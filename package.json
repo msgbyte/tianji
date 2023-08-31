@@ -8,9 +8,14 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.2.5",
+    "antd": "^5.8.5",
+    "clsx": "^2.0.0",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router": "^6.15.0",
+    "react-router-dom": "^6.15.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
     "vite-express": "^0.10.0"
@@ -21,7 +26,10 @@
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.4",
+    "autoprefixer": "^10.4.15",
     "nodemon": "^2.0.22",
+    "postcss": "^8.4.29",
+    "tailwindcss": "^3.3.3",
     "vite": "^4.4.9"
   }
 }
