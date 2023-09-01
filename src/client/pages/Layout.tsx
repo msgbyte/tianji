@@ -9,7 +9,7 @@ export const Layout: React.FC = React.memo(() => {
     <div>
       <div className="flex items-center bg-gray-100 px-4">
         <div className="px-2 mr-10 font-bold">Tianji</div>
-        <div className="flex space-x-4">
+        <div className="flex gap-8">
           <NavItem to="/dashboard" label="Dashboard" />
           <NavItem to="/monitor" label="Monitor" />
           <NavItem to="/website" label="Website" />
@@ -31,15 +31,11 @@ export const Layout: React.FC = React.memo(() => {
               ],
             }}
           >
-            <Button
-              shape="circle"
-              size="large"
-              icon={<UserOutlined />}
-            ></Button>
+            <Button shape="circle" size="large" icon={<UserOutlined />} />
           </Dropdown>
         </div>
       </div>
-      <div>
+      <div className="max-w-7xl m-auto px-4">
         <Outlet />
       </div>
     </div>
