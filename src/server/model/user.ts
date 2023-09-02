@@ -1,5 +1,6 @@
 import { prisma } from './_client';
 import bcryptjs from 'bcryptjs';
+import { ROLES } from '../utils/const';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -19,17 +20,51 @@ export async function createAdminUser(username: string, password: string) {
     data: {
       username,
       password: await hashPassword(password),
-      role: 'admin',
+      role: ROLES.admin,
+      workspaces: {
+        create: [
+          {
+            role: ROLES.owner,
+            workspace: {
+              create: {
+                name: username,
+              },
+            },
+          },
+        ],
+      },
     },
   });
 }
 
 export async function createUser(username: string, password: string) {
+  const existCount = await prisma.user.count({
+    where: {
+      username,
+    },
+  });
+
+  if (existCount > 0) {
+    throw new Error('User already exists');
+  }
+
   await prisma.user.create({
     data: {
       username,
       password: await hashPassword(password),
-      role: 'normal',
+      role: ROLES.user,
+      workspaces: {
+        create: [
+          {
+            role: ROLES.owner,
+            workspace: {
+              create: {
+                name: username,
+              },
+            },
+          },
+        ],
+      },
     },
   });
 }
@@ -39,6 +74,14 @@ export async function authUser(username: string, password: string) {
     where: {
       username,
       password: await hashPassword(password),
+    },
+    select: {
+      id: true,
+      username: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+      deletedAt: true,
     },
   });
 

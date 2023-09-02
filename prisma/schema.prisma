@@ -4,11 +4,11 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model User {
-  id        String    @id @unique @db.Uuid @default(uuid())
+  id        String    @id @unique @default(uuid()) @db.Uuid
   username  String    @unique @db.VarChar(255)
   password  String    @db.VarChar(60)
   role      String    @db.VarChar(50)
@@ -16,25 +16,50 @@ model User {
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt DateTime? @db.Timestamptz(6)
 
+  workspaces WorkspacesOnUsers[]
+}
+
+model Workspace {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(100)
+  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(6)
+
+  users   WorkspacesOnUsers[]
   website Website[]
 }
 
-model Website {
-  id        String    @id @unique @db.Uuid @default(uuid())
-  name      String    @db.VarChar(100)
-  domain    String?   @db.VarChar(500)
-  shareId   String?   @unique @db.VarChar(50)
-  resetAt   DateTime? @db.Timestamptz(6)
-  userId    String?   @db.Uuid
-  createdAt DateTime? @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime? @updatedAt @db.Timestamptz(6)
-  deletedAt DateTime? @db.Timestamptz(6)
+model WorkspacesOnUsers {
+  userId      String    @db.Uuid
+  workspaceId String    @db.Uuid
+  role        String    @db.VarChar(100)
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
 
-  user        User?         @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@id([userId, workspaceId])
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+model Website {
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @db.VarChar(100)
+  domain      String?   @db.VarChar(500)
+  shareId     String?   @unique @db.VarChar(50)
+  resetAt     DateTime? @db.Timestamptz(6)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String    @db.Uuid
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
   eventData   EventData[]
   sessionData SessionData[]
 
-  @@index([userId])
+  @@index([workspaceId])
   @@index([createdAt])
   @@index([shareId])
 }
