@@ -44,3 +44,18 @@ export async function authUser(username: string, password: string) {
 
   return user;
 }
+
+export async function findUser(userId: string) {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      username: true,
+      role: true,
+    },
+  });
+
+  return user;
+}
