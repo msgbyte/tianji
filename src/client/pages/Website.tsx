@@ -57,7 +57,7 @@ interface WebsiteInfoRecordType {
   domain: string;
 }
 
-export const WebsiteList: React.FC = React.memo(() => {
+const WebsiteList: React.FC = React.memo(() => {
   const dataSource: WebsiteInfoRecordType[] = [
     {
       name: 'tianji',

@@ -19,6 +19,10 @@ a {
   text-decoration: none;
 }
 
+#root, .App {
+  height: 100%;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
