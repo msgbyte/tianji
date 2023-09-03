@@ -16,7 +16,7 @@ export async function createAdminUser(username: string, password: string) {
     throw new Error('Create Admin User Just Only allow in non people exist');
   }
 
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       username,
       password: await hashPassword(password),
@@ -34,7 +34,21 @@ export async function createAdminUser(username: string, password: string) {
         ],
       },
     },
+    include: {
+      workspaces: true,
+    },
   });
+
+  if (user.workspaces[0]) {
+    prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        currentWorkspaceId: user.workspaces[0].workspaceId,
+      },
+    });
+  }
 }
 
 export async function createUser(username: string, password: string) {
@@ -48,7 +62,7 @@ export async function createUser(username: string, password: string) {
     throw new Error('User already exists');
   }
 
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       username,
       password: await hashPassword(password),
@@ -66,11 +80,25 @@ export async function createUser(username: string, password: string) {
         ],
       },
     },
+    include: {
+      workspaces: true,
+    },
   });
+
+  if (user.workspaces[0]) {
+    prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        currentWorkspaceId: user.workspaces[0].workspaceId,
+      },
+    });
+  }
 }
 
 export async function authUser(username: string, password: string) {
-  const user = await prisma.user.findFirstOrThrow({
+  const user = await prisma.user.findUniqueOrThrow({
     where: {
       username,
       password: await hashPassword(password),
@@ -89,7 +117,7 @@ export async function authUser(username: string, password: string) {
 }
 
 export async function findUser(userId: string) {
-  const user = await prisma.user.findFirst({
+  const user = await prisma.user.findUnique({
     where: {
       id: userId,
     },

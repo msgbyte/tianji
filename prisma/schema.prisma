@@ -8,13 +8,16 @@ generator client {
 }
 
 model User {
-  id        String    @id @unique @default(uuid()) @db.Uuid
-  username  String    @unique @db.VarChar(255)
-  password  String    @db.VarChar(60)
-  role      String    @db.VarChar(50)
-  createdAt DateTime? @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime? @updatedAt @db.Timestamptz(6)
-  deletedAt DateTime? @db.Timestamptz(6)
+  id                 String     @id @unique @default(uuid()) @db.Uuid
+  username           String     @unique @db.VarChar(255)
+  password           String     @db.VarChar(60)
+  role               String     @db.VarChar(50)
+  createdAt          DateTime?  @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime?  @updatedAt @db.Timestamptz(6)
+  deletedAt          DateTime?  @db.Timestamptz(6)
+  currentWorkspaceId String?    @db.Uuid
+
+  currentWorkspace   Workspace? @relation(fields: [currentWorkspaceId], references: [id])
 
   workspaces WorkspacesOnUsers[]
 }
@@ -27,6 +30,7 @@ model Workspace {
 
   users   WorkspacesOnUsers[]
   website Website[]
+  User    User[]
 }
 
 model WorkspacesOnUsers {
@@ -56,15 +60,15 @@ model Website {
   updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
 
-  eventData   EventData[]
-  sessionData SessionData[]
+  eventData   WebsiteEventData[]
+  sessionData WebsiteSessionData[]
 
   @@index([workspaceId])
   @@index([createdAt])
   @@index([shareId])
 }
 
-model Session {
+model WebsiteSession {
   id           String    @id @unique @db.Uuid
   websiteId    String    @db.Uuid
   hostname     String?   @db.VarChar(100)
@@ -80,7 +84,7 @@ model Session {
   createdAt    DateTime? @default(now()) @db.Timestamptz(6)
 
   websiteEvent WebsiteEvent[]
-  sessionData  SessionData[]
+  sessionData  WebsiteSessionData[]
 
   @@index([createdAt])
   @@index([websiteId])
@@ -110,8 +114,8 @@ model WebsiteEvent {
   eventType      Int       @default(1) @db.Integer
   eventName      String?   @db.VarChar(50)
 
-  eventData EventData[]
-  session   Session     @relation(fields: [sessionId], references: [id])
+  eventData WebsiteEventData[]
+  session   WebsiteSession     @relation(fields: [sessionId], references: [id])
 
   @@index([createdAt])
   @@index([sessionId])
@@ -125,7 +129,7 @@ model WebsiteEvent {
   @@index([websiteId, sessionId, createdAt])
 }
 
-model EventData {
+model WebsiteEventData {
   id             String    @id() @db.Uuid
   websiteId      String    @db.Uuid
   websiteEventId String    @db.Uuid
@@ -146,7 +150,7 @@ model EventData {
   @@index([websiteId, createdAt, eventKey])
 }
 
-model SessionData {
+model WebsiteSessionData {
   id          String    @id() @db.Uuid
   websiteId   String    @db.Uuid
   sessionId   String    @db.Uuid
@@ -158,8 +162,8 @@ model SessionData {
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
   deletedAt   DateTime? @default(now()) @db.Timestamptz(6)
 
-  website Website @relation(fields: [websiteId], references: [id])
-  session Session @relation(fields: [sessionId], references: [id])
+  website Website        @relation(fields: [websiteId], references: [id])
+  session WebsiteSession @relation(fields: [sessionId], references: [id])
 
   @@index([createdAt])
   @@index([websiteId])
