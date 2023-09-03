@@ -9,5 +9,11 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/client/main.tsx"></script>
+    <script>
+      const el = document.createElement('script');
+      el.src = location.origin + '/tracker.js';
+      el.setAttribute('data-website-id', '53b9a4c1-4a4e-4ec9-8d42-2a2941825bd2'); // For test
+      document.head.append(el);
+    </script>
   </body>
 </html>

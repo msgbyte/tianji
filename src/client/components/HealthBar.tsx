@@ -9,8 +9,9 @@ interface HealthBarProps {
 export const HealthBar: React.FC<HealthBarProps> = React.memo((props) => {
   return (
     <div className="flex">
-      {props.beats.map((beat) => (
+      {props.beats.map((beat, i) => (
         <div
+          key={i}
           title={beat.title}
           className={clsx(
             'rounded-full w-1 h-4 m-0.5 hover:scale-150 transition-transform',

@@ -28,7 +28,7 @@
   const root = hostUrl
     ? hostUrl.replace(/\/$/, '')
     : currentScript.src.split('/').slice(0, -1).join('/');
-  const endpoint = `${root}/api/send`;
+  const endpoint = `${root}/api/website/send`;
   const screen = `${width}x${height}`;
   const eventRegex = /data-tianji-event-([\w-_]+)/;
   const eventNameAttribute = _data + 'tianji-event';

@@ -1,4 +1,6 @@
 .env
+public/tracker.js
+geo
 
 # Logs
 logs

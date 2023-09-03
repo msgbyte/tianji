@@ -8,16 +8,16 @@ generator client {
 }
 
 model User {
-  id                 String     @id @unique @default(uuid()) @db.Uuid
-  username           String     @unique @db.VarChar(255)
-  password           String     @db.VarChar(60)
-  role               String     @db.VarChar(50)
-  createdAt          DateTime?  @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime?  @updatedAt @db.Timestamptz(6)
-  deletedAt          DateTime?  @db.Timestamptz(6)
-  currentWorkspaceId String?    @db.Uuid
+  id                 String    @id @unique @default(uuid()) @db.Uuid
+  username           String    @unique @db.VarChar(255)
+  password           String    @db.VarChar(60)
+  role               String    @db.VarChar(50)
+  createdAt          DateTime? @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime? @updatedAt @db.Timestamptz(6)
+  deletedAt          DateTime? @db.Timestamptz(6)
+  currentWorkspaceId String?   @db.Uuid
 
-  currentWorkspace   Workspace? @relation(fields: [currentWorkspaceId], references: [id])
+  currentWorkspace Workspace? @relation(fields: [currentWorkspaceId], references: [id])
 
   workspaces WorkspacesOnUsers[]
 }
@@ -101,7 +101,7 @@ model WebsiteSession {
 }
 
 model WebsiteEvent {
-  id             String    @id() @db.Uuid
+  id             String    @id() @default(uuid()) @db.Uuid
   websiteId      String    @db.Uuid
   sessionId      String    @db.Uuid
   createdAt      DateTime? @default(now()) @db.Timestamptz(6)
@@ -130,7 +130,7 @@ model WebsiteEvent {
 }
 
 model WebsiteEventData {
-  id             String    @id() @db.Uuid
+  id             String    @id() @default(uuid()) @db.Uuid
   websiteId      String    @db.Uuid
   websiteEventId String    @db.Uuid
   eventKey       String    @db.VarChar(500)
@@ -151,10 +151,9 @@ model WebsiteEventData {
 }
 
 model WebsiteSessionData {
-  id          String    @id() @db.Uuid
+  id          String    @id() @default(uuid()) @db.Uuid
   websiteId   String    @db.Uuid
   sessionId   String    @db.Uuid
-  sessionKey  String    @db.VarChar(500)
   stringValue String?   @db.VarChar(500)
   numberValue Decimal?  @db.Decimal(19, 4)
   dateValue   DateTime? @db.Timestamptz(6)
