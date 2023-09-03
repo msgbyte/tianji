@@ -22,8 +22,8 @@ app.use('/api/user', userRouter);
 app.use('/api/website', websiteRouter);
 
 app.use((err: any, req: any, res: any, next: any) => {
-  res.status(500);
-  res.json({ error: err.message });
+  console.error(err);
+  res.status(500).json({ message: err.message });
 });
 
 ViteExpress.listen(app, port, () => {

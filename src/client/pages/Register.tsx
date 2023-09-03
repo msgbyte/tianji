@@ -1,33 +1,22 @@
 import { Button, Form, Input, Typography } from 'antd';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { model } from '../api/model';
 import { useNavigate } from 'react-router';
-import { loginWithToken } from '../api/model/user';
-import { getJWT } from '../api/auth';
 import { useRequest } from '../hooks/useRequest';
 
-export const Login: React.FC = React.memo(() => {
+export const Register: React.FC = React.memo(() => {
   const navigate = useNavigate();
 
-  const [{ loading }, handleLogin] = useRequest(async (values: any) => {
-    await model.user.login(values.username, values.password);
+  const [{ loading }, handleRegister] = useRequest(async (values: any) => {
+    await model.user.register(values.username, values.password);
     navigate('/dashboard');
   });
-
-  useEffect(() => {
-    const token = getJWT();
-    if (token) {
-      loginWithToken().then(() => {
-        navigate('/dashboard');
-      });
-    }
-  }, []);
 
   return (
     <div className="w-full h-full flex justify-center items-center">
       <div className="w-80 -translate-y-1/4">
-        <Typography.Title level={2}>Tianji</Typography.Title>
-        <Form layout="vertical" disabled={loading} onFinish={handleLogin}>
+        <Typography.Title level={2}>Register Account</Typography.Title>
+        <Form layout="vertical" disabled={loading} onFinish={handleRegister}>
           <Form.Item
             label="Username"
             name="username"
@@ -50,18 +39,6 @@ export const Login: React.FC = React.memo(() => {
               block={true}
               loading={loading}
             >
-              Login
-            </Button>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              size="large"
-              htmlType="button"
-              block={true}
-              onClick={() => {
-                navigate('/register');
-              }}
-            >
               Register
             </Button>
           </Form.Item>
@@ -70,4 +47,4 @@ export const Login: React.FC = React.memo(() => {
     </div>
   );
 });
-Login.displayName = 'Login';
+Register.displayName = 'Register';

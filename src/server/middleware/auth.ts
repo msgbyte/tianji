@@ -1,4 +1,4 @@
-import { authUser, findUser } from '../model/user';
+import { findUser } from '../model/user';
 import passport from 'passport';
 import { Handler } from 'express';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
@@ -9,6 +9,12 @@ export const jwtSecret = process.env.JWT_SECRET || nanoid();
 export const jwtIssuer = process.env.JWT_ISSUER || 'tianji.msgbyte.com';
 export const jwtAudience = process.env.JWT_AUDIENCE || 'msgbyte.com';
 
+interface JWTPayload {
+  id: string;
+  username: string;
+  role: string;
+}
+
 passport.use(
   new JwtStrategy(
     {
@@ -18,7 +24,7 @@ passport.use(
       audience: jwtAudience,
     },
     function (jwt_payload, done) {
-      findUser(jwt_payload.sub)
+      findUser(jwt_payload.id)
         .then((user) => {
           if (user) {
             done(null, user);
@@ -41,14 +47,31 @@ passport.deserializeUser(function (user: any, cb) {
   cb(null, user);
 });
 
-export function jwtSign(payload: {}): string {
-  const token = jwt.sign(payload, jwtSecret, {
-    issuer: jwtIssuer,
-    audience: jwtAudience,
-    expiresIn: '30d',
-  });
+export function jwtSign(payload: JWTPayload): string {
+  const token = jwt.sign(
+    {
+      id: payload.id,
+      username: payload.username,
+      role: payload.role,
+    },
+    jwtSecret,
+    {
+      issuer: jwtIssuer,
+      audience: jwtAudience,
+      expiresIn: '30d',
+    }
+  );
 
   return token;
+}
+
+export function jwtVerify(token: string): JWTPayload {
+  const payload = jwt.verify(token, jwtSecret, {
+    issuer: jwtIssuer,
+    audience: jwtAudience,
+  });
+
+  return payload as JWTPayload;
 }
 
 export function auth(): Handler {

@@ -18,4 +18,4 @@ export function validate(...validator: ValidationChain[]): Handler {
   return compose([...validator, handler as any]);
 }
 
-export { body, query, param } from 'express-validator';
+export { body, query, param, header } from 'express-validator';

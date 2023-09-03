@@ -1,6 +1,12 @@
 import { Router } from 'express';
-import { body, validate } from '../middleware/validate';
-import { authUser, createAdminUser } from '../model/user';
+import { header, body, validate } from '../middleware/validate';
+import {
+  authUser,
+  authUserWithToken,
+  createAdminUser,
+  createUser,
+  getUserCount,
+} from '../model/user';
 import { auth, jwtSign } from '../middleware/auth';
 
 export const userRouter = Router();
@@ -16,13 +22,53 @@ userRouter.post(
 
     const user = await authUser(username, password);
 
-    const token = jwtSign({
-      id: user.id,
-      username: user.username,
-      role: user.role,
-    });
+    const token = jwtSign(user);
 
-    res.json({ token });
+    res.json({ info: user, token });
+  }
+);
+
+userRouter.post(
+  '/register',
+  validate(
+    body('username').exists().withMessage('Username should be existed'),
+    body('password').exists().withMessage('Password should be existed')
+  ),
+  async (req, res) => {
+    const { username, password } = req.body;
+
+    const userCount = await getUserCount();
+    if (userCount === 0) {
+      const user = await createAdminUser(username, password);
+
+      const token = jwtSign(user);
+
+      res.json({ info: user, token });
+    } else {
+      const user = await createUser(username, password);
+
+      const token = jwtSign(user);
+
+      res.json({ info: user, token });
+    }
+  }
+);
+
+userRouter.post(
+  '/loginWithToken',
+  validate(body('token').exists().withMessage('Token should be existed')),
+  async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+      throw new Error('Cannot get token');
+    }
+
+    const user = await authUserWithToken(token);
+
+    const newToken = jwtSign(user);
+
+    res.json({ info: user, token: newToken });
   }
 );
 
