@@ -25,7 +25,15 @@ export const useUserStore = create<UserState>(() => ({
   info: null,
 }));
 
-export function setUserInfo(info: UserInfo) {
+export function setUserInfo(info: UserLoginInfo) {
+  if (!info.currentWorkspace && info.workspaces[0]) {
+    // Make sure currentWorkspace existed
+    info.currentWorkspace = {
+      id: info.workspaces[0].workspace.id,
+      name: info.workspaces[0].workspace.name,
+    };
+  }
+
   useUserStore.setState({
     info,
   });

@@ -55,7 +55,7 @@ export async function createAdminUser(username: string, password: string) {
     );
   }
 
-  const user = await prisma.user.create({
+  let user = await prisma.user.create({
     data: {
       username,
       password: await hashPassword(password),
@@ -77,13 +77,14 @@ export async function createAdminUser(username: string, password: string) {
   });
 
   if (user.workspaces[0]) {
-    prisma.user.update({
+    user = await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
         currentWorkspaceId: user.workspaces[0].workspace.id,
       },
+      select: createUserSelect,
     });
   }
 
@@ -101,7 +102,7 @@ export async function createUser(username: string, password: string) {
     throw new Error('User already exists');
   }
 
-  const user = await prisma.user.create({
+  let user = await prisma.user.create({
     data: {
       username,
       password: await hashPassword(password),
@@ -123,13 +124,14 @@ export async function createUser(username: string, password: string) {
   });
 
   if (user.workspaces[0]) {
-    prisma.user.update({
+    user = await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
         currentWorkspaceId: user.workspaces[0].workspace.id,
       },
+      select: createUserSelect,
     });
   }
 

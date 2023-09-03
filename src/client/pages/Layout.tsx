@@ -3,8 +3,23 @@ import { Outlet } from 'react-router-dom';
 import { NavItem } from '../components/NavItem';
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
+import { useUserStore } from '../store/user';
 
 export const Layout: React.FC = React.memo(() => {
+  const workspaces = useUserStore((state) => {
+    const userInfo = state.info;
+    if (userInfo) {
+      return userInfo.workspaces.map((w) => ({
+        id: w.workspace.id,
+        name: w.workspace.name,
+        role: w.role,
+        current: userInfo.currentWorkspace.id === w.workspace.id,
+      }));
+    }
+
+    return [];
+  });
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center bg-gray-100 px-4">
@@ -24,6 +39,15 @@ export const Layout: React.FC = React.memo(() => {
             placement="bottomRight"
             menu={{
               items: [
+                {
+                  key: 'workspaces',
+                  label: 'Workspaces',
+                  children: workspaces.map((w) => ({
+                    key: w.id,
+                    label: `${w.name}${w.current ? '(current)' : ''}`,
+                    disabled: w.current,
+                  })),
+                },
                 {
                   key: 'logout',
                   label: 'Logout',
