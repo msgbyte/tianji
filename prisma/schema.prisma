@@ -29,8 +29,10 @@ model Workspace {
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
 
   users   WorkspacesOnUsers[]
-  website Website[]
-  User    User[]
+  websites Website[]
+
+  // for user currentWorkspace
+  selectedUsers User[]
 }
 
 model WorkspacesOnUsers {

@@ -6,8 +6,9 @@ import compression from 'compression';
 import passport from 'passport';
 import { userRouter } from './router/user';
 import { websiteRouter } from './router/website';
+import { workspaceRouter } from './router/workspace';
 
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 12345);
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.disable('x-powered-by');
 
 app.use('/api/user', userRouter);
 app.use('/api/website', websiteRouter);
+app.use('/api/workspace', workspaceRouter);
 
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err);

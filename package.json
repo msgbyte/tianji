@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "nodemon src/server/main.ts -w src/server",
+    "dev": "nodemon",
     "start": "NODE_ENV=production ts-node src/server/main.ts",
     "build": "vite build && pnpm build:tracker && pnpm build:geo",
     "build:tracker": "ts-node scripts/build-tracker.ts",
@@ -16,6 +16,7 @@
     "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^5.2.5",
     "@prisma/client": "^5.2.0",
+    "@tanstack/react-query": "^4.33.0",
     "@types/uuid": "^9.0.3",
     "antd": "^5.8.5",
     "axios": "^1.5.0",

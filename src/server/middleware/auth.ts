@@ -11,7 +11,7 @@ export const jwtSecret =
 export const jwtIssuer = process.env.JWT_ISSUER || 'tianji.msgbyte.com';
 export const jwtAudience = process.env.JWT_AUDIENCE || 'msgbyte.com';
 
-interface JWTPayload {
+export interface JWTPayload {
   id: string;
   username: string;
   role: string;

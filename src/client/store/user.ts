@@ -1,21 +1,5 @@
 import { create } from 'zustand';
-
-export interface UserLoginInfo {
-  id: string;
-  username: string;
-  role: string;
-  currentWorkspace: {
-    id: string;
-    name: string;
-  };
-  workspaces: {
-    role: string;
-    workspace: {
-      id: string;
-      name: string;
-    };
-  }[];
-}
+import { UserLoginInfo } from '../api/model/user';
 
 interface UserState {
   info: UserLoginInfo | null;

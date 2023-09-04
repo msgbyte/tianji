@@ -1,5 +1,5 @@
 import React from 'react';
-import { Select } from 'antd';
+import { Dropdown, Select } from 'antd';
 import { compact } from 'lodash-es';
 
 export const DateFilter: React.FC<{
