@@ -1,11 +1,8 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import { body, param, query, validate } from '../middleware/validate';
-import {
-  addWorkspaceWebsite,
-  checkIsWorkspaceUser,
-  getWorkspaceWebsites,
-} from '../model/workspace';
+import { body, query, validate } from '../middleware/validate';
+import { workspacePermission } from '../middleware/workspace';
+import { addWorkspaceWebsite, getWorkspaceWebsites } from '../model/workspace';
 
 export const workspaceRouter = Router();
 
@@ -19,15 +16,9 @@ workspaceRouter.get(
       .withMessage('workspaceId should be UUID')
   ),
   auth(),
+  workspacePermission(),
   async (req, res) => {
-    const userId = req.user!.id;
     const workspaceId = req.query.workspaceId as string;
-
-    const isWorkspaceUser = await checkIsWorkspaceUser(workspaceId, userId);
-
-    if (!isWorkspaceUser) {
-      throw new Error('Is not workspace user');
-    }
 
     const websites = await getWorkspaceWebsites(workspaceId);
 
@@ -47,15 +38,9 @@ workspaceRouter.post(
     body('domain').isURL().withMessage('domain should be URL')
   ),
   auth(),
+  workspacePermission(),
   async (req, res) => {
-    const userId = req.user!.id;
     const { workspaceId, name, domain } = req.body;
-
-    const isWorkspaceUser = await checkIsWorkspaceUser(workspaceId, userId);
-
-    if (!isWorkspaceUser) {
-      throw new Error('Is not workspace user');
-    }
 
     const website = await addWorkspaceWebsite(workspaceId, name, domain);
 
