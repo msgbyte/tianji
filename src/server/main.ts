@@ -4,6 +4,7 @@ import 'express-async-errors';
 import ViteExpress from 'vite-express';
 import compression from 'compression';
 import passport from 'passport';
+import morgan from 'morgan';
 import { userRouter } from './router/user';
 import { websiteRouter } from './router/website';
 import { workspaceRouter } from './router/workspace';
@@ -15,6 +16,7 @@ const app = express();
 app.use(compression());
 app.use(express.json());
 app.use(passport.initialize());
+app.use(morgan('tiny'));
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
