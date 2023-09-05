@@ -32,5 +32,5 @@ app.use((err: any, req: any, res: any, next: any) => {
 
 ViteExpress.listen(app, port, () => {
   console.log(`Server is listening on port ${port}...`);
-  console.log(`Website: http://localhost:${port}`);
+  console.log(`Website: http://127.0.0.1:${port}`);
 });
