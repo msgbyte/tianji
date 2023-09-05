@@ -1,9 +1,7 @@
 import { Button, Form, Input, Typography } from 'antd';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { model } from '../api/model';
 import { useNavigate } from 'react-router';
-import { loginWithToken } from '../api/model/user';
-import { getJWT } from '../api/auth';
 import { useRequest } from '../hooks/useRequest';
 
 export const Login: React.FC = React.memo(() => {
@@ -13,15 +11,6 @@ export const Login: React.FC = React.memo(() => {
     await model.user.login(values.username, values.password);
     navigate('/dashboard');
   });
-
-  useEffect(() => {
-    const token = getJWT();
-    if (token) {
-      loginWithToken().then(() => {
-        navigate('/dashboard');
-      });
-    }
-  }, []);
 
   return (
     <div className="w-full h-full flex justify-center items-center">

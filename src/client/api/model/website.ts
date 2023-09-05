@@ -26,6 +26,33 @@ export async function getWorkspaceWebsites(
   return data.websites;
 }
 
+export async function getWorkspaceWebsiteInfo(
+  workspaceId: string,
+  websiteId: string
+): Promise<WebsiteInfo | null> {
+  const { data } = await request.get(`/api/workspace/website/${websiteId}`, {
+    params: {
+      workspaceId,
+    },
+  });
+
+  return data.website;
+}
+
+export async function updateWorkspaceWebsiteInfo(
+  workspaceId: string,
+  websiteId: string,
+  info: { name: string; domain: string }
+) {
+  await request.post(`/api/workspace/website/${websiteId}`, {
+    workspaceId,
+    name: info.name,
+    domain: info.domain,
+  });
+
+  queryClient.resetQueries(['websites', workspaceId]);
+}
+
 export function useWorspaceWebsites(workspaceId: string) {
   const { data: websites = [], isLoading } = useQuery(
     ['websites', workspaceId],
@@ -35,6 +62,21 @@ export function useWorspaceWebsites(workspaceId: string) {
   );
 
   return { websites, isLoading };
+}
+
+export function useWorkspaceWebsiteInfo(
+  workspaceId: string,
+  websiteId: string
+) {
+  const { data: website = null, isLoading } = useQuery(
+    ['website', workspaceId, websiteId],
+    () => {
+      return getWorkspaceWebsiteInfo(workspaceId, websiteId);
+    },
+    { cacheTime: 0 }
+  );
+
+  return { website, isLoading };
 }
 
 export function refreshWorkspaceWebsites(workspaceId: string) {

@@ -3,7 +3,8 @@ import { checkIsWorkspaceUser } from '../model/workspace';
 
 export function workspacePermission(): Handler {
   return async (req, res, next) => {
-    const workspaceId = req.body.workspaceId ?? req.query.workspaceId;
+    const workspaceId =
+      req.body.workspaceId ?? req.query.workspaceId ?? req.params.workspaceId;
 
     if (!workspaceId) {
       throw new Error('Cannot find workspace id');

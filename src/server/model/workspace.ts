@@ -35,6 +35,40 @@ export async function getWorkspaceWebsites(workspaceId: string) {
   return workspace?.websites ?? [];
 }
 
+export async function getWorkspaceWebsiteInfo(
+  workspaceId: string,
+  websiteId: string
+) {
+  const websiteInfo = await prisma.website.findUnique({
+    where: {
+      id: websiteId,
+      workspaceId,
+    },
+  });
+
+  return websiteInfo;
+}
+
+export async function updateWorkspaceWebsiteInfo(
+  workspaceId: string,
+  websiteId: string,
+  name: string,
+  domain: string
+) {
+  const websiteInfo = await prisma.website.update({
+    where: {
+      id: websiteId,
+      workspaceId,
+    },
+    data: {
+      name,
+      domain,
+    },
+  });
+
+  return websiteInfo;
+}
+
 export async function addWorkspaceWebsite(
   workspaceId: string,
   name: string,

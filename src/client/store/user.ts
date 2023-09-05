@@ -22,3 +22,11 @@ export function setUserInfo(info: UserLoginInfo) {
     info,
   });
 }
+
+export function useCurrentWorkspaceId() {
+  const currentWorkspaceId = useUserStore(
+    (state) => state.info?.currentWorkspace?.id
+  );
+
+  return currentWorkspaceId;
+}
