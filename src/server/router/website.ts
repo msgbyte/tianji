@@ -7,6 +7,7 @@ import {
   saveWebsiteEvent,
   saveWebsiteSessionData,
 } from '../model/website';
+import { createToken } from '../utils/common';
 
 export const websiteRouter = Router();
 
@@ -101,6 +102,8 @@ websiteRouter.post(
       });
     }
 
-    res.send();
+    const token = createToken(session);
+
+    res.send(token);
   }
 );

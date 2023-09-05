@@ -1,5 +1,5 @@
 import { Website, WebsiteSession } from '@prisma/client';
-import { flattenJSON, hashUuid, isUuid } from '../utils/common';
+import { flattenJSON, hashUuid, isUuid, parseToken } from '../utils/common';
 import { prisma } from './_client';
 import { Request } from 'express';
 import { getClientInfo } from '../utils/detect';
@@ -40,6 +40,17 @@ export async function findSession(req: Request): Promise<{
 }> {
   // Verify payload
   const { payload } = req.body;
+
+  // Check if cache token is passed
+  const cacheToken = req.headers['x-tianji-cache'] as string;
+
+  if (cacheToken) {
+    const result = parseToken(cacheToken);
+
+    if (result) {
+      return result as any;
+    }
+  }
 
   const {
     website: websiteId,

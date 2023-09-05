@@ -3,11 +3,8 @@ import passport from 'passport';
 import { Handler } from 'express';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
-import { hashUuid } from '../utils/common';
-import dayjs from 'dayjs';
+import { jwtSecret } from '../utils/common';
 
-export const jwtSecret =
-  process.env.JWT_SECRET || hashUuid(dayjs().format('YYYYMMDD'));
 export const jwtIssuer = process.env.JWT_ISSUER || 'tianji.msgbyte.com';
 export const jwtAudience = process.env.JWT_AUDIENCE || 'msgbyte.com';
 

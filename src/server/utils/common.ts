@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { DATA_TYPE } from './const';
 import { DynamicDataType } from './types';
 import dayjs from 'dayjs';
+import jwt from 'jsonwebtoken';
 
 export function isUuid(value: string) {
   return validate(value);
@@ -128,4 +129,22 @@ function getDataType(value: any): string {
   }
 
   return type;
+}
+
+/**
+ * Secret for auth and cacheTokenGenerate
+ */
+export const jwtSecret =
+  process.env.JWT_SECRET || hashUuid(dayjs().format('YYYYMMDD'));
+
+export function createToken(payload: any, secret = jwtSecret, options?: any) {
+  return jwt.sign(payload, secret, options);
+}
+
+export function parseToken(token: string, secret = jwtSecret) {
+  try {
+    return jwt.verify(token, secret);
+  } catch {
+    return null;
+  }
 }
