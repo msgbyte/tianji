@@ -4,10 +4,12 @@ import { body, param, query, validate } from '../middleware/validate';
 import { workspacePermission } from '../middleware/workspace';
 import {
   addWorkspaceWebsite,
+  deleteWorkspaceWebsite,
   getWorkspaceWebsiteInfo,
   getWorkspaceWebsites,
   updateWorkspaceWebsiteInfo,
 } from '../model/workspace';
+import { ROLES } from '../utils/const';
 
 export const workspaceRouter = Router();
 
@@ -124,6 +126,32 @@ workspaceRouter.post(
       name,
       domain
     );
+
+    res.json({ website });
+  }
+);
+
+workspaceRouter.delete(
+  '/:workspaceId/website/:websiteId',
+  validate(
+    param('workspaceId')
+      .isString()
+      .withMessage('workspaceId should be string')
+      .isUUID()
+      .withMessage('workspaceId should be UUID'),
+    param('websiteId')
+      .isString()
+      .withMessage('workspaceId should be string')
+      .isUUID()
+      .withMessage('workspaceId should be UUID')
+  ),
+  auth(),
+  workspacePermission([ROLES.owner]),
+  async (req, res) => {
+    const workspaceId = req.params.workspaceId;
+    const websiteId = req.params.websiteId;
+
+    const website = await deleteWorkspaceWebsite(workspaceId, websiteId);
 
     res.json({ website });
   }

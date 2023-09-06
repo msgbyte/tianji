@@ -1,7 +1,8 @@
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input, message, Popconfirm, Tabs } from 'antd';
 import React from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import {
+  deleteWorkspaceWebsite,
   updateWorkspaceWebsiteInfo,
   useWorkspaceWebsiteInfo,
 } from '../api/model/website';
@@ -20,6 +21,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
     currentWorkspaceId!,
     websiteId!
   );
+  const navigate = useNavigate();
 
   const [, handleSave] = useRequest(
     async (values: { name: string; domain: string }) => {
@@ -31,6 +33,14 @@ export const WebsiteInfo: React.FC = React.memo(() => {
       message.success('Save Success');
     }
   );
+
+  const [, handleDeleteWebsite] = useRequest(async () => {
+    await deleteWorkspaceWebsite(currentWorkspaceId!, websiteId!);
+
+    message.success('Delete Success');
+
+    navigate('/settings/websites');
+  });
 
   if (!currentWorkspaceId) {
     return <NoWorkspaceTip />;
@@ -55,31 +65,50 @@ export const WebsiteInfo: React.FC = React.memo(() => {
       </div>
 
       <div>
-        <Form
-          layout="vertical"
-          initialValues={{
-            id: website.id,
-            name: website.name,
-            domain: website.domain,
-          }}
-          onFinish={handleSave}
-        >
-          <Form.Item label="Website ID" name="id">
-            <Input size="large" disabled={true} />
-          </Form.Item>
-          <Form.Item label="Name" name="name" rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
-          <Form.Item label="Domain" name="domain" rules={[{ required: true }]}>
-            <Input size="large" />
-          </Form.Item>
+        <Tabs>
+          <Tabs.TabPane key={'detail'} tab={'Detail'}>
+            <Form
+              layout="vertical"
+              initialValues={{
+                id: website.id,
+                name: website.name,
+                domain: website.domain,
+              }}
+              onFinish={handleSave}
+            >
+              <Form.Item label="Website ID" name="id">
+                <Input size="large" disabled={true} />
+              </Form.Item>
+              <Form.Item label="Name" name="name" rules={[{ required: true }]}>
+                <Input size="large" />
+              </Form.Item>
+              <Form.Item
+                label="Domain"
+                name="domain"
+                rules={[{ required: true }]}
+              >
+                <Input size="large" />
+              </Form.Item>
 
-          <Form.Item>
-            <Button size="large" htmlType="submit">
-              Save
-            </Button>
-          </Form.Item>
-        </Form>
+              <Form.Item>
+                <Button size="large" htmlType="submit">
+                  Save
+                </Button>
+              </Form.Item>
+            </Form>
+          </Tabs.TabPane>
+
+          <Tabs.TabPane key={'data'} tab={'Data'}>
+            <Popconfirm
+              title="Delete Website"
+              onConfirm={() => handleDeleteWebsite()}
+            >
+              <Button type="primary" danger={true}>
+                Delete Website
+              </Button>
+            </Popconfirm>
+          </Tabs.TabPane>
+        </Tabs>
       </div>
     </div>
   );

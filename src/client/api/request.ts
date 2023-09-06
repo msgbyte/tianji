@@ -9,10 +9,7 @@ function createRequest() {
   const ins = axios.create();
 
   ins.interceptors.request.use(async (val) => {
-    if (
-      ['post', 'get'].includes(String(val.method).toLowerCase()) &&
-      !val.headers.Authorization
-    ) {
+    if (!val.headers.Authorization) {
       val.headers.Authorization = `Bearer ${getJWT()}`;
     }
 

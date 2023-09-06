@@ -34,7 +34,6 @@ export const Settings: React.FC = React.memo(() => {
           mode="vertical"
           items={items}
         />
-        {pathname}
       </div>
       <div className="w-full md:w-5/6 py-2 px-4">
         <Routes>

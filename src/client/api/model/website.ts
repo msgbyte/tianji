@@ -53,6 +53,15 @@ export async function updateWorkspaceWebsiteInfo(
   queryClient.resetQueries(['websites', workspaceId]);
 }
 
+export async function deleteWorkspaceWebsite(
+  workspaceId: string,
+  websiteId: string
+) {
+  await request.delete(`/api/workspace/${workspaceId}/website/${websiteId}`);
+
+  queryClient.resetQueries(['websites', workspaceId]);
+}
+
 export function useWorspaceWebsites(workspaceId: string) {
   const { data: websites = [], isLoading } = useQuery(
     ['websites', workspaceId],

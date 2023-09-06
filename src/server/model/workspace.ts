@@ -1,21 +1,23 @@
 import { prisma } from './_client';
 
+export async function getWorkspaceUser(workspaceId: string, userId: string) {
+  const info = await prisma.workspacesOnUsers.findFirst({
+    where: {
+      workspaceId,
+      userId,
+    },
+  });
+
+  return info;
+}
+
 export async function checkIsWorkspaceUser(
   workspaceId: string,
   userId: string
 ) {
-  const workspace = await prisma.workspace.findUnique({
-    where: {
-      id: workspaceId,
-      users: {
-        some: {
-          userId,
-        },
-      },
-    },
-  });
+  const info = await getWorkspaceUser(workspaceId, userId);
 
-  if (workspace) {
+  if (info) {
     return true;
   } else {
     return false;
@@ -78,6 +80,20 @@ export async function addWorkspaceWebsite(
     data: {
       name,
       domain,
+      workspaceId,
+    },
+  });
+
+  return website;
+}
+
+export async function deleteWorkspaceWebsite(
+  workspaceId: string,
+  websiteId: string
+) {
+  const website = await prisma.website.delete({
+    where: {
+      id: websiteId,
       workspaceId,
     },
   });
