@@ -4,16 +4,46 @@ import { Column } from '@ant-design/charts';
 import { ArrowRightOutlined, SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from './DateFilter';
 import { HealthBar } from './HealthBar';
+import { useWorspaceWebsites, WebsiteInfo } from '../api/model/website';
+import { Loading } from './Loading';
 
-export const WebsiteOverview: React.FC = React.memo(() => {
+interface WebsiteOverviewProps {
+  workspaceId: string;
+}
+export const WebsiteOverview: React.FC<WebsiteOverviewProps> = React.memo(
+  (props) => {
+    const { isLoading, websites } = useWorspaceWebsites(props.workspaceId);
+
+    if (isLoading) {
+      return <Loading />;
+    }
+
+    return (
+      <div>
+        {websites.map((website) => (
+          <WebsiteOverviewItem key={website.id} website={website} />
+        ))}
+      </div>
+    );
+  }
+);
+WebsiteOverview.displayName = 'WebsiteOverview';
+
+const WebsiteOverviewItem: React.FC<{
+  website: WebsiteInfo;
+}> = React.memo((props) => {
   return (
-    <div>
+    <div className="mb-10 pb-10 border-b">
       <div className="flex">
         <div className="flex flex-1 text-2xl font-bold items-center">
-          <span className="mr-2">Tianji</span>
+          <span className="mr-2" title={props.website.domain ?? ''}>
+            {props.website.name}
+          </span>
 
           <HealthBar
-            beats={Array.from({ length: 13 }).map(() => ({ status: 'health' }))}
+            beats={Array.from({ length: 13 }).map(() => ({
+              status: 'health',
+            }))}
           />
         </div>
 
@@ -50,7 +80,7 @@ export const WebsiteOverview: React.FC = React.memo(() => {
     </div>
   );
 });
-WebsiteOverview.displayName = 'WebsiteOverview';
+WebsiteOverviewItem.displayName = 'WebsiteOverviewItem';
 
 const MetricCard: React.FC<{
   label: string;

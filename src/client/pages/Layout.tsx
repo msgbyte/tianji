@@ -59,8 +59,10 @@ export const Layout: React.FC = React.memo(() => {
           </Dropdown>
         </div>
       </div>
-      <div className="flex-1 w-full max-w-7xl m-auto px-4 overflow-auto">
-        <Outlet />
+      <div className="flex-1 w-full px-4 overflow-auto">
+        <div className="max-w-7xl m-auto">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
