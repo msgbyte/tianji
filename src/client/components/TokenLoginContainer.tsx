@@ -10,7 +10,7 @@ export const TokenLoginContainer: React.FC<React.PropsWithChildren> =
     useEffect(() => {
       const token = getJWT();
       if (token) {
-        loginWithToken().then(() => {
+        loginWithToken().finally(() => {
           setLoading(false);
         });
       } else {
