@@ -6,10 +6,13 @@ import {
   addWorkspaceWebsite,
   deleteWorkspaceWebsite,
   getWorkspaceWebsiteInfo,
+  getWorkspaceWebsitePageviewStats,
   getWorkspaceWebsites,
   updateWorkspaceWebsiteInfo,
 } from '../model/workspace';
+import { parseDateRange } from '../utils/common';
 import { ROLES } from '../utils/const';
+import { QueryFilters } from '../utils/prisma';
 
 export const workspaceRouter = Router();
 
@@ -36,11 +39,7 @@ workspaceRouter.get(
 workspaceRouter.post(
   '/website',
   validate(
-    body('workspaceId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID'),
+    body('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
     body('name')
       .isString()
       .withMessage('name should be string')
@@ -66,16 +65,8 @@ workspaceRouter.post(
 workspaceRouter.get(
   '/website/:websiteId',
   validate(
-    query('workspaceId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID'),
-    param('websiteId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID')
+    query('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
+    param('websiteId').isUUID().withMessage('workspaceId should be UUID')
   ),
   auth(),
   workspacePermission(),
@@ -92,14 +83,9 @@ workspaceRouter.get(
 workspaceRouter.post(
   '/website/:websiteId',
   validate(
-    body('workspaceId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID'),
+    body('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
     param('websiteId')
       .isString()
-      .withMessage('workspaceId should be string')
       .isUUID()
       .withMessage('workspaceId should be UUID'),
     body('name')
@@ -134,16 +120,8 @@ workspaceRouter.post(
 workspaceRouter.delete(
   '/:workspaceId/website/:websiteId',
   validate(
-    param('workspaceId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID'),
-    param('websiteId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID')
+    param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
+    param('websiteId').isUUID().withMessage('workspaceId should be UUID')
   ),
   auth(),
   workspacePermission([ROLES.owner]),
@@ -152,6 +130,64 @@ workspaceRouter.delete(
     const websiteId = req.params.websiteId;
 
     const website = await deleteWorkspaceWebsite(workspaceId, websiteId);
+
+    res.json({ website });
+  }
+);
+
+workspaceRouter.get(
+  '/:workspaceId/website/:websiteId/pageviews',
+  validate(
+    param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
+    param('websiteId').isUUID().withMessage('workspaceId should be UUID')
+  ),
+  auth(),
+  workspacePermission(),
+  async (req, res) => {
+    const workspaceId = req.params.workspaceId;
+    const websiteId = req.params.websiteId;
+    const {
+      timezone,
+      url,
+      referrer,
+      title,
+      os,
+      browser,
+      device,
+      country,
+      region,
+      city,
+      startAt,
+      endAt,
+    } = req.query;
+
+    const { startDate, endDate, unit } = await parseDateRange({
+      websiteId,
+      startAt: Number(startAt),
+      endAt: Number(endAt),
+      unit: String(req.query.unit),
+    });
+
+    const filters = {
+      startDate,
+      endDate,
+      timezone,
+      unit,
+      url,
+      referrer,
+      title,
+      os,
+      browser,
+      device,
+      country,
+      region,
+      city,
+    };
+
+    const website = await getWorkspaceWebsitePageviewStats(
+      websiteId,
+      filters as QueryFilters
+    );
 
     res.json({ website });
   }

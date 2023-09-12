@@ -124,7 +124,7 @@ export async function findSession(req: Request): Promise<{
   return res;
 }
 
-async function loadWebsite(websiteId: string): Promise<Website | null> {
+export async function loadWebsite(websiteId: string): Promise<Website | null> {
   const website = await prisma.website.findUnique({
     where: {
       id: websiteId,

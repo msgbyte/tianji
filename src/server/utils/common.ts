@@ -4,6 +4,7 @@ import { DATA_TYPE } from './const';
 import { DynamicDataType } from './types';
 import dayjs from 'dayjs';
 import jwt from 'jsonwebtoken';
+import { max } from 'lodash-es';
 
 export function isUuid(value: string) {
   return validate(value);
@@ -147,4 +148,68 @@ export function parseToken(token: string, secret = jwtSecret) {
   } catch {
     return null;
   }
+}
+
+export function maxDate(...args: any[]) {
+  return max(args.filter((n) => dayjs(n).isValid()));
+}
+
+export async function parseDateRange({
+  websiteId,
+  startAt,
+  endAt,
+  unit,
+}: {
+  websiteId: string;
+  startAt: number;
+  endAt: number;
+  unit: string;
+}) {
+  // All-time
+  if (+startAt === 0 && +endAt === 1) {
+    const result = await getWorkspaceWebsiteDateRange(websiteId as string);
+    const { min, max } = result[0];
+    const startDate = new Date(min);
+    const endDate = new Date(max);
+
+    return {
+      startDate,
+      endDate,
+      unit: getMinimumUnit(startDate, endDate),
+    };
+  }
+
+  const startDate = new Date(+startAt);
+  const endDate = new Date(+endAt);
+  const minUnit = getMinimumUnit(startDate, endDate);
+
+  return {
+    startDate,
+    endDate,
+    unit: (getAllowedUnits(startDate, endDate).includes(unit as string)
+      ? unit
+      : minUnit) as string,
+  };
+}
+
+export function getAllowedUnits(startDate: Date, endDate: Date) {
+  const units = ['minute', 'hour', 'day', 'month', 'year'];
+  const minUnit = getMinimumUnit(startDate, endDate);
+  const index = units.indexOf(minUnit);
+
+  return index >= 0 ? units.splice(index) : [];
+}
+
+export function getMinimumUnit(startDate: Date, endDate: Date) {
+  if (dayjs(endDate).diff(startDate, 'minutes') <= 60) {
+    return 'minute';
+  } else if (dayjs(endDate).diff(startDate, 'hours') <= 48) {
+    return 'hour';
+  } else if (dayjs(endDate).diff(startDate, 'days') <= 90) {
+    return 'day';
+  } else if (dayjs(endDate).diff(startDate, 'months') <= 24) {
+    return 'month';
+  }
+
+  return 'year';
 }

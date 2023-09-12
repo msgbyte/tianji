@@ -1,4 +1,6 @@
 import { prisma } from './_client';
+import { QueryFilters, parseFilters, getDateQuery } from '../utils/prisma';
+import { DEFAULT_RESET_DATE, EVENT_TYPE } from '../utils/const';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
   const info = await prisma.workspacesOnUsers.findFirst({
@@ -99,4 +101,55 @@ export async function deleteWorkspaceWebsite(
   });
 
   return website;
+}
+
+export async function getWorkspaceWebsitePageviewStats(
+  websiteId: string,
+  filters: QueryFilters
+) {
+  const { timezone = 'utc', unit = 'day' } = filters;
+  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
+    ...filters,
+    eventType: EVENT_TYPE.pageView,
+  });
+
+  return prisma.$queryRaw`
+    select
+      ${getDateQuery('website_event.created_at', unit, timezone)} x,
+      count(*) y
+    from website_event
+      ${joinSession}
+    where website_event.website_id = ${params.websiteId}
+      and website_event.created_at
+    between ${params.startDate} and ${(params as any).endDate}
+      and event_type = {{eventType}}
+      ${filterQuery}
+    group by 1
+  `;
+}
+
+export async function getWorkspaceWebsiteDateRange(websiteId: string) {
+  const { params } = await parseFilters(websiteId, {
+    startDate: new Date(DEFAULT_RESET_DATE),
+  });
+
+  const res = await prisma.websiteEvent.aggregate({
+    _max: {
+      createdAt: true,
+    },
+    _min: {
+      createdAt: true,
+    },
+    where: {
+      websiteId,
+      createdAt: {
+        gt: params.startDate,
+      },
+    },
+  });
+
+  return {
+    max: res._max.createdAt,
+    min: res._min.createdAt,
+  };
 }

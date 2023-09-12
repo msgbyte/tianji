@@ -66,3 +66,48 @@ export const DATA_TYPE = {
   date: 4,
   array: 5,
 } as const;
+
+export const SESSION_COLUMNS = [
+  'browser',
+  'os',
+  'device',
+  'screen',
+  'language',
+  'country',
+  'region',
+  'city',
+];
+
+export const OPERATORS = {
+  equals: 'eq',
+  notEquals: 'neq',
+  set: 's',
+  notSet: 'ns',
+  contains: 'c',
+  doesNotContain: 'dnc',
+  true: 't',
+  false: 'f',
+  greaterThan: 'gt',
+  lessThan: 'lt',
+  greaterThanEquals: 'gte',
+  lessThanEquals: 'lte',
+  before: 'bf',
+  after: 'af',
+} as const;
+
+export const FILTER_COLUMNS = {
+  url: 'url_path',
+  referrer: 'referrer_domain',
+  title: 'page_title',
+  query: 'url_query',
+  os: 'os',
+  browser: 'browser',
+  device: 'device',
+  country: 'country',
+  region: 'subdivision1',
+  city: 'city',
+  language: 'language',
+  event: 'event_name',
+};
+
+export const DEFAULT_RESET_DATE = '2000-01-01';
