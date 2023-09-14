@@ -3,9 +3,12 @@ import crypto from 'crypto';
 import { DATA_TYPE } from './const';
 import { DynamicDataType } from './types';
 import dayjs from 'dayjs';
+import minMax from 'dayjs/plugin/minMax';
 import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import { getWorkspaceWebsiteDateRange } from '../model/workspace';
+
+dayjs.extend(minMax);
 
 export function isUuid(value: string) {
   return validate(value);
@@ -152,7 +155,7 @@ export function parseToken(token: string, secret = jwtSecret) {
 }
 
 export function maxDate(...args: any[]) {
-  return _.max(args.filter((n) => dayjs(n).isValid()));
+  return dayjs.max(args.filter((n) => dayjs(n).isValid()));
 }
 
 export async function parseDateRange({

@@ -139,7 +139,9 @@ workspaceRouter.get(
   '/:workspaceId/website/:websiteId/pageviews',
   validate(
     param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
-    param('websiteId').isUUID().withMessage('workspaceId should be UUID')
+    param('websiteId').isUUID().withMessage('workspaceId should be UUID'),
+    query('startAt').isNumeric().withMessage('startAt should be number'),
+    query('endAt').isNumeric().withMessage('startAt should be number')
   ),
   auth(),
   workspacePermission(),
@@ -184,11 +186,15 @@ workspaceRouter.get(
       city,
     };
 
-    const website = await getWorkspaceWebsitePageviewStats(
+    console.log('filters', filters);
+
+    const stats = await getWorkspaceWebsitePageviewStats(
       websiteId,
       filters as QueryFilters
     );
 
-    res.json({ website });
+    console.log('stats', stats);
+
+    res.json({ stats });
   }
 );

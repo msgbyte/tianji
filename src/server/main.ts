@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './init';
 import express from 'express';
 import 'express-async-errors';
 import ViteExpress from 'vite-express';

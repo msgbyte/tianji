@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+import dayjs from 'dayjs';
 import _ from 'lodash';
 import { loadWebsite } from '../model/website';
 import { maxDate } from './common';
@@ -50,14 +52,22 @@ export async function parseFilters(
   return {
     joinSession:
       options?.joinSession ||
-      Object.keys(filters).find((key) => SESSION_COLUMNS.includes(key))
-        ? `inner join session on website_event.session_id = session.session_id`
+      Object.entries(filters).find(
+        ([key, value]) =>
+          typeof value !== 'undefined' && SESSION_COLUMNS.includes(key)
+      )
+        ? `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`
         : '',
     filterQuery: getFilterQuery(filters, options),
     params: {
       ...normalizeFilters(filters),
       websiteId,
-      startDate: maxDate(filters.startDate, website.resetAt),
+      startDate: dayjs(
+        maxDate(filters.startDate, website.resetAt)
+      ).toISOString(),
+      endDate: filters.endDate
+        ? dayjs(filters.endDate).toISOString()
+        : undefined,
       websiteDomain: website.domain,
     },
   };
@@ -81,6 +91,8 @@ export function getFilterQuery(
     const value: any = filters[name as keyof QueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
     const column = _.get(FILTER_COLUMNS, name, options?.columns?.[name]);
+
+    // TODO
 
     if (value !== undefined && column) {
       arr.push(`and ${mapFilter(column, operator, name)}`);
@@ -118,9 +130,13 @@ export function getDateQuery(
   field: string,
   unit: keyof typeof POSTGRESQL_DATE_FORMATS,
   timezone?: string
-): string {
+) {
   if (timezone) {
-    return `to_char(date_trunc('${unit}', ${field} at time zone '${timezone}'), '${POSTGRESQL_DATE_FORMATS[unit]}')`;
+    return Prisma.sql([
+      `to_char(date_trunc('${unit}', ${field} at time zone '${timezone}'), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
+    ]);
   }
-  return `to_char(date_trunc('${unit}', ${field}), '${POSTGRESQL_DATE_FORMATS[unit]}')`;
+  return Prisma.sql([
+    `to_char(date_trunc('${unit}', ${field}), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
+  ]);
 }

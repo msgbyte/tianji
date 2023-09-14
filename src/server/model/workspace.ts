@@ -1,6 +1,7 @@
 import { prisma } from './_client';
 import { QueryFilters, parseFilters, getDateQuery } from '../utils/prisma';
 import { DEFAULT_RESET_DATE, EVENT_TYPE } from '../utils/const';
+import { Prisma } from '@prisma/client';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
   const info = await prisma.workspacesOnUsers.findFirst({
@@ -115,15 +116,14 @@ export async function getWorkspaceWebsitePageviewStats(
 
   return prisma.$queryRaw`
     select
-      ${getDateQuery('website_event.created_at', unit, timezone)} x,
-      count(*) y
-    from website_event
-      ${joinSession}
-    where website_event.website_id = ${params.websiteId}
-      and website_event.created_at
-    between ${params.startDate} and ${(params as any).endDate}
-      and event_type = {{eventType}}
-      ${filterQuery}
+      ${getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} x,
+      count(1) y
+    from "WebsiteEvent"
+      ${joinSession ? Prisma.sql([joinSession]) : Prisma.empty}
+    where "WebsiteEvent"."websiteId" = ${params.websiteId}::uuid
+      and "WebsiteEvent"."createdAt"
+    between ${params.startDate}::timestamptz and ${params.endDate}::timestamptz
+      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
     group by 1
   `;
 }
