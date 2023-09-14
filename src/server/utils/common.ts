@@ -4,7 +4,8 @@ import { DATA_TYPE } from './const';
 import { DynamicDataType } from './types';
 import dayjs from 'dayjs';
 import jwt from 'jsonwebtoken';
-import { max } from 'lodash-es';
+import _ from 'lodash';
+import { getWorkspaceWebsiteDateRange } from '../model/workspace';
 
 export function isUuid(value: string) {
   return validate(value);
@@ -151,7 +152,7 @@ export function parseToken(token: string, secret = jwtSecret) {
 }
 
 export function maxDate(...args: any[]) {
-  return max(args.filter((n) => dayjs(n).isValid()));
+  return _.max(args.filter((n) => dayjs(n).isValid()));
 }
 
 export async function parseDateRange({
@@ -167,10 +168,11 @@ export async function parseDateRange({
 }) {
   // All-time
   if (+startAt === 0 && +endAt === 1) {
-    const result = await getWorkspaceWebsiteDateRange(websiteId as string);
-    const { min, max } = result[0];
-    const startDate = new Date(min);
-    const endDate = new Date(max);
+    const { min, max } = await getWorkspaceWebsiteDateRange(
+      websiteId as string
+    );
+    const startDate = new Date(min!);
+    const endDate = new Date(max!);
 
     return {
       startDate,

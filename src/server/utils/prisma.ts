@@ -1,4 +1,4 @@
-import { get } from 'lodash-es';
+import _ from 'lodash';
 import { loadWebsite } from '../model/website';
 import { maxDate } from './common';
 import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const';
@@ -80,7 +80,7 @@ export function getFilterQuery(
   const query = Object.keys(filters).reduce<string[]>((arr, name) => {
     const value: any = filters[name as keyof QueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
-    const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
+    const column = _.get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
     if (value !== undefined && column) {
       arr.push(`and ${mapFilter(column, operator, name)}`);
