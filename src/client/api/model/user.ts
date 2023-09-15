@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { setUserInfo } from '../../store/user';
 import { getJWT, setJWT } from '../auth';
 import { request } from '../request';
@@ -46,4 +47,12 @@ export async function register(username: string, password: string) {
 
   setJWT(data.token);
   setUserInfo(data.info as UserLoginInfo);
+}
+
+/**
+ * Mock
+ * return local, or fetch remote data
+ */
+export function getUserTimezone(): string {
+  return dayjs.tz.guess() ?? 'utc';
 }

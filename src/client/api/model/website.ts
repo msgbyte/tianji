@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '../cache';
 import { request } from '../request';
+import { getUserTimezone } from './user';
 
 export interface WebsiteInfo {
   id: string;
@@ -102,4 +103,42 @@ export async function addWorkspaceWebsite(
     name,
     domain,
   });
+}
+
+export async function getWorkspaceWebsitePageview(
+  workspaceId: string,
+  websiteId: string,
+  filter: Record<string, any>
+) {
+  const { data } = await request.get(
+    `/api/workspace/${workspaceId}/website/${websiteId}/pageviews`,
+    {
+      params: {
+        ...filter,
+      },
+    }
+  );
+
+  return data;
+}
+
+export function useWorkspaceWebsitePageview(
+  workspaceId: string,
+  websiteId: string,
+  startAt: number,
+  endAt: number
+) {
+  const { data, isLoading } = useQuery(
+    ['websitePageview', { workspaceId, websiteId }],
+    () => {
+      return getWorkspaceWebsitePageview(workspaceId, websiteId, {
+        startAt,
+        endAt,
+        unit: 'hour',
+        timezone: getUserTimezone(),
+      });
+    }
+  );
+
+  return { stats: data?.stats ?? [], isLoading };
 }

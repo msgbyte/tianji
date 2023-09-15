@@ -186,14 +186,10 @@ workspaceRouter.get(
       city,
     };
 
-    console.log('filters', filters);
-
     const stats = await getWorkspaceWebsitePageviewStats(
       websiteId,
       filters as QueryFilters
     );
-
-    console.log('stats', stats);
 
     res.json({ stats });
   }

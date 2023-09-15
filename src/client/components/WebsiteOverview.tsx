@@ -1,11 +1,22 @@
 import { Button, Tag } from 'antd';
-import React from 'react';
-import { Column } from '@ant-design/charts';
+import React, { useMemo } from 'react';
+import { Column, ColumnConfig } from '@ant-design/charts';
 import { ArrowRightOutlined, SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from './DateFilter';
 import { HealthBar } from './HealthBar';
-import { useWorspaceWebsites, WebsiteInfo } from '../api/model/website';
+import {
+  useWorkspaceWebsitePageview,
+  useWorspaceWebsites,
+  WebsiteInfo,
+} from '../api/model/website';
 import { Loading } from './Loading';
+import dayjs from 'dayjs';
+import {
+  DateUnit,
+  formatDate,
+  formatDateWithUnit,
+  getDateArray,
+} from '../utils/date';
 
 interface WebsiteOverviewProps {
   workspaceId: string;
@@ -32,6 +43,25 @@ WebsiteOverview.displayName = 'WebsiteOverview';
 const WebsiteOverviewItem: React.FC<{
   website: WebsiteInfo;
 }> = React.memo((props) => {
+  const unit: DateUnit = 'hour';
+  const startDate = dayjs().subtract(1, 'day').add(1, unit).startOf(unit);
+  const endDate = dayjs().endOf(unit);
+
+  const { stats, isLoading } = useWorkspaceWebsitePageview(
+    props.website.workspaceId,
+    props.website.id,
+    startDate.unix() * 1000,
+    endDate.unix() * 1000
+  );
+
+  const chartData = useMemo(() => {
+    return getDateArray(stats, startDate, endDate, unit);
+  }, [stats, unit]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <div className="mb-10 pb-10 border-b">
       <div className="flex">
@@ -75,7 +105,7 @@ const WebsiteOverviewItem: React.FC<{
       </div>
 
       <div>
-        <DemoChart />
+        <StatsChart data={chartData} unit={unit} />
       </div>
     </div>
   );
@@ -107,71 +137,36 @@ const MetricCard: React.FC<{
 });
 MetricCard.displayName = 'MetricCard';
 
-export const DemoChart: React.FC = React.memo(() => {
-  const data = [
-    {
-      type: '家具家电',
-      sales: 38,
-    },
-    {
-      type: '粮油副食',
-      sales: 52,
-    },
-    {
-      type: '生鲜水果',
-      sales: 61,
-    },
-    {
-      type: '美容洗护',
-      sales: 145,
-    },
-    {
-      type: '母婴用品',
-      sales: 48,
-    },
-    {
-      type: '进口食品',
-      sales: 38,
-    },
-    {
-      type: '食品饮料',
-      sales: 38,
-    },
-    {
-      type: '家庭清洁',
-      sales: 38,
-    },
-  ];
-  const config = {
-    data,
-    xField: 'type',
-    yField: 'sales',
-    label: {
-      // 可手动配置 label 数据标签位置
-      position: 'middle' as const,
-      // 'top', 'bottom', 'middle',
-      // 配置样式
-      style: {
-        fill: '#FFFFFF',
-        opacity: 0.6,
-      },
-    },
-    xAxis: {
+export const StatsChart: React.FC<{
+  data: { x: string; y: number }[];
+  unit: DateUnit;
+}> = React.memo((props) => {
+  const config: ColumnConfig = useMemo(
+    () => ({
+      data: props.data,
+      xField: 'x',
+      yField: 'y',
       label: {
-        autoHide: true,
-        autoRotate: false,
+        position: 'middle' as const,
+        style: {
+          fill: '#FFFFFF',
+          opacity: 0.6,
+        },
       },
-    },
-    meta: {
-      type: {
-        alias: '类别',
+      tooltip: {
+        title: (t) => formatDate(t),
       },
-      sales: {
-        alias: '销售额',
+      xAxis: {
+        label: {
+          autoHide: true,
+          autoRotate: false,
+          formatter: (text) => formatDateWithUnit(text, props.unit),
+        },
       },
-    },
-  };
+    }),
+    [props.data, props.unit]
+  );
 
   return <Column {...config} />;
 });
-DemoChart.displayName = 'DemoChart';
+StatsChart.displayName = 'StatsChart';
