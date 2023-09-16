@@ -1,5 +1,6 @@
-# tianji
-Tianji must not be leaked
+# Tianji
+
+Insight into everything
 
 
 ## Open Source
