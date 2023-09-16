@@ -121,9 +121,11 @@ export async function getWorkspaceWebsitePageviewStats(
     from "WebsiteEvent"
       ${joinSession ? Prisma.sql([joinSession]) : Prisma.empty}
     where "WebsiteEvent"."websiteId" = ${params.websiteId}::uuid
-      and "WebsiteEvent"."createdAt"
-    between ${params.startDate}::timestamptz and ${params.endDate}::timestamptz
+      and "WebsiteEvent"."createdAt" between ${
+        params.startDate
+      }::timestamptz and ${params.endDate}::timestamptz
       and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      ${filterQuery}
     group by 1
   `;
 }

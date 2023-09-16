@@ -49,6 +49,8 @@ export async function parseFilters(
     throw new Error('Not found website');
   }
 
+  const websiteDomain = website.domain;
+
   return {
     joinSession:
       options?.joinSession ||
@@ -58,7 +60,7 @@ export async function parseFilters(
       )
         ? `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`
         : '',
-    filterQuery: getFilterQuery(filters, options),
+    filterQuery: getFilterQuery(filters, options, websiteDomain),
     params: {
       ...normalizeFilters(filters),
       websiteId,
@@ -68,7 +70,7 @@ export async function parseFilters(
       endDate: filters.endDate
         ? dayjs(filters.endDate).toISOString()
         : undefined,
-      websiteDomain: website.domain,
+      websiteDomain,
     },
   };
 }
@@ -85,8 +87,9 @@ function normalizeFilters(filters: Record<string, any> = {}) {
 
 export function getFilterQuery(
   filters: QueryFilters = {},
-  options: QueryOptions = {}
-): string {
+  options: QueryOptions = {},
+  websiteDomain: string | null = null
+) {
   const query = Object.keys(filters).reduce<string[]>((arr, name) => {
     const value: any = filters[name as keyof QueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
@@ -95,11 +98,11 @@ export function getFilterQuery(
     // TODO
 
     if (value !== undefined && column) {
-      arr.push(`and ${mapFilter(column, operator, name)}`);
+      arr.push(`AND ${mapFilter(column, operator, name)}`);
 
       if (name === 'referrer') {
         arr.push(
-          'and (website_event.referrer_domain != {{websiteDomain}} or website_event.referrer_domain is null)'
+          `AND ("WebsiteEvent"."referrerDomain" != ${websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`
         );
       }
     }
@@ -107,7 +110,7 @@ export function getFilterQuery(
     return arr;
   }, []);
 
-  return query.join('\n');
+  return Prisma.sql([query.join('\n')]);
 }
 
 function mapFilter(
@@ -118,9 +121,9 @@ function mapFilter(
 ) {
   switch (operator) {
     case OPERATORS.equals:
-      return `${column} = {{${name}::${type}}}`;
+      return `"${column}" = '${name}'::${type}`;
     case OPERATORS.notEquals:
-      return `${column} != {{${name}::${type}}}`;
+      return `"${column}" != '${name}'::${type}`;
     default:
       return '';
   }

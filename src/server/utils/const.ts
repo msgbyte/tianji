@@ -96,10 +96,10 @@ export const OPERATORS = {
 } as const;
 
 export const FILTER_COLUMNS = {
-  url: 'url_path',
-  referrer: 'referrer_domain',
-  title: 'page_title',
-  query: 'url_query',
+  url: 'urlPath',
+  referrer: 'referrerDomain',
+  title: 'pageTitle',
+  query: 'urlQuery',
   os: 'os',
   browser: 'browser',
   device: 'device',
@@ -107,7 +107,7 @@ export const FILTER_COLUMNS = {
   region: 'subdivision1',
   city: 'city',
   language: 'language',
-  event: 'event_name',
+  event: 'eventName',
 };
 
 export const DEFAULT_RESET_DATE = '2000-01-01';
