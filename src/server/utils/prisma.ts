@@ -58,8 +58,10 @@ export async function parseFilters(
         ([key, value]) =>
           typeof value !== 'undefined' && SESSION_COLUMNS.includes(key)
       )
-        ? `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`
-        : '',
+        ? Prisma.sql([
+            `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`,
+          ])
+        : Prisma.empty,
     filterQuery: getFilterQuery(filters, options, websiteDomain),
     params: {
       ...normalizeFilters(filters),

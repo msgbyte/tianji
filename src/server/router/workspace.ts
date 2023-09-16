@@ -8,6 +8,7 @@ import {
   getWorkspaceWebsiteInfo,
   getWorkspaceWebsitePageviewStats,
   getWorkspaceWebsites,
+  getWorkspaceWebsiteSessionStats,
   updateWorkspaceWebsiteInfo,
 } from '../model/workspace';
 import { parseDateRange } from '../utils/common';
@@ -186,11 +187,11 @@ workspaceRouter.get(
       city,
     };
 
-    const stats = await getWorkspaceWebsitePageviewStats(
-      websiteId,
-      filters as QueryFilters
-    );
+    const [pageviews, sessions] = await Promise.all([
+      getWorkspaceWebsitePageviewStats(websiteId, filters as QueryFilters),
+      getWorkspaceWebsiteSessionStats(websiteId, filters as QueryFilters),
+    ]);
 
-    res.json({ stats });
+    res.json({ pageviews, sessions });
   }
 );

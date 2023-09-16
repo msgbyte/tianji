@@ -140,5 +140,9 @@ export function useWorkspaceWebsitePageview(
     }
   );
 
-  return { stats: data?.stats ?? [], isLoading };
+  return {
+    pageviews: data?.pageviews ?? [],
+    sessions: data?.sessions ?? [],
+    isLoading,
+  };
 }

@@ -47,7 +47,7 @@ const WebsiteOverviewItem: React.FC<{
   const startDate = dayjs().subtract(1, 'day').add(1, unit).startOf(unit);
   const endDate = dayjs().endOf(unit);
 
-  const { stats, isLoading } = useWorkspaceWebsitePageview(
+  const { pageviews, sessions, isLoading } = useWorkspaceWebsitePageview(
     props.website.workspaceId,
     props.website.id,
     startDate.unix() * 1000,
@@ -55,8 +55,14 @@ const WebsiteOverviewItem: React.FC<{
   );
 
   const chartData = useMemo(() => {
-    return getDateArray(stats, startDate, endDate, unit);
-  }, [stats, unit]);
+    const pageviewsArr = getDateArray(pageviews, startDate, endDate, unit);
+    const sessionsArr = getDateArray(sessions, startDate, endDate, unit);
+
+    return [
+      ...pageviewsArr.map((item) => ({ ...item, type: 'pageview' })),
+      ...sessionsArr.map((item) => ({ ...item, type: 'session' })),
+    ];
+  }, [pageviews, sessions, unit]);
 
   if (isLoading) {
     return <Loading />;
@@ -138,14 +144,16 @@ const MetricCard: React.FC<{
 MetricCard.displayName = 'MetricCard';
 
 export const StatsChart: React.FC<{
-  data: { x: string; y: number }[];
+  data: { x: string; y: number; type: string }[];
   unit: DateUnit;
 }> = React.memo((props) => {
   const config: ColumnConfig = useMemo(
     () => ({
       data: props.data,
+      isStack: true,
       xField: 'x',
       yField: 'y',
+      seriesField: 'type',
       label: {
         position: 'middle' as const,
         style: {
