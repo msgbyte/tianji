@@ -28,7 +28,7 @@ model Workspace {
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
 
-  users   WorkspacesOnUsers[]
+  users    WorkspacesOnUsers[]
   websites Website[]
 
   // for user currentWorkspace
@@ -168,5 +168,34 @@ model WebsiteSessionData {
 
   @@index([createdAt])
   @@index([websiteId])
+  @@index([sessionId])
+}
+
+model TelemetrySession {
+  id           String    @id @unique @db.Uuid
+  hostname     String?   @db.VarChar(100)
+  browser      String?   @db.VarChar(20)
+  os           String?   @db.VarChar(20)
+  country      String?   @db.Char(2)
+  subdivision1 String?   @db.VarChar(20)
+  subdivision2 String?   @db.VarChar(50)
+  city         String?   @db.VarChar(50)
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+
+  telemetryEvent TelemetryEvent[]
+
+  @@index([createdAt])
+}
+
+model TelemetryEvent {
+  id        String    @id() @default(uuid()) @db.Uuid
+  sessionId String    @db.Uuid
+  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+  urlOrigin String    @db.VarChar(500)
+  urlPath   String    @db.VarChar(500)
+
+  session TelemetrySession @relation(fields: [sessionId], references: [id])
+
+  @@index([createdAt])
   @@index([sessionId])
 }

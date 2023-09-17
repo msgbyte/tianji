@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { recordTelemetryEvent, sumTelemetryEvent } from '../model/telemetry';
 import { numify } from '../utils/common';
 const openBadge = require('openbadge');
 
@@ -10,18 +11,22 @@ telemetryRouter.get('/blank.gif', async (req, res) => {
     'base64'
   );
 
+  recordTelemetryEvent(req);
+
   res.header('Content-Type', 'image/gif').send(buffer);
 });
 
 telemetryRouter.get('/badge.svg', async (req, res) => {
   const title = req.query.title || 'visitor';
+  const start = req.query.start ? Number(req.query.start) : 0;
 
-  const num = numify(11123243);
+  recordTelemetryEvent(req);
+  const num = await sumTelemetryEvent(req);
 
   const svg = await new Promise((resolve, reject) => {
     openBadge(
       {
-        text: [title, num],
+        text: [title, numify(num + start)],
       },
       (err: any, badgeSvg: string) => {
         if (err) {

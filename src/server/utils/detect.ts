@@ -16,10 +16,7 @@ import maxmind, { Reader, CityResponse } from 'maxmind';
 
 let lookup: Reader<CityResponse>;
 
-export async function getClientInfo(
-  req: Request,
-  payload: WebsiteEventPayload
-) {
+export async function getRequestInfo(req: Request) {
   const userAgent = req.headers['user-agent'];
   const ip = getIpAddress(req);
   const location = await getLocation(ip, req);
@@ -29,7 +26,6 @@ export async function getClientInfo(
   const city = location?.city;
   const browser = browserName(userAgent ?? '');
   const os = detectOS(userAgent ?? '');
-  const device = getDevice(payload.screen, os);
 
   return {
     userAgent,
@@ -40,6 +36,18 @@ export async function getClientInfo(
     subdivision1,
     subdivision2,
     city,
+  };
+}
+
+export async function getClientInfo(
+  req: Request,
+  payload: WebsiteEventPayload
+) {
+  const requestInfo = await getRequestInfo(req);
+  const device = getDevice(payload.screen, requestInfo.os);
+
+  return {
+    ...requestInfo,
     device,
   };
 }
