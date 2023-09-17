@@ -9,6 +9,7 @@ import morgan from 'morgan';
 import { userRouter } from './router/user';
 import { websiteRouter } from './router/website';
 import { workspaceRouter } from './router/workspace';
+import { telemetryRouter } from './router/telemetry';
 
 const port = Number(process.env.PORT || 12345);
 
@@ -25,6 +26,7 @@ app.disable('x-powered-by');
 app.use('/api/user', userRouter);
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
+app.use('/api/telemetry', telemetryRouter);
 
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err);

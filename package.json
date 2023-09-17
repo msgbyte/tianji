@@ -37,6 +37,7 @@
     "maxmind": "^4.3.11",
     "morgan": "^1.10.0",
     "nanoid": "^3.3.6",
+    "openbadge": "^1.0.4",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "react": "^18.2.0",
