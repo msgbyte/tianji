@@ -128,7 +128,7 @@ export function useWorkspaceWebsitePageview(
   startAt: number,
   endAt: number
 ) {
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, refetch } = useQuery(
     ['websitePageview', { workspaceId, websiteId }],
     () => {
       return getWorkspaceWebsitePageview(workspaceId, websiteId, {
@@ -144,5 +144,6 @@ export function useWorkspaceWebsitePageview(
     pageviews: data?.pageviews ?? [],
     sessions: data?.sessions ?? [],
     isLoading,
+    refetch,
   };
 }

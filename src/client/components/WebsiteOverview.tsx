@@ -1,4 +1,4 @@
-import { Button, Tag } from 'antd';
+import { Button, message, Tag } from 'antd';
 import React, { useMemo } from 'react';
 import { Column, ColumnConfig } from '@ant-design/charts';
 import { ArrowRightOutlined, SyncOutlined } from '@ant-design/icons';
@@ -17,6 +17,7 @@ import {
   formatDateWithUnit,
   getDateArray,
 } from '../utils/date';
+import { useEvent } from '../hooks/useEvent';
 
 interface WebsiteOverviewProps {
   workspaceId: string;
@@ -47,12 +48,18 @@ const WebsiteOverviewItem: React.FC<{
   const startDate = dayjs().subtract(1, 'day').add(1, unit).startOf(unit);
   const endDate = dayjs().endOf(unit);
 
-  const { pageviews, sessions, isLoading } = useWorkspaceWebsitePageview(
-    props.website.workspaceId,
-    props.website.id,
-    startDate.unix() * 1000,
-    endDate.unix() * 1000
-  );
+  const { pageviews, sessions, isLoading, refetch } =
+    useWorkspaceWebsitePageview(
+      props.website.workspaceId,
+      props.website.id,
+      startDate.unix() * 1000,
+      endDate.unix() * 1000
+    );
+
+  const handleRefresh = useEvent(async () => {
+    await refetch();
+    message.success('Refreshed');
+  });
 
   const chartData = useMemo(() => {
     const pageviewsArr = getDateArray(pageviews, startDate, endDate, unit);
@@ -104,7 +111,11 @@ const WebsiteOverviewItem: React.FC<{
         </div>
 
         <div className="flex items-center gap-2 justify-end w-full lg:w-1/3">
-          <Button size="large" icon={<SyncOutlined />} />
+          <Button
+            size="large"
+            icon={<SyncOutlined />}
+            onClick={handleRefresh}
+          />
 
           <DateFilter />
         </div>
