@@ -106,7 +106,6 @@ model WebsiteEvent {
   id             String    @id() @default(uuid()) @db.Uuid
   websiteId      String    @db.Uuid
   sessionId      String    @db.Uuid
-  createdAt      DateTime? @default(now()) @db.Timestamptz(6)
   urlPath        String    @db.VarChar(500)
   urlQuery       String?   @db.VarChar(500)
   referrerPath   String?   @db.VarChar(500)
@@ -115,6 +114,7 @@ model WebsiteEvent {
   pageTitle      String?   @db.VarChar(500)
   eventType      Int       @default(1) @db.Integer
   eventName      String?   @db.VarChar(50)
+  createdAt      DateTime? @default(now()) @db.Timestamptz(6)
 
   eventData WebsiteEventData[]
   session   WebsiteSession     @relation(fields: [sessionId], references: [id])
@@ -173,6 +173,7 @@ model WebsiteSessionData {
 
 model TelemetrySession {
   id           String    @id @unique @db.Uuid
+  workspaceId  String    @db.Uuid
   hostname     String?   @db.VarChar(100)
   browser      String?   @db.VarChar(20)
   os           String?   @db.VarChar(20)
@@ -185,17 +186,22 @@ model TelemetrySession {
   telemetryEvent TelemetryEvent[]
 
   @@index([createdAt])
+  @@index([workspaceId, createdAt])
 }
 
 model TelemetryEvent {
-  id        String    @id() @default(uuid()) @db.Uuid
-  sessionId String    @db.Uuid
-  createdAt DateTime? @default(now()) @db.Timestamptz(6)
-  urlOrigin String    @db.VarChar(500)
-  urlPath   String    @db.VarChar(500)
+  id          String    @id() @default(uuid()) @db.Uuid
+  sessionId   String    @db.Uuid
+  workspaceId String    @db.Uuid
+  eventName        String?   @db.VarChar(100)
+  urlOrigin   String    @db.VarChar(500)
+  urlPath     String    @db.VarChar(500)
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
 
   session TelemetrySession @relation(fields: [sessionId], references: [id])
 
   @@index([createdAt])
   @@index([sessionId])
+  @@index([workspaceId])
+  @@index([workspaceId, createdAt])
 }

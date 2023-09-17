@@ -1,7 +1,6 @@
 import { prisma } from './_client';
 import { QueryFilters, parseFilters, getDateQuery } from '../utils/prisma';
 import { DEFAULT_RESET_DATE, EVENT_TYPE } from '../utils/const';
-import { Prisma } from '@prisma/client';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
   const info = await prisma.workspacesOnUsers.findFirst({
@@ -25,6 +24,14 @@ export async function checkIsWorkspaceUser(
   } else {
     return false;
   }
+}
+
+export async function getWorkspace(workspaceId: string) {
+  return prisma.workspace.findUnique({
+    where: {
+      id: workspaceId,
+    },
+  });
 }
 
 export async function getWorkspaceWebsites(workspaceId: string) {

@@ -9,9 +9,15 @@ export async function recordTelemetryEvent(req: Request) {
   if (!(url && typeof url === 'string')) {
     return;
   }
+  const eventName = req.query.name ? String(req.query.name) : undefined;
 
   const session = await findSession(req, url);
   if (!session) {
+    return;
+  }
+
+  const workspaceId = req.params.workspaceId;
+  if (!workspaceId) {
     return;
   }
 
@@ -20,6 +26,8 @@ export async function recordTelemetryEvent(req: Request) {
   await prisma.telemetryEvent.create({
     data: {
       sessionId: session.id,
+      workspaceId,
+      eventName,
       urlOrigin: origin,
       urlPath: pathname,
     },
@@ -32,10 +40,19 @@ export async function sumTelemetryEvent(req: Request): Promise<number> {
     return 0;
   }
 
+  const eventName = req.query.name ? String(req.query.name) : undefined;
+
+  const workspaceId = req.params.workspaceId;
+  if (!workspaceId) {
+    return 0;
+  }
+
   const { origin, pathname } = new URL(url);
 
   const number = await prisma.telemetryEvent.count({
     where: {
+      workspaceId,
+      eventName,
       urlOrigin: origin,
       urlPath: pathname,
     },
@@ -46,6 +63,10 @@ export async function sumTelemetryEvent(req: Request): Promise<number> {
 
 async function findSession(req: Request, url: string) {
   const { hostname } = new URL(url);
+  const workspaceId = req.params.workspaceId;
+  if (!workspaceId) {
+    throw new Error('Not found workspaceId');
+  }
 
   const {
     userAgent,
@@ -58,7 +79,7 @@ async function findSession(req: Request, url: string) {
     city,
   } = await getRequestInfo(req);
 
-  const sessionId = hashUuid(hostname, ip, userAgent!);
+  const sessionId = hashUuid(workspaceId, hostname, ip, userAgent!);
 
   let session = await loadSession(sessionId);
   if (!session) {
@@ -66,6 +87,7 @@ async function findSession(req: Request, url: string) {
       session = await prisma.telemetrySession.create({
         data: {
           id: sessionId,
+          workspaceId,
           hostname,
           browser,
           os,
