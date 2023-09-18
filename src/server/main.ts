@@ -10,10 +10,13 @@ import { userRouter } from './router/user';
 import { websiteRouter } from './router/website';
 import { workspaceRouter } from './router/workspace';
 import { telemetryRouter } from './router/telemetry';
+import { initSocketio } from './ws';
 
 const port = Number(process.env.PORT || 12345);
 
 const app = express();
+
+initSocketio(app);
 
 app.use(compression());
 app.use(express.json());
