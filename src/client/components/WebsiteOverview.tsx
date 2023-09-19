@@ -5,7 +5,9 @@ import { ArrowRightOutlined, SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from './DateFilter';
 import { HealthBar } from './HealthBar';
 import {
+  StatsItemType,
   useWorkspaceWebsitePageview,
+  useWorkspaceWebsiteStats,
   useWorspaceWebsites,
   WebsiteInfo,
 } from '../api/model/website';
@@ -18,6 +20,8 @@ import {
   getDateArray,
 } from '../utils/date';
 import { useEvent } from '../hooks/useEvent';
+import { MetricCard } from './MetricCard';
+import { formatNumber, formatShortTime } from '../utils/common';
 
 interface WebsiteOverviewProps {
   workspaceId: string;
@@ -48,16 +52,33 @@ const WebsiteOverviewItem: React.FC<{
   const startDate = dayjs().subtract(1, 'day').add(1, unit).startOf(unit);
   const endDate = dayjs().endOf(unit);
 
-  const { pageviews, sessions, isLoading, refetch } =
-    useWorkspaceWebsitePageview(
-      props.website.workspaceId,
-      props.website.id,
-      startDate.unix() * 1000,
-      endDate.unix() * 1000
-    );
+  const {
+    pageviews,
+    sessions,
+    isLoading: isLoadingPageview,
+    refetch: refetchPageview,
+  } = useWorkspaceWebsitePageview(
+    props.website.workspaceId,
+    props.website.id,
+    startDate.unix() * 1000,
+    endDate.unix() * 1000,
+    unit
+  );
+
+  const {
+    stats,
+    isLoading: isLoadingStats,
+    refetch: refetchStats,
+  } = useWorkspaceWebsiteStats(
+    props.website.workspaceId,
+    props.website.id,
+    startDate.unix() * 1000,
+    endDate.unix() * 1000,
+    unit
+  );
 
   const handleRefresh = useEvent(async () => {
-    await refetch();
+    await Promise.all([refetchPageview(), refetchStats()]);
     message.success('Refreshed');
   });
 
@@ -71,7 +92,7 @@ const WebsiteOverviewItem: React.FC<{
     ];
   }, [pageviews, sessions, unit]);
 
-  if (isLoading) {
+  if (isLoadingPageview || isLoadingStats) {
     return <Loading />;
   }
 
@@ -98,17 +119,7 @@ const WebsiteOverviewItem: React.FC<{
       </div>
 
       <div className="flex mb-10 flex-wrap">
-        <div className="flex gap-5 flex-wrap w-full lg:w-2/3">
-          <MetricCard label="Views" value={20} diff={20} />
-          <MetricCard label="Visitors" value={20} diff={20} />
-          <MetricCard label="Bounce rate" value={20} diff={-20} unit="%" />
-          <MetricCard
-            label="Average visit time"
-            value={20}
-            diff={-20}
-            unit="s"
-          />
-        </div>
+        {stats && <MetricsBar stats={stats} />}
 
         <div className="flex items-center gap-2 justify-end w-full lg:w-1/3">
           <Button
@@ -129,30 +140,73 @@ const WebsiteOverviewItem: React.FC<{
 });
 WebsiteOverviewItem.displayName = 'WebsiteOverviewItem';
 
-const MetricCard: React.FC<{
-  label: string;
-  value: number;
-  diff: number;
-  unit?: string;
+export const MetricsBar: React.FC<{
+  stats: {
+    bounces: StatsItemType;
+    pageviews: StatsItemType;
+    totaltime: StatsItemType;
+    uniques: StatsItemType;
+  };
 }> = React.memo((props) => {
-  const unit = props.unit ?? '';
+  const { pageviews, uniques, bounces, totaltime } = props.stats || {};
+  const num = Math.min(uniques.value, bounces.value);
+  const diffs = {
+    pageviews: pageviews.value - pageviews.change,
+    uniques: uniques.value - uniques.change,
+    bounces: bounces.value - bounces.change,
+    totaltime: totaltime.value - totaltime.change,
+  };
 
   return (
-    <div className="flex flex-col justify-center min-w-[140px] min-h-[90px]">
-      <div className="flex items-center whitespace-nowrap font-bold text-4xl">
-        {String(props.value)}
-        {unit}
-      </div>
-      <div className="flex items-center whitespace-nowrap font-bold">
-        <span className="mr-2">{props.label}</span>
-        <Tag color={props.diff >= 0 ? 'green' : 'red'}>
-          {props.diff >= 0 ? `+${props.diff}${unit}` : `${props.diff}${unit}`}
-        </Tag>
-      </div>
+    <div className="flex gap-5 flex-wrap w-full lg:w-2/3">
+      <MetricCard
+        label="Views"
+        value={pageviews.value}
+        change={pageviews.change}
+      />
+      <MetricCard
+        label="Visitors"
+        value={uniques.value}
+        change={uniques.change}
+      />
+      <MetricCard
+        label="Bounce rate"
+        value={uniques.value ? (num / uniques.value) * 100 : 0}
+        change={
+          uniques.value && uniques.change
+            ? (num / uniques.value) * 100 -
+                (Math.min(diffs.uniques, diffs.bounces) / diffs.uniques) *
+                  100 || 0
+            : 0
+        }
+        format={(n) => formatNumber(n) + '%'}
+      />
+      <MetricCard
+        label="Average visit time"
+        value={
+          totaltime.value && pageviews.value
+            ? totaltime.value / (pageviews.value - bounces.value)
+            : 0
+        }
+        change={
+          totaltime.value && pageviews.value
+            ? (diffs.totaltime / (diffs.pageviews - diffs.bounces) -
+                totaltime.value / (pageviews.value - bounces.value)) *
+                -1 || 0
+            : 0
+        }
+        format={(n) =>
+          `${n < 0 ? '-' : ''}${formatShortTime(
+            Math.abs(~~n),
+            ['m', 's'],
+            ' '
+          )}`
+        }
+      />
     </div>
   );
 });
-MetricCard.displayName = 'MetricCard';
+MetricsBar.displayName = 'MetricsBar';
 
 export const StatsChart: React.FC<{
   data: { x: string; y: number; type: string }[];

@@ -145,3 +145,9 @@ export function getDateQuery(
     `to_char(date_trunc('${unit}', ${field}), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
   ]);
 }
+
+export function getTimestampIntervalQuery(field: string) {
+  return Prisma.sql([
+    `floor(extract(epoch from max(${field}) - min(${field})))`,
+  ]);
+}

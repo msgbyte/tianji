@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
 import { body, param, query, validate } from '../middleware/validate';
@@ -6,9 +7,10 @@ import {
   addWorkspaceWebsite,
   deleteWorkspaceWebsite,
   getWorkspaceWebsiteInfo,
-  getWorkspaceWebsitePageviewStats,
+  getWorkspaceWebsitePageview,
   getWorkspaceWebsites,
-  getWorkspaceWebsiteSessionStats,
+  getWorkspaceWebsiteSession,
+  getWorkspaceWebsiteStats,
   updateWorkspaceWebsiteInfo,
 } from '../model/workspace';
 import { parseDateRange } from '../utils/common';
@@ -188,10 +190,90 @@ workspaceRouter.get(
     };
 
     const [pageviews, sessions] = await Promise.all([
-      getWorkspaceWebsitePageviewStats(websiteId, filters as QueryFilters),
-      getWorkspaceWebsiteSessionStats(websiteId, filters as QueryFilters),
+      getWorkspaceWebsitePageview(websiteId, filters as QueryFilters),
+      getWorkspaceWebsiteSession(websiteId, filters as QueryFilters),
     ]);
 
     res.json({ pageviews, sessions });
+  }
+);
+
+workspaceRouter.get(
+  '/:workspaceId/website/:websiteId/stats',
+  validate(
+    param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
+    param('websiteId').isUUID().withMessage('workspaceId should be UUID'),
+    query('startAt').isNumeric().withMessage('startAt should be number'),
+    query('endAt').isNumeric().withMessage('startAt should be number')
+  ),
+  auth(),
+  workspacePermission(),
+  async (req, res) => {
+    const workspaceId = req.params.workspaceId;
+    const websiteId = req.params.websiteId;
+    const {
+      timezone,
+      url,
+      referrer,
+      title,
+      os,
+      browser,
+      device,
+      country,
+      region,
+      city,
+      startAt,
+      endAt,
+    } = req.query;
+
+    const { startDate, endDate, unit } = await parseDateRange({
+      websiteId,
+      startAt: Number(startAt),
+      endAt: Number(endAt),
+      unit: String(req.query.unit),
+    });
+
+    const diff = dayjs(endDate).diff(startDate, 'minutes');
+    const prevStartDate = dayjs(startDate).subtract(diff, 'minutes').toDate();
+    const prevEndDate = dayjs(endDate).subtract(diff, 'minutes').toDate();
+
+    const filters = {
+      startDate,
+      endDate,
+      timezone,
+      unit,
+      url,
+      referrer,
+      title,
+      os,
+      browser,
+      device,
+      country,
+      region,
+      city,
+    } as QueryFilters;
+
+    const [metrics, prevPeriod] = await Promise.all([
+      getWorkspaceWebsiteStats(websiteId, {
+        ...filters,
+        startDate,
+        endDate,
+      }),
+      getWorkspaceWebsiteStats(websiteId, {
+        ...filters,
+        startDate: prevStartDate,
+        endDate: prevEndDate,
+      }),
+    ]);
+
+    const stats = Object.keys(metrics[0]).reduce((obj, key) => {
+      obj[key] = {
+        value: Number(metrics[0][key]) || 0,
+        change: Number(metrics[0][key]) - Number(prevPeriod[0][key]) || 0,
+      };
+      return obj;
+    }, {} as Record<string, { value: number; change: number }>);
+
+    res.json({ stats });
   }
 );

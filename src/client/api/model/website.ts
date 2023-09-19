@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { DateUnit } from '../../utils/date';
 import { queryClient } from '../cache';
 import { request } from '../request';
 import { getUserTimezone } from './user';
@@ -126,15 +127,16 @@ export function useWorkspaceWebsitePageview(
   workspaceId: string,
   websiteId: string,
   startAt: number,
-  endAt: number
+  endAt: number,
+  unit: DateUnit
 ) {
   const { data, isLoading, refetch } = useQuery(
-    ['websitePageview', { workspaceId, websiteId }],
+    ['websitePageview', { workspaceId, websiteId, startAt, endAt }],
     () => {
       return getWorkspaceWebsitePageview(workspaceId, websiteId, {
         startAt,
         endAt,
-        unit: 'hour',
+        unit,
         timezone: getUserTimezone(),
       });
     }
@@ -143,6 +145,62 @@ export function useWorkspaceWebsitePageview(
   return {
     pageviews: data?.pageviews ?? [],
     sessions: data?.sessions ?? [],
+    isLoading,
+    refetch,
+  };
+}
+
+export interface StatsItemType {
+  value: number;
+  change: number;
+}
+export async function getWorkspaceWebsiteStats(
+  workspaceId: string,
+  websiteId: string,
+  filter: Record<string, any>
+): Promise<{
+  bounces: StatsItemType;
+  pageviews: StatsItemType;
+  totaltime: StatsItemType;
+  uniques: StatsItemType;
+}> {
+  const { data } = await request.get(
+    `/api/workspace/${workspaceId}/website/${websiteId}/stats`,
+    {
+      params: {
+        ...filter,
+      },
+    }
+  );
+
+  return data.stats;
+}
+
+export function useWorkspaceWebsiteStats(
+  workspaceId: string,
+  websiteId: string,
+  startAt: number,
+  endAt: number,
+  unit: DateUnit
+) {
+  const {
+    data: stats,
+    isLoading,
+    refetch,
+  } = useQuery(
+    ['websiteStats', { workspaceId, websiteId, startAt, endAt }],
+    () => {
+      return getWorkspaceWebsiteStats(workspaceId, websiteId, {
+        startAt,
+        endAt,
+        unit,
+        timezone: getUserTimezone(),
+      });
+    }
+  );
+
+  return {
+    stats,
     isLoading,
     refetch,
   };

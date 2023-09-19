@@ -1,5 +1,10 @@
 import { prisma } from './_client';
-import { QueryFilters, parseFilters, getDateQuery } from '../utils/prisma';
+import {
+  QueryFilters,
+  parseFilters,
+  getDateQuery,
+  getTimestampIntervalQuery,
+} from '../utils/prisma';
 import { DEFAULT_RESET_DATE, EVENT_TYPE } from '../utils/const';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
@@ -137,7 +142,7 @@ export async function getWorkspaceWebsiteDateRange(websiteId: string) {
   };
 }
 
-export async function getWorkspaceWebsitePageviewStats(
+export async function getWorkspaceWebsitePageview(
   websiteId: string,
   filters: QueryFilters
 ) {
@@ -162,7 +167,7 @@ export async function getWorkspaceWebsitePageviewStats(
   `;
 }
 
-export async function getWorkspaceWebsiteSessionStats(
+export async function getWorkspaceWebsiteSession(
   websiteId: string,
   filters: QueryFilters
 ) {
@@ -185,4 +190,39 @@ export async function getWorkspaceWebsiteSessionStats(
       ${filterQuery}
     group by 1
     `;
+}
+
+export async function getWorkspaceWebsiteStats(
+  websiteId: string,
+  filters: QueryFilters
+): any {
+  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
+    ...filters,
+  });
+
+  return prisma.$queryRaw`
+    select
+      sum(t.c) as "pageviews",
+      count(distinct t."sessionId") as "uniques",
+      sum(case when t.c = 1 then 1 else 0 end) as "bounces",
+      sum(t.time) as "totaltime"
+    from (
+      select
+        "WebsiteEvent"."sessionId",
+        ${getDateQuery('"WebsiteEvent"."createdAt"', 'hour')},
+        count(*) as c,
+        ${getTimestampIntervalQuery('"WebsiteEvent"."createdAt"')} as "time"
+      from "WebsiteEvent"
+      join "Website"
+        on "WebsiteEvent"."websiteId" = "Website"."id"
+        ${joinSession}
+      where "Website"."id" = ${params.websiteId}::uuid
+        and "WebsiteEvent"."createdAt" between ${
+          params.startDate
+        }::timestamptz and ${params.endDate}::timestamptz
+        and "eventType" = ${EVENT_TYPE.pageView}
+        ${filterQuery}
+      group by 1, 2
+    ) as t
+  `;
 }
