@@ -4,6 +4,7 @@ import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { WebsiteInfo } from '../../components/WebsiteInfo';
 import { WebsiteList } from '../../components/WebsiteList';
 import { useEvent } from '../../hooks/useEvent';
+import { NotificationList } from './NotificationList';
 
 export const SettingsPage: React.FC = React.memo(() => {
   const navigate = useNavigate();
@@ -13,6 +14,10 @@ export const SettingsPage: React.FC = React.memo(() => {
     {
       key: 'websites',
       label: 'Websites',
+    },
+    {
+      key: 'notifications',
+      label: 'Notifications',
     },
   ];
 
@@ -40,6 +45,7 @@ export const SettingsPage: React.FC = React.memo(() => {
           <Route path="/" element={<WebsiteList />} />
           <Route path="/websites" element={<WebsiteList />} />
           <Route path="/website/:websiteId" element={<WebsiteInfo />} />
+          <Route path="/notifications" element={<NotificationList />} />
         </Routes>
       </div>
     </div>

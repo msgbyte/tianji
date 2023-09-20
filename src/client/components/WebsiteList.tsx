@@ -18,6 +18,7 @@ import { useRequest } from '../hooks/useRequest';
 import { useUserStore } from '../store/user';
 import { useEvent } from '../hooks/useEvent';
 import { useNavigate } from 'react-router';
+import { PageHeader } from './PageHeader';
 
 export const WebsiteList: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,19 +44,21 @@ export const WebsiteList: React.FC = React.memo(() => {
 
   return (
     <div>
-      <div className="h-24 flex items-center">
-        <div className="text-2xl flex-1">Websites</div>
-        <div>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Add Website
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Websites"
+        action={
+          <div>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="large"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Add Website
+            </Button>
+          </div>
+        }
+      />
 
       <WebsiteListTable workspaceId={currentWorkspace.id} />
 
