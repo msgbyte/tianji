@@ -4,7 +4,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
 import { Monitor } from './pages/Monitor';
 import { Website } from './pages/Website';
-import { Settings } from './pages/Settings';
+import { SettingsPage } from './pages/Settings';
 import { Servers } from './pages/Servers';
 import { useUserStore } from './store/user';
 import { Register } from './pages/Register';
@@ -24,7 +24,7 @@ export const AppRoutes: React.FC = React.memo(() => {
           <Route path="/monitor" element={<Monitor />} />
           <Route path="/website" element={<Website />} />
           <Route path="/servers" element={<Servers />} />
-          <Route path="/settings/*" element={<Settings />} />
+          <Route path="/settings/*" element={<SettingsPage />} />
         </Route>
       ) : (
         <Route>

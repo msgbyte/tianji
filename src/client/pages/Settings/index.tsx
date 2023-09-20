@@ -1,11 +1,11 @@
 import { Menu, MenuProps } from 'antd';
 import React from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { WebsiteInfo } from '../components/WebsiteInfo';
-import { WebsiteList } from '../components/WebsiteList';
-import { useEvent } from '../hooks/useEvent';
+import { WebsiteInfo } from '../../components/WebsiteInfo';
+import { WebsiteList } from '../../components/WebsiteList';
+import { useEvent } from '../../hooks/useEvent';
 
-export const Settings: React.FC = React.memo(() => {
+export const SettingsPage: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -45,4 +45,4 @@ export const Settings: React.FC = React.memo(() => {
     </div>
   );
 });
-Settings.displayName = 'Settings';
+SettingsPage.displayName = 'SettingsPage';
