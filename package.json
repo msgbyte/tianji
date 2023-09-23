@@ -22,6 +22,7 @@
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",
+    "colord": "^2.9.3",
     "compose-middleware": "^5.0.1",
     "compression": "^1.7.4",
     "dayjs": "^1.11.9",

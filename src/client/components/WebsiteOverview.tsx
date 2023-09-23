@@ -22,6 +22,7 @@ import {
 import { useEvent } from '../hooks/useEvent';
 import { MetricCard } from './MetricCard';
 import { formatNumber, formatShortTime } from '../utils/common';
+import { useTheme } from '../hooks/useTheme';
 
 interface WebsiteOverviewProps {
   workspaceId: string;
@@ -212,31 +213,35 @@ export const StatsChart: React.FC<{
   data: { x: string; y: number; type: string }[];
   unit: DateUnit;
 }> = React.memo((props) => {
-  const config: ColumnConfig = useMemo(
-    () => ({
-      data: props.data,
-      isStack: true,
-      xField: 'x',
-      yField: 'y',
-      seriesField: 'type',
-      label: {
-        position: 'middle' as const,
-        style: {
-          fill: '#FFFFFF',
-          opacity: 0.6,
-        },
-      },
-      tooltip: {
-        title: (t) => formatDate(t),
-      },
-      xAxis: {
+  const { colors } = useTheme();
+
+  const config = useMemo(
+    () =>
+      ({
+        data: props.data,
+        isStack: true,
+        xField: 'x',
+        yField: 'y',
+        seriesField: 'type',
         label: {
-          autoHide: true,
-          autoRotate: false,
-          formatter: (text) => formatDateWithUnit(text, props.unit),
+          position: 'middle' as const,
+          style: {
+            fill: '#FFFFFF',
+            opacity: 0.6,
+          },
         },
-      },
-    }),
+        tooltip: {
+          title: (t) => formatDate(t),
+        },
+        color: [colors.chart.pv, colors.chart.uv],
+        xAxis: {
+          label: {
+            autoHide: true,
+            autoRotate: false,
+            formatter: (text) => formatDateWithUnit(text, props.unit),
+          },
+        },
+      } as ColumnConfig),
     [props.data, props.unit]
   );
 

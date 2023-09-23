@@ -28,6 +28,9 @@ dependencies:
   clsx:
     specifier: ^2.0.0
     version: 2.0.0
+  colord:
+    specifier: ^2.9.3
+    version: 2.9.3
   compose-middleware:
     specifier: ^5.0.1
     version: 5.0.1
@@ -2517,6 +2520,10 @@ packages:
     dependencies:
       color-convert: 1.9.3
       color-string: 1.9.1
+    dev: false
+
+  /colord@2.9.3:
+    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
     dev: false
 
   /combined-stream@1.0.8:
