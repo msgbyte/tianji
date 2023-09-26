@@ -195,7 +195,7 @@ export async function getWorkspaceWebsiteSession(
 export async function getWorkspaceWebsiteStats(
   websiteId: string,
   filters: QueryFilters
-): any {
+): Promise<any> {
   const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
     ...filters,
   });

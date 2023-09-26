@@ -28,8 +28,9 @@ model Workspace {
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
 
-  users    WorkspacesOnUsers[]
-  websites Website[]
+  users         WorkspacesOnUsers[]
+  websites      Website[]
+  notifications Notification[]
 
   // for user currentWorkspace
   selectedUsers User[]
@@ -193,7 +194,7 @@ model TelemetryEvent {
   id          String    @id() @default(uuid()) @db.Uuid
   sessionId   String    @db.Uuid
   workspaceId String    @db.Uuid
-  eventName        String?   @db.VarChar(100)
+  eventName   String?   @db.VarChar(100)
   urlOrigin   String    @db.VarChar(500)
   urlPath     String    @db.VarChar(500)
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
@@ -204,4 +205,17 @@ model TelemetryEvent {
   @@index([sessionId])
   @@index([workspaceId])
   @@index([workspaceId, createdAt])
+}
+
+model Notification {
+  id          String @id() @default(uuid()) @db.Uuid
+  workspaceId String @db.Uuid
+  name        String @db.VarChar(100)
+  type        String @db.VarChar(100)
+  payload     Json   @db.Json
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@index([workspaceId])
 }

@@ -1,7 +1,8 @@
 import { Handler } from 'express';
 import { getWorkspaceUser } from '../model/workspace';
+import { ROLES } from '../utils/const';
 
-export function workspacePermission(roles: string[] = []): Handler {
+export function workspacePermission(roles: ROLES[] = []): Handler {
   return async (req, res, next) => {
     const workspaceId =
       req.body.workspaceId ?? req.query.workspaceId ?? req.params.workspaceId;
@@ -23,7 +24,7 @@ export function workspacePermission(roles: string[] = []): Handler {
     }
 
     if (Array.isArray(roles) && roles.length > 0) {
-      if (!roles.includes(info.role)) {
+      if (!roles.includes(info.role as ROLES)) {
         throw new Error(
           `Workspace roles not has this permission, need ${roles}`
         );

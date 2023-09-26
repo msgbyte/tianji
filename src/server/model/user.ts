@@ -1,6 +1,6 @@
 import { prisma } from './_client';
 import bcryptjs from 'bcryptjs';
-import { ROLES } from '../utils/const';
+import { ROLES, SYSTEM_ROLES } from '../utils/const';
 import { jwtVerify } from '../middleware/auth';
 
 async function hashPassword(password: string) {
@@ -59,7 +59,7 @@ export async function createAdminUser(username: string, password: string) {
     data: {
       username,
       password: await hashPassword(password),
-      role: ROLES.admin,
+      role: SYSTEM_ROLES.admin,
       workspaces: {
         create: [
           {
@@ -106,7 +106,7 @@ export async function createUser(username: string, password: string) {
     data: {
       username,
       password: await hashPassword(password),
-      role: ROLES.user,
+      role: SYSTEM_ROLES.user,
       workspaces: {
         create: [
           {
