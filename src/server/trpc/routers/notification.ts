@@ -49,4 +49,20 @@ export const notificationRouter = router({
         });
       }
     }),
+  delete: workspaceOwnerProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, workspaceId } = input;
+
+      return await prisma.notification.delete({
+        where: {
+          workspaceId,
+          id,
+        },
+      });
+    }),
 });

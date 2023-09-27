@@ -1,5 +1,5 @@
-import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, List } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, List, Popconfirm } from 'antd';
 import React, { useState } from 'react';
 import { trpc } from '../../api/trpc';
 import {
@@ -21,10 +21,10 @@ export const NotificationList: React.FC = React.memo(() => {
     NotificationFormValues | undefined
   >(undefined);
 
-  const mutation = trpc.notification.upsert.useMutation();
+  const upsertMutation = trpc.notification.upsert.useMutation();
+  const deleteMutation = trpc.notification.delete.useMutation();
 
   const handleOpenModal = useEvent((initValues?: NotificationFormValues) => {
-    console.log('initValues', initValues);
     setEditingFormData(initValues);
     setOpen(true);
   });
@@ -35,11 +35,19 @@ export const NotificationList: React.FC = React.memo(() => {
   });
 
   const handleSubmit = useEvent(async (values: NotificationFormValues) => {
-    await mutation.mutateAsync({
+    await upsertMutation.mutateAsync({
       workspaceId: currentWorkspaceId!,
       ...values,
     });
     handleCloseModal();
+    refetch();
+  });
+
+  const handleDelete = useEvent(async (notificationId: string) => {
+    await deleteMutation.mutateAsync({
+      workspaceId: currentWorkspaceId!,
+      id: notificationId,
+    });
     refetch();
   });
 
@@ -84,6 +92,17 @@ export const NotificationList: React.FC = React.memo(() => {
               >
                 Edit
               </Button>,
+              <Popconfirm
+                title="Is delete this item?"
+                okButtonProps={{
+                  danger: true,
+                }}
+                onConfirm={() => {
+                  handleDelete(item.id);
+                }}
+              >
+                <Button danger={true} icon={<DeleteOutlined />} />
+              </Popconfirm>,
             ]}
           >
             <List.Item.Meta title={item.name} />
