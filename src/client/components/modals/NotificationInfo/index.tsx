@@ -3,12 +3,19 @@ import {
   Form,
   FormProps,
   Input,
+  message,
   Modal,
   ModalProps,
   Select,
 } from 'antd';
 import React, { useMemo } from 'react';
+import {
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  trpc,
+} from '../../../api/trpc';
 import { useEvent } from '../../../hooks/useEvent';
+import { useCurrentWorkspaceId } from '../../../store/user';
 import { notificationStrategies } from './strategies';
 
 export interface NotificationFormValues {
@@ -32,6 +39,12 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
   React.memo((props) => {
     const [form] = Form.useForm();
     const typeValue = Form.useWatch('type', form);
+    const currentWorkspaceId = useCurrentWorkspaceId()!;
+
+    const testMutation = trpc.notification.test.useMutation({
+      onSuccess: defaultSuccessHandler,
+      onError: defaultErrorHandler,
+    });
 
     const formEl = useMemo(() => {
       const strategy = notificationStrategies.find((s) => s.name === typeValue);
@@ -63,7 +76,12 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
       const values = form.getFieldsValue();
       const { name, type, payload } = values;
 
-      console.log('TODO', { name, type, payload });
+      await testMutation.mutateAsync({
+        workspaceId: currentWorkspaceId,
+        name,
+        type,
+        payload,
+      });
     });
 
     return (
@@ -76,7 +94,9 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
         onCancel={props.onCancel}
         footer={
           <div>
-            <Button onClick={handleTest}>Test</Button>
+            <Button loading={testMutation.isLoading} onClick={handleTest}>
+              Test
+            </Button>
             <Button type="primary" onClick={handleSave}>
               Save
             </Button>

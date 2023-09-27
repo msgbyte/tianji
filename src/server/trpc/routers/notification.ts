@@ -1,6 +1,7 @@
 import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
 import { z } from 'zod';
 import { prisma } from '../../model/_client';
+import { sendNotification } from '../../model/notification';
 
 export const notificationRouter = router({
   getAll: workspaceProcedure.query(({ input }) => {
@@ -12,6 +13,18 @@ export const notificationRouter = router({
       },
     });
   }),
+  test: workspaceProcedure
+    .input(
+      z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        type: z.string(),
+        payload: z.object({}).passthrough(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await sendNotification(input, `${input.name} + Notification Testing`);
+    }),
   upsert: workspaceOwnerProcedure
     .input(
       z.object({
