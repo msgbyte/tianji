@@ -23,6 +23,38 @@ a {
   height: 100%;
 }
 
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-black bg-opacity-10;
+  border-color: transparent;
+  background-clip: padding-box;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-black bg-opacity-20;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-black bg-opacity-5;
+  border-color: transparent;
+  background-clip: padding-box;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 4px;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

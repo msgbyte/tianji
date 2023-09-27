@@ -1,15 +1,18 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, List } from 'antd';
 import React, { useState } from 'react';
-import { NotificationInfoModal } from '../../components/modals/NotificationInfo';
+import {
+  NotificationFormValues,
+  NotificationInfoModal,
+} from '../../components/modals/NotificationInfo';
 import { PageHeader } from '../../components/PageHeader';
 import { useEvent } from '../../hooks/useEvent';
 
 export const NotificationList: React.FC = React.memo(() => {
   const [open, setOpen] = useState(false);
 
-  const handleOk = useEvent(() => {
-    console.log('ok');
+  const handleSubmit = useEvent((values: NotificationFormValues) => {
+    console.log('ok', values);
     setOpen(false);
   });
 
@@ -47,7 +50,7 @@ export const NotificationList: React.FC = React.memo(() => {
 
       <NotificationInfoModal
         open={open}
-        onOk={handleOk}
+        onSubmit={handleSubmit}
         onCancel={() => setOpen(false)}
       />
     </div>
