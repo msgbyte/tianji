@@ -12,6 +12,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './api/cache';
 import { TokenLoginContainer } from './components/TokenLoginContainer';
 import React from 'react';
+import { trpc, trpcClient } from './api/trpc';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -47,13 +48,15 @@ AppRoutes.displayName = 'AppRoutes';
 export const App: React.FC = React.memo(() => {
   return (
     <div className="App">
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <TokenLoginContainer>
-            <AppRoutes />
-          </TokenLoginContainer>
-        </BrowserRouter>
-      </QueryClientProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <TokenLoginContainer>
+              <AppRoutes />
+            </TokenLoginContainer>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </trpc.Provider>
     </div>
   );
 });
