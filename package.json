@@ -21,7 +21,7 @@
     "@trpc/react-query": "^10.38.4",
     "@trpc/server": "^10.38.4",
     "@types/uuid": "^9.0.3",
-    "antd": "^5.8.5",
+    "antd": "^5.9.3",
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",

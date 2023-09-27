@@ -1,5 +1,7 @@
 import { initTRPC, inferAsyncReturnType, TRPCError } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
+import _ from 'lodash';
+import { z } from 'zod';
 import { jwtVerify } from '../middleware/auth';
 import { getWorkspaceUser } from '../model/workspace';
 import { ROLES, SYSTEM_ROLES } from '../utils/const';
@@ -37,12 +39,20 @@ const isSystemAdmin = middleware(async (opts) => {
 });
 
 export const systemAdminProcedure = t.procedure.use(isSystemAdmin);
-export const workspaceProcedure = t.procedure.use(
-  createWorkspacePermissionMiddleware()
-);
-export const ownerProcedure = t.procedure.use(
-  createWorkspacePermissionMiddleware([ROLES.owner])
-);
+export const workspaceProcedure = t.procedure
+  .input(
+    z.object({
+      workspaceId: z.string().uuid(),
+    })
+  )
+  .use(createWorkspacePermissionMiddleware());
+export const workspaceOwnerProcedure = t.procedure
+  .input(
+    z.object({
+      workspaceId: z.string().uuid(),
+    })
+  )
+  .use(createWorkspacePermissionMiddleware([ROLES.owner]));
 
 /**
  * Create a trpc middleware which help user check workspace permission

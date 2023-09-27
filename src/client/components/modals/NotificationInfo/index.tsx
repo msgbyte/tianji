@@ -7,12 +7,12 @@ import {
   ModalProps,
   Select,
 } from 'antd';
-import React, { useMemo, useState } from 'react';
-import { request } from '../../../api/request';
+import React, { useMemo } from 'react';
 import { useEvent } from '../../../hooks/useEvent';
 import { notificationStrategies } from './strategies';
 
 export interface NotificationFormValues {
+  id?: string;
   name: string;
   type: string;
   payload: Record<string, any>;
@@ -48,9 +48,10 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
     const handleSave = useEvent(async () => {
       await form.validateFields();
       const values = form.getFieldsValue();
-      const { name, type, ...payload } = values;
+      const { id, name, type, payload } = values;
 
       props.onSubmit({
+        id,
         name,
         type,
         payload,
@@ -60,7 +61,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
     const handleTest = useEvent(async () => {
       await form.validateFields();
       const values = form.getFieldsValue();
-      const { name, type, ...payload } = values;
+      const { name, type, payload } = values;
 
       console.log('TODO', { name, type, payload });
     });
@@ -84,10 +85,12 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
       >
         <div className="overflow-y-auto max-h-[80vh]">
           <Form
+            preserve={false}
             form={form}
             layout="vertical"
             initialValues={props.initialValues ?? defaultValues}
           >
+            <Form.Item hidden name="id" />
             <Form.Item label="Notification Type" name="type">
               <Select>
                 {notificationStrategies.map((s) => (
@@ -102,7 +105,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
               <Input />
             </Form.Item>
 
-            <Form.Item name="payload">{formEl}</Form.Item>
+            {formEl}
           </Form>
         </div>
       </Modal>
