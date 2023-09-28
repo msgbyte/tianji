@@ -1,12 +1,10 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { createContext, publicProcedure, router } from './trpc';
-import { z } from 'zod';
+import { createContext, router } from './trpc';
 import { notificationRouter } from './routers/notification';
+import { websiteRouter } from './routers/website';
 
 const appRouter = router({
-  debug: publicProcedure.input(z.string()).query((opts) => {
-    return { id: opts.input, name: 'Bilbo' };
-  }),
+  website: websiteRouter,
   notification: notificationRouter,
 });
 

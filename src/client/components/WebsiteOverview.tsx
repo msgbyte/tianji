@@ -23,6 +23,7 @@ import { useEvent } from '../hooks/useEvent';
 import { MetricCard } from './MetricCard';
 import { formatNumber, formatShortTime } from '../utils/common';
 import { useTheme } from '../hooks/useTheme';
+import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 
 interface WebsiteOverviewProps {
   workspaceId: string;
@@ -110,6 +111,13 @@ const WebsiteOverviewItem: React.FC<{
               status: 'health',
             }))}
           />
+
+          <div className="ml-4 text-base font-normal">
+            <WebsiteOnlineCount
+              workspaceId={props.website.workspaceId}
+              websiteId={props.website.id}
+            />
+          </div>
         </div>
 
         <div>

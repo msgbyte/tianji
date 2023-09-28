@@ -10,6 +10,7 @@ import {
   URL_LENGTH,
 } from '../utils/const';
 import type { DynamicData } from '../utils/types';
+import dayjs from 'dayjs';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -254,4 +255,21 @@ export async function saveWebsiteSessionData(data: {
       data: flattendData,
     }),
   ]);
+}
+
+export async function getWebsiteOnlineUserCount(
+  websiteId: string
+): Promise<number> {
+  const startAt = dayjs().subtract(5, 'minutes').toDate();
+
+  interface Ret {
+    x: number;
+  }
+
+  const res = await prisma.$queryRaw<
+    Ret[]
+  >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId}::uuid AND "createdAt" >= ${startAt}`;
+  console.log('res', res);
+
+  return res?.[0].x ?? 0;
 }
