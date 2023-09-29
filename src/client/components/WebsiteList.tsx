@@ -95,7 +95,6 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
     const navigate = useNavigate();
 
     const handleEdit = useEvent((websiteId) => {
-      console.log(`/settings/website/${websiteId}`);
       navigate(`/settings/website/${websiteId}`);
     });
 

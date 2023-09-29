@@ -13,9 +13,27 @@ export const monitorRouter = router({
 
     return monitors;
   }),
-  create: workspaceOwnerProcedure
+  get: workspaceProcedure
     .input(
       z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { id, workspaceId } = input;
+      const monitor = await prisma.monitor.findUnique({
+        where: {
+          id,
+          workspaceId,
+        },
+      });
+
+      return monitor;
+    }),
+  upsert: workspaceOwnerProcedure
+    .input(
+      z.object({
+        id: z.string().optional(),
         name: z.string(),
         type: z.string(),
         active: z.boolean().default(true),
@@ -27,6 +45,7 @@ export const monitorRouter = router({
     )
     .mutation(async ({ input }) => {
       const {
+        id,
         workspaceId,
         name,
         type,
@@ -37,19 +56,35 @@ export const monitorRouter = router({
         payload,
       } = input;
 
-      const monitor = await prisma.monitor.create({
-        data: {
-          workspaceId,
-          name,
-          type,
-          active,
-          interval,
-          maxRetry,
-          retryInterval,
-          payload,
-        },
-      });
-
-      return monitor;
+      if (id) {
+        return prisma.monitor.update({
+          data: {
+            name,
+            type,
+            active,
+            interval,
+            maxRetry,
+            retryInterval,
+            payload,
+          },
+          where: {
+            id,
+            workspaceId,
+          },
+        });
+      } else {
+        return prisma.monitor.create({
+          data: {
+            workspaceId,
+            name,
+            type,
+            active,
+            interval,
+            maxRetry,
+            retryInterval,
+            payload,
+          },
+        });
+      }
     }),
 });
