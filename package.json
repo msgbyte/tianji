@@ -28,6 +28,7 @@
     "colord": "^2.9.3",
     "compose-middleware": "^5.0.1",
     "compression": "^1.7.4",
+    "croner": "^7.0.1",
     "dayjs": "^1.11.9",
     "detect-browser": "^5.3.0",
     "dotenv": "^16.3.1",
