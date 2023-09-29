@@ -3,8 +3,12 @@ import type { AppRouter } from '../../server/trpc';
 import { httpBatchLink, TRPCClientErrorLike } from '@trpc/client';
 import { getJWT } from './auth';
 import { message } from 'antd';
+import { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
 export const trpc = createTRPCReact<AppRouter>();
+
+export type RouterInput = inferRouterInputs<AppRouter>;
+export type RouterOutput = inferRouterOutputs<AppRouter>;
 
 export const trpcClient = trpc.createClient({
   links: [
