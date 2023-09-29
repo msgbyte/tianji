@@ -60,7 +60,7 @@ export const Layout: React.FC = React.memo(() => {
         </div>
       </div>
       <div className="flex-1 w-full px-4 overflow-auto">
-        <div className="max-w-7xl m-auto">
+        <div className="max-w-7xl m-auto h-full">
           <Outlet />
         </div>
       </div>
