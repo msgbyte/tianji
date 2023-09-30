@@ -269,7 +269,6 @@ export async function getWebsiteOnlineUserCount(
   const res = await prisma.$queryRaw<
     Ret[]
   >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId}::uuid AND "createdAt" >= ${startAt}`;
-  console.log('res', res);
 
   return res?.[0].x ?? 0;
 }
