@@ -1,25 +1,34 @@
 package main
 
 import (
-    "fmt"
-    "flag"
-    "net/url"
-    "log"
-
-    socketio "github.com/googollee/go-socket.io"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"net"
+	"net/url"
+	"os"
 )
 
 var (
-	URL   = flag.String("url", "", "The http url of tianji, for example: https://tianji.msgbyte.com")
-	WORKSPACE_ID   = flag.String("workspace", "", "The workspace id for tianji, this should be a uuid")
-	INTERVAL = flag.Float64("interval", 2.0, "Input the INTERVAL")
-	isVnstat = flag.Bool("vnstat", false, "Use vnstat for traffic statistics, linux only")
+	Url         = flag.String("url", "", "The http url of tianji, for example: https://tianji.msgbyte.com")
+	WorkspaceId = flag.String("workspace", "", "The workspace id for tianji, this should be a uuid")
+	Name        = flag.String("name", "", "The identification name for this machine")
+	Interval    = flag.Float64("interval", 5.0, "Input the INTERVAL")
+	IsVnstat    = flag.Bool("vnstat", false, "Use vnstat for traffic statistics, linux only")
 )
+
+type ReportData struct {
+	WorkspaceId string `json:"workspaceId"`
+	Name        string `json:"name"`
+	Hostname    string `json:"hostname"`
+	Payload     any    `json:"payload"`
+}
 
 func main() {
 	flag.Parse()
 
-	parsedURL, err := url.Parse(*URL)
+	parsedURL, err := url.Parse(*Url)
 
 	if err != nil {
 		log.Fatal("Invalid URL:", err)
@@ -29,14 +38,55 @@ func main() {
 		log.Fatal("Invalid URL: Missing scheme")
 	}
 
-	if *WORKSPACE_ID == "" {
+	if *WorkspaceId == "" {
 		log.Fatal("WORKSPACE_ID must not be blank!")
 	}
 
-	client, _ := socketio.NewClient(*URL, nil)
+	hostname, _ := os.Hostname()
+	var name string
+	if *Name != "" {
+		name = *Name
+	} else {
+		name = hostname
+	}
 
-	client.Connect()
-	client.Emit("notice", "hello")
+	sendUDPTestPack(*parsedURL, ReportData{
+		WorkspaceId: *WorkspaceId,
+		Name:        name,
+		Hostname:    hostname,
+	})
+}
 
-	fmt.Println("Hello, World!", *URL)
+func sendUDPTestPack(url url.URL, payload ReportData) {
+	// parse target url
+	addr, err := net.ResolveUDPAddr("udp", url.Hostname()+":"+url.Port())
+	if err != nil {
+		fmt.Println("Error resolving address:", err)
+		return
+	}
+
+	// create UDP connection
+	conn, err := net.DialUDP("udp", nil, addr)
+	if err != nil {
+		fmt.Println("Error creating connection:", err)
+		return
+	}
+	defer conn.Close()
+
+	// serialized message
+	jsonData, err := json.Marshal(payload)
+	fmt.Printf("[Report] %s\n", jsonData)
+	if err != nil {
+		fmt.Println("Error encoding JSON:", err)
+		return
+	}
+
+	// Send message
+	_, err = conn.Write(jsonData)
+	if err != nil {
+		fmt.Println("Error sending message:", err)
+		return
+	}
+
+	fmt.Println("Message sent successfully!")
 }

@@ -12,10 +12,13 @@ import { workspaceRouter } from './router/workspace';
 import { telemetryRouter } from './router/telemetry';
 import { initSocketio } from './ws';
 import { trpcExpressMiddleware } from './trpc';
+import { initUdpServer } from './udp/server';
 
 const port = Number(process.env.PORT || 12345);
 
 const app = express();
+
+initUdpServer(port);
 
 initSocketio(app);
 
