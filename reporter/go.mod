@@ -3,9 +3,15 @@ module tianji-reporter
 go 1.21.1
 
 require (
-	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/gomodule/redigo v1.8.9 // indirect
-	github.com/googollee/go-socket.io v1.8.0-rc.1 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
+	github.com/json-iterator/go v1.1.12
+	github.com/shirou/gopsutil/v3 v3.20.10
+)
+
+require (
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
+	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/stretchr/testify v1.8.2 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
