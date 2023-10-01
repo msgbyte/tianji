@@ -15,6 +15,7 @@ type ReportData struct {
 	WorkspaceId string                  `json:"workspaceId"`
 	Name        string                  `json:"name"`
 	Hostname    string                  `json:"hostname"`
+	Timeout     int                     `json:"timeout"` // if service receive after timeout second, its means client are offline
 	Payload     utils.ReportDataPayload `json:"payload"`
 }
 
@@ -62,6 +63,7 @@ func main() {
 			WorkspaceId: *WorkspaceId,
 			Name:        name,
 			Hostname:    hostname,
+			Timeout:     interval * 2,
 			Payload:     utils.GetReportDataPaylod(interval, *IsVnstat),
 		})
 	}
