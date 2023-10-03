@@ -1,10 +1,11 @@
 import { EventEmitter } from 'eventemitter-strict';
 import { Socket } from 'socket.io';
+import { ServerStatusInfo } from '../../types';
 
 type SubscribeEventFn<T> = (workspaceId: string, eventData: T) => void;
 
 export interface SubscribeEventMap {
-  __test: SubscribeEventFn<number>;
+  onServerStatusUpdate: SubscribeEventFn<Record<string, ServerStatusInfo>>;
 }
 
 type SocketEventFn<T, U = unknown> = (
@@ -25,6 +26,19 @@ export interface SocketEventMap {
 export const socketEventBus = new EventEmitter<SocketEventMap>();
 export const subscribeEventBus = new EventEmitter<SubscribeEventMap>();
 
+type SubscribeInitializerFn<
+  T extends keyof SubscribeEventMap = keyof SubscribeEventMap
+> = (
+  workspaceId: string,
+  socket: Socket
+) =>
+  | Parameters<SubscribeEventMap[T]>[1]
+  | Promise<Parameters<SubscribeEventMap[T]>[1]>;
+const subscribeInitializerList: [
+  keyof SubscribeEventMap,
+  SubscribeInitializerFn
+][] = [];
+
 let i = 0;
 const subscribeFnMap: Record<string, SubscribeEventFn<any>> = {};
 socketEventBus.on('$subscribe', (eventData, socket, callback) => {
@@ -42,6 +56,12 @@ socketEventBus.on('$subscribe', (eventData, socket, callback) => {
 
   subscribeFnMap[`${name}#${cursor}`] = fn;
 
+  subscribeInitializerList.forEach(async ([_name, initializer]) => {
+    if (_name === name) {
+      socket.emit(`${name}#${cursor}`, await initializer(_workspaceId, socket));
+    }
+  });
+
   callback(cursor);
 });
 socketEventBus.on('$unsubscribe', (eventData, socket, callback) => {
@@ -53,3 +73,13 @@ socketEventBus.on('$unsubscribe', (eventData, socket, callback) => {
     subscribeEventBus.off(name, fn);
   }
 });
+
+/**
+ * Listen for subscribed requests and return results immediately
+ */
+export function createSubscribeInitializer<T extends keyof SubscribeEventMap>(
+  name: T,
+  initializer: SubscribeInitializerFn
+) {
+  subscribeInitializerList.push([name, initializer]);
+}

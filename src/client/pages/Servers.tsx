@@ -2,6 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Button, Form, Input, Modal, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { PlusOutlined } from '@ant-design/icons';
+import { ServerStatusInfo } from '../../types';
+import { useSocketSubscribe } from '../api/socketio';
+import { filesize } from 'filesize';
+import prettyMilliseconds from 'pretty-ms';
 
 export const Servers: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,67 +64,98 @@ interface ServerInfoRecordType {
 }
 
 export const ServerList: React.FC = React.memo(() => {
-  const dataSource: ServerInfoRecordType[] = [
-    {
-      status: 'online',
-      nodeName: 'node1',
-      type: 'KVM',
-      location: 'Chicago',
-      uptime: 82989,
-      load: 0.2,
-      network: '82.9K | 89.3K',
-      traffic: '21.6G | 18.3G',
-      cpu: '5%',
-      ram: '1G/2G',
-      hdd: '25G/30G',
-    },
-  ];
+  const serverMap = useSocketSubscribe<Record<string, ServerStatusInfo>>(
+    'onServerStatusUpdate',
+    {}
+  );
 
-  const columns = useMemo((): ColumnsType<ServerInfoRecordType> => {
+  const dataSource = Object.values(serverMap);
+
+  console.log('dataSource', dataSource);
+
+  const columns = useMemo((): ColumnsType<ServerStatusInfo> => {
     return [
       {
-        dataIndex: 'status',
+        key: 'status',
         title: 'Status',
+        render: (val, record) => {
+          return Date.now() - (record.updatedAt + record.timeout) < 0
+            ? 'online'
+            : 'offline';
+        },
       },
       {
-        dataIndex: 'nodeName',
+        dataIndex: 'name',
         title: 'Node Name',
       },
       {
-        dataIndex: 'type',
-        title: 'Type',
+        dataIndex: 'hostname',
+        title: 'Host Name',
       },
       {
-        dataIndex: 'uptime',
+        dataIndex: ['payload', 'system'],
+        title: 'System',
+      },
+      {
+        dataIndex: ['payload', 'uptime'],
         title: 'Uptime',
+        render: (val) => prettyMilliseconds(Number(val) * 1000),
       },
       {
-        dataIndex: 'load',
+        dataIndex: ['payload', 'load'],
         title: 'Load',
       },
       {
-        dataIndex: 'network',
+        key: 'nework',
         title: 'Network',
+        render: (_, record) => {
+          return `${filesize(record.payload.network_in)} | ${filesize(
+            record.payload.network_out
+          )}`;
+        },
       },
       {
-        dataIndex: 'traffic',
+        key: 'traffic',
         title: 'Traffic',
+        render: (_, record) => {
+          return `${filesize(record.payload.network_rx)}/s | ${filesize(
+            record.payload.network_tx
+          )}/s`;
+        },
       },
       {
-        dataIndex: 'cpu',
+        dataIndex: ['payload', 'cpu'],
         title: 'cpu',
+        render: (val) => `${val}%`,
       },
       {
-        dataIndex: 'ram',
+        key: 'ram',
         title: 'ram',
+        render: (_, record) => {
+          return `${filesize(record.payload.memory_used * 1000)} / ${filesize(
+            record.payload.memory_total * 1000
+          )}`;
+        },
       },
       {
-        dataIndex: 'hdd',
+        key: 'hdd',
         title: 'hdd',
+        render: (_, record) => {
+          return `${filesize(record.payload.hdd_used * 1000)} / ${filesize(
+            record.payload.hdd_total * 1000
+          )}`;
+        },
       },
     ];
   }, []);
 
-  return <Table columns={columns} dataSource={dataSource} pagination={false} />;
+  return (
+    <Table
+      rowKey="hostname"
+      columns={columns}
+      dataSource={dataSource}
+      pagination={false}
+    />
+  );
 });
 ServerList.displayName = 'ServerList';

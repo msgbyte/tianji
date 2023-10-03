@@ -3,7 +3,7 @@ import { getJWT } from './auth';
 import type { SubscribeEventMap, SocketEventMap } from '../../server/ws/shared';
 import { create } from 'zustand';
 import { useEvent } from '../hooks/useEvent';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const useSocketStore = create<{
   socket: Socket | null;
@@ -78,7 +78,6 @@ export function useSocket() {
       };
 
       Promise.resolve(p).then((cursor) => {
-        console.log('aaa');
         socket.on(`${name}#${cursor}` as string, receiveDataUpdate);
       });
 
@@ -89,12 +88,16 @@ export function useSocket() {
   return { emit, subscribe };
 }
 
-export function useSocketSubscribe<T extends keyof SubscribeEventMap>(
-  name: T,
-  onData: (data: SubscribeEventData<T>) => void
-) {
+export function useSocketSubscribe<T>(
+  name: keyof SubscribeEventMap,
+  defaultData: T
+): T {
   const { subscribe } = useSocket();
-  const cb = useEvent(onData);
+  const [data, setData] = useState<T>(defaultData);
+
+  const cb = useEvent((_data) => {
+    setData(_data);
+  });
 
   useEffect(() => {
     const unsubscribe = subscribe(name, cb);
@@ -103,4 +106,6 @@ export function useSocketSubscribe<T extends keyof SubscribeEventMap>(
       unsubscribe();
     };
   }, [name]);
+
+  return data;
 }
