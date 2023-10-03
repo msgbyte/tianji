@@ -57,7 +57,6 @@ func main() {
 	ticker := time.Tick(time.Duration(interval) * time.Second)
 
 	for {
-		<-ticker
 		log.Println("Send report data to:", parsedURL.String())
 		sendUDPTestPack(*parsedURL, ReportData{
 			WorkspaceId: *WorkspaceId,
@@ -66,6 +65,8 @@ func main() {
 			Timeout:     interval * 2,
 			Payload:     utils.GetReportDataPaylod(interval, *IsVnstat),
 		})
+
+		<-ticker
 	}
 }
 

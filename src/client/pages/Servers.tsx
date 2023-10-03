@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Button, Form, Input, Modal, Table } from 'antd';
+import { Badge, Button, Form, Input, Modal, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { PlusOutlined } from '@ant-design/icons';
 import { ServerStatusInfo } from '../../types';
@@ -67,9 +67,11 @@ export const ServerList: React.FC = React.memo(() => {
         key: 'status',
         title: 'Status',
         render: (val, record) => {
-          return Date.now() - (record.updatedAt + record.timeout) < 0
-            ? 'online'
-            : 'offline';
+          return Date.now() - (record.updatedAt + record.timeout) < 0 ? (
+            <Badge status="success" text="online" />
+          ) : (
+            <Badge status="error" text="offline" />
+          );
         },
       },
       {
