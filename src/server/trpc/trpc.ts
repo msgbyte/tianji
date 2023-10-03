@@ -1,25 +1,16 @@
 import { initTRPC, inferAsyncReturnType, TRPCError } from '@trpc/server';
-import * as trpcExpress from '@trpc/server/adapters/express';
 import _ from 'lodash';
 import { z } from 'zod';
 import { jwtVerify } from '../middleware/auth';
 import { getWorkspaceUser } from '../model/workspace';
 import { ROLES, SYSTEM_ROLES } from '../utils/const';
+import type { IncomingMessage } from 'http';
 
-export function createContext({
-  req,
-  res,
-}: trpcExpress.CreateExpressContextOptions) {
+export function createContext({ req }: { req: IncomingMessage }) {
   const authorization = req.headers['authorization'] ?? '';
   const token = authorization.replace('Bearer ', '');
 
-  try {
-    const user = jwtVerify(token);
-
-    return { user };
-  } catch (err) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
-  }
+  return { token };
 }
 
 type Context = inferAsyncReturnType<typeof createContext>;
@@ -29,8 +20,31 @@ export const middleware = t.middleware;
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
-const isSystemAdmin = middleware(async (opts) => {
+const isUser = middleware(async (opts) => {
+  const token = opts.ctx.token;
+
+  if (!token) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'NoToken' });
+  }
+
+  try {
+    const user = jwtVerify(token);
+
+    return opts.next({
+      ctx: {
+        user,
+      },
+    });
+  } catch (err) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'TokenInvalid' });
+  }
+});
+
+export const protectProedure = t.procedure.use(isUser);
+
+const isSystemAdmin = isUser.unstable_pipe(async (opts) => {
   const { ctx, input } = opts;
+
   if (ctx.user.role !== SYSTEM_ROLES.admin) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
@@ -39,14 +53,14 @@ const isSystemAdmin = middleware(async (opts) => {
 });
 
 export const systemAdminProcedure = t.procedure.use(isSystemAdmin);
-export const workspaceProcedure = t.procedure
+export const workspaceProcedure = protectProedure
   .input(
     z.object({
       workspaceId: z.string().uuid(),
     })
   )
   .use(createWorkspacePermissionMiddleware());
-export const workspaceOwnerProcedure = t.procedure
+export const workspaceOwnerProcedure = protectProedure
   .input(
     z.object({
       workspaceId: z.string().uuid(),
@@ -58,7 +72,7 @@ export const workspaceOwnerProcedure = t.procedure
  * Create a trpc middleware which help user check workspace permission
  */
 function createWorkspacePermissionMiddleware(roles: ROLES[] = []) {
-  return middleware(async (opts) => {
+  return isUser.unstable_pipe(async (opts) => {
     const { ctx, input } = opts;
 
     const workspaceId = _.get(input, 'workspaceId', '');
