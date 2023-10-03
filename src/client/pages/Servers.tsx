@@ -7,6 +7,8 @@ import { useSocketSubscribe } from '../api/socketio';
 import { filesize } from 'filesize';
 import prettyMilliseconds from 'pretty-ms';
 import { UpDownCounter } from '../components/UpDownCounter';
+import { max } from 'lodash-es';
+import dayjs from 'dayjs';
 
 export const Servers: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +59,7 @@ export const ServerList: React.FC = React.memo(() => {
   );
 
   const dataSource = Object.values(serverMap);
+  const lastUpdatedAt = max(dataSource.map((d) => d.updatedAt));
 
   const columns = useMemo((): ColumnsType<ServerStatusInfo> => {
     return [
@@ -141,12 +144,17 @@ export const ServerList: React.FC = React.memo(() => {
   }, []);
 
   return (
-    <Table
-      rowKey="hostname"
-      columns={columns}
-      dataSource={dataSource}
-      pagination={false}
-    />
+    <div>
+      <div className="text-right text-sm opacity-80">
+        Last updated at: {dayjs(lastUpdatedAt).format('YYYY-MM-DD HH:mm:ss')}
+      </div>
+      <Table
+        rowKey="hostname"
+        columns={columns}
+        dataSource={dataSource}
+        pagination={false}
+      />
+    </div>
   );
 });
 ServerList.displayName = 'ServerList';
