@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { UserLoginInfo } from '../api/model/user';
+import { createSocketIOClient } from '../api/socketio';
 
 interface UserState {
   info: UserLoginInfo | null;
@@ -21,6 +22,9 @@ export function setUserInfo(info: UserLoginInfo) {
   useUserStore.setState({
     info,
   });
+
+  // create socketio after login
+  createSocketIOClient(info.currentWorkspace.id);
 }
 
 export function useCurrentWorkspaceId() {

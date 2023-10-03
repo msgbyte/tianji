@@ -10,22 +10,24 @@ import { userRouter } from './router/user';
 import { websiteRouter } from './router/website';
 import { workspaceRouter } from './router/workspace';
 import { telemetryRouter } from './router/telemetry';
-import { initSocketio } from './ws';
 import { trpcExpressMiddleware } from './trpc';
 import { initUdpServer } from './udp/server';
+import { createServer } from 'http';
+import { initSocketio } from './ws';
 
 const port = Number(process.env.PORT || 12345);
 
 const app = express();
+const httpServer = createServer(app);
 
 initUdpServer(port);
 
-initSocketio(app);
+initSocketio(httpServer);
 
 app.use(compression());
 app.use(express.json());
 app.use(passport.initialize());
-app.use(morgan('tiny'));
+// app.use(morgan('tiny'));
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
@@ -42,7 +44,9 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).json({ message: err.message });
 });
 
-ViteExpress.listen(app, port, () => {
-  console.log(`Server is listening on port ${port}...`);
-  console.log(`Website: http://127.0.0.1:${port}`);
+httpServer.listen(port, () => {
+  ViteExpress.bind(app, httpServer, () => {
+    console.log(`Server is listening on port ${port}...`);
+    console.log(`Website: http://127.0.0.1:${port}`);
+  });
 });
