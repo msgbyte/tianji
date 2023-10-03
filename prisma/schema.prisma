@@ -44,8 +44,8 @@ model WorkspacesOnUsers {
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
 
-  user      User      @relation(fields: [userId], references: [id])
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@id([userId, workspaceId])
   @@index([userId])
@@ -58,12 +58,14 @@ model Website {
   domain      String?   @db.VarChar(500)
   shareId     String?   @unique @db.VarChar(50)
   resetAt     DateTime? @db.Timestamptz(6)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId String    @db.Uuid
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
 
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  sessions WebsiteSession[]
   eventData   WebsiteEventData[]
   sessionData WebsiteSessionData[]
 
@@ -86,6 +88,8 @@ model WebsiteSession {
   subdivision2 String?   @db.VarChar(50)
   city         String?   @db.VarChar(50)
   createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+
+  website   Website @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   websiteEvent WebsiteEvent[]
   sessionData  WebsiteSessionData[]
@@ -119,7 +123,7 @@ model WebsiteEvent {
   createdAt      DateTime? @default(now()) @db.Timestamptz(6)
 
   eventData WebsiteEventData[]
-  session   WebsiteSession     @relation(fields: [sessionId], references: [id])
+  session   WebsiteSession     @relation(fields: [sessionId], references: [id],onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
   @@index([sessionId])
@@ -144,8 +148,8 @@ model WebsiteEventData {
   dataType       Int       @db.Integer
   createdAt      DateTime? @default(now()) @db.Timestamptz(6)
 
-  website      Website      @relation(fields: [websiteId], references: [id])
-  websiteEvent WebsiteEvent @relation(fields: [websiteEventId], references: [id])
+  website      Website      @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  websiteEvent WebsiteEvent @relation(fields: [websiteEventId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
   @@index([websiteId])
@@ -165,8 +169,8 @@ model WebsiteSessionData {
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
   deletedAt   DateTime? @default(now()) @db.Timestamptz(6)
 
-  website Website        @relation(fields: [websiteId], references: [id])
-  session WebsiteSession @relation(fields: [sessionId], references: [id])
+  website Website        @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  session WebsiteSession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
   @@index([websiteId])
@@ -200,7 +204,7 @@ model TelemetryEvent {
   urlPath     String    @db.VarChar(500)
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
 
-  session TelemetrySession @relation(fields: [sessionId], references: [id])
+  session TelemetrySession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
   @@index([sessionId])
@@ -216,7 +220,7 @@ model Notification {
   payload     Json      @db.Json
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   monitors Monitor[]
 
@@ -224,17 +228,41 @@ model Notification {
 }
 
 model Monitor {
-  id            String  @id() @default(uuid()) @db.Uuid
-  workspaceId   String  @db.Uuid
-  name          String  @db.VarChar(100)
-  type          String  @db.VarChar(100)
-  active        Boolean @default(true) @db.Boolean
-  interval      Int     @default(20) @db.Integer
-  maxRetry      Int     @default(0) @db.Integer
-  retryInterval Int     @default(0) @db.Integer
-  payload       Json    @db.Json
+  id            String    @id() @default(uuid()) @db.Uuid
+  workspaceId   String    @db.Uuid
+  name          String    @db.VarChar(100)
+  type          String    @db.VarChar(100)
+  active        Boolean   @default(true) @db.Boolean
+  interval      Int       @default(20) @db.Integer
+  maxRetry      Int       @default(0) @db.Integer
+  retryInterval Int       @default(0) @db.Integer
+  payload       Json      @db.Json
+  createdAt     DateTime? @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
   notifications Notification[]
+  events        MonitorEvent[]
+  datas        MonitorData[]
+
+  @@index([workspaceId])
+}
+
+model MonitorEvent {
+  id        String    @id @default(uuid()) @db.Uuid
+  message   String    @db.VarChar(500)
+  monitorId String    @db.Uuid
+  type String @db.VarChar(100) // Up or Down
+  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model MonitorData {
+  id        String    @id @default(uuid()) @db.Uuid
+  monitorId String    @db.Uuid
+  value Int @default(0) @db.Integer // -1 means error
+  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }
