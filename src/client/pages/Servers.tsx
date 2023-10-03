@@ -6,6 +6,7 @@ import { ServerStatusInfo } from '../../types';
 import { useSocketSubscribe } from '../api/socketio';
 import { filesize } from 'filesize';
 import prettyMilliseconds from 'pretty-ms';
+import { UpDownCounter } from '../components/UpDownCounter';
 
 export const Servers: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,20 +50,6 @@ export const Servers: React.FC = React.memo(() => {
 });
 Servers.displayName = 'Servers';
 
-interface ServerInfoRecordType {
-  status: 'online' | 'offline';
-  nodeName: string;
-  type: string; // KVM | Hyper-V
-  location: string;
-  uptime: number; // second
-  load: number;
-  network: string;
-  traffic: string;
-  cpu: string;
-  ram: string;
-  hdd: string;
-}
-
 export const ServerList: React.FC = React.memo(() => {
   const serverMap = useSocketSubscribe<Record<string, ServerStatusInfo>>(
     'onServerStatusUpdate',
@@ -70,8 +57,6 @@ export const ServerList: React.FC = React.memo(() => {
   );
 
   const dataSource = Object.values(serverMap);
-
-  console.log('dataSource', dataSource);
 
   const columns = useMemo((): ColumnsType<ServerStatusInfo> => {
     return [
@@ -109,18 +94,24 @@ export const ServerList: React.FC = React.memo(() => {
         key: 'nework',
         title: 'Network',
         render: (_, record) => {
-          return `${filesize(record.payload.network_in)} | ${filesize(
-            record.payload.network_out
-          )}`;
+          return (
+            <UpDownCounter
+              up={filesize(record.payload.network_out)}
+              down={filesize(record.payload.network_in)}
+            />
+          );
         },
       },
       {
         key: 'traffic',
         title: 'Traffic',
         render: (_, record) => {
-          return `${filesize(record.payload.network_rx)}/s | ${filesize(
-            record.payload.network_tx
-          )}/s`;
+          return (
+            <UpDownCounter
+              up={filesize(record.payload.network_tx) + '/s'}
+              down={filesize(record.payload.network_rx) + '/s'}
+            />
+          );
         },
       },
       {
