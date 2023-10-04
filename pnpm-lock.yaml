@@ -106,6 +106,9 @@ dependencies:
   passport-jwt:
     specifier: ^4.0.1
     version: 4.0.1
+  ping:
+    specifier: ^0.4.4
+    version: 0.4.4
   pretty-ms:
     specifier: 7.0.1
     version: 7.0.1
@@ -186,6 +189,9 @@ devDependencies:
   '@types/passport-jwt':
     specifier: ^3.0.9
     version: 3.0.9
+  '@types/ping':
+    specifier: ^0.4.2
+    version: 0.4.2
   '@types/react':
     specifier: ^18.2.21
     version: 18.2.21
@@ -2072,6 +2078,10 @@ packages:
     resolution: {integrity: sha512-QFdJ2TiAEoXfEQSNDISJR1Tm51I78CymqcBa8imbjo6dNNu+l2huDxxbDEIoFIwOSKMkOfHEikyDuZ38WwWsmw==}
     dependencies:
       '@types/express': 4.17.17
+    dev: true
+
+  /@types/ping@0.4.2:
+    resolution: {integrity: sha512-5WAzkazMQP7EBDfGtfOV8Tkh7SoXhyo8UYXsR7G7RCRihyM5Ds2zbxgrS+eI0bMqL/GPRO7FcJCK7czoxQmXNw==}
     dev: true
 
   /@types/prop-types@15.7.5:
@@ -4380,6 +4390,11 @@ packages:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /ping@0.4.4:
+    resolution: {integrity: sha512-56ZMC0j7SCsMMLdOoUg12VZCfj/+ZO+yfOSjaNCRrmZZr6GLbN2X/Ui56T15dI8NhiHckaw5X2pvyfAomanwqQ==}
+    engines: {node: '>=4.0.0'}
+    dev: false
 
   /pirates@4.0.6:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}

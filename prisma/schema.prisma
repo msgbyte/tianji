@@ -63,9 +63,9 @@ model Website {
   updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  sessions WebsiteSession[]
+  sessions    WebsiteSession[]
   eventData   WebsiteEventData[]
   sessionData WebsiteSessionData[]
 
@@ -89,7 +89,7 @@ model WebsiteSession {
   city         String?   @db.VarChar(50)
   createdAt    DateTime? @default(now()) @db.Timestamptz(6)
 
-  website   Website @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  website Website @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   websiteEvent WebsiteEvent[]
   sessionData  WebsiteSessionData[]
@@ -123,7 +123,7 @@ model WebsiteEvent {
   createdAt      DateTime? @default(now()) @db.Timestamptz(6)
 
   eventData WebsiteEventData[]
-  session   WebsiteSession     @relation(fields: [sessionId], references: [id],onUpdate: Cascade, onDelete: Cascade)
+  session   WebsiteSession     @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
   @@index([sessionId])
@@ -234,8 +234,9 @@ model Monitor {
   type          String    @db.VarChar(100)
   active        Boolean   @default(true) @db.Boolean
   interval      Int       @default(20) @db.Integer
-  maxRetry      Int       @default(0) @db.Integer
-  retryInterval Int       @default(0) @db.Integer
+  // TODO
+  // maxRetry      Int       @default(0) @db.Integer
+  // retryInterval Int       @default(0) @db.Integer
   payload       Json      @db.Json
   createdAt     DateTime? @default(now()) @db.Timestamptz(6)
 
@@ -243,7 +244,7 @@ model Monitor {
 
   notifications Notification[]
   events        MonitorEvent[]
-  datas        MonitorData[]
+  datas         MonitorData[]
 
   @@index([workspaceId])
 }
@@ -252,7 +253,7 @@ model MonitorEvent {
   id        String    @id @default(uuid()) @db.Uuid
   message   String    @db.VarChar(500)
   monitorId String    @db.Uuid
-  type String @db.VarChar(100) // Up or Down
+  type      String    @db.VarChar(100) // UP or DOWN
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -261,7 +262,7 @@ model MonitorEvent {
 model MonitorData {
   id        String    @id @default(uuid()) @db.Uuid
   monitorId String    @db.Uuid
-  value Int @default(0) @db.Integer // -1 means error
+  value     Int       @default(0) @db.Integer // -1 means error
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)

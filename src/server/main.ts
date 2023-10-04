@@ -14,6 +14,7 @@ import { trpcExpressMiddleware } from './trpc';
 import { initUdpServer } from './udp/server';
 import { createServer } from 'http';
 import { initSocketio } from './ws';
+import { monitorManager } from './model/monitor';
 
 const port = Number(process.env.PORT || 12345);
 
@@ -23,6 +24,8 @@ const httpServer = createServer(app);
 initUdpServer(port);
 
 initSocketio(httpServer);
+
+monitorManager.startAll();
 
 app.use(compression());
 app.use(express.json());
