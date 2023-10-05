@@ -1,9 +1,9 @@
 import clsx from 'clsx';
 import React, { useState } from 'react';
-import { trpc } from '../api/trpc';
-import { useCurrentWorkspaceId } from '../store/user';
-import { HealthBar } from './HealthBar';
-import { NoWorkspaceTip } from './NoWorkspaceTip';
+import { trpc } from '../../../api/trpc';
+import { useCurrentWorkspaceId } from '../../../store/user';
+import { HealthBar } from '../../HealthBar';
+import { NoWorkspaceTip } from '../../NoWorkspaceTip';
 
 export const MonitorList: React.FC = React.memo(() => {
   const currentWorkspaceId = useCurrentWorkspaceId()!;

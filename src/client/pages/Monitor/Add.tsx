@@ -1,5 +1,5 @@
 import React from 'react';
-import { MonitorInfoEditor } from '../../components/MonitorInfoEditor';
+import { MonitorInfoEditor } from '../../components/modals/monitor/MonitorInfoEditor';
 import { useCurrentWorkspaceId } from '../../store/user';
 
 export const MonitorAdd: React.FC = React.memo(() => {

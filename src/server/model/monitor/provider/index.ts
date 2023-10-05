@@ -1,6 +1,6 @@
 import { ping } from './ping';
 import type { MonitorProvider } from './type';
 
-export const monitorProviders: Record<string, MonitorProvider> = {
+export const monitorProviders: Record<string, MonitorProvider<any>> = {
   ping,
 };

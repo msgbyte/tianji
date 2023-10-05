@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { trpc } from '../../api/trpc';
 import { ErrorTip } from '../../components/ErrorTip';
 import { Loading } from '../../components/Loading';
-import { MonitorInfoEditor } from '../../components/MonitorInfoEditor';
+import { MonitorInfoEditor } from '../../components/modals/monitor/MonitorInfoEditor';
 import { useCurrentWorkspaceId } from '../../store/user';
 
 export const MonitorEdit: React.FC = React.memo(() => {
@@ -25,7 +25,7 @@ export const MonitorEdit: React.FC = React.memo(() => {
   return (
     <div>
       <MonitorInfoEditor
-        initValue={monitor}
+        initialValues={monitor}
         onSave={(value) => {
           console.log(value);
         }}

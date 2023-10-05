@@ -28,7 +28,7 @@ export const Layout: React.FC = React.memo(() => {
           <NavItem to="/dashboard" label="Dashboard" />
           <NavItem to="/monitor" label="Monitor" />
           <NavItem to="/website" label="Website" />
-          <NavItem to="/Servers" label="Servers" />
+          <NavItem to="/servers" label="Servers" />
           <NavItem to="/settings" label="Settings" />
         </div>
 

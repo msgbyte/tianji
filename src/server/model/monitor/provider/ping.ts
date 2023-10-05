@@ -1,13 +1,15 @@
 import { MonitorProvider } from './type';
 import pingUtils from 'ping';
 
-export const ping: MonitorProvider = {
+export const ping: MonitorProvider<{
+  hostname: string;
+}> = {
   run: async (monitor) => {
     if (typeof monitor.payload !== 'object') {
       throw new Error('monitor.payload should be object');
     }
 
-    const { hostname } = monitor.payload as any;
+    const { hostname } = monitor.payload;
 
     const res = await pingAction(hostname);
 
