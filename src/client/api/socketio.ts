@@ -96,7 +96,7 @@ export function useSocketSubscribe<T>(
   const [data, setData] = useState<T>(defaultData);
 
   const cb = useEvent((_data) => {
-    setData(_data);
+    setData(_data ?? defaultData);
   });
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { createTRPCReact } from '@trpc/react-query';
-import type { AppRouter } from '../../server/trpc';
+import type { AppRouter } from '../../server/trpc/routers';
 import { httpBatchLink, TRPCClientErrorLike } from '@trpc/client';
 import { getJWT } from './auth';
 import { message } from 'antd';

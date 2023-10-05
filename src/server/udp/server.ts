@@ -11,6 +11,10 @@ const serverMap: Record<
 > = {};
 
 createSubscribeInitializer('onServerStatusUpdate', (workspaceId) => {
+  if (!serverMap[workspaceId]) {
+    serverMap[workspaceId] = {};
+  }
+
   return serverMap[workspaceId];
 });
 

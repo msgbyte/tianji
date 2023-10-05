@@ -131,7 +131,14 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
       return <Loading />;
     }
 
-    return <Table columns={columns} dataSource={websites} pagination={false} />;
+    return (
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={websites}
+        pagination={false}
+      />
+    );
   }
 );
 WebsiteListTable.displayName = 'WebsiteListTable';
