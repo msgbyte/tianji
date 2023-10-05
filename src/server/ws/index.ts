@@ -2,7 +2,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { jwtVerify } from '../middleware/auth';
 import { socketEventBus } from './shared';
-import { isUuid } from '../utils/common';
+import { isCuid } from '../utils/common';
 
 export function initSocketio(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
@@ -17,7 +17,7 @@ export function initSocketio(httpServer: HTTPServer) {
   io.of((name, auth, next) => {
     const workspaceId = name.replace(/^\//, '');
 
-    next(null, isUuid(workspaceId)); // or false, when the creation is denied
+    next(null, isCuid(workspaceId)); // or false, when the creation is denied
   })
     .use(async (socket, next) => {
       // Auth

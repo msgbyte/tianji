@@ -8,14 +8,14 @@ generator client {
 }
 
 model User {
-  id                 String    @id @unique @default(uuid()) @db.Uuid
+  id                 String    @id @unique @default(cuid()) @db.VarChar(30)
   username           String    @unique @db.VarChar(255)
   password           String    @db.VarChar(60)
   role               String    @db.VarChar(50)
   createdAt          DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt          DateTime? @db.Timestamptz(6)
-  currentWorkspaceId String?   @db.Uuid
+  currentWorkspaceId String?   @db.VarChar(30)
 
   currentWorkspace Workspace? @relation(fields: [currentWorkspaceId], references: [id])
 
@@ -23,7 +23,7 @@ model User {
 }
 
 model Workspace {
-  id        String    @id @unique @default(uuid()) @db.Uuid
+  id        String    @id @unique @default(cuid()) @db.VarChar(30)
   name      String    @db.VarChar(100)
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @db.Timestamptz(6)
@@ -38,8 +38,8 @@ model Workspace {
 }
 
 model WorkspacesOnUsers {
-  userId      String    @db.Uuid
-  workspaceId String    @db.Uuid
+  userId      String    @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
   role        String    @db.VarChar(100)
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
@@ -53,12 +53,12 @@ model WorkspacesOnUsers {
 }
 
 model Website {
-  id          String    @id @unique @default(uuid()) @db.Uuid
+  id          String    @id @unique @default(cuid()) @db.VarChar(30)
   name        String    @db.VarChar(100)
   domain      String?   @db.VarChar(500)
   shareId     String?   @unique @db.VarChar(50)
   resetAt     DateTime? @db.Timestamptz(6)
-  workspaceId String    @db.Uuid
+  workspaceId String    @db.VarChar(30)
   createdAt   DateTime? @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
@@ -76,7 +76,7 @@ model Website {
 
 model WebsiteSession {
   id           String    @id @unique @db.Uuid
-  websiteId    String    @db.Uuid
+  websiteId    String    @db.VarChar(30)
   hostname     String?   @db.VarChar(100)
   browser      String?   @db.VarChar(20)
   os           String?   @db.VarChar(20)
@@ -109,8 +109,8 @@ model WebsiteSession {
 }
 
 model WebsiteEvent {
-  id             String    @id() @default(uuid()) @db.Uuid
-  websiteId      String    @db.Uuid
+  id             String    @id() @default(cuid()) @db.VarChar(30)
+  websiteId      String    @db.VarChar(30)
   sessionId      String    @db.Uuid
   urlPath        String    @db.VarChar(500)
   urlQuery       String?   @db.VarChar(500)
@@ -138,9 +138,9 @@ model WebsiteEvent {
 }
 
 model WebsiteEventData {
-  id             String    @id() @default(uuid()) @db.Uuid
-  websiteId      String    @db.Uuid
-  websiteEventId String    @db.Uuid
+  id             String    @id() @default(cuid()) @db.VarChar(30)
+  websiteId      String    @db.VarChar(30)
+  websiteEventId String    @db.VarChar(30)
   eventKey       String    @db.VarChar(500)
   stringValue    String?   @db.VarChar(500)
   numberValue    Decimal?  @db.Decimal(19, 4)
@@ -159,8 +159,8 @@ model WebsiteEventData {
 }
 
 model WebsiteSessionData {
-  id          String    @id() @default(uuid()) @db.Uuid
-  websiteId   String    @db.Uuid
+  id          String    @id() @default(cuid()) @db.VarChar(30)
+  websiteId   String    @db.VarChar(30)
   sessionId   String    @db.Uuid
   stringValue String?   @db.VarChar(500)
   numberValue Decimal?  @db.Decimal(19, 4)
@@ -179,7 +179,7 @@ model WebsiteSessionData {
 
 model TelemetrySession {
   id           String    @id @unique @db.Uuid
-  workspaceId  String    @db.Uuid
+  workspaceId  String    @db.VarChar(30)
   hostname     String?   @db.VarChar(100)
   browser      String?   @db.VarChar(20)
   os           String?   @db.VarChar(20)
@@ -196,9 +196,9 @@ model TelemetrySession {
 }
 
 model TelemetryEvent {
-  id          String    @id() @default(uuid()) @db.Uuid
+  id          String    @id() @default(cuid()) @db.VarChar(30)
   sessionId   String    @db.Uuid
-  workspaceId String    @db.Uuid
+  workspaceId String    @db.VarChar(30)
   eventName   String?   @db.VarChar(100)
   urlOrigin   String    @db.VarChar(500)
   urlPath     String    @db.VarChar(500)
@@ -213,8 +213,8 @@ model TelemetryEvent {
 }
 
 model Notification {
-  id          String    @id() @default(uuid()) @db.Uuid
-  workspaceId String    @db.Uuid
+  id          String    @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
   name        String    @db.VarChar(100)
   type        String    @db.VarChar(100)
   payload     Json      @db.Json
@@ -228,17 +228,17 @@ model Notification {
 }
 
 model Monitor {
-  id            String    @id() @default(uuid()) @db.Uuid
-  workspaceId   String    @db.Uuid
-  name          String    @db.VarChar(100)
-  type          String    @db.VarChar(100)
-  active        Boolean   @default(true) @db.Boolean
-  interval      Int       @default(20) @db.Integer
+  id          String    @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
+  name        String    @db.VarChar(100)
+  type        String    @db.VarChar(100)
+  active      Boolean   @default(true) @db.Boolean
+  interval    Int       @default(20) @db.Integer
   // TODO
   // maxRetry      Int       @default(0) @db.Integer
   // retryInterval Int       @default(0) @db.Integer
-  payload       Json      @db.Json
-  createdAt     DateTime? @default(now()) @db.Timestamptz(6)
+  payload     Json      @db.Json
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
@@ -250,9 +250,9 @@ model Monitor {
 }
 
 model MonitorEvent {
-  id        String    @id @default(uuid()) @db.Uuid
+  id        String    @id @default(cuid()) @db.VarChar(30)
   message   String    @db.VarChar(500)
-  monitorId String    @db.Uuid
+  monitorId String    @db.VarChar(30)
   type      String    @db.VarChar(100) // UP or DOWN
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
 
@@ -260,8 +260,8 @@ model MonitorEvent {
 }
 
 model MonitorData {
-  id        String    @id @default(uuid()) @db.Uuid
-  monitorId String    @db.Uuid
+  id        String    @id @default(cuid()) @db.VarChar(30)
+  monitorId String    @db.VarChar(30)
   value     Int       @default(0) @db.Integer // -1 means error
   createdAt DateTime? @default(now()) @db.Timestamptz(6)
 

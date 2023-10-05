@@ -22,11 +22,7 @@ export const workspaceRouter = Router();
 workspaceRouter.get(
   '/websites',
   validate(
-    query('workspaceId')
-      .isString()
-      .withMessage('workspaceId should be string')
-      .isUUID()
-      .withMessage('workspaceId should be UUID')
+    query('workspaceId').isString().withMessage('workspaceId should be string')
   ),
   auth(),
   workspacePermission(),
@@ -42,7 +38,7 @@ workspaceRouter.get(
 workspaceRouter.post(
   '/website',
   validate(
-    body('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
+    body('workspaceId').isString(),
     body('name')
       .isString()
       .withMessage('name should be string')
@@ -67,10 +63,7 @@ workspaceRouter.post(
 
 workspaceRouter.get(
   '/website/:websiteId',
-  validate(
-    query('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
-    param('websiteId').isUUID().withMessage('workspaceId should be UUID')
-  ),
+  validate(query('workspaceId').isString(), param('websiteId').isString()),
   auth(),
   workspacePermission(),
   async (req, res) => {
@@ -86,7 +79,7 @@ workspaceRouter.get(
 workspaceRouter.post(
   '/website/:websiteId',
   validate(
-    body('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
+    body('workspaceId').isString(),
     param('websiteId')
       .isString()
       .isUUID()
@@ -122,10 +115,7 @@ workspaceRouter.post(
 
 workspaceRouter.delete(
   '/:workspaceId/website/:websiteId',
-  validate(
-    param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
-    param('websiteId').isUUID().withMessage('workspaceId should be UUID')
-  ),
+  validate(param('workspaceId').isString(), param('websiteId').isString()),
   auth(),
   workspacePermission([ROLES.owner]),
   async (req, res) => {
@@ -141,8 +131,8 @@ workspaceRouter.delete(
 workspaceRouter.get(
   '/:workspaceId/website/:websiteId/pageviews',
   validate(
-    param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
-    param('websiteId').isUUID().withMessage('workspaceId should be UUID'),
+    param('workspaceId').isString(),
+    param('websiteId').isString(),
     query('startAt').isNumeric().withMessage('startAt should be number'),
     query('endAt').isNumeric().withMessage('startAt should be number')
   ),
@@ -201,8 +191,8 @@ workspaceRouter.get(
 workspaceRouter.get(
   '/:workspaceId/website/:websiteId/stats',
   validate(
-    param('workspaceId').isUUID().withMessage('workspaceId should be UUID'),
-    param('websiteId').isUUID().withMessage('workspaceId should be UUID'),
+    param('workspaceId').isString(),
+    param('websiteId').isString(),
     query('startAt').isNumeric().withMessage('startAt should be number'),
     query('endAt').isNumeric().withMessage('startAt should be number')
   ),

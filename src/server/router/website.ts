@@ -29,7 +29,7 @@ websiteRouter.post(
             screen: yup.string().max(11),
             title: yup.string().max(500),
             url: yup.string().max(500),
-            website: yup.string().uuid().required(),
+            website: yup.string().required(),
             name: yup.string().max(50),
           })
           .required()

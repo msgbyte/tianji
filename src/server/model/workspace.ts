@@ -157,7 +157,7 @@ export async function getWorkspaceWebsitePageview(
       count(1) y
     from "WebsiteEvent"
       ${joinSession}
-    where "WebsiteEvent"."websiteId" = ${params.websiteId}::uuid
+    where "WebsiteEvent"."websiteId" = ${params.websiteId}
       and "WebsiteEvent"."createdAt" between ${
         params.startDate
       }::timestamptz and ${params.endDate}::timestamptz
@@ -182,7 +182,7 @@ export async function getWorkspaceWebsiteSession(
       count(distinct "WebsiteEvent"."sessionId") y
     from "WebsiteEvent"
       ${joinSession}
-    where "WebsiteEvent"."websiteId" = ${params.websiteId}::uuid
+    where "WebsiteEvent"."websiteId" = ${params.websiteId}
       and "WebsiteEvent"."createdAt" between ${
         params.startDate
       }::timestamptz and ${params.endDate}::timestamptz
@@ -216,7 +216,7 @@ export async function getWorkspaceWebsiteStats(
       join "Website"
         on "WebsiteEvent"."websiteId" = "Website"."id"
         ${joinSession}
-      where "Website"."id" = ${params.websiteId}::uuid
+      where "Website"."id" = ${params.websiteId}
         and "WebsiteEvent"."createdAt" between ${
           params.startDate
         }::timestamptz and ${params.endDate}::timestamptz

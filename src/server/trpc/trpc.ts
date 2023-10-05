@@ -56,14 +56,14 @@ export const systemAdminProcedure = t.procedure.use(isSystemAdmin);
 export const workspaceProcedure = protectProedure
   .input(
     z.object({
-      workspaceId: z.string().uuid(),
+      workspaceId: z.string().cuid2(),
     })
   )
   .use(createWorkspacePermissionMiddleware());
 export const workspaceOwnerProcedure = protectProedure
   .input(
     z.object({
-      workspaceId: z.string().uuid(),
+      workspaceId: z.string().cuid2(),
     })
   )
   .use(createWorkspacePermissionMiddleware([ROLES.owner]));

@@ -1,5 +1,5 @@
 import { Website, WebsiteSession } from '@prisma/client';
-import { flattenJSON, hashUuid, isUuid, parseToken } from '../utils/common';
+import { flattenJSON, hashUuid, isCuid, parseToken } from '../utils/common';
 import { prisma } from './_client';
 import { Request } from 'express';
 import { getClientInfo } from '../utils/detect';
@@ -66,7 +66,7 @@ export async function findSession(req: Request): Promise<{
     throw new Error('Invalid hostname.');
   }
 
-  if (!isUuid(websiteId)) {
+  if (!isCuid(websiteId)) {
     throw new Error('Invalid website ID.');
   }
 
@@ -268,7 +268,7 @@ export async function getWebsiteOnlineUserCount(
 
   const res = await prisma.$queryRaw<
     Ret[]
-  >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId}::uuid AND "createdAt" >= ${startAt}`;
+  >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId} AND "createdAt" >= ${startAt}`;
 
   return res?.[0].x ?? 0;
 }

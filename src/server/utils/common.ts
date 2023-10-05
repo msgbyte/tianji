@@ -7,6 +7,9 @@ import minMax from 'dayjs/plugin/minMax';
 import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import { getWorkspaceWebsiteDateRange } from '../model/workspace';
+import { isCuid } from '@paralleldrive/cuid2';
+
+export { isCuid };
 
 dayjs.extend(minMax);
 
