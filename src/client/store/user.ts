@@ -32,5 +32,9 @@ export function useCurrentWorkspaceId() {
     (state) => state.info?.currentWorkspace?.id
   );
 
+  if (!currentWorkspaceId) {
+    throw new Error('No Workspace Id');
+  }
+
   return currentWorkspaceId;
 }

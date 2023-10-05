@@ -4,11 +4,12 @@ import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { monitorProviders } from './provider';
 import { useEvent } from '../../../hooks/useEvent';
 
-type MonitorInfoEditorValues = Omit<
+export type MonitorInfoEditorValues = Omit<
   Monitor,
   'id' | 'workspaceId' | 'createdAt'
 > & {
   id?: string;
+  payload: Record<string, any>;
 };
 
 const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {

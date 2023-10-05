@@ -1,5 +1,6 @@
 import { MonitorProvider } from './type';
 import pingUtils from 'ping';
+import os from 'os';
 
 export const ping: MonitorProvider<{
   hostname: string;
@@ -22,13 +23,14 @@ export const ping: MonitorProvider<{
 };
 
 const isWindows = /^win/.test(process.platform);
+const deadline = ['linux', 'darwin'].includes(os.platform()) ? 10 : undefined;
 
 function pingAction(hostname: string, packetSize = 56) {
   return new Promise<number | 'unknown'>((resolve, reject) => {
     pingUtils.promise
       .probe(hostname, {
         min_reply: 1,
-        deadline: 10,
+        deadline,
         packetSize,
       })
       .then((res) => {

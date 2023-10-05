@@ -29,7 +29,7 @@ export const trpcClient = trpc.createClient({
  *   onSuccess: defaultSuccessHandler,
  * });
  */
-export function defaultSuccessHandler(data: any) {
+export function defaultSuccessHandler() {
   message.success('Operate Success');
 }
 

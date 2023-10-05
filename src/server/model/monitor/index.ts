@@ -107,11 +107,17 @@ class MonitorRunner {
 
       this.timer = setTimeout(() => {
         run();
-      }, interval);
+      }, interval * 1000);
     };
 
     async function run() {
-      const value = await provider.run(monitor);
+      let value = 0;
+      try {
+        value = await provider.run(monitor);
+      } catch (err) {
+        console.error(err);
+        value = -1;
+      }
 
       // check event update
       if (value < 0 && currentStatus === 'UP') {

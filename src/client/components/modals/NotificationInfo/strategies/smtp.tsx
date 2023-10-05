@@ -28,7 +28,7 @@ export const NotificationSMTP: React.FC = React.memo(() => {
           <Select.Option value={true}>TLS (465)</Select.Option>
         </Select>
       </Form.Item>
-      <Form.Item name={['payload', 'ignoreTLS']}>
+      <Form.Item name={['payload', 'ignoreTLS']} valuePropName="checked">
         <Checkbox>Ignore TLS Error</Checkbox>
       </Form.Item>
       <Form.Item

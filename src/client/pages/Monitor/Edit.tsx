@@ -1,9 +1,13 @@
 import React from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { useMonitorUpsert } from '../../api/model/monitor';
 import { trpc } from '../../api/trpc';
 import { ErrorTip } from '../../components/ErrorTip';
 import { Loading } from '../../components/Loading';
-import { MonitorInfoEditor } from '../../components/modals/monitor/MonitorInfoEditor';
+import {
+  MonitorInfoEditor,
+  MonitorInfoEditorValues,
+} from '../../components/modals/monitor/MonitorInfoEditor';
 import { useCurrentWorkspaceId } from '../../store/user';
 
 export const MonitorEdit: React.FC = React.memo(() => {
@@ -11,8 +15,10 @@ export const MonitorEdit: React.FC = React.memo(() => {
   const currentWorkspaceId = useCurrentWorkspaceId();
   const { data: monitor, isLoading } = trpc.monitor.get.useQuery({
     id: monitorId!,
-    workspaceId: currentWorkspaceId!,
+    workspaceId: currentWorkspaceId,
   });
+  const mutation = useMonitorUpsert();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return <Loading />;
@@ -25,9 +31,13 @@ export const MonitorEdit: React.FC = React.memo(() => {
   return (
     <div>
       <MonitorInfoEditor
-        initialValues={monitor}
-        onSave={(value) => {
-          console.log(value);
+        initialValues={monitor as MonitorInfoEditorValues}
+        onSave={async (value) => {
+          await mutation.mutateAsync({
+            ...value,
+            workspaceId: currentWorkspaceId,
+          });
+          navigate('/monitor', { replace: true });
         }}
       />
     </div>
