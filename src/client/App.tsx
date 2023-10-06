@@ -2,7 +2,6 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { Layout } from './pages/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
-import { Website } from './pages/Website';
 import { SettingsPage } from './pages/Settings';
 import { Servers } from './pages/Servers';
 import { useUserStore } from './store/user';
@@ -13,6 +12,7 @@ import { TokenLoginContainer } from './components/TokenLoginContainer';
 import React from 'react';
 import { trpc, trpcClient } from './api/trpc';
 import { MonitorPage } from './pages/Monitor';
+import { WebsitePage } from './pages/Website';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -23,7 +23,7 @@ export const AppRoutes: React.FC = React.memo(() => {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/monitor/*" element={<MonitorPage />} />
-          <Route path="/website" element={<Website />} />
+          <Route path="/website/*" element={<WebsitePage />} />
           <Route path="/servers" element={<Servers />} />
           <Route path="/settings/*" element={<SettingsPage />} />
         </Route>
