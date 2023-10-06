@@ -67,6 +67,8 @@ export const DATA_TYPE = {
   array: 5,
 } as const;
 
+export const EVENT_COLUMNS = ['url', 'referrer', 'title', 'query', 'event'];
+
 export const SESSION_COLUMNS = [
   'browser',
   'os',

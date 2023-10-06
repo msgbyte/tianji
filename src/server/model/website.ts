@@ -1,4 +1,4 @@
-import { Website, WebsiteSession } from '@prisma/client';
+import { Prisma, Website, WebsiteSession } from '@prisma/client';
 import { flattenJSON, hashUuid, isCuid, parseToken } from '../utils/common';
 import { prisma } from './_client';
 import { Request } from 'express';
@@ -7,10 +7,12 @@ import {
   DATA_TYPE,
   EVENT_NAME_LENGTH,
   EVENT_TYPE,
+  SESSION_COLUMNS,
   URL_LENGTH,
 } from '../utils/const';
 import type { DynamicData } from '../utils/types';
 import dayjs from 'dayjs';
+import { QueryFilters, parseFilters } from '../utils/prisma';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -271,4 +273,77 @@ export async function getWebsiteOnlineUserCount(
   >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId} AND "createdAt" >= ${startAt}`;
 
   return res?.[0].x ?? 0;
+}
+
+export async function getSessionMetrics(
+  websiteId: string,
+  column: string,
+  filters: QueryFilters
+): Promise<{ x: string; y: number }[]> {
+  const { filterQuery, joinSession, params } = await parseFilters(
+    websiteId,
+    {
+      ...filters,
+    },
+    {
+      joinSession: SESSION_COLUMNS.includes(column),
+    }
+  );
+  const includeCountry = column === 'city' || column === 'subdivision1';
+
+  return prisma.$queryRaw`select
+      ${column} x,
+      count(distinct "WebsiteEvent"."sessionId") y
+      ${includeCountry ? Prisma.sql([', country']) : Prisma.empty}
+    from "WebsiteEvent"
+    ${joinSession}
+    where "WebsiteEvent"."websiteId" = ${websiteId}
+      and "WebsiteEvent"."createdAt"
+      between ${params.startDate}::timestamptz and ${
+    params.endDate
+  }::timestamptz
+      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      ${filterQuery}
+    group by 1
+    ${includeCountry ? Prisma.sql([', 3']) : Prisma.empty}
+    order by 2 desc
+    limit 100`;
+}
+
+export async function getPageviewMetrics(
+  websiteId: string,
+  column: string,
+  filters: QueryFilters
+): Promise<{ x: string; y: number }[]> {
+  const eventType =
+    column === 'eventName' ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView;
+  const { filterQuery, joinSession, params } = await parseFilters(
+    websiteId,
+    {
+      ...filters,
+    },
+    { joinSession: SESSION_COLUMNS.includes(column) }
+  );
+
+  let excludeDomain = Prisma.empty;
+  if (column === 'referrerDomain') {
+    excludeDomain = Prisma.sql`and ("WebsiteEvent"."referrerDomain" != ${params.websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`;
+  }
+
+  return prisma.$queryRaw`
+    select ${Prisma.sql([`"${column}"`])}  x, count(*) y
+    from "WebsiteEvent"
+    ${joinSession}
+    where "WebsiteEvent"."websiteId" = ${websiteId}
+      and "WebsiteEvent"."createdAt"
+      between ${params.startDate}::timestamptz and ${
+    params.endDate
+  }::timestamptz
+      and "eventType" = ${eventType}
+      ${excludeDomain}
+      ${filterQuery}
+    group by 1
+    order by 2 desc
+    limit 100
+    `;
 }

@@ -170,7 +170,7 @@ export async function parseDateRange({
   websiteId: string;
   startAt: number;
   endAt: number;
-  unit: string;
+  unit?: string;
 }) {
   // All-time
   if (+startAt === 0 && +endAt === 1) {

@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { ArrowRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Divider } from 'antd';
-import { WebsiteOverview } from '../components/WebsiteOverview';
+import { WebsiteOverview } from '../components/website/WebsiteOverview';
 import { useCurrentWorkspaceId } from '../store/user';
 import { Loading } from '../components/Loading';
 import { useWorspaceWebsites } from '../api/model/website';
