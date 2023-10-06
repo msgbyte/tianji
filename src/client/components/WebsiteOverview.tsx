@@ -1,14 +1,13 @@
-import { Button, message, Tag } from 'antd';
+import { Button, message } from 'antd';
 import React, { useMemo } from 'react';
 import { Column, ColumnConfig } from '@ant-design/charts';
-import { ArrowRightOutlined, SyncOutlined } from '@ant-design/icons';
+import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from './DateFilter';
 import { HealthBar } from './HealthBar';
 import {
   StatsItemType,
   useWorkspaceWebsitePageview,
   useWorkspaceWebsiteStats,
-  useWorspaceWebsites,
   WebsiteInfo,
 } from '../api/model/website';
 import { Loading } from './Loading';
@@ -25,30 +24,9 @@ import { formatNumber, formatShortTime } from '../utils/common';
 import { useTheme } from '../hooks/useTheme';
 import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 
-interface WebsiteOverviewProps {
-  workspaceId: string;
-}
-export const WebsiteOverview: React.FC<WebsiteOverviewProps> = React.memo(
-  (props) => {
-    const { isLoading, websites } = useWorspaceWebsites(props.workspaceId);
-
-    if (isLoading) {
-      return <Loading />;
-    }
-
-    return (
-      <div>
-        {websites.map((website) => (
-          <WebsiteOverviewItem key={website.id} website={website} />
-        ))}
-      </div>
-    );
-  }
-);
-WebsiteOverview.displayName = 'WebsiteOverview';
-
-const WebsiteOverviewItem: React.FC<{
+export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
+  actions?: React.ReactNode;
 }> = React.memo((props) => {
   const unit: DateUnit = 'hour';
   const startDate = dayjs().subtract(1, 'day').add(1, unit).startOf(unit);
@@ -99,7 +77,7 @@ const WebsiteOverviewItem: React.FC<{
   }
 
   return (
-    <div className="mb-10 pb-10 border-b">
+    <div>
       <div className="flex">
         <div className="flex flex-1 text-2xl font-bold items-center">
           <span className="mr-2" title={props.website.domain ?? ''}>
@@ -120,11 +98,7 @@ const WebsiteOverviewItem: React.FC<{
           </div>
         </div>
 
-        <div>
-          <Button type="primary" size="large">
-            View Details <ArrowRightOutlined />
-          </Button>
-        </div>
+        <div>{props.actions}</div>
       </div>
 
       <div className="flex mb-10 flex-wrap">
@@ -147,7 +121,7 @@ const WebsiteOverviewItem: React.FC<{
     </div>
   );
 });
-WebsiteOverviewItem.displayName = 'WebsiteOverviewItem';
+WebsiteOverview.displayName = 'WebsiteOverview';
 
 export const MetricsBar: React.FC<{
   stats: {

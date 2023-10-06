@@ -119,7 +119,14 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
                 >
                   Edit
                 </Button>
-                <Button icon={<BarChartOutlined />}>View</Button>
+                <Button
+                  icon={<BarChartOutlined />}
+                  onClick={() => {
+                    navigate(`/website/${record.id}`);
+                  }}
+                >
+                  View
+                </Button>
               </div>
             );
           },
