@@ -1,4 +1,4 @@
-import { Divider } from 'antd';
+import { Card, Divider } from 'antd';
 import dayjs from 'dayjs';
 import React from 'react';
 import { useParams } from 'react-router';
@@ -32,23 +32,21 @@ export const WebsiteDetail: React.FC = React.memo(() => {
 
   return (
     <div className="py-6">
-      <div>
-        <WebsiteOverview website={website} />
-      </div>
-
-      <Divider />
-
-      <div className="flex">
-        <div className="flex-1">
+      <Card>
+        <Card.Grid hoverable={false} className="!w-full">
+          <WebsiteOverview website={website} />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/2">
           <PagesTable
             websiteId={websiteId}
             startAt={dayjs().subtract(1, 'day').unix() * 1000}
             endAt={dayjs().unix() * 1000}
           />
-        </div>
-        <Divider type="vertical" />
-        <div className="flex-1">right</div>
-      </div>
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/2">
+          right
+        </Card.Grid>
+      </Card>
     </div>
   );
 });

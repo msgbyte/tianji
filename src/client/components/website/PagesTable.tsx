@@ -7,6 +7,6 @@ interface PagesTableProps {
   endAt: number;
 }
 export const PagesTable: React.FC<PagesTableProps> = React.memo((props) => {
-  return <MetricsTable {...props} type="url" title={['pages', 'views']} />;
+  return <MetricsTable {...props} type="url" title={['Pages', 'Views']} />;
 });
 PagesTable.displayName = 'PagesTable';

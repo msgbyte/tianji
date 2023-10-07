@@ -70,6 +70,14 @@ export const websiteRouter = router({
         event: z.string().optional(),
       })
     )
+    .output(
+      z.array(
+        z.object({
+          x: z.string(),
+          y: z.bigint(),
+        })
+      )
+    )
     .query(async ({ input }) => {
       const {
         websiteId,
