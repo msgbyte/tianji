@@ -8,7 +8,7 @@ export const NavItem: React.FC<{
 }> = React.memo((props) => {
   const location = useLocation();
 
-  const isCurrent = location.pathname === props.to;
+  const isCurrent = location.pathname.startsWith(props.to);
 
   return (
     <Link to={props.to}>
