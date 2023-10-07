@@ -73,8 +73,8 @@ export const websiteRouter = router({
     .output(
       z.array(
         z.object({
-          x: z.string(),
-          y: z.bigint(),
+          x: z.string().nullable(),
+          y: z.number(),
         })
       )
     )
@@ -137,16 +137,19 @@ export const websiteRouter = router({
             }
           }
 
-          return Object.values(combined);
+          return Object.values(combined).map((d) => ({
+            x: d.x,
+            y: Number(d.y),
+          }));
         }
 
-        return data;
+        return data.map((d) => ({ x: d.x, y: Number(d.y) }));
       }
 
       if (EVENT_COLUMNS.includes(type)) {
         const data = await getPageviewMetrics(websiteId, column, filters);
 
-        return data;
+        return data.map((d) => ({ x: d.x, y: Number(d.y) }));
       }
 
       return [];

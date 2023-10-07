@@ -292,7 +292,7 @@ export async function getSessionMetrics(
   const includeCountry = column === 'city' || column === 'subdivision1';
 
   return prisma.$queryRaw`select
-      ${column} x,
+      ${Prisma.sql([`"${column}"`])} x,
       count(distinct "WebsiteEvent"."sessionId") y
       ${includeCountry ? Prisma.sql([', country']) : Prisma.empty}
     from "WebsiteEvent"

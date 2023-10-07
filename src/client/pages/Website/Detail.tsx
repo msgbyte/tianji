@@ -6,7 +6,7 @@ import { trpc } from '../../api/trpc';
 import { ErrorTip } from '../../components/ErrorTip';
 import { Loading } from '../../components/Loading';
 import { NotFoundTip } from '../../components/NotFoundTip';
-import { PagesTable } from '../../components/website/PagesTable';
+import { MetricsTable } from '../../components/website/MetricsTable';
 import { WebsiteOverview } from '../../components/website/WebsiteOverview';
 import { useCurrentWorkspaceId } from '../../store/user';
 
@@ -30,21 +30,83 @@ export const WebsiteDetail: React.FC = React.memo(() => {
     return <NotFoundTip />;
   }
 
+  const startAt = dayjs().subtract(1, 'day').unix() * 1000;
+  const endAt = dayjs().unix() * 1000;
+
   return (
     <div className="py-6">
       <Card>
         <Card.Grid hoverable={false} className="!w-full">
           <WebsiteOverview website={website} />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/2">
-          <PagesTable
+        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+          <MetricsTable
             websiteId={websiteId}
-            startAt={dayjs().subtract(1, 'day').unix() * 1000}
-            endAt={dayjs().unix() * 1000}
+            type="url"
+            title={['Pages', 'Views']}
+            startAt={startAt}
+            endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/2">
-          right
+        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+          <MetricsTable
+            websiteId={websiteId}
+            type="referrer"
+            title={['Referrers', 'Views']}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+          <MetricsTable
+            websiteId={websiteId}
+            type="browser"
+            title={['Browser', 'Visitors']}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+          <MetricsTable
+            websiteId={websiteId}
+            type="os"
+            title={['OS', 'Visitors']}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+          <MetricsTable
+            websiteId={websiteId}
+            type="device"
+            title={['Devices', 'Visitors']}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-2/3 min-h-[470px]">
+          {/* Map */}
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+          <MetricsTable
+            websiteId={websiteId}
+            type="country"
+            title={['Countries', 'Visitors']}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+          <MetricsTable
+            websiteId={websiteId}
+            type="event"
+            title={['Events', 'Actions']}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+        <Card.Grid hoverable={false} className="!w-2/3 min-h-[470px]">
+          {/* Events */}
         </Card.Grid>
       </Card>
     </div>

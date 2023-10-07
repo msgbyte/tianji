@@ -3,7 +3,7 @@ import type { AppRouter } from '../../server/trpc/routers';
 import { httpBatchLink, TRPCClientErrorLike } from '@trpc/client';
 import { getJWT } from './auth';
 import { message } from 'antd';
-import { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
+import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
 export const trpc = createTRPCReact<AppRouter>();
 

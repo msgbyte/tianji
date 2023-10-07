@@ -1,10 +1,12 @@
 import { Table } from 'antd';
 import { ColumnsType } from 'antd/es/table/interface';
 import React from 'react';
-import { trpc } from '../../api/trpc';
+import { RouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { sum } from 'lodash-es';
 import millify from 'millify';
+
+type MetricsItemType = RouterOutput['website']['metrics'][number];
 
 interface MetricsTableProps {
   websiteId: string;
@@ -35,10 +37,11 @@ export const MetricsTable: React.FC<MetricsTableProps> = React.memo((props) => {
 
   const total = sum(metrics.map((m) => m.y));
 
-  const columns: ColumnsType<{ x: string; y: number }> = [
+  const columns: ColumnsType<MetricsItemType> = [
     {
       title: title[0],
       dataIndex: 'x',
+      render: (val) => val ?? <span className="italic">(None)</span>,
     },
     {
       title: title[1],
@@ -55,7 +58,7 @@ export const MetricsTable: React.FC<MetricsTableProps> = React.memo((props) => {
                 lowercase: true,
               })}
             </div>
-            <div className="inline-block w-10 relative border-l ml-1 pl-1">
+            <div className="inline-block w-12 relative border-l ml-1 px-1">
               <div
                 className="bg-blue-300 absolute h-full bg-opacity-25 left-0 top-0 pointer-events-none"
                 style={{ width: `${percent}%` }}
