@@ -85,10 +85,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-2/3 min-h-[470px]">
-          {/* Map */}
-        </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
           <MetricsTable
             websiteId={websiteId}
             type="country"
@@ -97,7 +94,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
           <MetricsTable
             websiteId={websiteId}
             type="event"
@@ -105,9 +102,6 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             startAt={startAt}
             endAt={endAt}
           />
-        </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-2/3 min-h-[470px]">
-          {/* Events */}
         </Card.Grid>
       </Card>
     </div>
