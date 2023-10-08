@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { header, body, validate } from '../middleware/validate';
+import { body, validate } from '../middleware/validate';
 import {
   authUser,
   authUserWithToken,
@@ -64,11 +64,15 @@ userRouter.post(
       throw new Error('Cannot get token');
     }
 
-    const user = await authUserWithToken(token);
+    try {
+      const user = await authUserWithToken(token);
 
-    const newToken = jwtSign(user);
+      const newToken = jwtSign(user);
 
-    res.json({ info: user, token: newToken });
+      res.json({ info: user, token: newToken });
+    } catch (err) {
+      res.status(401).json({ message: 'Invalid token' });
+    }
   }
 );
 
