@@ -109,6 +109,7 @@ export async function findSession(req: Request): Promise<{
           device,
           screen,
           language,
+          ip,
           country,
           subdivision1,
           subdivision2,

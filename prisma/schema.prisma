@@ -83,6 +83,7 @@ model WebsiteSession {
   device       String?   @db.VarChar(20)
   screen       String?   @db.VarChar(11)
   language     String?   @db.VarChar(35)
+  ip           String?   @db.VarChar(20)
   country      String?   @db.Char(2)
   subdivision1 String?   @db.VarChar(20)
   subdivision2 String?   @db.VarChar(50)
