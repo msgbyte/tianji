@@ -25,7 +25,7 @@ export const Layout: React.FC = React.memo(() => {
   return (
     <div className="flex flex-col h-full">
       {showHeader && (
-        <div className="flex items-center bg-gray-100 px-4">
+        <div className="flex items-center bg-gray-100 px-4 sticky top-0 z-20">
           <div className="px-2 mr-10 font-bold">Tianji</div>
           <div className="flex gap-8">
             <NavItem to="/dashboard" label="Dashboard" />
@@ -63,7 +63,7 @@ export const Layout: React.FC = React.memo(() => {
           </div>
         </div>
       )}
-      <div className="flex-1 w-full px-4 overflow-auto">
+      <div className="flex-1 w-full px-4">
         <div className="max-w-7xl m-auto h-full">
           <Outlet />
         </div>
