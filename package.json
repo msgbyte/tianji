@@ -52,6 +52,7 @@
     "passport-jwt": "^4.0.1",
     "ping": "^0.4.4",
     "pretty-ms": "7.0.1",
+    "puppeteer": "^21.3.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.15.0",

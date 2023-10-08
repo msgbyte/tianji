@@ -15,8 +15,9 @@ import { initUdpServer } from './udp/server';
 import { createServer } from 'http';
 import { initSocketio } from './ws';
 import { monitorManager } from './model/monitor';
+import { settings } from './utils/settings';
 
-const port = Number(process.env.PORT || 12345);
+const port = settings.port;
 
 const app = express();
 const httpServer = createServer(app);
