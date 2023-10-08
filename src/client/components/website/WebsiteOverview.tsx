@@ -1,4 +1,4 @@
-import { Button, message } from 'antd';
+import { Button, message, Spin } from 'antd';
 import React, { useMemo } from 'react';
 import { Column, ColumnConfig } from '@ant-design/charts';
 import { SyncOutlined } from '@ant-design/icons';
@@ -23,14 +23,14 @@ import { MetricCard } from '../MetricCard';
 import { formatNumber, formatShortTime } from '../../utils/common';
 import { useTheme } from '../../hooks/useTheme';
 import { WebsiteOnlineCount } from '../WebsiteOnlineCount';
+import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
   actions?: React.ReactNode;
 }> = React.memo((props) => {
   const unit: DateUnit = 'hour';
-  const startDate = dayjs().subtract(1, 'day').add(1, unit).startOf(unit);
-  const endDate = dayjs().endOf(unit);
+  const { startDate, endDate } = useGlobalRangeDate();
 
   const {
     pageviews,
@@ -72,12 +72,10 @@ export const WebsiteOverview: React.FC<{
     ];
   }, [pageviews, sessions, unit]);
 
-  if (isLoadingPageview || isLoadingStats) {
-    return <Loading />;
-  }
+  const loading = isLoadingPageview || isLoadingStats;
 
   return (
-    <div>
+    <Spin spinning={loading}>
       <div className="flex">
         <div className="flex flex-1 text-2xl font-bold items-center">
           <span className="mr-2" title={props.website.domain ?? ''}>
@@ -111,14 +109,16 @@ export const WebsiteOverview: React.FC<{
             onClick={handleRefresh}
           />
 
-          <DateFilter />
+          <div>
+            <DateFilter />
+          </div>
         </div>
       </div>
 
       <div>
         <StatsChart data={chartData} unit={unit} />
       </div>
-    </div>
+    </Spin>
   );
 });
 WebsiteOverview.displayName = 'WebsiteOverview';

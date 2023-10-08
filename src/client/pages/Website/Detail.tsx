@@ -1,5 +1,4 @@
-import { Card, Divider } from 'antd';
-import dayjs from 'dayjs';
+import { Card } from 'antd';
 import React from 'react';
 import { useParams } from 'react-router';
 import { trpc } from '../../api/trpc';
@@ -8,6 +7,7 @@ import { Loading } from '../../components/Loading';
 import { NotFoundTip } from '../../components/NotFoundTip';
 import { MetricsTable } from '../../components/website/MetricsTable';
 import { WebsiteOverview } from '../../components/website/WebsiteOverview';
+import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { useCurrentWorkspaceId } from '../../store/user';
 
 export const WebsiteDetail: React.FC = React.memo(() => {
@@ -17,6 +17,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
     workspaceId,
     websiteId: websiteId!,
   });
+  const { startDate, endDate } = useGlobalRangeDate();
 
   if (!websiteId) {
     return <ErrorTip />;
@@ -30,8 +31,8 @@ export const WebsiteDetail: React.FC = React.memo(() => {
     return <NotFoundTip />;
   }
 
-  const startAt = dayjs().subtract(1, 'day').unix() * 1000;
-  const endAt = dayjs().unix() * 1000;
+  const startAt = startDate.unix() * 1000;
+  const endAt = endDate.unix() * 1000;
 
   return (
     <div className="py-6">
