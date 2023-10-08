@@ -29,8 +29,7 @@ export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
   actions?: React.ReactNode;
 }> = React.memo((props) => {
-  const unit: DateUnit = 'hour';
-  const { startDate, endDate } = useGlobalRangeDate();
+  const { startDate, endDate, unit } = useGlobalRangeDate();
 
   const {
     pageviews,

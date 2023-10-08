@@ -1,12 +1,15 @@
 import { CalendarOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { useMemo } from 'react';
+import { getMinimumUnit } from '../../shared';
 import { DateRange, useGlobalStateStore } from '../store/global';
+import { DateUnit } from '../utils/date';
 
 export function useGlobalRangeDate(): {
   label: React.ReactNode;
   startDate: Dayjs;
   endDate: Dayjs;
+  unit: DateUnit;
 } {
   const { dateRange, startDate, endDate } = useGlobalStateStore();
 
@@ -30,6 +33,7 @@ export function useGlobalRangeDate(): {
         ),
         startDate: _startDate,
         endDate: _endDate,
+        unit: getMinimumUnit(_startDate, _endDate),
       };
     }
 
@@ -38,6 +42,7 @@ export function useGlobalRangeDate(): {
         label: 'Today',
         startDate: dayjs().startOf('day'),
         endDate: dayjs().endOf('day'),
+        unit: 'hour',
       };
     }
 
@@ -46,6 +51,7 @@ export function useGlobalRangeDate(): {
         label: 'Yesterday',
         startDate: dayjs().subtract(1, 'day').startOf('day'),
         endDate: dayjs().subtract(1, 'day').endOf('day'),
+        unit: 'hour',
       };
     }
 
@@ -54,6 +60,7 @@ export function useGlobalRangeDate(): {
         label: 'This week',
         startDate: dayjs().startOf('week'),
         endDate: dayjs().endOf('week'),
+        unit: 'day',
       };
     }
 
@@ -62,6 +69,7 @@ export function useGlobalRangeDate(): {
         label: 'Last 7 days',
         startDate: dayjs().subtract(7, 'day').startOf('day'),
         endDate: dayjs().endOf('day'),
+        unit: 'day',
       };
     }
 
@@ -70,6 +78,7 @@ export function useGlobalRangeDate(): {
         label: 'This month',
         startDate: dayjs().startOf('month'),
         endDate: dayjs().endOf('month'),
+        unit: 'day',
       };
     }
 
@@ -78,6 +87,7 @@ export function useGlobalRangeDate(): {
         label: 'Last 30 days',
         startDate: dayjs().subtract(30, 'day').startOf('day'),
         endDate: dayjs().endOf('day'),
+        unit: 'day',
       };
     }
 
@@ -86,14 +96,16 @@ export function useGlobalRangeDate(): {
         label: 'Last 90 days',
         startDate: dayjs().subtract(90, 'day').startOf('day'),
         endDate: dayjs().endOf('day'),
+        unit: 'day',
       };
     }
 
     if (dateRange === DateRange.ThisYear) {
       return {
-        label: 'Last 90 days',
+        label: 'This year',
         startDate: dayjs().startOf('year'),
         endDate: dayjs().endOf('year'),
+        unit: 'month',
       };
     }
 
@@ -102,6 +114,7 @@ export function useGlobalRangeDate(): {
       label: 'Last 24 hours',
       startDate: dayjs().subtract(1, 'day'),
       endDate: dayjs(),
+      unit: 'hour',
     };
   }, [dateRange, startDate, endDate]);
 }
