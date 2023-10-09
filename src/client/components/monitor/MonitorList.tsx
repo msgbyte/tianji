@@ -1,18 +1,34 @@
+import { Card } from 'antd';
 import clsx from 'clsx';
-import React, { useState } from 'react';
-import { trpc } from '../../../api/trpc';
-import { useCurrentWorkspaceId } from '../../../store/user';
-import { HealthBar } from '../../HealthBar';
-import { NoWorkspaceTip } from '../../NoWorkspaceTip';
+import React, { useMemo, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
+import { trpc } from '../../api/trpc';
+import { useCurrentWorkspaceId } from '../../store/user';
+import { HealthBar } from '../HealthBar';
+import { NoWorkspaceTip } from '../NoWorkspaceTip';
 
 export const MonitorList: React.FC = React.memo(() => {
   const currentWorkspaceId = useCurrentWorkspaceId()!;
   const { data: monitors = [] } = trpc.monitor.all.useQuery({
     workspaceId: currentWorkspaceId,
   });
+  const navigate = useNavigate();
+  const initMonitorId = useMemo(() => {
+    const pathname = window.location.pathname;
+    const re = /^\/monitor\/([^\/]+?)$/;
+    if (re.test(pathname)) {
+      const id = pathname.match(re)?.[1];
+
+      if (typeof id === 'string') {
+        return id;
+      }
+    }
+
+    return null;
+  }, []);
 
   const [selectedMonitorId, setSelectedMonitorId] = useState<string | null>(
-    null
+    initMonitorId
   );
 
   if (!currentWorkspaceId) {
@@ -30,7 +46,10 @@ export const MonitorList: React.FC = React.memo(() => {
               ? 'bg-green-500 bg-opacity-20'
               : 'bg-green-500 bg-opacity-0 hover:bg-opacity-10'
           )}
-          onClick={() => setSelectedMonitorId(monitor.id)}
+          onClick={() => {
+            navigate(`/monitor/${monitor.id}`);
+            setSelectedMonitorId(monitor.id);
+          }}
         >
           <div>
             <span

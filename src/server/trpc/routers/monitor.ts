@@ -2,6 +2,7 @@ import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
 import { prisma } from '../../model/_client';
 import { z } from 'zod';
 import { monitorManager } from '../../model/monitor';
+import { MonitorInfo } from '../../../types';
 
 export const monitorRouter = router({
   all: workspaceProcedure.query(async ({ input }) => {
@@ -12,7 +13,7 @@ export const monitorRouter = router({
       },
     });
 
-    return monitors;
+    return monitors as MonitorInfo[];
   }),
   get: workspaceProcedure
     .input(
@@ -29,7 +30,7 @@ export const monitorRouter = router({
         },
       });
 
-      return monitor;
+      return monitor as MonitorInfo;
     }),
   upsert: workspaceOwnerProcedure
     .input(
@@ -56,5 +57,33 @@ export const monitorRouter = router({
       });
 
       return monitor;
+    }),
+  data: workspaceOwnerProcedure
+    .input(
+      z.object({
+        monitorId: z.string(),
+        startAt: z.number(),
+        endAt: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { monitorId, workspaceId, startAt, endAt } = input;
+
+      return prisma.monitorData.findMany({
+        where: {
+          monitor: {
+            id: monitorId,
+            workspaceId,
+          },
+          createdAt: {
+            gte: new Date(startAt),
+            lte: new Date(endAt),
+          },
+        },
+        select: {
+          value: true,
+          createdAt: true,
+        },
+      });
     }),
 });

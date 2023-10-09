@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes, useNavigate } from 'react-router';
-import { MonitorList } from '../../components/modals/monitor/MonitorList';
+import { MonitorList } from '../../components/monitor/MonitorList';
 import { MonitorAdd } from './Add';
 import { MonitorDetail } from './Detail';
 import { MonitorEdit } from './Edit';
