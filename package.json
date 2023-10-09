@@ -8,6 +8,7 @@
     "build": "vite build && pnpm build:tracker && pnpm build:geo",
     "build:tracker": "ts-node scripts/build-tracker.ts",
     "build:geo": "ts-node scripts/build-geo.ts",
+    "check:type": "tsc --noEmit --skipLibCheck --jsx react-jsx --module esnext",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio"
