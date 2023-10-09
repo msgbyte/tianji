@@ -12,8 +12,8 @@ model User {
   username           String    @unique @db.VarChar(255)
   password           String    @db.VarChar(60)
   role               String    @db.VarChar(50)
-  createdAt          DateTime? @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime? @updatedAt @db.Timestamptz(6)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
   deletedAt          DateTime? @db.Timestamptz(6)
   currentWorkspaceId String?   @db.VarChar(30)
 
@@ -23,10 +23,10 @@ model User {
 }
 
 model Workspace {
-  id        String    @id @unique @default(cuid()) @db.VarChar(30)
-  name      String    @db.VarChar(100)
-  createdAt DateTime? @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime? @updatedAt @db.Timestamptz(6)
+  id        String   @id @unique @default(cuid()) @db.VarChar(30)
+  name      String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   users         WorkspacesOnUsers[]
   websites      Website[]
@@ -38,11 +38,11 @@ model Workspace {
 }
 
 model WorkspacesOnUsers {
-  userId      String    @db.VarChar(30)
-  workspaceId String    @db.VarChar(30)
-  role        String    @db.VarChar(100)
-  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
+  userId      String   @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  role        String   @db.VarChar(100)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -59,8 +59,8 @@ model Website {
   shareId     String?   @unique @db.VarChar(50)
   resetAt     DateTime? @db.Timestamptz(6)
   workspaceId String    @db.VarChar(30)
-  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime? @updatedAt @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -75,20 +75,20 @@ model Website {
 }
 
 model WebsiteSession {
-  id           String    @id @unique @db.Uuid
-  websiteId    String    @db.VarChar(30)
-  hostname     String?   @db.VarChar(100)
-  browser      String?   @db.VarChar(20)
-  os           String?   @db.VarChar(20)
-  device       String?   @db.VarChar(20)
-  screen       String?   @db.VarChar(11)
-  language     String?   @db.VarChar(35)
-  ip           String?   @db.VarChar(20)
-  country      String?   @db.Char(2)
-  subdivision1 String?   @db.VarChar(20)
-  subdivision2 String?   @db.VarChar(50)
-  city         String?   @db.VarChar(50)
-  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+  id           String   @id @unique @db.Uuid
+  websiteId    String   @db.VarChar(30)
+  hostname     String?  @db.VarChar(100)
+  browser      String?  @db.VarChar(20)
+  os           String?  @db.VarChar(20)
+  device       String?  @db.VarChar(20)
+  screen       String?  @db.VarChar(11)
+  language     String?  @db.VarChar(35)
+  ip           String?  @db.VarChar(20)
+  country      String?  @db.Char(2)
+  subdivision1 String?  @db.VarChar(20)
+  subdivision2 String?  @db.VarChar(50)
+  city         String?  @db.VarChar(50)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
 
   website Website @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -110,18 +110,18 @@ model WebsiteSession {
 }
 
 model WebsiteEvent {
-  id             String    @id() @default(cuid()) @db.VarChar(30)
-  websiteId      String    @db.VarChar(30)
-  sessionId      String    @db.Uuid
-  urlPath        String    @db.VarChar(500)
-  urlQuery       String?   @db.VarChar(500)
-  referrerPath   String?   @db.VarChar(500)
-  referrerQuery  String?   @db.VarChar(500)
-  referrerDomain String?   @db.VarChar(500)
-  pageTitle      String?   @db.VarChar(500)
-  eventType      Int       @default(1) @db.Integer
-  eventName      String?   @db.VarChar(50)
-  createdAt      DateTime? @default(now()) @db.Timestamptz(6)
+  id             String   @id() @default(cuid()) @db.VarChar(30)
+  websiteId      String   @db.VarChar(30)
+  sessionId      String   @db.Uuid
+  urlPath        String   @db.VarChar(500)
+  urlQuery       String?  @db.VarChar(500)
+  referrerPath   String?  @db.VarChar(500)
+  referrerQuery  String?  @db.VarChar(500)
+  referrerDomain String?  @db.VarChar(500)
+  pageTitle      String?  @db.VarChar(500)
+  eventType      Int      @default(1) @db.Integer
+  eventName      String?  @db.VarChar(50)
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   eventData WebsiteEventData[]
   session   WebsiteSession     @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -147,7 +147,7 @@ model WebsiteEventData {
   numberValue    Decimal?  @db.Decimal(19, 4)
   dateValue      DateTime? @db.Timestamptz(6)
   dataType       Int       @db.Integer
-  createdAt      DateTime? @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
 
   website      Website      @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   websiteEvent WebsiteEvent @relation(fields: [websiteEventId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -167,8 +167,7 @@ model WebsiteSessionData {
   numberValue Decimal?  @db.Decimal(19, 4)
   dateValue   DateTime? @db.Timestamptz(6)
   dataType    Int       @db.Integer
-  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
-  deletedAt   DateTime? @default(now()) @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
 
   website Website        @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   session WebsiteSession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -179,16 +178,16 @@ model WebsiteSessionData {
 }
 
 model TelemetrySession {
-  id           String    @id @unique @db.Uuid
-  workspaceId  String    @db.VarChar(30)
-  hostname     String?   @db.VarChar(100)
-  browser      String?   @db.VarChar(20)
-  os           String?   @db.VarChar(20)
-  country      String?   @db.Char(2)
-  subdivision1 String?   @db.VarChar(20)
-  subdivision2 String?   @db.VarChar(50)
-  city         String?   @db.VarChar(50)
-  createdAt    DateTime? @default(now()) @db.Timestamptz(6)
+  id           String   @id @unique @db.Uuid
+  workspaceId  String   @db.VarChar(30)
+  hostname     String?  @db.VarChar(100)
+  browser      String?  @db.VarChar(20)
+  os           String?  @db.VarChar(20)
+  country      String?  @db.Char(2)
+  subdivision1 String?  @db.VarChar(20)
+  subdivision2 String?  @db.VarChar(50)
+  city         String?  @db.VarChar(50)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
 
   telemetryEvent TelemetryEvent[]
 
@@ -197,13 +196,13 @@ model TelemetrySession {
 }
 
 model TelemetryEvent {
-  id          String    @id() @default(cuid()) @db.VarChar(30)
-  sessionId   String    @db.Uuid
-  workspaceId String    @db.VarChar(30)
-  eventName   String?   @db.VarChar(100)
-  urlOrigin   String    @db.VarChar(500)
-  urlPath     String    @db.VarChar(500)
-  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+  id          String   @id() @default(cuid()) @db.VarChar(30)
+  sessionId   String   @db.Uuid
+  workspaceId String   @db.VarChar(30)
+  eventName   String?  @db.VarChar(100)
+  urlOrigin   String   @db.VarChar(500)
+  urlPath     String   @db.VarChar(500)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
   session TelemetrySession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -214,12 +213,12 @@ model TelemetryEvent {
 }
 
 model Notification {
-  id          String    @id() @default(cuid()) @db.VarChar(30)
-  workspaceId String    @db.VarChar(30)
-  name        String    @db.VarChar(100)
-  type        String    @db.VarChar(100)
-  payload     Json      @db.Json
-  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+  id          String   @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String   @db.VarChar(100)
+  type        String   @db.VarChar(100)
+  payload     Json     @db.Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -229,17 +228,17 @@ model Notification {
 }
 
 model Monitor {
-  id          String    @id() @default(cuid()) @db.VarChar(30)
-  workspaceId String    @db.VarChar(30)
-  name        String    @db.VarChar(100)
-  type        String    @db.VarChar(100)
-  active      Boolean   @default(true) @db.Boolean
-  interval    Int       @default(20) @db.Integer
+  id          String   @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String   @db.VarChar(100)
+  type        String   @db.VarChar(100)
+  active      Boolean  @default(true) @db.Boolean
+  interval    Int      @default(20) @db.Integer
   // TODO
   // maxRetry      Int       @default(0) @db.Integer
   // retryInterval Int       @default(0) @db.Integer
-  payload     Json      @db.Json
-  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+  payload     Json     @db.Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
@@ -251,20 +250,20 @@ model Monitor {
 }
 
 model MonitorEvent {
-  id        String    @id @default(cuid()) @db.VarChar(30)
-  message   String    @db.VarChar(500)
-  monitorId String    @db.VarChar(30)
-  type      String    @db.VarChar(100) // UP or DOWN
-  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  message   String   @db.VarChar(500)
+  monitorId String   @db.VarChar(30)
+  type      String   @db.VarChar(100) // UP or DOWN
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }
 
 model MonitorData {
-  id        String    @id @default(cuid()) @db.VarChar(30)
-  monitorId String    @db.VarChar(30)
-  value     Int       @default(0) @db.Integer // -1 means error
-  createdAt DateTime? @default(now()) @db.Timestamptz(6)
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  monitorId String   @db.VarChar(30)
+  value     Int      @default(0) @db.Integer // -1 means error
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }
