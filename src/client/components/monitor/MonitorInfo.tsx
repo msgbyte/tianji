@@ -9,6 +9,8 @@ import { NotFoundTip } from '../NotFoundTip';
 import { MonitorInfo as MonitorInfoType } from '../../../types';
 import { Area, AreaConfig } from '@ant-design/charts';
 import { MonitorHealthBar } from './MonitorHealthBar';
+import { useSocketSubscribeList } from '../../api/socketio';
+import { uniqBy } from 'lodash';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -74,6 +76,11 @@ const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
     const workspaceId = useCurrentWorkspaceId();
     const { monitorId } = props;
     const [rangeType, setRangeType] = useState('recent');
+    const newDataList = useSocketSubscribeList('onMonitorReceiveNewData', {
+      filter: (data) => {
+        return data.monitorId === props.monitorId;
+      },
+    });
 
     const range = useMemo((): [Dayjs, Dayjs] => {
       if (rangeType === '3h') {
@@ -102,33 +109,35 @@ const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
     const { data, annotations } = useMemo(() => {
       const annotations: AreaConfig['annotations'] = [];
       let start: number | null = null;
-      const data = _data.map((d, i, arr) => {
-        const value = d.value > 0 ? d.value : null;
-        const time = dayjs(d.createdAt).valueOf();
+      const data = uniqBy([..._data, ...newDataList], 'createdAt').map(
+        (d, i, arr) => {
+          const value = d.value > 0 ? d.value : null;
+          const time = dayjs(d.createdAt).valueOf();
 
-        if (!value && !start && arr[i - 1]) {
-          start = dayjs(arr[i - 1]['createdAt']).valueOf();
-        } else if (value && start) {
-          annotations.push({
-            type: 'region',
-            start: [start, 'min'],
-            end: [time, 'max'],
-            style: {
-              fill: 'red',
-              fillOpacity: 0.25,
-            },
-          });
-          start = null;
+          if (!value && !start && arr[i - 1]) {
+            start = dayjs(arr[i - 1]['createdAt']).valueOf();
+          } else if (value && start) {
+            annotations.push({
+              type: 'region',
+              start: [start, 'min'],
+              end: [time, 'max'],
+              style: {
+                fill: 'red',
+                fillOpacity: 0.25,
+              },
+            });
+            start = null;
+          }
+
+          return {
+            value,
+            time,
+          };
         }
-
-        return {
-          value,
-          time,
-        };
-      });
+      );
 
       return { data, annotations };
-    }, [_data]);
+    }, [_data, newDataList]);
 
     const config = useMemo<AreaConfig>(() => {
       return {

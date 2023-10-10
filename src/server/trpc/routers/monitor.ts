@@ -101,6 +101,10 @@ export const monitorRouter = router({
           monitorId,
         },
         take: -take,
+        select: {
+          value: true,
+          createdAt: true,
+        },
       });
     }),
 });
