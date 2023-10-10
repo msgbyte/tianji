@@ -1,4 +1,5 @@
 import { Monitor } from '@prisma/client';
+import { createSubscribeInitializer, subscribeEventBus } from '../../ws/shared';
 import { prisma } from '../_client';
 import { monitorProviders } from './provider';
 
@@ -80,6 +81,9 @@ class MonitorManager {
   }
 }
 
+/**
+ * Class which actually run monitor data collect
+ */
 class MonitorRunner {
   isStopped = false;
   timer: NodeJS.Timeout | null = null;
@@ -91,7 +95,7 @@ class MonitorRunner {
    */
   async startMonitor() {
     const monitor = this.monitor;
-    const { type, interval } = monitor;
+    const { type, interval, workspaceId } = monitor;
 
     const provider = monitorProviders[type];
     if (!provider) {
@@ -139,18 +143,20 @@ class MonitorRunner {
       }
 
       // insert into data
-      await prisma.monitorData.create({
+      const data = await prisma.monitorData.create({
         data: {
           monitorId: monitor.id,
           value,
         },
       });
 
+      subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
+
       // Run next loop
       nextAction();
     }
 
-    nextAction();
+    run();
 
     console.log(`Start monitor ${monitor.name}(${monitor.id})`);
   }

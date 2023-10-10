@@ -8,6 +8,7 @@ import { getMonitorLink } from '../modals/monitor/provider';
 import { NotFoundTip } from '../NotFoundTip';
 import { MonitorInfo as MonitorInfoType } from '../../../types';
 import { Area, AreaConfig } from '@ant-design/charts';
+import { MonitorHealthBar } from './MonitorHealthBar';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -32,17 +33,32 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   return (
     <div>
       <Space className="w-full" direction="vertical">
-        <div className="text-2xl">{monitorInfo.name}</div>
+        <div className="flex justify-between">
+          <Space direction="vertical">
+            <div className="text-2xl">{monitorInfo.name}</div>
 
-        <div>
-          <Tag color="cyan">{monitorInfo.type}</Tag>
-          <span>{getMonitorLink(monitorInfo as any as MonitorInfoType)}</span>
+            <div>
+              <Tag color="cyan">{monitorInfo.type}</Tag>
+              <span>
+                {getMonitorLink(monitorInfo as any as MonitorInfoType)}
+              </span>
+            </div>
+          </Space>
+
+          <div className="text-black text-opacity-75">
+            Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
+            days
+          </div>
         </div>
 
-        <div>
-          Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
-          days
-        </div>
+        <Card>
+          <MonitorHealthBar
+            monitorId={monitorId}
+            count={40}
+            size="large"
+            showCurrentStatus={true}
+          />
+        </Card>
 
         <Card>
           <MonitorDataChart monitorId={monitorId} />

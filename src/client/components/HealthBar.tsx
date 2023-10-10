@@ -3,18 +3,35 @@ import React from 'react';
 
 type HealthStatus = 'health' | 'error' | 'warning' | 'none';
 
-interface HealthBarProps {
-  beats: { title?: string; status: HealthStatus }[];
+export interface HealthBarBeat {
+  title?: string;
+  status: HealthStatus;
+}
+
+export interface HealthBarProps {
+  size?: 'small' | 'large';
+  beats: HealthBarBeat[];
 }
 export const HealthBar: React.FC<HealthBarProps> = React.memo((props) => {
+  const size = props.size ?? 'small';
+
   return (
-    <div className="flex">
+    <div
+      className={clsx('flex', {
+        'gap-[3px]': size === 'small',
+        'gap-1': size === 'large',
+      })}
+    >
       {props.beats.map((beat, i) => (
         <div
           key={i}
           title={beat.title}
           className={clsx(
-            'rounded-full w-1 h-4 m-0.5 hover:scale-150 transition-transform',
+            'rounded-full hover:scale-150 transition-transform',
+            {
+              'w-[5px] h-4': size === 'small',
+              'w-2 h-8': size === 'large',
+            },
             {
               'bg-green-500': beat.status === 'health',
               'bg-red-600': beat.status === 'error',

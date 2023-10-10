@@ -1,11 +1,13 @@
+import { MonitorData } from '@prisma/client';
 import { EventEmitter } from 'eventemitter-strict';
 import { Socket } from 'socket.io';
-import { ServerStatusInfo } from '../../types';
+import { MaybePromise, ServerStatusInfo } from '../../types';
 
 type SubscribeEventFn<T> = (workspaceId: string, eventData: T) => void;
 
 export interface SubscribeEventMap {
   onServerStatusUpdate: SubscribeEventFn<Record<string, ServerStatusInfo>>;
+  onMonitorReceiveNewData: SubscribeEventFn<MonitorData>;
 }
 
 type SocketEventFn<T, U = unknown> = (
@@ -31,9 +33,7 @@ type SubscribeInitializerFn<
 > = (
   workspaceId: string,
   socket: Socket
-) =>
-  | Parameters<SubscribeEventMap[T]>[1]
-  | Promise<Parameters<SubscribeEventMap[T]>[1]>;
+) => MaybePromise<Parameters<SubscribeEventMap[T]>[1]> | MaybePromise<void>;
 const subscribeInitializerList: [
   keyof SubscribeEventMap,
   SubscribeInitializerFn
@@ -46,7 +46,7 @@ socketEventBus.on('$subscribe', (eventData, socket, callback) => {
   const { name } = eventData;
 
   const cursor = i++;
-  const fn: SubscribeEventMap[typeof name] = (workspaceId, data) => {
+  const fn: SubscribeEventFn<unknown> = (workspaceId, data) => {
     if (workspaceId === '*' || _workspaceId === workspaceId) {
       socket.emit(`${name}#${cursor}`, data);
     }
@@ -58,7 +58,10 @@ socketEventBus.on('$subscribe', (eventData, socket, callback) => {
 
   subscribeInitializerList.forEach(async ([_name, initializer]) => {
     if (_name === name) {
-      socket.emit(`${name}#${cursor}`, await initializer(_workspaceId, socket));
+      const res = await initializer(_workspaceId, socket);
+      if (res) {
+        socket.emit(`${name}#${cursor}`, res);
+      }
     }
   });
 

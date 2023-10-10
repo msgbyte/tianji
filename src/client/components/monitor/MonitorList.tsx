@@ -6,6 +6,7 @@ import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { HealthBar } from '../HealthBar';
 import { NoWorkspaceTip } from '../NoWorkspaceTip';
+import { MonitorHealthBar } from './MonitorHealthBar';
 
 export const MonitorList: React.FC = React.memo(() => {
   const currentWorkspaceId = useCurrentWorkspaceId()!;
@@ -76,11 +77,7 @@ export const MonitorList: React.FC = React.memo(() => {
           </div>
 
           <div className="flex items-center">
-            <HealthBar
-              beats={Array.from({ length: 13 }).map(() => ({
-                status: 'health',
-              }))}
-            />
+            <MonitorHealthBar monitorId={monitor.id} />
           </div>
         </div>
       ))}

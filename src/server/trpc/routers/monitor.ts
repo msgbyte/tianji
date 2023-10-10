@@ -18,7 +18,7 @@ export const monitorRouter = router({
   get: workspaceProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().cuid2(),
       })
     )
     .query(async ({ input }) => {
@@ -35,7 +35,7 @@ export const monitorRouter = router({
   upsert: workspaceOwnerProcedure
     .input(
       z.object({
-        id: z.string().optional(),
+        id: z.string().cuid2().optional(),
         name: z.string(),
         type: z.string(),
         active: z.boolean().default(true),
@@ -61,7 +61,7 @@ export const monitorRouter = router({
   data: workspaceOwnerProcedure
     .input(
       z.object({
-        monitorId: z.string(),
+        monitorId: z.string().cuid2(),
         startAt: z.number(),
         endAt: z.number(),
       })
@@ -84,6 +84,23 @@ export const monitorRouter = router({
           value: true,
           createdAt: true,
         },
+      });
+    }),
+  recentData: workspaceOwnerProcedure
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+        take: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { monitorId, take } = input;
+
+      return prisma.monitorData.findMany({
+        where: {
+          monitorId,
+        },
+        take: -take,
       });
     }),
 });
