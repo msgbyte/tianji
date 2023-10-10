@@ -3,7 +3,7 @@ import { getJWT } from './auth';
 import type { SubscribeEventMap, SocketEventMap } from '../../server/ws/shared';
 import { create } from 'zustand';
 import { useEvent } from '../hooks/useEvent';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 
 const useSocketStore = create<{
   socket: Socket | null;
@@ -108,4 +108,36 @@ export function useSocketSubscribe<T>(
   }, [name]);
 
   return data;
+}
+
+interface UseSocketSubscribeListOptions<K, T> {
+  filter?: (data: T) => boolean;
+}
+const defaultFilter = () => true;
+export function useSocketSubscribeList<
+  K extends keyof SubscribeEventMap = keyof SubscribeEventMap,
+  T = SubscribeEventData<K>
+>(name: K, options: UseSocketSubscribeListOptions<K, T> = {}): T[] {
+  const { filter = defaultFilter } = options;
+  const { subscribe } = useSocket();
+  const [list, push] = useReducer(
+    (state: T[], data: T) => [...state, data],
+    [] as T[]
+  );
+
+  const cb = useEvent((_data) => {
+    if (filter(_data)) {
+      push(_data);
+    }
+  });
+
+  useEffect(() => {
+    const unsubscribe = subscribe(name, cb);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [name]);
+
+  return list;
 }
