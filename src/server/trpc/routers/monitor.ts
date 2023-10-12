@@ -3,6 +3,7 @@ import { prisma } from '../../model/_client';
 import { z } from 'zod';
 import { monitorManager } from '../../model/monitor';
 import { MonitorInfo } from '../../../types';
+import dayjs from 'dayjs';
 
 export const monitorRouter = router({
   all: workspaceProcedure.query(async ({ input }) => {
@@ -58,7 +59,7 @@ export const monitorRouter = router({
 
       return monitor;
     }),
-  data: workspaceOwnerProcedure
+  data: workspaceProcedure
     .input(
       z.object({
         monitorId: z.string().cuid2(),
@@ -86,7 +87,7 @@ export const monitorRouter = router({
         },
       });
     }),
-  recentData: workspaceOwnerProcedure
+  recentData: workspaceProcedure
     .input(
       z.object({
         monitorId: z.string().cuid2(),
@@ -106,5 +107,90 @@ export const monitorRouter = router({
           createdAt: true,
         },
       });
+    }),
+  dataMetrics: workspaceProcedure
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { monitorId } = input;
+      const now = dayjs();
+
+      const [
+        recent1DayAvg,
+        recent1DayOnlineCount,
+        recent1DayOfflineCount,
+        recent30DayOnlineCount,
+        recent30DayOfflineCount,
+      ] = await Promise.all([
+        prisma.monitorData
+          .aggregate({
+            _avg: {
+              value: true,
+            },
+            where: {
+              monitorId,
+              createdAt: {
+                lte: now.toDate(),
+                gte: now.subtract(1, 'day').toDate(),
+              },
+            },
+          })
+          .then((res) => res._avg.value ?? -1),
+        prisma.monitorData.count({
+          where: {
+            monitorId,
+            createdAt: {
+              lte: now.toDate(),
+              gte: now.subtract(1, 'day').toDate(),
+            },
+            value: {
+              gte: 0,
+            },
+          },
+        }),
+        prisma.monitorData.count({
+          where: {
+            monitorId,
+            createdAt: {
+              lte: now.toDate(),
+              gte: now.subtract(1, 'day').toDate(),
+            },
+            value: -1,
+          },
+        }),
+        prisma.monitorData.count({
+          where: {
+            monitorId,
+            createdAt: {
+              lte: now.toDate(),
+              gte: now.subtract(30, 'day').toDate(),
+            },
+            value: {
+              gte: 0,
+            },
+          },
+        }),
+        prisma.monitorData.count({
+          where: {
+            monitorId,
+            createdAt: {
+              lte: now.toDate(),
+              gte: now.subtract(30, 'day').toDate(),
+            },
+            value: -1,
+          },
+        }),
+      ]);
+
+      return {
+        recent1DayAvg,
+        recent1DayOnlineCount,
+        recent1DayOfflineCount,
+        recent30DayOnlineCount,
+        recent30DayOfflineCount,
+      };
     }),
 });

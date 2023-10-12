@@ -5,12 +5,14 @@ import { HealthBar, HealthBarBeat, HealthBarProps } from '../HealthBar';
 import dayjs from 'dayjs';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
+import { useWatch } from '../../hooks/useWatch';
 
 interface MonitorHealthBarProps {
   monitorId: string;
   count?: number;
   size?: HealthBarProps['size'];
   showCurrentStatus?: boolean;
+  onBeatsItemUpdate?: (items: { value: number; createdAt: string }[]) => void;
 }
 export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
   (props) => {
@@ -38,28 +40,34 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
       );
     }, [newDataList, recent, count]);
 
-    const beats = items.map((item): HealthBarBeat => {
-      if (!item) {
-        return {
-          status: 'none',
-        };
-      }
+    const beats = useMemo(() => {
+      return items.map((item): HealthBarBeat => {
+        if (!item) {
+          return {
+            status: 'none',
+          };
+        }
 
-      const title = `${dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')} | ${
-        item.value
-      }ms`;
+        const title = `${dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')} | ${
+          item.value
+        }ms`;
 
-      if (item.value < 0) {
+        if (item.value < 0) {
+          return {
+            title,
+            status: 'error',
+          };
+        }
+
         return {
           title,
-          status: 'error',
+          status: 'health',
         };
-      }
+      });
+    }, [items]);
 
-      return {
-        title,
-        status: 'health',
-      };
+    useWatch([items], () => {
+      props.onBeatsItemUpdate?.(items);
     });
 
     return (

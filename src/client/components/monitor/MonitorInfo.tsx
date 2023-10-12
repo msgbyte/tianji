@@ -10,7 +10,8 @@ import { MonitorInfo as MonitorInfoType } from '../../../types';
 import { Area, AreaConfig } from '@ant-design/charts';
 import { MonitorHealthBar } from './MonitorHealthBar';
 import { useSocketSubscribeList } from '../../api/socketio';
-import { uniqBy } from 'lodash';
+import { last, uniqBy } from 'lodash-es';
+import { ErrorTip } from '../ErrorTip';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -18,6 +19,7 @@ interface MonitorInfoProps {
 export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
   const { monitorId } = props;
+  const [currectResponse, setCurrentResponse] = useState(0);
 
   const { data: monitorInfo, isLoading } = trpc.monitor.get.useQuery({
     workspaceId,
@@ -59,6 +61,16 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             count={40}
             size="large"
             showCurrentStatus={true}
+            onBeatsItemUpdate={(items) => {
+              setCurrentResponse(last(items)?.value ?? 0);
+            }}
+          />
+        </Card>
+
+        <Card>
+          <MonitorDataMetrics
+            monitorId={monitorId}
+            currectResponse={currectResponse}
           />
         </Card>
 
@@ -70,6 +82,70 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   );
 });
 MonitorInfo.displayName = 'MonitorInfo';
+
+export const MonitorDataMetrics: React.FC<{
+  monitorId: string;
+  currectResponse: number;
+}> = React.memo((props) => {
+  const workspaceId = useCurrentWorkspaceId();
+  const { monitorId, currectResponse } = props;
+  const { data, isLoading } = trpc.monitor.dataMetrics.useQuery({
+    workspaceId,
+    monitorId,
+  });
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!data) {
+    return <ErrorTip />;
+  }
+
+  return (
+    <div className="flex justify-between text-center">
+      <div>
+        <div className="font-bold mb-0.5">Response</div>
+        <div className="text-gray-500">(Current)</div>
+        <div>{currectResponse} ms</div>
+      </div>
+      <div>
+        <div className="font-bold mb-0.5">Avg. Response</div>
+        <div className="text-gray-500">(24 hour)</div>
+        <div>{parseFloat(data.recent1DayAvg.toFixed(0))} ms</div>
+      </div>
+      <div>
+        <div className="font-bold mb-0.5">Uptime</div>
+        <div className="text-gray-500 mb-2 text-xs">(24 hour)</div>
+        <div>
+          {parseFloat(
+            (
+              (data.recent1DayOnlineCount /
+                (data.recent1DayOnlineCount + data.recent1DayOfflineCount)) *
+              100
+            ).toFixed(2)
+          )}
+          %
+        </div>
+      </div>
+      <div>
+        <div className="font-bold mb-0.5">Uptime</div>
+        <div className="text-gray-500">(30 days)</div>
+        <div>
+          {parseFloat(
+            (
+              (data.recent30DayOnlineCount /
+                (data.recent30DayOnlineCount + data.recent30DayOfflineCount)) *
+              100
+            ).toFixed(2)
+          )}
+          %
+        </div>
+      </div>
+    </div>
+  );
+});
+MonitorDataMetrics.displayName = 'MonitorDataMetrics';
 
 const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
   (props) => {
