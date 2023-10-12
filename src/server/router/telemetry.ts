@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { query, validate } from '../middleware/validate';
 import { recordTelemetryEvent, sumTelemetryEvent } from '../model/telemetry';
 import { numify } from '../utils/common';
-const openBadge = require('openbadge');
+import { makeBadge } from 'badge-maker';
 
 export const telemetryRouter = Router();
 
@@ -37,19 +37,10 @@ telemetryRouter.get(
     recordTelemetryEvent(req);
     const num = await sumTelemetryEvent(req);
 
-    const svg = await new Promise((resolve, reject) => {
-      openBadge(
-        {
-          text: [title, numify(num + start)],
-        },
-        (err: any, badgeSvg: string) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(badgeSvg);
-          }
-        }
-      );
+    const svg = makeBadge({
+      label: String(title),
+      message: numify(num + start),
+      color: 'green',
     });
 
     res.header('Content-Type', 'image/svg+xml').send(svg);

@@ -39,7 +39,7 @@ app.disable('x-powered-by');
 app.use('/api/user', userRouter);
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
-app.use('/api/telemetry', telemetryRouter);
+app.use('/telemetry', telemetryRouter);
 
 app.use('/trpc', trpcExpressMiddleware);
 
