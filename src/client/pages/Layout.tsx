@@ -26,7 +26,10 @@ export const Layout: React.FC = React.memo(() => {
     <div className="flex flex-col h-full">
       {showHeader && (
         <div className="flex items-center bg-gray-100 px-4 sticky top-0 z-20">
-          <div className="px-2 mr-10 font-bold">Tianji</div>
+          <div className="px-2 mr-10 font-bold flex items-center">
+            <img src="/icon.svg" className="w-10 h-10 mr-2" />
+            <span className="text-xl">Tianji</span>
+          </div>
           <div className="flex gap-8">
             <NavItem to="/dashboard" label="Dashboard" />
             <NavItem to="/monitor" label="Monitor" />
