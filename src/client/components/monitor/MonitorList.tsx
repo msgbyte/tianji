@@ -27,10 +27,27 @@ export const MonitorList: React.FC = React.memo(() => {
 
     return null;
   }, []);
+  const [beats, setBeats] = useState<
+    {
+      value: number;
+      createdAt: string;
+    }[]
+  >([]);
 
   const [selectedMonitorId, setSelectedMonitorId] = useState<string | null>(
     initMonitorId
   );
+
+  const upPercent = useMemo(() => {
+    let up = 0;
+    beats.forEach((b) => {
+      if (b.value >= 0) {
+        up++;
+      }
+    });
+
+    return parseFloat(((up / beats.length) * 100).toFixed(1));
+  }, [beats]);
 
   if (!currentWorkspaceId) {
     return <NoWorkspaceTip />;
@@ -59,11 +76,11 @@ export const MonitorList: React.FC = React.memo(() => {
               }
             >
               {/* {monitor.monthOnlineRate * 100}% */}
-              80%
+              {upPercent}%
             </span>
           </div>
           <div className="flex-1 pl-2">
-            <div className="text-base mb-2">{monitor.name}</div>
+            <div className="text-base">{monitor.name}</div>
             {/* <div>
               {monitor.tags.map((tag) => (
                 <span
@@ -77,7 +94,10 @@ export const MonitorList: React.FC = React.memo(() => {
           </div>
 
           <div className="flex items-center">
-            <MonitorHealthBar monitorId={monitor.id} />
+            <MonitorHealthBar
+              monitorId={monitor.id}
+              onBeatsItemUpdate={setBeats}
+            />
           </div>
         </div>
       ))}
