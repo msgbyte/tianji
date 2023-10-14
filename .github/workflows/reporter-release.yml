@@ -22,6 +22,6 @@ jobs:
           project_path: ./reporter
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: 1.21.1
+          goversion: https://go.dev/dl/go1.21.1.${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
           binary_name: "tianji-reporter"
           compress_assets: "OFF"
