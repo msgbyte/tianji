@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "nodemon",
     "start": "NODE_ENV=production ts-node src/server/main.ts",
-    "build": "vite build && pnpm build:tracker && pnpm build:geo",
+    "build": "pnpm build:client && pnpm build:server && pnpm build:tracker && pnpm build:geo",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
     "build:tracker": "ts-node scripts/build-tracker.ts",
     "build:geo": "ts-node scripts/build-geo.ts",
-    "check:type": "tsc --noEmit --skipLibCheck --jsx react-jsx --module esnext",
+    "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio"
