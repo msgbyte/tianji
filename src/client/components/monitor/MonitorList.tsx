@@ -28,10 +28,10 @@ export const MonitorList: React.FC = React.memo(() => {
     return null;
   }, []);
   const [beats, setBeats] = useState<
-    {
+    ({
       value: number;
-      createdAt: string;
-    }[]
+      createdAt: string | Date;
+    } | null)[]
   >([]);
 
   const [selectedMonitorId, setSelectedMonitorId] = useState<string | null>(
@@ -41,6 +41,10 @@ export const MonitorList: React.FC = React.memo(() => {
   const upPercent = useMemo(() => {
     let up = 0;
     beats.forEach((b) => {
+      if (!b) {
+        return;
+      }
+
       if (b.value >= 0) {
         up++;
       }

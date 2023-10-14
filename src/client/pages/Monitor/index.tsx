@@ -12,7 +12,7 @@ export const MonitorPage: React.FC = React.memo(() => {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1">
-        <div className="p-4">
+        <div className="px-4 pt-4">
           <div
             className="px-3 py-2 rounded-full bg-green-400 hover:bg-green-500 text-white inline-block cursor-pointer"
             onClick={() => navigate('/monitor/add')}

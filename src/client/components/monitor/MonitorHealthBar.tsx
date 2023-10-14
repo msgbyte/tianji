@@ -12,7 +12,9 @@ interface MonitorHealthBarProps {
   count?: number;
   size?: HealthBarProps['size'];
   showCurrentStatus?: boolean;
-  onBeatsItemUpdate?: (items: { value: number; createdAt: string }[]) => void;
+  onBeatsItemUpdate?: (
+    items: ({ value: number; createdAt: string | Date } | null)[]
+  ) => void;
 }
 export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
   (props) => {
