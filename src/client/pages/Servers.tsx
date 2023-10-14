@@ -233,7 +233,7 @@ export const AddServerStep: React.FC = React.memo(() => {
             <div>
               run reporter with{' '}
               <Typography.Text code={true} copyable={true}>
-                ./reporter --url {window.location.origin} --workspace{' '}
+                ./tianji-reporter --url {window.location.origin} --workspace{' '}
                 {workspaceId}
               </Typography.Text>
               <Button
