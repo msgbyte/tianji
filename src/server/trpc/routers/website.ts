@@ -31,11 +31,12 @@ export const websiteRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const { websiteId } = input;
+      const { workspaceId, websiteId } = input;
 
       const website = await prisma.website.findUnique({
         where: {
           id: websiteId,
+          workspaceId,
         },
       });
 

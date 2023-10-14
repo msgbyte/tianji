@@ -1,6 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { getQueryKey } from '@trpc/react-query';
-import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../trpc';
+import {
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  getQueryKey,
+  trpc,
+} from '../trpc';
 
 export function useMonitorUpsert() {
   const queryClient = useQueryClient();

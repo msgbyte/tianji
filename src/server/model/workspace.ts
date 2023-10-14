@@ -52,20 +52,6 @@ export async function getWorkspaceWebsites(workspaceId: string) {
   return workspace?.websites ?? [];
 }
 
-export async function getWorkspaceWebsiteInfo(
-  workspaceId: string,
-  websiteId: string
-) {
-  const websiteInfo = await prisma.website.findUnique({
-    where: {
-      id: websiteId,
-      workspaceId,
-    },
-  });
-
-  return websiteInfo;
-}
-
 export async function addWorkspaceWebsite(
   workspaceId: string,
   name: string,

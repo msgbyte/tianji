@@ -1,17 +1,19 @@
 import { Button, Form, Input, message, Popconfirm, Tabs } from 'antd';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import {
-  deleteWorkspaceWebsite,
-  useWorkspaceWebsiteInfo,
-} from '../api/model/website';
+import { deleteWorkspaceWebsite } from '../api/model/website';
 import { useRequest } from '../hooks/useRequest';
 import { useCurrentWorkspaceId } from '../store/user';
 import { ErrorTip } from './ErrorTip';
 import { Loading } from './Loading';
 import { NoWorkspaceTip } from './NoWorkspaceTip';
 import { MonitorPicker } from './monitor/MonitorPicker';
-import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../api/trpc';
+import {
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  getQueryKey,
+  trpc,
+} from '../api/trpc';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEvent } from '../hooks/useEvent';
 
@@ -20,16 +22,17 @@ export const WebsiteInfo: React.FC = React.memo(() => {
   const { websiteId } = useParams<{
     websiteId: string;
   }>();
-  const { website, isLoading } = useWorkspaceWebsiteInfo(
-    workspaceId,
-    websiteId!
-  );
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const { data: website, isLoading } = trpc.website.info.useQuery({
+    workspaceId,
+    websiteId: websiteId!,
+  });
+
   const updateMutation = trpc.website.updateInfo.useMutation({
     onSuccess: () => {
-      queryClient.resetQueries(['websites', workspaceId]); // TODO: translation to trpc
+      queryClient.resetQueries(getQueryKey(trpc.website.info));
       defaultSuccessHandler();
     },
     onError: defaultErrorHandler,

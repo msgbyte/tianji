@@ -1,10 +1,12 @@
-import { createTRPCReact } from '@trpc/react-query';
+import { createTRPCReact, getQueryKey } from '@trpc/react-query';
 import type { AppRouter } from '../../server/trpc/routers';
 import { httpBatchLink, loggerLink, TRPCClientErrorLike } from '@trpc/client';
 import { getJWT } from './auth';
 import { message } from 'antd';
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 import { isDev } from '../utils/env';
+
+export { getQueryKey };
 
 export const trpc = createTRPCReact<AppRouter>();
 

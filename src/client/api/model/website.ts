@@ -19,19 +19,6 @@ export async function getWorkspaceWebsites(
   return data.websites;
 }
 
-export async function getWorkspaceWebsiteInfo(
-  workspaceId: string,
-  websiteId: string
-): Promise<WebsiteInfo | null> {
-  const { data } = await request.get(`/api/workspace/website/${websiteId}`, {
-    params: {
-      workspaceId,
-    },
-  });
-
-  return data.website;
-}
-
 export async function deleteWorkspaceWebsite(
   workspaceId: string,
   websiteId: string
@@ -50,21 +37,6 @@ export function useWorspaceWebsites(workspaceId: string) {
   );
 
   return { websites, isLoading };
-}
-
-export function useWorkspaceWebsiteInfo(
-  workspaceId: string,
-  websiteId: string
-) {
-  const { data: website = null, isLoading } = useQuery(
-    ['website', workspaceId, websiteId],
-    () => {
-      return getWorkspaceWebsiteInfo(workspaceId, websiteId);
-    },
-    { cacheTime: 0 }
-  );
-
-  return { website, isLoading };
 }
 
 export function refreshWorkspaceWebsites(workspaceId: string) {

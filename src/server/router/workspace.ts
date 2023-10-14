@@ -61,21 +61,6 @@ workspaceRouter.post(
   }
 );
 
-workspaceRouter.get(
-  '/website/:websiteId',
-  validate(query('workspaceId').isString(), param('websiteId').isString()),
-  auth(),
-  workspacePermission(),
-  async (req, res) => {
-    const workspaceId = req.query.workspaceId as string;
-    const websiteId = req.params.websiteId;
-
-    const website = await getWorkspaceWebsiteInfo(workspaceId, websiteId);
-
-    res.json({ website });
-  }
-);
-
 workspaceRouter.delete(
   '/:workspaceId/website/:websiteId',
   validate(param('workspaceId').isString(), param('websiteId').isString()),
