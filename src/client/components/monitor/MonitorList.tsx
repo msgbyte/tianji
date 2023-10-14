@@ -75,9 +75,10 @@ export const MonitorList: React.FC = React.memo(() => {
         >
           <div>
             <span
-              className={
-                'bg-green-400 min-w-[62px] p-0.5 rounded-full text-white inline-block text-center'
-              }
+              className={clsx(
+                'min-w-[62px] p-0.5 rounded-full text-white inline-block text-center',
+                upPercent === 100 ? 'bg-green-400' : 'bg-amber-400'
+              )}
             >
               {/* {monitor.monthOnlineRate * 100}% */}
               {upPercent}%
