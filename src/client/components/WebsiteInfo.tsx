@@ -3,7 +3,6 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   deleteWorkspaceWebsite,
-  updateWorkspaceWebsiteInfo,
   useWorkspaceWebsiteInfo,
 } from '../api/model/website';
 import { useRequest } from '../hooks/useRequest';
@@ -11,38 +10,50 @@ import { useCurrentWorkspaceId } from '../store/user';
 import { ErrorTip } from './ErrorTip';
 import { Loading } from './Loading';
 import { NoWorkspaceTip } from './NoWorkspaceTip';
+import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../api/trpc';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEvent } from '../hooks/useEvent';
 
 export const WebsiteInfo: React.FC = React.memo(() => {
+  const workspaceId = useCurrentWorkspaceId();
   const { websiteId } = useParams<{
     websiteId: string;
   }>();
-  const currentWorkspaceId = useCurrentWorkspaceId();
   const { website, isLoading } = useWorkspaceWebsiteInfo(
-    currentWorkspaceId!,
+    workspaceId,
     websiteId!
   );
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [, handleSave] = useRequest(
+  const updateMutation = trpc.website.updateInfo.useMutation({
+    onSuccess: () => {
+      queryClient.resetQueries(['websites', workspaceId]); // TODO: translation to trpc
+      defaultSuccessHandler();
+    },
+    onError: defaultErrorHandler,
+  });
+
+  const handleSave = useEvent(
     async (values: { name: string; domain: string }) => {
-      await updateWorkspaceWebsiteInfo(currentWorkspaceId!, websiteId!, {
+      await updateMutation.mutateAsync({
+        workspaceId,
+        websiteId: websiteId!,
         name: values.name,
         domain: values.domain,
       });
-
-      message.success('Save Success');
     }
   );
 
   const [, handleDeleteWebsite] = useRequest(async () => {
-    await deleteWorkspaceWebsite(currentWorkspaceId!, websiteId!);
+    await deleteWorkspaceWebsite(workspaceId, websiteId!);
 
     message.success('Delete Success');
 
     navigate('/settings/websites');
   });
 
-  if (!currentWorkspaceId) {
+  if (!workspaceId) {
     return <NoWorkspaceTip />;
   }
 

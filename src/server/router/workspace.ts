@@ -76,43 +76,6 @@ workspaceRouter.get(
   }
 );
 
-workspaceRouter.post(
-  '/website/:websiteId',
-  validate(
-    body('workspaceId').isString(),
-    param('websiteId')
-      .isString()
-      .isUUID()
-      .withMessage('workspaceId should be UUID'),
-    body('name')
-      .isString()
-      .withMessage('name should be string')
-      .isLength({ max: 100 })
-      .withMessage('length should be under 100'),
-    body('domain')
-      .isURL()
-      .withMessage('domain should be URL')
-      .isLength({ max: 500 })
-      .withMessage('length should be under 500')
-  ),
-  auth(),
-  workspacePermission(),
-  async (req, res) => {
-    const workspaceId = req.query.workspaceId as string;
-    const websiteId = req.params.websiteId;
-    const { name, domain } = req.body;
-
-    const website = await updateWorkspaceWebsiteInfo(
-      workspaceId,
-      websiteId,
-      name,
-      domain
-    );
-
-    res.json({ website });
-  }
-);
-
 workspaceRouter.delete(
   '/:workspaceId/website/:websiteId',
   validate(param('workspaceId').isString(), param('websiteId').isString()),

@@ -66,26 +66,6 @@ export async function getWorkspaceWebsiteInfo(
   return websiteInfo;
 }
 
-export async function updateWorkspaceWebsiteInfo(
-  workspaceId: string,
-  websiteId: string,
-  name: string,
-  domain: string
-) {
-  const websiteInfo = await prisma.website.update({
-    where: {
-      id: websiteId,
-      workspaceId,
-    },
-    data: {
-      name,
-      domain,
-    },
-  });
-
-  return websiteInfo;
-}
-
 export async function addWorkspaceWebsite(
   workspaceId: string,
   name: string,

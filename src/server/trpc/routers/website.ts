@@ -1,4 +1,4 @@
-import { router, workspaceProcedure } from '../trpc';
+import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
 import { z } from 'zod';
 import { getWebsiteOnlineUserCount } from '../../model/website';
 import { prisma } from '../../model/_client';
@@ -153,5 +153,29 @@ export const websiteRouter = router({
       }
 
       return [];
+    }),
+  updateInfo: workspaceOwnerProcedure
+    .input(
+      z.object({
+        websiteId: z.string().cuid(),
+        name: z.string().max(100),
+        domain: z.union([z.string().max(500).url(), z.string().max(500).ip()]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { workspaceId, websiteId, name, domain } = input;
+
+      const websiteInfo = await prisma.website.update({
+        where: {
+          id: websiteId,
+          workspaceId,
+        },
+        data: {
+          name,
+          domain,
+        },
+      });
+
+      return websiteInfo;
     }),
 });

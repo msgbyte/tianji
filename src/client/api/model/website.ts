@@ -41,20 +41,6 @@ export async function getWorkspaceWebsiteInfo(
   return data.website;
 }
 
-export async function updateWorkspaceWebsiteInfo(
-  workspaceId: string,
-  websiteId: string,
-  info: { name: string; domain: string }
-) {
-  await request.post(`/api/workspace/website/${websiteId}`, {
-    workspaceId,
-    name: info.name,
-    domain: info.domain,
-  });
-
-  queryClient.resetQueries(['websites', workspaceId]);
-}
-
 export async function deleteWorkspaceWebsite(
   workspaceId: string,
   websiteId: string
