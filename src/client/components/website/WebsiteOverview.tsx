@@ -24,6 +24,7 @@ import { formatNumber, formatShortTime } from '../../utils/common';
 import { useTheme } from '../../hooks/useTheme';
 import { WebsiteOnlineCount } from '../WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
+import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
@@ -81,11 +82,9 @@ export const WebsiteOverview: React.FC<{
             {props.website.name}
           </span>
 
-          <HealthBar
-            beats={Array.from({ length: 13 }).map(() => ({
-              status: 'health',
-            }))}
-          />
+          {props.website.monitorId && (
+            <MonitorHealthBar monitorId={props.website.monitorId} />
+          )}
 
           <div className="ml-4 text-base font-normal">
             <WebsiteOnlineCount

@@ -142,6 +142,9 @@ dependencies:
   socket.io-client:
     specifier: ^4.7.2
     version: 4.7.2
+  str2int:
+    specifier: ^1.1.0
+    version: 1.1.0
   ts-node:
     specifier: ^10.9.1
     version: 10.9.1(@types/node@18.17.12)(typescript@5.2.2)
@@ -6261,6 +6264,10 @@ packages:
   /statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
+    dev: false
+
+  /str2int@1.1.0:
+    resolution: {integrity: sha512-Eb9eGdySBmA2cQyJaxsiB9a6IJ7t1RCQK6o3pUZf6dTI3CVq9TkMcUCVNoWeonv7mNza3Hcp3cf1j73vEhL4ag==}
     dev: false
 
   /streamx@2.15.1:

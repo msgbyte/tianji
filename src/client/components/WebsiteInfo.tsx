@@ -10,6 +10,7 @@ import { useCurrentWorkspaceId } from '../store/user';
 import { ErrorTip } from './ErrorTip';
 import { Loading } from './Loading';
 import { NoWorkspaceTip } from './NoWorkspaceTip';
+import { MonitorPicker } from './monitor/MonitorPicker';
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../api/trpc';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEvent } from '../hooks/useEvent';
@@ -35,12 +36,13 @@ export const WebsiteInfo: React.FC = React.memo(() => {
   });
 
   const handleSave = useEvent(
-    async (values: { name: string; domain: string }) => {
+    async (values: { name: string; domain: string; monitorId: string }) => {
       await updateMutation.mutateAsync({
         workspaceId,
         websiteId: websiteId!,
         name: values.name,
         domain: values.domain,
+        monitorId: values.monitorId,
       });
     }
   );
@@ -84,6 +86,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
                 id: website.id,
                 name: website.name,
                 domain: website.domain,
+                monitorId: website.monitorId,
               }}
               onFinish={handleSave}
             >
@@ -99,6 +102,10 @@ export const WebsiteInfo: React.FC = React.memo(() => {
                 rules={[{ required: true }]}
               >
                 <Input size="large" />
+              </Form.Item>
+
+              <Form.Item label="Monitor" name="monitorId">
+                <MonitorPicker size="large" allowClear={true} />
               </Form.Item>
 
               <Form.Item>

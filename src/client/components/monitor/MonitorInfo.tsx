@@ -1,4 +1,4 @@
-import { Card, Select, Space, Tag } from 'antd';
+import { Card, Select, Space } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { trpc } from '../../api/trpc';
@@ -12,6 +12,7 @@ import { MonitorHealthBar } from './MonitorHealthBar';
 import { useSocketSubscribeList } from '../../api/socketio';
 import { last, uniqBy } from 'lodash-es';
 import { ErrorTip } from '../ErrorTip';
+import { ColorTag } from '../ColorTag';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -42,7 +43,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             <div className="text-2xl">{monitorInfo.name}</div>
 
             <div>
-              <Tag color="cyan">{monitorInfo.type}</Tag>
+              <ColorTag label={monitorInfo.type} />
               <span>
                 {getMonitorLink(monitorInfo as any as MonitorInfoType)}
               </span>

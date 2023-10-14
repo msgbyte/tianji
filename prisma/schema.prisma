@@ -54,16 +54,18 @@ model WorkspacesOnUsers {
 
 model Website {
   id          String    @id @unique @default(cuid()) @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
   name        String    @db.VarChar(100)
   domain      String?   @db.VarChar(500)
   shareId     String?   @unique @db.VarChar(50)
   resetAt     DateTime? @db.Timestamptz(6)
-  workspaceId String    @db.VarChar(30)
+  monitorId   String?   @db.VarChar(30)
   createdAt   DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
   deletedAt   DateTime? @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  monitor   Monitor?  @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sessions    WebsiteSession[]
   eventData   WebsiteEventData[]
@@ -242,6 +244,7 @@ model Monitor {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
+  websites      Website[]
   notifications Notification[]
   events        MonitorEvent[]
   datas         MonitorData[]

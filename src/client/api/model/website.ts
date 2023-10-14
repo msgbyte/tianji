@@ -3,18 +3,9 @@ import { DateUnit } from '../../utils/date';
 import { queryClient } from '../cache';
 import { request } from '../request';
 import { getUserTimezone } from './user';
+import { Website as WebsiteInfo } from '@prisma/client';
 
-export interface WebsiteInfo {
-  id: string;
-  name: string;
-  domain: string | null;
-  shareId: string | null;
-  resetAt: string | null;
-  workspaceId: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-  deletedAt: string | null;
-}
+export type { WebsiteInfo };
 
 export async function getWorkspaceWebsites(
   workspaceId: string

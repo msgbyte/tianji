@@ -157,13 +157,14 @@ export const websiteRouter = router({
   updateInfo: workspaceOwnerProcedure
     .input(
       z.object({
-        websiteId: z.string().cuid(),
+        websiteId: z.string().cuid2(),
         name: z.string().max(100),
         domain: z.union([z.string().max(500).url(), z.string().max(500).ip()]),
+        monitorId: z.string().cuid2(),
       })
     )
     .mutation(async ({ input }) => {
-      const { workspaceId, websiteId, name, domain } = input;
+      const { workspaceId, websiteId, name, domain, monitorId } = input;
 
       const websiteInfo = await prisma.website.update({
         where: {
@@ -173,6 +174,7 @@ export const websiteRouter = router({
         data: {
           name,
           domain,
+          monitorId,
         },
       });
 
