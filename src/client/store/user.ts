@@ -1,6 +1,8 @@
 import { create } from 'zustand';
-import { UserLoginInfo } from '../api/model/user';
 import { createSocketIOClient } from '../api/socketio';
+import { AppRouterOutput } from '../api/trpc';
+
+type UserLoginInfo = AppRouterOutput['user']['loginWithToken']['info'];
 
 interface UserState {
   info: UserLoginInfo | null;
@@ -13,10 +15,7 @@ export const useUserStore = create<UserState>(() => ({
 export function setUserInfo(info: UserLoginInfo) {
   if (!info.currentWorkspace && info.workspaces[0]) {
     // Make sure currentWorkspace existed
-    info.currentWorkspace = {
-      id: info.workspaces[0].workspace.id,
-      name: info.workspaces[0].workspace.name,
-    };
+    info.currentWorkspace = info.workspaces[0].workspace;
   }
 
   useUserStore.setState({
@@ -24,7 +23,21 @@ export function setUserInfo(info: UserLoginInfo) {
   });
 
   // create socketio after login
-  createSocketIOClient(info.currentWorkspace.id);
+  if (info.currentWorkspace) {
+    createSocketIOClient(info.currentWorkspace.id);
+  }
+}
+
+export function useCurrentWorkspace() {
+  const currentWorkspace = useUserStore(
+    (state) => state.info?.currentWorkspace
+  );
+
+  if (!currentWorkspace) {
+    throw new Error('No Workspace Id');
+  }
+
+  return currentWorkspace;
 }
 
 export function useCurrentWorkspaceId() {

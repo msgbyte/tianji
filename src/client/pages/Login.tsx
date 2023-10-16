@@ -1,14 +1,23 @@
 import { Button, Form, Input, Typography } from 'antd';
 import React from 'react';
-import { model } from '../api/model';
 import { useNavigate } from 'react-router';
 import { useRequest } from '../hooks/useRequest';
+import { trpc } from '../api/trpc';
+import { setJWT } from '../api/auth';
+import { setUserInfo } from '../store/user';
 
 export const Login: React.FC = React.memo(() => {
   const navigate = useNavigate();
 
+  const mutation = trpc.user.login.useMutation();
   const [{ loading }, handleLogin] = useRequest(async (values: any) => {
-    await model.user.login(values.username, values.password);
+    const res = await mutation.mutateAsync({
+      username: values.username,
+      password: values.password,
+    });
+
+    setJWT(res.token);
+    setUserInfo(res.info);
     navigate('/dashboard');
   });
 

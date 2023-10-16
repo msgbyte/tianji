@@ -10,8 +10,8 @@ export { getQueryKey };
 
 export const trpc = createTRPCReact<AppRouter>();
 
-export type RouterInput = inferRouterInputs<AppRouter>;
-export type RouterOutput = inferRouterOutputs<AppRouter>;
+export type AppRouterInput = inferRouterInputs<AppRouter>;
+export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 
 export const trpcClient = trpc.createClient({
   links: [

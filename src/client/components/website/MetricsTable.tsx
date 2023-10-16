@@ -1,12 +1,12 @@
 import { Table } from 'antd';
 import { ColumnsType } from 'antd/es/table/interface';
 import React from 'react';
-import { RouterOutput, trpc } from '../../api/trpc';
+import { AppRouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { sum } from 'lodash-es';
 import millify from 'millify';
 
-type MetricsItemType = RouterOutput['website']['metrics'][number];
+type MetricsItemType = AppRouterOutput['website']['metrics'][number];
 
 interface MetricsTableProps {
   websiteId: string;

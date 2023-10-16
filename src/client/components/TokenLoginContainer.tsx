@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { getJWT } from '../api/auth';
-import { loginWithToken } from '../api/model/user';
+import { getJWT, setJWT } from '../api/auth';
 import { Loading } from './Loading';
+import { trpc } from '../api/trpc';
+import { setUserInfo } from '../store/user';
 
 export const TokenLoginContainer: React.FC<React.PropsWithChildren> =
   React.memo((props) => {
     const [loading, setLoading] = useState(true);
+    const mutation = trpc.user.loginWithToken.useMutation();
 
     useEffect(() => {
       const token = getJWT();
       if (token) {
-        loginWithToken().finally(() => {
-          setLoading(false);
-        });
+        mutation
+          .mutateAsync({
+            token,
+          })
+          .then((res) => {
+            setJWT(res.token);
+            setUserInfo(res.info);
+          })
+          .catch((err) => {})
+          .finally(() => {
+            setLoading(false);
+          });
       } else {
         setLoading(false);
       }
