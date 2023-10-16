@@ -28,6 +28,7 @@ const createUserSelect = {
     select: {
       id: true,
       name: true,
+      dashboardOrder: true,
     },
   },
   workspaces: {
@@ -37,6 +38,7 @@ const createUserSelect = {
         select: {
           id: true,
           name: true,
+          dashboardOrder: true,
         },
       },
     },
