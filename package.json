@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nodemon",
     "start": "NODE_ENV=production ts-node src/server/main.ts",
+    "start:pro": "node ./dist/server/main.js",
     "build": "pnpm build:client && pnpm build:server && pnpm build:tracker && pnpm build:geo",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",

@@ -6,12 +6,10 @@ import { workspacePermission } from '../middleware/workspace';
 import {
   addWorkspaceWebsite,
   deleteWorkspaceWebsite,
-  getWorkspaceWebsiteInfo,
   getWorkspaceWebsitePageview,
   getWorkspaceWebsites,
   getWorkspaceWebsiteSession,
   getWorkspaceWebsiteStats,
-  updateWorkspaceWebsiteInfo,
 } from '../model/workspace';
 import { parseDateRange } from '../utils/common';
 import { ROLES } from '../utils/const';
