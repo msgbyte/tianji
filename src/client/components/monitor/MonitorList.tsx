@@ -1,10 +1,8 @@
-import { Card } from 'antd';
 import clsx from 'clsx';
 import React, { useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
-import { HealthBar } from '../HealthBar';
 import { NoWorkspaceTip } from '../NoWorkspaceTip';
 import { MonitorHealthBar } from './MonitorHealthBar';
 
@@ -80,7 +78,6 @@ export const MonitorList: React.FC = React.memo(() => {
                 upPercent === 100 ? 'bg-green-400' : 'bg-amber-400'
               )}
             >
-              {/* {monitor.monthOnlineRate * 100}% */}
               {upPercent}%
             </span>
           </div>

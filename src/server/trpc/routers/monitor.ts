@@ -193,4 +193,25 @@ export const monitorRouter = router({
         recent30DayOfflineCount,
       };
     }),
+  events: workspaceProcedure
+    .input(
+      z.object({
+        monitorId: z.string().cuid2().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { monitorId } = input;
+
+      const list = await prisma.monitorEvent.findMany({
+        where: {
+          monitorId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 20,
+      });
+
+      return list;
+    }),
 });
