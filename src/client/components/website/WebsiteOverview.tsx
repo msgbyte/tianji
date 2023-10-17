@@ -3,15 +3,12 @@ import React, { useMemo } from 'react';
 import { Column, ColumnConfig } from '@ant-design/charts';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
-import { HealthBar } from '../HealthBar';
 import {
   StatsItemType,
   useWorkspaceWebsitePageview,
   useWorkspaceWebsiteStats,
   WebsiteInfo,
 } from '../../api/model/website';
-import { Loading } from '../Loading';
-import dayjs from 'dayjs';
 import {
   DateUnit,
   formatDate,
@@ -25,12 +22,15 @@ import { useTheme } from '../../hooks/useTheme';
 import { WebsiteOnlineCount } from '../WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
+import { useNavigate } from 'react-router';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
   actions?: React.ReactNode;
 }> = React.memo((props) => {
+  const { website, actions } = props;
   const { startDate, endDate, unit } = useGlobalRangeDate();
+  const navigate = useNavigate();
 
   const {
     pageviews,
@@ -38,8 +38,8 @@ export const WebsiteOverview: React.FC<{
     isLoading: isLoadingPageview,
     refetch: refetchPageview,
   } = useWorkspaceWebsitePageview(
-    props.website.workspaceId,
-    props.website.id,
+    website.workspaceId,
+    website.id,
     startDate.unix() * 1000,
     endDate.unix() * 1000,
     unit
@@ -50,8 +50,8 @@ export const WebsiteOverview: React.FC<{
     isLoading: isLoadingStats,
     refetch: refetchStats,
   } = useWorkspaceWebsiteStats(
-    props.website.workspaceId,
-    props.website.id,
+    website.workspaceId,
+    website.id,
     startDate.unix() * 1000,
     endDate.unix() * 1000,
     unit
@@ -78,23 +78,28 @@ export const WebsiteOverview: React.FC<{
     <Spin spinning={loading}>
       <div className="flex">
         <div className="flex flex-1 text-2xl font-bold items-center">
-          <span className="mr-2" title={props.website.domain ?? ''}>
-            {props.website.name}
+          <span className="mr-2" title={website.domain ?? ''}>
+            {website.name}
           </span>
 
-          {props.website.monitorId && (
-            <MonitorHealthBar monitorId={props.website.monitorId} />
+          {website.monitorId && (
+            <div
+              className="cursor-pointer"
+              onClick={() => navigate(`/monitor/${website.monitorId}`)}
+            >
+              <MonitorHealthBar monitorId={website.monitorId} />
+            </div>
           )}
 
           <div className="ml-4 text-base font-normal">
             <WebsiteOnlineCount
-              workspaceId={props.website.workspaceId}
-              websiteId={props.website.id}
+              workspaceId={website.workspaceId}
+              websiteId={website.id}
             />
           </div>
         </div>
 
-        <div>{props.actions}</div>
+        <div>{actions}</div>
       </div>
 
       <div className="flex mb-10 flex-wrap">
