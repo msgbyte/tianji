@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "nodemon",
-    "start": "NODE_ENV=production ts-node src/server/main.ts",
-    "start:pro": "node ./dist/server/main.js",
+    "start": "NODE_ENV=production node ./dist/server/main.js",
+    "start:docker": "pnpm db:migrate && pnpm db:generate && pnpm start",
     "build": "pnpm build:client && pnpm build:server && pnpm build:tracker && pnpm build:geo",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
@@ -14,6 +14,7 @@
     "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio"
   },
   "dependencies": {

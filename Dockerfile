@@ -12,4 +12,4 @@ RUN pnpm build
 
 EXPOSE 12345
 
-CMD ["pnpm", "start:pro"]
+CMD ["pnpm", "start:docker"]
