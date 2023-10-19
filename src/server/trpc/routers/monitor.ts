@@ -2,7 +2,7 @@ import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
 import { prisma } from '../../model/_client';
 import { z } from 'zod';
 import { monitorManager } from '../../model/monitor';
-import { MonitorInfo } from '../../../types';
+import { MonitorInfoWithNotificationIds } from '../../../types';
 import dayjs from 'dayjs';
 
 export const monitorRouter = router({
@@ -12,9 +12,16 @@ export const monitorRouter = router({
       where: {
         workspaceId,
       },
+      include: {
+        notifications: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
-    return monitors as MonitorInfo[];
+    return monitors as MonitorInfoWithNotificationIds[];
   }),
   get: workspaceProcedure
     .input(
@@ -29,9 +36,16 @@ export const monitorRouter = router({
           id,
           workspaceId,
         },
+        include: {
+          notifications: {
+            select: {
+              id: true,
+            },
+          },
+        },
       });
 
-      return monitor as MonitorInfo;
+      return monitor as MonitorInfoWithNotificationIds;
     }),
   upsert: workspaceOwnerProcedure
     .input(
@@ -41,11 +55,21 @@ export const monitorRouter = router({
         type: z.string(),
         active: z.boolean().default(true),
         interval: z.number().int().default(20),
+        notificationIds: z.array(z.string()).default([]),
         payload: z.object({}).passthrough(),
       })
     )
     .mutation(async ({ input }) => {
-      const { id, workspaceId, name, type, active, interval, payload } = input;
+      const {
+        id,
+        workspaceId,
+        name,
+        type,
+        active,
+        interval,
+        notificationIds,
+        payload,
+      } = input;
 
       const monitor = await monitorManager.upsert({
         id,
@@ -54,6 +78,7 @@ export const monitorRouter = router({
         type,
         active,
         interval,
+        notificationIds,
         payload,
       });
 

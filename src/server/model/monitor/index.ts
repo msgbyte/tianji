@@ -8,7 +8,12 @@ import dayjs from 'dayjs';
 export type MonitorUpsertData = Pick<
   Monitor,
   'workspaceId' | 'name' | 'type' | 'interval'
-> & { id?: string; active?: boolean; payload: Record<string, any> };
+> & {
+  id?: string;
+  active?: boolean;
+  notificationIds?: string[];
+  payload: Record<string, any>;
+};
 
 type MonitorWithNotification = Monitor & { notifications: Notification[] };
 
@@ -21,13 +26,19 @@ class MonitorManager {
    */
   async upsert(data: MonitorUpsertData): Promise<MonitorWithNotification> {
     let monitor: MonitorWithNotification;
-    if (data.id) {
+    const { id, notificationIds = [], ...others } = data;
+    if (id) {
       // update
       monitor = await prisma.monitor.update({
         where: {
-          id: data.id,
+          id,
         },
-        data: { ...data },
+        data: {
+          ...others,
+          notifications: {
+            set: notificationIds.map((id) => ({ id })),
+          },
+        },
         include: {
           notifications: true,
         },
@@ -37,7 +48,12 @@ class MonitorManager {
     } else {
       // create
       monitor = await prisma.monitor.create({
-        data: { ...data },
+        data: {
+          ...others,
+          notifications: {
+            connect: notificationIds.map((id) => ({ id })),
+          },
+        },
         include: {
           notifications: true,
         },

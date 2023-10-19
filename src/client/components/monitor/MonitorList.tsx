@@ -56,12 +56,12 @@ export const MonitorList: React.FC = React.memo(() => {
   }
 
   return (
-    <div>
+    <div className="p-2">
       {monitors.map((monitor) => (
         <div
           key={monitor.name}
           className={clsx(
-            'flex rounded-lg py-3 px-4 cursor-pointer',
+            'flex rounded-lg py-3 px-4 cursor-pointer mb-1',
             selectedMonitorId === monitor.id
               ? 'bg-green-500 bg-opacity-20'
               : 'bg-green-500 bg-opacity-0 hover:bg-opacity-10'

@@ -7,3 +7,7 @@ export type MonitorInfo = ExactType<
     payload: Record<string, any>;
   }
 >;
+
+export type MonitorInfoWithNotificationIds = MonitorInfo & {
+  notifications: { id: string }[];
+};

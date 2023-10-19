@@ -31,7 +31,12 @@ export const MonitorEdit: React.FC = React.memo(() => {
   return (
     <div>
       <MonitorInfoEditor
-        initialValues={monitor as MonitorInfoEditorValues}
+        initialValues={
+          {
+            ...monitor,
+            notificationIds: monitor.notifications.map((n) => n.id),
+          } as MonitorInfoEditorValues
+        }
         onSave={async (value) => {
           const monitor = await mutation.mutateAsync({
             ...value,

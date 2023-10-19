@@ -3,6 +3,7 @@ import type { Monitor } from '@prisma/client';
 import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { monitorProviders } from './provider';
 import { useEvent } from '../../../hooks/useEvent';
+import { NotificationPicker } from '../../notification/NotificationPicker';
 
 export type MonitorInfoEditorValues = Omit<
   Monitor,
@@ -10,6 +11,7 @@ export type MonitorInfoEditorValues = Omit<
 > & {
   id?: string;
   payload: Record<string, any>;
+  notificationIds?: string[];
 };
 
 const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
@@ -81,6 +83,10 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
           </Form.Item>
 
           {formEl}
+
+          <Form.Item label="Notification" name="notificationIds">
+            <NotificationPicker allowClear={true} mode="multiple" />
+          </Form.Item>
 
           <Button type="primary" htmlType="submit">
             Save
