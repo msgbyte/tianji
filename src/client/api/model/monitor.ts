@@ -1,16 +1,12 @@
-import { useQueryClient } from '@tanstack/react-query';
-import {
-  defaultErrorHandler,
-  defaultSuccessHandler,
-  getQueryKey,
-  trpc,
-} from '../trpc';
+import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../trpc';
 
 export function useMonitorUpsert() {
-  const queryClient = useQueryClient();
+  const context = trpc.useContext();
   const mutation = trpc.monitor.upsert.useMutation({
     onSuccess: (data) => {
-      queryClient.resetQueries(getQueryKey(trpc.monitor.all));
+      context.monitor.all.reset({
+        workspaceId: data.workspaceId,
+      });
 
       defaultSuccessHandler();
     },

@@ -33,11 +33,11 @@ export const MonitorEdit: React.FC = React.memo(() => {
       <MonitorInfoEditor
         initialValues={monitor as MonitorInfoEditorValues}
         onSave={async (value) => {
-          await mutation.mutateAsync({
+          const monitor = await mutation.mutateAsync({
             ...value,
             workspaceId: currentWorkspaceId,
           });
-          navigate('/monitor', { replace: true });
+          navigate(`/monitor/${monitor.id}`, { replace: true });
         }}
       />
     </div>

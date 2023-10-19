@@ -1,4 +1,4 @@
-import { Card, Select, Space } from 'antd';
+import { Button, Card, Select, Space, Spin } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { trpc } from '../../api/trpc';
@@ -13,6 +13,7 @@ import { useSocketSubscribeList } from '../../api/socketio';
 import { last, uniqBy } from 'lodash-es';
 import { ErrorTip } from '../ErrorTip';
 import { ColorTag } from '../ColorTag';
+import { useNavigate } from 'react-router';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -21,13 +22,18 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
   const { monitorId } = props;
   const [currectResponse, setCurrentResponse] = useState(0);
+  const navigate = useNavigate();
 
-  const { data: monitorInfo, isLoading } = trpc.monitor.get.useQuery({
+  const {
+    data: monitorInfo,
+    isInitialLoading,
+    isLoading,
+  } = trpc.monitor.get.useQuery({
     workspaceId,
     id: monitorId,
   });
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <Loading />;
   }
 
@@ -36,7 +42,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   }
 
   return (
-    <div>
+    <Spin spinning={isLoading}>
       <Space className="w-full" direction="vertical">
         <div className="flex justify-between">
           <Space direction="vertical">
@@ -54,6 +60,17 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
             days
           </div>
+        </div>
+
+        <div>
+          <Button
+            type="primary"
+            onClick={() => {
+              navigate(`/monitor/${monitorInfo.id}/edit`);
+            }}
+          >
+            Edit
+          </Button>
         </div>
 
         <Card>
@@ -79,7 +96,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
           <MonitorDataChart monitorId={monitorId} />
         </Card>
       </Space>
-    </div>
+    </Spin>
   );
 });
 MonitorInfo.displayName = 'MonitorInfo';
