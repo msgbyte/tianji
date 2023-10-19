@@ -17,7 +17,7 @@ interface SMTPPayload {
 
 // Fork from https://github.com/louislam/uptime-kuma/blob/HEAD/server/notification-providers/smtp.js
 export const smtp: NotificationProvider = {
-  send: async (notification, message) => {
+  send: async (notification, title, message) => {
     const payload = notification.payload as unknown as SMTPPayload;
 
     const config: SMTPTransport.Options = {
@@ -34,7 +34,7 @@ export const smtp: NotificationProvider = {
       };
     }
 
-    const subject = message;
+    const subject = title;
     const bodyTextContent = message;
 
     const transporter = nodemailer.createTransport(config);

@@ -4,7 +4,7 @@ import { prisma } from '../../model/_client';
 import { sendNotification } from '../../model/notification';
 
 export const notificationRouter = router({
-  getAll: workspaceProcedure.query(({ input }) => {
+  all: workspaceProcedure.query(({ input }) => {
     const workspaceId = input.workspaceId;
 
     return prisma.notification.findMany({
@@ -23,7 +23,11 @@ export const notificationRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      await sendNotification(input, `${input.name} + Notification Testing`);
+      await sendNotification(
+        input,
+        `${input.name} Notification Testing`,
+        `This is Notification Testing`
+      );
     }),
   upsert: workspaceOwnerProcedure
     .input(

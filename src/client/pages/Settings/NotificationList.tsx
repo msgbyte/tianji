@@ -14,7 +14,7 @@ import { useCurrentWorkspaceId } from '../../store/user';
 export const NotificationList: React.FC = React.memo(() => {
   const [open, setOpen] = useState(false);
   const currentWorkspaceId = useCurrentWorkspaceId();
-  const { data: list = [], refetch } = trpc.notification.getAll.useQuery({
+  const { data: list = [], refetch } = trpc.notification.all.useQuery({
     workspaceId: currentWorkspaceId!,
   });
   const [editingFormData, setEditingFormData] = useState<

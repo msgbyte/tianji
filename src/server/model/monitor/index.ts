@@ -1,12 +1,16 @@
-import { Monitor } from '@prisma/client';
-import { createSubscribeInitializer, subscribeEventBus } from '../../ws/shared';
+import { Monitor, Notification } from '@prisma/client';
+import { subscribeEventBus } from '../../ws/shared';
 import { prisma } from '../_client';
 import { monitorProviders } from './provider';
+import { sendNotification } from '../notification';
+import dayjs from 'dayjs';
 
 export type MonitorUpsertData = Pick<
   Monitor,
   'workspaceId' | 'name' | 'type' | 'interval'
 > & { id?: string; active?: boolean; payload: Record<string, any> };
+
+type MonitorWithNotification = Monitor & { notifications: Notification[] };
 
 class MonitorManager {
   private monitorRunner: Record<string, MonitorRunner> = {};
@@ -15,8 +19,8 @@ class MonitorManager {
   /**
    * create or update
    */
-  async upsert(data: MonitorUpsertData): Promise<Monitor> {
-    let monitor: Monitor;
+  async upsert(data: MonitorUpsertData): Promise<MonitorWithNotification> {
+    let monitor: MonitorWithNotification;
     if (data.id) {
       // update
       monitor = await prisma.monitor.update({
@@ -24,6 +28,9 @@ class MonitorManager {
           id: data.id,
         },
         data: { ...data },
+        include: {
+          notifications: true,
+        },
       });
 
       return monitor;
@@ -31,6 +38,9 @@ class MonitorManager {
       // create
       monitor = await prisma.monitor.create({
         data: { ...data },
+        include: {
+          notifications: true,
+        },
       });
     }
 
@@ -63,6 +73,9 @@ class MonitorManager {
       where: {
         active: true,
       },
+      include: {
+        notifications: true,
+      },
     });
 
     Promise.all(
@@ -88,7 +101,7 @@ class MonitorRunner {
   isStopped = false;
   timer: NodeJS.Timeout | null = null;
 
-  constructor(public monitor: Monitor) {}
+  constructor(public monitor: Monitor & { notifications: Notification[] }) {}
 
   /**
    * Start single monitor
@@ -114,7 +127,7 @@ class MonitorRunner {
       }, interval * 1000);
     };
 
-    async function run() {
+    const run = async () => {
       let value = 0;
       try {
         value = await provider.run(monitor);
@@ -132,6 +145,12 @@ class MonitorRunner {
             type: 'DOWN',
           },
         });
+        await this.notify(
+          `[${monitor.name}] 🔴 Down`,
+          `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
+            'YYYY-MM-DD HH:mm:ss'
+          )}`
+        );
       } else if (value > 0 && currentStatus === 'DOWN') {
         await prisma.monitorEvent.create({
           data: {
@@ -140,6 +159,12 @@ class MonitorRunner {
             type: 'UP',
           },
         });
+        await this.notify(
+          `[${monitor.name}] ✅ Up`,
+          `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
+            'YYYY-MM-DD HH:mm:ss'
+          )}`
+        );
       }
 
       // insert into data
@@ -154,7 +179,7 @@ class MonitorRunner {
 
       // Run next loop
       nextAction();
-    }
+    };
 
     run();
 
@@ -176,6 +201,17 @@ class MonitorRunner {
   async restartMonitor() {
     this.stopMonitor();
     this.startMonitor();
+  }
+
+  async notify(title: string, message: string) {
+    const notifications = this.monitor.notifications;
+    await Promise.all(
+      notifications.map((n) =>
+        sendNotification(n, title, message).catch((err) => {
+          console.error(err);
+        })
+      )
+    );
   }
 }
 
