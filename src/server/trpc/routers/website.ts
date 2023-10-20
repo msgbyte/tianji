@@ -161,7 +161,7 @@ export const websiteRouter = router({
         websiteId: z.string().cuid2(),
         name: z.string().max(100),
         domain: z.union([z.string().max(500).url(), z.string().max(500).ip()]),
-        monitorId: z.string().cuid2(),
+        monitorId: z.string().cuid2().nullish(),
       })
     )
     .mutation(async ({ input }) => {
