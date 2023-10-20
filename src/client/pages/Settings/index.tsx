@@ -5,21 +5,26 @@ import { WebsiteInfo } from '../../components/WebsiteInfo';
 import { WebsiteList } from '../../components/WebsiteList';
 import { useEvent } from '../../hooks/useEvent';
 import { NotificationList } from './NotificationList';
+import { Profile } from './Profile';
+
+const items: MenuProps['items'] = [
+  {
+    key: 'websites',
+    label: 'Websites',
+  },
+  {
+    key: 'notifications',
+    label: 'Notifications',
+  },
+  {
+    key: 'profile',
+    label: 'Profile',
+  },
+];
 
 export const SettingsPage: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-
-  const items: MenuProps['items'] = [
-    {
-      key: 'websites',
-      label: 'Websites',
-    },
-    {
-      key: 'notifications',
-      label: 'Notifications',
-    },
-  ];
 
   const onClick: MenuProps['onClick'] = useEvent((e) => {
     navigate(`/settings/${e.key}`);
@@ -46,6 +51,7 @@ export const SettingsPage: React.FC = React.memo(() => {
           <Route path="/websites" element={<WebsiteList />} />
           <Route path="/website/:websiteId" element={<WebsiteInfo />} />
           <Route path="/notifications" element={<NotificationList />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </div>

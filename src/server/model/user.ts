@@ -2,6 +2,7 @@ import { prisma } from './_client';
 import bcryptjs from 'bcryptjs';
 import { ROLES, SYSTEM_ROLES } from '../utils/const';
 import { jwtVerify } from '../middleware/auth';
+import { TRPCError } from '@trpc/server';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -190,4 +191,40 @@ export async function findUser(userId: string) {
   });
 
   return user;
+}
+
+export async function changeUserPassword(
+  userId: string,
+  oldPassword: string,
+  newPassword: string
+) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'user not found',
+    });
+  }
+
+  const checkPassword = await comparePassword(oldPassword, user.password);
+  if (!checkPassword) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'old password not correct',
+    });
+  }
+
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      password: await hashPassword(newPassword),
+    },
+  });
 }

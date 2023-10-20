@@ -9,3 +9,7 @@ export function getJWT(): string | null {
 export function setJWT(jwt: string) {
   window.localStorage.setItem(TOKEN_STORAGE_KEY, jwt);
 }
+
+export function clearJWT() {
+  window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+}

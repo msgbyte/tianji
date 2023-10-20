@@ -1,8 +1,9 @@
-import { publicProcedure, router } from '../trpc';
+import { protectProedure, publicProcedure, router } from '../trpc';
 import { z } from 'zod';
 import {
   authUser,
   authUserWithToken,
+  changeUserPassword,
   createAdminUser,
   createUser,
   getUserCount,
@@ -73,5 +74,18 @@ export const userRouter = router({
 
         return { info: user, token };
       }
+    }),
+  changePassword: protectProedure
+    .input(
+      z.object({
+        oldPassword: z.string(),
+        newPassword: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.user.id;
+      const { oldPassword, newPassword } = input;
+
+      return changeUserPassword(userId, oldPassword, newPassword);
     }),
 });

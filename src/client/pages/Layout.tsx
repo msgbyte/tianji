@@ -4,6 +4,7 @@ import { NavItem } from '../components/NavItem';
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
 import { useUserStore } from '../store/user';
+import { useLogout } from '../api/model/user';
 
 export const Layout: React.FC = React.memo(() => {
   const [params] = useSearchParams();
@@ -14,12 +15,13 @@ export const Layout: React.FC = React.memo(() => {
         id: w.workspace.id,
         name: w.workspace.name,
         role: w.role,
-        current: userInfo.currentWorkspace.id === w.workspace.id,
+        current: userInfo.currentWorkspace?.id === w.workspace.id,
       }));
     }
 
     return [];
   });
+  const logout = useLogout();
   const showHeader = !params.has('hideHeader');
 
   return (
@@ -57,6 +59,9 @@ export const Layout: React.FC = React.memo(() => {
                   {
                     key: 'logout',
                     label: 'Logout',
+                    onClick: () => {
+                      logout();
+                    },
                   },
                 ],
               }}
