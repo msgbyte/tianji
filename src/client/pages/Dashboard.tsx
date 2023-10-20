@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo, useState } from 'react';
 import { ArrowRightOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Divider } from 'antd';
+import { Button, Divider, Empty } from 'antd';
 import { WebsiteOverview } from '../components/website/WebsiteOverview';
 import { useCurrentWorkspace } from '../store/user';
 import { Loading } from '../components/Loading';
@@ -11,6 +11,7 @@ import { useEvent } from '../hooks/useEvent';
 import arrayMove from 'array-move';
 import SortableList, { SortableItem } from 'react-easy-sort';
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../api/trpc';
+import { Link } from 'react-router-dom';
 
 export const Dashboard: React.FC = React.memo(() => {
   const workspace = useCurrentWorkspace();
@@ -31,13 +32,15 @@ export const Dashboard: React.FC = React.memo(() => {
       <div className="h-20 flex items-center">
         <div className="text-2xl flex-1">Dashboard</div>
         <div>
-          <Button
-            icon={<EditOutlined />}
-            size="large"
-            onClick={() => setIsEditLayout((state) => !state)}
-          >
-            {isEditLayout ? 'Done' : 'Edit'}
-          </Button>
+          {websiteList.length !== 0 && (
+            <Button
+              icon={<EditOutlined />}
+              size="large"
+              onClick={() => setIsEditLayout((state) => !state)}
+            >
+              {isEditLayout ? 'Done' : 'Edit'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -57,6 +60,19 @@ export const Dashboard: React.FC = React.memo(() => {
         </SortableList>
       ) : (
         <div>
+          {websiteList.length === 0 && (
+            <Empty
+              description={
+                <div>
+                  <div>There is no website has been created</div>
+                  <Link to="/settings/websites">
+                    <Button>Add webiste</Button>
+                  </Link>
+                </div>
+              }
+            />
+          )}
+
           {websiteList.map((website, i) => (
             <Fragment key={website.id}>
               {i !== 0 && <Divider />}

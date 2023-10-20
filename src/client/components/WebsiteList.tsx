@@ -1,9 +1,10 @@
 import {
   BarChartOutlined,
+  CodeOutlined,
   EditOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
-import { Button, Form, Input, Modal, Table } from 'antd';
+import { Button, Form, Input, Modal, Table, Typography } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 import {
@@ -19,6 +20,7 @@ import { useUserStore } from '../store/user';
 import { useEvent } from '../hooks/useEvent';
 import { useNavigate } from 'react-router';
 import { PageHeader } from './PageHeader';
+import { ModalButton } from './ModalButton';
 
 export const WebsiteList: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,9 +112,36 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
         },
         {
           key: 'action',
-          render: (record) => {
+          render: (_, record) => {
+            const trackScript = `<script async src="${location.origin}/tracker.js" data-website-id="${record.id}"></script>`;
+
             return (
               <div className="flex gap-2 justify-end">
+                <ModalButton
+                  buttonProps={{
+                    icon: <CodeOutlined />,
+                    children: 'Code',
+                  }}
+                  modalProps={{
+                    children: (
+                      <div>
+                        <div>Tracking code</div>
+                        <div className="text-sm opacity-60">
+                          Add this code into your website head script
+                        </div>
+                        <Typography.Paragraph
+                          copyable={{
+                            format: 'text/plain',
+                            text: trackScript,
+                          }}
+                          className="h-[96px] flex p-2 rounded bg-black bg-opacity-5 border border-black border-opacity-10"
+                        >
+                          <span>{trackScript}</span>
+                        </Typography.Paragraph>
+                      </div>
+                    ),
+                  }}
+                />
                 <Button
                   icon={<EditOutlined />}
                   onClick={() => handleEdit(record.id)}
