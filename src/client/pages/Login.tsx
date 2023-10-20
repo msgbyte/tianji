@@ -5,6 +5,7 @@ import { useRequest } from '../hooks/useRequest';
 import { trpc } from '../api/trpc';
 import { setJWT } from '../api/auth';
 import { setUserInfo } from '../store/user';
+import { useGlobalConfig } from '../hooks/useConfig';
 
 export const Login: React.FC = React.memo(() => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export const Login: React.FC = React.memo(() => {
     setUserInfo(res.info);
     navigate('/dashboard');
   });
+  const { allowRegister } = useGlobalConfig();
 
   return (
     <div className="w-full h-full flex justify-center items-center">
@@ -51,18 +53,21 @@ export const Login: React.FC = React.memo(() => {
               Login
             </Button>
           </Form.Item>
-          <Form.Item>
-            <Button
-              size="large"
-              htmlType="button"
-              block={true}
-              onClick={() => {
-                navigate('/register');
-              }}
-            >
-              Register
-            </Button>
-          </Form.Item>
+
+          {allowRegister && (
+            <Form.Item>
+              <Button
+                size="large"
+                htmlType="button"
+                block={true}
+                onClick={() => {
+                  navigate('/register');
+                }}
+              >
+                Register
+              </Button>
+            </Form.Item>
+          )}
         </Form>
       </div>
     </div>

@@ -4,8 +4,10 @@ import { websiteRouter } from './website';
 import { monitorRouter } from './monitor';
 import { userRouter } from './user';
 import { workspaceRouter } from './workspace';
+import { globalRouter } from './global';
 
 export const appRouter = router({
+  global: globalRouter,
   user: userRouter,
   workspace: workspaceRouter,
   website: websiteRouter,

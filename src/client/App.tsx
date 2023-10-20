@@ -13,9 +13,14 @@ import React from 'react';
 import { trpc, trpcClient } from './api/trpc';
 import { MonitorPage } from './pages/Monitor';
 import { WebsitePage } from './pages/Website';
+import { useGlobalConfig } from './hooks/useConfig';
+import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
+  const { allowRegister } = useGlobalConfig();
+
+  useInjectWebsiteScript();
 
   return (
     <Routes>
@@ -30,7 +35,7 @@ export const AppRoutes: React.FC = React.memo(() => {
       ) : (
         <Route>
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {allowRegister && <Route path="/register" element={<Register />} />}
         </Route>
       )}
 
