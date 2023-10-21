@@ -86,7 +86,7 @@ model WebsiteSession {
   device       String?  @db.VarChar(20)
   screen       String?  @db.VarChar(11)
   language     String?  @db.VarChar(35)
-  ip           String?  @db.VarChar(20)
+  ip           String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
   country      String?  @db.Char(2)
   subdivision1 String?  @db.VarChar(20)
   subdivision2 String?  @db.VarChar(50)
