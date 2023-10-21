@@ -4,17 +4,23 @@ import express from 'express';
 import 'express-async-errors';
 import ViteExpress from 'vite-express';
 import compression from 'compression';
+import swaggerUI from 'swagger-ui-express';
 import passport from 'passport';
 import morgan from 'morgan';
 import { websiteRouter } from './router/website';
 import { workspaceRouter } from './router/workspace';
 import { telemetryRouter } from './router/telemetry';
-import { trpcExpressMiddleware } from './trpc';
+import {
+  trpcExpressMiddleware,
+  trpcOpenapiDocument,
+  trpcOpenapiHttpHandler,
+} from './trpc';
 import { initUdpServer } from './udp/server';
 import { createServer } from 'http';
 import { initSocketio } from './ws';
 import { monitorManager } from './model/monitor';
 import { settings } from './utils/settings';
+import { env } from './utils/env';
 
 const port = settings.port;
 
@@ -39,6 +45,10 @@ app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/telemetry', telemetryRouter);
 
+if (env.allowOpenapi) {
+  app.use('/open/_ui', swaggerUI.serve, swaggerUI.setup(trpcOpenapiDocument));
+  app.use('/open', trpcOpenapiHttpHandler);
+}
 app.use('/trpc', trpcExpressMiddleware);
 
 app.use((err: any, req: any, res: any, next: any) => {
@@ -49,6 +59,9 @@ app.use((err: any, req: any, res: any, next: any) => {
 httpServer.listen(port, () => {
   ViteExpress.bind(app, httpServer, () => {
     console.log(`Server is listening on port ${port}...`);
+    if (env.allowOpenapi) {
+      console.log(`Openapi UI: http://127.0.0.1:${port}/open/_ui`);
+    }
     console.log(`Website: http://127.0.0.1:${port}`);
   });
 });

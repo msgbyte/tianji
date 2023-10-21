@@ -8,6 +8,7 @@ services:
       DATABASE_URL: postgresql://tianji:tianji@db:5432/tianji
       JWT_SECRET: replace-me-with-a-random-string
       ALLOW_REGISTER: "false"
+      ALLOW_OPENAPI: "true"
     depends_on:
       - postgres
     restart: always

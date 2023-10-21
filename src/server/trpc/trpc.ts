@@ -5,6 +5,7 @@ import { jwtVerify } from '../middleware/auth';
 import { getWorkspaceUser } from '../model/workspace';
 import { ROLES, SYSTEM_ROLES } from '../utils/const';
 import type { IncomingMessage } from 'http';
+import { OpenApiMeta } from 'trpc-openapi';
 
 export function createContext({ req }: { req: IncomingMessage }) {
   const authorization = req.headers['authorization'] ?? '';
@@ -14,7 +15,7 @@ export function createContext({ req }: { req: IncomingMessage }) {
 }
 
 type Context = inferAsyncReturnType<typeof createContext>;
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().meta<OpenApiMeta>().create();
 
 export const middleware = t.middleware;
 export const router = t.router;

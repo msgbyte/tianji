@@ -10,13 +10,25 @@ import {
 } from '../../model/user';
 import { jwtSign } from '../../middleware/auth';
 import { TRPCError } from '@trpc/server';
+import { env } from '../../utils/env';
+import { userInfoSchema } from '../../model/_schema/index';
+import { OPENAPI_TAG } from '../../utils/const';
 
 export const userRouter = router({
   login: publicProcedure
+    .meta({
+      openapi: { method: 'POST', path: '/login', tags: [OPENAPI_TAG.USER] },
+    })
     .input(
       z.object({
         username: z.string(),
         password: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        info: userInfoSchema,
+        token: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -28,8 +40,21 @@ export const userRouter = router({
       return { info: user, token };
     }),
   loginWithToken: publicProcedure
+    .meta({
+      openapi: {
+        method: 'POST',
+        path: '/loginWithToken',
+        tags: [OPENAPI_TAG.USER],
+      },
+    })
     .input(
       z.object({
+        token: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        info: userInfoSchema,
         token: z.string(),
       })
     )
@@ -51,13 +76,34 @@ export const userRouter = router({
       }
     }),
   register: publicProcedure
+    .meta({
+      openapi: {
+        enabled: env.allowRegister,
+        method: 'POST',
+        path: '/register',
+        tags: [OPENAPI_TAG.USER],
+      },
+    })
     .input(
       z.object({
         username: z.string(),
         password: z.string(),
       })
     )
+    .output(
+      z.object({
+        info: userInfoSchema,
+        token: z.string(),
+      })
+    )
     .mutation(async ({ input }) => {
+      if (!env.allowRegister) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not allow register',
+        });
+      }
+
       const { username, password } = input;
 
       const userCount = await getUserCount();
