@@ -24,7 +24,7 @@ export const MonitorOverview: React.FC = React.memo(() => {
           </div>
         </Card>
       </div>
-      <div>
+      <div className="py-2">
         <MonitorEventList />
       </div>
     </div>

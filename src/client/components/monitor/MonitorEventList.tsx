@@ -23,7 +23,7 @@ export const MonitorEventList: React.FC<MonitorEventListProps> = React.memo(
     }
 
     return (
-      <div className="space-y-4 py-2">
+      <div className="space-y-4">
         {data.map((item) => (
           <Card
             key={item.id}

@@ -134,7 +134,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
                             format: 'text/plain',
                             text: trackScript,
                           }}
-                          className="h-[96px] flex p-2 rounded bg-black bg-opacity-5 border border-black border-opacity-10"
+                          className="h-[96px] flex p-2 rounded bg-black bg-opacity-5 border border-black border-opacity-10 overflow-auto"
                         >
                           <span>{trackScript}</span>
                         </Typography.Paragraph>
