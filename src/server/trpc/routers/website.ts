@@ -6,6 +6,7 @@ import {
   EVENT_COLUMNS,
   FILTER_COLUMNS,
   SESSION_COLUMNS,
+  hostnameRegex,
 } from '../../utils/const';
 import { parseDateRange } from '../../utils/common';
 import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
@@ -160,7 +161,10 @@ export const websiteRouter = router({
       z.object({
         websiteId: z.string().cuid2(),
         name: z.string().max(100),
-        domain: z.union([z.string().max(500).url(), z.string().max(500).ip()]),
+        domain: z.union([
+          z.string().max(500).regex(hostnameRegex),
+          z.string().max(500).ip(),
+        ]),
         monitorId: z.string().cuid2().nullish(),
       })
     )
