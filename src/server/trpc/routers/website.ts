@@ -1,23 +1,38 @@
-import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
+import {
+  OpenApiMetaInfo,
+  router,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} from '../trpc';
 import { z } from 'zod';
 import { getWebsiteOnlineUserCount } from '../../model/website';
 import { prisma } from '../../model/_client';
 import {
   EVENT_COLUMNS,
   FILTER_COLUMNS,
+  OPENAPI_TAG,
   SESSION_COLUMNS,
   hostnameRegex,
 } from '../../utils/const';
 import { parseDateRange } from '../../utils/common';
 import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
+import { websiteInfoSchema } from '../../model/_schema';
+import { OpenApiMeta } from 'trpc-openapi';
 
 export const websiteRouter = router({
   onlineCount: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/onlineCount',
+      })
+    )
     .input(
       z.object({
         websiteId: z.string(),
       })
     )
+    .output(z.number())
     .query(async ({ input }) => {
       const websiteId = input.websiteId;
 
@@ -26,11 +41,18 @@ export const websiteRouter = router({
       return count;
     }),
   info: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/info',
+      })
+    )
     .input(
       z.object({
         websiteId: z.string(),
       })
     )
+    .output(websiteInfoSchema.nullable())
     .query(async ({ input }) => {
       const { workspaceId, websiteId } = input;
 
@@ -44,6 +66,12 @@ export const websiteRouter = router({
       return website;
     }),
   metrics: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/metrics',
+      })
+    )
     .input(
       z.object({
         websiteId: z.string(),
@@ -157,6 +185,12 @@ export const websiteRouter = router({
       return [];
     }),
   updateInfo: workspaceOwnerProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'PUT',
+        path: '/update',
+      })
+    )
     .input(
       z.object({
         websiteId: z.string().cuid2(),
@@ -168,6 +202,7 @@ export const websiteRouter = router({
         monitorId: z.string().cuid2().nullish(),
       })
     )
+    .output(websiteInfoSchema)
     .mutation(async ({ input }) => {
       const { workspaceId, websiteId, name, domain, monitorId } = input;
 
@@ -186,3 +221,14 @@ export const websiteRouter = router({
       return websiteInfo;
     }),
 });
+
+function buildWebsiteOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.WEBSITE],
+      protect: true,
+      ...meta,
+      path: `/workspace/{workspaceId}/website/{websiteId}${meta.path}`,
+    },
+  };
+}

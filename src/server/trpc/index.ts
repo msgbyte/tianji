@@ -19,9 +19,13 @@ export const trpcOpenapiHttpHandler = createOpenApiHttpHandler({
   createContext,
 });
 
+const description = `
+  <h3>Insight into everything</h3>
+  <p>Github: <a href="https://github.com/msgbyte/tianji" target="_blank">https://github.com/msgbyte/tianji</a></p>
+`.trim();
 export const trpcOpenapiDocument = generateOpenApiDocument(appRouter, {
   title: 'Tianji OpenAPI',
-  description: 'Insight into everything',
+  description,
   version: '1.0.0',
   baseUrl: '/open',
 });

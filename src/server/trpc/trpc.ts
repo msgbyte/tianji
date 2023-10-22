@@ -17,6 +17,8 @@ export function createContext({ req }: { req: IncomingMessage }) {
 type Context = inferAsyncReturnType<typeof createContext>;
 const t = initTRPC.context<Context>().meta<OpenApiMeta>().create();
 
+export type OpenApiMetaInfo = NonNullable<OpenApiMeta['openapi']>;
+
 export const middleware = t.middleware;
 export const router = t.router;
 export const publicProcedure = t.procedure;

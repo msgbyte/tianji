@@ -21,3 +21,16 @@ export const userInfoSchema = z.object({
     })
   ),
 });
+
+export const websiteInfoSchema = z.object({
+  id: z.string(),
+  workspaceId: z.string(),
+  name: z.string(),
+  domain: z.string().nullable(),
+  shareId: z.string().nullable(),
+  resetAt: z.date().nullable(),
+  monitorId: z.string().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  deletedAt: z.date().nullable(),
+});

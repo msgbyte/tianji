@@ -115,7 +115,9 @@ export const FILTER_COLUMNS = {
 export const DEFAULT_RESET_DATE = '2000-01-01';
 
 export enum OPENAPI_TAG {
+  GLOBAL = 'Global',
   USER = 'User',
+  WEBSITE = 'Website',
 }
 
 export const hostnameRegex =

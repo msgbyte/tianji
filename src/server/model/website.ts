@@ -273,7 +273,7 @@ export async function getWebsiteOnlineUserCount(
     Ret[]
   >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId} AND "createdAt" >= ${startAt}`;
 
-  return res?.[0].x ?? 0;
+  return Number(res?.[0].x ?? 0);
 }
 
 export async function getSessionMetrics(

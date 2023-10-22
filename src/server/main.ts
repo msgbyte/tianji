@@ -47,6 +47,7 @@ app.use('/telemetry', telemetryRouter);
 
 if (env.allowOpenapi) {
   app.use('/open/_ui', swaggerUI.serve, swaggerUI.setup(trpcOpenapiDocument));
+  app.use('/open/_document', (req, res) => res.send(trpcOpenapiDocument));
   app.use('/open', trpcOpenapiHttpHandler);
 }
 app.use('/trpc', trpcExpressMiddleware);
