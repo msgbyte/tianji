@@ -16,6 +16,18 @@ I think these tools should serve the same purpose, so is there an application th
 
 It's good to specialize in one thing, if we are experts in related abilities we need such specialized tools. But for most users who only have lightweight needs, an **All-in-One** application will be more convenient and easier to use.
 
+## Roadmap
+
+- [x] website analysis
+- [x] monitor
+- [x] server status
+- [x] problem notification
+- [x] telemetry
+- [ ] openapi
+- [ ] website
+- [ ] team collaboration
+- [ ] survey
+
 ## Open Source
 
 `Tianji` is open source with `Apache 2.0` license.
