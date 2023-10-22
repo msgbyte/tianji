@@ -1,6 +1,8 @@
 # Tianji
 
-Insight into everything
+<img src="./public/icon.svg" width="128" />
+
+**Insight into everything**
 
 `Uptime Monitor` + `Website analytics` + `Server Status` = `Tianji`
 

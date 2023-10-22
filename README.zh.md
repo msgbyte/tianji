@@ -1,6 +1,8 @@
 # Tianji
 
-洞察一切
+<img src="./public/icon.svg" width="128" />
+
+**洞察一切**
 
 `状态监控器` + `网站分析器` + `服务状态上报` = `Tianji`
 
