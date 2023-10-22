@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 
-WORKDIR /app/tailchat
+WORKDIR /app/tianji
 
 RUN npm install -g pnpm@8.3.1
 
