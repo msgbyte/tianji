@@ -34,7 +34,7 @@ export const logger = winston.createLogger({
             `${timestamp} ${label || '-'} ${level}: ${message}`
         )
       ),
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+      // level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
     }),
   ],
 });

@@ -96,7 +96,7 @@ function checkCertificate(res: AxiosResponse<any, any>) {
   const info = res.request.res.socket.getPeerCertificate(true);
   const valid = res.request.res.socket.authorized || false;
 
-  logger.info('cert', 'Parsing Certificate Info', info);
+  logger.debug('cert', 'Parsing Certificate Info', info);
 
   const parsedInfo = parseCertificateInfo(info);
 
