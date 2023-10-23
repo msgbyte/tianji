@@ -249,6 +249,7 @@ model Monitor {
   notifications Notification[]
   events        MonitorEvent[]
   datas         MonitorData[]
+  status        MonitorStatus[]
 
   @@index([workspaceId])
 }
@@ -270,4 +271,17 @@ model MonitorData {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+// Use for record latest monitor status, for example tls status
+model MonitorStatus {
+  monitorId  String   @db.VarChar(30)
+  statusName String   @db.VarChar(50)
+  payload    Json     @db.Json
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([monitorId, statusName])
 }

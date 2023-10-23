@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { Loading } from '../Loading';
-import { getMonitorLink } from '../modals/monitor/provider';
+import { getMonitorLink, getMonitorProvider } from '../modals/monitor/provider';
 import { NotFoundTip } from '../NotFoundTip';
 import { MonitorInfo as MonitorInfoType } from '../../../types';
 import { Area, AreaConfig } from '@ant-design/charts';
@@ -14,6 +14,7 @@ import { last, uniqBy } from 'lodash-es';
 import { ErrorTip } from '../ErrorTip';
 import { ColorTag } from '../ColorTag';
 import { useNavigate } from 'react-router';
+import { MonitorStatsBlock } from './MonitorStatsBlock';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -88,6 +89,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
         <Card>
           <MonitorDataMetrics
             monitorId={monitorId}
+            monitorType={monitorInfo.type}
             currectResponse={currectResponse}
           />
         </Card>
@@ -103,14 +105,29 @@ MonitorInfo.displayName = 'MonitorInfo';
 
 export const MonitorDataMetrics: React.FC<{
   monitorId: string;
+  monitorType: string;
   currectResponse: number;
 }> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
-  const { monitorId, currectResponse } = props;
+  const { monitorId, monitorType, currectResponse } = props;
   const { data, isLoading } = trpc.monitor.dataMetrics.useQuery({
     workspaceId,
     monitorId,
   });
+  const providerOverview = useMemo(() => {
+    const provider = getMonitorProvider(monitorType);
+    if (!provider || !provider.overview) {
+      return null;
+    }
+
+    return (
+      <>
+        {provider.overview.map((Component) => (
+          <Component monitorId={monitorId} />
+        ))}
+      </>
+    );
+  }, [monitorType]);
 
   if (isLoading) {
     return <Loading />;
@@ -122,44 +139,40 @@ export const MonitorDataMetrics: React.FC<{
 
   return (
     <div className="flex justify-between text-center">
-      <div>
-        <div className="font-bold mb-0.5">Response</div>
-        <div className="text-gray-500">(Current)</div>
-        <div>{currectResponse} ms</div>
-      </div>
-      <div>
-        <div className="font-bold mb-0.5">Avg. Response</div>
-        <div className="text-gray-500">(24 hour)</div>
-        <div>{parseFloat(data.recent1DayAvg.toFixed(0))} ms</div>
-      </div>
-      <div>
-        <div className="font-bold mb-0.5">Uptime</div>
-        <div className="text-gray-500 mb-2 text-xs">(24 hour)</div>
-        <div>
-          {parseFloat(
-            (
-              (data.recent1DayOnlineCount /
-                (data.recent1DayOnlineCount + data.recent1DayOfflineCount)) *
-              100
-            ).toFixed(2)
-          )}
-          %
-        </div>
-      </div>
-      <div>
-        <div className="font-bold mb-0.5">Uptime</div>
-        <div className="text-gray-500">(30 days)</div>
-        <div>
-          {parseFloat(
-            (
-              (data.recent30DayOnlineCount /
-                (data.recent30DayOnlineCount + data.recent30DayOfflineCount)) *
-              100
-            ).toFixed(2)
-          )}
-          %
-        </div>
-      </div>
+      <MonitorStatsBlock
+        title="Response"
+        desc="(Current)"
+        text={`${currectResponse} ms`}
+      />
+      <MonitorStatsBlock
+        title="Avg. Response"
+        desc="(24 hour)"
+        text={`${parseFloat(data.recent1DayAvg.toFixed(0))} ms`}
+      />
+      <MonitorStatsBlock
+        title="Uptime"
+        desc="(24 hour)"
+        text={`${parseFloat(
+          (
+            (data.recent1DayOnlineCount /
+              (data.recent1DayOnlineCount + data.recent1DayOfflineCount)) *
+            100
+          ).toFixed(2)
+        )} %`}
+      />
+      <MonitorStatsBlock
+        title="Uptime"
+        desc="(30 days)"
+        text={`${parseFloat(
+          (
+            (data.recent30DayOnlineCount /
+              (data.recent30DayOnlineCount + data.recent30DayOfflineCount)) *
+            100
+          ).toFixed(2)
+        )} %`}
+      />
+
+      {providerOverview}
     </div>
   );
 });

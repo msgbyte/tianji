@@ -239,4 +239,23 @@ export const monitorRouter = router({
 
       return list;
     }),
+  getStatus: workspaceProcedure
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+        statusName: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { monitorId, statusName } = input;
+
+      return prisma.monitorStatus.findUnique({
+        where: {
+          monitorId_statusName: {
+            monitorId,
+            statusName,
+          },
+        },
+      });
+    }),
 });

@@ -19,7 +19,7 @@ export const MonitorEventList: React.FC<MonitorEventListProps> = React.memo(
     const navigate = useNavigate();
 
     if (isLoading === false && data.length === 0) {
-      return <Empty />;
+      return <Empty description="No events" />;
     }
 
     return (

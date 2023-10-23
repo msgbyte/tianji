@@ -1,25 +1,25 @@
 import React from 'react';
 import { MonitorInfo } from '../../../../../types';
-import { MonitorPing } from './ping';
-
-interface MonitorProvider {
-  label: string;
-  name: string;
-  link: (info: MonitorInfo) => React.ReactNode;
-  form: React.ComponentType;
-}
+import { pingProvider } from './ping';
+import { httpProvider } from './http';
+import { MonitorProvider } from './types';
 
 export const monitorProviders: MonitorProvider[] = [
-  {
-    label: 'Ping',
-    name: 'ping',
-    link: (info) => String(info.payload.hostname),
-    form: MonitorPing,
-  },
+  pingProvider, // ping
+  httpProvider, // http
 ];
 
+export function getMonitorProvider(type: string) {
+  const provider = monitorProviders.find((m) => m.name === type);
+  if (!provider) {
+    return null;
+  }
+
+  return provider;
+}
+
 export function getMonitorLink(info: MonitorInfo): React.ReactNode {
-  const provider = monitorProviders.find((m) => m.name === info.type);
+  const provider = getMonitorProvider(info.type);
   if (!provider) {
     return null;
   }

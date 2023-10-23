@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Monitor } from '@prisma/client';
 import { Button, Form, Input, InputNumber, Select } from 'antd';
-import { monitorProviders } from './provider';
+import { getMonitorProvider, monitorProviders } from './provider';
 import { useEvent } from '../../../hooks/useEvent';
 import { NotificationPicker } from '../../notification/NotificationPicker';
 
@@ -31,7 +31,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
     const typeValue = Form.useWatch('type', form);
 
     const formEl = useMemo(() => {
-      const provider = monitorProviders.find((s) => s.name === typeValue);
+      const provider = getMonitorProvider(typeValue);
 
       if (!provider) {
         return null;

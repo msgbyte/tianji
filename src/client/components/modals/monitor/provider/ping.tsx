@@ -1,5 +1,6 @@
 import { Form, Input } from 'antd';
 import React from 'react';
+import { MonitorProvider } from './types';
 
 export const MonitorPing: React.FC = React.memo(() => {
   return (
@@ -15,3 +16,10 @@ export const MonitorPing: React.FC = React.memo(() => {
   );
 });
 MonitorPing.displayName = 'MonitorPing';
+
+export const pingProvider: MonitorProvider = {
+  label: 'Ping',
+  name: 'ping',
+  link: (info) => String(info.payload.hostname),
+  form: MonitorPing,
+};
