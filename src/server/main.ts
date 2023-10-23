@@ -41,6 +41,13 @@ app.use(passport.initialize());
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
 
+app.use(
+  '/tracker.js',
+  express.static('./public/tracker.js', {
+    maxAge: '7d',
+  })
+);
+
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/telemetry', telemetryRouter);
