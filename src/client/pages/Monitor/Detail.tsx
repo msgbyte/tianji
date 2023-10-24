@@ -11,7 +11,7 @@ export const MonitorDetail: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="px-2">
+    <div className="px-2 h-full">
       <MonitorInfo monitorId={monitorId} />
     </div>
   );

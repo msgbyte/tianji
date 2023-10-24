@@ -15,6 +15,7 @@ import { ErrorTip } from '../ErrorTip';
 import { ColorTag } from '../ColorTag';
 import { useNavigate } from 'react-router';
 import { MonitorStatsBlock } from './MonitorStatsBlock';
+import { MonitorEventList } from './MonitorEventList';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -43,62 +44,66 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   }
 
   return (
-    <Spin spinning={isLoading}>
-      <Space className="w-full" direction="vertical">
-        <div className="flex justify-between">
-          <Space direction="vertical">
-            <div className="text-2xl">{monitorInfo.name}</div>
+    <div className="w-full h-full overflow-auto">
+      <Spin spinning={isLoading}>
+        <Space direction="vertical">
+          <div className="flex justify-between">
+            <Space direction="vertical">
+              <div className="text-2xl">{monitorInfo.name}</div>
 
-            <div>
-              <ColorTag label={monitorInfo.type} />
-              <span>
-                {getMonitorLink(monitorInfo as any as MonitorInfoType)}
-              </span>
+              <div>
+                <ColorTag label={monitorInfo.type} />
+                <span>
+                  {getMonitorLink(monitorInfo as any as MonitorInfoType)}
+                </span>
+              </div>
+            </Space>
+
+            <div className="text-black text-opacity-75">
+              Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
+              days
             </div>
-          </Space>
-
-          <div className="text-black text-opacity-75">
-            Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
-            days
           </div>
-        </div>
 
-        <div>
-          <Button
-            type="primary"
-            onClick={() => {
-              navigate(`/monitor/${monitorInfo.id}/edit`);
-            }}
-          >
-            Edit
-          </Button>
-        </div>
+          <div>
+            <Button
+              type="primary"
+              onClick={() => {
+                navigate(`/monitor/${monitorInfo.id}/edit`);
+              }}
+            >
+              Edit
+            </Button>
+          </div>
 
-        <Card>
-          <MonitorHealthBar
-            monitorId={monitorId}
-            count={40}
-            size="large"
-            showCurrentStatus={true}
-            onBeatsItemUpdate={(items) => {
-              setCurrentResponse(last(items)?.value ?? 0);
-            }}
-          />
-        </Card>
+          <Card>
+            <MonitorHealthBar
+              monitorId={monitorId}
+              count={40}
+              size="large"
+              showCurrentStatus={true}
+              onBeatsItemUpdate={(items) => {
+                setCurrentResponse(last(items)?.value ?? 0);
+              }}
+            />
+          </Card>
 
-        <Card>
-          <MonitorDataMetrics
-            monitorId={monitorId}
-            monitorType={monitorInfo.type}
-            currectResponse={currectResponse}
-          />
-        </Card>
+          <Card>
+            <MonitorDataMetrics
+              monitorId={monitorId}
+              monitorType={monitorInfo.type}
+              currectResponse={currectResponse}
+            />
+          </Card>
 
-        <Card>
-          <MonitorDataChart monitorId={monitorId} />
-        </Card>
-      </Space>
-    </Spin>
+          <Card>
+            <MonitorDataChart monitorId={monitorId} />
+          </Card>
+
+          <MonitorEventList monitorId={monitorId} />
+        </Space>
+      </Spin>
+    </div>
   );
 });
 MonitorInfo.displayName = 'MonitorInfo';

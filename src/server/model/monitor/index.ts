@@ -156,7 +156,7 @@ class MonitorRunner {
       if (value < 0 && currentStatus === 'UP') {
         await prisma.monitorEvent.create({
           data: {
-            message: `Monitor ${monitor.name} has been down`,
+            message: `Monitor [${monitor.name}] has been down`,
             monitorId: monitor.id,
             type: 'DOWN',
           },
@@ -170,7 +170,7 @@ class MonitorRunner {
       } else if (value > 0 && currentStatus === 'DOWN') {
         await prisma.monitorEvent.create({
           data: {
-            message: `Monitor ${monitor.name} has been up`,
+            message: `Monitor [${monitor.name}] has been up`,
             monitorId: monitor.id,
             type: 'UP',
           },
