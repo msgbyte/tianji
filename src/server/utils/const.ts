@@ -118,6 +118,7 @@ export enum OPENAPI_TAG {
   GLOBAL = 'Global',
   USER = 'User',
   WEBSITE = 'Website',
+  MONITOR = 'Monitor',
 }
 
 export const hostnameRegex =

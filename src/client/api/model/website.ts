@@ -3,9 +3,9 @@ import { DateUnit } from '../../utils/date';
 import { queryClient } from '../cache';
 import { request } from '../request';
 import { getUserTimezone } from './user';
-import { Website as WebsiteInfo } from '@prisma/client';
+import { AppRouterOutput } from '../trpc';
 
-export type { WebsiteInfo };
+export type WebsiteInfo = NonNullable<AppRouterOutput['website']['info']>;
 
 export async function getWorkspaceWebsites(
   workspaceId: string

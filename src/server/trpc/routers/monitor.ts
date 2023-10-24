@@ -1,39 +1,36 @@
-import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
+import {
+  OpenApiMetaInfo,
+  router,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} from '../trpc';
 import { prisma } from '../../model/_client';
 import { z } from 'zod';
 import { monitorManager } from '../../model/monitor';
 import { MonitorInfoWithNotificationIds } from '../../../types';
 import dayjs from 'dayjs';
+import {
+  monitorEventSchema,
+  monitorInfoSchema,
+  monitorInfoWithNotificationIdSchema,
+  monitorStatusSchema,
+} from '../../model/_schema';
+import { OPENAPI_TAG } from '../../utils/const';
+import { OpenApiMeta } from 'trpc-openapi';
 
 export const monitorRouter = router({
-  all: workspaceProcedure.query(async ({ input }) => {
-    const workspaceId = input.workspaceId;
-    const monitors = await prisma.monitor.findMany({
-      where: {
-        workspaceId,
-      },
-      include: {
-        notifications: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
-
-    return monitors as MonitorInfoWithNotificationIds[];
-  }),
-  get: workspaceProcedure
-    .input(
-      z.object({
-        id: z.string().cuid2(),
+  all: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/all',
       })
     )
+    .output(z.array(monitorInfoWithNotificationIdSchema))
     .query(async ({ input }) => {
-      const { id, workspaceId } = input;
-      const monitor = await prisma.monitor.findUnique({
+      const workspaceId = input.workspaceId;
+      const monitors = await prisma.monitor.findMany({
         where: {
-          id,
           workspaceId,
         },
         include: {
@@ -45,9 +42,46 @@ export const monitorRouter = router({
         },
       });
 
-      return monitor as MonitorInfoWithNotificationIds;
+      return monitors as MonitorInfoWithNotificationIds[];
+    }),
+  get: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/{monitorId}',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(monitorInfoWithNotificationIdSchema.nullable())
+    .query(async ({ input }) => {
+      const { monitorId, workspaceId } = input;
+      const monitor = await prisma.monitor.findUnique({
+        where: {
+          id: monitorId,
+          workspaceId,
+        },
+        include: {
+          notifications: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      return monitor;
     }),
   upsert: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'POST',
+        path: '/upsert',
+      })
+    )
     .input(
       z.object({
         id: z.string().cuid2().optional(),
@@ -59,6 +93,7 @@ export const monitorRouter = router({
         payload: z.object({}).passthrough(),
       })
     )
+    .output(monitorInfoSchema)
     .mutation(async ({ input }) => {
       const {
         id,
@@ -85,12 +120,26 @@ export const monitorRouter = router({
       return monitor;
     }),
   data: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/{monitorId}/data',
+      })
+    )
     .input(
       z.object({
         monitorId: z.string().cuid2(),
         startAt: z.number(),
         endAt: z.number(),
       })
+    )
+    .output(
+      z.array(
+        z.object({
+          value: z.number(),
+          createdAt: z.date(),
+        })
+      )
     )
     .query(async ({ input }) => {
       const { monitorId, workspaceId, startAt, endAt } = input;
@@ -113,11 +162,25 @@ export const monitorRouter = router({
       });
     }),
   recentData: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/{monitorId}/recentData',
+      })
+    )
     .input(
       z.object({
         monitorId: z.string().cuid2(),
         take: z.number(),
       })
+    )
+    .output(
+      z.array(
+        z.object({
+          value: z.number(),
+          createdAt: z.date(),
+        })
+      )
     )
     .query(async ({ input }) => {
       const { monitorId, take } = input;
@@ -134,9 +197,24 @@ export const monitorRouter = router({
       });
     }),
   dataMetrics: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/{monitorId}/dataMetrics',
+      })
+    )
     .input(
       z.object({
         monitorId: z.string().cuid2(),
+      })
+    )
+    .output(
+      z.object({
+        recent1DayAvg: z.number(),
+        recent1DayOnlineCount: z.number(),
+        recent1DayOfflineCount: z.number(),
+        recent30DayOnlineCount: z.number(),
+        recent30DayOfflineCount: z.number(),
       })
     )
     .query(async ({ input }) => {
@@ -219,11 +297,18 @@ export const monitorRouter = router({
       };
     }),
   events: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/events',
+      })
+    )
     .input(
       z.object({
         monitorId: z.string().cuid2().optional(),
       })
     )
+    .output(z.array(monitorEventSchema))
     .query(async ({ input }) => {
       const { monitorId } = input;
 
@@ -240,12 +325,19 @@ export const monitorRouter = router({
       return list;
     }),
   getStatus: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/{monitorId}/status',
+      })
+    )
     .input(
       z.object({
         monitorId: z.string().cuid2(),
         statusName: z.string(),
       })
     )
+    .output(monitorStatusSchema.nullable())
     .query(async ({ input }) => {
       const { monitorId, statusName } = input;
 
@@ -259,3 +351,14 @@ export const monitorRouter = router({
       });
     }),
 });
+
+function buildMonitorOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.MONITOR],
+      protect: true,
+      ...meta,
+      path: `/workspace/{workspaceId}/monitor${meta.path}`,
+    },
+  };
+}

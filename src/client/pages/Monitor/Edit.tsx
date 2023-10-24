@@ -12,10 +12,10 @@ import { useCurrentWorkspaceId } from '../../store/user';
 
 export const MonitorEdit: React.FC = React.memo(() => {
   const { monitorId } = useParams<{ monitorId: string }>();
-  const currentWorkspaceId = useCurrentWorkspaceId();
+  const workspaceId = useCurrentWorkspaceId();
   const { data: monitor, isLoading } = trpc.monitor.get.useQuery({
-    id: monitorId!,
-    workspaceId: currentWorkspaceId,
+    monitorId: monitorId!,
+    workspaceId,
   });
   const mutation = useMonitorUpsert();
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export const MonitorEdit: React.FC = React.memo(() => {
         onSave={async (value) => {
           const monitor = await mutation.mutateAsync({
             ...value,
-            workspaceId: currentWorkspaceId,
+            workspaceId,
           });
           navigate(`/monitor/${monitor.id}`, { replace: true });
         }}

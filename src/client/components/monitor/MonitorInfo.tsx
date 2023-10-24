@@ -31,7 +31,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     isLoading,
   } = trpc.monitor.get.useQuery({
     workspaceId,
-    id: monitorId,
+    monitorId,
   });
 
   if (isInitialLoading) {
