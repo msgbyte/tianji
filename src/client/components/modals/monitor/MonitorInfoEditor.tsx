@@ -75,7 +75,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
           </Form.Item>
 
           <Form.Item
-            label="Check Interval"
+            label="Check Interval(s)"
             name="interval"
             rules={[{ required: true }]}
           >

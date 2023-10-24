@@ -183,11 +183,14 @@ const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
     const workspaceId = useCurrentWorkspaceId();
     const { monitorId } = props;
     const [rangeType, setRangeType] = useState('recent');
-    const newDataList = useSocketSubscribeList('onMonitorReceiveNewData', {
-      filter: (data) => {
-        return data.monitorId === props.monitorId;
-      },
-    });
+    const subscribedDataList = useSocketSubscribeList(
+      'onMonitorReceiveNewData',
+      {
+        filter: (data) => {
+          return data.monitorId === props.monitorId;
+        },
+      }
+    );
 
     const range = useMemo((): [Dayjs, Dayjs] => {
       if (rangeType === '3h') {
@@ -206,6 +209,12 @@ const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
       return [dayjs().subtract(0.5, 'hour'), dayjs()];
     }, [rangeType]);
 
+    const { data: _recentData = [] } = trpc.monitor.recentData.useQuery({
+      workspaceId,
+      monitorId,
+      take: 40,
+    });
+
     const { data: _data = [] } = trpc.monitor.data.useQuery({
       workspaceId,
       monitorId,
@@ -216,35 +225,37 @@ const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
     const { data, annotations } = useMemo(() => {
       const annotations: AreaConfig['annotations'] = [];
       let start: number | null = null;
-      const data = uniqBy([..._data, ...newDataList], 'createdAt').map(
-        (d, i, arr) => {
-          const value = d.value > 0 ? d.value : null;
-          const time = dayjs(d.createdAt).valueOf();
+      let fetchedData = rangeType === 'recent' ? _recentData : _data;
+      const data = uniqBy(
+        [...fetchedData, ...subscribedDataList],
+        'createdAt'
+      ).map((d, i, arr) => {
+        const value = d.value > 0 ? d.value : null;
+        const time = dayjs(d.createdAt).valueOf();
 
-          if (!value && !start && arr[i - 1]) {
-            start = dayjs(arr[i - 1]['createdAt']).valueOf();
-          } else if (value && start) {
-            annotations.push({
-              type: 'region',
-              start: [start, 'min'],
-              end: [time, 'max'],
-              style: {
-                fill: 'red',
-                fillOpacity: 0.25,
-              },
-            });
-            start = null;
-          }
-
-          return {
-            value,
-            time,
-          };
+        if (!value && !start && arr[i - 1]) {
+          start = dayjs(arr[i - 1]['createdAt']).valueOf();
+        } else if (value && start) {
+          annotations.push({
+            type: 'region',
+            start: [start, 'min'],
+            end: [time, 'max'],
+            style: {
+              fill: 'red',
+              fillOpacity: 0.25,
+            },
+          });
+          start = null;
         }
-      );
+
+        return {
+          value,
+          time,
+        };
+      });
 
       return { data, annotations };
-    }, [_data, newDataList]);
+    }, [_recentData, _data, subscribedDataList]);
 
     const config = useMemo<AreaConfig>(() => {
       return {
