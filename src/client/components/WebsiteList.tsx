@@ -113,7 +113,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
         {
           key: 'action',
           render: (_, record) => {
-            const trackScript = `<script async src="${location.origin}/tracker.js" data-website-id="${record.id}"></script>`;
+            const trackScript = `<script async defer src="${location.origin}/tracker.js" data-website-id="${record.id}"></script>`;
 
             return (
               <div className="flex gap-2 justify-end">
