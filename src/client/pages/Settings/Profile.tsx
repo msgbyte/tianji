@@ -46,6 +46,7 @@ export const Profile: React.FC = React.memo(() => {
 
       <Modal
         open={openChangePassword}
+        title="Change password"
         footer={null}
         maskClosable={false}
         onCancel={() => setOpenChangePassword(false)}
@@ -77,7 +78,7 @@ export const Profile: React.FC = React.memo(() => {
             <Input.Password />
           </Form.Item>
           <Form.Item
-            label="Old Password"
+            label="New Password Repeat"
             name="newPasswordRepeat"
             rules={[
               { required: true },
