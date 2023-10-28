@@ -29,6 +29,8 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
   (props) => {
     const [form] = Form.useForm();
     const typeValue = Form.useWatch('type', form);
+    const initialValues = props.initialValues ?? defaultValues;
+    const isEdit = Boolean(initialValues.id);
 
     const formEl = useMemo(() => {
       const provider = getMonitorProvider(typeValue);
@@ -55,13 +57,13 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
           preserve={false}
           form={form}
           layout="vertical"
-          initialValues={props.initialValues ?? defaultValues}
+          initialValues={initialValues}
           onFinish={handleSubmit}
         >
           <Form.Item hidden name="id" />
 
           <Form.Item label="Monitor Type" name="type">
-            <Select>
+            <Select disabled={isEdit}>
               {monitorProviders.map((m) => (
                 <Select.Option key={m.name} value={m.name}>
                   {m.label}
