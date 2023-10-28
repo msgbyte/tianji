@@ -43,7 +43,7 @@ websiteRouter.post(
       .matches(/event|identify/i)
   ),
   async (req, res) => {
-    // https://github1s.com/umami-software/umami/blob/master/src/pages/api/send.ts
+    // Reference: https://github1s.com/umami-software/umami/blob/master/src/pages/api/send.ts
 
     const { type, payload } = req.body;
     const {
