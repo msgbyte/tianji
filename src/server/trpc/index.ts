@@ -5,6 +5,7 @@ import {
   createOpenApiHttpHandler,
   generateOpenApiDocument,
 } from 'trpc-openapi';
+import { version } from '../../../package.json';
 
 export const trpcExpressMiddleware = trpcExpress.createExpressMiddleware({
   router: appRouter,
@@ -26,6 +27,6 @@ const description = `
 export const trpcOpenapiDocument = generateOpenApiDocument(appRouter, {
   title: 'Tianji OpenAPI',
   description,
-  version: '1.0.0',
+  version: `v${version}`,
   baseUrl: '/open',
 });
