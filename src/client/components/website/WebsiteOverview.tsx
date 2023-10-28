@@ -29,7 +29,7 @@ export const WebsiteOverview: React.FC<{
   actions?: React.ReactNode;
 }> = React.memo((props) => {
   const { website, actions } = props;
-  const { startDate, endDate, unit } = useGlobalRangeDate();
+  const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
   const navigate = useNavigate();
 
   const {
@@ -58,7 +58,10 @@ export const WebsiteOverview: React.FC<{
   );
 
   const handleRefresh = useEvent(async () => {
+    refresh();
+
     await Promise.all([refetchPageview(), refetchStats()]);
+
     message.success('Refreshed');
   });
 

@@ -1,10 +1,11 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import type { DateUnit } from '../../shared';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export type DateUnit = 'minute' | 'hour' | 'day' | 'month' | 'year';
+export type { DateUnit };
 
 function createDateUnitFn(unit: DateUnit) {
   return {
