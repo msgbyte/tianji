@@ -21,6 +21,7 @@ import { initSocketio } from './ws';
 import { monitorManager } from './model/monitor';
 import { settings } from './utils/settings';
 import { env } from './utils/env';
+import cors from 'cors';
 
 const port = settings.port;
 
@@ -36,7 +37,8 @@ monitorManager.startAll();
 app.use(compression());
 app.use(express.json());
 app.use(passport.initialize());
-// app.use(morgan('tiny'));
+app.use(morgan('tiny'));
+app.use(cors());
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
