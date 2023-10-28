@@ -161,6 +161,51 @@ export const monitorRouter = router({
         },
       });
     }),
+  changeActive: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'PATCH',
+        path: '/{monitorId}/changeActive',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string(),
+        active: z.boolean(),
+      })
+    )
+    .output(monitorInfoSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { workspaceId, monitorId, active } = input;
+
+      const monitor = await prisma.monitor.update({
+        where: {
+          workspaceId,
+          id: monitorId,
+        },
+        data: {
+          active,
+        },
+      });
+      const runner = monitorManager.getRunner(monitorId);
+      if (runner) {
+        if (active === true) {
+          runner.startMonitor();
+          runner.createEvent(
+            'UP',
+            `Monitor [${monitor.name}] has been manual start`
+          );
+        } else {
+          runner.stopMonitor();
+          runner.createEvent(
+            'DOWN',
+            `Monitor [${monitor.name}] has been manual stop`
+          );
+        }
+      }
+
+      return monitor;
+    }),
   recentData: workspaceProcedure
     .meta(
       buildMonitorOpenapi({

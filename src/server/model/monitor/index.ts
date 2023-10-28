@@ -108,6 +108,10 @@ class MonitorManager {
       console.log('All monitor has been begin.');
     });
   }
+
+  getRunner(monitorId: string): MonitorRunner | undefined {
+    return this.monitorRunner[monitorId];
+  }
 }
 
 /**
@@ -154,13 +158,10 @@ class MonitorRunner {
 
       // check event update
       if (value < 0 && currentStatus === 'UP') {
-        await prisma.monitorEvent.create({
-          data: {
-            message: `Monitor [${monitor.name}] has been down`,
-            monitorId: monitor.id,
-            type: 'DOWN',
-          },
-        });
+        await this.createEvent(
+          'DOWN',
+          `Monitor [${monitor.name}] has been down`
+        );
         await this.notify(
           `[${monitor.name}] 🔴 Down`,
           `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
@@ -168,13 +169,7 @@ class MonitorRunner {
           )}`
         );
       } else if (value > 0 && currentStatus === 'DOWN') {
-        await prisma.monitorEvent.create({
-          data: {
-            message: `Monitor [${monitor.name}] has been up`,
-            monitorId: monitor.id,
-            type: 'UP',
-          },
-        });
+        await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
         await this.notify(
           `[${monitor.name}] ✅ Up`,
           `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
@@ -217,6 +212,16 @@ class MonitorRunner {
   async restartMonitor() {
     this.stopMonitor();
     this.startMonitor();
+  }
+
+  async createEvent(type: 'UP' | 'DOWN', message: string) {
+    return await prisma.monitorEvent.create({
+      data: {
+        message,
+        monitorId: this.monitor.id,
+        type,
+      },
+    });
   }
 
   async notify(title: string, message: string) {

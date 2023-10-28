@@ -1,7 +1,11 @@
 import { Button, Card, Select, Space, Spin } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { useMemo, useState } from 'react';
-import { trpc } from '../../api/trpc';
+import {
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  trpc,
+} from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { Loading } from '../Loading';
 import { getMonitorLink, getMonitorProvider } from '../modals/monitor/provider';
@@ -16,6 +20,7 @@ import { ColorTag } from '../ColorTag';
 import { useNavigate } from 'react-router';
 import { MonitorStatsBlock } from './MonitorStatsBlock';
 import { MonitorEventList } from './MonitorEventList';
+import { useEvent } from '../../hooks/useEvent';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -34,6 +39,46 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     workspaceId,
     monitorId,
   });
+  const changeActiveMutation = trpc.monitor.changeActive.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
+
+  const trpcUtils = trpc.useContext();
+
+  const handleStart = useEvent(async () => {
+    await changeActiveMutation.mutateAsync({
+      workspaceId,
+      monitorId,
+      active: true,
+    });
+
+    trpcUtils.monitor.get.refetch({
+      workspaceId,
+      monitorId,
+    });
+    trpcUtils.monitor.events.refetch({
+      workspaceId,
+      monitorId,
+    });
+  });
+
+  const handleStop = useEvent(async () => {
+    await changeActiveMutation.mutateAsync({
+      workspaceId,
+      monitorId,
+      active: false,
+    });
+
+    trpcUtils.monitor.get.refetch({
+      workspaceId,
+      monitorId,
+    });
+    trpcUtils.monitor.events.refetch({
+      workspaceId,
+      monitorId,
+    });
+  });
 
   if (isInitialLoading) {
     return <Loading />;
@@ -46,10 +91,17 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   return (
     <div className="w-full h-full overflow-auto">
       <Spin spinning={isLoading}>
-        <Space direction="vertical">
+        <Space className="w-full" direction="vertical">
           <div className="flex justify-between">
             <Space direction="vertical">
-              <div className="text-2xl">{monitorInfo.name}</div>
+              <div className="text-2xl flex items-center gap-2">
+                <span>{monitorInfo.name}</span>
+                {monitorInfo.active === false && (
+                  <div className="bg-red-500 rounded-full px-2 py-0.5 text-white text-xs">
+                    Stoped
+                  </div>
+                )}
+              </div>
 
               <div>
                 <ColorTag label={monitorInfo.type} />
@@ -65,7 +117,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             </div>
           </div>
 
-          <div>
+          <div className="flex gap-2">
             <Button
               type="primary"
               onClick={() => {
@@ -74,6 +126,22 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             >
               Edit
             </Button>
+
+            {monitorInfo.active ? (
+              <Button
+                loading={changeActiveMutation.isLoading}
+                onClick={handleStop}
+              >
+                Stop
+              </Button>
+            ) : (
+              <Button
+                loading={changeActiveMutation.isLoading}
+                onClick={handleStart}
+              >
+                Start
+              </Button>
+            )}
           </div>
 
           <Card>
