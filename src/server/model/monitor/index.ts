@@ -165,17 +165,19 @@ class MonitorRunner {
         await this.notify(
           `[${monitor.name}] 🔴 Down`,
           `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
-            'YYYY-MM-DD HH:mm:ss'
+            'YYYY-MM-DD HH:mm:ss (z)'
           )}`
         );
+        currentStatus = 'DOWN';
       } else if (value > 0 && currentStatus === 'DOWN') {
         await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
         await this.notify(
           `[${monitor.name}] ✅ Up`,
           `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
-            'YYYY-MM-DD HH:mm:ss'
+            'YYYY-MM-DD HH:mm:ss (z)'
           )}`
         );
+        currentStatus = 'UP';
       }
 
       // insert into data
