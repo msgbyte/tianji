@@ -4,7 +4,7 @@ import React from 'react';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { sum } from 'lodash-es';
-import millify from 'millify';
+import { formatNumber } from '../../utils/common';
 
 type MetricsItemType = AppRouterOutput['website']['metrics'][number];
 
@@ -53,11 +53,7 @@ export const MetricsTable: React.FC<MetricsTableProps> = React.memo((props) => {
 
         return (
           <div className="flex">
-            <div className="w-12 text-right">
-              {millify(val, {
-                lowercase: true,
-              })}
-            </div>
+            <div className="w-12 text-right">{formatNumber(val)}</div>
             <div className="inline-block w-12 relative border-l ml-1 px-1">
               <div
                 className="bg-blue-300 absolute h-full bg-opacity-25 left-0 top-0 pointer-events-none"

@@ -1,3 +1,5 @@
+import millify from 'millify';
+
 export function parseTime(val: number) {
   const days = ~~(val / 86400);
   const hours = ~~(val / 3600) - days * 24;
@@ -14,8 +16,10 @@ export function parseTime(val: number) {
   };
 }
 
-export function formatNumber(n: number) {
-  return Number(n).toFixed(0);
+export function formatNumber(n: number): string {
+  return millify(n, {
+    lowercase: true,
+  });
 }
 
 export function formatShortTime(val: number, formats = ['m', 's'], space = '') {
