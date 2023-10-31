@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	jsoniter "github.com/json-iterator/go"
 	"log"
 	"net"
@@ -152,7 +151,7 @@ func sendHTTPRequest(_url url.URL, payload ReportData) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Send request error:", err)
+		log.Println("Send request error:", err)
 		return
 	}
 
@@ -162,7 +161,7 @@ func sendHTTPRequest(_url url.URL, payload ReportData) {
 	body := new(bytes.Buffer)
 	_, err = body.ReadFrom(resp.Body)
 	if err != nil {
-		fmt.Println("Read response error:", err)
+		log.Println("Read response error:", err)
 		return
 	}
 

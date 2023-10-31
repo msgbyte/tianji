@@ -211,7 +211,7 @@ export const ServerList: React.FC<{
         dataSource={dataSource}
         pagination={false}
         locale={{ emptyText: <Empty description="No server online" /> }}
-        rowClassName={(record) => clsx(!isServerOnline(record) && 'opacity-80')}
+        rowClassName={(record) => clsx(!isServerOnline(record) && 'opacity-60')}
       />
     </div>
   );
