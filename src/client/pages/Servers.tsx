@@ -1,12 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import {
   Badge,
   Button,
+  Empty,
   Form,
   Input,
   Modal,
   Steps,
+  Switch,
   Table,
+  Tooltip,
   Typography,
 } from 'antd';
 import { ColumnsType } from 'antd/es/table';
@@ -22,9 +25,12 @@ import { useCurrentWorkspaceId } from '../store/user';
 import { useWatch } from '../hooks/useWatch';
 import { Loading } from '../components/Loading';
 import { without } from 'lodash-es';
+import { useIntervalUpdate } from '../hooks/useIntervalUpdate';
+import clsx from 'clsx';
 
 export const Servers: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hideOfflineServer, setHideOfflineServer] = useState(false);
 
   const handleOk = () => {
     setIsModalOpen(false);
@@ -34,7 +40,15 @@ export const Servers: React.FC = React.memo(() => {
     <div>
       <div className="h-24 flex items-center">
         <div className="text-2xl flex-1">Servers</div>
-        <div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 text-gray-500">
+            <Switch
+              checked={hideOfflineServer}
+              onChange={setHideOfflineServer}
+            />
+            Hide Offline
+          </div>
+
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -46,7 +60,7 @@ export const Servers: React.FC = React.memo(() => {
         </div>
       </div>
 
-      <ServerList />
+      <ServerList hideOfflineServer={hideOfflineServer} />
 
       <Modal
         title="Add Server"
@@ -74,10 +88,26 @@ function useServerMap(): Record<string, ServerStatusInfo> {
   return serverMap;
 }
 
-export const ServerList: React.FC = React.memo(() => {
+export const ServerList: React.FC<{
+  hideOfflineServer: boolean;
+}> = React.memo((props) => {
   const serverMap = useServerMap();
+  const inc = useIntervalUpdate(2 * 1000);
+  const { hideOfflineServer } = props;
 
-  const dataSource = Object.values(serverMap);
+  const dataSource = useMemo(
+    () =>
+      Object.values(serverMap)
+        .sort((info) => (isServerOnline(info) ? -1 : 1))
+        .filter((info) => {
+          if (hideOfflineServer) {
+            return isServerOnline(info);
+          }
+
+          return true;
+        }), // make online server is up and offline is down
+    [serverMap, inc, hideOfflineServer]
+  );
   const lastUpdatedAt = max(dataSource.map((d) => d.updatedAt));
 
   const columns = useMemo((): ColumnsType<ServerStatusInfo> => {
@@ -86,10 +116,16 @@ export const ServerList: React.FC = React.memo(() => {
         key: 'status',
         title: 'Status',
         render: (val, record) => {
-          return Date.now() - (record.updatedAt + record.timeout) < 0 ? (
+          return isServerOnline(record) ? (
             <Badge status="success" text="online" />
           ) : (
-            <Badge status="error" text="offline" />
+            <Tooltip
+              title={`Last online: ${dayjs(record.updatedAt).format(
+                'YYYY-MM-DD HH:mm:ss'
+              )}`}
+            >
+              <Badge status="error" text="offline" />
+            </Tooltip>
           );
         },
       },
@@ -174,6 +210,8 @@ export const ServerList: React.FC = React.memo(() => {
         columns={columns}
         dataSource={dataSource}
         pagination={false}
+        locale={{ emptyText: <Empty description="No server online" /> }}
+        rowClassName={(record) => clsx(!isServerOnline(record) && 'opacity-80')}
       />
     </div>
   );
@@ -274,3 +312,7 @@ export const AddServerStep: React.FC = React.memo(() => {
   );
 });
 AddServerStep.displayName = 'AddServerStep';
+
+function isServerOnline(info: ServerStatusInfo): boolean {
+  return new Date(info.updatedAt).valueOf() + info.timeout * 1000 > Date.now();
+}
