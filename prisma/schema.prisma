@@ -205,6 +205,7 @@ model TelemetryEvent {
   eventName   String?  @db.VarChar(100)
   urlOrigin   String   @db.VarChar(500)
   urlPath     String   @db.VarChar(500)
+  payload     Json?    @db.Json // Other payload info get from query params, should be a object
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
   session TelemetrySession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)

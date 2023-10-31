@@ -14,7 +14,6 @@
     "build:openapi": "ts-node scripts/build-openapi-schema.ts",
     "postinstall": "pnpm db:generate",
     "check:type": "tsc --noEmit --skipLibCheck --module esnext",
-    "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:apply": "prisma migrate deploy",

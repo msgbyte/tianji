@@ -5,11 +5,12 @@ import { getRequestInfo } from '../utils/detect';
 import { prisma } from './_client';
 
 export async function recordTelemetryEvent(req: Request) {
-  const url = req.query.url ?? req.headers.referer;
+  const { url = req.headers.referer, name, ...others } = req.query;
+
   if (!(url && typeof url === 'string')) {
     return;
   }
-  const eventName = req.query.name ? String(req.query.name) : undefined;
+  const eventName = name ? String(name) : undefined;
 
   const session = await findSession(req, url);
   if (!session) {
@@ -22,6 +23,7 @@ export async function recordTelemetryEvent(req: Request) {
   }
 
   const { origin, pathname } = new URL(url);
+  const payload = Object.keys(others).length > 0 ? others : undefined;
 
   await prisma.telemetryEvent.create({
     data: {
@@ -30,6 +32,7 @@ export async function recordTelemetryEvent(req: Request) {
       eventName,
       urlOrigin: origin,
       urlPath: pathname,
+      payload,
     },
   });
 }
