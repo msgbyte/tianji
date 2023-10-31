@@ -22,6 +22,7 @@ import { monitorManager } from './model/monitor';
 import { settings } from './utils/settings';
 import { env } from './utils/env';
 import cors from 'cors';
+import { serverStatusRouter } from './router/serverStatus';
 
 const port = settings.port;
 
@@ -53,13 +54,15 @@ app.use(
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/telemetry', telemetryRouter);
+app.use('/serverStatus', serverStatusRouter);
+
+app.use('/trpc', trpcExpressMiddleware);
 
 if (env.allowOpenapi) {
   app.use('/open/_ui', swaggerUI.serve, swaggerUI.setup(trpcOpenapiDocument));
   app.use('/open/_document', (req, res) => res.send(trpcOpenapiDocument));
   app.use('/open', trpcOpenapiHttpHandler);
 }
-app.use('/trpc', trpcExpressMiddleware);
 
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err);
