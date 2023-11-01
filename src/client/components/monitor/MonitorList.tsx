@@ -5,12 +5,14 @@ import { AppRouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { NoWorkspaceTip } from '../NoWorkspaceTip';
 import { MonitorHealthBar } from './MonitorHealthBar';
+import { Loading } from '../Loading';
+import { Empty } from 'antd';
 
 type MonitorType = AppRouterOutput['monitor']['all'][number];
 
 export const MonitorList: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const { data: monitors = [] } = trpc.monitor.all.useQuery({
+  const { data: monitors = [], isLoading } = trpc.monitor.all.useQuery({
     workspaceId,
   });
   const initMonitorId = useMemo(() => {
@@ -35,8 +37,14 @@ export const MonitorList: React.FC = React.memo(() => {
     return <NoWorkspaceTip />;
   }
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <div className="p-2">
+      {monitors.length === 0 && <Empty description="Here is no monitor yet." />}
+
       {monitors.map((monitor) => (
         <MonitorListItem
           key={monitor.id}
