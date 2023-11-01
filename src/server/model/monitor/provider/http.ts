@@ -3,6 +3,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { logger } from '../../../utils/logger';
 import dayjs from 'dayjs';
 import { prisma } from '../../_client';
+import https from 'https';
 
 export const http: MonitorProvider<{
   url: string;
@@ -11,6 +12,7 @@ export const http: MonitorProvider<{
   contentType?: string;
   bodyValue?: string;
   maxRedirects?: number;
+  ignoreTLS?: boolean;
 }> = {
   run: async (monitor) => {
     if (typeof monitor.payload !== 'object') {
@@ -24,6 +26,7 @@ export const http: MonitorProvider<{
       contentType,
       bodyValue,
       maxRedirects,
+      ignoreTLS,
     } = monitor.payload;
 
     const config: AxiosRequestConfig = {
@@ -45,9 +48,16 @@ export const http: MonitorProvider<{
       config.data = bodyValue;
     }
 
+    const httpsAgentOptions = {
+      maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+      rejectUnauthorized: !ignoreTLS,
+    };
+
+    config.httpsAgent = new https.Agent(httpsAgentOptions);
+
     try {
       const startTime = dayjs();
-      const res = await axios(config);
+      const res = await axios({ ...config });
 
       const diff = dayjs().diff(startTime, 'ms');
 

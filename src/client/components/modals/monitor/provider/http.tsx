@@ -1,4 +1,4 @@
-import { Form, Input, Select } from 'antd';
+import { Form, Input, Select, Switch } from 'antd';
 import React from 'react';
 import { MonitorOverviewComponent, MonitorProvider } from './types';
 import { trpc } from '../../../../api/trpc';
@@ -31,6 +31,13 @@ const MonitorHttp: React.FC = React.memo(() => {
           <Select.Option value="head">HEAD</Select.Option>
           <Select.Option value="options">OPTIONS</Select.Option>
         </Select>
+      </Form.Item>
+      <Form.Item
+        label="Ignore TLS/SSL error"
+        valuePropName="checked"
+        name={['payload', 'ignoreTLS']}
+      >
+        <Switch />
       </Form.Item>
       <Form.Item
         label="Content-Type"
