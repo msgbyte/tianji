@@ -160,6 +160,7 @@ export const MetricsBar: React.FC<{
       />
       <MetricCard
         label="Bounce rate"
+        reverseColors={true}
         value={uniques.value ? (num / uniques.value) * 100 : 0}
         change={
           uniques.value && uniques.change
