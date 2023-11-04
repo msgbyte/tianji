@@ -1,29 +1,69 @@
 import React from 'react';
-import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
-
-import styles from './index.module.css';
+import LogoSvg from '@site/static/img/logo.svg';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <h1 className="hero__title">{siteConfig.title}</h1>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro"
-          >
-            Docusaurus Tutorial - 5min ⏱️
-          </Link>
+    <header className="container">
+      <div className="text-center mt-10">
+        <LogoSvg className="w-40 h-40" />
+        <h1 className="text-5xl">
+          <span className="text-gradient font-bold">{siteConfig.title}</span>
+        </h1>
+        <p className="text-black text-opacity-60 text-2xl">
+          {siteConfig.tagline}
+        </p>
+        <p className="opacity-60">
+          Tianji brings all your commonly used tools together in one place
+        </p>
+        <div className="text-xl">
+          <span className="underline font-semibold">Website analytics</span> +{' '}
+          <span className="underline font-semibold">Uptime Monitor</span> +{' '}
+          <span className="underline font-semibold">Server Status</span> ={' '}
+          <span className="text-gradient font-bold">Tianji</span>
         </div>
       </div>
+
+      <div className="text-center my-6">
+        <Link
+          className="button button--primary button--lg"
+          to="mailto:moonrailgun@gmail.com?subject=I want to apply for Tianji early access account&body=Here is my account: <Here place your username>"
+        >
+          Early Access
+        </Link>
+      </div>
     </header>
+  );
+}
+
+function HomepageMain() {
+  return (
+    <main className="container pb-8">
+      <div className="flex flex-wrap gap-2 justify-around mt-4 mb-8">
+        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+          ✔ No cookies
+        </div>
+        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+          ✔ GDPR & CCPA compliant
+        </div>
+        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+          ✔ Open API
+        </div>
+        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+          ✔ Open Source
+        </div>
+      </div>
+
+      <div className="text-center">
+        <img
+          className="border-8 border-solid border-gray-200 rounded-lg shadow-lg"
+          src="/img/preview.png"
+        />
+      </div>
+    </main>
   );
 }
 
@@ -35,9 +75,8 @@ export default function Home(): JSX.Element {
       description="Description will go into a meta tag in <head />"
     >
       <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
+
+      <HomepageMain />
     </Layout>
   );
 }
