@@ -38,20 +38,22 @@ const config = {
       /** @type {import('docusaurus-preset-openapi').Options} */
       {
         api: {
-          path: "./openapi.json",
-          routeBasePath: "/api",
+          path: './openapi.json',
+          routeBasePath: '/api',
         },
         docs: {
-          sidebarPath: require.resolve("./sidebars.js"),
-          routeBasePath: "/",
-          editUrl:
-            'https://github.com/msgbyte/tianji/tree/main/website/',
+          sidebarPath: require.resolve('./sidebars.js'),
+          routeBasePath: '/',
+          editUrl: 'https://github.com/msgbyte/tianji/tree/main/website/',
         },
         theme: {
-          customCss: require.resolve("./src/css/custom.css"),
+          customCss: [
+            require.resolve('./src/css/base.css'),
+            require.resolve('./src/css/custom.css'),
+          ],
         },
       },
-    ]
+    ],
   ],
 
   themeConfig:
