@@ -192,9 +192,9 @@ export const ServerList: React.FC<{
         key: 'hdd',
         title: 'hdd',
         render: (_, record) => {
-          return `${filesize(record.payload.hdd_used * 1000)} / ${filesize(
-            record.payload.hdd_total * 1000
-          )}`;
+          return `${filesize(
+            record.payload.hdd_used * 1000 * 1000
+          )} / ${filesize(record.payload.hdd_total * 1000 * 1000)}`;
         },
       },
     ];
@@ -240,6 +240,8 @@ export const AddServerStep: React.FC = React.memo(() => {
     }
   });
 
+  const command = `./tianji-reporter --url ${window.location.origin} --workspace ${workspaceId}`;
+
   return (
     <Steps
       direction="vertical"
@@ -269,10 +271,9 @@ export const AddServerStep: React.FC = React.memo(() => {
           title: 'Run',
           description: (
             <div>
-              run reporter with{' '}
-              <Typography.Text code={true} copyable={true}>
-                ./tianji-reporter --url {window.location.origin} --workspace{' '}
-                {workspaceId}
+              run reporter with:{' '}
+              <Typography.Text code={true} copyable={{ text: command }}>
+                {command}
               </Typography.Text>
               <Button
                 type="link"

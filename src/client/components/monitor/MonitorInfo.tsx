@@ -200,7 +200,7 @@ export const MonitorDataMetrics: React.FC<{
         ))}
       </>
     );
-  }, [monitorType]);
+  }, [monitorId, monitorType]);
 
   if (isLoading) {
     return <Loading />;
