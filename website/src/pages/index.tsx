@@ -3,6 +3,8 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import LogoSvg from '@site/static/img/logo.svg';
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -58,10 +60,23 @@ function HomepageMain() {
       </div>
 
       <div className="text-center">
-        <img
-          className="border-8 border-solid border-gray-200 rounded-lg shadow-lg"
-          src="/img/preview.png"
-        />
+        <div className="border-8 border-solid border-gray-200 rounded-lg shadow-lg">
+          <Carousel
+            showThumbs={false}
+            showStatus={false}
+            showIndicators={true}
+            autoPlay={true}
+            swipeable={true}
+            interval={5000}
+            stopOnHover={true}
+            emulateTouch={true}
+            infiniteLoop={true}
+          >
+            <img src="/img/preview1.png" />
+            <img src="/img/preview2.png" />
+            <img src="/img/preview3.png" />
+          </Carousel>
+        </div>
       </div>
     </main>
   );
