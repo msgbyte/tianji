@@ -10,6 +10,10 @@ RUN pnpm install --frozen-lockfile
 
 RUN pnpm build
 
+RUN rm -rf ./src
+RUN rm -rf ./website
+RUN rm -rf ./reporter
+
 EXPOSE 12345
 
 CMD ["pnpm", "start:docker"]
