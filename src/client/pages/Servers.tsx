@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   Badge,
   Button,
+  Divider,
   Empty,
   Form,
   Input,
   Modal,
+  Popconfirm,
   Steps,
   Switch,
   Table,
@@ -28,14 +30,30 @@ import { Loading } from '../components/Loading';
 import { without } from 'lodash-es';
 import { useIntervalUpdate } from '../hooks/useIntervalUpdate';
 import clsx from 'clsx';
+import { isServerOnline } from '../../shared';
+import { defaultErrorHandler, trpc } from '../api/trpc';
+import { useEvent } from '../hooks/useEvent';
+import { useRequest } from '../hooks/useRequest';
 
 export const Servers: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hideOfflineServer, setHideOfflineServer] = useState(false);
+  const workspaceId = useCurrentWorkspaceId();
 
   const handleOk = () => {
     setIsModalOpen(false);
   };
+
+  const clearOfflineNodeMutation =
+    trpc.serverStatus.clearOfflineServerStatus.useMutation({
+      onError: defaultErrorHandler,
+    });
+
+  const [{ loading }, handleClearOfflineNode] = useRequest(async (e) => {
+    await clearOfflineNodeMutation.mutateAsync({
+      workspaceId,
+    });
+  });
 
   return (
     <div>
@@ -49,6 +67,21 @@ export const Servers: React.FC = React.memo(() => {
             />
             Hide Offline
           </div>
+
+          <div>
+            <Popconfirm
+              title="Clear Offline Node"
+              description="Are you sure to clear all offline node?"
+              disabled={loading}
+              onConfirm={handleClearOfflineNode}
+            >
+              <Button size="large" loading={loading}>
+                Clear Offline
+              </Button>
+            </Popconfirm>
+          </div>
+
+          <Divider type="vertical" />
 
           <Button
             type="primary"
@@ -151,10 +184,10 @@ export const ServerList: React.FC<{
         dataIndex: 'hostname',
         title: 'Host Name',
       },
-      {
-        dataIndex: ['payload', 'system'],
-        title: 'System',
-      },
+      // {
+      //   dataIndex: ['payload', 'system'],
+      //   title: 'System',
+      // },
       {
         dataIndex: ['payload', 'uptime'],
         title: 'Uptime',
@@ -351,7 +384,3 @@ export const AddServerStep: React.FC = React.memo(() => {
   );
 });
 AddServerStep.displayName = 'AddServerStep';
-
-function isServerOnline(info: ServerStatusInfo): boolean {
-  return new Date(info.updatedAt).valueOf() + info.timeout * 1000 > Date.now();
-}

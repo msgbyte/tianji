@@ -1,5 +1,8 @@
+import dayjs from 'dayjs';
 import { ServerStatusInfo } from '../../types';
 import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared';
+import _ from 'lodash';
+import { isServerOnline } from '../../shared';
 
 const serverMap: Record<
   string, // workspaceId
@@ -46,4 +49,29 @@ export function recordServerStatus(info: ServerStatusInfo) {
     workspaceId,
     serverMap[workspaceId]
   );
+}
+
+export function clearOfflineServerStatus(workspaceId: string) {
+  if (!serverMap[workspaceId]) {
+    return;
+  }
+
+  const offlineNode: string[] = [];
+  Object.entries(serverMap[workspaceId]).forEach(([key, info]) => {
+    if (!isServerOnline(info)) {
+      offlineNode.push(key);
+    }
+  });
+
+  for (const node of offlineNode) {
+    delete serverMap[workspaceId][node];
+  }
+
+  subscribeEventBus.emit(
+    'onServerStatusUpdate',
+    workspaceId,
+    serverMap[workspaceId]
+  );
+
+  return serverMap[workspaceId];
 }
