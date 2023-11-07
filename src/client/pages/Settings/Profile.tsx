@@ -26,14 +26,14 @@ export const Profile: React.FC = React.memo(() => {
 
       <Card>
         <Form layout="vertical">
-          <Form.Item label="User Id">
-            <Typography.Text copyable={true} code={true}>
-              {userInfo?.id}
-            </Typography.Text>
-          </Form.Item>
           <Form.Item label="Current Workspace Id">
             <Typography.Text copyable={true} code={true}>
               {userInfo?.currentWorkspace?.id}
+            </Typography.Text>
+          </Form.Item>
+          <Form.Item label="User Id">
+            <Typography.Text copyable={true} code={true}>
+              {userInfo?.id}
             </Typography.Text>
           </Form.Item>
           <Form.Item label="Password">

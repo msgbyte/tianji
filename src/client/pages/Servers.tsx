@@ -9,6 +9,7 @@ import {
   Steps,
   Switch,
   Table,
+  Tabs,
   Tooltip,
   Typography,
 } from 'antd';
@@ -71,7 +72,20 @@ export const Servers: React.FC = React.memo(() => {
         onCancel={() => setIsModalOpen(false)}
       >
         <div>
-          <AddServerStep />
+          <Tabs
+            items={[
+              {
+                key: 'script',
+                label: 'Script',
+                children: <InstallScript />,
+              },
+              {
+                key: 'manual',
+                label: 'Manual',
+                children: <AddServerStep />,
+              },
+            ]}
+          />
         </div>
       </Modal>
     </div>
@@ -218,6 +232,27 @@ export const ServerList: React.FC<{
 });
 ServerList.displayName = 'ServerList';
 
+export const InstallScript: React.FC = React.memo(() => {
+  const workspaceId = useCurrentWorkspaceId();
+  const command = `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh | bash`;
+
+  return (
+    <div>
+      <div>Run this command in your linux machine</div>
+
+      <Typography.Paragraph
+        copyable={{
+          format: 'text/plain',
+          text: command,
+        }}
+        className="h-[96px] flex p-2 rounded bg-black bg-opacity-5 border border-black border-opacity-10 overflow-auto"
+      >
+        <span>{command}</span>
+      </Typography.Paragraph>
+    </div>
+  );
+});
+
 export const AddServerStep: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
   const [current, setCurrent] = useState(0);
@@ -272,7 +307,10 @@ export const AddServerStep: React.FC = React.memo(() => {
           description: (
             <div>
               run reporter with:{' '}
-              <Typography.Text code={true} copyable={{ text: command }}>
+              <Typography.Text
+                code={true}
+                copyable={{ format: 'text/plain', text: command }}
+              >
                 {command}
               </Typography.Text>
               <Button
