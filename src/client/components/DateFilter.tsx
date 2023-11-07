@@ -105,7 +105,7 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
         open={showDropdown}
         onOpenChange={(open) => setShowDropdown(open)}
       >
-        <Button size="large">
+        <Button className="min-w-[150px] text-right" size="large">
           <Space>
             {label}
             <DownOutlined

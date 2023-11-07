@@ -38,7 +38,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
     <div className="py-6">
       <Card>
         <Card.Grid hoverable={false} className="!w-full">
-          <WebsiteOverview website={website} />
+          <WebsiteOverview website={website} showDateFilter={true} />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
           <MetricsTable

@@ -12,6 +12,7 @@ import arrayMove from 'array-move';
 import SortableList, { SortableItem } from 'react-easy-sort';
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../api/trpc';
 import { Link } from 'react-router-dom';
+import { DateFilter } from '../components/DateFilter';
 
 export const Dashboard: React.FC = React.memo(() => {
   const workspace = useCurrentWorkspace();
@@ -31,7 +32,9 @@ export const Dashboard: React.FC = React.memo(() => {
     <div className="py-4">
       <div className="h-20 flex items-center">
         <div className="text-2xl flex-1">Dashboard</div>
-        <div>
+        <div className="flex gap-4">
+          {!isEditLayout && <DateFilter />}
+
           {websiteList.length !== 0 && (
             <Button
               icon={<EditOutlined />}

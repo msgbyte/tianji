@@ -26,9 +26,10 @@ import { useNavigate } from 'react-router';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
+  showDateFilter?: boolean;
   actions?: React.ReactNode;
 }> = React.memo((props) => {
-  const { website, actions } = props;
+  const { website, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
   const navigate = useNavigate();
 
@@ -115,9 +116,11 @@ export const WebsiteOverview: React.FC<{
             onClick={handleRefresh}
           />
 
-          <div>
-            <DateFilter />
-          </div>
+          {showDateFilter && (
+            <div>
+              <DateFilter />
+            </div>
+          )}
         </div>
       </div>
 
