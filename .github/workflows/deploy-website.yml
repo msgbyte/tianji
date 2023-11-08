@@ -1,0 +1,31 @@
+name: "Deployment Website"
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "website/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    defaults:
+      run:
+        working-directory: website
+    steps:
+    - uses: actions/checkout@v4
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25.1.1
+      env:
+        VERSION: ${{ env.GITHUB_SHA }}
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: prj_V3iY3AcH0wIXxMHW4oDy3W3XzfnN
+        working-directory: ./
+        vercel-args: '--prod'
