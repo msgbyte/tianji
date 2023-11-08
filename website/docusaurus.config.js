@@ -56,9 +56,7 @@ const config = {
     ],
   ],
 
-  plugins: [
-    require.resolve('docusaurus-plugin-image-zoom'),
-  ],
+  plugins: [require.resolve('docusaurus-plugin-image-zoom')],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
@@ -139,13 +137,22 @@ const config = {
         selector: '.markdown :not(em) > img',
         background: {
           light: 'rgb(255, 255, 255)',
-          dark: 'rgb(50, 50, 50)'
+          dark: 'rgb(50, 50, 50)',
         },
         config: {
           // options you can specify via https://github.com/francoischalifour/medium-zoom#usage
-        }
-      }
+        },
+      },
     }),
+
+  scripts: [
+    {
+      src: 'https://tianji.moonrailgun.com/tracker.js',
+      async: true,
+      defer: true,
+      'data-website-id': 'clopxgjr6050tqn5dzxo7pjac',
+    },
+  ],
 };
 
 module.exports = config;
