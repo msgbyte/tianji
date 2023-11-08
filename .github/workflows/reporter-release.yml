@@ -25,4 +25,4 @@ jobs:
           goversion: 1.21.1
           binary_name: "tianji-reporter"
           compress_assets: "OFF"
-          asset_name: "${BINARY_NAME}-${GOOS}-${GOARCH}"
+          asset_name: "tianji-reporter-${{ matrix.goos }}-${{ matrix.goarch }}"
