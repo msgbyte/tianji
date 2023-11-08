@@ -3,6 +3,7 @@ import { body, header, param, validate } from '../middleware/validate';
 import { recordServerStatus } from '../model/serverStatus';
 import fs from 'fs-extra';
 import path from 'path';
+import { env } from '../utils/env';
 
 export const serverStatusRouter = Router();
 
@@ -34,7 +35,7 @@ serverStatusRouter.get(
   validate(param('workspaceId').isString()),
   async (req, res) => {
     const { workspaceId } = req.params;
-    const server = `${req.protocol}://${req.get('Host')}`;
+    const server = env.serverUrl || `${req.protocol}://${req.get('Host')}`;
 
     res
       .setHeader('Content-Type', 'text/plain')
