@@ -54,12 +54,14 @@ function install_dependencies() {
 
 function input_dsn() {
   defaultServer="{{DEFAULT_SERVER}}"
-  read -p "${Info} Please input server url(default: $defaultWorkspace)" serverUrl
-  serverUrl=${serverUrl:$defaultWorkspace}
+  echo -e "${Info} Please input server url, press enter use default value(default: $defaultServer)"
+  read -re serverUrl
+  serverUrl=${serverUrl:-$defaultServer}
 
   defaultWorkspace="{{DEFAULT_WORKSPACE}}"
-  read -p "${Info} Please input workspaceId(default: $defaultWorkspace)" workspace
-  workspace=${workspace:$defaultWorkspace}
+  echo -e "${Info} Please input workspaceId, press enter use default value(default: $defaultWorkspace)"
+  read -re workspace
+  workspace=${workspace:-$defaultWorkspace}
 }
 
 service_conf=/usr/lib/systemd/system/tianji-reporter.service
@@ -68,7 +70,7 @@ function write_service() {
   echo -e "${Info} Write to systemd configuration"
   cat >${service_conf} <<-EOF
 [Unit]
-Description=Tianji-Report
+Description=Tianji-Reporter
 Documentation=https://github.com/msgbyte/tianji
 After=network.target
 
@@ -134,7 +136,8 @@ function install_client() {
   esac
   echo -e "${Info} Downloading ${arch} binary file..."
   mkdir -p /usr/local/tianji/reporter/
-  cd /tmp && wget "https://github.com/msgbyte/tianji/releases/latest/download/tianji-reporter-linux-${arch}"
+  cd /tmp
+  wget --no-check-certificate "https://github.com/msgbyte/tianji/releases/latest/download/tianji-reporter-linux-${arch}"
   mv tianji-reporter-linux-${arch} /usr/local/tianji/reporter/tianji-reporter
   chmod +x /usr/local/tianji/reporter/tianji-reporter
   enable_service
