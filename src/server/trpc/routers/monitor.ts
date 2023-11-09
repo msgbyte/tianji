@@ -355,11 +355,14 @@ export const monitorRouter = router({
     )
     .output(z.array(monitorEventSchema))
     .query(async ({ input }) => {
-      const { monitorId } = input;
+      const { workspaceId, monitorId } = input;
 
       const list = await prisma.monitorEvent.findMany({
         where: {
           monitorId,
+          monitor: {
+            workspaceId: workspaceId,
+          },
         },
         orderBy: {
           createdAt: 'desc',
