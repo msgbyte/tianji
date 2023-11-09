@@ -15,9 +15,7 @@ function HomepageHeader() {
         <h1 className="text-5xl">
           <span className="text-gradient font-bold">{siteConfig.title}</span>
         </h1>
-        <p className="text-black text-opacity-60 text-2xl">
-          {siteConfig.tagline}
-        </p>
+        <p className="opacity-60 text-2xl">{siteConfig.tagline}</p>
         <p className="opacity-60">
           Tianji brings all your commonly used tools together in one place
         </p>
@@ -62,6 +60,7 @@ function HomepageMain() {
       <div className="text-center">
         <div className="border-8 border-solid border-gray-200 rounded-lg shadow-lg">
           <Carousel
+            className="cursor-move"
             showThumbs={false}
             showStatus={false}
             showIndicators={true}
