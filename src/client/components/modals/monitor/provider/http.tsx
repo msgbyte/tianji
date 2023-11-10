@@ -56,8 +56,10 @@ const MonitorHttp: React.FC = React.memo(() => {
           </Select.Option>
         </Select>
       </Form.Item>
-      <Form.Item label="Content-Type" name={['payload', 'bodyValue']}>
-        <Input.TextArea placeholder='For example:\n{ "key": "value" }' />
+      <Form.Item label="Body" name={['payload', 'bodyValue']}>
+        <Input.TextArea
+          placeholder='For example:&#13;&#10;{ "key": "value" }'
+        />
       </Form.Item>
     </>
   );
