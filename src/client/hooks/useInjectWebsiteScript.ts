@@ -10,6 +10,8 @@ export function useInjectWebsiteScript() {
       const el = document.createElement('script');
       el.src = location.origin + '/tracker.js';
       el.setAttribute('data-website-id', String(websiteId));
+      el.setAttribute('async', 'async');
+      el.setAttribute('defer', 'defer');
       document.head.append(el);
     }
   );
