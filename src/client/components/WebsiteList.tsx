@@ -77,11 +77,17 @@ export const WebsiteList: React.FC = React.memo(() => {
           <Form.Item
             label="Server Name"
             name="name"
+            tooltip="Server Name to Display"
             rules={[{ required: true }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item label="Domain" name="domain" rules={[{ required: true }]}>
+          <Form.Item
+            label="Domain"
+            name="domain"
+            tooltip="Your server domain, or ip."
+            rules={[{ required: true }]}
+          >
             <Input />
           </Form.Item>
         </Form>
