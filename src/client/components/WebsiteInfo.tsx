@@ -107,7 +107,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
                 <Input size="large" />
               </Form.Item>
 
-              <Form.Item label="Monitor" name="monitorId">
+              <Form.Item label="Monitor" name="monitorId" tooltip="You can bind a monitor which will display health status in website overview">
                 <MonitorPicker size="large" allowClear={true} />
               </Form.Item>
 
