@@ -139,6 +139,12 @@ dependencies:
   react-easy-sort:
     specifier: ^1.5.3
     version: 1.5.3(react-dom@18.2.0)(react@18.2.0)
+  react-grid-layout:
+    specifier: 1.4.2
+    version: 1.4.2(react-dom@18.2.0)(react@18.2.0)
+  react-resizable:
+    specifier: ^3.0.5
+    version: 3.0.5(react-dom@18.2.0)(react@18.2.0)
   react-router:
     specifier: ^6.15.0
     version: 6.15.0(react@18.2.0)
@@ -234,6 +240,12 @@ devDependencies:
   '@types/react-dom':
     specifier: ^18.2.7
     version: 18.2.7
+  '@types/react-grid-layout':
+    specifier: ^1.3.5
+    version: 1.3.5
+  '@types/react-resizable':
+    specifier: ^3.0.7
+    version: 3.0.7
   '@types/request-ip':
     specifier: ^0.0.38
     version: 0.0.38
@@ -2199,6 +2211,18 @@ packages:
       '@types/react': 18.2.21
     dev: true
 
+  /@types/react-grid-layout@1.3.5:
+    resolution: {integrity: sha512-WH/po1gcEcoR6y857yAnPGug+ZhkF4PaTUxgAbwfeSH/QOgVSakKHBXoPGad/sEznmkiaK3pqHk+etdWisoeBQ==}
+    dependencies:
+      '@types/react': 18.2.21
+    dev: true
+
+  /@types/react-resizable@3.0.7:
+    resolution: {integrity: sha512-V4N7/xDUME+cxKya/A73MmFrHofTupVdE45boRxeA8HL4Q5pJh3AuG0FWCEy2GB84unIMSRISyEAS/GHWum9EQ==}
+    dependencies:
+      '@types/react': 18.2.21
+    dev: true
+
   /@types/react@18.2.21:
     resolution: {integrity: sha512-neFKG/sBAwGxHgXiIxnbm3/AAVQ/cMRS93hvBpg8xYRbeQSPVABp9U2bRnPf0iI4+Ucdv3plSxKK+3CW2ENJxA==}
     dependencies:
@@ -2792,6 +2816,11 @@ packages:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
+    dev: false
+
+  /clsx@1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
     dev: false
 
   /clsx@2.0.0:
@@ -3645,6 +3674,10 @@ packages:
 
   /fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
+    dev: false
+
+  /fast-equals@4.0.3:
+    resolution: {integrity: sha512-G3BSX9cfKttjr+2o1O22tYMLq0DPluZnYtq1rXumE1SpL/F/SLIfHx08WYQoWSIpeMYf8sRbJ8++71+v6Pnxfg==}
     dev: false
 
   /fast-fifo@1.3.2:
@@ -6007,6 +6040,18 @@ packages:
       scheduler: 0.23.0
     dev: false
 
+  /react-draggable@4.4.6(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-LtY5Xw1zTPqHkVmtM3X8MUOxNDOUhv/khTgBgrUvwaS064bwVvxT+q5El0uUFNx5IEPKXuRejr7UqLwBIg5pdw==}
+    peerDependencies:
+      react: '>= 16.3.0'
+      react-dom: '>= 16.3.0'
+    dependencies:
+      clsx: 1.2.1
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
   /react-easy-sort@1.5.3(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-d5DVqmlqGfpRcE2blMkZ/H8AvsY6KZmUG5nOeUrV5INWMbqDIXTRBkkBnJvNOQT6mupAjl4wokgQcur5zRMYxw==}
     engines: {node: '>=16'}
@@ -6018,6 +6063,22 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       tslib: 2.0.1
+    dev: false
+
+  /react-grid-layout@1.4.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-LLOZogtw5XNHbdCquKQRG/Dspjyfelk+kE9DKRbLUl3UArFRQu/IiH+aPcjh+wSkSHUjf+Rv32ueEYigbGzRLQ==}
+    peerDependencies:
+      react: '>= 16.3.0'
+      react-dom: '>= 16.3.0'
+    dependencies:
+      clsx: 2.0.0
+      fast-equals: 4.0.3
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-draggable: 4.4.6(react-dom@18.2.0)(react@18.2.0)
+      react-resizable: 3.0.5(react-dom@18.2.0)(react@18.2.0)
+      resize-observer-polyfill: 1.5.1
     dev: false
 
   /react-is@16.13.1:
@@ -6032,6 +6093,18 @@ packages:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /react-resizable@3.0.5(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-vKpeHhI5OZvYn82kXOs1bC8aOXktGU5AmKAgaZS4F5JPburCtbmDPqE7Pzp+1kN4+Wb81LlF33VpGwWwtXem+w==}
+    peerDependencies:
+      react: '>= 16.3'
+    dependencies:
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-draggable: 4.4.6(react-dom@18.2.0)(react@18.2.0)
+    transitivePeerDependencies:
+      - react-dom
+    dev: false
 
   /react-resize-detector@7.1.2(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-zXnPJ2m8+6oq9Nn8zsep/orts9vQv3elrpA+R8XTcW7DVVUJ9vwDwMXaBtykAYjMnkCIaOoK9vObyR7ZgFNlOw==}

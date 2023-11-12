@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { Layout } from './pages/Layout';
-import { Dashboard } from './pages/Dashboard';
+import { DashboardPage } from './pages/Dashboard';
 import { Login } from './pages/Login';
 import { SettingsPage } from './pages/Settings';
 import { Servers } from './pages/Servers';
@@ -26,7 +26,7 @@ export const AppRoutes: React.FC = React.memo(() => {
     <Routes>
       {info ? (
         <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/monitor/*" element={<MonitorPage />} />
           <Route path="/website/*" element={<WebsitePage />} />
           <Route path="/servers" element={<Servers />} />

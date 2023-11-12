@@ -3,6 +3,7 @@ import bcryptjs from 'bcryptjs';
 import { ROLES, SYSTEM_ROLES } from '../utils/const';
 import { jwtVerify } from '../middleware/auth';
 import { TRPCError } from '@trpc/server';
+import { Prisma } from '@prisma/client';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -30,6 +31,7 @@ const createUserSelect = {
       id: true,
       name: true,
       dashboardOrder: true,
+      dashboardLayout: true,
     },
   },
   workspaces: {
@@ -39,12 +41,11 @@ const createUserSelect = {
         select: {
           id: true,
           name: true,
-          dashboardOrder: true,
         },
       },
     },
   },
-};
+} satisfies Prisma.UserSelect;
 
 /**
  * Create User

@@ -40,6 +40,27 @@ export const websiteRouter = router({
 
       return count;
     }),
+  all: workspaceProcedure
+    .meta({
+      openapi: {
+        method: 'GET',
+        path: `/workspace/{workspaceId}/website/all`,
+        tags: [OPENAPI_TAG.WEBSITE],
+        protect: true,
+      },
+    })
+    .output(z.array(websiteInfoSchema))
+    .query(async ({ input }) => {
+      const { workspaceId } = input;
+
+      const websites = await prisma.website.findMany({
+        where: {
+          workspaceId,
+        },
+      });
+
+      return websites;
+    }),
   info: workspaceProcedure
     .meta(
       buildWebsiteOpenapi({

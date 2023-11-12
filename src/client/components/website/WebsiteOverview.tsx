@@ -233,7 +233,7 @@ export const StatsChart: React.FC<{
             formatter: (text) => formatDateWithUnit(text, props.unit),
           },
         },
-      } as ColumnConfig),
+      } satisfies ColumnConfig),
     [props.data, props.unit]
   );
 

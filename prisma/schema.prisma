@@ -23,11 +23,12 @@ model User {
 }
 
 model Workspace {
-  id             String   @id @unique @default(cuid()) @db.VarChar(30)
-  name           String   @db.VarChar(100)
-  dashboardOrder String[]
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+  id              String   @id @unique @default(cuid()) @db.VarChar(30)
+  name            String   @db.VarChar(100)
+  dashboardOrder  String[]
+  dashboardLayout Json?    @db.Json
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
   users         WorkspacesOnUsers[]
   websites      Website[]
