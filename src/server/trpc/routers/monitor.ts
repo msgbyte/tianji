@@ -88,7 +88,7 @@ export const monitorRouter = router({
         name: z.string(),
         type: z.string(),
         active: z.boolean().default(true),
-        interval: z.number().int().default(20),
+        interval: z.number().int().min(5).max(10000).default(20),
         notificationIds: z.array(z.string()).default([]),
         payload: z.object({}).passthrough(),
       })
