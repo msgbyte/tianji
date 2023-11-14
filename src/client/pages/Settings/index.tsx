@@ -1,8 +1,8 @@
 import { Menu, MenuProps } from 'antd';
 import React from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { WebsiteInfo } from '../../components/WebsiteInfo';
-import { WebsiteList } from '../../components/WebsiteList';
+import { WebsiteInfo } from '../../components/website/WebsiteInfo';
+import { WebsiteList } from '../../components/website/WebsiteList';
 import { useEvent } from '../../hooks/useEvent';
 import { NotificationList } from './NotificationList';
 import { Profile } from './Profile';

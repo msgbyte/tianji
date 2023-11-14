@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button, DatePicker, Dropdown, MenuProps, Modal, Space } from 'antd';
 import { Dayjs } from 'dayjs';
 import { DownOutlined } from '@ant-design/icons';
@@ -19,82 +19,85 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
   const { label, startDate, endDate } = useGlobalRangeDate();
   const [range, setRange] = useState<[Dayjs, Dayjs]>([startDate, endDate]);
 
-  const menu: MenuProps = {
-    onClick: () => {
-      setShowDropdown(false);
-    },
-    items: compact([
-      {
-        label: 'Today',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.Today });
+  const menu: MenuProps = useMemo(
+    () => ({
+      onClick: () => {
+        setShowDropdown(false);
+      },
+      items: compact([
+        {
+          label: 'Today',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Today });
+          },
         },
-      },
-      {
-        label: 'Last 24 Hours',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.Last24Hours });
+        {
+          label: 'Last 24 Hours',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Last24Hours });
+          },
         },
-      },
-      {
-        label: 'Yesterday',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.Yesterday });
+        {
+          label: 'Yesterday',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Yesterday });
+          },
         },
-      },
-      {
-        type: 'divider',
-      },
-      {
-        label: 'This week',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.ThisWeek });
+        {
+          type: 'divider',
         },
-      },
-      {
-        label: 'Last 7 days',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.Last7Days });
+        {
+          label: 'This week',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.ThisWeek });
+          },
         },
-      },
-      {
-        type: 'divider',
-      },
-      {
-        label: 'This Month',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.ThisMonth });
+        {
+          label: 'Last 7 days',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Last7Days });
+          },
         },
-      },
-      {
-        label: 'Last 30 days',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.Last30Days });
+        {
+          type: 'divider',
         },
-      },
-      {
-        label: 'Last 90 days',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.Last90Days });
+        {
+          label: 'This Month',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.ThisMonth });
+          },
         },
-      },
-      {
-        label: 'This year',
-        onClick: () => {
-          useGlobalStateStore.setState({ dateRange: DateRange.ThisYear });
+        {
+          label: 'Last 30 days',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Last30Days });
+          },
         },
-      },
-      {
-        type: 'divider',
-      },
-      {
-        label: 'Custom',
-        onClick: () => {
-          setShowPicker(true);
+        {
+          label: 'Last 90 days',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Last90Days });
+          },
         },
-      },
-    ] as MenuProps['items']),
-  };
+        {
+          label: 'This year',
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.ThisYear });
+          },
+        },
+        {
+          type: 'divider',
+        },
+        {
+          label: 'Custom',
+          onClick: () => {
+            setShowPicker(true);
+          },
+        },
+      ] as MenuProps['items']),
+    }),
+    []
+  );
 
   return (
     <>

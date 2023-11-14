@@ -12,15 +12,15 @@ import {
   refreshWorkspaceWebsites,
   useWorspaceWebsites,
   WebsiteInfo,
-} from '../api/model/website';
-import { Loading } from './Loading';
-import { NoWorkspaceTip } from './NoWorkspaceTip';
-import { useRequest } from '../hooks/useRequest';
-import { useUserStore } from '../store/user';
-import { useEvent } from '../hooks/useEvent';
+} from '../../api/model/website';
+import { Loading } from '../Loading';
+import { NoWorkspaceTip } from '../NoWorkspaceTip';
+import { useRequest } from '../../hooks/useRequest';
+import { useUserStore } from '../../store/user';
+import { useEvent } from '../../hooks/useEvent';
 import { useNavigate } from 'react-router';
-import { PageHeader } from './PageHeader';
-import { ModalButton } from './ModalButton';
+import { PageHeader } from '../PageHeader';
+import { ModalButton } from '../ModalButton';
 
 export const WebsiteList: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);

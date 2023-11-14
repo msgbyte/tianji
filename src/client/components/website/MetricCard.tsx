@@ -1,6 +1,6 @@
 import { Tag } from 'antd';
 import React from 'react';
-import { formatNumber } from '../utils/common';
+import { formatNumber } from '../../utils/common';
 
 interface MetricCardProps {
   value?: number;

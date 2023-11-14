@@ -1,5 +1,5 @@
 import React from 'react';
-import { trpc } from '../api/trpc';
+import { trpc } from '../../api/trpc';
 
 export const WebsiteOnlineCount: React.FC<{
   workspaceId: string;

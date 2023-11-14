@@ -1,21 +1,21 @@
 import { Button, Form, Input, message, Popconfirm, Tabs } from 'antd';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { deleteWorkspaceWebsite } from '../api/model/website';
-import { useRequest } from '../hooks/useRequest';
-import { useCurrentWorkspaceId } from '../store/user';
-import { ErrorTip } from './ErrorTip';
-import { Loading } from './Loading';
-import { NoWorkspaceTip } from './NoWorkspaceTip';
-import { MonitorPicker } from './monitor/MonitorPicker';
+import { deleteWorkspaceWebsite } from '../../api/model/website';
+import { useRequest } from '../../hooks/useRequest';
+import { useCurrentWorkspaceId } from '../../store/user';
+import { ErrorTip } from '../ErrorTip';
+import { Loading } from '../Loading';
+import { NoWorkspaceTip } from '../NoWorkspaceTip';
+import { MonitorPicker } from '../monitor/MonitorPicker';
 import {
   defaultErrorHandler,
   defaultSuccessHandler,
   getQueryKey,
   trpc,
-} from '../api/trpc';
+} from '../../api/trpc';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEvent } from '../hooks/useEvent';
+import { useEvent } from '../../hooks/useEvent';
 
 export const WebsiteInfo: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
@@ -107,7 +107,11 @@ export const WebsiteInfo: React.FC = React.memo(() => {
                 <Input size="large" />
               </Form.Item>
 
-              <Form.Item label="Monitor" name="monitorId" tooltip="You can bind a monitor which will display health status in website overview">
+              <Form.Item
+                label="Monitor"
+                name="monitorId"
+                tooltip="You can bind a monitor which will display health status in website overview"
+              >
                 <MonitorPicker size="large" allowClear={true} />
               </Form.Item>
 

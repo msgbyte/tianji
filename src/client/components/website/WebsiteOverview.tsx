@@ -16,10 +16,10 @@ import {
   getDateArray,
 } from '../../utils/date';
 import { useEvent } from '../../hooks/useEvent';
-import { MetricCard } from '../MetricCard';
+import { MetricCard } from './MetricCard';
 import { formatNumber, formatShortTime } from '../../utils/common';
 import { useTheme } from '../../hooks/useTheme';
-import { WebsiteOnlineCount } from '../WebsiteOnlineCount';
+import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
 import { useNavigate } from 'react-router';

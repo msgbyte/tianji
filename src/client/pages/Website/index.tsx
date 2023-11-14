@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
-import { WebsiteList } from '../../components/WebsiteList';
+import { WebsiteList } from '../../components/website/WebsiteList';
 import { WebsiteDetail } from './Detail';
 
 export const WebsitePage: React.FC = React.memo(() => {
