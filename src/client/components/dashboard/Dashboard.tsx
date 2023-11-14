@@ -8,6 +8,7 @@ import { Button, Empty, message } from 'antd';
 import { DateFilter } from '../DateFilter';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspace, useCurrentWorkspaceId } from '../../store/user';
+import clsx from 'clsx';
 
 export const Dashboard: React.FC = React.memo(() => {
   const { isEditMode, switchEditMode, layouts, items } = useDashboardStore();
@@ -46,7 +47,12 @@ export const Dashboard: React.FC = React.memo(() => {
 
   return (
     <div className="py-4">
-      <div className="flex gap-2 justify-end">
+      <div
+        className={clsx(
+          'flex gap-2 justify-end bg-white py-2',
+          isEditMode && 'sticky top-0 z-10'
+        )}
+      >
         {isEditMode ? (
           <>
             <DashboardItemAddButton />
