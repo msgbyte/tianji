@@ -7,6 +7,7 @@ import React from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useEvent } from '../../../hooks/useEvent';
 import { WebsiteEventItem } from './WebsiteEventItem';
+import { MonitorHealthBarItem } from './MonitorHealthBarItem';
 
 interface DashboardGridItemProps {
   item: DashboardItem;
@@ -21,6 +22,8 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
         return <WebsiteOverviewItem websiteId={id} />;
       } else if (type === 'websiteEvent') {
         return <WebsiteEventItem websiteId={id} />;
+      } else if (type === 'monitorHealthBar') {
+        return <MonitorHealthBarItem monitorId={id} />;
       } else {
         return <NotFoundTip />;
       }

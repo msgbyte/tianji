@@ -7,10 +7,17 @@ import { DownOutlined } from '@ant-design/icons';
 
 export const DashboardItemAddButton: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const { data: websites = [], isLoading } = trpc.website.all.useQuery({
-    workspaceId,
-  });
+  const { data: websites = [], isLoading: isWebsiteLoading } =
+    trpc.website.all.useQuery({
+      workspaceId,
+    });
+  const { data: monitors = [], isLoading: isMonitorLoading } =
+    trpc.monitor.all.useQuery({
+      workspaceId,
+    });
   const { addItem } = useDashboardStore();
+
+  const isLoading = isWebsiteLoading || isMonitorLoading;
 
   const menu: MenuProps = {
     items: [
@@ -37,6 +44,27 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
               label: 'Events',
               onClick: () => {
                 addItem('websiteEvent', website.id, `${website.name}'s Event`);
+              },
+            },
+          ],
+        })),
+      },
+      {
+        key: 'monitor',
+        label: 'Monitor',
+        children: monitors.map((monitor) => ({
+          key: `monitor#${monitor.id}`,
+          label: monitor.name,
+          children: [
+            {
+              key: `monitor#${monitor.id}#healthBar`,
+              label: 'Health Bar',
+              onClick: () => {
+                addItem(
+                  'monitorHealthBar',
+                  monitor.id,
+                  `${monitor.name}'s Health`
+                );
               },
             },
           ],
