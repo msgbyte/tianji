@@ -41,7 +41,7 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
       <Card
         className="h-full w-full overflow-auto"
         title={title}
-        headStyle={{ padding: 10 }}
+        headStyle={{ padding: 10, minHeight: 40 }}
         bodyStyle={{ padding: 10 }}
         extra={
           isEditMode && (

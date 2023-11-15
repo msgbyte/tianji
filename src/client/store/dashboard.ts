@@ -75,7 +75,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 export const defaultItemLayout: Record<DashboardItemType, Omit<Layout, 'i'>> = {
   websiteOverview: { x: Infinity, y: Infinity, w: 4, h: 12 },
   websiteEvent: { x: Infinity, y: Infinity, w: 2, h: 5 },
-  monitorHealthBar: { x: Infinity, y: Infinity, w: 1, h: 2 },
+  monitorHealthBar: { x: Infinity, y: Infinity, w: 2, h: 2 },
   monitorStatus: { x: Infinity, y: Infinity, w: 4, h: 2 },
   monitorChart: { x: Infinity, y: Infinity, w: 4, h: 2 },
   monitorEvent: { x: Infinity, y: Infinity, w: 4, h: 2 },
