@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Layouts, Responsive, WidthProvider } from 'react-grid-layout';
 import clsx from 'clsx';
 import { DashboardGridItem } from './items';
