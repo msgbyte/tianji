@@ -40,10 +40,14 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
               },
             },
             {
-              key: `website#${website.id}#event`,
+              key: `website#${website.id}#events`,
               label: 'Events',
               onClick: () => {
-                addItem('websiteEvent', website.id, `${website.name}'s Event`);
+                addItem(
+                  'websiteEvents',
+                  website.id,
+                  `${website.name}'s Events`
+                );
               },
             },
           ],
@@ -64,6 +68,35 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
                   'monitorHealthBar',
                   monitor.id,
                   `${monitor.name}'s Health`
+                );
+              },
+            },
+            {
+              key: `monitor#${monitor.id}#metrics`,
+              label: 'Metrics',
+              onClick: () => {
+                addItem(
+                  'monitorMetrics',
+                  monitor.id,
+                  `${monitor.name}'s Metrics`
+                );
+              },
+            },
+            {
+              key: `monitor#${monitor.id}#chart`,
+              label: 'Chart',
+              onClick: () => {
+                addItem('monitorChart', monitor.id, `${monitor.name}'s Chart`);
+              },
+            },
+            {
+              key: `monitor#${monitor.id}#events`,
+              label: 'Events',
+              onClick: () => {
+                addItem(
+                  'monitorEvents',
+                  monitor.id,
+                  `${monitor.name}'s Events`
                 );
               },
             },

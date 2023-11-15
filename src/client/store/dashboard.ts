@@ -5,12 +5,11 @@ import { v1 as uuid } from 'uuid';
 
 export type DashboardItemType =
   | 'websiteOverview'
-  | 'websiteEvent'
+  | 'websiteEvents'
   | 'monitorHealthBar'
-  | 'monitorStatus'
+  | 'monitorMetrics'
   | 'monitorChart'
-  | 'monitorEvent'
-  | 'serverStatus';
+  | 'monitorEvents';
 
 export interface DashboardItem {
   key: string; // match with layout, not equal
@@ -73,11 +72,10 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 }));
 
 export const defaultItemLayout: Record<DashboardItemType, Omit<Layout, 'i'>> = {
-  websiteOverview: { x: Infinity, y: Infinity, w: 4, h: 12 },
-  websiteEvent: { x: Infinity, y: Infinity, w: 2, h: 5 },
-  monitorHealthBar: { x: Infinity, y: Infinity, w: 2, h: 2 },
-  monitorStatus: { x: Infinity, y: Infinity, w: 4, h: 2 },
-  monitorChart: { x: Infinity, y: Infinity, w: 4, h: 2 },
-  monitorEvent: { x: Infinity, y: Infinity, w: 4, h: 2 },
-  serverStatus: { x: Infinity, y: Infinity, w: 4, h: 2 },
+  websiteOverview: { x: 0, y: Infinity, w: 4, h: 12 },
+  websiteEvents: { x: 0, y: Infinity, w: 2, h: 5 },
+  monitorHealthBar: { x: 0, y: Infinity, w: 2, h: 2 },
+  monitorMetrics: { x: 0, y: Infinity, w: 2, h: 3 },
+  monitorChart: { x: 0, y: Infinity, w: 2, h: 6 },
+  monitorEvents: { x: 0, y: Infinity, w: 2, h: 10 },
 };

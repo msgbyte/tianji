@@ -8,6 +8,9 @@ import { DeleteOutlined } from '@ant-design/icons';
 import { useEvent } from '../../../hooks/useEvent';
 import { WebsiteEventItem } from './WebsiteEventItem';
 import { MonitorHealthBarItem } from './MonitorHealthBarItem';
+import { MonitorMetricsItem } from './MonitorMetricsItem';
+import { MonitorChartItem } from './MonitorChartItem';
+import { MonitorEventsItem } from './MonitorEventsItem';
 
 interface DashboardGridItemProps {
   item: DashboardItem;
@@ -20,10 +23,16 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
     const inner = useMemo(() => {
       if (type === 'websiteOverview') {
         return <WebsiteOverviewItem websiteId={id} />;
-      } else if (type === 'websiteEvent') {
+      } else if (type === 'websiteEvents') {
         return <WebsiteEventItem websiteId={id} />;
       } else if (type === 'monitorHealthBar') {
         return <MonitorHealthBarItem monitorId={id} />;
+      } else if (type === 'monitorMetrics') {
+        return <MonitorMetricsItem monitorId={id} />;
+      } else if (type === 'monitorChart') {
+        return <MonitorChartItem monitorId={id} />;
+      } else if (type === 'monitorEvents') {
+        return <MonitorEventsItem monitorId={id} />;
       } else {
         return <NotFoundTip />;
       }
