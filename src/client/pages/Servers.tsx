@@ -244,6 +244,13 @@ export const ServerList: React.FC<{
           )} / ${filesize(record.payload.hdd_total * 1000 * 1000)}`;
         },
       },
+      {
+        key: 'updatedAt',
+        title: 'updatedAt',
+        render: (val) => {
+          return dayjs(val).format('MMM D HH:mm:ss');
+        },
+      },
     ];
   }, []);
 
