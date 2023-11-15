@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Layouts, Layout } from 'react-grid-layout';
-import { mapValues, without } from 'lodash';
+import { mapValues } from 'lodash';
 import { v1 as uuid } from 'uuid';
 
 export type DashboardItemType =
@@ -74,10 +74,10 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
 export const defaultItemLayout: Record<DashboardItemType, Omit<Layout, 'i'>> = {
   websiteOverview: { x: Infinity, y: Infinity, w: 4, h: 12 },
-  websiteEvent: { x: 0, y: 0, w: 4, h: 2 },
-  monitorHealthBar: { x: 0, y: 0, w: 4, h: 2 },
-  monitorStatus: { x: 0, y: 0, w: 4, h: 2 },
-  monitorChart: { x: 0, y: 0, w: 4, h: 2 },
-  monitorEvent: { x: 0, y: 0, w: 4, h: 2 },
-  serverStatus: { x: 0, y: 0, w: 4, h: 2 },
+  websiteEvent: { x: Infinity, y: Infinity, w: 2, h: 5 },
+  monitorHealthBar: { x: Infinity, y: Infinity, w: 4, h: 2 },
+  monitorStatus: { x: Infinity, y: Infinity, w: 4, h: 2 },
+  monitorChart: { x: Infinity, y: Infinity, w: 4, h: 2 },
+  monitorEvent: { x: Infinity, y: Infinity, w: 4, h: 2 },
+  serverStatus: { x: Infinity, y: Infinity, w: 4, h: 2 },
 };

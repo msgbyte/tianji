@@ -24,7 +24,7 @@ interface MetricsTableProps {
   endAt: number;
 }
 export const MetricsTable: React.FC<MetricsTableProps> = React.memo((props) => {
-  const workspaceId = useCurrentWorkspaceId()!;
+  const workspaceId = useCurrentWorkspaceId();
   const { websiteId, title, type, startAt, endAt } = props;
 
   const { isLoading, data: metrics = [] } = trpc.website.metrics.useQuery({

@@ -1,4 +1,4 @@
-import { Button, Dropdown, Space } from 'antd';
+import { Button, Dropdown, MenuProps, Space } from 'antd';
 import React from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
@@ -12,37 +12,42 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
   });
   const { addItem } = useDashboardStore();
 
-  return (
-    <div>
-      <Dropdown
-        trigger={['click']}
-        disabled={isLoading}
-        menu={{
-          items: [
+  const menu: MenuProps = {
+    items: [
+      {
+        key: 'website',
+        label: 'Website',
+        children: websites.map((website) => ({
+          key: `website#${website.id}`,
+          label: website.name,
+          children: [
             {
-              key: 'website',
-              label: 'website',
-              children: websites.map((website) => ({
-                key: `website#${website.id}`,
-                label: website.name,
-                children: [
-                  {
-                    key: `website#${website.id}#overview`,
-                    label: 'overview',
-                    onClick: () => {
-                      addItem(
-                        'websiteOverview',
-                        website.id,
-                        `${website.name}'s Overview`
-                      );
-                    },
-                  },
-                ],
-              })),
+              key: `website#${website.id}#overview`,
+              label: 'Overview',
+              onClick: () => {
+                addItem(
+                  'websiteOverview',
+                  website.id,
+                  `${website.name}'s Overview`
+                );
+              },
+            },
+            {
+              key: `website#${website.id}#event`,
+              label: 'Events',
+              onClick: () => {
+                addItem('websiteEvent', website.id, `${website.name}'s Event`);
+              },
             },
           ],
-        }}
-      >
+        })),
+      },
+    ],
+  };
+
+  return (
+    <div>
+      <Dropdown trigger={['click']} disabled={isLoading} menu={menu}>
         <Button type="primary" size="large" className="w-32">
           <Space>
             <span>Add</span>

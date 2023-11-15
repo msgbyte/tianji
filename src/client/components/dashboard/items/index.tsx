@@ -6,6 +6,7 @@ import { Button, Card } from 'antd';
 import React from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useEvent } from '../../../hooks/useEvent';
+import { WebsiteEventItem } from './WebsiteEventItem';
 
 interface DashboardGridItemProps {
   item: DashboardItem;
@@ -18,6 +19,8 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
     const inner = useMemo(() => {
       if (type === 'websiteOverview') {
         return <WebsiteOverviewItem websiteId={id} />;
+      } else if (type === 'websiteEvent') {
+        return <WebsiteEventItem websiteId={id} />;
       } else {
         return <NotFoundTip />;
       }
@@ -35,6 +38,8 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
       <Card
         className="h-full w-full overflow-auto"
         title={title}
+        headStyle={{ padding: 10 }}
+        bodyStyle={{ padding: 10 }}
         extra={
           isEditMode && (
             <Button
