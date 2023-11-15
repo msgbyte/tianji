@@ -26,7 +26,12 @@ export const Login: React.FC = React.memo(() => {
   return (
     <div className="w-full h-full flex justify-center items-center">
       <div className="w-80 -translate-y-1/4">
-        <Typography.Title level={2}>Tianji</Typography.Title>
+        <div className="text-center">
+          <img className="w-24 h-24" src="/icon.svg" />
+        </div>
+        <Typography.Title className="text-center" level={2}>
+          Tianji
+        </Typography.Title>
         <Form layout="vertical" disabled={loading} onFinish={handleLogin}>
           <Form.Item
             label="Username"
