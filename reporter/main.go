@@ -26,7 +26,7 @@ var (
 	Url         = flag.String("url", "", "The http url of tianji, for example: https://tianji.msgbyte.com")
 	WorkspaceId = flag.String("workspace", "", "The workspace id for tianji, this should be a uuid")
 	Name        = flag.String("name", "", "The identification name for this machine")
-	Interval    = flag.Int("interval", 10.0, "Input the INTERVAL, seconed")
+	Interval    = flag.Int("interval", 5.0, "Input the INTERVAL, seconed")
 	IsVnstat    = flag.Bool("vnstat", false, "Use vnstat for traffic statistics, linux only")
 )
 
