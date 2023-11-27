@@ -187,6 +187,7 @@ model TelemetrySession {
   hostname     String?  @db.VarChar(100)
   browser      String?  @db.VarChar(20)
   os           String?  @db.VarChar(20)
+  ip           String?  @db.VarChar(45)
   country      String?  @db.Char(2)
   subdivision1 String?  @db.VarChar(20)
   subdivision2 String?  @db.VarChar(50)

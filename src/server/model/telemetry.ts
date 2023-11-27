@@ -94,6 +94,7 @@ async function findSession(req: Request, url: string) {
           hostname,
           browser,
           os,
+          ip,
           country,
           subdivision1,
           subdivision2,
