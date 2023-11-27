@@ -4,7 +4,7 @@
 
 **Insight into everything**
 
-`Uptime Monitor` + `Website analytics` + `Server Status` = `Tianji`
+`Website analytics` + `Uptime Monitor`  + `Server Status` = `Tianji`
 
 All in one project!
 

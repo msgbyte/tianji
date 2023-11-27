@@ -1,10 +1,10 @@
-# Tianji
+# 天机 Tianji
 
 <img src="./public/icon.svg" width="128" />
 
 **洞察一切**
 
-`状态监控器` + `网站分析器` + `服务状态上报` = `Tianji`
+`网站分析器` + `状态监控器` + `服务状态上报` = `Tianji`
 
 所有一切都在一起!
 
