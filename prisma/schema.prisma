@@ -15,9 +15,9 @@ model User {
   createdAt          DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
   deletedAt          DateTime? @db.Timestamptz(6)
-  currentWorkspaceId String?   @db.VarChar(30)
+  currentWorkspaceId String    @db.VarChar(30)
 
-  currentWorkspace Workspace? @relation(fields: [currentWorkspaceId], references: [id])
+  currentWorkspace Workspace @relation(fields: [currentWorkspaceId], references: [id])
 
   workspaces WorkspacesOnUsers[]
 }

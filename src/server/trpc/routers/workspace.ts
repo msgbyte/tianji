@@ -2,6 +2,7 @@ import { router, workspaceOwnerProcedure } from '../trpc';
 import { z } from 'zod';
 import { prisma } from '../../model/_client';
 import { workspaceDashboardLayoutSchema } from '../../model/_schema';
+import { Prisma } from '@prisma/client';
 
 export const workspaceRouter = router({
   updateDashboardOrder: workspaceOwnerProcedure
@@ -25,7 +26,7 @@ export const workspaceRouter = router({
   saveDashboardLayout: workspaceOwnerProcedure
     .input(
       z.object({
-        dashboardLayout: workspaceDashboardLayoutSchema,
+        dashboardLayout: workspaceDashboardLayoutSchema.nullable(),
       })
     )
     .mutation(async ({ input }) => {
@@ -36,7 +37,7 @@ export const workspaceRouter = router({
           id: workspaceId,
         },
         data: {
-          dashboardLayout,
+          dashboardLayout: dashboardLayout ?? Prisma.DbNull,
         },
       });
     }),

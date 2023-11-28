@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { schemas } from '../../../types';
 
 // Match prisma `JsonValue`
 export const jsonFieldSchema = z.union([
@@ -10,12 +11,10 @@ export const jsonFieldSchema = z.union([
   z.number(),
 ]);
 
-export const workspaceDashboardLayoutSchema = z
-  .object({
-    layouts: z.record(z.string(), z.array(z.any())),
-    items: z.array(z.any()),
-  })
-  .nullable();
+export const workspaceDashboardLayoutSchema = z.object({
+  layouts: z.record(z.string(), z.array(z.any())),
+  items: z.array(z.any()),
+});
 
 export const workspaceSchema = z.object({
   id: z.string(),
@@ -30,9 +29,9 @@ export const userInfoSchema = z.object({
   updatedAt: z.date(),
   deletedAt: z.date().nullable(),
   currentWorkspace: z.intersection(
-    workspaceSchema.nullable(),
+    workspaceSchema,
     z.object({
-      dashboardLayout: workspaceDashboardLayoutSchema,
+      dashboardLayout: workspaceDashboardLayoutSchema.nullable(),
     })
   ),
   workspaces: z.array(

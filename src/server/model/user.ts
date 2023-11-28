@@ -59,38 +59,33 @@ export async function createAdminUser(username: string, password: string) {
     );
   }
 
-  let user = await prisma.user.create({
-    data: {
-      username,
-      password: await hashPassword(password),
-      role: SYSTEM_ROLES.admin,
-      workspaces: {
-        create: [
-          {
-            role: ROLES.owner,
-            workspace: {
-              create: {
-                name: username,
-              },
-            },
-          },
-        ],
-      },
-    },
-    select: createUserSelect,
-  });
-
-  if (user.workspaces[0]) {
-    user = await prisma.user.update({
-      where: {
-        id: user.id,
-      },
+  const user = await prisma.$transaction(async (p) => {
+    const newWorkspace = await p.workspace.create({
       data: {
-        currentWorkspaceId: user.workspaces[0].workspace.id,
+        name: username,
+      },
+    });
+
+    const user = await p.user.create({
+      data: {
+        username,
+        password: await hashPassword(password),
+        role: SYSTEM_ROLES.admin,
+        workspaces: {
+          create: [
+            {
+              role: ROLES.owner,
+              workspaceId: newWorkspace.id,
+            },
+          ],
+        },
+        currentWorkspaceId: newWorkspace.id,
       },
       select: createUserSelect,
     });
-  }
+
+    return user;
+  });
 
   return user;
 }
@@ -106,38 +101,33 @@ export async function createUser(username: string, password: string) {
     throw new Error('User already exists');
   }
 
-  let user = await prisma.user.create({
-    data: {
-      username,
-      password: await hashPassword(password),
-      role: SYSTEM_ROLES.user,
-      workspaces: {
-        create: [
-          {
-            role: ROLES.owner,
-            workspace: {
-              create: {
-                name: username,
-              },
-            },
-          },
-        ],
-      },
-    },
-    select: createUserSelect,
-  });
-
-  if (user.workspaces[0]) {
-    user = await prisma.user.update({
-      where: {
-        id: user.id,
-      },
+  const user = await prisma.$transaction(async (p) => {
+    const newWorkspace = await p.workspace.create({
       data: {
-        currentWorkspaceId: user.workspaces[0].workspace.id,
+        name: username,
+      },
+    });
+
+    const user = await p.user.create({
+      data: {
+        username,
+        password: await hashPassword(password),
+        role: SYSTEM_ROLES.user,
+        workspaces: {
+          create: [
+            {
+              role: ROLES.owner,
+              workspaceId: newWorkspace.id,
+            },
+          ],
+        },
+        currentWorkspaceId: newWorkspace.id,
       },
       select: createUserSelect,
     });
-  }
+
+    return user;
+  });
 
   return user;
 }
