@@ -7,6 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
+generator zod {
+  provider    = "zod-prisma"
+  modelSuffix = "ModelSchema"
+}
+
 model User {
   id                 String    @id @unique @default(cuid()) @db.VarChar(30)
   username           String    @unique @db.VarChar(255)
@@ -26,6 +35,7 @@ model Workspace {
   id              String   @id @unique @default(cuid()) @db.VarChar(30)
   name            String   @db.VarChar(100)
   dashboardOrder  String[]
+  /// [DashboardLayout]
   dashboardLayout Json?    @db.Json
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
@@ -201,14 +211,16 @@ model TelemetrySession {
 }
 
 model TelemetryEvent {
-  id          String   @id() @default(cuid()) @db.VarChar(30)
-  sessionId   String   @db.Uuid
-  workspaceId String   @db.VarChar(30)
-  eventName   String?  @db.VarChar(100)
-  urlOrigin   String   @db.VarChar(500)
-  urlPath     String   @db.VarChar(500)
-  payload     Json?    @db.Json // Other payload info get from query params, should be a object
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  id          String  @id() @default(cuid()) @db.VarChar(30)
+  sessionId   String  @db.Uuid
+  workspaceId String  @db.VarChar(30)
+  eventName   String? @db.VarChar(100)
+  urlOrigin   String  @db.VarChar(500)
+  urlPath     String  @db.VarChar(500)
+
+  /// [CommonPayload]
+  payload   Json?    @db.Json // Other payload info get from query params, should be a object
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   session TelemetrySession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -223,6 +235,7 @@ model Notification {
   workspaceId String   @db.VarChar(30)
   name        String   @db.VarChar(100)
   type        String   @db.VarChar(100)
+  /// [CommonPayload]
   payload     Json     @db.Json
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
@@ -243,6 +256,7 @@ model Monitor {
   // TODO
   // maxRetry      Int       @default(0) @db.Integer
   // retryInterval Int       @default(0) @db.Integer
+  /// [CommonPayload]
   payload     Json     @db.Json
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
@@ -280,6 +294,7 @@ model MonitorData {
 model MonitorStatus {
   monitorId  String   @db.VarChar(30)
   statusName String   @db.VarChar(50)
+  /// [CommonPayload]
   payload    Json     @db.Json
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
