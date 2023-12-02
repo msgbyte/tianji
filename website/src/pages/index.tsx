@@ -28,11 +28,17 @@ function HomepageHeader() {
       </div>
 
       <div className="text-center my-6">
-        <Link
+        {/* <Link
           className="button button--primary button--lg"
           to="mailto:moonrailgun@gmail.com?subject=I want to apply for Tianji early access account&body=Here is my account: <Here place your username>"
         >
           Early Access
+        </Link> */}
+        <Link
+          className="button button--primary button--lg"
+          to="https://demo.tianji.msgbyte.com"
+        >
+          Visit Demo
         </Link>
       </div>
     </header>
