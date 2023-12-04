@@ -56,8 +56,34 @@ const MonitorHttp: React.FC = React.memo(() => {
           </Select.Option>
         </Select>
       </Form.Item>
+      <Form.Item
+        label="Headers"
+        name={['payload', 'headers']}
+        rules={[
+          {
+            validator(rule, value, callback) {
+              try {
+                const obj = JSON.parse(value);
+                if (typeof obj !== 'object') {
+                  callback('Not JSON Object');
+                } else {
+                  callback();
+                }
+              } catch {
+                callback('Not valid JSON string');
+              }
+            },
+          },
+        ]}
+      >
+        <Input.TextArea
+          rows={4}
+          placeholder='For example:&#13;&#10;{ "key": "value" }'
+        />
+      </Form.Item>
       <Form.Item label="Body" name={['payload', 'bodyValue']}>
         <Input.TextArea
+          rows={4}
           placeholder='For example:&#13;&#10;{ "key": "value" }'
         />
       </Form.Item>

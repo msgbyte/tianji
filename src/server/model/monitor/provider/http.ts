@@ -10,6 +10,7 @@ export const http: MonitorProvider<{
   method?: string;
   timeout?: number; // second
   contentType?: string;
+  headers?: string;
   bodyValue?: string;
   maxRedirects?: number;
   ignoreTLS?: boolean;
@@ -24,6 +25,7 @@ export const http: MonitorProvider<{
       method = 'get',
       timeout = 30,
       contentType,
+      headers,
       bodyValue,
       maxRedirects,
       ignoreTLS,
@@ -44,6 +46,20 @@ export const http: MonitorProvider<{
       // },
     };
 
+    if (headers) {
+      try {
+        const customHeaders = JSON.parse(headers);
+        if (typeof customHeaders === 'object') {
+          config.headers = {
+            ...config.headers,
+            ...customHeaders,
+          };
+        }
+      } catch (err) {
+        logger.warn('Unabled header:', headers);
+      }
+    }
+
     if (bodyValue) {
       config.data = bodyValue;
     }
@@ -54,6 +70,8 @@ export const http: MonitorProvider<{
     };
 
     config.httpsAgent = new https.Agent(httpsAgentOptions);
+
+    console.log('config', config);
 
     try {
       const startTime = dayjs();
