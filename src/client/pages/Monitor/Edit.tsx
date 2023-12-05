@@ -7,7 +7,7 @@ import { Loading } from '../../components/Loading';
 import {
   MonitorInfoEditor,
   MonitorInfoEditorValues,
-} from '../../components/modals/monitor/MonitorInfoEditor';
+} from '../../components/monitor/MonitorInfoEditor';
 import { useCurrentWorkspaceId } from '../../store/user';
 
 export const MonitorEdit: React.FC = React.memo(() => {

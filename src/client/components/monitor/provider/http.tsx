@@ -1,11 +1,11 @@
 import { Form, Input, Select, Switch } from 'antd';
 import React from 'react';
 import { MonitorOverviewComponent, MonitorProvider } from './types';
-import { trpc } from '../../../../api/trpc';
-import { MonitorStatsBlock } from '../../../monitor/MonitorStatsBlock';
+import { trpc } from '../../../api/trpc';
+import { MonitorStatsBlock } from '../MonitorStatsBlock';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash-es';
-import { useCurrentWorkspaceId } from '../../../../store/user';
+import { useCurrentWorkspaceId } from '../../../store/user';
 
 const MonitorHttp: React.FC = React.memo(() => {
   return (

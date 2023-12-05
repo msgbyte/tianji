@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { useMonitorUpsert } from '../../api/model/monitor';
-import { MonitorInfoEditor } from '../../components/modals/monitor/MonitorInfoEditor';
+import { MonitorInfoEditor } from '../../components/monitor/MonitorInfoEditor';
 import { useCurrentWorkspaceId } from '../../store/user';
 
 export const MonitorAdd: React.FC = React.memo(() => {

@@ -8,7 +8,7 @@ import {
 } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { Loading } from '../Loading';
-import { getMonitorLink } from '../modals/monitor/provider';
+import { getMonitorLink } from './provider';
 import { NotFoundTip } from '../NotFoundTip';
 import { MonitorInfo as MonitorInfoType } from '../../../types';
 import { MonitorHealthBar } from './MonitorHealthBar';

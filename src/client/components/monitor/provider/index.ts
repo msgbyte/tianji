@@ -1,5 +1,5 @@
 import React from 'react';
-import { MonitorInfo } from '../../../../../types';
+import { MonitorInfo } from '../../../../types';
 import { pingProvider } from './ping';
 import { httpProvider } from './http';
 import { MonitorProvider } from './types';

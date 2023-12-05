@@ -3,7 +3,7 @@ import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { ErrorTip } from '../ErrorTip';
 import { Loading } from '../Loading';
-import { getMonitorProvider } from '../modals/monitor/provider';
+import { getMonitorProvider } from './provider';
 import { MonitorStatsBlock } from './MonitorStatsBlock';
 
 export const MonitorDataMetrics: React.FC<{

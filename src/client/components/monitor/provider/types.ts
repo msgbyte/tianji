@@ -1,4 +1,4 @@
-import { MonitorInfo } from '../../../../../types';
+import { MonitorInfo } from '../../../../types';
 
 export interface MonitorProvider {
   label: string;
