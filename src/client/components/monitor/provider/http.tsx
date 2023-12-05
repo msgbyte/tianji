@@ -6,6 +6,7 @@ import { MonitorStatsBlock } from '../MonitorStatsBlock';
 import dayjs from 'dayjs';
 import { isEmpty } from 'lodash-es';
 import { useCurrentWorkspaceId } from '../../../store/user';
+import { z } from 'zod';
 
 const MonitorHttp: React.FC = React.memo(() => {
   return (
@@ -13,7 +14,19 @@ const MonitorHttp: React.FC = React.memo(() => {
       <Form.Item
         label="Url"
         name={['payload', 'url']}
-        rules={[{ required: true }]}
+        rules={[
+          { required: true },
+          {
+            validator(rule, value, callback) {
+              try {
+                z.string().url().parse(value);
+                callback();
+              } catch (err) {
+                callback('Not valid http url');
+              }
+            },
+          },
+        ]}
       >
         <Input placeholder="https://example.com" />
       </Form.Item>

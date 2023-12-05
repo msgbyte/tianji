@@ -12,12 +12,12 @@ import {
   FILTER_COLUMNS,
   OPENAPI_TAG,
   SESSION_COLUMNS,
-  hostnameRegex,
 } from '../../utils/const';
 import { parseDateRange } from '../../utils/common';
 import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
 import { websiteInfoSchema } from '../../model/_schema';
 import { OpenApiMeta } from 'trpc-openapi';
+import { hostnameRegex } from '../../../shared';
 
 export const websiteRouter = router({
   onlineCount: workspaceProcedure
