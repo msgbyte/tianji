@@ -71,8 +71,6 @@ export const http: MonitorProvider<{
 
     config.httpsAgent = new https.Agent(httpsAgentOptions);
 
-    console.log('config', config);
-
     try {
       const startTime = dayjs();
       const res = await axios({ ...config });
