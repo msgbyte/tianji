@@ -16,8 +16,8 @@ import { WebsitePage } from './pages/Website';
 import { useGlobalConfig } from './hooks/useConfig';
 import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
 import { ConfigProvider, theme } from 'antd';
-import { useGlobalStateStore } from './store/global';
 import clsx from 'clsx';
+import { useSettingsStore } from './store/settings';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -54,7 +54,7 @@ export const AppRoutes: React.FC = React.memo(() => {
 AppRoutes.displayName = 'AppRoutes';
 
 export const App: React.FC = React.memo(() => {
-  const colorScheme = useGlobalStateStore((state) => state.colorScheme);
+  const colorScheme = useSettingsStore((state) => state.colorScheme);
   const algorithm =
     colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
 
