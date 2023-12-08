@@ -47,7 +47,7 @@ export const MonitorEventList: React.FC<MonitorEventListProps> = React.memo(
                 {item.type}
               </div>
 
-              <div className="text-black text-opacity-60">
+              <div className="text-black text-opacity-60 dark:text-white dark:text-opacity-60">
                 {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
               </div>
 

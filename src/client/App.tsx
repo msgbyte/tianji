@@ -15,6 +15,9 @@ import { MonitorPage } from './pages/Monitor';
 import { WebsitePage } from './pages/Website';
 import { useGlobalConfig } from './hooks/useConfig';
 import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
+import { ConfigProvider, theme } from 'antd';
+import { useGlobalStateStore } from './store/global';
+import clsx from 'clsx';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -51,14 +54,24 @@ export const AppRoutes: React.FC = React.memo(() => {
 AppRoutes.displayName = 'AppRoutes';
 
 export const App: React.FC = React.memo(() => {
+  const colorScheme = useGlobalStateStore((state) => state.colorScheme);
+  const algorithm =
+    colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
+
   return (
-    <div className="App">
+    <div
+      className={clsx('App', {
+        dark: colorScheme === 'dark',
+      })}
+    >
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <TokenLoginContainer>
-              <AppRoutes />
-            </TokenLoginContainer>
+            <ConfigProvider theme={{ algorithm }}>
+              <TokenLoginContainer>
+                <AppRoutes />
+              </TokenLoginContainer>
+            </ConfigProvider>
           </BrowserRouter>
         </QueryClientProvider>
       </trpc.Provider>

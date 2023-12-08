@@ -14,7 +14,7 @@ export const MonitorPage: React.FC = React.memo(() => {
       <div>
         <div className="px-4 pt-4">
           <div
-            className="px-3 py-2 rounded-full bg-green-400 hover:bg-green-500 text-white inline-block cursor-pointer"
+            className="px-3 py-2 rounded-full bg-green-400 hover:bg-green-500 text-white dark:text-gray-700 inline-block cursor-pointer"
             onClick={() => navigate('/monitor/add')}
           >
             Add new Montior
@@ -22,7 +22,7 @@ export const MonitorPage: React.FC = React.memo(() => {
         </div>
       </div>
       <div className="py-5 flex flex-1 overflow-hidden">
-        <div className="w-5/12 bg-gray-50">
+        <div className="w-5/12 bg-gray-50 dark:bg-gray-800">
           <MonitorList />
         </div>
         <div className="w-7/12">

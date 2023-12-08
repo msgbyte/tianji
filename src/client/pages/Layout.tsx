@@ -5,6 +5,7 @@ import { UserOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
 import { useUserStore } from '../store/user';
 import { useLogout } from '../api/model/user';
+import { ColorSchemeSwitcher } from '../components/ColorSchemeSwitcher';
 
 export const Layout: React.FC = React.memo(() => {
   const [params] = useSearchParams();
@@ -25,12 +26,12 @@ export const Layout: React.FC = React.memo(() => {
   const showHeader = !params.has('hideHeader');
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full dark:bg-gray-900 dark:text-gray-300">
       {showHeader && (
-        <div className="flex items-center bg-gray-100 px-4 sticky top-0 z-20">
+        <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-4 sticky top-0 z-20">
           <div className="px-2 mr-10 font-bold flex items-center">
             <img src="/icon.svg" className="w-10 h-10 mr-2" />
-            <span className="text-xl">Tianji</span>
+            <span className="text-xl dark:text-gray-200">Tianji</span>
           </div>
           <div className="flex gap-8">
             <NavItem to="/dashboard" label="Dashboard" />
@@ -42,7 +43,9 @@ export const Layout: React.FC = React.memo(() => {
 
           <div className="flex-1" />
 
-          <div>
+          <div className="flex gap-2">
+            <ColorSchemeSwitcher />
+
             <Dropdown
               placement="bottomRight"
               menu={{
