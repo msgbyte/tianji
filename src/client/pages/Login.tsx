@@ -24,7 +24,7 @@ export const Login: React.FC = React.memo(() => {
   const { allowRegister } = useGlobalConfig();
 
   return (
-    <div className="w-full h-full flex justify-center items-center">
+    <div className="w-full h-full flex justify-center items-center dark:bg-gray-900">
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
           <img className="w-24 h-24" src="/icon.svg" />
