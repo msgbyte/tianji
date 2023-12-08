@@ -119,6 +119,24 @@ export const monitorRouter = router({
 
       return monitor;
     }),
+  delete: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'DELETE',
+        path: '/{monitorId}',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(monitorInfoSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, monitorId } = input;
+
+      return monitorManager.delete(workspaceId, monitorId);
+    }),
   data: workspaceProcedure
     .meta(
       buildMonitorOpenapi({

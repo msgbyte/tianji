@@ -4,6 +4,7 @@ import { prisma } from '../_client';
 import { monitorProviders } from './provider';
 import { sendNotification } from '../notification';
 import dayjs from 'dayjs';
+import { logger } from '../../utils/logger';
 
 export type MonitorUpsertData = Pick<
   Monitor,
@@ -72,6 +73,23 @@ class MonitorManager {
     runner.startMonitor();
 
     return monitor;
+  }
+
+  async delete(workspaceId: string, monitorId: string) {
+    const runner = this.getRunner(monitorId);
+    if (!runner) {
+      throw new Error('This monitor not found');
+    }
+
+    runner.stopMonitor();
+    delete this.monitorRunner[monitorId];
+
+    return prisma.monitor.delete({
+      where: {
+        workspaceId,
+        id: monitorId,
+      },
+    });
   }
 
   /**
@@ -148,50 +166,54 @@ class MonitorRunner {
     };
 
     const run = async () => {
-      let value = 0;
       try {
-        value = await provider.run(monitor);
+        let value = 0;
+        try {
+          value = await provider.run(monitor);
+        } catch (err) {
+          console.error(err);
+          value = -1;
+        }
+
+        // check event update
+        if (value < 0 && currentStatus === 'UP') {
+          await this.createEvent(
+            'DOWN',
+            `Monitor [${monitor.name}] has been down`
+          );
+          await this.notify(
+            `[${monitor.name}] 🔴 Down`,
+            `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
+              'YYYY-MM-DD HH:mm:ss (z)'
+            )}`
+          );
+          currentStatus = 'DOWN';
+        } else if (value > 0 && currentStatus === 'DOWN') {
+          await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
+          await this.notify(
+            `[${monitor.name}] ✅ Up`,
+            `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
+              'YYYY-MM-DD HH:mm:ss (z)'
+            )}`
+          );
+          currentStatus = 'UP';
+        }
+
+        // insert into data
+        const data = await prisma.monitorData.create({
+          data: {
+            monitorId: monitor.id,
+            value,
+          },
+        });
+
+        subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
+
+        // Run next loop
+        nextAction();
       } catch (err) {
-        console.error(err);
-        value = -1;
+        logger.error('Run monitor error,', monitor.id, String(err));
       }
-
-      // check event update
-      if (value < 0 && currentStatus === 'UP') {
-        await this.createEvent(
-          'DOWN',
-          `Monitor [${monitor.name}] has been down`
-        );
-        await this.notify(
-          `[${monitor.name}] 🔴 Down`,
-          `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
-            'YYYY-MM-DD HH:mm:ss (z)'
-          )}`
-        );
-        currentStatus = 'DOWN';
-      } else if (value > 0 && currentStatus === 'DOWN') {
-        await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
-        await this.notify(
-          `[${monitor.name}] ✅ Up`,
-          `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
-            'YYYY-MM-DD HH:mm:ss (z)'
-          )}`
-        );
-        currentStatus = 'UP';
-      }
-
-      // insert into data
-      const data = await prisma.monitorData.create({
-        data: {
-          monitorId: monitor.id,
-          value,
-        },
-      });
-
-      subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
-
-      // Run next loop
-      nextAction();
     };
 
     run();

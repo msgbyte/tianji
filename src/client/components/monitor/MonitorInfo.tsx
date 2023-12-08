@@ -1,4 +1,4 @@
-import { Button, Card, Space, Spin } from 'antd';
+import { Button, Card, Popconfirm, Space, Spin } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import {
@@ -41,6 +41,10 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
+  const deleteMutation = trpc.monitor.delete.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
 
   const trpcUtils = trpc.useContext();
 
@@ -76,6 +80,17 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
       workspaceId,
       monitorId,
     });
+  });
+
+  const handleDelete = useEvent(async () => {
+    await deleteMutation.mutateAsync({
+      workspaceId,
+      monitorId,
+    });
+
+    trpcUtils.monitor.all.refetch();
+
+    navigate('/monitor');
   });
 
   if (isInitialLoading) {
@@ -140,6 +155,13 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 Start
               </Button>
             )}
+
+            <Popconfirm
+              title="How you sure delete this monitor?"
+              onConfirm={handleDelete}
+            >
+              <Button danger={true}>Delete</Button>
+            </Popconfirm>
           </div>
 
           <Card>
