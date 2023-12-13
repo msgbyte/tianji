@@ -5,6 +5,9 @@ import { MonitorAdd } from './Add';
 import { MonitorDetail } from './Detail';
 import { MonitorEdit } from './Edit';
 import { MonitorOverview } from './Overview';
+import { Button } from 'antd';
+import { MonitorPageList } from './PageList';
+import { MonitorPageAdd } from './PageAdd';
 
 export const MonitorPage: React.FC = React.memo(() => {
   const navigate = useNavigate();
@@ -12,13 +15,21 @@ export const MonitorPage: React.FC = React.memo(() => {
   return (
     <div className="h-full flex flex-col">
       <div>
-        <div className="px-4 pt-4">
-          <div
-            className="px-3 py-2 rounded-full bg-green-400 hover:bg-green-500 text-white dark:text-gray-700 inline-block cursor-pointer"
+        <div className="px-4 pt-4 flex gap-4">
+          <Button
+            type="primary"
+            size="large"
             onClick={() => navigate('/monitor/add')}
           >
             Add new Montior
-          </div>
+          </Button>
+          <Button
+            type="default"
+            size="large"
+            onClick={() => navigate('/monitor/pages')}
+          >
+            Pages
+          </Button>
         </div>
       </div>
       <div className="py-5 flex flex-1 overflow-hidden">
@@ -31,6 +42,8 @@ export const MonitorPage: React.FC = React.memo(() => {
             <Route path="/:monitorId" element={<MonitorDetail />} />
             <Route path="/:monitorId/edit" element={<MonitorEdit />} />
             <Route path="/add" element={<MonitorAdd />} />
+            <Route path="/pages" element={<MonitorPageList />} />
+            <Route path="/pages/add" element={<MonitorPageAdd />} />
           </Routes>
         </div>
       </div>

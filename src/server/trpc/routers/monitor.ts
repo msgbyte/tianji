@@ -418,6 +418,23 @@ export const monitorRouter = router({
         },
       });
     }),
+  getAllPages: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        path: '/getAllPages',
+      })
+    )
+    .output(z.array(MonitorStatusPageModelSchema))
+    .query(({ input }) => {
+      const { workspaceId } = input;
+
+      return prisma.monitorStatusPage.findMany({
+        where: {
+          workspaceId,
+        },
+      });
+    }),
   createPage: workspaceOwnerProcedure
     .meta(
       buildMonitorOpenapi({
