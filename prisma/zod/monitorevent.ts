@@ -1,4 +1,5 @@
 import * as z from "zod"
+import * as imports from "./schemas"
 import { CompleteMonitor, RelatedMonitorModelSchema } from "./index"
 
 export const MonitorEventModelSchema = z.object({

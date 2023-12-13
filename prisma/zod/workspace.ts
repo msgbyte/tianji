@@ -1,5 +1,6 @@
 import * as z from "zod"
-import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteUser, RelatedUserModelSchema } from "./index"
+import * as imports from "./schemas"
+import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteUser, RelatedUserModelSchema } from "./index"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -24,6 +25,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   websites: CompleteWebsite[]
   notifications: CompleteNotification[]
   monitors: CompleteMonitor[]
+  monitorStatusPages: CompleteMonitorStatusPage[]
   selectedUsers: CompleteUser[]
 }
 
@@ -37,5 +39,6 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   websites: RelatedWebsiteModelSchema.array(),
   notifications: RelatedNotificationModelSchema.array(),
   monitors: RelatedMonitorModelSchema.array(),
+  monitorStatusPages: RelatedMonitorStatusPageModelSchema.array(),
   selectedUsers: RelatedUserModelSchema.array(),
 }))

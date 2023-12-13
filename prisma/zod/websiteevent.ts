@@ -1,4 +1,5 @@
 import * as z from "zod"
+import * as imports from "./schemas"
 import { CompleteWebsiteEventData, RelatedWebsiteEventDataModelSchema, CompleteWebsiteSession, RelatedWebsiteSessionModelSchema } from "./index"
 
 export const WebsiteEventModelSchema = z.object({

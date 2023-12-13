@@ -1,4 +1,5 @@
 import * as z from "zod"
+import * as imports from "./schemas"
 import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema } from "./index"
 
 export const UserModelSchema = z.object({

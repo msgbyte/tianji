@@ -14,6 +14,7 @@ generator json {
 generator zod {
   provider    = "zod-prisma"
   modelSuffix = "ModelSchema"
+  imports     = "./zod/schemas"
 }
 
 model User {
@@ -40,10 +41,11 @@ model Workspace {
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
-  users         WorkspacesOnUsers[]
-  websites      Website[]
-  notifications Notification[]
-  monitors      Monitor[]
+  users              WorkspacesOnUsers[]
+  websites           Website[]
+  notifications      Notification[]
+  monitors           Monitor[]
+  monitorStatusPages MonitorStatusPage[]
 
   // for user currentWorkspace
   selectedUsers User[]
@@ -302,4 +304,21 @@ model MonitorStatus {
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@id([monitorId, statusName])
+}
+
+model MonitorStatusPage {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  slug        String   @unique // url slug
+  title       String   @db.VarChar(100)
+  description String   @default("") @db.VarChar(1000)
+  /// [MonitorStatusPageList]
+  /// @zod.custom(imports.MonitorStatusPageListSchema)
+  monitorList Json     @default("[]") // monitor list
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@index([slug])
 }

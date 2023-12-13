@@ -10,5 +10,8 @@ declare global {
       layouts: Record<string, any[]>;
       items: any[];
     } | null;
+    type MonitorStatusPageList = {
+      id: string;
+    }[];
   }
 }

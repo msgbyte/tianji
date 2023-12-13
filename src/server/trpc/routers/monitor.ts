@@ -17,6 +17,7 @@ import {
 } from '../../model/_schema';
 import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
+import { MonitorStatusPageModelSchema } from '../../../../prisma/zod';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -414,6 +415,91 @@ export const monitorRouter = router({
             monitorId,
             statusName,
           },
+        },
+      });
+    }),
+  createPage: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'POST',
+        path: '/createStatusPage',
+      })
+    )
+    .input(
+      z.object({
+        slug: z.string(),
+        title: z.string(),
+      })
+    )
+    .output(MonitorStatusPageModelSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, slug, title } = input;
+
+      const existSlugCount = await prisma.monitorStatusPage.count({
+        where: {
+          slug,
+        },
+      });
+
+      if (existSlugCount > 0) {
+        throw new Error('This slug has been existed');
+      }
+
+      const res = await prisma.monitorStatusPage.create({
+        data: {
+          workspaceId,
+          slug,
+          title,
+        },
+      });
+
+      return res;
+    }),
+  editPage: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'PATCH',
+        path: '/updateStatusPage',
+      })
+    )
+    .input(
+      MonitorStatusPageModelSchema.pick({
+        id: true,
+      }).merge(
+        MonitorStatusPageModelSchema.pick({
+          slug: true,
+          title: true,
+          description: true,
+          monitorList: true,
+        }).partial()
+      )
+    )
+    .output(MonitorStatusPageModelSchema)
+    .mutation(async ({ input }) => {
+      const { id, workspaceId, slug, title, description, monitorList } = input;
+
+      if (slug) {
+        const existSlugCount = await prisma.monitorStatusPage.count({
+          where: {
+            slug,
+          },
+        });
+
+        if (existSlugCount > 0) {
+          throw new Error('This slug has been existed');
+        }
+      }
+
+      return prisma.monitorStatusPage.update({
+        where: {
+          id,
+          workspaceId,
+        },
+        data: {
+          slug,
+          title,
+          description,
+          monitorList,
         },
       });
     }),

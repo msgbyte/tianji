@@ -1,4 +1,5 @@
 import * as z from "zod"
+import * as imports from "./schemas"
 import { CompleteTelemetryEvent, RelatedTelemetryEventModelSchema } from "./index"
 
 export const TelemetrySessionModelSchema = z.object({
