@@ -166,6 +166,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
           <Card>
             <MonitorHealthBar
+              workspaceId={workspaceId}
               monitorId={monitorId}
               count={40}
               size="large"

@@ -8,6 +8,7 @@ import { useCurrentWorkspaceId } from '../../store/user';
 import { useWatch } from '../../hooks/useWatch';
 
 interface MonitorHealthBarProps {
+  workspaceId: string;
   monitorId: string;
   count?: number;
   size?: HealthBarProps['size'];
@@ -18,8 +19,13 @@ interface MonitorHealthBarProps {
 }
 export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
   (props) => {
-    const { monitorId, size, count = 20, showCurrentStatus = false } = props;
-    const workspaceId = useCurrentWorkspaceId();
+    const {
+      workspaceId,
+      monitorId,
+      size,
+      count = 20,
+      showCurrentStatus = false,
+    } = props;
     const { data: recent = [] } = trpc.monitor.recentData.useQuery({
       workspaceId,
       monitorId,

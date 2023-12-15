@@ -28,8 +28,7 @@ export const userInfoSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   deletedAt: z.date().nullable(),
-  currentWorkspace: z.intersection(
-    workspaceSchema,
+  currentWorkspace: workspaceSchema.merge(
     z.object({
       dashboardLayout: workspaceDashboardLayoutSchema.nullable(),
     })

@@ -1,5 +1,6 @@
 import {
   OpenApiMetaInfo,
+  publicProcedure,
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
@@ -432,6 +433,29 @@ export const monitorRouter = router({
       return prisma.monitorStatusPage.findMany({
         where: {
           workspaceId,
+        },
+      });
+    }),
+  getPageInfo: publicProcedure
+    .meta({
+      openapi: {
+        tags: [OPENAPI_TAG.MONITOR],
+        method: 'GET',
+        path: '/monitor/getPageInfo',
+      },
+    })
+    .input(
+      z.object({
+        slug: z.string(),
+      })
+    )
+    .output(MonitorStatusPageModelSchema.nullable())
+    .query(({ input }) => {
+      const { slug } = input;
+
+      return prisma.monitorStatusPage.findUnique({
+        where: {
+          slug,
         },
       });
     }),

@@ -15,7 +15,10 @@ export const useUserStore = create<UserState>(() => ({
 export function setUserInfo(info: UserLoginInfo) {
   if (!info.currentWorkspace && info.workspaces[0]) {
     // Make sure currentWorkspace existed
-    info.currentWorkspace = info.workspaces[0].workspace;
+    info.currentWorkspace = {
+      ...info.workspaces[0].workspace,
+      dashboardLayout: null,
+    };
   }
 
   useUserStore.setState({
@@ -26,6 +29,10 @@ export function setUserInfo(info: UserLoginInfo) {
   if (info.currentWorkspace) {
     createSocketIOClient(info.currentWorkspace.id);
   }
+}
+
+export function useUserInfo(): UserLoginInfo | null {
+  return useUserStore((state) => state.info);
 }
 
 export function useCurrentWorkspace() {

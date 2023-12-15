@@ -65,6 +65,7 @@ export const MonitorListItem: React.FC<{
 }> = React.memo((props) => {
   const { monitor, selectedMonitorId, setSelectedMonitorId } = props;
   const navigate = useNavigate();
+  const workspaceId = useCurrentWorkspaceId();
   const [beats, setBeats] = useState<
     ({
       value: number;
@@ -126,7 +127,11 @@ export const MonitorListItem: React.FC<{
       </div>
 
       <div className="flex items-center">
-        <MonitorHealthBar monitorId={monitor.id} onBeatsItemUpdate={setBeats} />
+        <MonitorHealthBar
+          workspaceId={workspaceId}
+          monitorId={monitor.id}
+          onBeatsItemUpdate={setBeats}
+        />
       </div>
     </div>
   );

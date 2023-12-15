@@ -4,4 +4,4 @@ import { Dashboard } from '../components/dashboard/Dashboard';
 export const DashboardPage: React.FC = React.memo(() => {
   return <Dashboard />;
 });
-Dashboard.displayName = 'Dashboard';
+DashboardPage.displayName = 'DashboardPage';

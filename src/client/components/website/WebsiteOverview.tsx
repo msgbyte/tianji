@@ -91,7 +91,10 @@ export const WebsiteOverview: React.FC<{
               className="cursor-pointer"
               onClick={() => navigate(`/monitor/${website.monitorId}`)}
             >
-              <MonitorHealthBar monitorId={website.monitorId} />
+              <MonitorHealthBar
+                workspaceId={website.workspaceId}
+                monitorId={website.monitorId}
+              />
             </div>
           )}
 

@@ -18,6 +18,7 @@ import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
 import { ConfigProvider, theme } from 'antd';
 import clsx from 'clsx';
 import { useSettingsStore } from './store/settings';
+import { StatusPage } from './pages/Status';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -41,6 +42,8 @@ export const AppRoutes: React.FC = React.memo(() => {
           {allowRegister && <Route path="/register" element={<Register />} />}
         </Route>
       )}
+
+      <Route path="/status/:slug" element={<StatusPage />} />
 
       <Route
         path="*"
