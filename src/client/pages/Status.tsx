@@ -16,7 +16,7 @@ export const StatusPage: React.FC = React.memo(() => {
   const monitorList = info?.monitorList ?? [];
 
   return (
-    <div className="w-4/5 mx-auto py-8">
+    <div className="w-4/5 mx-auto py-8 ">
       <div className="text-2xl mb-4">{info?.title}</div>
 
       <div className="text-lg mb-2">Services</div>

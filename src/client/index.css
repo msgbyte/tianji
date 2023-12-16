@@ -23,6 +23,10 @@ a {
   height: 100%;
 }
 
+.App.dark {
+  @apply bg-gray-900 text-white;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
