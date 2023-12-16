@@ -76,6 +76,7 @@ const config = {
           //   position: 'left',
           //   label: 'Tutorial',
           // },
+          { to: '/changelog', label: 'Changelog', position: 'left' },
           { to: '/api', label: 'API', position: 'left' },
           {
             href: 'https://github.com/msgbyte/tianji',
@@ -116,6 +117,10 @@ const config = {
           {
             title: 'More',
             items: [
+              {
+                label: 'Changelog',
+                to: '/changelog',
+              },
               {
                 label: 'API',
                 to: '/api',

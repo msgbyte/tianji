@@ -25,12 +25,18 @@ dependencies:
   react-dom:
     specifier: ^17.0.2
     version: 17.0.2(react@17.0.2)
+  react-icons:
+    specifier: ^4.12.0
+    version: 4.12.0(react@17.0.2)
   react-responsive-carousel:
     specifier: ^3.2.23
     version: 3.2.23
   react-slick:
     specifier: ^0.29.0
     version: 0.29.0(react-dom@17.0.2)(react@17.0.2)
+  react-vertical-timeline-component:
+    specifier: ^3.6.0
+    version: 3.6.0(react@17.0.2)
 
 devDependencies:
   '@docusaurus/module-type-aliases':
@@ -42,6 +48,9 @@ devDependencies:
   '@types/react-slick':
     specifier: ^0.23.11
     version: 0.23.11
+  '@types/react-vertical-timeline-component':
+    specifier: ^3.3.6
+    version: 3.3.6
   autoprefixer:
     specifier: ^10.4.16
     version: 10.4.16(postcss@8.4.31)
@@ -2791,6 +2800,12 @@ packages:
 
   /@types/react-slick@0.23.11:
     resolution: {integrity: sha512-52AbNhYN7u0ATqAUvap2MXNG3znUsJslAWgebUHrovvnJ6EG6oic+TZyC82XiwwvijRMyL2V0C2wPJbzsSwllw==}
+    dependencies:
+      '@types/react': 18.2.33
+    dev: true
+
+  /@types/react-vertical-timeline-component@3.3.6:
+    resolution: {integrity: sha512-OUvyPXRjXvUD/SNLO0CW0GbIxVF32Ios5qHecMSfw6kxnK1cPULD9NV80EuqZ3WmS/s6BgbcwmN8k4ISb3akhQ==}
     dependencies:
       '@types/react': 18.2.33
     dev: true
@@ -7184,6 +7199,22 @@ packages:
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
 
+  /react-icons@4.12.0(react@17.0.2):
+    resolution: {integrity: sha512-IBaDuHiShdZqmfc/TwHu6+d6k2ltNCf3AszxNmjJc1KUfXdEeRJOKyNvLmAHaarhzGmTSVygNdyu8/opXv2gaw==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 17.0.2
+    dev: false
+
+  /react-intersection-observer@8.34.0(react@17.0.2):
+    resolution: {integrity: sha512-TYKh52Zc0Uptp5/b4N91XydfSGKubEhgZRtcg1rhTKABXijc4Sdr1uTp5lJ8TN27jwUsdXxjHXtHa0kPj704sw==}
+    peerDependencies:
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0|| ^18.0.0
+    dependencies:
+      react: 17.0.2
+    dev: false
+
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -7324,6 +7355,17 @@ packages:
       use-latest: 1.2.1(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
+    dev: false
+
+  /react-vertical-timeline-component@3.6.0(react@17.0.2):
+    resolution: {integrity: sha512-l9zulqjIGlRuaQeplGzV4r/tG2RYBpYt84Il8w4IxnJze2cDIGI04MKo3F7f1sHT0Sih1ohEFts8UV23AJS15Q==}
+    requiresBuild: true
+    dependencies:
+      classnames: 2.3.2
+      prop-types: 15.8.1
+      react-intersection-observer: 8.34.0(react@17.0.2)
+    transitivePeerDependencies:
+      - react
     dev: false
 
   /react@17.0.2:

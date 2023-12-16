@@ -9,6 +9,7 @@ export const globalRouter = router({
         method: 'GET',
         path: '/global/config',
         tags: [OPENAPI_TAG.GLOBAL],
+        description: 'Get Tianji system global config',
       },
     })
     .input(z.void())
