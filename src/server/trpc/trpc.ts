@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { jwtVerify } from '../middleware/auth';
 import { getWorkspaceUser } from '../model/workspace';
-import { ROLES, SYSTEM_ROLES } from '../utils/const';
+import { ROLES, SYSTEM_ROLES } from '../../shared';
 import type { IncomingMessage } from 'http';
 import { OpenApiMeta } from 'trpc-openapi';
 

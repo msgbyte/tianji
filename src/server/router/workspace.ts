@@ -12,8 +12,8 @@ import {
   getWorkspaceWebsiteStats,
 } from '../model/workspace';
 import { parseDateRange } from '../utils/common';
-import { ROLES } from '../utils/const';
 import { QueryFilters } from '../utils/prisma';
+import { ROLES } from '../../shared';
 
 export const workspaceRouter = Router();
 

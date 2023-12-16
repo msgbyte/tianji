@@ -1,10 +1,32 @@
-import { router, workspaceOwnerProcedure } from '../trpc';
+import { publicProcedure, router, workspaceOwnerProcedure } from '../trpc';
 import { z } from 'zod';
 import { prisma } from '../../model/_client';
 import { workspaceDashboardLayoutSchema } from '../../model/_schema';
 import { Prisma } from '@prisma/client';
 
 export const workspaceRouter = router({
+  getUserWorkspaceRole: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        workspaceId: z.string(),
+      })
+    )
+    .output(z.string().nullable())
+    .query(async ({ input }) => {
+      const { userId, workspaceId } = input;
+
+      const relation = await prisma.workspacesOnUsers.findUnique({
+        where: {
+          userId_workspaceId: {
+            workspaceId,
+            userId,
+          },
+        },
+      });
+
+      return relation?.role ?? null;
+    }),
   updateDashboardOrder: workspaceOwnerProcedure
     .input(
       z.object({

@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { body, validate } from '../middleware/validate';
 import * as yup from 'yup';
-import { COLLECTION_TYPE, HOSTNAME_REGEX } from '../utils/const';
+import { COLLECTION_TYPE } from '../utils/const';
 import {
   findSession,
   saveWebsiteEvent,
   saveWebsiteSessionData,
 } from '../model/website';
 import { createToken } from '../utils/common';
+import { hostnameRegex } from '../../shared';
 
 export const websiteRouter = Router();
 
@@ -23,7 +24,7 @@ websiteRouter.post(
           .object()
           .shape({
             data: yup.object(),
-            hostname: yup.string().matches(HOSTNAME_REGEX).max(100),
+            hostname: yup.string().matches(hostnameRegex).max(100),
             language: yup.string().max(35),
             referrer: yup.string().max(500),
             screen: yup.string().max(11),

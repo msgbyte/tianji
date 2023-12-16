@@ -1,16 +1,3 @@
-export enum SYSTEM_ROLES {
-  admin = 'admin',
-  user = 'user',
-}
-
-export enum ROLES {
-  owner = 'owner',
-  readOnly = 'readOnly',
-}
-
-export const HOSTNAME_REGEX =
-  /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
-
 export const COLLECTION_TYPE = {
   event: 'event',
   identify: 'identify',

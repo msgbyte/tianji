@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 import { jwtSign } from '../../middleware/auth';
-import { SYSTEM_ROLES } from '../const';
+import { SYSTEM_ROLES } from '../../../shared';
 import { settings } from '../settings';
 
 /**
