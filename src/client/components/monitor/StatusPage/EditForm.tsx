@@ -5,21 +5,28 @@ import { z } from 'zod';
 
 const { Text } = Typography;
 
-interface Values {
+export interface MonitorStatusPageEditFormValues {
   title: string;
   slug: string;
 }
 
 interface MonitorStatusPageEditFormProps {
   isLoading?: boolean;
-  onFinish: (values: Values) => void;
+  initialValues?: Partial<MonitorStatusPageEditFormValues>;
+  onFinish: (values: MonitorStatusPageEditFormValues) => void;
+  onCancel?: () => void;
+  saveButtonLabel?: string;
 }
 
 export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps> =
   React.memo((props) => {
     return (
       <div>
-        <Form<Values> layout="vertical" onFinish={props.onFinish}>
+        <Form<MonitorStatusPageEditFormValues>
+          layout="vertical"
+          initialValues={props.initialValues}
+          onFinish={props.onFinish}
+        >
           <Form.Item
             label="Title"
             name="title"
@@ -64,9 +71,18 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           >
             <Input addonBefore={`${window.origin}/status/`} />
           </Form.Item>
-          <Button type="primary" htmlType="submit" loading={props.isLoading}>
-            Next
-          </Button>
+
+          <div className="flex gap-4">
+            <Button type="primary" htmlType="submit" loading={props.isLoading}>
+              {props.saveButtonLabel ?? 'Save'}
+            </Button>
+
+            {props.onCancel && (
+              <Button htmlType="button" onClick={props.onCancel}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </Form>
       </div>
     );

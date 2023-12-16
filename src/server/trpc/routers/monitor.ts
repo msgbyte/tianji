@@ -523,6 +523,9 @@ export const monitorRouter = router({
         const existSlugCount = await prisma.monitorStatusPage.count({
           where: {
             slug,
+            id: {
+              not: id,
+            },
           },
         });
 

@@ -32,6 +32,7 @@ export const MonitorPageAdd: React.FC = React.memo(() => {
   return (
     <div className="px-8 py-4">
       <MonitorStatusPageEditForm
+        saveButtonLabel="Next"
         isLoading={createPageMutation.isLoading}
         onFinish={handleFinish}
       />
