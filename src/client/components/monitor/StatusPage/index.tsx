@@ -10,6 +10,7 @@ import {
 import clsx from 'clsx';
 import { useRequest } from '../../../hooks/useRequest';
 import { useNavigate } from 'react-router';
+import { ColorSchemeSwitcher } from '../../ColorSchemeSwitcher';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -59,23 +60,28 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
     );
 
     return (
-      <div className="w-full h-full flex gap-6">
+      <div className="w-full h-full flex">
         {editMode && (
-          <div className="w-1/3 overflow-auto py-8 px-4 border-r border-gray-600">
+          <div className="w-1/3 overflow-auto py-8 px-4 border-r border-gray-300 dark:border-gray-600">
             <MonitorStatusPageEditForm
               isLoading={loading}
               initialValues={info ?? {}}
               onFinish={handleSave}
+              onCancel={() => setEditMode(false)}
             />
           </div>
         )}
         <div
           className={clsx(
-            'mx-auto py-8 overflow-auto',
+            'mx-auto py-8 px-4 overflow-auto',
             !editMode ? 'w-4/5' : 'w-2/3'
           )}
         >
-          <div className="text-2xl mb-4">{info?.title}</div>
+          <div className="flex">
+            <div className="text-2xl mb-4 flex-1">{info?.title}</div>
+
+            <ColorSchemeSwitcher />
+          </div>
 
           <div>
             {allowEdit && !editMode && (
