@@ -24,13 +24,12 @@ export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
       <div className="shadow-2xl p-2.5 flex flex-col gap-4">
         {list.length > 0 ? (
           list.map((item) => (
-            <div key={item.id} className="hover:bg-black hover:bg-opacity-20">
-              <MonitorListItem
-                workspaceId={workspaceId}
-                monitorId={item.id}
-                monitorName={item.name}
-              />
-            </div>
+            <MonitorListItem
+              key={item.id}
+              workspaceId={workspaceId}
+              monitorId={item.id}
+              monitorName={item.name}
+            />
           ))
         ) : (
           <Empty description="No any monitor has been set" />

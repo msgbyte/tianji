@@ -37,7 +37,8 @@ export const MonitorListItem: React.FC<{
     <div
       className={clsx(
         className,
-        'flex rounded-lg py-3 px-4 cursor-pointer mb-1 bg-green-500 bg-opacity-0 hover:bg-opacity-10'
+        'flex rounded-lg py-3 px-4 mb-1 bg-green-500 bg-opacity-0 hover:bg-opacity-10',
+        onClick && 'cursor-pointer'
       )}
       onClick={onClick}
     >

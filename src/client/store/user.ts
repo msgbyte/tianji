@@ -35,6 +35,10 @@ export function useUserInfo(): UserLoginInfo | null {
   return useUserStore((state) => state.info);
 }
 
+export function useIsLogined() {
+  return !!useUserInfo();
+}
+
 export function useCurrentWorkspace() {
   const currentWorkspace = useUserStore(
     (state) => state.info?.currentWorkspace

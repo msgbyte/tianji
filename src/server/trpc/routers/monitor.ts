@@ -256,15 +256,18 @@ export const monitorRouter = router({
 
       return monitor;
     }),
-  recentData: workspaceProcedure
-    .meta(
-      buildMonitorOpenapi({
+  recentData: publicProcedure
+    .meta({
+      openapi: {
+        tags: [OPENAPI_TAG.MONITOR],
+        protect: false,
         method: 'GET',
-        path: '/{monitorId}/recentData',
-      })
-    )
+        path: `/monitor/{monitorId}/recentData`,
+      },
+    })
     .input(
       z.object({
+        workspaceId: z.string().cuid2(),
         monitorId: z.string().cuid2(),
         take: z.number(),
       })

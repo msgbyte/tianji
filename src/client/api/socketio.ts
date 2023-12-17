@@ -4,6 +4,7 @@ import type { SubscribeEventMap, SocketEventMap } from '../../server/ws/shared';
 import { create } from 'zustand';
 import { useEvent } from '../hooks/useEvent';
 import { useEffect, useReducer, useState } from 'react';
+import { useIsLogined, useUserInfo } from '../store/user';
 
 const useSocketStore = create<{
   socket: Socket | null;
@@ -120,6 +121,7 @@ export function useSocketSubscribeList<
 >(name: K, options: UseSocketSubscribeListOptions<K, T> = {}): T[] {
   const { filter = defaultFilter } = options;
   const { subscribe } = useSocket();
+  const isLogined = useIsLogined();
   const [list, push] = useReducer(
     (state: T[], data: T) => [...state, data],
     [] as T[]
@@ -132,6 +134,11 @@ export function useSocketSubscribeList<
   });
 
   useEffect(() => {
+    if (!isLogined) {
+      console.warn('Skip socket subscribe login because of not login');
+      return;
+    }
+
     const unsubscribe = subscribe(name, cb);
 
     return () => {
