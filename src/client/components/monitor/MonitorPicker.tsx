@@ -13,7 +13,7 @@ export const MonitorPicker: React.FC<MonitorPickerProps> = React.memo(
     });
 
     return (
-      <Select {...props}>
+      <Select placeholder="Select monitor" {...props}>
         {allMonitor.map((m) => (
           <Select.Option key={m.id} value={m.id}>
             <ColorTag label={m.type} />

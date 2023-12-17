@@ -83,18 +83,18 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             <ColorSchemeSwitcher />
           </div>
 
-          <div>
-            {allowEdit && !editMode && (
+          {allowEdit && !editMode && (
+            <div className="mb-4">
               <Button type="primary" onClick={() => setEditMode(true)}>
                 Edit
               </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="text-lg mb-2">Services</div>
 
           {info && (
-            <div className="shadow-2xl p-2.5">
+            <div className="shadow-2xl p-2.5 flex flex-col gap-4">
               {monitorList.length > 0 ? (
                 monitorList.map((item) => (
                   <div
