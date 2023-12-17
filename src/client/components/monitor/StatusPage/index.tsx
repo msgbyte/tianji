@@ -1,7 +1,6 @@
-import { Button, Empty } from 'antd';
+import { Button } from 'antd';
 import React, { useState } from 'react';
 import { trpc } from '../../../api/trpc';
-import { MonitorHealthBar } from '../MonitorHealthBar';
 import { useAllowEdit } from './useAllowEdit';
 import {
   MonitorStatusPageEditForm,
@@ -11,6 +10,7 @@ import clsx from 'clsx';
 import { useRequest } from '../../../hooks/useRequest';
 import { useNavigate } from 'react-router';
 import { ColorSchemeSwitcher } from '../../ColorSchemeSwitcher';
+import { StatusPageServices } from './Services';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -94,26 +94,10 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
           <div className="text-lg mb-2">Services</div>
 
           {info && (
-            <div className="shadow-2xl p-2.5 flex flex-col gap-4">
-              {monitorList.length > 0 ? (
-                monitorList.map((item) => (
-                  <div
-                    key={item.id}
-                    className="hover:bg-black hover:bg-opacity-20"
-                  >
-                    <MonitorHealthBar
-                      workspaceId={info.workspaceId}
-                      monitorId={item.id}
-                      count={40}
-                      size="large"
-                      showCurrentStatus={true}
-                    />
-                  </div>
-                ))
-              ) : (
-                <Empty description="No any monitor has been set" />
-              )}
-            </div>
+            <StatusPageServices
+              workspaceId={info.workspaceId}
+              monitorList={monitorList}
+            />
           )}
         </div>
       </div>
