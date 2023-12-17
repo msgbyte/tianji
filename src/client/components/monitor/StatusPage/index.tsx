@@ -84,9 +84,13 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
           </div>
 
           {allowEdit && !editMode && (
-            <div className="mb-4">
+            <div className="mb-4 flex gap-2">
               <Button type="primary" onClick={() => setEditMode(true)}>
                 Edit
+              </Button>
+
+              <Button type="default" onClick={() => navigate(`/`)}>
+                Back to Admin
               </Button>
             </div>
           )}
