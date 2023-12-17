@@ -1,20 +1,16 @@
 import clsx from 'clsx';
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { AppRouterOutput } from '../../api/trpc';
 import { MonitorHealthBar } from './MonitorHealthBar';
 
-type MonitorType = AppRouterOutput['monitor']['all'][number];
-
 export const MonitorListItem: React.FC<{
-  monitor: MonitorType;
+  className?: string;
   workspaceId: string;
-  selectedMonitorId: string | null;
-  setSelectedMonitorId: (monitorId: string) => void;
+  monitorId: string;
+  monitorName: string;
+  onClick?: () => void;
 }> = React.memo((props) => {
-  const { monitor, workspaceId, selectedMonitorId, setSelectedMonitorId } =
-    props;
-  const navigate = useNavigate();
+  const { className, workspaceId, monitorId, monitorName, onClick } = props;
+
   const [beats, setBeats] = useState<
     ({
       value: number;
@@ -39,17 +35,11 @@ export const MonitorListItem: React.FC<{
 
   return (
     <div
-      key={monitor.name}
       className={clsx(
-        'flex rounded-lg py-3 px-4 cursor-pointer mb-1',
-        selectedMonitorId === monitor.id
-          ? 'bg-green-500 bg-opacity-20'
-          : 'bg-green-500 bg-opacity-0 hover:bg-opacity-10'
+        className,
+        'flex rounded-lg py-3 px-4 cursor-pointer mb-1 bg-green-500 bg-opacity-0 hover:bg-opacity-10'
       )}
-      onClick={() => {
-        navigate(`/monitor/${monitor.id}`);
-        setSelectedMonitorId(monitor.id);
-      }}
+      onClick={onClick}
     >
       <div>
         <span
@@ -62,7 +52,7 @@ export const MonitorListItem: React.FC<{
         </span>
       </div>
       <div className="flex-1 pl-2">
-        <div className="text-base">{monitor.name}</div>
+        <div className="text-base">{monitorName}</div>
         {/* <div>
       {monitor.tags.map((tag) => (
         <span
@@ -78,7 +68,7 @@ export const MonitorListItem: React.FC<{
       <div className="flex items-center">
         <MonitorHealthBar
           workspaceId={workspaceId}
-          monitorId={monitor.id}
+          monitorId={monitorId}
           onBeatsItemUpdate={setBeats}
         />
       </div>

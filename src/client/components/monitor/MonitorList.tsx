@@ -1,33 +1,26 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { NoWorkspaceTip } from '../NoWorkspaceTip';
 import { Loading } from '../Loading';
 import { Empty } from 'antd';
 import { MonitorListItem } from './MonitorListItem';
+import { useNavigate, useParams } from 'react-router';
+import clsx from 'clsx';
 
 export const MonitorList: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
   const { data: monitors = [], isLoading } = trpc.monitor.all.useQuery({
     workspaceId,
   });
-  const initMonitorId = useMemo(() => {
-    const pathname = window.location.pathname;
-    const re = /^\/monitor\/([^\/]+?)$/;
-    if (re.test(pathname)) {
-      const id = pathname.match(re)?.[1];
+  const navigate = useNavigate();
+  const params = useParams<{
+    '*': string;
+  }>()['*'];
 
-      if (typeof id === 'string') {
-        return id;
-      }
-    }
-
-    return null;
-  }, []);
-
-  const [selectedMonitorId, setSelectedMonitorId] = useState<string | null>(
-    initMonitorId
-  );
+  const selectedMonitorId = useMemo(() => {
+    return params?.split('/')[0] ?? '';
+  }, [params]);
 
   if (!workspaceId) {
     return <NoWorkspaceTip />;
@@ -44,10 +37,13 @@ export const MonitorList: React.FC = React.memo(() => {
       {monitors.map((monitor) => (
         <MonitorListItem
           key={monitor.id}
-          monitor={monitor}
+          className={clsx(selectedMonitorId === monitor.id && '!bg-opacity-20')}
           workspaceId={workspaceId}
-          selectedMonitorId={selectedMonitorId}
-          setSelectedMonitorId={setSelectedMonitorId}
+          monitorId={monitor.id}
+          monitorName={monitor.name}
+          onClick={() => {
+            navigate(`/monitor/${monitor.id}`);
+          }}
         />
       ))}
     </div>
