@@ -33,7 +33,7 @@ export const MonitorPage: React.FC = React.memo(() => {
         </div>
       </div>
       <div className="py-5 flex flex-1 overflow-hidden">
-        <div className="w-5/12 bg-gray-50 dark:bg-gray-800">
+        <div className="w-5/12 rounded bg-gray-50 dark:bg-gray-800">
           <MonitorList />
         </div>
         <div className="w-7/12">

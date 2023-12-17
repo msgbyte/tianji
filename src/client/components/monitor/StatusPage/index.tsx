@@ -28,7 +28,9 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
     const navigate = useNavigate();
 
     const allowEdit = useAllowEdit(info?.workspaceId);
-    const [editMode, setEditMode] = useState(false);
+    const [editMode, setEditMode] = useState(() => {
+      return new URLSearchParams(window.location.search).has('edit');
+    });
 
     const monitorList = info?.monitorList ?? [];
 

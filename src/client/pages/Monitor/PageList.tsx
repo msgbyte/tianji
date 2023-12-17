@@ -28,7 +28,10 @@ export const MonitorPageList: React.FC = React.memo(() => {
                   icon={<EyeOutlined />}
                   onClick={() => navigate(`/status/${p.slug}`)}
                 />
-                <Button icon={<EditOutlined />} />
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={() => navigate(`/status/${p.slug}?edit=1`)}
+                />
               </div>
             </div>
           </Card>
