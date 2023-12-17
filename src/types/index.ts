@@ -1,7 +1,7 @@
+export * as schemas from '../../prisma/zod/index';
 export * from './server';
 export * from './monitor';
 export * from './utils';
-export * as schemas from '../../prisma/zod/index';
 
 declare global {
   namespace PrismaJson {

@@ -1,6 +1,8 @@
 import { Empty } from 'antd';
 import React from 'react';
-import { MonitorHealthBar } from '../MonitorHealthBar';
+import { trpc } from '../../../api/trpc';
+import { Loading } from '../../Loading';
+import { MonitorListItem } from '../MonitorListItem';
 
 interface StatusPageServicesProps {
   workspaceId: string;
@@ -10,17 +12,23 @@ export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
   (props) => {
     const { workspaceId, monitorList } = props;
 
+    const { data: list = [], isLoading } = trpc.monitor.getPublicInfo.useQuery({
+      monitorIds: monitorList.map((item) => item.id),
+    });
+
+    if (isLoading) {
+      return <Loading />;
+    }
+
     return (
       <div className="shadow-2xl p-2.5 flex flex-col gap-4">
-        {monitorList.length > 0 ? (
-          monitorList.map((item) => (
+        {list.length > 0 ? (
+          list.map((item) => (
             <div key={item.id} className="hover:bg-black hover:bg-opacity-20">
-              <MonitorHealthBar
+              <MonitorListItem
                 workspaceId={workspaceId}
                 monitorId={item.id}
-                count={40}
-                size="large"
-                showCurrentStatus={true}
+                monitorName={item.name}
               />
             </div>
           ))

@@ -8,7 +8,10 @@ import {
 import { prisma } from '../../model/_client';
 import { z } from 'zod';
 import { monitorManager } from '../../model/monitor';
-import { MonitorInfoWithNotificationIds } from '../../../types';
+import {
+  MonitorInfoWithNotificationIds,
+  MonitorPublicInfoSchema,
+} from '../../../types';
 import dayjs from 'dayjs';
 import {
   monitorEventSchema,
@@ -76,6 +79,33 @@ export const monitorRouter = router({
       });
 
       return monitor;
+    }),
+  getPublicInfo: publicProcedure
+    .meta({
+      openapi: {
+        tags: [OPENAPI_TAG.MONITOR],
+        protect: false,
+        method: 'POST',
+        path: '/monitor/getPublicInfo',
+      },
+    })
+    .input(
+      z.object({
+        monitorIds: z.array(z.string()),
+      })
+    )
+    .output(z.array(MonitorPublicInfoSchema))
+    .query(async ({ input }) => {
+      const { monitorIds } = input;
+      const res = await prisma.monitor.findMany({
+        where: {
+          id: {
+            in: monitorIds,
+          },
+        },
+      });
+
+      return res.map((item) => MonitorPublicInfoSchema.parse(item));
     }),
   upsert: workspaceOwnerProcedure
     .meta(
