@@ -57,4 +57,5 @@ export const openaiProvider: MonitorProvider = {
   overview: [MonitorOpenaiOverview],
   valueLabel: 'Balance',
   valueFormatter: (value) => `$${value / 100}`,
+  minInterval: 300, // min allow request in 5 minute, avoid to pressure for chatgpt
 };

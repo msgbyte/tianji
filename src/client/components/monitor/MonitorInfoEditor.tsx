@@ -32,9 +32,11 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
     const initialValues = props.initialValues ?? defaultValues;
     const isEdit = Boolean(initialValues.id);
 
-    const formEl = useMemo(() => {
-      const provider = getMonitorProvider(typeValue);
+    const provider = useMemo(() => {
+      return getMonitorProvider(typeValue);
+    }, [typeValue]);
 
+    const formEl = useMemo(() => {
       if (!provider) {
         return null;
       }
@@ -42,7 +44,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
       const Component = provider.form;
 
       return <Component />;
-    }, [typeValue]);
+    }, [provider]);
 
     const handleSubmit = useEvent((values) => {
       props.onSave({
@@ -81,7 +83,11 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
             name="interval"
             rules={[{ required: true }]}
           >
-            <InputNumber min={5} max={10000} step={10} />
+            <InputNumber
+              min={provider?.minInterval ?? 5}
+              max={10000}
+              step={10}
+            />
           </Form.Item>
 
           {formEl}
