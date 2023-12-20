@@ -4,6 +4,7 @@ import { logger } from '../../../utils/logger';
 import dayjs from 'dayjs';
 import { prisma } from '../../_client';
 import https from 'https';
+import { saveMonitorStatus } from './_utils';
 
 export const http: MonitorProvider<{
   url: string;
@@ -81,27 +82,9 @@ export const http: MonitorProvider<{
         try {
           const { valid, certInfo } = checkCertificate(res);
 
-          await prisma.monitorStatus.upsert({
-            where: {
-              monitorId_statusName: {
-                monitorId: monitor.id,
-                statusName: 'tls',
-              },
-            },
-            update: {
-              payload: {
-                valid,
-                certInfo,
-              },
-            },
-            create: {
-              monitorId: monitor.id,
-              statusName: 'tls',
-              payload: {
-                valid,
-                certInfo,
-              },
-            },
+          await saveMonitorStatus(monitor.id, 'tls', {
+            valid,
+            certInfo,
           });
         } catch (err) {}
       }

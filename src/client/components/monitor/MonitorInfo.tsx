@@ -124,7 +124,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               </div>
             </Space>
 
-            <div className="text-black text-opacity-75">
+            <div className="text-black dark:text-gray-200 text-opacity-75">
               Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
               days
             </div>
