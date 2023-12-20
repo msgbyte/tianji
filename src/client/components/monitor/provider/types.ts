@@ -6,6 +6,8 @@ export interface MonitorProvider {
   link?: (info: MonitorInfo) => React.ReactNode;
   form: React.ComponentType;
   overview?: MonitorOverviewComponent[];
+  valueLabel?: string;
+  valueFormatter?: (value: number) => string;
 }
 
 export type MonitorOverviewComponent = React.ComponentType<{

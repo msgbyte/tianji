@@ -6,6 +6,7 @@ import React, { useState, useMemo } from 'react';
 import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
+import { getMonitorProvider } from './provider';
 
 export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
   (props) => {
@@ -38,6 +39,11 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
       return [dayjs().subtract(0.5, 'hour'), dayjs()];
     }, [rangeType]);
 
+    const { data: monitorInfo } = trpc.monitor.get.useQuery({
+      workspaceId,
+      monitorId,
+    });
+
     const { data: _recentData = [] } = trpc.monitor.recentData.useQuery({
       workspaceId,
       monitorId,
@@ -50,6 +56,8 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
       startAt: range[0].valueOf(),
       endAt: range[1].valueOf(),
     });
+
+    const providerInfo = getMonitorProvider(monitorInfo?.type ?? '');
 
     const { data, annotations } = useMemo(() => {
       const annotations: AreaConfig['annotations'] = [];
@@ -114,9 +122,16 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
             return dayjs(datum.time).format('YYYY-MM-DD HH:mm');
           },
           formatter(datum) {
+            const name = providerInfo?.valueLabel
+              ? providerInfo?.valueLabel
+              : 'usage';
+            const formatterFn = providerInfo?.valueFormatter
+              ? providerInfo?.valueFormatter
+              : (value: number) => `${value}ms`;
+
             return {
-              name: 'usage',
-              value: datum.value ? datum.value + 'ms' : 'null',
+              name,
+              value: datum.value ? formatterFn(datum.value) : 'null',
             };
           },
         },

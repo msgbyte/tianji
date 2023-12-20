@@ -4,8 +4,6 @@ import {
   Button,
   Divider,
   Empty,
-  Form,
-  Input,
   Modal,
   Popconfirm,
   Steps,
@@ -32,7 +30,6 @@ import { useIntervalUpdate } from '../hooks/useIntervalUpdate';
 import clsx from 'clsx';
 import { isServerOnline } from '../../shared';
 import { defaultErrorHandler, trpc } from '../api/trpc';
-import { useEvent } from '../hooks/useEvent';
 import { useRequest } from '../hooks/useRequest';
 
 export const Servers: React.FC = React.memo(() => {
@@ -108,8 +105,8 @@ export const Servers: React.FC = React.memo(() => {
           <Tabs
             items={[
               {
-                key: 'script',
-                label: 'Script',
+                key: 'auto',
+                label: 'Auto',
                 children: <InstallScript />,
               },
               {

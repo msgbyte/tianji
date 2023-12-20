@@ -5,7 +5,6 @@ import { useCurrentWorkspaceId } from '../../../store/user';
 import { trpc } from '../../../api/trpc';
 import dayjs from 'dayjs';
 import { MonitorStatsBlock } from '../MonitorStatsBlock';
-import { isEmpty } from 'lodash-es';
 
 export const MonitorOpenai: React.FC = React.memo(() => {
   return (
@@ -40,15 +39,11 @@ export const MonitorOpenaiOverview: MonitorOverviewComponent = React.memo(
 
     const payload = data.payload as Record<string, any>;
 
-    if (isEmpty(payload.certInfo)) {
-      return null;
-    }
-
     return (
       <MonitorStatsBlock
         title="Usage"
         desc={dayjs(data.updatedAt).format('YYYY-MM-DD')}
-        text={`${payload.totalUsed} / ${payload.totalGranted}`}
+        text={`$${payload.totalUsed} / $${payload.totalGranted}`}
       />
     );
   }
@@ -60,4 +55,6 @@ export const openaiProvider: MonitorProvider = {
   name: 'openai',
   form: MonitorOpenai,
   overview: [MonitorOpenaiOverview],
+  valueLabel: 'Balance',
+  valueFormatter: (value) => `$${value / 100}`,
 };

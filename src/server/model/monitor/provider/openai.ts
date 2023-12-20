@@ -36,7 +36,7 @@ export const openai: MonitorProvider<{
 
     const res = await getBillingCreditGrants(sessionKey);
 
-    const balance = res.total_granted - res.total_used;
+    const balance = (res.total_granted - res.total_used) * 100;
 
     await saveMonitorStatus(monitor.id, 'credit', {
       totalGranted: res.total_granted,
