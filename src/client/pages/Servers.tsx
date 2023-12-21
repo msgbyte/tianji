@@ -242,7 +242,7 @@ export const ServerList: React.FC<{
         },
       },
       {
-        key: 'updatedAt',
+        dataIndex: 'updatedAt',
         title: 'updatedAt',
         render: (val) => {
           return dayjs(val).format('MMM D HH:mm:ss');
