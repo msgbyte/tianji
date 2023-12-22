@@ -17,8 +17,13 @@ export const MonitorDataMetrics: React.FC<{
     workspaceId,
     monitorId,
   });
+
+  const provider = useMemo(
+    () => getMonitorProvider(monitorType),
+    [monitorType]
+  );
+
   const providerOverview = useMemo(() => {
-    const provider = getMonitorProvider(monitorType);
     if (!provider || !provider.overview) {
       return null;
     }
@@ -30,7 +35,11 @@ export const MonitorDataMetrics: React.FC<{
         ))}
       </>
     );
-  }, [monitorId, monitorType]);
+  }, [monitorId, provider]);
+
+  const formatterFn = provider?.valueFormatter
+    ? provider?.valueFormatter
+    : (value: number) => `${value}ms`;
 
   if (isLoading) {
     return <Loading />;
@@ -46,14 +55,14 @@ export const MonitorDataMetrics: React.FC<{
         <MonitorStatsBlock
           title="Response"
           desc="(Current)"
-          text={`${currectResponse} ms`}
+          text={formatterFn(currectResponse)}
         />
       )}
 
       <MonitorStatsBlock
         title="Avg. Response"
         desc="(24 hour)"
-        text={`${parseFloat(data.recent1DayAvg.toFixed(0))} ms`}
+        text={formatterFn(parseFloat(data.recent1DayAvg.toFixed(0)))}
       />
       <MonitorStatsBlock
         title="Uptime"
