@@ -20,10 +20,10 @@ function HomepageHeader() {
           Tianji brings all your commonly used tools together in one place
         </p>
         <div className="text-xl">
+          <span className="text-gradient font-bold">Tianji</span> ={' '}
           <span className="underline font-semibold">Website analytics</span> +{' '}
           <span className="underline font-semibold">Uptime Monitor</span> +{' '}
-          <span className="underline font-semibold">Server Status</span> ={' '}
-          <span className="text-gradient font-bold">Tianji</span>
+          <span className="underline font-semibold">Server Status</span>
         </div>
       </div>
 
