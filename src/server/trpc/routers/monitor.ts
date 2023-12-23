@@ -500,10 +500,17 @@ export const monitorRouter = router({
       })
     )
     .input(
-      z.object({
-        slug: z.string(),
-        title: z.string(),
-      })
+      z
+        .object({
+          slug: z.string(),
+          title: z.string(),
+        })
+        .merge(
+          MonitorStatusPageModelSchema.pick({
+            description: true,
+            monitorList: true,
+          }).partial()
+        )
     )
     .output(MonitorStatusPageModelSchema)
     .mutation(async ({ input }) => {

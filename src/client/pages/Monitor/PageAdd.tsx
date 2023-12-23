@@ -3,12 +3,10 @@ import { useNavigate } from 'react-router';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { trpc } from '../../api/trpc';
 import { useEvent } from '../../hooks/useEvent';
-import { MonitorStatusPageEditForm } from '../../components/monitor/StatusPage/EditForm';
-
-interface Values {
-  title: string;
-  slug: string;
-}
+import {
+  MonitorStatusPageEditForm,
+  MonitorStatusPageEditFormValues,
+} from '../../components/monitor/StatusPage/EditForm';
 
 export const MonitorPageAdd: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId()!;
@@ -17,17 +15,18 @@ export const MonitorPageAdd: React.FC = React.memo(() => {
   const createPageMutation = trpc.monitor.createPage.useMutation();
   const trpcUtils = trpc.useContext();
 
-  const handleFinish = useEvent(async (values: Values) => {
-    await createPageMutation.mutateAsync({
-      workspaceId,
-      title: values.title,
-      slug: values.slug,
-    });
+  const handleFinish = useEvent(
+    async (values: MonitorStatusPageEditFormValues) => {
+      await createPageMutation.mutateAsync({
+        ...values,
+        workspaceId,
+      });
 
-    trpcUtils.monitor.getAllPages.refetch();
+      trpcUtils.monitor.getAllPages.refetch();
 
-    navigate('/monitor/pages');
-  });
+      navigate('/monitor/pages');
+    }
+  );
 
   return (
     <div className="px-8 py-4">

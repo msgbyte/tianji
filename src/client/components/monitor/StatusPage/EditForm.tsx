@@ -10,6 +10,7 @@ const { Text } = Typography;
 export interface MonitorStatusPageEditFormValues {
   title: string;
   slug: string;
+  monitorList: PrismaJson.MonitorStatusPageList;
 }
 
 interface MonitorStatusPageEditFormProps {
