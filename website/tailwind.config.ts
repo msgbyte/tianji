@@ -13,6 +13,7 @@ const plugin: PluginCreator = (api) => {
 };
 
 export default {
+  darkMode: ['class', '[data-theme="dark"]'],
   corePlugins: {
     preflight: false,
   },

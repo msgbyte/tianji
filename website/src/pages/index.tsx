@@ -34,12 +34,20 @@ function HomepageHeader() {
         >
           Early Access
         </Link> */}
-        <Link
+        {/* <Link
           className="button button--primary button--lg"
           to="https://demo.tianji.msgbyte.com"
         >
           Visit Demo
-        </Link>
+        </Link> */}
+
+        <div className="w-min m-auto text-left bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg">
+          <div className="whitespace-nowrap">
+            wget
+            https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
+          </div>
+          <div>docker compose up -d</div>
+        </div>
       </div>
     </header>
   );
