@@ -79,6 +79,11 @@ const config = {
           { to: '/changelog', label: 'Changelog', position: 'left' },
           { to: '/api', label: 'API', position: 'left' },
           {
+            href: 'https://discord.gg/8Vv47wAEej',
+            label: 'Discord',
+            position: 'right',
+          },
+          {
             href: 'https://github.com/msgbyte/tianji',
             label: 'GitHub',
             position: 'right',
@@ -104,10 +109,10 @@ const config = {
                 label: 'Stack Overflow',
                 href: 'https://stackoverflow.com/questions/tagged/tianji',
               },
-              // {
-              //   label: 'Discord',
-              //   href: 'https://discordapp.com/invite/docusaurus',
-              // },
+              {
+                label: 'Discord',
+                href: 'https://discord.gg/8Vv47wAEej',
+              },
               {
                 label: 'Twitter',
                 href: 'https://twitter.com/moonrailgun',
