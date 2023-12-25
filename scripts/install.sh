@@ -137,8 +137,7 @@ function install_client() {
   echo -e "${Info} Downloading ${arch} binary file..."
   mkdir -p /usr/local/tianji/reporter/
   cd /tmp
-  # wget --no-check-certificate "https://github.com/msgbyte/tianji/releases/latest/download/tianji-reporter-linux-${arch}" -O tianji-reporter-linux-${arch}
-  wget --no-check-certificate "https://temp-storage.msgbyte.com/tianji-reporter/tianji-reporter-linux-${arch}" -O tianji-reporter-linux-${arch}
+  wget --no-check-certificate "https://github.com/msgbyte/tianji/releases/latest/download/tianji-reporter-linux-${arch}" -O tianji-reporter-linux-${arch}
   mv tianji-reporter-linux-${arch} /usr/local/tianji/reporter/tianji-reporter
   chmod +x /usr/local/tianji/reporter/tianji-reporter
   enable_service
