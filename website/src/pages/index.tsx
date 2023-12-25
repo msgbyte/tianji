@@ -43,11 +43,18 @@ function HomepageHeader() {
 
         <div className="w-min m-auto text-left bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg">
           <div className="whitespace-nowrap">
-            wget
+            <span className="select-none opacity-50 mr-1">$</span>wget
             https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
           </div>
-          <div>docker compose up -d</div>
+          <div>
+            <span className="select-none opacity-50 mr-1">$</span>docker compose
+            up -d
+          </div>
         </div>
+        <small className="opacity-50">
+          Default account is <b>admin</b>/<b>admin</b>, please change password
+          ASAP.
+        </small>
       </div>
     </header>
   );
