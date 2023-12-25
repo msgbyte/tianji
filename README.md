@@ -23,10 +23,18 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [x] server status
 - [x] problem notification
 - [x] telemetry
-- [ ] openapi
-- [ ] website
+- [x] openapi
+- [x] website
 - [ ] team collaboration
 - [ ] survey
+
+## Preview
+
+![](./website/static/img/preview1.png)
+
+![](./website/static/img/preview2.png)
+
+![](./website/static/img/preview3.png)
 
 ## Open Source
 
