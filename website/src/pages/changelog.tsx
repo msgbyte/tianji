@@ -47,6 +47,12 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/12/25">
+          <h3 className="vertical-timeline-element-title">Open Source!</h3>
+          <p>We think open source can help more and more people</p>
+          <p>Tianji loves open source</p>
+        </VerticalTimelineElement>
+
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/11/9">
           <h3 className="vertical-timeline-element-title">Start Alpha Test</h3>
           <p>Invite some people test it</p>
