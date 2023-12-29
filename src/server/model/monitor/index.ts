@@ -119,7 +119,7 @@ class MonitorManager {
           this.monitorRunner[m.id] = runner;
           await runner.startMonitor();
         } catch (err) {
-          console.error('Start monitor error:', err);
+          console.error('Start monitor error:', String(err));
         }
       })
     ).then(() => {
@@ -171,7 +171,7 @@ class MonitorRunner {
         try {
           value = await provider.run(monitor);
         } catch (err) {
-          console.error(err);
+          logger.error('[Monitor] run error:', String(err));
           value = -1;
         }
 
