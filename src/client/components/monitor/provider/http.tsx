@@ -75,6 +75,10 @@ const MonitorHttp: React.FC = React.memo(() => {
         rules={[
           {
             validator(rule, value, callback) {
+              if (!value) {
+                callback();
+              }
+
               try {
                 const obj = JSON.parse(value);
                 if (typeof obj !== 'object') {
@@ -94,7 +98,30 @@ const MonitorHttp: React.FC = React.memo(() => {
           placeholder='For example:&#13;&#10;{ "key": "value" }'
         />
       </Form.Item>
-      <Form.Item label="Body" name={['payload', 'bodyValue']}>
+      <Form.Item
+        label="Body"
+        name={['payload', 'bodyValue']}
+        rules={[
+          {
+            validator(rule, value, callback) {
+              if (!value) {
+                callback();
+              }
+
+              try {
+                const obj = JSON.parse(value);
+                if (typeof obj !== 'object') {
+                  callback('Not JSON Object');
+                } else {
+                  callback();
+                }
+              } catch {
+                callback('Not valid JSON string');
+              }
+            },
+          },
+        ]}
+      >
         <Input.TextArea
           rows={4}
           placeholder='For example:&#13;&#10;{ "key": "value" }'
