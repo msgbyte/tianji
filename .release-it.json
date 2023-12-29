@@ -1,0 +1,44 @@
+{
+  "github": {
+    "release": true
+  },
+  "git": {
+    "commitMessage": "chore: release v${version}"
+  },
+  "npm": {
+    "publish": false
+  },
+  "hooks": {
+    "after:bump": "echo Version Upgrade Success. checkout more in CHANGELOG"
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "infile": "CHANGELOG.md",
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          {
+            "type": "feat",
+            "section": "Features"
+          },
+          {
+            "type": "fix",
+            "section": "Bug Fixes"
+          },
+          {
+            "type": "docs",
+            "section": "Document"
+          },
+          {
+            "type": "refactor",
+            "section": "Others"
+          },
+          {
+            "type": "chore",
+            "section": "Others"
+          }
+        ]
+      }
+    }
+  }
+}
