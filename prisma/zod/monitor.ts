@@ -20,6 +20,7 @@ export const MonitorModelSchema = z.object({
    */
   payload: jsonSchema,
   createdAt: z.date(),
+  updatedAt: z.date(),
 })
 
 export interface CompleteMonitor extends z.infer<typeof MonitorModelSchema> {

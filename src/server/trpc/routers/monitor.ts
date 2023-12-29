@@ -45,6 +45,9 @@ export const monitorRouter = router({
             },
           },
         },
+        orderBy: {
+          updatedAt: 'desc',
+        },
       });
 
       return monitors as MonitorInfoWithNotificationIds[];
@@ -425,6 +428,60 @@ export const monitorRouter = router({
       });
 
       return list;
+    }),
+  clearEvents: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'DELETE',
+        path: '/clearEvents',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(z.number())
+    .mutation(async ({ input }) => {
+      const { workspaceId, monitorId } = input;
+
+      const { count } = await prisma.monitorEvent.deleteMany({
+        where: {
+          monitor: {
+            id: monitorId,
+            workspaceId,
+          },
+        },
+      });
+
+      return count;
+    }),
+  clearData: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'DELETE',
+        path: '/clearData',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(z.number())
+    .mutation(async ({ input }) => {
+      const { workspaceId, monitorId } = input;
+
+      const { count } = await prisma.monitorData.deleteMany({
+        where: {
+          monitor: {
+            id: monitorId,
+            workspaceId,
+          },
+        },
+      });
+
+      return count;
     }),
   getStatus: workspaceProcedure
     .meta(

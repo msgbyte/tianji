@@ -261,6 +261,7 @@ model Monitor {
   /// [CommonPayload]
   payload     Json     @db.Json
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
