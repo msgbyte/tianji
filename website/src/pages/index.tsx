@@ -4,6 +4,9 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import LogoSvg from '@site/static/img/logo.svg';
 import { Carousel } from 'react-responsive-carousel';
+import { Popover } from 'antd';
+import { RiDiscordFill, RiTwitterXFill, RiWechatFill } from 'react-icons/ri';
+import { BlockCard } from '../components/BlockCard';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 function HomepageHeader() {
@@ -41,7 +44,7 @@ function HomepageHeader() {
           Visit Demo
         </Link> */}
 
-        <div className="w-min m-auto text-left bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg">
+        <div className="w-min m-auto text-left bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg overflow-auto max-w-full">
           <div className="whitespace-nowrap">
             <span className="select-none opacity-50 mr-1">$</span>wget
             https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
@@ -102,6 +105,38 @@ function HomepageMain() {
   );
 }
 
+function HomepageFooter() {
+  return (
+    <div className="text-center py-8">
+      <div className="text-2xl font-bold mb-8">Join Our Community</div>
+
+      <div className="flex justify-center gap-4">
+        <Popover
+          content={<img width={300} src="/img/wechat.jpg" />}
+          trigger={'click'}
+        >
+          <BlockCard
+            icon={<RiWechatFill className="text-green-500" />}
+            title="Wechat"
+          />
+        </Popover>
+
+        <BlockCard
+          icon={<RiDiscordFill className="text-indigo-600" />}
+          title="Discord"
+          onClick={() => window.open('https://discord.gg/8Vv47wAEej')}
+        />
+
+        <BlockCard
+          icon={<RiTwitterXFill />}
+          title="Twitter"
+          onClick={() => window.open('https://twitter.com/moonrailgun')}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
@@ -112,6 +147,8 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
 
       <HomepageMain />
+
+      <HomepageFooter />
     </Layout>
   );
 }
