@@ -1,7 +1,7 @@
 {
   "name": "tianji",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "dev": "nodemon",
     "start": "cross-env NODE_ENV=production node ./dist/src/server/main.js",
