@@ -17,7 +17,9 @@
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:apply": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "release": "release-it",
+    "release:patch": "release-it -i patch"
   },
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
@@ -87,6 +89,7 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^8.0.1",
     "@types/bcryptjs": "^2.4.3",
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.15",
@@ -116,6 +119,7 @@
     "prisma": "^5.4.2",
     "prisma-json-types-generator": "^3.0.3",
     "prisma-zod-generator": "^0.8.13",
+    "release-it": "^17.0.1",
     "tailwindcss": "^3.3.3",
     "tar": "^6.1.15",
     "typescript": "^5.2.2",
