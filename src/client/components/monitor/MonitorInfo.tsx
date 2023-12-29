@@ -1,4 +1,4 @@
-import { Button, Card, Popconfirm, Space, Spin } from 'antd';
+import { Button, Card, Dropdown, Popconfirm, Space, Spin, Modal } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import {
@@ -19,6 +19,7 @@ import { MonitorEventList } from './MonitorEventList';
 import { useEvent } from '../../hooks/useEvent';
 import { MonitorDataMetrics } from './MonitorDataMetrics';
 import { MonitorDataChart } from './MonitorDataChart';
+import { DeleteOutlined } from '@ant-design/icons';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -42,6 +43,14 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     onError: defaultErrorHandler,
   });
   const deleteMutation = trpc.monitor.delete.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
+  const clearEventsMutation = trpc.monitor.clearEvents.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
+  const clearDataMutation = trpc.monitor.clearData.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
@@ -91,6 +100,44 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     trpcUtils.monitor.all.refetch();
 
     navigate('/monitor');
+  });
+
+  const handleClearEvents = useEvent(() => {
+    Modal.confirm({
+      title: 'Warning',
+      content: 'Are you sure want to delete all events for this monitor?',
+      okButtonProps: {
+        danger: true,
+      },
+      onOk: async () => {
+        await clearEventsMutation.mutateAsync({
+          workspaceId,
+          monitorId,
+        });
+        trpcUtils.monitor.events.refetch({
+          workspaceId,
+          monitorId,
+        });
+      },
+    });
+  });
+
+  const handleClearData = useEvent(() => {
+    Modal.confirm({
+      title: 'Warning',
+      content: 'Are you sure want to delete all heartbeats for this monitor?',
+      okButtonProps: {
+        danger: true,
+      },
+      onOk: async () => {
+        await clearDataMutation.mutateAsync({
+          workspaceId,
+          monitorId,
+        });
+        trpcUtils.monitor.data.reset();
+        trpcUtils.monitor.recentData.reset();
+      },
+    });
   });
 
   if (isInitialLoading) {
@@ -188,6 +235,30 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
           <Card>
             <MonitorDataChart monitorId={monitorId} />
           </Card>
+
+          <div className="text-right">
+            <Dropdown
+              trigger={['click']}
+              menu={{
+                items: [
+                  {
+                    key: 'events',
+                    label: 'Events',
+                    onClick: handleClearEvents,
+                  },
+                  {
+                    key: 'heartbeats',
+                    label: 'Heartbeats',
+                    onClick: handleClearData,
+                  },
+                ],
+              }}
+            >
+              <Button icon={<DeleteOutlined />} danger={true}>
+                Clear Data
+              </Button>
+            </Dropdown>
+          </div>
 
           <MonitorEventList monitorId={monitorId} />
         </Space>
