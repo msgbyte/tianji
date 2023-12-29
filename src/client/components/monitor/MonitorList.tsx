@@ -37,7 +37,10 @@ export const MonitorList: React.FC = React.memo(() => {
       {monitors.map((monitor) => (
         <MonitorListItem
           key={monitor.id}
-          className={clsx(selectedMonitorId === monitor.id && '!bg-opacity-20')}
+          className={clsx(
+            selectedMonitorId === monitor.id && '!bg-opacity-20',
+            monitor.active === false && 'opacity-40'
+          )}
           workspaceId={workspaceId}
           monitorId={monitor.id}
           monitorName={monitor.name}
