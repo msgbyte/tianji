@@ -44,8 +44,6 @@ class MonitorManager {
           notifications: true,
         },
       });
-
-      return monitor;
     } else {
       // create
       monitor = await prisma.monitor.create({
@@ -171,7 +169,7 @@ class MonitorRunner {
         try {
           value = await provider.run(monitor);
         } catch (err) {
-          logger.error('[Monitor] run error:', String(err));
+          logger.error(`[Monitor] (id: ${monitor.id}) run error:`, String(err));
           value = -1;
         }
 
