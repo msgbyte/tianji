@@ -53,7 +53,7 @@ export function initSocketio(httpServer: HTTPServer) {
       }
 
       socket.onAny((eventName, eventData, callback) => {
-        console.log('[Socket] receive:', { eventName, eventData });
+        // console.log('[Socket] receive:', { eventName, eventData });
         socketEventBus.emit(eventName, eventData, socket, callback);
       });
     });

@@ -4,11 +4,13 @@ import { pingProvider } from './ping';
 import { httpProvider } from './http';
 import { MonitorProvider } from './types';
 import { openaiProvider } from './openai';
+import { customProvider } from './custom';
 
 export const monitorProviders: MonitorProvider[] = [
   pingProvider, // ping
   httpProvider, // http
   openaiProvider, // http
+  customProvider, // custom node script
 ];
 
 export function getMonitorProvider(type: string) {
