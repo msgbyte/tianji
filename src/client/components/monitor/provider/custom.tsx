@@ -1,6 +1,7 @@
-import { Form, Input } from 'antd';
+import { Button, Form } from 'antd';
 import React from 'react';
 import { MonitorProvider } from './types';
+import { CodeEditor } from '../../CodeEditor';
 
 export const MonitorCustom: React.FC = React.memo(() => {
   return (
@@ -10,7 +11,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
         name={['payload', 'code']}
         rules={[{ required: true }]}
       >
-        <Input.TextArea placeholder="return 1" rows={10} />
+        <CodeEditor height={320} />
       </Form.Item>
     </>
   );
