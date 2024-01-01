@@ -7,7 +7,7 @@ import { NotificationPicker } from '../notification/NotificationPicker';
 
 export type MonitorInfoEditorValues = Omit<
   Monitor,
-  'id' | 'workspaceId' | 'createdAt'
+  'id' | 'workspaceId' | 'createdAt' | 'updatedAt'
 > & {
   id?: string;
   payload: Record<string, any>;
