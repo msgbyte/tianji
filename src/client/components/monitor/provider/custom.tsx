@@ -82,4 +82,6 @@ export const customProvider: MonitorProvider = {
   label: 'Custom',
   name: 'custom',
   form: MonitorCustom,
+  valueLabel: 'Result',
+  valueFormatter: (value) => String(value),
 };
