@@ -13,17 +13,18 @@ export const custom: MonitorProvider<{
 
     const { code } = monitor.payload;
 
-    const res = await runCodeInVM(code);
+    const { result } = await runCodeInVM(code);
 
-    if (typeof res !== 'number') {
+    if (typeof result !== 'number') {
       return -1;
     }
 
-    return res;
+    return result;
   },
 };
 
-async function runCodeInVM(_code: string) {
+export async function runCodeInVM(_code: string) {
+  const start = Date.now();
   const isolate = new ivm.Isolate({ memoryLimit: env.sandboxMemoryLimit });
 
   const code = `${environmentScript}\n\n;(async () => {${_code}})()`;
@@ -33,7 +34,21 @@ async function runCodeInVM(_code: string) {
     isolate.compileScript(code),
   ]);
 
-  buildSandbox(context);
+  const logger: any[][] = [];
+
+  buildSandbox(context, {
+    console: {
+      log: (...args: any[]) => {
+        logger.push(['log', Date.now(), ...args]);
+      },
+      warn: (...args: any[]) => {
+        logger.push(['warn', Date.now(), ...args]);
+      },
+      error: (...args: any[]) => {
+        logger.push(['error', Date.now(), ...args]);
+      },
+    },
+  });
 
   const res = await script.run(context, {
     promise: true,
@@ -42,5 +57,5 @@ async function runCodeInVM(_code: string) {
   context.release();
   script.release();
 
-  return res;
+  return { logger, result: res, usage: Date.now() - start };
 }

@@ -125,11 +125,30 @@ function makeTransferable(data: any) {
     : new ivm.ExternalCopy(copyObject(data)).copyInto();
 }
 
-export function buildSandbox(context: Context) {
+interface SandboxGlobals {
+  console?: {
+    log: (...args: any[]) => void;
+    warn: (...args: any[]) => void;
+    error: (...args: any[]) => void;
+  };
+}
+
+const defaultSandboxGlobals = {
+  console: {
+    log: () => {},
+    warn: () => {},
+    error: () => {},
+  },
+};
+
+export function buildSandbox(context: Context, globals: SandboxGlobals = {}) {
   const jail = context.global;
   jail.setSync('global', jail.derefInto());
-  jail.setSync('ivm', ivm);
-  jail.setSync('console', makeTransferable(console));
+  jail.setSync('_ivm', ivm);
+  jail.setSync(
+    'console',
+    makeTransferable(globals.console ?? defaultSandboxGlobals)
+  );
   jail.setSync(
     '_request',
     new ivm.Reference(async (config: AxiosRequestConfig) => {
@@ -153,7 +172,7 @@ const reproxy = (reference) => {
 
       const data = reference.get(p);
 
-      if (typeof data === 'object' && data instanceof ivm.Reference && data.typeof === 'function') {
+      if (typeof data === 'object' && data instanceof _ivm.Reference && data.typeof === 'function') {
         return (...args) => data.apply(undefined, args, { arguments: { copy: true }, result: { promise: true } });
       }
 

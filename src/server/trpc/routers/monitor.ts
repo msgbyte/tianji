@@ -22,6 +22,7 @@ import {
 import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
 import { MonitorStatusPageModelSchema } from '../../../../prisma/zod';
+import { runCodeInVM } from '../../model/monitor/provider/custom';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -171,6 +172,22 @@ export const monitorRouter = router({
       const { workspaceId, monitorId } = input;
 
       return monitorManager.delete(workspaceId, monitorId);
+    }),
+  testCustomScript: workspaceOwnerProcedure
+    .input(
+      z.object({
+        code: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        logger: z.array(z.array(z.any())),
+        result: z.number(),
+        usage: z.number(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return runCodeInVM(input.code);
     }),
   data: workspaceProcedure
     .meta(
