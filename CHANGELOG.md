@@ -1,5 +1,12 @@
 
 
+## [1.2.1](https://github.com/msgbyte/tianji/compare/v1.2.0...v1.2.1) (2024-01-02)
+
+
+### Bug Fixes
+
+* add Suspense to fix lazy load problem ([d093df9](https://github.com/msgbyte/tianji/commit/d093df928c9137d11310affafbfa99c6b2dd74ac))
+
 ## [1.2.0](https://github.com/msgbyte/tianji/compare/v1.1.0...v1.2.0) (2024-01-01)
 
 
