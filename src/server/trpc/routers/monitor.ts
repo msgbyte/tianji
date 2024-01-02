@@ -187,7 +187,13 @@ export const monitorRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      return runCodeInVM(input.code);
+      const res = await runCodeInVM(input.code);
+
+      return {
+        logger: res.logger,
+        result: res.result ?? -1,
+        usage: res.usage,
+      };
     }),
   data: workspaceProcedure
     .meta(

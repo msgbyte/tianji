@@ -155,6 +155,7 @@ export function buildSandbox(context: Context, globals: SandboxGlobals = {}) {
       const result = await axios.request(config);
 
       return makeTransferable({
+        headers: { ...result.headers },
         data: result.data,
         status: result.status,
       });

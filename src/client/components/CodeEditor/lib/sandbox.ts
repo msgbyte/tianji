@@ -44,5 +44,11 @@ interface AxiosConfig {
   } | false;
 }
 
-const request = async (config: AxiosConfig) => {}
+interface RequestReturn {
+  headers: Record<string, string>;
+  data: any;
+  status: number;
+}
+
+const request = async (config: AxiosConfig): Promise<RequestReturn> => {}
 `;

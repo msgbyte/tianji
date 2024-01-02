@@ -27,6 +27,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
       centered: true,
       maskClosable: true,
       title: 'Run Completed',
+      width: 'clamp(320px, 60vw, 860px)',
       content: (
         <div>
           {logger.map(([type, time, ...args]) => (
@@ -43,7 +44,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
                 {dayjs(time).format('HH:mm:ss')}
               </span>
 
-              {args.join(' ')}
+              <span className="break-all">{args.join(' ')}</span>
             </div>
           ))}
 

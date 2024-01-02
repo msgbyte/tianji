@@ -27,7 +27,12 @@ export async function runCodeInVM(_code: string) {
   const start = Date.now();
   const isolate = new ivm.Isolate({ memoryLimit: env.sandboxMemoryLimit });
 
-  const code = `${environmentScript}\n\n;(async () => {${_code}})()`;
+  // avoid end comment with line break
+  const code = `${environmentScript}
+
+;(async () => {
+  ${_code}
+})()`;
 
   const [context, script] = await Promise.all([
     isolate.createContext(),

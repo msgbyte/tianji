@@ -26,6 +26,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
       theme={theme}
       defaultLanguage="javascript"
       value={props.value}
+      options={{
+        tabSize: 2,
+      }}
       onChange={(val) => props.onChange?.(val ?? '')}
       beforeMount={handleEditorWillMount}
     />
