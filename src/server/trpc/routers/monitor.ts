@@ -251,7 +251,7 @@ export const monitorRouter = router({
       })
     )
     .output(monitorInfoSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { workspaceId, monitorId, active } = input;
 
       const monitor = await prisma.monitor.update({
@@ -262,22 +262,27 @@ export const monitorRouter = router({
         data: {
           active,
         },
+        include: {
+          notifications: true,
+        },
       });
-      const runner = monitorManager.getRunner(monitorId);
-      if (runner) {
-        if (active === true) {
-          runner.startMonitor();
-          runner.createEvent(
-            'UP',
-            `Monitor [${monitor.name}] has been manual start`
-          );
-        } else {
-          runner.stopMonitor();
-          runner.createEvent(
-            'DOWN',
-            `Monitor [${monitor.name}] has been manual stop`
-          );
-        }
+      let runner = monitorManager.getRunner(monitorId);
+      if (!runner) {
+        runner = monitorManager.createRunner(monitor);
+      }
+
+      if (active === true) {
+        runner.startMonitor();
+        runner.createEvent(
+          'UP',
+          `Monitor [${monitor.name}] has been manual start`
+        );
+      } else {
+        runner.stopMonitor();
+        runner.createEvent(
+          'DOWN',
+          `Monitor [${monitor.name}] has been manual stop`
+        );
       }
 
       return monitor;

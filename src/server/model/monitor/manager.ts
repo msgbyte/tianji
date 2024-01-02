@@ -23,12 +23,13 @@ export class MonitorManager {
    */
   async upsert(data: MonitorUpsertData): Promise<MonitorWithNotification> {
     let monitor: MonitorWithNotification;
-    const { id, notificationIds = [], ...others } = data;
+    const { id, workspaceId, notificationIds = [], ...others } = data;
     if (id) {
       // update
       monitor = await prisma.monitor.update({
         where: {
           id,
+          workspaceId,
         },
         data: {
           ...others,
@@ -45,6 +46,7 @@ export class MonitorManager {
       monitor = await prisma.monitor.create({
         data: {
           ...others,
+          workspaceId,
           notifications: {
             connect: notificationIds.map((id) => ({ id })),
           },
@@ -123,5 +125,13 @@ export class MonitorManager {
 
   getRunner(monitorId: string): MonitorRunner | undefined {
     return this.monitorRunner[monitorId];
+  }
+
+  createRunner(monitor: MonitorWithNotification) {
+    const runner = (this.monitorRunner[monitor.id] = new MonitorRunner(
+      monitor
+    ));
+
+    return runner;
   }
 }
