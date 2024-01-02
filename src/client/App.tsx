@@ -9,7 +9,7 @@ import { Register } from './pages/Register';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './api/cache';
 import { TokenLoginContainer } from './components/TokenLoginContainer';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { trpc, trpcClient } from './api/trpc';
 import { MonitorPage } from './pages/Monitor';
 import { WebsitePage } from './pages/Website';
@@ -19,6 +19,7 @@ import { ConfigProvider, theme } from 'antd';
 import clsx from 'clsx';
 import { useSettingsStore } from './store/settings';
 import { StatusPage } from './pages/Status';
+import { Loading } from './components/Loading';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -72,7 +73,9 @@ export const App: React.FC = React.memo(() => {
           <BrowserRouter>
             <ConfigProvider theme={{ algorithm }}>
               <TokenLoginContainer>
-                <AppRoutes />
+                <Suspense fallback={<Loading />}>
+                  <AppRoutes />
+                </Suspense>
               </TokenLoginContainer>
             </ConfigProvider>
           </BrowserRouter>
