@@ -9,10 +9,12 @@ function isTransferable(data: any): data is ivm.Transferable {
     return true;
   }
 
+  if (data === null) {
+    return true;
+  }
+
   if (
-    ['null', 'undefined', 'string', 'number', 'boolean', 'function'].includes(
-      dataType
-    )
+    ['undefined', 'string', 'number', 'boolean', 'function'].includes(dataType)
   ) {
     return true;
   }
