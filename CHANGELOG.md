@@ -1,5 +1,18 @@
 
 
+## [1.2.2](https://github.com/msgbyte/tianji/compare/v1.2.1...v1.2.2) (2024-01-02)
+
+
+### Bug Fixes
+
+* fix a bug which can not raise monitor with changeActive if monitor never run before ([e38df27](https://github.com/msgbyte/tianji/commit/e38df2706ebfc59aa0a36294d7a35e4bf9ae1492))
+
+
+### Document
+
+* add demo link ([4bdc838](https://github.com/msgbyte/tianji/commit/4bdc8380f98e7fb8b83b17a9dd41dde1680edbdb))
+* update changelog and update roadmap ([df01dcb](https://github.com/msgbyte/tianji/commit/df01dcb8571b95b6642c2332623e42c4f2e57a06))
+
 ## [1.2.1](https://github.com/msgbyte/tianji/compare/v1.2.0...v1.2.1) (2024-01-02)
 
 
