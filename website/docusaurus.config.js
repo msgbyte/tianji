@@ -79,6 +79,11 @@ const config = {
           { to: '/changelog', label: 'Changelog', position: 'left' },
           { to: '/api', label: 'API', position: 'left' },
           {
+            href: 'https://demo.tianji.msgbyte.com/',
+            label: 'Demo',
+            position: 'right',
+          },
+          {
             href: 'https://discord.gg/8Vv47wAEej',
             label: 'Discord',
             position: 'right',
