@@ -1,5 +1,5 @@
-import { lazy } from 'react';
+import loadable from '@loadable/component';
 
-export const CodeEditor = lazy(() =>
+export const CodeEditor = loadable(() =>
   import('./main').then((m) => ({ default: m.CodeEditor }))
 );

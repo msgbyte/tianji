@@ -73,9 +73,7 @@ export const App: React.FC = React.memo(() => {
           <BrowserRouter>
             <ConfigProvider theme={{ algorithm }}>
               <TokenLoginContainer>
-                <Suspense fallback={<Loading />}>
-                  <AppRoutes />
-                </Suspense>
+                <AppRoutes />
               </TokenLoginContainer>
             </ConfigProvider>
           </BrowserRouter>
