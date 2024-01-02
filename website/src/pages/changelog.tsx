@@ -40,11 +40,24 @@ function Timeline() {
       <VerticalTimeline>
         <VerticalTimelineElement {...timelineStyle.current} date="now">
           <h3 className="vertical-timeline-element-title">Still Developing</h3>
-          <h4 className="vertical-timeline-element-subtitle">never stop</h4>
+          <h4 className="vertical-timeline-element-subtitle">Never stop</h4>
           <p>
             We have been continuously focusing on exploring the needs in this
             field and growing continuously. Just like you.
           </p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/01">
+          <h3 className="vertical-timeline-element-title">Release v1.2.0</h3>
+          <p>Add custom monitor!</p>
+          <p>Now you can build your custom monitor logic with javascript</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/12/30">
+          <h3 className="vertical-timeline-element-title">Release v1.1.0</h3>
+          <p>Add delete data/event action for monitor</p>
+          <p>Add monitor order with updatedAt</p>
+          <p>Fix http header json validator problem</p>
         </VerticalTimelineElement>
 
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/12/25">
