@@ -17,48 +17,6 @@ import { ROLES } from '../../shared';
 
 export const workspaceRouter = Router();
 
-workspaceRouter.get(
-  '/websites',
-  validate(
-    query('workspaceId').isString().withMessage('workspaceId should be string')
-  ),
-  auth(),
-  workspacePermission(),
-  async (req, res) => {
-    const workspaceId = req.query.workspaceId as string;
-
-    const websites = await getWorkspaceWebsites(workspaceId);
-
-    res.json({ websites });
-  }
-);
-
-workspaceRouter.post(
-  '/website',
-  validate(
-    body('workspaceId').isString(),
-    body('name')
-      .isString()
-      .withMessage('name should be string')
-      .isLength({ max: 100 })
-      .withMessage('length should be under 100'),
-    body('domain')
-      .isURL()
-      .withMessage('domain should be URL')
-      .isLength({ max: 500 })
-      .withMessage('length should be under 500')
-  ),
-  auth(),
-  workspacePermission(),
-  async (req, res) => {
-    const { workspaceId, name, domain } = req.body;
-
-    const website = await addWorkspaceWebsite(workspaceId, name, domain);
-
-    res.json({ website });
-  }
-);
-
 workspaceRouter.delete(
   '/:workspaceId/website/:websiteId',
   validate(param('workspaceId').isString(), param('websiteId').isString()),

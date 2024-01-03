@@ -7,18 +7,6 @@ import { AppRouterOutput } from '../trpc';
 
 export type WebsiteInfo = NonNullable<AppRouterOutput['website']['info']>;
 
-export async function getWorkspaceWebsites(
-  workspaceId: string
-): Promise<WebsiteInfo[]> {
-  const { data } = await request.get('/api/workspace/websites', {
-    params: {
-      workspaceId,
-    },
-  });
-
-  return data.websites;
-}
-
 export async function deleteWorkspaceWebsite(
   workspaceId: string,
   websiteId: string
@@ -28,31 +16,8 @@ export async function deleteWorkspaceWebsite(
   queryClient.resetQueries(['websites', workspaceId]);
 }
 
-export function useWorspaceWebsites(workspaceId: string) {
-  const { data: websites = [], isLoading } = useQuery(
-    ['websites', workspaceId],
-    () => {
-      return getWorkspaceWebsites(workspaceId);
-    }
-  );
-
-  return { websites, isLoading };
-}
-
 export function refreshWorkspaceWebsites(workspaceId: string) {
   queryClient.refetchQueries(['websites', workspaceId]);
-}
-
-export async function addWorkspaceWebsite(
-  workspaceId: string,
-  name: string,
-  domain: string
-) {
-  await request.post('/api/workspace/website', {
-    workspaceId,
-    name,
-    domain,
-  });
 }
 
 export async function getWorkspaceWebsitePageview(
