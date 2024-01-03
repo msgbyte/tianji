@@ -16,6 +16,7 @@ import {
 } from '../../api/trpc';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEvent } from '../../hooks/useEvent';
+import { hostnameValidator } from '../../utils/validator';
 
 export const WebsiteInfo: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
@@ -102,7 +103,12 @@ export const WebsiteInfo: React.FC = React.memo(() => {
               <Form.Item
                 label="Domain"
                 name="domain"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true },
+                  {
+                    validator: hostnameValidator,
+                  },
+                ]}
               >
                 <Input size="large" />
               </Form.Item>

@@ -7,42 +7,39 @@ import {
 import { Button, Form, Input, Modal, Table, Typography } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
-import {
-  addWorkspaceWebsite,
-  refreshWorkspaceWebsites,
-  useWorspaceWebsites,
-  WebsiteInfo,
-} from '../../api/model/website';
+import { WebsiteInfo } from '../../api/model/website';
 import { Loading } from '../Loading';
-import { NoWorkspaceTip } from '../NoWorkspaceTip';
-import { useRequest } from '../../hooks/useRequest';
-import { useUserStore } from '../../store/user';
+import { useCurrentWorkspaceId } from '../../store/user';
 import { useEvent } from '../../hooks/useEvent';
 import { useNavigate } from 'react-router';
 import { PageHeader } from '../PageHeader';
 import { ModalButton } from '../ModalButton';
+import { hostnameValidator } from '../../utils/validator';
+import { trpc } from '../../api/trpc';
 
 export const WebsiteList: React.FC = React.memo(() => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const currentWorkspace = useUserStore(
-    (state) => state.info?.currentWorkspace
-  );
+  const workspaceId = useCurrentWorkspaceId();
   const [form] = Form.useForm();
+  const addWebsiteMutation = trpc.website.add.useMutation();
+  const utils = trpc.useContext();
 
-  const [{ loading }, handleAddWebsite] = useRequest(async () => {
+  const handleAddWebsite = useEvent(async () => {
     await form.validateFields();
     const values = form.getFieldsValue();
 
-    await addWorkspaceWebsite(currentWorkspace!.id, values.name, values.domain);
-    refreshWorkspaceWebsites(currentWorkspace!.id);
+    await addWebsiteMutation.mutateAsync({
+      workspaceId,
+      name: values.name,
+      domain: values.domain,
+    });
+
+    utils.website.all.refetch();
+
     setIsModalOpen(false);
 
     form.resetFields();
   });
-
-  if (!currentWorkspace) {
-    return <NoWorkspaceTip />;
-  }
 
   return (
     <div>
@@ -62,13 +59,13 @@ export const WebsiteList: React.FC = React.memo(() => {
         }
       />
 
-      <WebsiteListTable workspaceId={currentWorkspace.id} />
+      <WebsiteListTable workspaceId={workspaceId} />
 
       <Modal
         title="Add Server"
         open={isModalOpen}
         okButtonProps={{
-          loading,
+          loading: addWebsiteMutation.isLoading,
         }}
         onOk={() => handleAddWebsite()}
         onCancel={() => setIsModalOpen(false)}
@@ -86,7 +83,12 @@ export const WebsiteList: React.FC = React.memo(() => {
             label="Domain"
             name="domain"
             tooltip="Your server domain, or ip."
-            rules={[{ required: true }]}
+            rules={[
+              { required: true },
+              {
+                validator: hostnameValidator,
+              },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -99,7 +101,9 @@ WebsiteList.displayName = 'WebsiteList';
 
 const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
   (props) => {
-    const { websites, isLoading } = useWorspaceWebsites(props.workspaceId);
+    const { data: websites = [], isLoading } = trpc.website.all.useQuery({
+      workspaceId: props.workspaceId,
+    });
     const navigate = useNavigate();
 
     const handleEdit = useEvent((websiteId) => {

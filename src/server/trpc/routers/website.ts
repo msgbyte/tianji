@@ -18,6 +18,13 @@ import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
 import { websiteInfoSchema } from '../../model/_schema';
 import { OpenApiMeta } from 'trpc-openapi';
 import { hostnameRegex } from '../../../shared';
+import { addWorkspaceWebsite } from '../../model/workspace';
+
+const websiteNameSchema = z.string().max(100);
+const websiteDomainSchema = z.union([
+  z.string().max(500).regex(hostnameRegex),
+  z.string().max(500).ip(),
+]);
 
 export const websiteRouter = router({
   onlineCount: workspaceProcedure
@@ -205,6 +212,29 @@ export const websiteRouter = router({
 
       return [];
     }),
+  add: workspaceOwnerProcedure
+    .meta({
+      openapi: {
+        method: 'POST',
+        tags: [OPENAPI_TAG.WEBSITE],
+        protect: true,
+        path: `/workspace/{workspaceId}/website/add`,
+      },
+    })
+    .input(
+      z.object({
+        name: websiteNameSchema,
+        domain: websiteDomainSchema,
+      })
+    )
+    .output(websiteInfoSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, name, domain } = input;
+
+      const website = await addWorkspaceWebsite(workspaceId, name, domain);
+
+      return website;
+    }),
   updateInfo: workspaceOwnerProcedure
     .meta(
       buildWebsiteOpenapi({
@@ -215,11 +245,8 @@ export const websiteRouter = router({
     .input(
       z.object({
         websiteId: z.string().cuid2(),
-        name: z.string().max(100),
-        domain: z.union([
-          z.string().max(500).regex(hostnameRegex),
-          z.string().max(500).ip(),
-        ]),
+        name: websiteNameSchema,
+        domain: websiteDomainSchema,
         monitorId: z.string().cuid2().nullish(),
       })
     )

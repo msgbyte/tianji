@@ -1,9 +1,8 @@
 import { Button, Form, Input, Typography } from 'antd';
 import React from 'react';
-import { slugRegex } from '../../../../shared';
-import { z } from 'zod';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { MonitorPicker } from '../MonitorPicker';
+import { urlSlugValidator } from '../../../utils/validator';
 
 const { Text } = Typography;
 
@@ -62,14 +61,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                 required: true,
               },
               {
-                validator(rule, value, callback) {
-                  try {
-                    z.string().regex(slugRegex).parse(value);
-                    callback();
-                  } catch (err) {
-                    callback('Not valid slug');
-                  }
-                },
+                validator: urlSlugValidator,
               },
             ]}
           >
