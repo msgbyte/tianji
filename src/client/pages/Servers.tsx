@@ -294,7 +294,7 @@ ServerList.displayName = 'ServerList';
 
 export const InstallScript: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const command = `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh | bash`;
+  const command = `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | bash`;
 
   return (
     <div>

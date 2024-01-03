@@ -24,8 +24,6 @@ vim docker-compose.yml
 
 you should change `JWT_SECRET` to make your token safe. 
 
-and change `SERVER_URL` to make sure you can quick run `install.sh` in server status report if you have many level gateway.
-
 Then, run it!
 
 ```

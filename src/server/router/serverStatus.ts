@@ -35,7 +35,9 @@ serverStatusRouter.get(
   validate(param('workspaceId').isString()),
   async (req, res) => {
     const { workspaceId } = req.params;
-    const server = env.serverUrl || `${req.protocol}://${req.get('Host')}`;
+    const queryUrl = req.query.url ? String(req.query.url) : undefined;
+
+    const server = queryUrl || `${req.protocol}://${req.get('Host')}`;
 
     res
       .setHeader('Content-Type', 'text/plain')

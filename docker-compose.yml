@@ -9,7 +9,6 @@ services:
       JWT_SECRET: replace-me-with-a-random-string
       ALLOW_REGISTER: "false"
       ALLOW_OPENAPI: "true"
-      SERVER_URL:
     depends_on:
       - postgres
     restart: always
