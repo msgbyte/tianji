@@ -239,7 +239,7 @@ export const ServerList: React.FC<{
         width: 120,
         render: (_, record) => {
           return (
-            <div>
+            <div className="text-xs">
               <div>{filesize(record.payload.memory_used * 1000)} / </div>
               <div>{filesize(record.payload.memory_total * 1000)}</div>
             </div>
@@ -252,7 +252,7 @@ export const ServerList: React.FC<{
         width: 120,
         render: (_, record) => {
           return (
-            <div>
+            <div className="text-xs">
               <div>{filesize(record.payload.hdd_used * 1000 * 1000)} / </div>
               <div>{filesize(record.payload.hdd_total * 1000 * 1000)}</div>
             </div>

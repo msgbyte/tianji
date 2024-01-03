@@ -62,7 +62,7 @@ export const WebsiteList: React.FC = React.memo(() => {
       <WebsiteListTable workspaceId={workspaceId} />
 
       <Modal
-        title="Add Server"
+        title="Add Website"
         open={isModalOpen}
         okButtonProps={{
           loading: addWebsiteMutation.isLoading,
@@ -72,9 +72,9 @@ export const WebsiteList: React.FC = React.memo(() => {
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Server Name"
+            label="Website Name"
             name="name"
-            tooltip="Server Name to Display"
+            tooltip="Website Name to Display"
             rules={[{ required: true }]}
           >
             <Input />
