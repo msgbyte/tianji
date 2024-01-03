@@ -159,6 +159,7 @@ export const ServerList: React.FC<{
       {
         key: 'status',
         title: 'Status',
+        width: 90,
         render: (val, record) => {
           return isServerOnline(record) ? (
             <Badge status="success" text="online" />
@@ -176,10 +177,14 @@ export const ServerList: React.FC<{
       {
         dataIndex: 'name',
         title: 'Node Name',
+        width: 150,
+        ellipsis: true,
       },
       {
         dataIndex: 'hostname',
         title: 'Host Name',
+        width: 150,
+        ellipsis: true,
       },
       // {
       //   dataIndex: ['payload', 'system'],
@@ -188,15 +193,18 @@ export const ServerList: React.FC<{
       {
         dataIndex: ['payload', 'uptime'],
         title: 'Uptime',
+        width: 150,
         render: (val) => prettyMilliseconds(Number(val) * 1000),
       },
       {
         dataIndex: ['payload', 'load'],
         title: 'Load',
+        width: 70,
       },
       {
         key: 'nework',
         title: 'Network',
+        width: 110,
         render: (_, record) => {
           return (
             <UpDownCounter
@@ -209,6 +217,7 @@ export const ServerList: React.FC<{
       {
         key: 'traffic',
         title: 'Traffic',
+        width: 110,
         render: (_, record) => {
           return (
             <UpDownCounter
@@ -220,30 +229,40 @@ export const ServerList: React.FC<{
       },
       {
         dataIndex: ['payload', 'cpu'],
-        title: 'cpu',
+        title: 'CPU',
+        width: 80,
         render: (val) => `${val}%`,
       },
       {
         key: 'ram',
-        title: 'ram',
+        title: 'RAM',
+        width: 120,
         render: (_, record) => {
-          return `${filesize(record.payload.memory_used * 1000)} / ${filesize(
-            record.payload.memory_total * 1000
-          )}`;
+          return (
+            <div>
+              <div>{filesize(record.payload.memory_used * 1000)} / </div>
+              <div>{filesize(record.payload.memory_total * 1000)}</div>
+            </div>
+          );
         },
       },
       {
         key: 'hdd',
-        title: 'hdd',
+        title: 'HDD',
+        width: 120,
         render: (_, record) => {
-          return `${filesize(
-            record.payload.hdd_used * 1000 * 1000
-          )} / ${filesize(record.payload.hdd_total * 1000 * 1000)}`;
+          return (
+            <div>
+              <div>{filesize(record.payload.hdd_used * 1000 * 1000)} / </div>
+              <div>{filesize(record.payload.hdd_total * 1000 * 1000)}</div>
+            </div>
+          );
         },
       },
       {
         dataIndex: 'updatedAt',
         title: 'updatedAt',
+        width: 130,
         render: (val) => {
           return dayjs(val).format('MMM D HH:mm:ss');
         },
@@ -256,14 +275,18 @@ export const ServerList: React.FC<{
       <div className="text-right text-sm opacity-80">
         Last updated at: {dayjs(lastUpdatedAt).format('YYYY-MM-DD HH:mm:ss')}
       </div>
-      <Table
-        rowKey="hostname"
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-        locale={{ emptyText: <Empty description="No server online" /> }}
-        rowClassName={(record) => clsx(!isServerOnline(record) && 'opacity-60')}
-      />
+      <div className="overflow-auto">
+        <Table
+          rowKey="hostname"
+          columns={columns}
+          dataSource={dataSource}
+          pagination={false}
+          locale={{ emptyText: <Empty description="No server online" /> }}
+          rowClassName={(record) =>
+            clsx(!isServerOnline(record) && 'opacity-60')
+          }
+        />
+      </div>
     </div>
   );
 });
@@ -286,6 +309,11 @@ export const InstallScript: React.FC = React.memo(() => {
       >
         <span>{command}</span>
       </Typography.Paragraph>
+
+      <div>
+        Or you wanna report server status in windows server? switch to Manual
+        tab
+      </div>
     </div>
   );
 });
