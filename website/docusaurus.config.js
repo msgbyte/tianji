@@ -7,7 +7,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Tianji',
-  tagline: 'Insight into everything',
+  tagline:
+    'Insight into everything. Brings all your commonly used tools together in one place',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -63,6 +64,14 @@ const config = {
     ({
       // Replace with your project's social card
       image: 'img/social-card.png',
+      metadata: [
+        {
+          name: 'keywords',
+          content:
+            'tianji, umami, uptime, kuma, website, analysis, monitor, serverstatus, opensource, free, docker',
+        },
+        { name: 'twitter:card', content: 'summary_large_image' },
+      ],
       navbar: {
         title: 'Tianji',
         logo: {
