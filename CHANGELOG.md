@@ -1,5 +1,22 @@
 
 
+## [1.2.3](https://github.com/msgbyte/tianji/compare/v1.2.2...v1.2.3) (2024-01-04)
+
+
+### Bug Fixes
+
+* fix a bug which script not support makeTransferable json which data include null ([824bd89](https://github.com/msgbyte/tianji/commit/824bd89edeb1d453a120c6883b096e7e5a4c6a28))
+* fix domain schema check problem in add website server ([a04aa67](https://github.com/msgbyte/tianji/commit/a04aa67f85cee08715aeb5148eb0433eda79a64a))
+
+
+### Others
+
+* add ci action and update release it config ([1c8b4d9](https://github.com/msgbyte/tianji/commit/1c8b4d9285042c490ed40eecdd74ee09131b05c1))
+* improve server status table list display ([28dd506](https://github.com/msgbyte/tianji/commit/28dd506cb4aa10bc17c01c53b9081bdfa6864628))
+* improve UI ([deceafa](https://github.com/msgbyte/tianji/commit/deceafad4fb766e81921348b16846f1efe4715d1))
+* remove env SERVER_URL and use url to get real server url ([81e7f86](https://github.com/msgbyte/tianji/commit/81e7f8651ae90c97cdd2a6b22bdd4889f171f675))
+* update docusaurus config for seo ([927136e](https://github.com/msgbyte/tianji/commit/927136e3fb27bd015fe175d2d8289db43bc50f8a))
+
 ## [1.2.2](https://github.com/msgbyte/tianji/compare/v1.2.1...v1.2.2) (2024-01-02)
 
 
