@@ -48,7 +48,8 @@ model Workspace {
   monitorStatusPages MonitorStatusPage[]
 
   // for user currentWorkspace
-  selectedUsers User[]
+  selectedUsers  User[]
+  workspaceDailyUsage WorkspaceDailyUsage[]
 }
 
 model WorkspacesOnUsers {
@@ -135,7 +136,7 @@ model WebsiteEvent {
   referrerQuery  String?  @db.VarChar(500)
   referrerDomain String?  @db.VarChar(500)
   pageTitle      String?  @db.VarChar(500)
-  eventType      Int      @default(1) @db.Integer
+  eventType      Int      @default(1) @db.Integer // 1 is view, 2 is click event
   eventName      String?  @db.VarChar(50)
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
@@ -322,4 +323,18 @@ model MonitorStatusPage {
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
   @@index([slug])
+}
+
+model WorkspaceDailyUsage {
+  id                    String   @id @unique @default(cuid()) @db.VarChar(30)
+  workspaceId           String   @db.VarChar(30)
+  date                  DateTime @db.Date // calc every day
+  websiteAcceptedCount  Int // website accept any request count
+  websiteEventCount     Int // website accept event request count
+  monitorExecutionCount Int // monitor exec number count
+  createdAt             DateTime @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([workspaceId, date])
 }

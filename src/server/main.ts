@@ -23,6 +23,7 @@ import { settings } from './utils/settings';
 import { env } from './utils/env';
 import cors from 'cors';
 import { serverStatusRouter } from './router/serverStatus';
+import { initCronjob } from './cronjob';
 
 const port = settings.port;
 
@@ -32,6 +33,8 @@ const httpServer = createServer(app);
 initUdpServer(port);
 
 initSocketio(httpServer);
+
+initCronjob();
 
 monitorManager.startAll();
 
