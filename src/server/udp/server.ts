@@ -1,11 +1,12 @@
 import dgram from 'dgram';
 import { recordServerStatus } from '../model/serverStatus';
+import { logger } from '../utils/logger';
 
 export function initUdpServer(port: number) {
   const server = dgram.createSocket('udp4');
 
   server.on('error', (err) => {
-    console.log(`Init error:\n${err.stack}`);
+    logger.info(`Init error:\n${err.stack}`);
     server.close();
   });
 
@@ -14,7 +15,7 @@ export function initUdpServer(port: number) {
       const raw = String(msg);
       const json = JSON.parse(String(msg));
 
-      console.log('[UDP] recevice tianji report:', raw, 'info', rinfo);
+      logger.info('[UDP] recevice tianji report:', raw, 'info', rinfo);
 
       recordServerStatus(json);
     } catch (err) {}
@@ -22,7 +23,7 @@ export function initUdpServer(port: number) {
 
   server.on('listening', () => {
     const address = server.address();
-    console.log(`UDP Server is listening: ${address.address}:${address.port}`);
+    logger.info(`UDP Server is listening: ${address.address}:${address.port}`);
   });
 
   server.bind(port);

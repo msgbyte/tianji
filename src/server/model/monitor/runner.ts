@@ -92,7 +92,7 @@ export class MonitorRunner {
 
     run();
 
-    console.log(`Start monitor ${monitor.name}(${monitor.id})`);
+    logger.info(`Start monitor ${monitor.name}(${monitor.id})`);
   }
 
   stopMonitor() {
@@ -104,7 +104,7 @@ export class MonitorRunner {
       this.timer = null;
     }
 
-    console.log(`Stop monitor ${monitor.name}(${monitor.id})`);
+    logger.info(`Stop monitor ${monitor.name}(${monitor.id})`);
   }
 
   async restartMonitor() {

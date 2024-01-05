@@ -24,6 +24,7 @@ import { env } from './utils/env';
 import cors from 'cors';
 import { serverStatusRouter } from './router/serverStatus';
 import { initCronjob } from './cronjob';
+import { logger } from './utils/logger';
 
 const port = settings.port;
 
@@ -68,16 +69,16 @@ if (env.allowOpenapi) {
 }
 
 app.use((err: any, req: any, res: any, next: any) => {
-  console.error(err);
+  logger.error(err);
   res.status(500).json({ message: err.message });
 });
 
 httpServer.listen(port, () => {
   ViteExpress.bind(app, httpServer, () => {
-    console.log(`Server is listening on port ${port}...`);
+    logger.info(`Server is listening on port ${port}...`);
     if (env.allowOpenapi) {
-      console.log(`Openapi UI: http://127.0.0.1:${port}/open/_ui`);
+      logger.info(`Openapi UI: http://127.0.0.1:${port}/open/_ui`);
     }
-    console.log(`Website: http://127.0.0.1:${port}`);
+    logger.info(`Website: http://127.0.0.1:${port}`);
   });
 });

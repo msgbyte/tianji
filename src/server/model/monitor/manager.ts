@@ -1,6 +1,7 @@
 import { Monitor, Notification } from '@prisma/client';
 import { prisma } from '../_client';
 import { MonitorRunner } from './runner';
+import { logger } from '../../utils/logger';
 
 export type MonitorUpsertData = Pick<
   Monitor,
@@ -93,7 +94,7 @@ export class MonitorManager {
    */
   async startAll() {
     if (this.isStarted === true) {
-      console.warn('MonitorManager.startAll should only call once, skipped.');
+      logger.warn('MonitorManager.startAll should only call once, skipped.');
       return;
     }
 
@@ -115,11 +116,11 @@ export class MonitorManager {
           this.monitorRunner[m.id] = runner;
           await runner.startMonitor();
         } catch (err) {
-          console.error('Start monitor error:', String(err));
+          logger.error('Start monitor error:', String(err));
         }
       })
     ).then(() => {
-      console.log('All monitor has been begin.');
+      logger.info('All monitor has been begin.');
     });
   }
 
