@@ -19,7 +19,8 @@ import { MonitorEventList } from './MonitorEventList';
 import { useEvent } from '../../hooks/useEvent';
 import { MonitorDataMetrics } from './MonitorDataMetrics';
 import { MonitorDataChart } from './MonitorDataChart';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { MonitorBadgeView } from './MonitorBadgeView';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -29,6 +30,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const { monitorId } = props;
   const [currectResponse, setCurrentResponse] = useState(0);
   const navigate = useNavigate();
+  const [showBadge, setShowBadge] = useState(false);
 
   const {
     data: monitorInfo,
@@ -209,6 +211,35 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             >
               <Button danger={true}>Delete</Button>
             </Popconfirm>
+
+            <Dropdown
+              trigger={['click']}
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'badge',
+                    label: 'Show Badge',
+                    onClick: () => setShowBadge(true),
+                  },
+                ],
+              }}
+            >
+              <Button icon={<MoreOutlined />} />
+            </Dropdown>
+
+            <Modal
+              open={showBadge}
+              onCancel={() => setShowBadge(false)}
+              onOk={() => setShowBadge(false)}
+              destroyOnClose={true}
+              centered={true}
+            >
+              <MonitorBadgeView
+                workspaceId={workspaceId}
+                monitorId={monitorId}
+              />
+            </Modal>
           </div>
 
           <Card>

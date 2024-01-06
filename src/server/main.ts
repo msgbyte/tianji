@@ -25,6 +25,7 @@ import cors from 'cors';
 import { serverStatusRouter } from './router/serverStatus';
 import { initCronjob } from './cronjob';
 import { logger } from './utils/logger';
+import { monitorRouter } from './router/monitor';
 
 const port = settings.port;
 
@@ -57,6 +58,7 @@ app.use(
 
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
+app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);
 app.use('/serverStatus', serverStatusRouter);
 
