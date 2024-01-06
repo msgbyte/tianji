@@ -7,7 +7,12 @@ import {
 } from '../trpc';
 import { prisma } from '../../model/_client';
 import { z } from 'zod';
-import { monitorManager } from '../../model/monitor';
+import {
+  getMonitorData,
+  getMonitorPublicInfos,
+  getMonitorRecentData,
+  monitorManager,
+} from '../../model/monitor';
 import {
   MonitorInfoWithNotificationIds,
   MonitorPublicInfoSchema,
@@ -101,15 +106,8 @@ export const monitorRouter = router({
     .output(z.array(MonitorPublicInfoSchema))
     .query(async ({ input }) => {
       const { monitorIds } = input;
-      const res = await prisma.monitor.findMany({
-        where: {
-          id: {
-            in: monitorIds,
-          },
-        },
-      });
 
-      return res.map((item) => MonitorPublicInfoSchema.parse(item));
+      return getMonitorPublicInfos(monitorIds);
     }),
   upsert: workspaceOwnerProcedure
     .meta(
@@ -220,22 +218,12 @@ export const monitorRouter = router({
     .query(async ({ input }) => {
       const { monitorId, workspaceId, startAt, endAt } = input;
 
-      return prisma.monitorData.findMany({
-        where: {
-          monitor: {
-            id: monitorId,
-            workspaceId,
-          },
-          createdAt: {
-            gte: new Date(startAt),
-            lte: new Date(endAt),
-          },
-        },
-        select: {
-          value: true,
-          createdAt: true,
-        },
-      });
+      return getMonitorData(
+        workspaceId,
+        monitorId,
+        new Date(startAt),
+        new Date(endAt)
+      );
     }),
   changeActive: workspaceOwnerProcedure
     .meta(
@@ -312,18 +300,9 @@ export const monitorRouter = router({
       )
     )
     .query(async ({ input }) => {
-      const { monitorId, take } = input;
+      const { workspaceId, monitorId, take } = input;
 
-      return prisma.monitorData.findMany({
-        where: {
-          monitorId,
-        },
-        take: -take,
-        select: {
-          value: true,
-          createdAt: true,
-        },
-      });
+      return getMonitorRecentData(workspaceId, monitorId, take);
     }),
   dataMetrics: workspaceProcedure
     .meta(
