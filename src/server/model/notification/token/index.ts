@@ -1,6 +1,7 @@
 import { BaseContentTokenizer } from './tokenizer/base';
 import { HTMLContentTokenizer } from './tokenizer/html';
 import { MarkdownContentTokenizer } from './tokenizer/markdown';
+import { TelegramContentTokenizer } from './tokenizer/telegram';
 import {
   ContentToken,
   ImageContentToken,
@@ -38,3 +39,4 @@ export const token = {
 export const baseContentTokenizer = new BaseContentTokenizer();
 export const htmlContentTokenizer = new HTMLContentTokenizer();
 export const markdownContentTokenizer = new MarkdownContentTokenizer();
+export const telegramContentTokenizer = new TelegramContentTokenizer();

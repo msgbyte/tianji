@@ -53,6 +53,7 @@ export class BaseContentTokenizer {
 
         return '';
       })
-      .join('');
+      .join('')
+      .trim();
   }
 }
