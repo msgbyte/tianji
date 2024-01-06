@@ -1,6 +1,7 @@
 import { NotificationProvider } from './type';
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { htmlContentTokenizer } from '../token';
 
 interface SMTPPayload {
   hostname: string;
@@ -35,7 +36,7 @@ export const smtp: NotificationProvider = {
     }
 
     const subject = title;
-    const bodyTextContent = message;
+    const bodyTextContent = htmlContentTokenizer.parse(message);
 
     const transporter = nodemailer.createTransport(config);
     await transporter.sendMail({
@@ -44,7 +45,7 @@ export const smtp: NotificationProvider = {
       cc: payload.cc,
       bcc: payload.bcc,
       subject: subject,
-      text: bodyTextContent,
+      html: bodyTextContent,
     });
   },
 };

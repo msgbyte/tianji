@@ -1,10 +1,17 @@
 import { Notification } from '@prisma/client';
 import { notificationProviders } from './provider';
+import { ExactType } from '../../../types';
+import { ContentToken } from './token';
 
 export async function sendNotification(
-  notification: Pick<Notification, 'name' | 'type' | 'payload'>,
+  notification: ExactType<
+    Pick<Notification, 'name' | 'type' | 'payload'>,
+    {
+      type: keyof typeof notificationProviders;
+    }
+  >,
   title: string,
-  message: string
+  message: ContentToken[]
 ) {
   const type = notification.type;
 

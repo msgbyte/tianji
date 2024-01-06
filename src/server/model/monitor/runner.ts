@@ -5,6 +5,8 @@ import { monitorProviders } from './provider';
 import { sendNotification } from '../notification';
 import dayjs from 'dayjs';
 import { logger } from '../../utils/logger';
+import { token } from '../notification/token';
+import { ContentToken } from '../notification/token/type';
 
 /**
  * Class which actually run monitor data collect
@@ -55,21 +57,23 @@ export class MonitorRunner {
             'DOWN',
             `Monitor [${monitor.name}] has been down`
           );
-          await this.notify(
-            `[${monitor.name}] 🔴 Down`,
-            `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
-              'YYYY-MM-DD HH:mm:ss (z)'
-            )}`
-          );
+          await this.notify(`[${monitor.name}] 🔴 Down`, [
+            token.text(
+              `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
+                'YYYY-MM-DD HH:mm:ss (z)'
+              )}`
+            ),
+          ]);
           currentStatus = 'DOWN';
         } else if (value > 0 && currentStatus === 'DOWN') {
           await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
-          await this.notify(
-            `[${monitor.name}] ✅ Up`,
-            `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
-              'YYYY-MM-DD HH:mm:ss (z)'
-            )}`
-          );
+          await this.notify(`[${monitor.name}] ✅ Up`, [
+            token.text(
+              `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
+                'YYYY-MM-DD HH:mm:ss (z)'
+              )}`
+            ),
+          ]);
           currentStatus = 'UP';
         }
 
@@ -122,7 +126,7 @@ export class MonitorRunner {
     });
   }
 
-  async notify(title: string, message: string) {
+  async notify(title: string, message: ContentToken[]) {
     const notifications = this.monitor.notifications;
     await Promise.all(
       notifications.map((n) =>

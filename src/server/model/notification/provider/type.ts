@@ -1,9 +1,10 @@
 import { Notification } from '@prisma/client';
+import { ContentToken } from '../token';
 
 export interface NotificationProvider {
   send: (
     notification: Pick<Notification, 'name' | 'type' | 'payload'>,
     title: string,
-    message: string
+    message: ContentToken[]
   ) => Promise<void>;
 }

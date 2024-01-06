@@ -2,6 +2,7 @@ import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
 import { z } from 'zod';
 import { prisma } from '../../model/_client';
 import { sendNotification } from '../../model/notification';
+import { token } from '../../model/notification/token';
 
 export const notificationRouter = router({
   all: workspaceProcedure.query(({ input }) => {
@@ -23,11 +24,12 @@ export const notificationRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      await sendNotification(
-        input,
-        `${input.name} Notification Testing`,
-        `This is Notification Testing`
-      );
+      await sendNotification(input, `${input.name} Notification Testing`, [
+        token.title('Tianji: Insight into everything', 2),
+        token.text(`This is Notification Testing from ${input.name}`),
+        token.newline(),
+        token.image('https://tianji.msgbyte.com/img/social-card.png'),
+      ]);
     }),
   upsert: workspaceOwnerProcedure
     .input(
