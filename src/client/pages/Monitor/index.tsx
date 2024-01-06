@@ -21,7 +21,7 @@ export const MonitorPage: React.FC = React.memo(() => {
             size="large"
             onClick={() => navigate('/monitor/add')}
           >
-            Add new Montior
+            Add new Monitor
           </Button>
           <Button
             type="default"
