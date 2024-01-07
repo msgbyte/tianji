@@ -11,7 +11,7 @@ import {
   TitleContentToken,
 } from './type';
 
-export { ContentToken };
+export type { ContentToken };
 
 export const token = {
   text: (content: string): TextContentToken => ({

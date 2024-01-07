@@ -23,6 +23,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = React.memo(
         className={clsx('layout', isEditMode && 'select-none')}
         layouts={layouts}
         rowHeight={50}
+        draggableCancel=".non-draggable"
         isDraggable={isEditMode}
         isResizable={isEditMode}
         breakpoints={{ lg: 1200, md: 768, sm: 0 }}

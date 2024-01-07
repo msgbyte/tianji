@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { DashboardItem, useDashboardStore } from '../../../store/dashboard';
 import { WebsiteOverviewItem } from './WebsiteOverviewItem';
 import { NotFoundTip } from '../../NotFoundTip';
-import { Button, Card } from 'antd';
+import { Button, Card, Input, Typography } from 'antd';
 import React from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useEvent } from '../../../hooks/useEvent';
@@ -11,13 +11,14 @@ import { MonitorHealthBarItem } from './MonitorHealthBarItem';
 import { MonitorMetricsItem } from './MonitorMetricsItem';
 import { MonitorChartItem } from './MonitorChartItem';
 import { MonitorEventsItem } from './MonitorEventsItem';
+import { EditableText } from '../../EditableText';
 
 interface DashboardGridItemProps {
   item: DashboardItem;
 }
 export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
   (props) => {
-    const { isEditMode, removeItem } = useDashboardStore();
+    const { isEditMode, removeItem, changeItemTitle } = useDashboardStore();
     const { key, id, title, type } = props.item;
 
     const inner = useMemo(() => {
@@ -40,7 +41,6 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
 
     const handleDelete = useEvent(
       (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        console.log('e', e, key);
         e.stopPropagation();
         removeItem(key);
       }
@@ -49,7 +49,14 @@ export const DashboardGridItem: React.FC<DashboardGridItemProps> = React.memo(
     return (
       <Card
         className="h-full w-full overflow-auto"
-        title={title}
+        title={
+          <EditableText
+            className="non-draggable"
+            enable={isEditMode}
+            defaultValue={title}
+            onSave={(text) => changeItemTitle(key, text)}
+          />
+        }
         headStyle={{ padding: 10, minHeight: 40 }}
         bodyStyle={{ padding: 10 }}
         extra={

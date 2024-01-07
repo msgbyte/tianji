@@ -25,6 +25,7 @@ interface DashboardState {
   items: DashboardItem[];
   addItem: (type: DashboardItemType, id: string, title: string) => void;
   removeItem: (key: string) => void;
+  changeItemTitle: (key: string, title: string) => void;
 }
 
 export const defaultBlankLayouts = {
@@ -66,6 +67,22 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
           layout.filter((l) => l.i !== key)
         ),
         items: state.items.filter((item) => item.key !== key),
+      };
+    });
+  },
+  changeItemTitle: (key: string, title: string) => {
+    set((state) => {
+      return {
+        items: state.items.map((item) => {
+          if (item.key === key) {
+            return {
+              ...item,
+              title,
+            };
+          } else {
+            return item;
+          }
+        }),
       };
     });
   },
