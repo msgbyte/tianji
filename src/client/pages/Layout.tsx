@@ -6,6 +6,7 @@ import { Button, Dropdown } from 'antd';
 import { useUserStore } from '../store/user';
 import { useLogout } from '../api/model/user';
 import { ColorSchemeSwitcher } from '../components/ColorSchemeSwitcher';
+import { version } from '../../shared';
 
 export const Layout: React.FC = React.memo(() => {
   const [params] = useSearchParams();
@@ -65,6 +66,14 @@ export const Layout: React.FC = React.memo(() => {
                     onClick: () => {
                       logout();
                     },
+                  },
+                  {
+                    type: 'divider',
+                  },
+                  {
+                    key: 'version',
+                    label: `v${version}`,
+                    disabled: true,
                   },
                 ],
               }}

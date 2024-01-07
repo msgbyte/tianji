@@ -26,6 +26,7 @@ import { serverStatusRouter } from './router/serverStatus';
 import { initCronjob } from './cronjob';
 import { logger } from './utils/logger';
 import { monitorRouter } from './router/monitor';
+import { healthRouter } from './router/health';
 
 const port = settings.port;
 
@@ -56,6 +57,7 @@ app.use(
   })
 );
 
+app.use('/health', healthRouter);
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/monitor', monitorRouter);
