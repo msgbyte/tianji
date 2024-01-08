@@ -19,9 +19,6 @@ function HomepageHeader() {
           <span className="text-gradient font-bold">{siteConfig.title}</span>
         </h1>
         <p className="opacity-60 text-2xl">{siteConfig.tagline}</p>
-        <p className="opacity-60">
-          Tianji brings all your commonly used tools together in one place
-        </p>
         <div className="text-xl">
           <span className="text-gradient font-bold">Tianji</span> ={' '}
           <span className="underline font-semibold">Website Analytics</span> +{' '}
@@ -118,18 +115,21 @@ function HomepageFooter() {
           <BlockCard
             icon={<RiWechatFill className="text-green-500" />}
             title="Wechat"
+            data-tianji-event="community-wechat"
           />
         </Popover>
 
         <BlockCard
           icon={<RiDiscordFill className="text-indigo-600" />}
           title="Discord"
+          data-tianji-event="community-discord"
           onClick={() => window.open('https://discord.gg/8Vv47wAEej')}
         />
 
         <BlockCard
           icon={<RiTwitterXFill />}
           title="Twitter"
+          data-tianji-event="community-twitter"
           onClick={() => window.open('https://twitter.com/moonrailgun')}
         />
       </div>
@@ -141,8 +141,8 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Insight into everything"
+      title={`Tianji = Website Analytics + Uptime Monitor + Server Status`}
+      description={siteConfig.tagline}
     >
       <HomepageHeader />
 
