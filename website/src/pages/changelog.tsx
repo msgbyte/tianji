@@ -16,14 +16,14 @@ import 'react-vertical-timeline-component/style.min.css';
 const timelineStyle: Record<string, VerticalTimelineElementProps> = {
   current: {
     className: 'vertical-timeline-element--work',
-    dateClassName: 'text-black',
+    dateClassName: 'text-black dark:text-white',
     contentStyle: { background: 'rgb(33, 150, 243)', color: '#fff' },
     contentArrowStyle: { borderRight: '7px solid  rgb(33, 150, 243)' },
     iconStyle: { background: 'rgb(33, 150, 243)', color: '#fff' },
     icon: <AiFillThunderbolt />,
   },
   normal: {
-    className: 'vertical-timeline-element--work',
+    className: 'vertical-timeline-element--work dark:text-neutral-600',
     iconStyle: { background: 'rgb(33, 150, 243)', color: '#fff' },
     icon: <AiOutlineCheck />,
   },
@@ -36,7 +36,7 @@ const timelineStyle: Record<string, VerticalTimelineElementProps> = {
 
 function Timeline() {
   return (
-    <div className="bg-gray-100">
+    <div className="bg-gray-100 dark:bg-neutral-700">
       <VerticalTimeline>
         <VerticalTimelineElement {...timelineStyle.current} date="now">
           <h3 className="vertical-timeline-element-title">Still Developing</h3>
