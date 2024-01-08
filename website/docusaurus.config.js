@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Tianji',
   tagline:
-    'Insight into everything. Brings all your commonly used tools together in one place',
+    'All-in-One Insight Hub',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -44,7 +44,7 @@ const config = {
         },
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          routeBasePath: '/',
+          routeBasePath: '/docs',
           editUrl: 'https://github.com/msgbyte/tianji/tree/main/website/',
         },
         theme: {
@@ -79,12 +79,12 @@ const config = {
           src: 'img/logo.svg',
         },
         items: [
-          // {
-          //   type: 'docSidebar',
-          //   sidebarId: 'tutorialSidebar',
-          //   position: 'left',
-          //   label: 'Tutorial',
-          // },
+          {
+            type: 'docSidebar',
+            sidebarId: 'tutorialSidebar',
+            position: 'left',
+            label: 'Docs',
+          },
           { to: '/changelog', label: 'Changelog', position: 'left' },
           { to: '/api', label: 'API', position: 'left' },
           {
@@ -107,15 +107,15 @@ const config = {
       footer: {
         style: 'dark',
         links: [
-          // {
-          //   title: 'Docs',
-          //   items: [
-          //     {
-          //       label: 'Tutorial',
-          //       to: '/docs/intro',
-          //     },
-          //   ],
-          // },
+          {
+            title: 'Docs',
+            items: [
+              {
+                label: 'Tutorial',
+                to: '/docs/intro',
+              },
+            ],
+          },
           {
             title: 'Community',
             items: [

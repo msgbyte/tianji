@@ -22,7 +22,7 @@ type ReportData struct {
 }
 
 var (
-	Mode        = flag.String("mode", "http", "The send mode of report data, you can select: `http` or `udp`, default is `http`")
+	Mode        = flag.String("mode", "http", "The send mode of report data, you can select: 'http' or 'udp', default is 'http'")
 	Url         = flag.String("url", "", "The http url of tianji, for example: https://tianji.msgbyte.com")
 	WorkspaceId = flag.String("workspace", "", "The workspace id for tianji, this should be a uuid")
 	Name        = flag.String("name", "", "The identification name for this machine")
