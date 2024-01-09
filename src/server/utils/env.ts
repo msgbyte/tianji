@@ -4,7 +4,8 @@ export const env = {
   websiteId: process.env.WEBSITE_ID,
   sandboxMemoryLimit: process.env.SANDBOX_MEMORY_LIMIT
     ? Number(process.env.SANDBOX_MEMORY_LIMIT)
-    : 16, // MB
+    : 16, // unit: MB
+  dbDebug: checkEnvTrusty(process.env.DB_DEBUG),
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
