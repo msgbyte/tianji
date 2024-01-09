@@ -1,5 +1,37 @@
 
 
+## [1.3.0](https://github.com/msgbyte/tianji/compare/v1.2.3...v1.3.0) (2024-01-09)
+
+
+### Features
+
+* add daily cron job to calc workspace usage ([1fad81f](https://github.com/msgbyte/tianji/commit/1fad81f3ab445bf276c4db234383c1d18c74d2a7))
+* add mobile nav menu support ([1e0d077](https://github.com/msgbyte/tianji/commit/1e0d077f2a26e926b7df0ae41a17d2c7101f28d7))
+* add monitor badge [#6](https://github.com/msgbyte/tianji/issues/6) ([3e9760d](https://github.com/msgbyte/tianji/commit/3e9760d895bf55e625aa35752e617b8b2701e29e))
+* add telegram notification support ([e5a5225](https://github.com/msgbyte/tianji/commit/e5a52257eac5a9cf1aeb38a976b640b7453c8c94))
+* add tokenizer for notification ([ce6fd56](https://github.com/msgbyte/tianji/commit/ce6fd56d51c50e9f6cec903a2d753bc3820d9d15))
+* add version display ([ac7f401](https://github.com/msgbyte/tianji/commit/ac7f4011cd4dfa0938aea888e7f004d93321c9af))
+* dashboard card title allow edit ([d03f60f](https://github.com/msgbyte/tianji/commit/d03f60f6a14be87d1f7f059b625faea5c030512d))
+
+
+### Bug Fixes
+
+* fix monitor data sorting problem, add order by and add created at for fetch monitor data ([023a657](https://github.com/msgbyte/tianji/commit/023a6573a1b5853ba6e5957e7204430fb0119ba3))
+* fix typo error for montior -> monitor ([90f22af](https://github.com/msgbyte/tianji/commit/90f22afe282602d48563b6ccdbc07110e319c5d2))
+
+
+### Document
+
+* update changelog dark theme color ([f585dba](https://github.com/msgbyte/tianji/commit/f585dba2063d0570ff739079d06e3aee2d3353f6))
+* update website document ([0076a3b](https://github.com/msgbyte/tianji/commit/0076a3bed7b8a4cd2bf48d39f8db29f6fa1302fa))
+* update wechat image and home page tagline ([0eedd7d](https://github.com/msgbyte/tianji/commit/0eedd7d088ad0bcc74150b733473ed5cb4035ef3))
+
+
+### Others
+
+* add db debug support ([f9ea835](https://github.com/msgbyte/tianji/commit/f9ea835dac961a3bc56b4f03236dd225310c56ab))
+* extract some monitor logic into model ([19e7ed5](https://github.com/msgbyte/tianji/commit/19e7ed516bae41ac80ca9e167f548ae7a0dabfa9))
+
 ## [1.2.3](https://github.com/msgbyte/tianji/compare/v1.2.2...v1.2.3) (2024-01-04)
 
 
