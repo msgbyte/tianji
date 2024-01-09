@@ -6,6 +6,8 @@ RUN npm install -g pnpm@8.3.1
 
 COPY . .
 
+RUN apk add --update --no-cache python3 g++ make py3-pip
+
 RUN pnpm install --frozen-lockfile
 
 RUN pnpm build
