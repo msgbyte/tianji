@@ -292,6 +292,8 @@ model MonitorData {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([createdAt])
 }
 
 // Use for record latest monitor status, for example tls status

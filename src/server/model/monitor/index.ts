@@ -37,6 +37,9 @@ export function getMonitorData(
       value: true,
       createdAt: true,
     },
+    orderBy: {
+      createdAt: 'asc',
+    },
   });
 }
 
