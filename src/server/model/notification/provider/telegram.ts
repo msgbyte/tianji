@@ -22,7 +22,7 @@ export const telegram: NotificationProvider = {
     await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       chat_id: chatId,
       text,
-      parse_mode: 'MarkdownV2',
+      parse_mode: 'HTML',
     });
 
     // send image

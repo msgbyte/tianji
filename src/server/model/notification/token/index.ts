@@ -9,6 +9,7 @@ import {
   ParagraphContentToken,
   TextContentToken,
   TitleContentToken,
+  UrlContentToken,
 } from './type';
 
 export type { ContentToken };
@@ -33,6 +34,11 @@ export const token = {
   }),
   newline: (): NewlineContentToken => ({
     type: 'newline',
+  }),
+  url: (url: string, title?: string): UrlContentToken => ({
+    type: 'url',
+    url,
+    title,
   }),
 };
 

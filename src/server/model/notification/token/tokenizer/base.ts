@@ -5,6 +5,7 @@ import {
   ParagraphContentToken,
   TextContentToken,
   TitleContentToken,
+  UrlContentToken,
 } from '../type';
 
 export class BaseContentTokenizer {
@@ -26,6 +27,10 @@ export class BaseContentTokenizer {
 
   parseNewline(token: NewlineContentToken) {
     return '\n';
+  }
+
+  parseUrl(token: UrlContentToken) {
+    return token.url;
   }
 
   parse(tokens: ContentToken[]) {

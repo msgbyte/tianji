@@ -1,22 +1,37 @@
-import { ImageContentToken, TitleContentToken } from '../type';
-import { MarkdownContentTokenizer } from './markdown';
+import {
+  ImageContentToken,
+  ParagraphContentToken,
+  TextContentToken,
+  TitleContentToken,
+  UrlContentToken,
+} from '../type';
+import { BaseContentTokenizer } from './base';
 
-export class TelegramContentTokenizer extends MarkdownContentTokenizer {
+export class TelegramContentTokenizer extends BaseContentTokenizer {
   parseImage(token: ImageContentToken) {
     return '';
   }
 
-  parseTitle(token: TitleContentToken) {
-    if (token.level === 1) {
-      return `\n\\# ${token.content}\n`;
-    }
-    if (token.level === 2) {
-      return `\n\\#\\# ${token.content}\n`;
-    }
-    if (token.level === 3) {
-      return `\n\\#\\#\\# ${token.content}\n`;
-    }
+  parseText(token: TextContentToken): string {
+    return this.parseEntityCharacter(token.content);
+  }
 
-    return `\n${token.content}\n`;
+  parseTitle(token: TitleContentToken) {
+    return `\n<b>${this.parseEntityCharacter(token.content)}</b>\n`;
+  }
+
+  parseParagraph(token: ParagraphContentToken) {
+    return `\n${this.parseEntityCharacter(token.content)}\n`;
+  }
+
+  parseUrl(token: UrlContentToken): string {
+    return `<a href="${token.url}">${token.title ?? token.url}</a>`;
+  }
+
+  private parseEntityCharacter(input: string): string {
+    return input
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('&', '&amp;');
   }
 }

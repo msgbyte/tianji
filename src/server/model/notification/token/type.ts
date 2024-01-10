@@ -23,9 +23,16 @@ export type NewlineContentToken = {
   type: 'newline';
 };
 
+export type UrlContentToken = {
+  type: 'url';
+  url: string;
+  title?: string;
+};
+
 export type ContentToken =
   | TextContentToken
   | ImageContentToken
   | TitleContentToken
   | ParagraphContentToken
-  | NewlineContentToken;
+  | NewlineContentToken
+  | UrlContentToken;

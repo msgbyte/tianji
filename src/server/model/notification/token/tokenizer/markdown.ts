@@ -2,6 +2,7 @@ import {
   ImageContentToken,
   ParagraphContentToken,
   TitleContentToken,
+  UrlContentToken,
 } from '../type';
 import { BaseContentTokenizer } from './base';
 
@@ -26,5 +27,9 @@ export class MarkdownContentTokenizer extends BaseContentTokenizer {
     }
 
     return `\n${token.content}\n`;
+  }
+
+  parseUrl(token: UrlContentToken): string {
+    return `[${token.title ?? ''}](${token.url})`;
   }
 }

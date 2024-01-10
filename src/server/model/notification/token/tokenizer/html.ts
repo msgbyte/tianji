@@ -3,6 +3,7 @@ import {
   NewlineContentToken,
   ParagraphContentToken,
   TitleContentToken,
+  UrlContentToken,
 } from '../type';
 import { BaseContentTokenizer } from './base';
 
@@ -31,5 +32,9 @@ export class HTMLContentTokenizer extends BaseContentTokenizer {
 
   parseNewline(token: NewlineContentToken) {
     return '<br />';
+  }
+
+  parseUrl(token: UrlContentToken): string {
+    return `<a href="${token.url}">${token.title ?? token.url}</a>`;
   }
 }
