@@ -94,6 +94,7 @@ export class MonitorRunner {
       }
     };
 
+    this.isStopped = false;
     run();
 
     logger.info(`Start monitor ${monitor.name}(${monitor.id})`);
