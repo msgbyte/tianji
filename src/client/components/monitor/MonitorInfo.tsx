@@ -160,7 +160,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 <span>{monitorInfo.name}</span>
                 {monitorInfo.active === false && (
                   <div className="bg-red-500 rounded-full px-2 py-0.5 text-white text-xs">
-                    Stoped
+                    Stopped
                   </div>
                 )}
               </div>
