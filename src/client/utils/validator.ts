@@ -25,3 +25,12 @@ export const urlSlugValidator: Validator = (rule, value, callback) => {
     callback('Not valid slug');
   }
 };
+
+export const portValidator: Validator = (rule, value, callback) => {
+  try {
+    z.number().min(1).max(65535).parse(value);
+    callback();
+  } catch (err) {
+    callback('Not valid port, it should be 1 ~ 65535');
+  }
+};

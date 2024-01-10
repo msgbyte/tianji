@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import type { Monitor } from '@prisma/client';
 import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { getMonitorProvider, monitorProviders } from './provider';
-import { useEvent } from '../../hooks/useEvent';
+import { useEvent, useEventWithLoading } from '../../hooks/useEvent';
 import { NotificationPicker } from '../notification/NotificationPicker';
 
 export type MonitorInfoEditorValues = Omit<
@@ -23,7 +23,7 @@ const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
 
 interface MonitorInfoEditorProps {
   initialValues?: MonitorInfoEditorValues;
-  onSave: (value: MonitorInfoEditorValues) => void;
+  onSave: (value: MonitorInfoEditorValues) => Promise<void>;
 }
 export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
   (props) => {
@@ -46,8 +46,8 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
       return <Component />;
     }, [provider]);
 
-    const handleSubmit = useEvent((values) => {
-      props.onSave({
+    const [handleSubmit, isLoading] = useEventWithLoading(async (values) => {
+      await props.onSave({
         ...values,
         active: true,
       });
@@ -96,7 +96,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
             <NotificationPicker allowClear={true} mode="multiple" />
           </Form.Item>
 
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isLoading}>
             Save
           </Button>
         </Form>

@@ -5,11 +5,13 @@ import { httpProvider } from './http';
 import { MonitorProvider } from './types';
 import { openaiProvider } from './openai';
 import { customProvider } from './custom';
+import { tcpProvider } from './tcp';
 
 export const monitorProviders: MonitorProvider[] = [
   pingProvider, // ping
+  tcpProvider, // tcp
   httpProvider, // http
-  openaiProvider, // http
+  openaiProvider, // openai
   customProvider, // custom node script
 ];
 
