@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { getBillingCreditGrants } from '../openai';
 
 describe.runIf(!!process.env.OPENAI_SESS_KEY)('openai', () => {
@@ -7,6 +7,7 @@ describe.runIf(!!process.env.OPENAI_SESS_KEY)('openai', () => {
       String(process.env.OPENAI_SESS_KEY)
     );
 
-    console.log(res);
+    expect(typeof res.allUSD).toBe('number');
+    expect(typeof res.totalUsed).toBe('number');
   });
 });

@@ -43,7 +43,7 @@ export const MonitorOpenaiOverview: MonitorOverviewComponent = React.memo(
       <MonitorStatsBlock
         title="Usage"
         desc={dayjs(data.updatedAt).format('YYYY-MM-DD')}
-        text={`$${payload.totalUsed} / $${payload.totalGranted}`}
+        text={`$${payload.totalUsed} / $${payload.allUSD}`}
       />
     );
   }
