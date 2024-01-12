@@ -578,7 +578,7 @@ export const monitorRouter = router({
     )
     .output(MonitorStatusPageModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, slug, title } = input;
+      const { workspaceId, slug, title, description, monitorList } = input;
 
       const existSlugCount = await prisma.monitorStatusPage.count({
         where: {
@@ -595,6 +595,8 @@ export const monitorRouter = router({
           workspaceId,
           slug,
           title,
+          description,
+          monitorList,
         },
       });
 

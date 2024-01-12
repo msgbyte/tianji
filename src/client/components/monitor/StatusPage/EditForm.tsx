@@ -28,7 +28,6 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           layout="vertical"
           initialValues={props.initialValues}
           onFinish={props.onFinish}
-          onValuesChange={console.log}
         >
           <Form.Item
             label="Title"
