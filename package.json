@@ -6,6 +6,7 @@
     "dev": "nodemon",
     "start": "cross-env NODE_ENV=production node ./dist/src/server/main.js",
     "start:docker": "pnpm db:migrate:apply && pnpm db:generate && pnpm start",
+    "test": "vitest",
     "build": "pnpm build:tracker && pnpm build:client && pnpm build:server && pnpm build:geo",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
@@ -130,6 +131,7 @@
     "tailwindcss": "^3.3.3",
     "tar": "^6.1.15",
     "typescript": "^5.2.2",
-    "vite": "^4.4.9"
+    "vite": "^4.4.9",
+    "vitest": "^1.1.3"
   }
 }

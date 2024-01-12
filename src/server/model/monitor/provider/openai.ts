@@ -53,7 +53,7 @@ export const openai: MonitorProvider<{
   },
 };
 
-async function getBillingCreditGrants(sessionKey: string) {
+export async function getBillingCreditGrants(sessionKey: string) {
   const { data } = await axios.get(
     'https://api.openai.com/dashboard/billing/credit_grants',
     {
