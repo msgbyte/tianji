@@ -1,15 +1,28 @@
 import clsx from 'clsx';
 import React, { useMemo, useState } from 'react';
 import { MonitorHealthBar } from './MonitorHealthBar';
+import { last } from 'lodash-es';
+import { getMonitorProvider, getProviderDisplay } from './provider';
+import { Tooltip } from 'antd';
 
 export const MonitorListItem: React.FC<{
   className?: string;
   workspaceId: string;
   monitorId: string;
   monitorName: string;
+  monitorType: string;
+  showCurrentResponse?: boolean;
   onClick?: () => void;
 }> = React.memo((props) => {
-  const { className, workspaceId, monitorId, monitorName, onClick } = props;
+  const {
+    className,
+    workspaceId,
+    monitorId,
+    monitorName,
+    monitorType,
+    showCurrentResponse = false,
+    onClick,
+  } = props;
 
   const [beats, setBeats] = useState<
     ({
@@ -33,11 +46,29 @@ export const MonitorListItem: React.FC<{
     return parseFloat(((up / beats.length) * 100).toFixed(1));
   }, [beats]);
 
+  const provider = getMonitorProvider(monitorType);
+
+  const latestResponse = useMemo((): string | false => {
+    const val = last(beats)?.value;
+
+    if (!val) {
+      return false;
+    }
+
+    if (!provider) {
+      return String(val);
+    }
+
+    const { text } = getProviderDisplay(val, provider);
+
+    return text;
+  }, [beats, provider]);
+
   return (
     <div
       className={clsx(
         className,
-        'flex rounded-lg py-3 px-4 mb-1 bg-green-500 bg-opacity-0 hover:bg-opacity-10',
+        'flex rounded-lg py-3 px-4 mb-1 bg-green-500 bg-opacity-0 hover:bg-opacity-10 items-center',
         onClick && 'cursor-pointer'
       )}
       onClick={onClick}
@@ -55,16 +86,24 @@ export const MonitorListItem: React.FC<{
       <div className="flex-1 pl-2">
         <div className="text-base">{monitorName}</div>
         {/* <div>
-      {monitor.tags.map((tag) => (
-        <span
-          className="py-0.5 px-1 rounded-full text-white text-sm"
-          style={{ backgroundColor: tag.color }}
-        >
-          {tag.label}
-        </span>
-      ))}
-    </div> */}
+              {monitor.tags.map((tag) => (
+                <span
+                  className="py-0.5 px-1 rounded-full text-white text-sm"
+                  style={{ backgroundColor: tag.color }}
+                >
+                  {tag.label}
+                </span>
+              ))}
+            </div> */}
       </div>
+
+      {showCurrentResponse && latestResponse && (
+        <Tooltip title="Current">
+          <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
+            {latestResponse}
+          </div>
+        </Tooltip>
+      )}
 
       <div className="flex items-center">
         <MonitorHealthBar

@@ -1,8 +1,9 @@
 import { Empty } from 'antd';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { trpc } from '../../../api/trpc';
 import { Loading } from '../../Loading';
 import { MonitorListItem } from '../MonitorListItem';
+import { keyBy } from 'lodash-es';
 
 interface StatusPageServicesProps {
   workspaceId: string;
@@ -16,12 +17,14 @@ export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
       monitorIds: monitorList.map((item) => item.id),
     });
 
+    const monitorProps = useMemo(() => keyBy(monitorList, 'id'), [monitorList]);
+
     if (isLoading) {
       return <Loading />;
     }
 
     return (
-      <div className="shadow-2xl p-2.5 flex flex-col gap-4">
+      <div className="p-2.5 flex flex-col gap-4 rounded-md border border-gray-200 dark:border-gray-700">
         {list.length > 0 ? (
           list.map((item) => (
             <MonitorListItem
@@ -29,6 +32,8 @@ export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
               workspaceId={workspaceId}
               monitorId={item.id}
               monitorName={item.name}
+              monitorType={item.type}
+              showCurrentResponse={monitorProps[item.id].showCurrent ?? false}
             />
           ))
         ) : (

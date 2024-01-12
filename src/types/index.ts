@@ -1,3 +1,6 @@
+import { z } from 'zod';
+import { MonitorStatusPageListSchema } from '../../prisma/zod/schemas';
+
 export * as schemas from '../../prisma/zod/index';
 export * from './server';
 export * from './monitor';
@@ -10,8 +13,6 @@ declare global {
       layouts: Record<string, any[]>;
       items: any[];
     } | null;
-    type MonitorStatusPageList = {
-      id: string;
-    }[];
+    type MonitorStatusPageList = z.infer<typeof MonitorStatusPageListSchema>;
   }
 }

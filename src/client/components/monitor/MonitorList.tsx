@@ -44,6 +44,7 @@ export const MonitorList: React.FC = React.memo(() => {
           workspaceId={workspaceId}
           monitorId={monitor.id}
           monitorName={monitor.name}
+          monitorType={monitor.type}
           onClick={() => {
             navigate(`/monitor/${monitor.id}`);
           }}

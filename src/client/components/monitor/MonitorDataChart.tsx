@@ -6,7 +6,7 @@ import React, { useState, useMemo } from 'react';
 import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
-import { getMonitorProvider } from './provider';
+import { getMonitorProvider, getProviderDisplay } from './provider';
 
 export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
   (props) => {
@@ -122,16 +122,14 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
             return dayjs(datum.time).format('YYYY-MM-DD HH:mm');
           },
           formatter(datum) {
-            const name = providerInfo?.valueLabel
-              ? providerInfo?.valueLabel
-              : 'usage';
-            const formatterFn = providerInfo?.valueFormatter
-              ? providerInfo?.valueFormatter
-              : (value: number) => `${value}ms`;
+            const { name, text } = getProviderDisplay(
+              datum.value,
+              providerInfo
+            );
 
             return {
               name,
-              value: datum.value ? formatterFn(datum.value) : 'null',
+              value: datum.value ? text : 'null',
             };
           },
         },

@@ -32,3 +32,21 @@ export function getMonitorLink(info: MonitorInfo): React.ReactNode {
 
   return provider.link(info);
 }
+
+export function getProviderDisplay(
+  value: number,
+  provider:
+    | Pick<MonitorProvider, 'valueFormatter' | 'valueLabel'>
+    | undefined
+    | null
+) {
+  const name = provider?.valueLabel ? provider?.valueLabel : 'usage';
+  const formatterFn = provider?.valueFormatter
+    ? provider?.valueFormatter
+    : (value: number) => `${value}ms`;
+
+  return {
+    name,
+    text: formatterFn(value),
+  };
+}

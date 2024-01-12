@@ -1,4 +1,4 @@
-import { Button, Form, Input, Typography } from 'antd';
+import { Button, Divider, Form, Input, Switch, Typography } from 'antd';
 import React from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { MonitorPicker } from '../MonitorPicker';
@@ -72,27 +72,50 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
               return (
                 <>
                   <Form.Item label="Monitors">
-                    {fields.map((field, index) => (
-                      <div key={field.key} className="flex gap-2 items-start">
-                        <Form.Item
-                          name={[field.name, 'id']}
-                          className="flex-1"
-                          rules={[
-                            {
-                              required: true,
-                              message: 'Please select monitor',
-                            },
-                          ]}
-                        >
-                          <MonitorPicker />
-                        </Form.Item>
+                    <div className="flex flex-col gap-2 mb-2">
+                      {fields.map((field, index) => (
+                        // monitor item
+                        <>
+                          {index !== 0 && <Divider className="my-0.5" />}
 
-                        <MinusCircleOutlined
-                          className="text-lg mt-1.5"
-                          onClick={() => remove(field.name)}
-                        />
-                      </div>
-                    ))}
+                          <div key={field.key} className="flex flex-col gap-1">
+                            <Form.Item
+                              name={[field.name, 'id']}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: 'Please select monitor',
+                                },
+                              ]}
+                              noStyle={true}
+                            >
+                              <MonitorPicker />
+                            </Form.Item>
+
+                            <div className="flex item-center">
+                              <div className="flex-1">
+                                <Form.Item
+                                  name={[field.name, 'showCurrent']}
+                                  valuePropName="checked"
+                                  noStyle={true}
+                                >
+                                  <Switch size="small" />
+                                </Form.Item>
+
+                                <span className="text-sm align-middle ml-1">
+                                  Show Current Response
+                                </span>
+                              </div>
+
+                              <MinusCircleOutlined
+                                className="text-lg mt-1.5"
+                                onClick={() => remove(field.name)}
+                              />
+                            </div>
+                          </div>
+                        </>
+                      ))}
+                    </div>
 
                     <Button
                       type="dashed"

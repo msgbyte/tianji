@@ -16,4 +16,5 @@ export type MonitorInfoWithNotificationIds = MonitorInfo & {
 export const MonitorPublicInfoSchema = schemas.MonitorModelSchema.pick({
   id: true,
   name: true,
+  type: true,
 });

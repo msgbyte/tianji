@@ -4,7 +4,6 @@ import { takeRight, last } from 'lodash-es';
 import { HealthBar, HealthBarBeat, HealthBarProps } from '../HealthBar';
 import dayjs from 'dayjs';
 import { trpc } from '../../api/trpc';
-import { useCurrentWorkspaceId } from '../../store/user';
 import { useWatch } from '../../hooks/useWatch';
 
 interface MonitorHealthBarProps {
