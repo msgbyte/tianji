@@ -246,6 +246,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             <MonitorHealthBar
               workspaceId={workspaceId}
               monitorId={monitorId}
+              monitorType={monitorInfo.type}
               count={40}
               size="large"
               showCurrentStatus={true}

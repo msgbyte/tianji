@@ -109,6 +109,7 @@ export const MonitorListItem: React.FC<{
         <MonitorHealthBar
           workspaceId={workspaceId}
           monitorId={monitorId}
+          monitorType={monitorType}
           onBeatsItemUpdate={setBeats}
         />
       </div>

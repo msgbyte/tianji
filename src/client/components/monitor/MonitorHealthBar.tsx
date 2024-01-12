@@ -5,10 +5,13 @@ import { HealthBar, HealthBarBeat, HealthBarProps } from '../HealthBar';
 import dayjs from 'dayjs';
 import { trpc } from '../../api/trpc';
 import { useWatch } from '../../hooks/useWatch';
+import { getMonitorProvider, getProviderDisplay } from './provider';
+import { MonitorProvider } from './provider/types';
 
 interface MonitorHealthBarProps {
   workspaceId: string;
   monitorId: string;
+  monitorType?: string;
   count?: number;
   size?: HealthBarProps['size'];
   showCurrentStatus?: boolean;
@@ -47,6 +50,8 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
       );
     }, [newDataList, recent, count]);
 
+    const provider = useMonitorProvider(monitorId, props.monitorType);
+
     const beats = useMemo(() => {
       return items.map((item): HealthBarBeat => {
         if (!item) {
@@ -55,9 +60,11 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
           };
         }
 
-        const title = `${dayjs(item.createdAt).format('YYYY-MM-DD HH:mm')} | ${
-          item.value
-        }ms`;
+        const { text } = getProviderDisplay(item.value, provider);
+
+        const title = `${dayjs(item.createdAt).format(
+          'YYYY-MM-DD HH:mm'
+        )} | ${text}`;
 
         if (item.value < 0) {
           return {
@@ -71,7 +78,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
           status: 'health',
         };
       });
-    }, [items]);
+    }, [items, provider]);
 
     useWatch([items], () => {
       props.onBeatsItemUpdate?.(items);
@@ -103,3 +110,22 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
   }
 );
 MonitorHealthBar.displayName = 'MonitorHealthBar';
+
+function useMonitorProvider(
+  monitorId: string,
+  monitorType?: string
+): MonitorProvider | null {
+  const { data: [monitorPublicInfo] = [] } =
+    trpc.monitor.getPublicInfo.useQuery(
+      {
+        monitorIds: [monitorId],
+      },
+      {
+        enabled: !monitorType,
+      }
+    );
+
+  const type = monitorType ?? monitorPublicInfo?.type;
+
+  return type ? getMonitorProvider(type) : null;
+}
