@@ -2,15 +2,26 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { trpc } from '../../api/trpc';
-import { Button, Card } from 'antd';
-import { EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Card, Popconfirm } from 'antd';
+import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { useEvent } from '../../hooks/useEvent';
 
 export const MonitorPageList: React.FC = React.memo(() => {
-  const workspaceId = useCurrentWorkspaceId()!;
-  const { data: pages = [] } = trpc.monitor.getAllPages.useQuery({
+  const workspaceId = useCurrentWorkspaceId();
+  const navigate = useNavigate();
+  const { data: pages = [], refetch } = trpc.monitor.getAllPages.useQuery({
     workspaceId,
   });
-  const navigate = useNavigate();
+  const deletePageMutation = trpc.monitor.deletePage.useMutation();
+
+  const handleDeletePage = useEvent(async (monitorId: string) => {
+    await deletePageMutation.mutateAsync({
+      workspaceId,
+      id: monitorId,
+    });
+
+    refetch();
+  });
 
   return (
     <div className="px-8 py-4">
@@ -24,13 +35,25 @@ export const MonitorPageList: React.FC = React.memo(() => {
             <div className="flex">
               <div className="flex-1">{p.title}</div>
               <div className="flex gap-2">
-                <Button
-                  icon={<EyeOutlined />}
-                  onClick={() => navigate(`/status/${p.slug}`)}
-                />
+                <Popconfirm
+                  title="Did you sure delete this page?"
+                  onConfirm={() => handleDeletePage(p.id)}
+                  okButtonProps={{
+                    danger: true,
+                    loading: deletePageMutation.isLoading,
+                  }}
+                >
+                  <Button icon={<DeleteOutlined />} />
+                </Popconfirm>
+
                 <Button
                   icon={<EditOutlined />}
                   onClick={() => navigate(`/status/${p.slug}?edit=1`)}
+                />
+
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => navigate(`/status/${p.slug}`)}
                 />
               </div>
             </div>

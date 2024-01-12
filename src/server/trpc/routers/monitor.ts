@@ -651,6 +651,31 @@ export const monitorRouter = router({
         },
       });
     }),
+  deletePage: workspaceOwnerProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'DELETE',
+        path: '/deleteStatusPage',
+      })
+    )
+    .input(
+      MonitorStatusPageModelSchema.pick({
+        id: true,
+      })
+    )
+    .output(MonitorStatusPageModelSchema)
+    .mutation(async ({ input }) => {
+      const { id, workspaceId } = input;
+
+      const res = await prisma.monitorStatusPage.delete({
+        where: {
+          id,
+          workspaceId,
+        },
+      });
+
+      return res;
+    }),
 });
 
 function buildMonitorOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {

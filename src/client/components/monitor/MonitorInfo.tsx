@@ -206,7 +206,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             )}
 
             <Popconfirm
-              title="How you sure delete this monitor?"
+              title="Did you sure delete this monitor?"
               onConfirm={handleDelete}
             >
               <Button danger={true}>Delete</Button>
