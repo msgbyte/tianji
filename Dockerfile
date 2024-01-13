@@ -8,6 +8,9 @@ COPY . .
 
 RUN apk add --update --no-cache python3 g++ make py3-pip
 
+# Push client(only support pure text message)
+RUN pip install apprise
+
 RUN pnpm install --frozen-lockfile
 
 RUN pnpm build

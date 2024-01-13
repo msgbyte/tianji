@@ -19,7 +19,6 @@ import { initUdpServer } from './udp/server';
 import { createServer } from 'http';
 import { initSocketio } from './ws';
 import { monitorManager } from './model/monitor';
-import { settings } from './utils/settings';
 import { env } from './utils/env';
 import cors from 'cors';
 import { serverStatusRouter } from './router/serverStatus';
@@ -28,7 +27,7 @@ import { logger } from './utils/logger';
 import { monitorRouter } from './router/monitor';
 import { healthRouter } from './router/health';
 
-const port = settings.port;
+const port = env.port;
 
 const app = express();
 const httpServer = createServer(app);
