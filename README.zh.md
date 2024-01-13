@@ -16,6 +16,15 @@
 
 专精于一项这很好，如果我们是相关能力的专家我们需要这样的专业工具。但是对于大部分只有轻量级需求的用户而言，一个all in one的应用会更加方便与易于使用
 
+
+## Preview
+
+![](./website/static/img/preview1.png)
+
+![](./website/static/img/preview2.png)
+
+![](./website/static/img/preview3.png)
+
 ## Open Source
 
 `Tianji` is open source with `Apache 2.0` license.
