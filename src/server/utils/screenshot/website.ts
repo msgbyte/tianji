@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import { jwtSign } from '../../middleware/auth';
 import { SYSTEM_ROLES } from '../../../shared';
-import { settings } from '../settings';
+import { env } from '../env';
 
 /**
  * take a screenshot for website detail
@@ -30,7 +30,7 @@ export async function screenshotWebsiteDetailImage(
     ]);
 
     await page.goto(
-      `http://127.0.0.1:${settings.port}/website/${websiteId}?hideHeader`,
+      `http://127.0.0.1:${env.port}/website/${websiteId}?hideHeader`,
       {
         waitUntil: 'networkidle2',
       }
