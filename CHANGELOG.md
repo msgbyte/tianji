@@ -1,5 +1,13 @@
 
 
+## [1.4.2](https://github.com/msgbyte/tianji/compare/v1.4.1...v1.4.2) (2024-01-14)
+
+
+### Others
+
+* change docker base image to node:20-bookworm-slim ([65c37d8](https://github.com/msgbyte/tianji/commit/65c37d89a0b0276dc55dbdeccde8fd699bf15485))
+* update docker publish action config ([6b74e60](https://github.com/msgbyte/tianji/commit/6b74e605ada8296fd6e14d746de14f25aad0bf4c))
+
 ## [1.4.1](https://github.com/msgbyte/tianji/compare/v1.4.0...v1.4.1) (2024-01-14)
 
 
