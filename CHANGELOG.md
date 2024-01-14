@@ -1,5 +1,12 @@
 
 
+## [1.4.3](https://github.com/msgbyte/tianji/compare/v1.4.2...v1.4.3) (2024-01-14)
+
+
+### Others
+
+* update base image to node:20-bookworm ([4a4f08b](https://github.com/msgbyte/tianji/commit/4a4f08b300b26c1e0bdb6c701c7103fa52a7b04d))
+
 ## [1.4.2](https://github.com/msgbyte/tianji/compare/v1.4.1...v1.4.2) (2024-01-14)
 
 
