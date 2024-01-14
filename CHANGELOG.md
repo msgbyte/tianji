@@ -1,5 +1,36 @@
 
 
+## [1.4.0](https://github.com/msgbyte/tianji/compare/v1.3.1...v1.4.0) (2024-01-14)
+
+
+### Features
+
+* add apprise notification [#10](https://github.com/msgbyte/tianji/issues/10) ([09c3cfa](https://github.com/msgbyte/tianji/commit/09c3cfa0dc4fb6ace8be0ed1c9e10efaf442d83d))
+* add status page delete action ([551f86b](https://github.com/msgbyte/tianji/commit/551f86b8e32eb1c71ef2c73454b8d73362acce41))
+* add tcp port monitor ([9892d3a](https://github.com/msgbyte/tianji/commit/9892d3ac5ac22442f488b0cef846f1c11c3407b9))
+* allow display current response value in monitor list ([ec591f0](https://github.com/msgbyte/tianji/commit/ec591f0c54eed0af66a40c0ade64e11c32c8164c))
+
+
+### Bug Fixes
+
+* fix custom display text not apply in health bar ([699fe6c](https://github.com/msgbyte/tianji/commit/699fe6c967cf4ee5278b723c27239957631b82c4))
+* fix openai balance calc logic ([1fccb10](https://github.com/msgbyte/tianji/commit/1fccb103fd79fad312dbf9403d935e0726da95af))
+* fix status page set monitor list in create action not work problem ([e24d822](https://github.com/msgbyte/tianji/commit/e24d82224ca2bbce8e72caaa07677dd7a2b947bc))
+
+
+### Document
+
+* update zh readme ([78b2ee8](https://github.com/msgbyte/tianji/commit/78b2ee84f5f7ea232b4fe92284c53d072c2b35c0))
+
+
+### Others
+
+* add docker build ci ([18867c6](https://github.com/msgbyte/tianji/commit/18867c614e8c3e1892a98f8756848666b816c011))
+* add notification picker empty state to guide user to create notification ([a567834](https://github.com/msgbyte/tianji/commit/a567834e459838af6b40c88b086e2f71a5d52fce))
+* add url token and fix telegram adapt problem ([e6f0267](https://github.com/msgbyte/tianji/commit/e6f02677e558586633db055a72649a4db7229ff4))
+* fix ci problem ([9fec5fc](https://github.com/msgbyte/tianji/commit/9fec5fc02fe3686e962e0b234da7d62cf311685c))
+* remove unused action in docker ci task ([3d3f07c](https://github.com/msgbyte/tianji/commit/3d3f07c3806a90183756bcea48452903aec98561))
+
 ## [1.3.1](https://github.com/msgbyte/tianji/compare/v1.3.0...v1.3.1) (2024-01-10)
 
 
