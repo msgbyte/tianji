@@ -1,5 +1,17 @@
 
 
+## [1.4.1](https://github.com/msgbyte/tianji/compare/v1.4.0...v1.4.1) (2024-01-14)
+
+
+### Bug Fixes
+
+* fix pip install problem when docker build ([fb8184f](https://github.com/msgbyte/tianji/commit/fb8184fe9cde26e7991e05f3833adfec1a0a7206))
+
+
+### Others
+
+* update docker ci push conditions ([a7a7e6b](https://github.com/msgbyte/tianji/commit/a7a7e6b87dd7cbe2cfe16da53a458f65e9ac181e))
+
 ## [1.4.0](https://github.com/msgbyte/tianji/compare/v1.3.1...v1.4.0) (2024-01-14)
 
 
