@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:20-bookworm-slim
 
 WORKDIR /app/tianji
 
@@ -6,10 +6,8 @@ RUN npm install -g pnpm@8.3.1
 
 COPY . .
 
-RUN apk add --update --no-cache python3 g++ make py3-pip
-
 # Push client(only support pure text message)
-RUN pip install apprise --break-system-packages
+RUN apt update && apt -y install apprise
 
 RUN pnpm install --frozen-lockfile
 
