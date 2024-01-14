@@ -9,12 +9,13 @@ COPY . .
 RUN apk add --update --no-cache python3 g++ make py3-pip
 
 # Push client(only support pure text message)
-RUN pip install apprise
+RUN pip install apprise --break-system-packages
 
 RUN pnpm install --frozen-lockfile
 
 RUN pnpm build
 
+# remove unused source file
 RUN rm -rf ./src
 RUN rm -rf ./website
 RUN rm -rf ./reporter
