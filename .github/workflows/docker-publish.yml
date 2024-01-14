@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4 # peter-evans/dockerhub-description need checkout README.md
       - name: Docker Setup QEMU
         uses: docker/setup-qemu-action@v3
         id: qemu
@@ -42,6 +44,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
         uses: peter-evans/dockerhub-description@v3
+        continue-on-error: true
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
