@@ -1,6 +1,11 @@
 name: "Docker Build CI"
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - "Dockerfile"
   workflow_dispatch:
 
 jobs:
