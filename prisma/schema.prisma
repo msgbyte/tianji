@@ -35,9 +35,11 @@ model User {
 model Workspace {
   id              String   @id @unique @default(cuid()) @db.VarChar(30)
   name            String   @db.VarChar(100)
-  dashboardOrder  String[]
+  dashboardOrder  String[] // deprecated
   /// [DashboardLayout]
   dashboardLayout Json?    @db.Json
+  /// [CommonPayload]
+  settings        Json     @default("{}")
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
@@ -48,7 +50,7 @@ model Workspace {
   monitorStatusPages MonitorStatusPage[]
 
   // for user currentWorkspace
-  selectedUsers  User[]
+  selectedUsers       User[] // user list who select this workspace, not use in most of case
   workspaceDailyUsage WorkspaceDailyUsage[]
 }
 
