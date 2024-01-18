@@ -1,4 +1,4 @@
-FROM node:20-bookworm
+FROM node:18-bookworm
 
 WORKDIR /app/tianji
 
