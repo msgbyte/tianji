@@ -1,6 +1,9 @@
-import type { Monitor } from '@prisma/client';
+import type { MonitorModelSchema } from '../server/prisma/zod';
 import { ExactType } from './utils';
 import { schemas } from '.';
+import z from 'zod';
+
+type Monitor = z.infer<typeof MonitorModelSchema>;
 
 export type MonitorInfo = ExactType<
   Monitor,

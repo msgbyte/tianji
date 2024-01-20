@@ -3,7 +3,14 @@ import colors from 'tailwindcss/colors';
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
+  content: {
+    relative: true,
+    files: [
+      './index.html',
+      './components/**/*.{js,jsx,ts,tsx}',
+      './pages/**/*.{js,jsx,ts,tsx}',
+    ],
+  },
   theme: {
     extend: {
       colors: {

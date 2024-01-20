@@ -16,6 +16,10 @@ export const WorkspaceModelSchema = z.object({
    * [DashboardLayout]
    */
   dashboardLayout: jsonSchema,
+  /**
+   * [CommonPayload]
+   */
+  settings: jsonSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
 })

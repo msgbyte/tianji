@@ -3,7 +3,6 @@ import { body, header, param, validate } from '../middleware/validate';
 import { recordServerStatus } from '../model/serverStatus';
 import fs from 'fs-extra';
 import path from 'path';
-import { env } from '../utils/env';
 
 export const serverStatusRouter = Router();
 

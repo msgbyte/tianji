@@ -26,7 +26,7 @@ import {
 } from '../../model/_schema';
 import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
-import { MonitorStatusPageModelSchema } from '../../../../prisma/zod';
+import { MonitorStatusPageModelSchema } from '../../prisma/zod';
 import { runCodeInVM } from '../../model/monitor/provider/custom';
 
 export const monitorRouter = router({

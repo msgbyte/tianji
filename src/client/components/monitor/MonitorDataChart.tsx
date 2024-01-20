@@ -1,7 +1,7 @@
 import { AreaConfig, Area } from '@ant-design/charts';
 import { Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { uniqBy } from 'lodash';
+import { uniqBy } from 'lodash-es';
 import React, { useState, useMemo } from 'react';
 import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';

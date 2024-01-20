@@ -13,7 +13,7 @@ vite
         formats: ['iife'],
       },
       emptyOutDir: false,
-      outDir: resolve(__dirname, '../public'),
+      outDir: resolve(__dirname, '../dist/src/server/public'),
     },
   })
   .then((res) => {

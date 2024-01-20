@@ -1,0 +1,4 @@
+packages:
+  - 'src/client'
+  - 'src/server'
+  - 'website'

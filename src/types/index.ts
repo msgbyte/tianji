@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { MonitorStatusPageListSchema } from '../../prisma/zod/schemas';
+import { MonitorStatusPageListSchema } from '../server/prisma/zod/schemas';
 
-export * as schemas from '../../prisma/zod/index';
+export * as schemas from '../server/prisma/zod/index';
 export * from './server';
 export * from './monitor';
 export * from './utils';

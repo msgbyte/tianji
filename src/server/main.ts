@@ -2,7 +2,6 @@ import 'dotenv/config';
 import './init';
 import express from 'express';
 import 'express-async-errors';
-import ViteExpress from 'vite-express';
 import compression from 'compression';
 import swaggerUI from 'swagger-ui-express';
 import passport from 'passport';
@@ -45,6 +44,7 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(morgan('tiny'));
 app.use(cors());
+app.use(express.static('dist'));
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
@@ -77,11 +77,9 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 httpServer.listen(port, () => {
-  ViteExpress.bind(app, httpServer, () => {
-    logger.info(`Server is listening on port ${port}...`);
-    if (env.allowOpenapi) {
-      logger.info(`Openapi UI: http://127.0.0.1:${port}/open/_ui`);
-    }
-    logger.info(`Website: http://127.0.0.1:${port}`);
-  });
+  logger.info(`Server is listening on port ${port}...`);
+  if (env.allowOpenapi) {
+    logger.info(`Openapi UI: http://127.0.0.1:${port}/open/_ui`);
+  }
+  logger.info(`Website: http://127.0.0.1:${port}`);
 });

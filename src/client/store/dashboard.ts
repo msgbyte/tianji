@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Layouts, Layout } from 'react-grid-layout';
-import { mapValues } from 'lodash';
+import { mapValues } from 'lodash-es';
 import { v1 as uuid } from 'uuid';
 
 export type DashboardItemType =

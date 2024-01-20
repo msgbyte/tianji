@@ -14,7 +14,7 @@ RUN pnpm build
 
 # make sure run after pnpm build completed
 # Push client(only support pure text message)
-# RUN pip install apprise --break-system-packages
+RUN pip install apprise --break-system-packages
 
 # remove unused source file
 RUN rm -rf ./src
