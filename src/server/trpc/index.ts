@@ -7,6 +7,8 @@ import {
 } from 'trpc-openapi';
 import { version } from '../../../package.json';
 
+export type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
+
 export const trpcExpressMiddleware = trpcExpress.createExpressMiddleware({
   router: appRouter,
   createContext,

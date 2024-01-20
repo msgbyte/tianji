@@ -4,5 +4,5 @@
     "module": "ESNext",
     "jsx": "react-jsx"
   },
-  "include": ["./**/*"]
+  "include": ["./**/*", "../server/**/*"]
 }

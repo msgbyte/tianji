@@ -18,7 +18,7 @@
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.4.2",
-    "@trpc/server": "^10.38.4",
+    "@trpc/server": "^10.45.0",
     "axios": "^1.5.0",
     "badge-maker": "^3.3.1",
     "bcryptjs": "^2.4.3",

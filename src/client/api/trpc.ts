@@ -1,9 +1,9 @@
 import { createTRPCReact, getQueryKey } from '@trpc/react-query';
+import type { inferRouterInputs, inferRouterOutputs } from '../../server/trpc';
 import type { AppRouter } from '../../server/trpc/routers';
 import { httpBatchLink, loggerLink, TRPCClientErrorLike } from '@trpc/client';
 import { getJWT } from './auth';
 import { message } from 'antd';
-import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 import { isDev } from '../utils/env';
 
 export { getQueryKey };

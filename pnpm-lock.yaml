@@ -1,11 +1,14 @@
 lockfileVersion: '6.0'
 
+overrides:
+  dayjs: 1.11.10
+
 importers:
 
   .:
     dependencies:
       dayjs:
-        specifier: ^1.11.9
+        specifier: 1.11.10
         version: 1.11.10
       eventemitter-strict:
         specifier: ^1.0.1
@@ -81,8 +84,8 @@ importers:
         specifier: ^3.3.3
         version: 3.3.3
       dayjs:
-        specifier: ^1.11.9
-        version: 1.11.9
+        specifier: 1.11.10
+        version: 1.11.10
       eventemitter-strict:
         specifier: ^1.0.1
         version: 1.0.1
@@ -138,6 +141,12 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1(@types/react@18.2.21)(react@18.2.0)
     devDependencies:
+      '@types/loadable__component':
+        specifier: ^5.13.8
+        version: 5.13.8
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/react':
         specifier: ^18.2.21
         version: 18.2.21
@@ -150,6 +159,9 @@ importers:
       '@types/react-resizable':
         specifier: ^3.0.7
         version: 3.0.7
+      '@types/uuid':
+        specifier: ^9.0.7
+        version: 9.0.7
       '@vitejs/plugin-react':
         specifier: ^4.0.4
         version: 4.0.4(vite@5.0.12)
@@ -178,8 +190,8 @@ importers:
         specifier: 5.4.2
         version: 5.4.2(prisma@5.4.2)
       '@trpc/server':
-        specifier: ^10.38.4
-        version: 10.38.4
+        specifier: ^10.45.0
+        version: 10.45.0
       axios:
         specifier: ^1.5.0
         version: 1.5.0
@@ -202,7 +214,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       dayjs:
-        specifier: ^1.11.9
+        specifier: 1.11.10
         version: 1.11.10
       detect-browser:
         specifier: ^5.3.0
@@ -272,7 +284,7 @@ importers:
         version: 0.1.1
       trpc-openapi:
         specifier: ^1.2.0
-        version: 1.2.0(@trpc/server@10.38.4)(zod@3.22.2)
+        version: 1.2.0(@trpc/server@10.45.0)(zod@3.22.2)
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@18.17.12)(typescript@5.2.2)
@@ -6785,10 +6797,6 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@trpc/server@10.38.4:
-    resolution: {integrity: sha512-xSMTwnKA/Unxu5fbAkQ7cApHeWj1rTEA3XgrGDcPHn03fmeIidIKxronM46N46ZF4CCexey4JWzu89XxA16uIA==}
-    dev: false
-
   /@trpc/server@10.45.0:
     resolution: {integrity: sha512-2Fwzv6nqpE0Ie/G7PeS0EVR89zLm+c1Mw7T+RAGtU807j4oaUx0zGkBXTu5u9AI+j+BYNN2GZxJcuDTAecbr1A==}
     dev: false
@@ -7078,6 +7086,18 @@ packages:
     dependencies:
       '@types/node': 18.17.12
     dev: false
+
+  /@types/loadable__component@5.13.8:
+    resolution: {integrity: sha512-0FF/WihuPkR5IFOHiBzC95bSACvgQNUQCuNy1WF8F/lCBBHgS2SxarIk4CTjWM10A72ovpmXZDRcuAXZNS+/kQ==}
+    dependencies:
+      '@types/react': 18.2.21
+    dev: true
+
+  /@types/lodash-es@4.17.12:
+    resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
+    dependencies:
+      '@types/lodash': 4.14.198
+    dev: true
 
   /@types/lodash@4.14.198:
     resolution: {integrity: sha512-trNJ/vtMZYMLhfN45uLq4ShQSw0/S7xCTLLVM+WM1rmFpba/VS42jVUgaO3w/NOLiWR/09lnYk0yMaA/atdIsg==}
@@ -9803,10 +9823,6 @@ packages:
 
   /dayjs@1.11.10:
     resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
-    dev: false
-
-  /dayjs@1.11.9:
-    resolution: {integrity: sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==}
     dev: false
 
   /debounce@1.2.1:
@@ -19814,13 +19830,13 @@ packages:
     resolution: {integrity: sha512-AqTiAOLcj85xS7vQ8QkAV41hPDIJ71XJB4RCUrzo/1GM2CQwhkJGaf9Hgr7BOugMRpgGUrqRg/DrBDl4H40+8g==}
     dev: true
 
-  /trpc-openapi@1.2.0(@trpc/server@10.38.4)(zod@3.22.2):
+  /trpc-openapi@1.2.0(@trpc/server@10.45.0)(zod@3.22.2):
     resolution: {integrity: sha512-pfYoCd/3KYXWXvUPZBKJw455OOwngKN/6SIcj7Yit19OMLJ+8yVZkEvGEeg5wUSwfsiTdRsKuvqkRPXVSwV7ew==}
     peerDependencies:
       '@trpc/server': ^10.0.0
       zod: ^3.14.4
     dependencies:
-      '@trpc/server': 10.38.4
+      '@trpc/server': 10.45.0
       co-body: 6.1.0
       h3: 1.8.2
       lodash.clonedeep: 4.5.0

@@ -33,5 +33,10 @@
     "dayjs": "^1.11.9",
     "eventemitter-strict": "^1.0.1",
     "zod": "^3.22.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "dayjs": "1.11.10"
+    }
   }
 }

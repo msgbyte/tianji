@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import type { Monitor } from '@prisma/client';
+import type { Monitor } from '../../../server/types/prisma';
 import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { getMonitorProvider, monitorProviders } from './provider';
-import { useEvent, useEventWithLoading } from '../../hooks/useEvent';
+import { useEventWithLoading } from '../../hooks/useEvent';
 import { NotificationPicker } from '../notification/NotificationPicker';
 
 export type MonitorInfoEditorValues = Omit<
