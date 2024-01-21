@@ -23,6 +23,9 @@ importers:
       '@types/node':
         specifier: ^18.17.12
         version: 18.17.12
+      '@types/tar':
+        specifier: ^6.1.10
+        version: 6.1.10
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
@@ -7346,6 +7349,13 @@ packages:
       '@types/serve-static': 1.15.2
     dev: true
 
+  /@types/tar@6.1.10:
+    resolution: {integrity: sha512-60ZO+W0tRKJ3ggdzJKp75xKVlNogKYMqGvr2bMH/+k3T0BagfYTnbmVDFMJB1BFttz6yRgP5MDGP27eh7brrqw==}
+    dependencies:
+      '@types/node': 18.17.12
+      minipass: 4.2.8
+    dev: true
+
   /@types/tcp-ping@0.1.5:
     resolution: {integrity: sha512-79CSV6HXSi53zB7JwEpDMIPa881n7drC+Ed1JtQ5kdVUklYyG1g4GqefuUQy/AblK58Q5JAS7d9LWbdE2xiEqA==}
     dev: true
@@ -14313,6 +14323,11 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       yallist: 4.0.0
+    dev: true
+
+  /minipass@4.2.8:
+    resolution: {integrity: sha512-fNzuVyifolSLFL4NzpF+wEF4qrgqaaKX0haXPQEdQ7NKAN+WecoKMHV09YcuL/DHxrUsYQOK3MiuDf7Ip2OXfQ==}
+    engines: {node: '>=8'}
     dev: true
 
   /minipass@5.0.0:
