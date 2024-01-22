@@ -52,6 +52,7 @@ model Workspace {
   // for user currentWorkspace
   selectedUsers       User[] // user list who select this workspace, not use in most of case
   workspaceDailyUsage WorkspaceDailyUsage[]
+  workspaceAuditLog   WorkspaceAuditLog[]
 }
 
 model WorkspacesOnUsers {
@@ -341,4 +342,22 @@ model WorkspaceDailyUsage {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@unique([workspaceId, date])
+}
+
+model WorkspaceAuditLog {
+  id          String                @id @default(cuid()) @db.VarChar(30)
+  workspaceId String                @db.VarChar(30)
+  content     String
+  relatedId   String?
+  relatedType WorkspaceAuditLogType?
+  createdAt   DateTime              @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([createdAt])
+}
+
+enum WorkspaceAuditLogType {
+  Monitor
+  Notification
 }
