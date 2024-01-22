@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { logger } from '../../utils/logger';
 import { token } from '../notification/token';
 import { ContentToken } from '../notification/token/type';
+import { createAuditLog } from '../auditLog';
 
 /**
  * Class which actually run monitor data collect
@@ -48,6 +49,12 @@ export class MonitorRunner {
           value = await provider.run(monitor);
         } catch (err) {
           logger.error(`[Monitor] (id: ${monitor.id}) run error:`, String(err));
+          createAuditLog({
+            workspaceId: this.monitor.workspaceId,
+            relatedId: this.monitor.id,
+            relatedType: 'Monitor',
+            content: `Monitor(id: ${monitor.id}) exec error: ${String(err)}`,
+          });
           value = -1;
         }
 
@@ -90,7 +97,13 @@ export class MonitorRunner {
         // Run next loop
         nextAction();
       } catch (err) {
-        logger.error('Run monitor error,', monitor.id, String(err));
+        logger.error('[Monitor] Run monitor error,', monitor.id, String(err));
+        createAuditLog({
+          workspaceId: this.monitor.workspaceId,
+          relatedId: this.monitor.id,
+          relatedType: 'Monitor',
+          content: `Run monitor(id: ${monitor.id}) error: ${String(err)}`,
+        });
       }
     };
 

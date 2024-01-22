@@ -10,11 +10,15 @@ export async function createAuditLog(info: {
   relatedType?: WorkspaceAuditLogType;
   content: string;
 }) {
-  const log = await prisma.workspaceAuditLog.create({
-    data: {
-      ...info,
-    },
-  });
+  try {
+    const log = await prisma.workspaceAuditLog.create({
+      data: {
+        ...info,
+      },
+    });
 
-  return log;
+    return log;
+  } catch (err) {
+    console.error('[AuditLog] create log error', String(err));
+  }
 }

@@ -28,6 +28,7 @@ import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
 import { MonitorStatusPageModelSchema } from '../../prisma/zod';
 import { runCodeInVM } from '../../model/monitor/provider/custom';
+import { createAuditLog } from '../../model/auditLog';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -239,8 +240,9 @@ export const monitorRouter = router({
       })
     )
     .output(monitorInfoSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { workspaceId, monitorId, active } = input;
+      const user = ctx.user;
 
       const monitor = await prisma.monitor.update({
         where: {
@@ -265,12 +267,28 @@ export const monitorRouter = router({
           'UP',
           `Monitor [${monitor.name}] has been manual start`
         );
+        createAuditLog({
+          workspaceId: workspaceId,
+          relatedId: monitorId,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitor.id}) manual start by ${String(
+            user.username
+          )}(${String(user.id)})`,
+        });
       } else {
         runner.stopMonitor();
         runner.createEvent(
           'DOWN',
           `Monitor [${monitor.name}] has been manual stop`
         );
+        createAuditLog({
+          workspaceId: workspaceId,
+          relatedId: monitorId,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitor.id}) manual stop by ${String(
+            user.username
+          )}(${String(user.id)})`,
+        });
       }
 
       return monitor;
