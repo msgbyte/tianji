@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { version } from '../../shared';
+import { version } from '@tianji/shared';
 
 export const healthRouter = Router();
 

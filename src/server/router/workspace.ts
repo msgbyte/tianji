@@ -13,7 +13,7 @@ import {
 } from '../model/workspace';
 import { parseDateRange } from '../utils/common';
 import { QueryFilters } from '../utils/prisma';
-import { ROLES } from '../../shared';
+import { ROLES } from '@tianji/shared';
 
 export const workspaceRouter = Router();
 

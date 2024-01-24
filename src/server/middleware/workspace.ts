@@ -1,6 +1,6 @@
 import { Handler } from 'express';
 import { getWorkspaceUser } from '../model/workspace';
-import { ROLES } from '../../shared';
+import { ROLES } from '@tianji/shared';
 
 export function workspacePermission(roles: ROLES[] = []): Handler {
   return async (req, res, next) => {

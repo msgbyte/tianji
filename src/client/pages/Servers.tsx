@@ -28,7 +28,7 @@ import { Loading } from '../components/Loading';
 import { without } from 'lodash-es';
 import { useIntervalUpdate } from '../hooks/useIntervalUpdate';
 import clsx from 'clsx';
-import { isServerOnline } from '../../shared';
+import { isServerOnline } from '@tianji/shared';
 import { defaultErrorHandler, trpc } from '../api/trpc';
 import { useRequest } from '../hooks/useRequest';
 

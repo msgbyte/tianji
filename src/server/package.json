@@ -1,6 +1,7 @@
 {
   "name": "@tianji/server",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -18,6 +19,7 @@
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.4.2",
+    "@tianji/shared": "workspace:^",
     "@trpc/server": "^10.45.0",
     "axios": "^1.5.0",
     "badge-maker": "^3.3.1",

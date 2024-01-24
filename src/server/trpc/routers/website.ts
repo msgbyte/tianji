@@ -17,7 +17,7 @@ import { parseDateRange } from '../../utils/common';
 import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
 import { websiteInfoSchema } from '../../model/_schema';
 import { OpenApiMeta } from 'trpc-openapi';
-import { hostnameRegex } from '../../../shared';
+import { hostnameRegex } from '@tianji/shared';
 import { addWorkspaceWebsite } from '../../model/workspace';
 
 const websiteNameSchema = z.string().max(100);

@@ -1,6 +1,6 @@
 import { RuleObject } from 'antd/es/form';
 import { z } from 'zod';
-import { hostnameRegex, slugRegex } from '../../shared';
+import { hostnameRegex, slugRegex } from '@tianji/shared';
 
 type Validator = (
   rule: RuleObject,

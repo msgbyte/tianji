@@ -1,4 +1,4 @@
-import { ROLES } from '../../../../shared';
+import { ROLES } from '@tianji/shared';
 import { trpc } from '../../../api/trpc';
 import { useUserInfo } from '../../../store/user';
 

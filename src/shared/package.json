@@ -1,0 +1,13 @@
+{
+  "name": "@tianji/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.ts",
+  "scripts": {},
+  "keywords": [],
+  "author": "moonrailgun <moonrailgun@gmail.com>",
+  "dependencies": {
+    "dayjs": "^1.11.9"
+  }
+}

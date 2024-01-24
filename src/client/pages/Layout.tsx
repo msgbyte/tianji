@@ -3,11 +3,11 @@ import { Outlet, useSearchParams } from 'react-router-dom';
 import { NavItem } from '../components/NavItem';
 import { MobileNavItem } from '../components/MobileNavItem';
 import { UserOutlined } from '@ant-design/icons';
-import { Button, Divider, Drawer, Dropdown, Menu } from 'antd';
+import { Button, Divider, Drawer, Dropdown } from 'antd';
 import { useUserStore } from '../store/user';
 import { useLogout } from '../api/model/user';
 import { ColorSchemeSwitcher } from '../components/ColorSchemeSwitcher';
-import { version } from '../../shared';
+import { version } from '@tianji/shared';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { RiMenuUnfoldLine } from 'react-icons/ri';
 

@@ -8,7 +8,7 @@ import {
   saveWebsiteSessionData,
 } from '../model/website';
 import { createToken } from '../utils/common';
-import { hostnameRegex } from '../../shared';
+import { hostnameRegex } from '@tianji/shared';
 
 export const websiteRouter = Router();
 

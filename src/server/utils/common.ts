@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 import { getWorkspaceWebsiteDateRange } from '../model/workspace';
 import { isCuid } from '@paralleldrive/cuid2';
-import { getMinimumUnit } from '../../shared';
+import { getMinimumUnit } from '@tianji/shared';
 
 export { isCuid };
 

@@ -1,6 +1,6 @@
 import { prisma } from './_client';
 import bcryptjs from 'bcryptjs';
-import { ROLES, SYSTEM_ROLES } from '../../shared';
+import { ROLES, SYSTEM_ROLES } from '@tianji/shared';
 import { jwtVerify } from '../middleware/auth';
 import { TRPCError } from '@trpc/server';
 import { Prisma } from '@prisma/client';

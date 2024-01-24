@@ -1,7 +1,7 @@
 import { CalendarOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { useMemo, useReducer } from 'react';
-import { getMinimumUnit } from '../../shared';
+import { getMinimumUnit } from '@tianji/shared';
 import { DateRange, useGlobalStateStore } from '../store/global';
 import { DateUnit } from '../utils/date';
 

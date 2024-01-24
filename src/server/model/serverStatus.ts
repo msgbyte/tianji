@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { ServerStatusInfo } from '../../types';
 import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared';
 import _ from 'lodash';
-import { isServerOnline } from '../../shared';
+import { isServerOnline } from '@tianji/shared';
 
 const serverMap: Record<
   string, // workspaceId

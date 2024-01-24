@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
-import type { DateUnit } from '../../shared';
+import type { DateUnit } from '@tianji/shared';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
