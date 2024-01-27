@@ -1,6 +1,6 @@
 # 天机 Tianji
 
-<img src="./public/icon.svg" width="128" />
+<img src="./website/static/img/logo.svg" width="128" />
 
 **洞察一切**
 

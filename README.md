@@ -1,6 +1,6 @@
 # Tianji
 
-<img src="./public/icon.svg" width="128" />
+<img src="./website/static/img/logo.svg" width="128" />
 
 **Insight into everything**
 
