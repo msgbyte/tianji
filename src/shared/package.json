@@ -3,8 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
-  "main": "index.ts",
-  "scripts": {},
+  "types": "./dist/cjs/src/shared/src/index.d.ts",
+  "exports": {
+    "import": "./dist/esm/src/shared/src/index.js",
+    "require": "./dist/cjs/src/shared/src/index.js"
+  },
+  "scripts": {
+    "build": "pnpm build:cjs && pnpm build:esm",
+    "build:cjs": "tsc --module commonjs --outDir ./dist/cjs",
+    "build:esm": "tsc --module esnext --outDir ./dist/esm",
+    "postinstall": "pnpm build"
+  },
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "dependencies": {

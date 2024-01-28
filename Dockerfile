@@ -17,7 +17,7 @@ RUN pnpm build
 RUN pip install apprise --break-system-packages
 
 # remove unused source file
-RUN rm -rf ./src
+RUN rm -rf ./src/client
 RUN rm -rf ./website
 RUN rm -rf ./reporter
 

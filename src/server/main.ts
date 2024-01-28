@@ -25,6 +25,7 @@ import { initCronjob } from './cronjob';
 import { logger } from './utils/logger';
 import { monitorRouter } from './router/monitor';
 import { healthRouter } from './router/health';
+import path from 'path';
 
 const port = env.port;
 
@@ -44,7 +45,7 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(morgan('tiny'));
 app.use(cors());
-app.use(express.static('dist'));
+app.use(express.static('public'));
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
@@ -70,6 +71,13 @@ if (env.allowOpenapi) {
   app.use('/open/_document', (req, res) => res.send(trpcOpenapiDocument));
   app.use('/open', trpcOpenapiHttpHandler);
 }
+
+// fallback
+app.get('/*', (req, res) => {
+  if (req.accepts('html')) {
+    res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+  }
+});
 
 app.use((err: any, req: any, res: any, next: any) => {
   logger.error(err);

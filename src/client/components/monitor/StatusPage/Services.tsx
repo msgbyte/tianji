@@ -7,7 +7,10 @@ import { keyBy } from 'lodash-es';
 
 interface StatusPageServicesProps {
   workspaceId: string;
-  monitorList: PrismaJson.MonitorStatusPageList;
+  monitorList: {
+    id: string;
+    showCurrent?: boolean;
+  }[];
 }
 export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
   (props) => {

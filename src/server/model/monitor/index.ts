@@ -1,5 +1,5 @@
-import { MonitorPublicInfoSchema } from '../../../types';
 import { prisma } from '../_client';
+import { MonitorPublicInfoSchema } from '../_schema/monitor';
 import { MonitorManager } from './manager';
 
 export const monitorManager = new MonitorManager();

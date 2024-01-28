@@ -4,7 +4,7 @@
   "exclude": ["node_modules/**/*", "dist"],
   "compilerOptions": {
     "rootDirs": ["./", "../"],
-    "outDir": "../../dist",
+    "outDir": "./dist",
     "noEmit": false
   }
 }

@@ -13,10 +13,6 @@ import {
   getMonitorRecentData,
   monitorManager,
 } from '../../model/monitor';
-import {
-  MonitorInfoWithNotificationIds,
-  MonitorPublicInfoSchema,
-} from '../../../types';
 import dayjs from 'dayjs';
 import {
   monitorEventSchema,
@@ -29,6 +25,10 @@ import { OpenApiMeta } from 'trpc-openapi';
 import { MonitorStatusPageModelSchema } from '../../prisma/zod';
 import { runCodeInVM } from '../../model/monitor/provider/custom';
 import { createAuditLog } from '../../model/auditLog';
+import {
+  MonitorInfoWithNotificationIds,
+  MonitorPublicInfoSchema,
+} from '../../model/_schema/monitor';
 
 export const monitorRouter = router({
   all: workspaceProcedure
