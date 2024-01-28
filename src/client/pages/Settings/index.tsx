@@ -6,6 +6,7 @@ import { WebsiteList } from '../../components/website/WebsiteList';
 import { useEvent } from '../../hooks/useEvent';
 import { NotificationList } from './NotificationList';
 import { Profile } from './Profile';
+import { AuditLog } from './AuditLog';
 
 const items: MenuProps['items'] = [
   {
@@ -15,6 +16,10 @@ const items: MenuProps['items'] = [
   {
     key: 'notifications',
     label: 'Notifications',
+  },
+  {
+    key: 'auditLog',
+    label: 'Audit Log',
   },
   {
     key: 'profile',
@@ -51,6 +56,7 @@ export const SettingsPage: React.FC = React.memo(() => {
           <Route path="/websites" element={<WebsiteList />} />
           <Route path="/website/:websiteId" element={<WebsiteInfo />} />
           <Route path="/notifications" element={<NotificationList />} />
+          <Route path="/auditLog" element={<AuditLog />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>

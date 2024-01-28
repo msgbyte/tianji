@@ -151,3 +151,51 @@ export function getTimestampIntervalQuery(field: string) {
     `floor(extract(epoch from max(${field}) - min(${field})))`,
   ]);
 }
+
+type ExtractFindManyReturnType<T> = T extends (
+  args?: any
+) => Prisma.PrismaPromise<infer R>
+  ? R
+  : never;
+
+export async function fetchDataByCursor<
+  Model extends {
+    findMany: (args?: any) => Prisma.PrismaPromise<any>;
+  },
+  CursorType
+>(
+  fetchModel: Model,
+  options: {
+    where: Record<string, string>;
+    limit: number;
+    cursor: CursorType;
+    cursorName?: string;
+    order?: 'asc' | 'desc';
+  }
+) {
+  const { where, limit, cursor, cursorName = 'id', order = 'desc' } = options;
+  const items: ExtractFindManyReturnType<Model['findMany']> =
+    await fetchModel.findMany({
+      where,
+      take: limit + 1,
+      cursor: cursor
+        ? {
+            [cursorName]: cursor,
+          }
+        : undefined,
+      orderBy: {
+        [cursorName]: order,
+      },
+    });
+
+  let nextCursor: CursorType | undefined = undefined;
+  if (items.length > limit) {
+    const nextItem = items.pop()!;
+    nextCursor = nextItem[cursorName];
+  }
+
+  return {
+    items,
+    nextCursor,
+  };
+}

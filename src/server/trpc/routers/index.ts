@@ -6,6 +6,7 @@ import { userRouter } from './user';
 import { workspaceRouter } from './workspace';
 import { globalRouter } from './global';
 import { serverStatusRouter } from './serverStatus';
+import { auditLogRouter } from './auditLog';
 
 export const appRouter = router({
   global: globalRouter,
@@ -15,6 +16,7 @@ export const appRouter = router({
   notification: notificationRouter,
   monitor: monitorRouter,
   serverStatus: serverStatusRouter,
+  auditLog: auditLogRouter,
 });
 
 export type AppRouter = typeof appRouter;

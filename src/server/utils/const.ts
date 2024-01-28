@@ -103,6 +103,7 @@ export const DEFAULT_RESET_DATE = '2000-01-01';
 
 export enum OPENAPI_TAG {
   GLOBAL = 'Global',
+  WORKSPACE = 'Workspace',
   USER = 'User',
   WEBSITE = 'Website',
   MONITOR = 'Monitor',
