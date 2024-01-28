@@ -9,7 +9,6 @@
     "start": "cd src/server && cross-env NODE_ENV=production node ./dist/src/server/main.js",
     "start:docker": "pnpm start:docker:db && pnpm start",
     "start:docker:db": "cd src/server && pnpm db:migrate:apply",
-    "postinstall": "cd src/server && pnpm db:generate",
     "test": "vitest",
     "build": "pnpm build:tracker && pnpm build:server && pnpm build:client && pnpm build:geo",
     "build:client": "cd src/client && pnpm build",

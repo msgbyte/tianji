@@ -9,7 +9,7 @@
     "require": "./dist/cjs/src/shared/src/index.js"
   },
   "scripts": {
-    "build": "pnpm build:cjs && pnpm build:esm",
+    "build": "concurrently --kill-others npm:build:cjs npm:build:esm",
     "build:cjs": "tsc --module commonjs --outDir ./dist/cjs",
     "build:esm": "tsc --module esnext --outDir ./dist/esm",
     "postinstall": "pnpm build"
