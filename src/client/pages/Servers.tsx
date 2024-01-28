@@ -217,7 +217,7 @@ export const ServerList: React.FC<{
       {
         key: 'traffic',
         title: 'Traffic',
-        width: 120,
+        width: 130,
         render: (_, record) => {
           return (
             <UpDownCounter
