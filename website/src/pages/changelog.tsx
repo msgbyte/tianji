@@ -24,6 +24,7 @@ const timelineStyle: Record<string, VerticalTimelineElementProps> = {
   },
   normal: {
     className: 'vertical-timeline-element--work dark:text-neutral-600',
+    dateClassName: 'text-black dark:text-white',
     iconStyle: { background: 'rgb(33, 150, 243)', color: '#fff' },
     icon: <AiOutlineCheck />,
   },
