@@ -11,8 +11,8 @@ import {
   MOBILE_OS,
   MOBILE_SCREEN_WIDTH,
 } from './const';
-import path from 'path';
 import maxmind, { Reader, CityResponse } from 'maxmind';
+import { libraryPath } from './lib';
 
 let lookup: Reader<CityResponse>;
 
@@ -104,9 +104,7 @@ export async function getLocation(ip: string, req: Request) {
 
   // Database lookup
   if (!lookup) {
-    const dir = path.join(process.cwd(), 'geo');
-
-    lookup = await maxmind.open(path.resolve(dir, 'GeoLite2-City.mmdb'));
+    lookup = await maxmind.open(libraryPath.geoPath);
   }
 
   const result = lookup.get(ip);
