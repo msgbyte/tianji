@@ -4,7 +4,7 @@ import type { SubscribeEventMap, SocketEventMap } from '../../server/ws/shared';
 import { create } from 'zustand';
 import { useEvent } from '../hooks/useEvent';
 import { useEffect, useReducer, useState } from 'react';
-import { useIsLogined, useUserInfo } from '../store/user';
+import { useIsLogined } from '../store/user';
 
 const useSocketStore = create<{
   socket: Socket | null;

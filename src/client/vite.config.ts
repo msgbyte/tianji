@@ -11,6 +11,11 @@ export default defineConfig({
   clearScreen: false,
   server: {
     proxy: {
+      '/socket.io': {
+        target: 'ws://localhost:12345',
+        changeOrigin: true,
+        ws: true,
+      },
       '/trpc': {
         target: 'http://localhost:12345',
       },

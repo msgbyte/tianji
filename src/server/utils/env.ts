@@ -1,4 +1,5 @@
 export const env = {
+  isProd: process.env.NODE_ENV === 'production',
   port: Number(process.env.PORT || 12345),
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI),

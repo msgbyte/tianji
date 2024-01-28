@@ -3,11 +3,14 @@ import { body, header, param, validate } from '../middleware/validate';
 import { recordServerStatus } from '../model/serverStatus';
 import fs from 'fs-extra';
 import path from 'path';
+import { env } from '../utils/env';
 
 export const serverStatusRouter = Router();
 
 const installScript = fs.readFileSync(
-  path.resolve(process.cwd(), './scripts/install.sh')
+  env.isProd
+    ? path.resolve(process.cwd(), './scripts/install.sh')
+    : path.resolve(process.cwd(), '../../scripts/install.sh')
 );
 
 serverStatusRouter.post(
