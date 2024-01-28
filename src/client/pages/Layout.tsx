@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
+import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 import { NavItem } from '../components/NavItem';
 import { MobileNavItem } from '../components/MobileNavItem';
 import { UserOutlined } from '@ant-design/icons';
@@ -30,6 +30,7 @@ export const Layout: React.FC = React.memo(() => {
   const logout = useLogout();
   const isMobile = useIsMobile();
   const showHeader = !params.has('hideHeader');
+  const navigate = useNavigate();
 
   const accountEl = (
     <Dropdown
@@ -44,6 +45,13 @@ export const Layout: React.FC = React.memo(() => {
               label: `${w.name}${w.current ? '(current)' : ''}`,
               disabled: w.current,
             })),
+          },
+          {
+            key: 'settings',
+            label: 'Settings',
+            onClick: () => {
+              navigate('/settings');
+            },
           },
           {
             key: 'logout',
