@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 
 RUN pnpm build
 
-# make sure run after pnpm build completed
+# make sure run after pnpm build completed to avoid break system packages
 # Push client(only support pure text message)
 RUN pip install apprise --break-system-packages
 

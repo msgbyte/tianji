@@ -36,7 +36,7 @@
     "express-validator": "^7.0.1",
     "fs-extra": "^11.2.0",
     "is-localhost-ip": "^2.0.0",
-    "isolated-vm": "^4.6.0",
+    "isolated-vm": "^4.7.2",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "maxmind": "^4.3.18",
