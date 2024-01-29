@@ -19,6 +19,9 @@ export default defineConfig({
       '/trpc': {
         target: 'http://localhost:12345',
       },
+      '/api/workspace': {
+        target: 'http://localhost:12345',
+      },
     },
   },
 });

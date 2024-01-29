@@ -12,6 +12,7 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:apply": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:seed:website": "ts-node ./tests/seeds/website.ts",
     "test": "vitest",
     "test:ci": "vitest --run"
   },
@@ -62,6 +63,7 @@
     "zod-prisma": "^0.5.4"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.0",
     "@types/bcryptjs": "^2.4.3",
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.15",
