@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 import { OPENAPI_TAG } from '../../utils/const';
+import { env } from '../../utils/env';
 
 export const globalRouter = router({
   config: publicProcedure
@@ -23,10 +24,10 @@ export const globalRouter = router({
     )
     .query(async ({ input }) => {
       return {
-        allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
-        websiteId: process.env.WEBSITE_ID,
-        amapToken: process.env.AMAP_TOKEN,
-        mapboxToken: process.env.MAPBOX_TOKEN,
+        allowRegister: env.allowRegister,
+        websiteId: env.websiteId,
+        amapToken: env.amapToken,
+        mapboxToken: env.mapboxToken,
       };
     }),
 });

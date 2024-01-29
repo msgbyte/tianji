@@ -8,6 +8,8 @@ export const env = {
     ? Number(process.env.SANDBOX_MEMORY_LIMIT)
     : 16, // unit: MB
   dbDebug: checkEnvTrusty(process.env.DB_DEBUG),
+  amapToken: process.env.AMAP_TOKEN,
+  mapboxToken: process.env.MAPBOX_TOKEN,
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
