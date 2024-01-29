@@ -95,20 +95,23 @@ model Website {
 }
 
 model WebsiteSession {
-  id           String   @id @unique @db.Uuid
-  websiteId    String   @db.VarChar(30)
-  hostname     String?  @db.VarChar(100)
-  browser      String?  @db.VarChar(20)
-  os           String?  @db.VarChar(20)
-  device       String?  @db.VarChar(20)
-  screen       String?  @db.VarChar(11)
-  language     String?  @db.VarChar(35)
-  ip           String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
-  country      String?  @db.Char(2)
-  subdivision1 String?  @db.VarChar(20)
-  subdivision2 String?  @db.VarChar(50)
-  city         String?  @db.VarChar(50)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  id             String   @id @unique @db.Uuid
+  websiteId      String   @db.VarChar(30)
+  hostname       String?  @db.VarChar(100)
+  browser        String?  @db.VarChar(20)
+  os             String?  @db.VarChar(20)
+  device         String?  @db.VarChar(20)
+  screen         String?  @db.VarChar(11)
+  language       String?  @db.VarChar(35)
+  ip             String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
+  country        String?  @db.Char(2)
+  subdivision1   String?  @db.VarChar(20)
+  subdivision2   String?  @db.VarChar(50)
+  city           String?  @db.VarChar(50)
+  longitude      Float?
+  latitude       Float?
+  accuracyRadius Int?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   website Website @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -198,17 +201,20 @@ model WebsiteSessionData {
 }
 
 model TelemetrySession {
-  id           String   @id @unique @db.Uuid
-  workspaceId  String   @db.VarChar(30)
-  hostname     String?  @db.VarChar(100)
-  browser      String?  @db.VarChar(20)
-  os           String?  @db.VarChar(20)
-  ip           String?  @db.VarChar(45)
-  country      String?  @db.Char(2)
-  subdivision1 String?  @db.VarChar(20)
-  subdivision2 String?  @db.VarChar(50)
-  city         String?  @db.VarChar(50)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  id             String   @id @unique @db.Uuid
+  workspaceId    String   @db.VarChar(30)
+  hostname       String?  @db.VarChar(100)
+  browser        String?  @db.VarChar(20)
+  os             String?  @db.VarChar(20)
+  ip             String?  @db.VarChar(45)
+  country        String?  @db.Char(2)
+  subdivision1   String?  @db.VarChar(20)
+  subdivision2   String?  @db.VarChar(50)
+  city           String?  @db.VarChar(50)
+  longitude      Float?
+  latitude       Float?
+  accuracyRadius Int?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   telemetryEvent TelemetryEvent[]
 
@@ -345,12 +351,12 @@ model WorkspaceDailyUsage {
 }
 
 model WorkspaceAuditLog {
-  id          String                @id @default(cuid()) @db.VarChar(30)
-  workspaceId String                @db.VarChar(30)
+  id          String                 @id @default(cuid()) @db.VarChar(30)
+  workspaceId String                 @db.VarChar(30)
   content     String
   relatedId   String?
   relatedType WorkspaceAuditLogType?
-  createdAt   DateTime              @default(now()) @db.Timestamptz(6)
+  createdAt   DateTime               @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 

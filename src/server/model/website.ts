@@ -26,21 +26,11 @@ export interface WebsiteEventPayload {
   name?: string;
 }
 
-export async function findSession(req: Request): Promise<{
-  id: any;
-  websiteId: string;
-  hostname: string;
-  browser: string;
-  os: any;
-  device: string;
-  screen: string;
-  language: string;
-  country: any;
-  subdivision1: any;
-  subdivision2: any;
-  city: any;
-  workspaceId: string;
-}> {
+export async function findSession(req: Request): Promise<
+  WebsiteSession & {
+    workspaceId: string;
+  }
+> {
   // Verify payload
   const { payload } = req.body;
 
@@ -88,6 +78,9 @@ export async function findSession(req: Request): Promise<{
     subdivision1,
     subdivision2,
     city,
+    longitude,
+    latitude,
+    accuracyRadius,
     device,
   } = await getClientInfo(req, payload);
 
@@ -114,6 +107,9 @@ export async function findSession(req: Request): Promise<{
           subdivision1,
           subdivision2,
           city,
+          longitude,
+          latitude,
+          accuracyRadius,
         },
       });
     } catch (e: any) {

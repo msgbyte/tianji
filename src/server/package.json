@@ -12,7 +12,8 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:apply": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:ci": "vitest --run"
   },
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",

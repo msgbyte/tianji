@@ -2,7 +2,6 @@ import { Request } from 'express';
 import type { WebsiteEventPayload } from '../model/website';
 import { getClientIp } from 'request-ip';
 import isLocalhost from 'is-localhost-ip';
-import { safeDecodeURIComponent } from './common';
 import { browserName, detectOS, OperatingSystem } from 'detect-browser';
 import {
   DESKTOP_OS,
@@ -14,16 +13,19 @@ import {
 import maxmind, { Reader, CityResponse } from 'maxmind';
 import { libraryPath } from './lib';
 
-let lookup: Reader<CityResponse>;
-
 export async function getRequestInfo(req: Request) {
   const userAgent = req.headers['user-agent'];
   const ip = getIpAddress(req);
-  const location = await getLocation(ip, req);
-  const country = location?.country;
-  const subdivision1 = location?.subdivision1;
-  const subdivision2 = location?.subdivision2;
-  const city = location?.city;
+  const location = await getLocation(ip);
+  const {
+    country,
+    subdivision1,
+    subdivision2,
+    city,
+    longitude,
+    latitude,
+    accuracyRadius,
+  } = location ?? {};
   const browser = browserName(userAgent ?? '');
   const os = detectOS(userAgent ?? '');
 
@@ -36,6 +38,9 @@ export async function getRequestInfo(req: Request) {
     subdivision1,
     subdivision2,
     city,
+    longitude,
+    latitude,
+    accuracyRadius,
   };
 }
 
@@ -68,38 +73,11 @@ export function getIpAddress(req: Request): string {
   return getClientIp(req)!;
 }
 
-export async function getLocation(ip: string, req: Request) {
+let lookup: Reader<CityResponse>;
+export async function getLocation(ip: string) {
   // Ignore local ips
   if (await isLocalhost(ip)) {
     return;
-  }
-
-  // Cloudflare headers
-  if (req.headers['cf-ipcountry']) {
-    const country = safeDecodeURIComponent(req.headers['cf-ipcountry']);
-    const subdivision1 = safeDecodeURIComponent(req.headers['cf-region-code']);
-    const city = safeDecodeURIComponent(req.headers['cf-ipcity']);
-
-    return {
-      country,
-      subdivision1: getRegionCode(country, subdivision1),
-      city,
-    };
-  }
-
-  // Vercel headers
-  if (req.headers['x-vercel-ip-country']) {
-    const country = safeDecodeURIComponent(req.headers['x-vercel-ip-country']);
-    const subdivision1 = safeDecodeURIComponent(
-      req.headers['x-vercel-ip-country-region']
-    );
-    const city = safeDecodeURIComponent(req.headers['x-vercel-ip-city']);
-
-    return {
-      country,
-      subdivision1: getRegionCode(country, subdivision1),
-      city,
-    };
   }
 
   // Database lookup
@@ -109,14 +87,19 @@ export async function getLocation(ip: string, req: Request) {
 
   const result = lookup.get(ip);
 
-  if (result) {
-    return {
-      country: result.country?.iso_code ?? result?.registered_country?.iso_code,
-      subdivision1: result.subdivisions?.[0]?.iso_code,
-      subdivision2: result.subdivisions?.[1]?.names?.en,
-      city: result.city?.names?.en,
-    };
+  if (!result) {
+    return;
   }
+
+  return {
+    country: result.country?.iso_code ?? result?.registered_country?.iso_code,
+    subdivision1: result.subdivisions?.[0]?.iso_code,
+    subdivision2: result.subdivisions?.[1]?.names?.en,
+    city: result.city?.names?.en,
+    longitude: result.location?.longitude,
+    latitude: result.location?.latitude,
+    accuracyRadius: result.location?.accuracy_radius,
+  };
 }
 
 function getRegionCode(

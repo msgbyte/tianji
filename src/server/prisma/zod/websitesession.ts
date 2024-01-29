@@ -16,6 +16,9 @@ export const WebsiteSessionModelSchema = z.object({
   subdivision1: z.string().nullish(),
   subdivision2: z.string().nullish(),
   city: z.string().nullish(),
+  longitude: z.number().nullish(),
+  latitude: z.number().nullish(),
+  accuracyRadius: z.number().int().nullish(),
   createdAt: z.date(),
 })
 

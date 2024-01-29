@@ -80,6 +80,9 @@ async function findSession(req: Request, url: string) {
     subdivision1,
     subdivision2,
     city,
+    longitude,
+    latitude,
+    accuracyRadius,
   } = await getRequestInfo(req);
 
   const sessionId = hashUuid(workspaceId, hostname, ip, userAgent!);
@@ -99,6 +102,9 @@ async function findSession(req: Request, url: string) {
           subdivision1,
           subdivision2,
           city,
+          longitude,
+          latitude,
+          accuracyRadius,
         },
       });
     } catch (e: any) {
