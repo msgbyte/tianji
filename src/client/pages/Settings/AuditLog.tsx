@@ -1,4 +1,4 @@
-import { Card, List } from 'antd';
+import { Card, Empty, List } from 'antd';
 import React, { useMemo, useRef } from 'react';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { PageHeader } from '../../components/PageHeader';
@@ -58,6 +58,8 @@ export const AuditLog: React.FC = React.memo(() => {
       <Card>
         <List>
           <div ref={parentRef} className="h-[560px] overflow-auto w-full">
+            {virtualItems.length === 0 && <Empty />}
+
             <div
               className="relative w-full"
               style={{
