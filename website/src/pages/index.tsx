@@ -16,9 +16,9 @@ function HomepageHeader() {
       <div className="text-center mt-10">
         <LogoSvg className="w-40 h-40" />
         <h1 className="text-5xl">
-          <span className="text-gradient font-bold">{siteConfig.title}</span>
+          <span className="text-gradient font-bold">Tianji</span>
         </h1>
-        <p className="opacity-60 text-2xl">{siteConfig.tagline}</p>
+        <p className="opacity-60 text-2xl">All-in-One Insight Hub</p>
         <div className="text-xl">
           <span className="text-gradient font-bold">Tianji</span> ={' '}
           <span className="underline font-semibold">Website Analytics</span> +{' '}
