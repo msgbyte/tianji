@@ -187,6 +187,58 @@ export const websiteRouter = router({
 
       return websiteStatsSchema.parse(stats);
     }),
+  geoStats: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/geoStats',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string(),
+        startAt: z.number(),
+        endAt: z.number(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          longitude: z.number(),
+          latitude: z.number(),
+          count: z.number(),
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const { websiteId, startAt, endAt } = input;
+
+      const res = await prisma.websiteSession.groupBy({
+        by: ['longitude', 'latitude'],
+        where: {
+          websiteId,
+          longitude: { not: null },
+          latitude: { not: null },
+          createdAt: {
+            gt: new Date(startAt),
+            lte: new Date(endAt),
+          },
+        },
+        _count: {
+          _all: true,
+        },
+      });
+
+      return res
+        .filter((item) => item.longitude !== null && item.latitude !== null)
+        .map((item) => {
+          return {
+            longitude: item.longitude!,
+            latitude: item.latitude!,
+            count: item._count._all,
+          };
+        });
+    }),
   metrics: workspaceProcedure
     .meta(
       buildWebsiteOpenapi({

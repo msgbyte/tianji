@@ -17,12 +17,16 @@ export const globalRouter = router({
       z.object({
         allowRegister: z.boolean(),
         websiteId: z.string().optional(),
+        amapToken: z.string().optional(),
+        mapboxToken: z.string().optional(),
       })
     )
     .query(async ({ input }) => {
       return {
         allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
         websiteId: process.env.WEBSITE_ID,
+        amapToken: process.env.AMAP_TOKEN,
+        mapboxToken: process.env.MAPBOX_TOKEN,
       };
     }),
 });
