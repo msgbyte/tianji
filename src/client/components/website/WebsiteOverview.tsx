@@ -4,9 +4,7 @@ import { Column, ColumnConfig } from '@ant-design/charts';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
 import {
-  StatsItemType,
   useWorkspaceWebsitePageview,
-  useWorkspaceWebsiteStats,
   WebsiteInfo,
 } from '../../api/model/website';
 import {
@@ -23,6 +21,8 @@ import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
 import { useNavigate } from 'react-router';
+import { AppRouterOutput, trpc } from '../../api/trpc';
+import { getUserTimezone } from '../../api/model/user';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
@@ -47,16 +47,17 @@ export const WebsiteOverview: React.FC<{
   );
 
   const {
-    stats,
+    data: stats,
     isLoading: isLoadingStats,
     refetch: refetchStats,
-  } = useWorkspaceWebsiteStats(
-    website.workspaceId,
-    website.id,
-    startDate.unix() * 1000,
-    endDate.unix() * 1000,
-    unit
-  );
+  } = trpc.website.stats.useQuery({
+    workspaceId: website.workspaceId,
+    websiteId: website.id,
+    startAt: startDate.unix() * 1000,
+    endAt: endDate.unix() * 1000,
+    timezone: getUserTimezone(),
+    unit,
+  });
 
   const handleRefresh = useEvent(async () => {
     refresh();
@@ -109,8 +110,8 @@ export const WebsiteOverview: React.FC<{
         <div>{actions}</div>
       </div>
 
-      <div className="flex mb-10 flex-wrap">
-        {stats && <MetricsBar stats={stats} />}
+      <div className="flex mb-10 flex-wrap justify-between">
+        <div className="flex-1">{stats && <MetricsBar stats={stats} />}</div>
 
         <div className="flex items-center gap-2 justify-end w-full lg:w-1/3">
           <Button
@@ -136,12 +137,7 @@ export const WebsiteOverview: React.FC<{
 WebsiteOverview.displayName = 'WebsiteOverview';
 
 export const MetricsBar: React.FC<{
-  stats: {
-    bounces: StatsItemType;
-    pageviews: StatsItemType;
-    totaltime: StatsItemType;
-    uniques: StatsItemType;
-  };
+  stats: AppRouterOutput['website']['stats'];
 }> = React.memo((props) => {
   const { pageviews, uniques, bounces, totaltime } = props.stats || {};
   const num = Math.min(uniques.value, bounces.value);
@@ -153,7 +149,7 @@ export const MetricsBar: React.FC<{
   };
 
   return (
-    <div className="flex gap-5 flex-wrap w-full lg:w-2/3">
+    <div className="flex gap-5 flex-wrap w-full">
       <MetricCard
         label="Views"
         value={pageviews.value}

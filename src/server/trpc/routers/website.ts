@@ -18,7 +18,16 @@ import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
 import { websiteInfoSchema } from '../../model/_schema';
 import { OpenApiMeta } from 'trpc-openapi';
 import { hostnameRegex } from '@tianji/shared';
-import { addWorkspaceWebsite } from '../../model/workspace';
+import {
+  addWorkspaceWebsite,
+  getWorkspaceWebsiteStats,
+} from '../../model/workspace';
+import {
+  websiteFilterSchema,
+  websiteStatsSchema,
+} from '../../model/_schema/filter';
+import dayjs from 'dayjs';
+import { QueryFilters } from '../../utils/prisma';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -92,6 +101,91 @@ export const websiteRouter = router({
       });
 
       return website;
+    }),
+  stats: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/stats',
+      })
+    )
+    .input(
+      z
+        .object({
+          websiteId: z.string(),
+          startAt: z.number(),
+          endAt: z.number(),
+          unit: z.string().optional(),
+        })
+        .merge(websiteFilterSchema.partial())
+    )
+    .output(websiteStatsSchema)
+    .query(async ({ input }) => {
+      const {
+        websiteId,
+        timezone,
+        url,
+        referrer,
+        title,
+        os,
+        browser,
+        device,
+        country,
+        region,
+        city,
+        startAt,
+        endAt,
+      } = input;
+
+      const { startDate, endDate, unit } = await parseDateRange({
+        websiteId,
+        startAt: Number(startAt),
+        endAt: Number(endAt),
+        unit: input.unit,
+      });
+
+      const diff = dayjs(endDate).diff(startDate, 'minutes');
+      const prevStartDate = dayjs(startDate).subtract(diff, 'minutes').toDate();
+      const prevEndDate = dayjs(endDate).subtract(diff, 'minutes').toDate();
+
+      const filters = {
+        startDate,
+        endDate,
+        timezone,
+        unit,
+        url,
+        referrer,
+        title,
+        os,
+        browser,
+        device,
+        country,
+        region,
+        city,
+      } as QueryFilters;
+
+      const [metrics, prevPeriod] = await Promise.all([
+        getWorkspaceWebsiteStats(websiteId, {
+          ...filters,
+          startDate,
+          endDate,
+        }),
+        getWorkspaceWebsiteStats(websiteId, {
+          ...filters,
+          startDate: prevStartDate,
+          endDate: prevEndDate,
+        }),
+      ]);
+
+      const stats = Object.keys(metrics[0]).reduce((obj, key) => {
+        obj[key] = {
+          value: Number(metrics[0][key]) || 0,
+          change: Number(metrics[0][key]) - Number(prevPeriod[0][key]) || 0,
+        };
+        return obj;
+      }, {} as Record<string, { value: number; change: number }>);
+
+      return websiteStatsSchema.parse(stats);
     }),
   metrics: workspaceProcedure
     .meta(
