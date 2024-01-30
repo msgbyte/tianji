@@ -41,7 +41,7 @@ export const MetricsTable: React.FC<MetricsTableProps> = React.memo((props) => {
     {
       title: title[0],
       dataIndex: 'x',
-      render: (val) => val ?? <span className="italic">(None)</span>,
+      render: (val) => val ?? <span className="italic opacity-60">(None)</span>,
     },
     {
       title: title[1],

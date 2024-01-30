@@ -1,6 +1,6 @@
-import { Card } from 'antd';
+import { Button, Card } from 'antd';
 import React from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { trpc } from '../../api/trpc';
 import { ErrorTip } from '../../components/ErrorTip';
 import { Loading } from '../../components/Loading';
@@ -9,6 +9,7 @@ import { MetricsTable } from '../../components/website/MetricsTable';
 import { WebsiteOverview } from '../../components/website/WebsiteOverview';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { useCurrentWorkspaceId } from '../../store/user';
+import { RightOutlined } from '@ant-design/icons';
 
 export const WebsiteDetail: React.FC = React.memo(() => {
   const { websiteId } = useParams();
@@ -18,6 +19,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
     websiteId: websiteId!,
   });
   const { startDate, endDate } = useGlobalRangeDate();
+  const navigate = useNavigate();
 
   if (!websiteId) {
     return <ErrorTip />;
@@ -93,6 +95,15 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             startAt={startAt}
             endAt={endAt}
           />
+          <Button
+            size="small"
+            className="m-auto flex flex-row-reverse items-center mt-1"
+            styles={{ icon: { marginRight: 0, marginLeft: 8 } }}
+            icon={<RightOutlined className="m-0" />}
+            onClick={() => navigate(`/website/${websiteId}/map`)}
+          >
+            Visitor Map
+          </Button>
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
           <MetricsTable
