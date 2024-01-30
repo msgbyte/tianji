@@ -6,8 +6,9 @@ import copy from 'copy-to-clipboard';
 export const MonitorBadgeView: React.FC<{
   workspaceId: string;
   monitorId: string;
+  monitorName?: string;
 }> = React.memo((props) => {
-  const { workspaceId, monitorId } = props;
+  const { workspaceId, monitorId, monitorName = '' } = props;
 
   const [showDetail, setShowDetail] = useState(false);
 
@@ -48,11 +49,13 @@ export const MonitorBadgeView: React.FC<{
       <div className="flex flex-col gap-2">
         <Input
           addonBefore="HTML Embed"
-          value={`<img src="${url}" />`}
+          value={`<img src="${url}" title="${monitorName}" />`}
           addonAfter={
             <div
               className="cursor-pointer"
-              onClick={() => handleCopy(`<img src="${url}" />`)}
+              onClick={() =>
+                handleCopy(`<img src="${url}" title="${monitorName}" />`)
+              }
             >
               Copy
             </div>
@@ -61,11 +64,11 @@ export const MonitorBadgeView: React.FC<{
 
         <Input
           addonBefore="Markdown"
-          value={`![](${url})`}
+          value={`![${monitorName}](${url})`}
           addonAfter={
             <div
               className="cursor-pointer"
-              onClick={() => handleCopy(`![](${url})`)}
+              onClick={() => handleCopy(`![${monitorName}](${url})`)}
             >
               Copy
             </div>

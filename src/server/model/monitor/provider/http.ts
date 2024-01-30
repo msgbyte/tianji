@@ -2,7 +2,6 @@ import { MonitorProvider } from './type';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { logger } from '../../../utils/logger';
 import dayjs from 'dayjs';
-import { prisma } from '../../_client';
 import https from 'https';
 import { saveMonitorStatus } from './_utils';
 

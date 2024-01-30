@@ -238,6 +238,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               <MonitorBadgeView
                 workspaceId={workspaceId}
                 monitorId={monitorId}
+                monitorName={monitorInfo.name}
               />
             </Modal>
           </div>
