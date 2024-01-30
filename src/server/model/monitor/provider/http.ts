@@ -91,7 +91,7 @@ export const http: MonitorProvider<{
 
       return diff;
     } catch (err) {
-      logger.error('run monitor http error', String(err));
+      logger.error(`run monitor(${monitor.id}) http error`, String(err));
       return -1;
     }
   },

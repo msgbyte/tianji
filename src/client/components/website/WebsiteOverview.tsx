@@ -1,4 +1,4 @@
-import { Button, message, Spin } from 'antd';
+import { Button, message, Spin, Switch } from 'antd';
 import React, { useMemo } from 'react';
 import { Column, ColumnConfig } from '@ant-design/charts';
 import { SyncOutlined } from '@ant-design/icons';
@@ -23,6 +23,7 @@ import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
 import { useNavigate } from 'react-router';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { getUserTimezone } from '../../api/model/user';
+import { useGlobalStateStore } from '../../store/global';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
@@ -32,6 +33,9 @@ export const WebsiteOverview: React.FC<{
   const { website, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
   const navigate = useNavigate();
+  const showPreviousPeriod = useGlobalStateStore(
+    (state) => state.showPreviousPeriod
+  );
 
   const {
     pageviews,
@@ -113,7 +117,19 @@ export const WebsiteOverview: React.FC<{
       <div className="flex mb-10 flex-wrap justify-between">
         <div className="flex-1">{stats && <MetricsBar stats={stats} />}</div>
 
-        <div className="flex items-center gap-2 justify-end w-full lg:w-1/3">
+        <div className="flex items-center gap-2 justify-end flex-wrap w-full lg:w-1/3">
+          <div className="mr-2">
+            <Switch
+              checked={showPreviousPeriod}
+              onChange={(checked) =>
+                useGlobalStateStore.setState({
+                  showPreviousPeriod: checked,
+                })
+              }
+            />
+            <span className="ml-1">Previous period</span>
+          </div>
+
           <Button
             size="large"
             icon={<SyncOutlined />}
@@ -140,51 +156,51 @@ export const MetricsBar: React.FC<{
   stats: AppRouterOutput['website']['stats'];
 }> = React.memo((props) => {
   const { pageviews, uniques, bounces, totaltime } = props.stats || {};
-  const num = Math.min(uniques.value, bounces.value);
-  const diffs = {
-    pageviews: pageviews.value - pageviews.change,
-    uniques: uniques.value - uniques.change,
-    bounces: bounces.value - bounces.change,
-    totaltime: totaltime.value - totaltime.change,
-  };
+  const bouncesNum = Math.min(uniques.value, bounces.value) / uniques.value;
+  const prevBouncesNum = Math.min(uniques.prev, bounces.prev) / uniques.prev;
 
   return (
     <div className="flex gap-5 flex-wrap w-full">
       <MetricCard
-        label="Views"
+        label="views"
         value={pageviews.value}
-        change={pageviews.change}
+        prev={pageviews.prev}
+        change={pageviews.value - pageviews.prev}
       />
       <MetricCard
-        label="Visitors"
+        label="visitors"
         value={uniques.value}
-        change={uniques.change}
+        prev={uniques.prev}
+        change={uniques.value - uniques.prev}
       />
       <MetricCard
-        label="Bounce rate"
+        label="bounce rate"
         reverseColors={true}
-        value={uniques.value ? (num / uniques.value) * 100 : 0}
+        value={uniques.value ? bouncesNum * 100 : 0}
+        prev={uniques.prev ? prevBouncesNum * 100 : 0}
         change={
-          uniques.value && uniques.change
-            ? (num / uniques.value) * 100 -
-                (Math.min(diffs.uniques, diffs.bounces) / diffs.uniques) *
-                  100 || 0
+          uniques.value && uniques.prev
+            ? bouncesNum * 100 - prevBouncesNum * 100 || 0
             : 0
         }
         format={(n) => formatNumber(n) + '%'}
       />
       <MetricCard
-        label="Average visit time"
+        label="average visit time"
         value={
           totaltime.value && pageviews.value
             ? totaltime.value / (pageviews.value - bounces.value)
             : 0
         }
+        prev={
+          totaltime.prev && pageviews.prev
+            ? totaltime.prev / (pageviews.prev - bounces.prev)
+            : 0
+        }
         change={
           totaltime.value && pageviews.value
-            ? (diffs.totaltime / (diffs.pageviews - diffs.bounces) -
-                totaltime.value / (pageviews.value - bounces.value)) *
-                -1 || 0
+            ? totaltime.value / (pageviews.value - bounces.value) -
+                totaltime.prev / (pageviews.prev - bounces.prev) || 0
             : 0
         }
         format={(n) =>

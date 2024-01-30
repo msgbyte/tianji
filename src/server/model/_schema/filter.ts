@@ -15,7 +15,7 @@ export const websiteFilterSchema = z.object({
 
 const websiteStatsItemType = z.object({
   value: z.number(),
-  change: z.number(),
+  prev: z.number(),
 });
 
 export const websiteStatsSchema = z.object({

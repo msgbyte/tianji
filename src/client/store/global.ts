@@ -18,10 +18,12 @@ interface GlobalState {
   dateRange: DateRange;
   startDate: Dayjs | null;
   endDate: Dayjs | null;
+  showPreviousPeriod: boolean;
 }
 
 export const useGlobalStateStore = create<GlobalState>(() => ({
   dateRange: DateRange.Last24Hours,
   startDate: null,
   endDate: null,
+  showPreviousPeriod: false,
 }));
