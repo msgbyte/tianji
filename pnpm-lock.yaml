@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 overrides:
   dayjs: 1.11.10
 
@@ -400,6 +404,9 @@ importers:
       nodemon:
         specifier: ^3.0.3
         version: 3.0.3
+      p-map:
+        specifier: 4.0.0
+        version: 4.0.0
       prisma:
         specifier: 5.4.2
         version: 5.4.2
@@ -16630,6 +16637,7 @@ packages:
   /pify@4.0.1:
     resolution: {integrity: sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==}
     engines: {node: '>=6'}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -17439,6 +17447,7 @@ packages:
 
   /prr@1.0.1:
     resolution: {integrity: sha512-yPw4Sng1gWghHQWj0B3ZggWUm4qVbPwPFcRG8KyxiU7J2OHFSoEHKS+EZ3fv5l1t9CyCiop6l/ZYeWbrgoQejw==}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -18103,7 +18112,7 @@ packages:
     engines: {node: '>=8.x'}
     peerDependencies:
       date-fns: '>= 2.x'
-      dayjs: '>= 1.x'
+      dayjs: 1.11.10
       luxon: '>= 3.x'
       moment: '>= 2.x'
       react: '>=16.9.0'
@@ -18132,7 +18141,7 @@ packages:
     engines: {node: '>=8.x'}
     peerDependencies:
       date-fns: '>= 2.x'
-      dayjs: '>= 1.x'
+      dayjs: 1.11.10
       luxon: '>= 3.x'
       moment: '>= 2.x'
       react: '>=16.9.0'
@@ -22737,7 +22746,3 @@ packages:
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false

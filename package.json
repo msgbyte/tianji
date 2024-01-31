@@ -8,7 +8,7 @@
     "dev:server": "cd src/server && pnpm dev",
     "start": "cd src/server && cross-env NODE_ENV=production node ./dist/src/server/main.js",
     "start:docker": "pnpm start:docker:db && pnpm start",
-    "start:docker:db": "cd src/server && pnpm db:migrate:apply",
+    "start:docker:db": "cd src/server && pnpm db:migrate:apply && pnpm db:migrate:script",
     "test": "vitest",
     "build": "pnpm build:tracker && pnpm build:app && pnpm build:geo",
     "build:app": "pnpm build:server && pnpm build:client",
