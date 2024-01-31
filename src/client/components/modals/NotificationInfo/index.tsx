@@ -92,7 +92,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
         open={props.open}
         onCancel={props.onCancel}
         footer={
-          <div>
+          <div className="space-x-2">
             <Button loading={testMutation.isLoading} onClick={handleTest}>
               Test
             </Button>
