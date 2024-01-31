@@ -111,6 +111,7 @@ export const NotificationList: React.FC = React.memo(() => {
       />
 
       <NotificationInfoModal
+        key={editingFormData?.id}
         open={open}
         initialValues={editingFormData}
         onSubmit={handleSubmit}
