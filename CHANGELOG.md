@@ -1,5 +1,61 @@
 
 
+## [1.5.0](https://github.com/msgbyte/tianji/compare/v1.4.3...v1.5.0) (2024-02-01)
+
+
+### Features
+
+* add audit log ([d912c78](https://github.com/msgbyte/tianji/commit/d912c788c534a5aff956d5a4b7d1f45208cc5d5e))
+* add leaflet visitor map if user not wanna register any token ([3baa1ab](https://github.com/msgbyte/tianji/commit/3baa1ab55b8ab399fd2b5a50840ac5d0162ae28c))
+* add previous period in website overview ([8ff5db8](https://github.com/msgbyte/tianji/commit/8ff5db80e21a8489a347be7a907cb5dad8f37aba))
+* add some audit log for monitor ([a176bbc](https://github.com/msgbyte/tianji/commit/a176bbcfb47d1b1fa2d3e8afb49785338df27580))
+* add visitor map entry button in country list ([835d7ff](https://github.com/msgbyte/tianji/commit/835d7ff43d77a236443929e52b75da6a2ecc9d9c))
+* add website visitor map ([5c633ae](https://github.com/msgbyte/tianji/commit/5c633ae38c21ee5e7a4a46ae0ee93c50efd8ef93))
+* add workspace audit log db model ([7243b99](https://github.com/msgbyte/tianji/commit/7243b991ae4ed5978b365994896de26669863ab1))
+* parse ip location and storage in db ([99a6c91](https://github.com/msgbyte/tianji/commit/99a6c91b1b63eb0b07ed8f05b42175f8ea6d9f51))
+
+
+### Bug Fixes
+
+* add more space in network traffic column [#20](https://github.com/msgbyte/tianji/issues/20) ([c8671e8](https://github.com/msgbyte/tianji/commit/c8671e865699edcf4d4ebce09acc1ef3470a7357))
+* fix @tianji/shared build problem ([f5f0a56](https://github.com/msgbyte/tianji/commit/f5f0a560f1e45bddd8e4034699ef31feb00ff3b8))
+* fix a bug which data will reuse prev state in notification in production ([5c2e0e4](https://github.com/msgbyte/tianji/commit/5c2e0e46e1a081d63a53c1aaf1497798c5f3ce8b))
+* fix library path load problem ([c049a62](https://github.com/msgbyte/tianji/commit/c049a624933e26ed8f4dabfa0e9e19534f1d1829))
+
+
+### Document
+
+* fix README/website style problem ([63a3e7c](https://github.com/msgbyte/tianji/commit/63a3e7c78121a7eabb3823cdf65f832466d5e4ee))
+* improve changelog date string display ([bb26196](https://github.com/msgbyte/tianji/commit/bb26196179d6c98363771955edae2858b383533d))
+* update qrcord ([211e921](https://github.com/msgbyte/tianji/commit/211e92100b74d0b90b481fccd8361027ef87df00))
+* update wechat ([d2171ce](https://github.com/msgbyte/tianji/commit/d2171ce2b34494bc58563de2ff2dba5de8a32718))
+
+
+### Others
+
+* add audit log list empty state ([f153145](https://github.com/msgbyte/tianji/commit/f153145e0d3c19df256a0329fe1b92121d0d55a7))
+* add config ([48605ab](https://github.com/msgbyte/tianji/commit/48605abe245250dea1f6b073150caaff53e877cd))
+* add global ts-node in root path ([1063eca](https://github.com/msgbyte/tianji/commit/1063eca4ff6cd695987b2c74b38a330df4f73e65))
+* add populate ip location script ([788b43b](https://github.com/msgbyte/tianji/commit/788b43b86d1855e0f220d4a2796ad9896da406af))
+* add settings menu in user menu ([00a0459](https://github.com/msgbyte/tianji/commit/00a045915e7bc651d10273b82377856cba059fc0))
+* add shared packacage ([39550ec](https://github.com/msgbyte/tianji/commit/39550ece8339ea98915ba1b41398548d31e8c09a))
+* change project strcut to monorepo ([601c167](https://github.com/msgbyte/tianji/commit/601c167d365e73dbd6b3f036d4930bc66fdf7759))
+* change website stat endpoint to trpc ([537edcf](https://github.com/msgbyte/tianji/commit/537edcf5066fee879be2506dab17e0e583ed9729))
+* docker base image change to node 18 ([88a87a4](https://github.com/msgbyte/tianji/commit/88a87a4b58678061e6acc43b40e1713439ea54b6))
+* fix ci problem ([0502185](https://github.com/msgbyte/tianji/commit/0502185e7cb14150ae497a5bf218f85e5bc69807))
+* fixpnpm run path problem ([814c7bf](https://github.com/msgbyte/tianji/commit/814c7bf237a75cd65cb46d635a2af2aee170c6b0))
+* improve dev env support ([70f0f56](https://github.com/msgbyte/tianji/commit/70f0f56b47f71d7dd62c9c502d553a3c491cf9e2))
+* improve monitor badge display, add title in copy text ([4a1ea85](https://github.com/msgbyte/tianji/commit/4a1ea8557aa2620573806ec1bb33536a1c676ec8))
+* improve SEO description ([4ed941b](https://github.com/msgbyte/tianji/commit/4ed941b013a24ca3e1603cbec68c415438710ec4))
+* remove kill others in @tianji/shared build ([dde617f](https://github.com/msgbyte/tianji/commit/dde617fa0cdbd3e29f6c484661e7a445409e627c))
+* resolve shared import problem in production ([486587f](https://github.com/msgbyte/tianji/commit/486587f232190d271b82b576c5d60e398cc67846))
+* run db:generate at first ([8a42ef6](https://github.com/msgbyte/tianji/commit/8a42ef616ee49bb09acbef4f2c2a424acab3b1a9))
+* update build track.js output path ([74948ff](https://github.com/msgbyte/tianji/commit/74948ff53394caa80dfbda10c42638f83ed12429))
+* update docker file, move to 20-alpine ([caad780](https://github.com/msgbyte/tianji/commit/caad780e9a5d77b83bbd1822ced5cd88f93b1dcf))
+* update dockerfile, move python3 into bottom to avoid compile isolated-vm ([153e2bf](https://github.com/msgbyte/tianji/commit/153e2bf499b3bbf253c565a822573d751d8000cb))
+* update dockerfile, try use 20-bullseye ([9b0db9e](https://github.com/msgbyte/tianji/commit/9b0db9e444730e7a35fb20d95c4582972de0a706))
+* upgrade isolated-vm ([bf1604d](https://github.com/msgbyte/tianji/commit/bf1604d9eccd011559cdc678b80748985640f60e))
+
 ## [1.4.3](https://github.com/msgbyte/tianji/compare/v1.4.2...v1.4.3) (2024-01-14)
 
 
