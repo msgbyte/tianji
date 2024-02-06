@@ -1,4 +1,4 @@
-import { Form, Input, Select, Switch } from 'antd';
+import { Form, Input, Select, Switch, Typography } from 'antd';
 import React from 'react';
 import { MonitorOverviewComponent, MonitorProvider } from './types';
 import { trpc } from '../../../api/trpc';
@@ -165,7 +165,11 @@ MonitorHttpOverview.displayName = 'MonitorHttpOverview';
 export const httpProvider: MonitorProvider = {
   label: 'HTTP',
   name: 'http',
-  link: (info) => String(info.payload.url),
+  link: (info) => (
+    <Typography.Link href={String(info.payload.url)} target="_blank">
+      {String(info.payload.url)}
+    </Typography.Link>
+  ),
   form: MonitorHttp,
   overview: [MonitorHttpOverview],
 };
