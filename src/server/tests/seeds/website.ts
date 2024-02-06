@@ -96,7 +96,24 @@ async function createSessionEvent(session: WebsiteSession) {
     data: Array.from({ length: faker.number.int({ max: 20 }) }).map(() => ({
       sessionId: session.id,
       websiteId: session.websiteId,
-      urlPath: '/',
+      urlPath: [
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.directoryPath(),
+        faker.system.filePath(),
+      ].join(''), // generate long path
       createdAt: faker.date.between({
         from: session.createdAt,
         to: endDate,
