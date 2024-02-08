@@ -94,14 +94,24 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   });
 
   const handleDelete = useEvent(async () => {
-    await deleteMutation.mutateAsync({
-      workspaceId,
-      monitorId,
+    Modal.confirm({
+      title: 'Warning',
+      content: 'Did you sure delete this monitor?',
+      okButtonProps: {
+        danger: true,
+      },
+      onOk: async () => {
+        await deleteMutation.mutateAsync({
+          workspaceId,
+          monitorId,
+        });
+        await trpcUtils.monitor.all.refetch();
+
+        navigate('/monitor', {
+          replace: true,
+        });
+      },
     });
-
-    trpcUtils.monitor.all.refetch();
-
-    navigate('/monitor');
   });
 
   const handleClearEvents = useEvent(() => {
@@ -205,13 +215,6 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               </Button>
             )}
 
-            <Popconfirm
-              title="Did you sure delete this monitor?"
-              onConfirm={handleDelete}
-            >
-              <Button danger={true}>Delete</Button>
-            </Popconfirm>
-
             <Dropdown
               trigger={['click']}
               placement="bottomRight"
@@ -221,6 +224,15 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                     key: 'badge',
                     label: 'Show Badge',
                     onClick: () => setShowBadge(true),
+                  },
+                  {
+                    type: 'divider',
+                  },
+                  {
+                    key: 'delete',
+                    label: 'Delete',
+                    danger: true,
+                    onClick: handleDelete,
                   },
                 ],
               }}
