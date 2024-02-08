@@ -1,5 +1,23 @@
 
 
+## [1.5.1](https://github.com/msgbyte/tianji/compare/v1.5.0...v1.5.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* add table label ellipsis to avoid much long label [#23](https://github.com/msgbyte/tianji/issues/23) ([343c05c](https://github.com/msgbyte/tianji/commit/343c05c3abf52cf70310d49b88f540fc2da5cf2f))
+
+
+### Document
+
+* update QRCode ([da5149b](https://github.com/msgbyte/tianji/commit/da5149b1665b8271d539c99aa29018dfa8a15633))
+
+
+### Others
+
+* http url allow link ([e9b783f](https://github.com/msgbyte/tianji/commit/e9b783f0478f67bee0ca81a0115d1680e38c6e3c))
+* move delete button into more button dropdown ([70c60b5](https://github.com/msgbyte/tianji/commit/70c60b5ee1f734a955ca38a3c5cf6faf44a2a93f))
+
 ## [1.5.0](https://github.com/msgbyte/tianji/compare/v1.4.3...v1.5.0) (2024-02-01)
 
 
