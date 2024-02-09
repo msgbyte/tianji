@@ -19,7 +19,7 @@ export const WorkspaceModelSchema = z.object({
   /**
    * [CommonPayload]
    */
-  settings: jsonSchema,
+  settings: imports.CommonPayloadSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
 })

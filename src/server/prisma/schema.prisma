@@ -39,6 +39,7 @@ model Workspace {
   /// [DashboardLayout]
   dashboardLayout Json?    @db.Json
   /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
   settings        Json     @default("{}")
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
@@ -231,6 +232,7 @@ model TelemetryEvent {
   urlPath     String  @db.VarChar(500)
 
   /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
   payload   Json?    @db.Json // Other payload info get from query params, should be a object
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
@@ -248,6 +250,7 @@ model Notification {
   name        String   @db.VarChar(100)
   type        String   @db.VarChar(100)
   /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
   payload     Json     @db.Json
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
 
@@ -265,11 +268,11 @@ model Monitor {
   type        String   @db.VarChar(100)
   active      Boolean  @default(true) @db.Boolean
   interval    Int      @default(20) @db.Integer
-  maxRetries  Int      @default(0)
+  maxRetries  Int      @default(0) @db.Integer
   // TODO
-  // maxRetry      Int       @default(0) @db.Integer
   // retryInterval Int       @default(0) @db.Integer
   /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
   payload     Json     @db.Json
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
@@ -311,6 +314,7 @@ model MonitorStatus {
   monitorId  String   @db.VarChar(30)
   statusName String   @db.VarChar(50)
   /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
   payload    Json     @db.Json
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)

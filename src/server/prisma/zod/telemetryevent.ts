@@ -18,7 +18,7 @@ export const TelemetryEventModelSchema = z.object({
   /**
    * [CommonPayload]
    */
-  payload: jsonSchema,
+  payload: imports.CommonPayloadSchema,
   createdAt: z.date(),
 })
 

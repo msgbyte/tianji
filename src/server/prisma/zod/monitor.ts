@@ -19,7 +19,7 @@ export const MonitorModelSchema = z.object({
   /**
    * [CommonPayload]
    */
-  payload: jsonSchema,
+  payload: imports.CommonPayloadSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
 })

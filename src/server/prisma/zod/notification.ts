@@ -16,7 +16,7 @@ export const NotificationModelSchema = z.object({
   /**
    * [CommonPayload]
    */
-  payload: jsonSchema,
+  payload: imports.CommonPayloadSchema,
   createdAt: z.date(),
 })
 

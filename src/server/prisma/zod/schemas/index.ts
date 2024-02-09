@@ -6,3 +6,5 @@ export const MonitorStatusPageListSchema = z.array(
     showCurrent: z.boolean().default(false).optional(),
   })
 );
+
+export const CommonPayloadSchema = z.record(z.string(), z.any());

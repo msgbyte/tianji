@@ -54,7 +54,7 @@ export const websiteInfoSchema = z.object({
   deletedAt: z.date().nullable(),
 });
 
-export const monitorInfoWithNotificationIdSchema = MonitorModelSchema.and(
+export const monitorInfoWithNotificationIdSchema = MonitorModelSchema.merge(
   z.object({
     notifications: z.array(z.object({ id: z.string() })),
   })
