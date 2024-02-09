@@ -15,6 +15,7 @@ export const MonitorModelSchema = z.object({
   type: z.string(),
   active: z.boolean(),
   interval: z.number().int(),
+  maxRetries: z.number().int(),
   /**
    * [CommonPayload]
    */

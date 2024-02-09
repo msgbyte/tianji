@@ -16,13 +16,15 @@ import {
 import dayjs from 'dayjs';
 import {
   monitorEventSchema,
-  monitorInfoSchema,
   monitorInfoWithNotificationIdSchema,
   monitorStatusSchema,
 } from '../../model/_schema';
 import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
-import { MonitorStatusPageModelSchema } from '../../prisma/zod';
+import {
+  MonitorModelSchema,
+  MonitorStatusPageModelSchema,
+} from '../../prisma/zod';
 import { runCodeInVM } from '../../model/monitor/provider/custom';
 import { createAuditLog } from '../../model/auditLog';
 import {
@@ -124,11 +126,12 @@ export const monitorRouter = router({
         type: z.string(),
         active: z.boolean().default(true),
         interval: z.number().int().min(5).max(10000).default(20),
+        maxRetries: z.number().int().min(0).max(10).default(0),
         notificationIds: z.array(z.string()).default([]),
         payload: z.object({}).passthrough(),
       })
     )
-    .output(monitorInfoSchema)
+    .output(MonitorModelSchema)
     .mutation(async ({ input }) => {
       const {
         id,
@@ -137,6 +140,7 @@ export const monitorRouter = router({
         type,
         active,
         interval,
+        maxRetries,
         notificationIds,
         payload,
       } = input;
@@ -148,6 +152,7 @@ export const monitorRouter = router({
         type,
         active,
         interval,
+        maxRetries,
         notificationIds,
         payload,
       });
@@ -166,7 +171,7 @@ export const monitorRouter = router({
         monitorId: z.string().cuid2(),
       })
     )
-    .output(monitorInfoSchema)
+    .output(MonitorModelSchema)
     .mutation(async ({ input }) => {
       const { workspaceId, monitorId } = input;
 
@@ -239,7 +244,7 @@ export const monitorRouter = router({
         active: z.boolean(),
       })
     )
-    .output(monitorInfoSchema)
+    .output(MonitorModelSchema)
     .mutation(async ({ input, ctx }) => {
       const { workspaceId, monitorId, active } = input;
       const user = ctx.user;

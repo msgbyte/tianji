@@ -15,6 +15,7 @@ import { createAuditLog } from '../auditLog';
 export class MonitorRunner {
   isStopped = false;
   timer: NodeJS.Timeout | null = null;
+  retriedNum = 0;
 
   constructor(public monitor: Monitor & { notifications: Notification[] }) {}
 
@@ -23,7 +24,7 @@ export class MonitorRunner {
    */
   async startMonitor() {
     const monitor = this.monitor;
-    const { type, interval, workspaceId } = monitor;
+    const { type, interval, workspaceId, maxRetries } = monitor;
 
     const provider = monitorProviders[type];
     if (!provider) {
@@ -58,30 +59,41 @@ export class MonitorRunner {
           value = -1;
         }
 
-        // check event update
-        if (value < 0 && currentStatus === 'UP') {
-          await this.createEvent(
-            'DOWN',
-            `Monitor [${monitor.name}] has been down`
-          );
-          await this.notify(`[${monitor.name}] 🔴 Down`, [
-            token.text(
-              `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
-                'YYYY-MM-DD HH:mm:ss (z)'
-              )}`
-            ),
-          ]);
-          currentStatus = 'DOWN';
-        } else if (value > 0 && currentStatus === 'DOWN') {
-          await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
-          await this.notify(`[${monitor.name}] ✅ Up`, [
-            token.text(
-              `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
-                'YYYY-MM-DD HH:mm:ss (z)'
-              )}`
-            ),
-          ]);
-          currentStatus = 'UP';
+        if (this.retriedNum < maxRetries) {
+          // can be retry
+          this.retriedNum++;
+        } else {
+          // check event update
+          if (value < 0 && currentStatus === 'UP') {
+            // UP -> DOWN
+            await this.createEvent(
+              'DOWN',
+              `Monitor [${monitor.name}] has been down`
+            );
+            await this.notify(`[${monitor.name}] 🔴 Down`, [
+              token.text(
+                `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
+                  'YYYY-MM-DD HH:mm:ss (z)'
+                )}`
+              ),
+            ]);
+            currentStatus = 'DOWN';
+          } else if (value > 0 && currentStatus === 'DOWN') {
+            // DOWN -> UP
+            this.retriedNum = 0;
+            await this.createEvent(
+              'UP',
+              `Monitor [${monitor.name}] has been up`
+            );
+            await this.notify(`[${monitor.name}] ✅ Up`, [
+              token.text(
+                `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
+                  'YYYY-MM-DD HH:mm:ss (z)'
+                )}`
+              ),
+            ]);
+            currentStatus = 'UP';
+          }
         }
 
         // insert into data
@@ -93,9 +105,6 @@ export class MonitorRunner {
         });
 
         subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
-
-        // Run next loop
-        nextAction();
       } catch (err) {
         logger.error('[Monitor] Run monitor error,', monitor.id, String(err));
         createAuditLog({
@@ -104,6 +113,9 @@ export class MonitorRunner {
           relatedType: 'Monitor',
           content: `Run monitor(id: ${monitor.id}) error: ${String(err)}`,
         });
+      } finally {
+        // Run next loop
+        nextAction();
       }
     };
 

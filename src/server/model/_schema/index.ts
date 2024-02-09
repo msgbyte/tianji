@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MonitorModelSchema } from '../../prisma/zod';
 
 // Match prisma `JsonValue`
 export const jsonFieldSchema = z.union([
@@ -53,18 +54,7 @@ export const websiteInfoSchema = z.object({
   deletedAt: z.date().nullable(),
 });
 
-export const monitorInfoSchema = z.object({
-  id: z.string(),
-  workspaceId: z.string(),
-  name: z.string(),
-  type: z.string(),
-  active: z.boolean(),
-  interval: z.number(),
-  payload: jsonFieldSchema,
-  createdAt: z.date(),
-});
-
-export const monitorInfoWithNotificationIdSchema = monitorInfoSchema.and(
+export const monitorInfoWithNotificationIdSchema = MonitorModelSchema.and(
   z.object({
     notifications: z.array(z.object({ id: z.string() })),
   })

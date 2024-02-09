@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger';
 
 export type MonitorUpsertData = Pick<
   Monitor,
-  'workspaceId' | 'name' | 'type' | 'interval'
+  'workspaceId' | 'name' | 'type' | 'interval' | 'maxRetries'
 > & {
   id?: string;
   active?: boolean;

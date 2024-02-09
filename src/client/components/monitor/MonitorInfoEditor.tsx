@@ -19,6 +19,7 @@ const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
   type: monitorProviders[0].name,
   active: true,
   interval: 60,
+  maxRetries: 0,
 };
 
 interface MonitorInfoEditorProps {
@@ -88,6 +89,14 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
               max={10000}
               step={10}
             />
+          </Form.Item>
+
+          <Form.Item
+            label="Max Retries"
+            name="maxRetries"
+            tooltip="Maximum retries before the service is marked as down and a notification is sent"
+          >
+            <InputNumber min={0} max={10} defaultValue={0} />
           </Form.Item>
 
           {formEl}

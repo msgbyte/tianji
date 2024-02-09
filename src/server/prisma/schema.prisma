@@ -265,6 +265,7 @@ model Monitor {
   type        String   @db.VarChar(100)
   active      Boolean  @default(true) @db.Boolean
   interval    Int      @default(20) @db.Integer
+  maxRetries  Int      @default(0)
   // TODO
   // maxRetry      Int       @default(0) @db.Integer
   // retryInterval Int       @default(0) @db.Integer
