@@ -7,9 +7,11 @@ import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { getMonitorProvider, getProviderDisplay } from './provider';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const { monitorId } = props;
     const [rangeType, setRangeType] = useState('recent');
@@ -145,11 +147,11 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
             value={rangeType}
             onChange={(val) => setRangeType(val)}
           >
-            <Select.Option value="recent">Recent</Select.Option>
-            <Select.Option value="3h">3h</Select.Option>
-            <Select.Option value="6h">6h</Select.Option>
-            <Select.Option value="24h">24h</Select.Option>
-            <Select.Option value="1w">1w</Select.Option>
+            <Select.Option value="recent">{t('Recent')}</Select.Option>
+            <Select.Option value="3h">{t('3h')}</Select.Option>
+            <Select.Option value="6h">{t('6h')}</Select.Option>
+            <Select.Option value="24h">{t('24h')}</Select.Option>
+            <Select.Option value="1w">{t('1w')}</Select.Option>
           </Select>
         </div>
 

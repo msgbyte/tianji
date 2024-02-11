@@ -31,8 +31,10 @@ import clsx from 'clsx';
 import { isServerOnline } from '@tianji/shared';
 import { defaultErrorHandler, trpc } from '../api/trpc';
 import { useRequest } from '../hooks/useRequest';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const Servers: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hideOfflineServer, setHideOfflineServer] = useState(false);
   const workspaceId = useCurrentWorkspaceId();
@@ -55,25 +57,25 @@ export const Servers: React.FC = React.memo(() => {
   return (
     <div>
       <div className="h-24 flex items-center">
-        <div className="text-2xl flex-1">Servers</div>
+        <div className="text-2xl flex-1">{t('Servers')}</div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1 text-gray-500">
             <Switch
               checked={hideOfflineServer}
               onChange={setHideOfflineServer}
             />
-            Hide Offline
+            {t('Hide Offline')}
           </div>
 
           <div>
             <Popconfirm
-              title="Clear Offline Node"
-              description="Are you sure to clear all offline node?"
+              title={t('Clear Offline Node')}
+              description={t('Are you sure to clear all offline node?')}
               disabled={loading}
               onConfirm={handleClearOfflineNode}
             >
               <Button size="large" loading={loading}>
-                Clear Offline
+                {t('Clear Offline')}
               </Button>
             </Popconfirm>
           </div>
@@ -86,7 +88,7 @@ export const Servers: React.FC = React.memo(() => {
             size="large"
             onClick={() => setIsModalOpen(true)}
           >
-            Add Server
+            {t('Add Server')}
           </Button>
         </div>
       </div>
@@ -94,7 +96,7 @@ export const Servers: React.FC = React.memo(() => {
       <ServerList hideOfflineServer={hideOfflineServer} />
 
       <Modal
-        title="Add Server"
+        title={t('Add Server')}
         open={isModalOpen}
         destroyOnClose={true}
         okText="Done"
@@ -106,12 +108,12 @@ export const Servers: React.FC = React.memo(() => {
             items={[
               {
                 key: 'auto',
-                label: 'Auto',
+                label: t('Auto'),
                 children: <InstallScript />,
               },
               {
                 key: 'manual',
-                label: 'Manual',
+                label: t('Manual'),
                 children: <AddServerStep />,
               },
             ]}
@@ -135,6 +137,7 @@ function useServerMap(): Record<string, ServerStatusInfo> {
 export const ServerList: React.FC<{
   hideOfflineServer: boolean;
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const serverMap = useServerMap();
   const inc = useIntervalUpdate(2 * 1000);
   const { hideOfflineServer } = props;
@@ -158,16 +161,16 @@ export const ServerList: React.FC<{
     return [
       {
         key: 'status',
-        title: 'Status',
+        title: t('Status'),
         width: 90,
         render: (val, record) => {
           return isServerOnline(record) ? (
-            <Badge status="success" text="online" />
+            <Badge status="success" text={t('online')} />
           ) : (
             <Tooltip
-              title={`Last online: ${dayjs(record.updatedAt).format(
-                'YYYY-MM-DD HH:mm:ss'
-              )}`}
+              title={t('Last online: {{time}}', {
+                time: dayjs(record.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+              })}
             >
               <Badge status="error" text="offline" />
             </Tooltip>
@@ -176,13 +179,13 @@ export const ServerList: React.FC<{
       },
       {
         dataIndex: 'name',
-        title: 'Node Name',
+        title: t('Node Name'),
         width: 150,
         ellipsis: true,
       },
       {
         dataIndex: 'hostname',
-        title: 'Host Name',
+        title: t('Host Name'),
         width: 150,
         ellipsis: true,
       },
@@ -192,18 +195,18 @@ export const ServerList: React.FC<{
       // },
       {
         dataIndex: ['payload', 'uptime'],
-        title: 'Uptime',
+        title: t('Uptime'),
         width: 150,
         render: (val) => prettyMilliseconds(Number(val) * 1000),
       },
       {
         dataIndex: ['payload', 'load'],
-        title: 'Load',
+        title: t('Load'),
         width: 70,
       },
       {
         key: 'nework',
-        title: 'Network',
+        title: t('Network'),
         width: 110,
         render: (_, record) => {
           return (
@@ -216,7 +219,7 @@ export const ServerList: React.FC<{
       },
       {
         key: 'traffic',
-        title: 'Traffic',
+        title: t('Traffic'),
         width: 130,
         render: (_, record) => {
           return (
@@ -229,13 +232,13 @@ export const ServerList: React.FC<{
       },
       {
         dataIndex: ['payload', 'cpu'],
-        title: 'CPU',
+        title: t('CPU'),
         width: 80,
         render: (val) => `${val}%`,
       },
       {
         key: 'ram',
-        title: 'RAM',
+        title: t('RAM'),
         width: 120,
         render: (_, record) => {
           return (
@@ -248,7 +251,7 @@ export const ServerList: React.FC<{
       },
       {
         key: 'hdd',
-        title: 'HDD',
+        title: t('HDD'),
         width: 120,
         render: (_, record) => {
           return (
@@ -261,7 +264,7 @@ export const ServerList: React.FC<{
       },
       {
         dataIndex: 'updatedAt',
-        title: 'updatedAt',
+        title: t('updatedAt'),
         width: 130,
         render: (val) => {
           return dayjs(val).format('MMM D HH:mm:ss');
@@ -273,7 +276,9 @@ export const ServerList: React.FC<{
   return (
     <div>
       <div className="text-right text-sm opacity-80">
-        Last updated at: {dayjs(lastUpdatedAt).format('YYYY-MM-DD HH:mm:ss')}
+        {t('Last updated at: {{date}}', {
+          date: dayjs(lastUpdatedAt).format('YYYY-MM-DD HH:mm:ss'),
+        })}
       </div>
       <div className="overflow-auto">
         <Table
@@ -281,7 +286,7 @@ export const ServerList: React.FC<{
           columns={columns}
           dataSource={dataSource}
           pagination={false}
-          locale={{ emptyText: <Empty description="No server online" /> }}
+          locale={{ emptyText: <Empty description={t('No server online')} /> }}
           rowClassName={(record) =>
             clsx(!isServerOnline(record) && 'opacity-60')
           }
@@ -293,12 +298,13 @@ export const ServerList: React.FC<{
 ServerList.displayName = 'ServerList';
 
 export const InstallScript: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const command = `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | bash`;
 
   return (
     <div>
-      <div>Run this command in your linux machine</div>
+      <div>{t('Run this command in your linux machine')}</div>
 
       <Typography.Paragraph
         copyable={{
@@ -311,14 +317,16 @@ export const InstallScript: React.FC = React.memo(() => {
       </Typography.Paragraph>
 
       <div>
-        Or you wanna report server status in windows server? switch to Manual
-        tab
+        {t(
+          'Or you wanna report server status in windows server? switch to Manual tab'
+        )}
       </div>
     </div>
   );
 });
 
 export const AddServerStep: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const [current, setCurrent] = useState(0);
   const serverMap = useServerMap();
@@ -348,10 +356,10 @@ export const AddServerStep: React.FC = React.memo(() => {
       current={current}
       items={[
         {
-          title: 'Download Client Reportor',
+          title: t('Download Client Reportor'),
           description: (
             <div>
-              Download reporter from{' '}
+              {t('Download reporter from')}{' '}
               <Typography.Link
                 href="https://github.com/msgbyte/tianji/releases"
                 target="_blank"
@@ -362,16 +370,16 @@ export const AddServerStep: React.FC = React.memo(() => {
                   }
                 }}
               >
-                Releases Page
+                {t('Releases Page')}
               </Typography.Link>
             </div>
           ),
         },
         {
-          title: 'Run',
+          title: t('Run'),
           description: (
             <div>
-              run reporter with:{' '}
+              {t('run reporter with')}:{' '}
               <Typography.Text
                 code={true}
                 copyable={{ format: 'text/plain', text: command }}
@@ -389,20 +397,20 @@ export const AddServerStep: React.FC = React.memo(() => {
                   }
                 }}
               >
-                Next step
+                {t('Next step')}
               </Button>
             </div>
           ),
         },
         {
-          title: 'Waiting for receive UDP pack',
+          title: t('Waiting for receive UDP pack'),
           description: (
             <div>
               {diffServerNames.length === 0 || checking === false ? (
                 <Loading />
               ) : (
                 <div>
-                  Is this your servers?
+                  {t('Is this your servers?')}
                   {diffServerNames.map((n) => (
                     <div key={n}>- {n}</div>
                   ))}

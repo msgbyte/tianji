@@ -7,23 +7,24 @@ import { useEvent } from '../../hooks/useEvent';
 import { NotificationList } from './NotificationList';
 import { Profile } from './Profile';
 import { AuditLog } from './AuditLog';
+import { Trans } from '@i18next-toolkit/react';
 
 const items: MenuProps['items'] = [
   {
     key: 'websites',
-    label: 'Websites',
+    label: <Trans>Websites</Trans>,
   },
   {
     key: 'notifications',
-    label: 'Notifications',
+    label: <Trans>Notifications</Trans>,
   },
   {
     key: 'auditLog',
-    label: 'Audit Log',
+    label: <Trans>Audit Log</Trans>,
   },
   {
     key: 'profile',
-    label: 'Profile',
+    label: <Trans>Profile</Trans>,
   },
 ];
 

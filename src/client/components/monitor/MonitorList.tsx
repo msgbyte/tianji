@@ -7,8 +7,10 @@ import { Empty } from 'antd';
 import { MonitorListItem } from './MonitorListItem';
 import { useNavigate, useParams } from 'react-router';
 import clsx from 'clsx';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorList: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { data: monitors = [], isLoading } = trpc.monitor.all.useQuery({
     workspaceId,
@@ -32,7 +34,9 @@ export const MonitorList: React.FC = React.memo(() => {
 
   return (
     <div className="p-2">
-      {monitors.length === 0 && <Empty description="Here is no monitor yet." />}
+      {monitors.length === 0 && (
+        <Empty description={t('Here is no monitor yet.')} />
+      )}
 
       {monitors.map((monitor) => (
         <MonitorListItem

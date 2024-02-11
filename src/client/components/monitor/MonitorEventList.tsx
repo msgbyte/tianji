@@ -5,12 +5,14 @@ import clsx from 'clsx';
 import dayjs from 'dayjs';
 import { Card, Empty } from 'antd';
 import { useNavigate } from 'react-router';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface MonitorEventListProps {
   monitorId?: string;
 }
 export const MonitorEventList: React.FC<MonitorEventListProps> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const { data = [], isLoading } = trpc.monitor.events.useQuery({
       workspaceId,
@@ -19,7 +21,7 @@ export const MonitorEventList: React.FC<MonitorEventListProps> = React.memo(
     const navigate = useNavigate();
 
     if (isLoading === false && data.length === 0) {
-      return <Empty description="No events" />;
+      return <Empty description={t('No events')} />;
     }
 
     return (

@@ -4,8 +4,10 @@ import { useEvent } from '../../../../hooks/useEvent';
 import axios from 'axios';
 import { AutoLoadingButton } from '../../../AutoLoadingButton';
 import { get, last } from 'lodash-es';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const NotificationTelegram: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const token = Form.useWatch(['payload', 'botToken']);
   const form = Form.useFormInstance();
 
@@ -32,16 +34,16 @@ export const NotificationTelegram: React.FC = React.memo(() => {
   return (
     <>
       <Form.Item
-        label="Bot Token"
+        label={t('Bot Token')}
         name={['payload', 'botToken']}
         rules={[{ required: true }]}
       >
         <Input.Password />
       </Form.Item>
       <Typography.Paragraph className="text-neutral-500">
-        You can get a token from https://t.me/BotFather.
+        {t('You can get a token from https://t.me/BotFather.')}
       </Typography.Paragraph>
-      <Form.Item label="Chat ID" required={true}>
+      <Form.Item label={t('Chat ID')} required={true}>
         <div className="flex gap-2 overflow-hidden">
           <Form.Item
             className="flex-1"
@@ -54,17 +56,19 @@ export const NotificationTelegram: React.FC = React.memo(() => {
 
           {token && (
             <AutoLoadingButton onClick={handleAutoGet}>
-              Auto Fetch
+              {t('Auto Fetch')}
             </AutoLoadingButton>
           )}
         </div>
       </Form.Item>
       <Typography.Paragraph className="text-neutral-500">
-        Support Direct Chat / Group / Channel's Chat ID
+        {t("Support Direct Chat / Group / Channel's Chat ID")}
       </Typography.Paragraph>
       <Typography.Paragraph className="text-neutral-500">
-        You can get your chat ID by sending a message to the bot and going to
-        this URL to view the chat_id:
+        {t(
+          'You can get your chat ID by sending a message to the bot and going to this URL to view the chat_id'
+        )}
+        :
       </Typography.Paragraph>
       <Typography.Link href={getUpdatesUrl(token)} target="_blank">
         {getUpdatesUrl('*'.repeat(token?.length ?? 0))}

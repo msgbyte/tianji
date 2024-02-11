@@ -16,8 +16,10 @@ import { PageHeader } from '../PageHeader';
 import { ModalButton } from '../ModalButton';
 import { hostnameValidator } from '../../utils/validator';
 import { trpc } from '../../api/trpc';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const WebsiteList: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const workspaceId = useCurrentWorkspaceId();
   const [form] = Form.useForm();
@@ -44,7 +46,7 @@ export const WebsiteList: React.FC = React.memo(() => {
   return (
     <div>
       <PageHeader
-        title="Websites"
+        title={t('Websites')}
         action={
           <div>
             <Button
@@ -53,7 +55,7 @@ export const WebsiteList: React.FC = React.memo(() => {
               size="large"
               onClick={() => setIsModalOpen(true)}
             >
-              Add Website
+              {t('Add Website')}
             </Button>
           </div>
         }
@@ -62,7 +64,7 @@ export const WebsiteList: React.FC = React.memo(() => {
       <WebsiteListTable workspaceId={workspaceId} />
 
       <Modal
-        title="Add Website"
+        title={t('Add Website')}
         open={isModalOpen}
         okButtonProps={{
           loading: addWebsiteMutation.isLoading,
@@ -72,17 +74,17 @@ export const WebsiteList: React.FC = React.memo(() => {
       >
         <Form layout="vertical" form={form}>
           <Form.Item
-            label="Website Name"
+            label={t('Website Name')}
             name="name"
-            tooltip="Website Name to Display"
+            tooltip={t('Website Name to Display')}
             rules={[{ required: true }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="Domain"
+            label={t('Domain')}
             name="domain"
-            tooltip="Your server domain, or ip."
+            tooltip={t('Your server domain, or ip.')}
             rules={[
               { required: true },
               {
@@ -105,6 +107,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
       workspaceId: props.workspaceId,
     });
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleEdit = useEvent((websiteId) => {
       navigate(`/settings/website/${websiteId}`);
@@ -114,11 +117,11 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
       return [
         {
           dataIndex: 'name',
-          title: 'Name',
+          title: t('Name'),
         },
         {
           dataIndex: 'domain',
-          title: 'Domain',
+          title: t('Domain'),
         },
         {
           key: 'action',
@@ -135,9 +138,9 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
                   modalProps={{
                     children: (
                       <div>
-                        <div>Tracking code</div>
+                        <div>{t('Tracking code')}</div>
                         <div className="text-sm opacity-60">
-                          Add this code into your website head script
+                          {t('Add this code into your website head script')}
                         </div>
                         <Typography.Paragraph
                           copyable={{
@@ -156,7 +159,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
                   icon={<EditOutlined />}
                   onClick={() => handleEdit(record.id)}
                 >
-                  Edit
+                  {t('Edit')}
                 </Button>
                 <Button
                   icon={<BarChartOutlined />}
@@ -164,7 +167,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
                     navigate(`/website/${record.id}`);
                   }}
                 >
-                  View
+                  {t('View')}
                 </Button>
               </div>
             );

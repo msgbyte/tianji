@@ -10,6 +10,8 @@ import { ColorSchemeSwitcher } from '../components/ColorSchemeSwitcher';
 import { version } from '@tianji/shared';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { RiMenuUnfoldLine } from 'react-icons/ri';
+import { useTranslation } from '@i18next-toolkit/react';
+import { LanguageSelector } from '../components/LanguageSelector';
 
 export const Layout: React.FC = React.memo(() => {
   const [params] = useSearchParams();
@@ -31,6 +33,7 @@ export const Layout: React.FC = React.memo(() => {
   const isMobile = useIsMobile();
   const showHeader = !params.has('hideHeader');
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const accountEl = (
     <Dropdown
@@ -39,7 +42,7 @@ export const Layout: React.FC = React.memo(() => {
         items: [
           {
             key: 'workspaces',
-            label: 'Workspaces',
+            label: t('Workspaces'),
             children: workspaces.map((w) => ({
               key: w.id,
               label: `${w.name}${w.current ? '(current)' : ''}`,
@@ -48,14 +51,14 @@ export const Layout: React.FC = React.memo(() => {
           },
           {
             key: 'settings',
-            label: 'Settings',
+            label: t('Settings'),
             onClick: () => {
               navigate('/settings');
             },
           },
           {
             key: 'logout',
-            label: 'Logout',
+            label: t('Logout'),
             onClick: () => {
               logout();
             },
@@ -96,27 +99,27 @@ export const Layout: React.FC = React.memo(() => {
                   <div className="flex-1">
                     <MobileNavItem
                       to="/dashboard"
-                      label="Dashboard"
+                      label={t('Dashboard')}
                       onClick={() => setOpenDraw(false)}
                     />
                     <MobileNavItem
                       to="/monitor"
-                      label="Monitor"
+                      label={t('Monitor')}
                       onClick={() => setOpenDraw(false)}
                     />
                     <MobileNavItem
                       to="/website"
-                      label="Website"
+                      label={t('Website')}
                       onClick={() => setOpenDraw(false)}
                     />
                     <MobileNavItem
                       to="/servers"
-                      label="Servers"
+                      label={t('Servers')}
                       onClick={() => setOpenDraw(false)}
                     />
                     <MobileNavItem
                       to="/settings"
-                      label="Settings"
+                      label={t('Settings')}
                       onClick={() => setOpenDraw(false)}
                     />
                   </div>
@@ -140,16 +143,18 @@ export const Layout: React.FC = React.memo(() => {
           {!isMobile && (
             <>
               <div className="flex gap-8">
-                <NavItem to="/dashboard" label="Dashboard" />
-                <NavItem to="/monitor" label="Monitor" />
-                <NavItem to="/website" label="Website" />
-                <NavItem to="/servers" label="Servers" />
-                <NavItem to="/settings" label="Settings" />
+                <NavItem to="/dashboard" label={t('Dashboard')} />
+                <NavItem to="/monitor" label={t('Monitor')} />
+                <NavItem to="/website" label={t('Website')} />
+                <NavItem to="/servers" label={t('Servers')} />
+                <NavItem to="/settings" label={t('Settings')} />
               </div>
 
               <div className="flex-1" />
 
               <div className="flex gap-2">
+                <LanguageSelector />
+
                 <ColorSchemeSwitcher />
 
                 {accountEl}

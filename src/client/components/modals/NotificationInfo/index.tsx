@@ -16,6 +16,7 @@ import {
 import { useEvent } from '../../../hooks/useEvent';
 import { useCurrentWorkspaceId } from '../../../store/user';
 import { notificationStrategies } from './strategies';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export interface NotificationFormValues {
   id?: string;
@@ -36,6 +37,7 @@ interface NotificationInfoModalProps
 }
 export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
   React.memo((props) => {
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const typeValue = Form.useWatch('type', form);
     const currentWorkspaceId = useCurrentWorkspaceId()!;
@@ -85,7 +87,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
 
     return (
       <Modal
-        title="Notification"
+        title={t('Notification')}
         destroyOnClose={true}
         maskClosable={false}
         centered={true}
@@ -94,10 +96,10 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
         footer={
           <div className="space-x-2">
             <Button loading={testMutation.isLoading} onClick={handleTest}>
-              Test
+              {t('Test')}
             </Button>
             <Button type="primary" onClick={handleSave}>
-              Save
+              {t('Save')}
             </Button>
           </div>
         }
@@ -110,7 +112,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
             initialValues={props.initialValues ?? defaultValues}
           >
             <Form.Item hidden name="id" />
-            <Form.Item label="Notification Type" name="type">
+            <Form.Item label={t('Notification Type')} name="type">
               <Select>
                 {notificationStrategies.map((s) => (
                   <Select.Option key={s.name} value={s.name}>
@@ -120,7 +122,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
               </Select>
             </Form.Item>
 
-            <Form.Item label="Display Name" name="name">
+            <Form.Item label={t('Display Name')} name="name">
               <Input />
             </Form.Item>
 

@@ -5,12 +5,14 @@ import { ErrorTip } from '../ErrorTip';
 import { Loading } from '../Loading';
 import { getMonitorProvider } from './provider';
 import { MonitorStatsBlock } from './MonitorStatsBlock';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorDataMetrics: React.FC<{
   monitorId: string;
   monitorType: string;
   currectResponse?: number;
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { monitorId, monitorType, currectResponse } = props;
   const { data, isLoading } = trpc.monitor.dataMetrics.useQuery({
@@ -53,20 +55,20 @@ export const MonitorDataMetrics: React.FC<{
     <div className="flex justify-between text-center">
       {typeof currectResponse === 'number' && (
         <MonitorStatsBlock
-          title="Response"
-          desc="(Current)"
+          title={t('Response')}
+          desc={t('(Current)')}
           text={formatterFn(currectResponse)}
         />
       )}
 
       <MonitorStatsBlock
-        title="Avg. Response"
-        desc="(24 hour)"
+        title={t('Avg. Response')}
+        desc={t('(24 hour)')}
         text={formatterFn(parseFloat(data.recent1DayAvg.toFixed(0)))}
       />
       <MonitorStatsBlock
-        title="Uptime"
-        desc="(24 hour)"
+        title={t('Uptime')}
+        desc={t('(24 hour)')}
         text={`${parseFloat(
           (
             (data.recent1DayOnlineCount /
@@ -76,8 +78,8 @@ export const MonitorDataMetrics: React.FC<{
         )} %`}
       />
       <MonitorStatsBlock
-        title="Uptime"
-        desc="(30 days)"
+        title={t('Uptime')}
+        desc={t('(30 days)')}
         text={`${parseFloat(
           (
             (data.recent30DayOnlineCount /

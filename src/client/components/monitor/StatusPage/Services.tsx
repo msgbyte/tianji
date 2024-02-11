@@ -4,6 +4,7 @@ import { trpc } from '../../../api/trpc';
 import { Loading } from '../../Loading';
 import { MonitorListItem } from '../MonitorListItem';
 import { keyBy } from 'lodash-es';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface StatusPageServicesProps {
   workspaceId: string;
@@ -14,6 +15,7 @@ interface StatusPageServicesProps {
 }
 export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const { workspaceId, monitorList } = props;
 
     const { data: list = [], isLoading } = trpc.monitor.getPublicInfo.useQuery({
@@ -40,7 +42,7 @@ export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
             />
           ))
         ) : (
-          <Empty description="No any monitor has been set" />
+          <Empty description={t('No any monitor has been set')} />
         )}
       </div>
     );

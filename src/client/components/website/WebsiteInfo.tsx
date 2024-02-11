@@ -17,8 +17,10 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useEvent } from '../../hooks/useEvent';
 import { hostnameValidator } from '../../utils/validator';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const WebsiteInfo: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { websiteId } = useParams<{
     websiteId: string;
@@ -54,7 +56,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
   const [, handleDeleteWebsite] = useRequest(async () => {
     await deleteWorkspaceWebsite(workspaceId, websiteId!);
 
-    message.success('Delete Success');
+    message.success(t('Delete Success'));
 
     navigate('/settings/websites');
   });
@@ -78,7 +80,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
   return (
     <div>
       <div className="h-24 flex items-center">
-        <div className="text-2xl flex-1">Website Info</div>
+        <div className="text-2xl flex-1">{t('Website Info')}</div>
       </div>
 
       <div>
@@ -94,14 +96,18 @@ export const WebsiteInfo: React.FC = React.memo(() => {
               }}
               onFinish={handleSave}
             >
-              <Form.Item label="Website ID" name="id">
+              <Form.Item label={t('Website ID')} name="id">
                 <Input size="large" disabled={true} />
               </Form.Item>
-              <Form.Item label="Name" name="name" rules={[{ required: true }]}>
+              <Form.Item
+                label={t('Name')}
+                name="name"
+                rules={[{ required: true }]}
+              >
                 <Input size="large" />
               </Form.Item>
               <Form.Item
-                label="Domain"
+                label={t('Domain')}
                 name="domain"
                 rules={[
                   { required: true },
@@ -114,16 +120,18 @@ export const WebsiteInfo: React.FC = React.memo(() => {
               </Form.Item>
 
               <Form.Item
-                label="Monitor"
+                label={t('Monitor')}
                 name="monitorId"
-                tooltip="You can bind a monitor which will display health status in website overview"
+                tooltip={t(
+                  'You can bind a monitor which will display health status in website overview'
+                )}
               >
                 <MonitorPicker size="large" allowClear={true} />
               </Form.Item>
 
               <Form.Item>
                 <Button size="large" htmlType="submit">
-                  Save
+                  {t('Save')}
                 </Button>
               </Form.Item>
             </Form>
@@ -131,11 +139,11 @@ export const WebsiteInfo: React.FC = React.memo(() => {
 
           <Tabs.TabPane key={'data'} tab={'Data'}>
             <Popconfirm
-              title="Delete Website"
+              title={t('Delete Website')}
               onConfirm={() => handleDeleteWebsite()}
             >
               <Button type="primary" danger={true}>
-                Delete Website
+                {t('Delete Website')}
               </Button>
             </Popconfirm>
           </Tabs.TabPane>

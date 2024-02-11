@@ -10,8 +10,10 @@ import { WebsiteOverview } from '../../components/website/WebsiteOverview';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { RightOutlined } from '@ant-design/icons';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const WebsiteDetail: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const { websiteId } = useParams();
   const workspaceId = useCurrentWorkspaceId();
   const { data: website, isLoading } = trpc.website.info.useQuery({
@@ -46,7 +48,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <MetricsTable
             websiteId={websiteId}
             type="url"
-            title={['Pages', 'Views']}
+            title={[t('Pages'), t('Views')]}
             startAt={startAt}
             endAt={endAt}
           />
@@ -55,7 +57,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <MetricsTable
             websiteId={websiteId}
             type="referrer"
-            title={['Referrers', 'Views']}
+            title={[t('Referrers'), t('Views')]}
             startAt={startAt}
             endAt={endAt}
           />
@@ -64,7 +66,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <MetricsTable
             websiteId={websiteId}
             type="browser"
-            title={['Browser', 'Visitors']}
+            title={[t('Browser'), t('Visitors')]}
             startAt={startAt}
             endAt={endAt}
           />
@@ -73,7 +75,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <MetricsTable
             websiteId={websiteId}
             type="os"
-            title={['OS', 'Visitors']}
+            title={[t('OS'), t('Visitors')]}
             startAt={startAt}
             endAt={endAt}
           />
@@ -82,7 +84,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <MetricsTable
             websiteId={websiteId}
             type="device"
-            title={['Devices', 'Visitors']}
+            title={[t('Devices'), t('Visitors')]}
             startAt={startAt}
             endAt={endAt}
           />
@@ -91,7 +93,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <MetricsTable
             websiteId={websiteId}
             type="country"
-            title={['Countries', 'Visitors']}
+            title={[t('Countries'), t('Visitors')]}
             startAt={startAt}
             endAt={endAt}
           />
@@ -102,14 +104,14 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             icon={<RightOutlined className="m-0" />}
             onClick={() => navigate(`/website/${websiteId}/map`)}
           >
-            Visitor Map
+            {t('Visitor Map')}
           </Button>
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
           <MetricsTable
             websiteId={websiteId}
             type="event"
-            title={['Events', 'Actions']}
+            title={[t('Events'), t('Actions')]}
             startAt={startAt}
             endAt={endAt}
           />

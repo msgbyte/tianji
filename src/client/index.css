@@ -21,6 +21,7 @@ a {
 
 #root, .App {
   height: 100%;
+  font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .App.dark {

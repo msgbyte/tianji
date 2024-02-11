@@ -24,12 +24,14 @@ import { useNavigate } from 'react-router';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { getUserTimezone } from '../../api/model/user';
 import { useGlobalStateStore } from '../../store/global';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
   showDateFilter?: boolean;
   actions?: React.ReactNode;
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const { website, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
   const navigate = useNavigate();
@@ -68,7 +70,7 @@ export const WebsiteOverview: React.FC<{
 
     await Promise.all([refetchPageview(), refetchStats()]);
 
-    message.success('Refreshed');
+    message.success(t('Refreshed'));
   });
 
   const chartData = useMemo(() => {
@@ -127,7 +129,7 @@ export const WebsiteOverview: React.FC<{
                 })
               }
             />
-            <span className="ml-1">Previous period</span>
+            <span className="ml-1">{t('Previous period')}</span>
           </div>
 
           <Button
@@ -155,6 +157,7 @@ WebsiteOverview.displayName = 'WebsiteOverview';
 export const MetricsBar: React.FC<{
   stats: AppRouterOutput['website']['stats'];
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const { pageviews, uniques, bounces, totaltime } = props.stats || {};
   const bouncesNum = Math.min(uniques.value, bounces.value) / uniques.value;
   const prevBouncesNum = Math.min(uniques.prev, bounces.prev) / uniques.prev;
@@ -162,19 +165,19 @@ export const MetricsBar: React.FC<{
   return (
     <div className="flex gap-5 flex-wrap w-full">
       <MetricCard
-        label="views"
+        label={t('views')}
         value={pageviews.value}
         prev={pageviews.prev}
         change={pageviews.value - pageviews.prev}
       />
       <MetricCard
-        label="visitors"
+        label={t('visitors')}
         value={uniques.value}
         prev={uniques.prev}
         change={uniques.value - uniques.prev}
       />
       <MetricCard
-        label="bounce rate"
+        label={t('bounce rate')}
         reverseColors={true}
         value={uniques.value ? bouncesNum * 100 : 0}
         prev={uniques.prev ? prevBouncesNum * 100 : 0}
@@ -186,7 +189,7 @@ export const MetricsBar: React.FC<{
         format={(n) => formatNumber(n) + '%'}
       />
       <MetricCard
-        label="average visit time"
+        label={t('average visit time')}
         value={
           totaltime.value && pageviews.value
             ? totaltime.value / (pageviews.value - bounces.value)

@@ -2,12 +2,14 @@ import { Checkbox, Divider, Input, message } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { useEvent } from '../../hooks/useEvent';
 import copy from 'copy-to-clipboard';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorBadgeView: React.FC<{
   workspaceId: string;
   monitorId: string;
   monitorName?: string;
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const { workspaceId, monitorId, monitorName = '' } = props;
 
   const [showDetail, setShowDetail] = useState(false);
@@ -24,7 +26,7 @@ export const MonitorBadgeView: React.FC<{
 
   const handleCopy = useEvent((text: string) => {
     copy(text);
-    message.success('Copy success!');
+    message.success(t('Copy success!'));
   });
 
   return (
@@ -32,19 +34,19 @@ export const MonitorBadgeView: React.FC<{
       <div>
         <img src={url} />
       </div>
-      <p>This will show your recent result of your monitor</p>
+      <p>{t('This will show your recent result of your monitor')}</p>
       <div>
         <Checkbox
           checked={showDetail}
           onChange={(e) => setShowDetail(e.target.checked)}
         >
-          Show Detail Number
+          {t('Show Detail Number')}
         </Checkbox>
       </div>
 
       <Divider />
 
-      <p>Share with...</p>
+      <p>{t('Share with...')}</p>
 
       <div className="flex flex-col gap-2">
         <Input
@@ -57,7 +59,7 @@ export const MonitorBadgeView: React.FC<{
                 handleCopy(`<img src="${url}" title="${monitorName}" />`)
               }
             >
-              Copy
+              {t('Copy')}
             </div>
           }
         />
@@ -70,7 +72,7 @@ export const MonitorBadgeView: React.FC<{
               className="cursor-pointer"
               onClick={() => handleCopy(`![${monitorName}](${url})`)}
             >
-              Copy
+              {t('Copy')}
             </div>
           }
         />
@@ -83,7 +85,7 @@ export const MonitorBadgeView: React.FC<{
               className="cursor-pointer"
               onClick={() => handleCopy(`[img]${url}[/img]`)}
             >
-              Copy
+              {t('Copy')}
             </div>
           }
         />
@@ -93,7 +95,7 @@ export const MonitorBadgeView: React.FC<{
           value={url}
           addonAfter={
             <div className="cursor-pointer" onClick={() => handleCopy(url)}>
-              Copy
+              {t('Copy')}
             </div>
           }
         />

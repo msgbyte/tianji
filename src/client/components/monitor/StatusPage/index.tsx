@@ -11,6 +11,7 @@ import { useRequest } from '../../../hooks/useRequest';
 import { useNavigate } from 'react-router';
 import { ColorSchemeSwitcher } from '../../ColorSchemeSwitcher';
 import { StatusPageServices } from './Services';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -18,6 +19,7 @@ interface MonitorStatusPageProps {
 
 export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const { slug } = props;
 
     const { data: info } = trpc.monitor.getPageInfo.useQuery({
@@ -88,16 +90,16 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
           {allowEdit && !editMode && (
             <div className="mb-4 flex gap-2">
               <Button type="primary" onClick={() => setEditMode(true)}>
-                Edit
+                {t('Edit')}
               </Button>
 
               <Button type="default" onClick={() => navigate(`/`)}>
-                Back to Admin
+                {t('Back to Admin')}
               </Button>
             </div>
           )}
 
-          <div className="text-lg mb-2">Services</div>
+          <div className="text-lg mb-2">{t('Services')}</div>
 
           {info && (
             <StatusPageServices

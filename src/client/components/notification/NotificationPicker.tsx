@@ -5,10 +5,12 @@ import { useCurrentWorkspaceId } from '../../store/user';
 import { ColorTag } from '../ColorTag';
 import { useNavigate } from 'react-router';
 import { PlusOutlined } from '@ant-design/icons';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface NotificationPickerProps extends SelectProps<string> {}
 export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const navigate = useNavigate();
     const { data: allNotification = [] } = trpc.notification.all.useQuery({
@@ -21,12 +23,12 @@ export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
           <Empty
             description={
               <div className="py-2">
-                <div className="mb-1">Not found any notification</div>
+                <div className="mb-1">{t('Not found any notification')}</div>
                 <Button
                   icon={<PlusOutlined />}
                   onClick={() => navigate('/settings/notifications')}
                 >
-                  Create Now
+                  {t('Create Now')}
                 </Button>
               </div>
             }

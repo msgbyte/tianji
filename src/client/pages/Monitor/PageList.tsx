@@ -5,8 +5,10 @@ import { trpc } from '../../api/trpc';
 import { Button, Card, Popconfirm } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { useEvent } from '../../hooks/useEvent';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorPageList: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const { data: pages = [], refetch } = trpc.monitor.getAllPages.useQuery({
@@ -26,7 +28,7 @@ export const MonitorPageList: React.FC = React.memo(() => {
   return (
     <div className="px-8 py-4">
       <Button type="primary" onClick={() => navigate('/monitor/pages/add')}>
-        New page
+        {t('New page')}
       </Button>
 
       <div className="mt-4 flex flex-col gap-2">
@@ -36,7 +38,7 @@ export const MonitorPageList: React.FC = React.memo(() => {
               <div className="flex-1">{p.title}</div>
               <div className="flex gap-2">
                 <Popconfirm
-                  title="Did you sure delete this page?"
+                  title={t('Did you sure delete this page?')}
                   onConfirm={() => handleDeletePage(p.id)}
                   okButtonProps={{
                     danger: true,

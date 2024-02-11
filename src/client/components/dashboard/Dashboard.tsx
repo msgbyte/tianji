@@ -9,8 +9,10 @@ import { DateFilter } from '../DateFilter';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspace, useCurrentWorkspaceId } from '../../store/user';
 import clsx from 'clsx';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const Dashboard: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const { isEditMode, switchEditMode, layouts, items } = useDashboardStore();
   const mutation = trpc.workspace.saveDashboardLayout.useMutation();
   const workspaceId = useCurrentWorkspaceId();
@@ -42,7 +44,7 @@ export const Dashboard: React.FC = React.memo(() => {
       },
     });
     switchEditMode();
-    message.success('Layout saved success');
+    message.success(t('Layout saved success'));
   });
 
   return (
@@ -63,7 +65,7 @@ export const Dashboard: React.FC = React.memo(() => {
               disabled={mutation.isLoading}
               onClick={handleSaveDashboardLayout}
             >
-              Done
+              {t('Done')}
             </Button>
           </>
         ) : (
@@ -75,7 +77,7 @@ export const Dashboard: React.FC = React.memo(() => {
               size="large"
               onClick={switchEditMode}
             >
-              Edit
+              {t('Edit')}
             </Button>
           </>
         )}
@@ -88,7 +90,11 @@ export const Dashboard: React.FC = React.memo(() => {
       />
 
       {items.length === 0 && (
-        <Empty description="You have not dashboard item yet, please enter edit mode and add you item." />
+        <Empty
+          description={t(
+            'You have not dashboard item yet, please enter edit mode and add you item.'
+          )}
+        />
       )}
     </div>
   );

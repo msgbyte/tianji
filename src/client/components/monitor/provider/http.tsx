@@ -7,12 +7,15 @@ import dayjs from 'dayjs';
 import { isEmpty } from 'lodash-es';
 import { useCurrentWorkspaceId } from '../../../store/user';
 import { z } from 'zod';
+import { useTranslation } from '@i18next-toolkit/react';
 
 const MonitorHttp: React.FC = React.memo(() => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item
-        label="Url"
+        label={t('Url')}
         name={['payload', 'url']}
         rules={[
           { required: true },
@@ -45,11 +48,11 @@ const MonitorHttp: React.FC = React.memo(() => {
           <Select.Option value="options">OPTIONS</Select.Option>
         </Select>
       </Form.Item>
-      <Form.Item label="Request Timeout(s)" name={['payload', 'timeout']}>
+      <Form.Item label={t('Request Timeout(s)')} name={['payload', 'timeout']}>
         <InputNumber defaultValue={30} />
       </Form.Item>
       <Form.Item
-        label="Ignore TLS/SSL error"
+        label={t('Ignore TLS/SSL error')}
         valuePropName="checked"
         name={['payload', 'ignoreTLS']}
       >
@@ -137,6 +140,7 @@ MonitorHttp.displayName = 'MonitorHttp';
 
 export const MonitorHttpOverview: MonitorOverviewComponent = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const { data } = trpc.monitor.getStatus.useQuery({
       workspaceId,
@@ -156,9 +160,11 @@ export const MonitorHttpOverview: MonitorOverviewComponent = React.memo(
 
     return (
       <MonitorStatsBlock
-        title="Cert Exp."
+        title={t('Cert Exp.')}
         desc={dayjs(payload.certInfo?.validTo).format('YYYY-MM-DD')}
-        text={`${payload.certInfo?.daysRemaining} days`}
+        text={t('{{num}} days', {
+          num: payload.certInfo?.daysRemaining,
+        })}
       />
     );
   }

@@ -8,8 +8,10 @@ import { useCurrentWorkspaceId } from '../../../store/user';
 import { useEvent } from '../../../hooks/useEvent';
 import dayjs from 'dayjs';
 import { ColorTag } from '../../ColorTag';
+import { Trans, useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorCustom: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const testScriptMutation = trpc.monitor.testCustomScript.useMutation({
     onError: defaultErrorHandler,
@@ -26,7 +28,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
     modal.info({
       centered: true,
       maskClosable: true,
-      title: 'Run Completed',
+      title: t('Run Completed'),
       width: 'clamp(320px, 60vw, 860px)',
       content: (
         <div>
@@ -48,9 +50,9 @@ export const MonitorCustom: React.FC = React.memo(() => {
             </div>
           ))}
 
-          <div>Usage: {usage}ms</div>
+          <div>{t('Usage: {{usage}}ms', { usage })} </div>
           <div>
-            Result: <span className="font-semibold">{result}</span>
+            {t('Result')}: <span className="font-semibold">{result}</span>
           </div>
         </div>
       ),
@@ -60,7 +62,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
   return (
     <>
       <Form.Item
-        label="Script JS Code"
+        label={t('Script JS Code')}
         name={['payload', 'code']}
         rules={[{ required: true }]}
       >
@@ -71,7 +73,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
         icon={<PlayCircleOutlined />}
         onClick={handleTestCode}
       >
-        Test Code
+        {t('Test Code')}
       </Button>
       {contextHolder}
     </>
@@ -80,7 +82,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
 MonitorCustom.displayName = 'MonitorCustom';
 
 export const customProvider: MonitorProvider = {
-  label: 'Custom',
+  label: <Trans>Custom</Trans>,
   name: 'custom',
   form: MonitorCustom,
   valueLabel: 'Result',

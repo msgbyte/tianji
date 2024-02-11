@@ -3,6 +3,7 @@ import React from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { MonitorPicker } from '../MonitorPicker';
 import { urlSlugValidator } from '../../../utils/validator';
+import { useTranslation } from '@i18next-toolkit/react';
 
 const { Text } = Typography;
 
@@ -22,6 +23,8 @@ interface MonitorStatusPageEditFormProps {
 
 export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps> =
   React.memo((props) => {
+    const { t } = useTranslation();
+
     return (
       <div>
         <Form<MonitorStatusPageEditFormValues>
@@ -30,7 +33,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           onFinish={props.onFinish}
         >
           <Form.Item
-            label="Title"
+            label={t('Title')}
             name="title"
             rules={[
               {
@@ -47,11 +50,11 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             extra={
               <div className="pt-2">
                 <div>
-                  Accept characters: <Text code>a-z</Text> <Text code>0-9</Text>{' '}
-                  <Text code>-</Text>
+                  {t('Accept characters')}: <Text code>a-z</Text>{' '}
+                  <Text code>0-9</Text> <Text code>-</Text>
                 </div>
                 <div>
-                  No consecutive dashes <Text code>--</Text>
+                  {t('No consecutive dashes')} <Text code>--</Text>
                 </div>
               </div>
             }
@@ -71,7 +74,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             {(fields, { add, remove }, { errors }) => {
               return (
                 <>
-                  <Form.Item label="Monitors">
+                  <Form.Item label={t('Monitors')}>
                     <div className="flex flex-col gap-2 mb-2">
                       {fields.map((field, index) => (
                         // monitor item
@@ -84,7 +87,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                               rules={[
                                 {
                                   required: true,
-                                  message: 'Please select monitor',
+                                  message: t('Please select monitor'),
                                 },
                               ]}
                               noStyle={true}
@@ -103,7 +106,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                                 </Form.Item>
 
                                 <span className="text-sm align-middle ml-1">
-                                  Show Current Response
+                                  {t('Show Current Response')}
                                 </span>
                               </div>
 
@@ -123,7 +126,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                       style={{ width: '60%' }}
                       icon={<PlusOutlined />}
                     >
-                      Add Monitor
+                      {t('Add Monitor')}
                     </Button>
 
                     <Form.ErrorList errors={errors} />
@@ -135,12 +138,12 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
 
           <div className="flex gap-4">
             <Button type="primary" htmlType="submit" loading={props.isLoading}>
-              {props.saveButtonLabel ?? 'Save'}
+              {props.saveButtonLabel ?? t('Save')}
             </Button>
 
             {props.onCancel && (
               <Button htmlType="button" onClick={props.onCancel}>
-                Cancel
+                {t('Cancel')}
               </Button>
             )}
           </div>

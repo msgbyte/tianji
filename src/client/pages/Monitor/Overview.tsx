@@ -3,8 +3,10 @@ import { useCurrentWorkspaceId } from '../../store/user';
 import { trpc } from '../../api/trpc';
 import { Card } from 'antd';
 import { MonitorEventList } from '../../components/monitor/MonitorEventList';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorOverview: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const currentWorkspaceId = useCurrentWorkspaceId()!;
   const { data: monitors = [] } = trpc.monitor.all.useQuery({
     workspaceId: currentWorkspaceId,
@@ -14,11 +16,11 @@ export const MonitorOverview: React.FC = React.memo(() => {
     <div className="px-2">
       <div className="grid gap-4 grid-cols-2">
         <Card hoverable={true}>
-          <div>Monitors</div>
+          <div>{t('Monitors')}</div>
           <div className="text-2xl font-semibold">{monitors.length}</div>
         </Card>
         <Card hoverable={true}>
-          <div>Available</div>
+          <div>{t('Available')}</div>
           <div className="text-2xl font-semibold">
             {monitors.filter((m) => m.active).length}
           </div>

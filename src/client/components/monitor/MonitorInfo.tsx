@@ -21,11 +21,13 @@ import { MonitorDataMetrics } from './MonitorDataMetrics';
 import { MonitorDataChart } from './MonitorDataChart';
 import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { MonitorBadgeView } from './MonitorBadgeView';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface MonitorInfoProps {
   monitorId: string;
 }
 export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { monitorId } = props;
   const [currectResponse, setCurrentResponse] = useState(0);
@@ -95,8 +97,8 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
   const handleDelete = useEvent(async () => {
     Modal.confirm({
-      title: 'Warning',
-      content: 'Did you sure delete this monitor?',
+      title: t('Warning'),
+      content: t('Did you sure delete this monitor?'),
       okButtonProps: {
         danger: true,
       },
@@ -116,8 +118,8 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
   const handleClearEvents = useEvent(() => {
     Modal.confirm({
-      title: 'Warning',
-      content: 'Are you sure want to delete all events for this monitor?',
+      title: t('Warning'),
+      content: t('Are you sure want to delete all events for this monitor?'),
       okButtonProps: {
         danger: true,
       },
@@ -136,8 +138,10 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
   const handleClearData = useEvent(() => {
     Modal.confirm({
-      title: 'Warning',
-      content: 'Are you sure want to delete all heartbeats for this monitor?',
+      title: t('Warning'),
+      content: t(
+        'Are you sure want to delete all heartbeats for this monitor?'
+      ),
       okButtonProps: {
         danger: true,
       },
@@ -170,7 +174,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 <span>{monitorInfo.name}</span>
                 {monitorInfo.active === false && (
                   <div className="bg-red-500 rounded-full px-2 py-0.5 text-white text-xs">
-                    Stopped
+                    {t('Stopped')}
                   </div>
                 )}
               </div>
@@ -184,8 +188,9 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             </Space>
 
             <div className="text-black dark:text-gray-200 text-opacity-75">
-              Monitored for {dayjs().diff(dayjs(monitorInfo.createdAt), 'days')}{' '}
-              days
+              {t('Monitored for {{dayNum}} days', {
+                dayNum: dayjs().diff(dayjs(monitorInfo.createdAt), 'days'),
+              })}
             </div>
           </div>
 
@@ -196,7 +201,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 navigate(`/monitor/${monitorInfo.id}/edit`);
               }}
             >
-              Edit
+              {t('Edit')}
             </Button>
 
             {monitorInfo.active ? (
@@ -204,14 +209,14 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 loading={changeActiveMutation.isLoading}
                 onClick={handleStop}
               >
-                Stop
+                {t('Stop')}
               </Button>
             ) : (
               <Button
                 loading={changeActiveMutation.isLoading}
                 onClick={handleStart}
               >
-                Start
+                {t('Start')}
               </Button>
             )}
 
@@ -222,7 +227,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 items: [
                   {
                     key: 'badge',
-                    label: 'Show Badge',
+                    label: t('Show Badge'),
                     onClick: () => setShowBadge(true),
                   },
                   {
@@ -230,7 +235,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                   },
                   {
                     key: 'delete',
-                    label: 'Delete',
+                    label: t('Delete'),
                     danger: true,
                     onClick: handleDelete,
                   },
@@ -288,19 +293,19 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 items: [
                   {
                     key: 'events',
-                    label: 'Events',
+                    label: t('Events'),
                     onClick: handleClearEvents,
                   },
                   {
                     key: 'heartbeats',
-                    label: 'Heartbeats',
+                    label: t('Heartbeats'),
                     onClick: handleClearData,
                   },
                 ],
               }}
             >
               <Button icon={<DeleteOutlined />} danger={true}>
-                Clear Data
+                {t('Clear Data')}
               </Button>
             </Dropdown>
           </div>

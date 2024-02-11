@@ -6,9 +6,11 @@ import { trpc } from '../api/trpc';
 import { setJWT } from '../api/auth';
 import { setUserInfo } from '../store/user';
 import { useGlobalConfig } from '../hooks/useConfig';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const Login: React.FC = React.memo(() => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const mutation = trpc.user.login.useMutation();
   const [{ loading }, handleLogin] = useRequest(async (values: any) => {
@@ -34,14 +36,14 @@ export const Login: React.FC = React.memo(() => {
         </Typography.Title>
         <Form layout="vertical" disabled={loading} onFinish={handleLogin}>
           <Form.Item
-            label="Username"
+            label={t('Username')}
             name="username"
             rules={[{ required: true }]}
           >
             <Input size="large" />
           </Form.Item>
           <Form.Item
-            label="Password"
+            label={t('Password')}
             name="password"
             rules={[{ required: true }]}
           >
@@ -55,7 +57,7 @@ export const Login: React.FC = React.memo(() => {
               block={true}
               loading={loading}
             >
-              Login
+              {t('Login')}
             </Button>
           </Form.Item>
 
@@ -69,7 +71,7 @@ export const Login: React.FC = React.memo(() => {
                   navigate('/register');
                 }}
               >
-                Register
+                {t('Register')}
               </Button>
             </Form.Item>
           )}

@@ -5,8 +5,10 @@ import { useRequest } from '../hooks/useRequest';
 import { trpc } from '../api/trpc';
 import { setJWT } from '../api/auth';
 import { setUserInfo } from '../store/user';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const Register: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const mutation = trpc.user.register.useMutation();
@@ -29,18 +31,18 @@ export const Register: React.FC = React.memo(() => {
           <img className="w-24 h-24" src="/icon.svg" />
         </div>
         <Typography.Title className="text-center" level={2}>
-          Register Account
+          {t('Register Account')}
         </Typography.Title>
         <Form layout="vertical" disabled={loading} onFinish={handleRegister}>
           <Form.Item
-            label="Username"
+            label={t('Username')}
             name="username"
             rules={[{ required: true }]}
           >
             <Input size="large" />
           </Form.Item>
           <Form.Item
-            label="Password"
+            label={t('Password')}
             name="password"
             rules={[{ required: true }]}
           >
@@ -54,7 +56,7 @@ export const Register: React.FC = React.memo(() => {
               block={true}
               loading={loading}
             >
-              Register
+              {t('Register')}
             </Button>
           </Form.Item>
         </Form>

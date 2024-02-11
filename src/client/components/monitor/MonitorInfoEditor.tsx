@@ -4,6 +4,7 @@ import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { getMonitorProvider, monitorProviders } from './provider';
 import { useEventWithLoading } from '../../hooks/useEvent';
 import { NotificationPicker } from '../notification/NotificationPicker';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export type MonitorInfoEditorValues = Omit<
   Monitor,
@@ -28,6 +29,7 @@ interface MonitorInfoEditorProps {
 }
 export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const typeValue = Form.useWatch('type', form);
     const initialValues = props.initialValues ?? defaultValues;
@@ -65,7 +67,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
         >
           <Form.Item hidden name="id" />
 
-          <Form.Item label="Monitor Type" name="type">
+          <Form.Item label={t('Monitor Type')} name="type">
             <Select disabled={isEdit}>
               {monitorProviders.map((m) => (
                 <Select.Option key={m.name} value={m.name}>
@@ -75,12 +77,12 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
             </Select>
           </Form.Item>
 
-          <Form.Item label="Name" name="name" rules={[{ required: true }]}>
+          <Form.Item label={t('Name')} name="name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
 
           <Form.Item
-            label="Check Interval(s)"
+            label={t('Check Interval(s)')}
             name="interval"
             rules={[{ required: true }]}
           >
@@ -92,21 +94,23 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
           </Form.Item>
 
           <Form.Item
-            label="Max Retries"
+            label={t('Max Retries')}
             name="maxRetries"
-            tooltip="Maximum retries before the service is marked as down and a notification is sent"
+            tooltip={t(
+              'Maximum retries before the service is marked as down and a notification is sent'
+            )}
           >
             <InputNumber min={0} max={10} defaultValue={0} />
           </Form.Item>
 
           {formEl}
 
-          <Form.Item label="Notification" name="notificationIds">
+          <Form.Item label={t('Notification')} name="notificationIds">
             <NotificationPicker allowClear={true} mode="multiple" />
           </Form.Item>
 
           <Button type="primary" htmlType="submit" loading={isLoading}>
-            Save
+            {t('Save')}
           </Button>
         </Form>
       </div>

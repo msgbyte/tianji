@@ -7,10 +7,12 @@ import { WebsiteOverview } from '../../website/WebsiteOverview';
 import { Button } from 'antd';
 import { useNavigate } from 'react-router';
 import { ArrowRightOutlined } from '@ant-design/icons';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const WebsiteOverviewItem: React.FC<{
   websiteId: string;
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
 
@@ -39,7 +41,7 @@ export const WebsiteOverviewItem: React.FC<{
               navigate(`/website/${websiteInfo.id}`);
             }}
           >
-            View Details <ArrowRightOutlined />
+            {t('View Details')} <ArrowRightOutlined />
           </Button>
         </>
       }

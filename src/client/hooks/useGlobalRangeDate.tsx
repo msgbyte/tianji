@@ -4,6 +4,7 @@ import { useMemo, useReducer } from 'react';
 import { getMinimumUnit } from '@tianji/shared';
 import { DateRange, useGlobalStateStore } from '../store/global';
 import { DateUnit } from '../utils/date';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export function useGlobalRangeDate(): {
   label: React.ReactNode;
@@ -18,6 +19,7 @@ export function useGlobalRangeDate(): {
     endDate: globalEndDate,
   } = useGlobalStateStore();
   const [updateInc, refresh] = useReducer((state: number) => state + 1, 0);
+  const { t } = useTranslation();
 
   const { label, startDate, endDate, unit } = useMemo(() => {
     if (dateRange === DateRange.Custom) {
@@ -45,7 +47,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.Today) {
       return {
-        label: 'Today',
+        label: t('Today'),
         startDate: dayjs().startOf('day'),
         endDate: dayjs().endOf('day'),
         unit: 'hour' as const,
@@ -54,7 +56,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.Yesterday) {
       return {
-        label: 'Yesterday',
+        label: t('Yesterday'),
         startDate: dayjs().subtract(1, 'day').startOf('day'),
         endDate: dayjs().subtract(1, 'day').endOf('day'),
         unit: 'hour' as const,
@@ -63,7 +65,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.ThisWeek) {
       return {
-        label: 'This week',
+        label: t('This week'),
         startDate: dayjs().startOf('week'),
         endDate: dayjs().endOf('week'),
         unit: 'day' as const,
@@ -72,7 +74,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.Last7Days) {
       return {
-        label: 'Last 7 days',
+        label: t('Last 7 days'),
         startDate: dayjs().subtract(7, 'day').startOf('day'),
         endDate: dayjs().endOf('day'),
         unit: 'day' as const,
@@ -81,7 +83,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.ThisMonth) {
       return {
-        label: 'This month',
+        label: t('This month'),
         startDate: dayjs().startOf('month'),
         endDate: dayjs().endOf('month'),
         unit: 'day' as const,
@@ -90,7 +92,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.Last30Days) {
       return {
-        label: 'Last 30 days',
+        label: t('Last 30 days'),
         startDate: dayjs().subtract(30, 'day').startOf('day'),
         endDate: dayjs().endOf('day'),
         unit: 'day' as const,
@@ -99,7 +101,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.Last90Days) {
       return {
-        label: 'Last 90 days',
+        label: t('Last 90 days'),
         startDate: dayjs().subtract(90, 'day').startOf('day'),
         endDate: dayjs().endOf('day'),
         unit: 'day' as const,
@@ -108,7 +110,7 @@ export function useGlobalRangeDate(): {
 
     if (dateRange === DateRange.ThisYear) {
       return {
-        label: 'This year',
+        label: t('This year'),
         startDate: dayjs().startOf('year'),
         endDate: dayjs().endOf('year'),
         unit: 'month' as const,
@@ -117,7 +119,7 @@ export function useGlobalRangeDate(): {
 
     // default last 24 hour
     return {
-      label: 'Last 24 hours',
+      label: t('Last 24 hours'),
       startDate: dayjs().subtract(1, 'day'),
       endDate: dayjs(),
       unit: 'hour' as const,

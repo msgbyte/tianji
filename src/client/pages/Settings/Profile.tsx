@@ -8,8 +8,10 @@ import {
   trpc,
 } from '../../api/trpc';
 import { useLogout } from '../../api/model/user';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const Profile: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const userInfo = useUserStore((state) => state.info);
   const [openChangePassword, setOpenChangePassword] = useState(false);
 
@@ -22,23 +24,23 @@ export const Profile: React.FC = React.memo(() => {
 
   return (
     <div>
-      <PageHeader title="Profile" />
+      <PageHeader title={t('Profile')} />
 
       <Card>
         <Form layout="vertical">
-          <Form.Item label="Current Workspace Id">
+          <Form.Item label={t('Current Workspace Id')}>
             <Typography.Text copyable={true} code={true}>
               {userInfo?.currentWorkspace?.id}
             </Typography.Text>
           </Form.Item>
-          <Form.Item label="User Id">
+          <Form.Item label={t('User Id')}>
             <Typography.Text copyable={true} code={true}>
               {userInfo?.id}
             </Typography.Text>
           </Form.Item>
-          <Form.Item label="Password">
+          <Form.Item label={t('Password')}>
             <Button danger={true} onClick={() => setOpenChangePassword(true)}>
-              Change Password
+              {t('Change Password')}
             </Button>
           </Form.Item>
         </Form>
@@ -46,7 +48,7 @@ export const Profile: React.FC = React.memo(() => {
 
       <Modal
         open={openChangePassword}
-        title="Change password"
+        title={t('Change password')}
         footer={null}
         maskClosable={false}
         onCancel={() => setOpenChangePassword(false)}
@@ -64,21 +66,21 @@ export const Profile: React.FC = React.memo(() => {
           }}
         >
           <Form.Item
-            label="Old Password"
+            label={t('Old Password')}
             name="oldPassword"
             rules={[{ required: true }]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
-            label="New Password"
+            label={t('New Password')}
             name="newPassword"
             rules={[{ required: true }]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
-            label="New Password Repeat"
+            label={t('New Password Repeat')}
             name="newPasswordRepeat"
             rules={[
               { required: true },
@@ -88,7 +90,9 @@ export const Profile: React.FC = React.memo(() => {
                     return Promise.resolve();
                   }
 
-                  return Promise.reject('The two passwords are not consistent');
+                  return Promise.reject(
+                    t('The two passwords are not consistent')
+                  );
                 },
               }),
             ]}
@@ -101,7 +105,7 @@ export const Profile: React.FC = React.memo(() => {
               htmlType="submit"
               loading={changePasswordMutation.isLoading}
             >
-              Submit
+              {t('Submit')}
             </Button>
           </Form.Item>
         </Form>

@@ -10,8 +10,10 @@ import { NoWorkspaceTip } from '../../components/NoWorkspaceTip';
 import { PageHeader } from '../../components/PageHeader';
 import { useEvent } from '../../hooks/useEvent';
 import { useCurrentWorkspaceId } from '../../store/user';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const NotificationList: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const currentWorkspaceId = useCurrentWorkspaceId();
   const { data: list = [], refetch } = trpc.notification.all.useQuery({
@@ -58,7 +60,7 @@ export const NotificationList: React.FC = React.memo(() => {
   return (
     <div>
       <PageHeader
-        title="Notification List"
+        title={t('Notification List')}
         action={
           <div>
             <Button
@@ -67,7 +69,7 @@ export const NotificationList: React.FC = React.memo(() => {
               size="large"
               onClick={() => handleOpenModal()}
             >
-              New
+              {t('New')}
             </Button>
           </div>
         }
@@ -90,10 +92,10 @@ export const NotificationList: React.FC = React.memo(() => {
                   });
                 }}
               >
-                Edit
+                {t('Edit')}
               </Button>,
               <Popconfirm
-                title="Is delete this item?"
+                title={t('Is delete this item?')}
                 okButtonProps={{
                   danger: true,
                 }}

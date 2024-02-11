@@ -7,6 +7,7 @@ import { trpc } from '../../api/trpc';
 import { useWatch } from '../../hooks/useWatch';
 import { getMonitorProvider, getProviderDisplay } from './provider';
 import { MonitorProvider } from './provider/types';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface MonitorHealthBarProps {
   workspaceId: string;
@@ -21,6 +22,7 @@ interface MonitorHealthBarProps {
 }
 export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const {
       workspaceId,
       monitorId,
@@ -92,15 +94,15 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
           <>
             {last(beats)?.status === 'health' ? (
               <div className="bg-green-500 text-white px-4 py-1 rounded-full text-lg font-bold">
-                UP
+                {t('UP')}
               </div>
             ) : last(beats)?.status === 'error' ? (
               <div className="bg-red-600 text-white px-4 py-1 rounded-full text-lg font-bold">
-                DOWN
+                {t('DOWN')}
               </div>
             ) : (
               <div className="bg-gray-400 text-white px-4 py-1 rounded-full text-lg font-bold">
-                NONE
+                {t('NONE')}
               </div>
             )}
           </>

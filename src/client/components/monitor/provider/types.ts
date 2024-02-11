@@ -1,7 +1,7 @@
 import { MonitorInfo } from '../../../../types';
 
 export interface MonitorProvider {
-  label: string;
+  label: React.ReactNode;
   name: string;
   link?: (info: MonitorInfo) => React.ReactNode;
   form: React.ComponentType;

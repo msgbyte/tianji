@@ -5,8 +5,10 @@ import { useCurrentWorkspaceId } from '../../store/user';
 import { useDashboardStore } from '../../store/dashboard';
 import { DownOutlined } from '@ant-design/icons';
 import clsx from 'clsx';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const DashboardItemAddButton: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { data: websites = [], isLoading: isWebsiteLoading } =
     trpc.website.all.useQuery({
@@ -25,7 +27,7 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
     items: [
       {
         key: 'website',
-        label: 'Website',
+        label: t('Website'),
         children:
           websites.length > 0
             ? websites.map((website) => ({
@@ -34,7 +36,7 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
                 children: [
                   {
                     key: `website#${website.id}#overview`,
-                    label: 'Overview',
+                    label: t('Overview'),
                     onClick: () => {
                       addItem(
                         'websiteOverview',
@@ -45,7 +47,7 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
                   },
                   {
                     key: `website#${website.id}#events`,
-                    label: 'Events',
+                    label: t('Events'),
                     onClick: () => {
                       addItem(
                         'websiteEvents',
@@ -59,14 +61,14 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
             : [
                 {
                   key: `website#none`,
-                  label: '(None)',
+                  label: t('(None)'),
                   disabled: true,
                 },
               ],
       },
       {
         key: 'monitor',
-        label: 'Monitor',
+        label: t('Monitor'),
         children:
           monitors.length > 0
             ? monitors.map((monitor) => ({
@@ -75,45 +77,53 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
                 children: [
                   {
                     key: `monitor#${monitor.id}#healthBar`,
-                    label: 'Health Bar',
+                    label: t('Health Bar'),
                     onClick: () => {
                       addItem(
                         'monitorHealthBar',
                         monitor.id,
-                        `${monitor.name}'s Health`
+                        t("{{monitorName}}'s Health", {
+                          monitorName: monitor.name,
+                        })
                       );
                     },
                   },
                   {
                     key: `monitor#${monitor.id}#metrics`,
-                    label: 'Metrics',
+                    label: t('Metrics'),
                     onClick: () => {
                       addItem(
                         'monitorMetrics',
                         monitor.id,
-                        `${monitor.name}'s Metrics`
+                        t("{{monitorName}}'s Metrics", {
+                          monitorName: monitor.name,
+                        })
                       );
                     },
                   },
                   {
                     key: `monitor#${monitor.id}#chart`,
-                    label: 'Chart',
+                    label: t('Chart'),
                     onClick: () => {
                       addItem(
                         'monitorChart',
                         monitor.id,
-                        `${monitor.name}'s Chart`
+                        t("{{monitorName}}'s Chart", {
+                          monitorName: monitor.name,
+                        })
                       );
                     },
                   },
                   {
                     key: `monitor#${monitor.id}#events`,
-                    label: 'Events',
+                    label: t('Events'),
                     onClick: () => {
                       addItem(
                         'monitorEvents',
                         monitor.id,
-                        `${monitor.name}'s Events`
+                        t("{{monitorName}}'s Events", {
+                          monitorName: monitor.name,
+                        })
                       );
                     },
                   },
@@ -122,7 +132,7 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
             : [
                 {
                   key: `monitor#none`,
-                  label: '(None)',
+                  label: t('(None)'),
                   disabled: true,
                 },
               ],
@@ -141,7 +151,7 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
       >
         <Button type="primary" size="large" className="w-32">
           <Space>
-            <span>Add</span>
+            <span>{t('Add')}</span>
             <DownOutlined
               className={clsx(
                 'transition-transform scale-y-75',

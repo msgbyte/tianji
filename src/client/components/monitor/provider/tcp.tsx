@@ -2,12 +2,15 @@ import { Form, Input, InputNumber } from 'antd';
 import React from 'react';
 import { MonitorProvider } from './types';
 import { hostnameValidator, portValidator } from '../../../utils/validator';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorTCP: React.FC = React.memo(() => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item
-        label="Host"
+        label={t('Host')}
         name={['payload', 'hostname']}
         rules={[
           { required: true },
@@ -19,7 +22,7 @@ export const MonitorTCP: React.FC = React.memo(() => {
         <Input placeholder="example.com or 1.2.3.4" />
       </Form.Item>
       <Form.Item
-        label="Host"
+        label={t('Port')}
         name={['payload', 'port']}
         rules={[
           { required: true },

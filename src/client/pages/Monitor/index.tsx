@@ -8,8 +8,10 @@ import { MonitorOverview } from './Overview';
 import { Button } from 'antd';
 import { MonitorPageList } from './PageList';
 import { MonitorPageAdd } from './PageAdd';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorPage: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -21,14 +23,14 @@ export const MonitorPage: React.FC = React.memo(() => {
             size="large"
             onClick={() => navigate('/monitor/add')}
           >
-            Add new Monitor
+            {t('Add new Monitor')}
           </Button>
           <Button
             type="default"
             size="large"
             onClick={() => navigate('/monitor/pages')}
           >
-            Pages
+            {t('Pages')}
           </Button>
         </div>
       </div>

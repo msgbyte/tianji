@@ -4,6 +4,7 @@ import { MonitorHealthBar } from './MonitorHealthBar';
 import { last } from 'lodash-es';
 import { getMonitorProvider, getProviderDisplay } from './provider';
 import { Tooltip } from 'antd';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorListItem: React.FC<{
   className?: string;
@@ -14,6 +15,7 @@ export const MonitorListItem: React.FC<{
   showCurrentResponse?: boolean;
   onClick?: () => void;
 }> = React.memo((props) => {
+  const { t } = useTranslation();
   const {
     className,
     workspaceId,
@@ -98,7 +100,7 @@ export const MonitorListItem: React.FC<{
       </div>
 
       {showCurrentResponse && latestResponse && (
-        <Tooltip title="Current">
+        <Tooltip title={t('Current')}>
           <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
             {latestResponse}
           </div>

@@ -5,12 +5,15 @@ import { useCurrentWorkspaceId } from '../../../store/user';
 import { trpc } from '../../../api/trpc';
 import dayjs from 'dayjs';
 import { MonitorStatsBlock } from '../MonitorStatsBlock';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const MonitorOpenai: React.FC = React.memo(() => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Form.Item
-        label="Session Key"
+        label={t('Session Key')}
         name={['payload', 'sessionKey']}
         rules={[{ required: true }]}
       >
@@ -26,6 +29,7 @@ MonitorOpenai.displayName = 'MonitorOpenai';
 
 export const MonitorOpenaiOverview: MonitorOverviewComponent = React.memo(
   (props) => {
+    const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const { data } = trpc.monitor.getStatus.useQuery({
       workspaceId,
@@ -41,7 +45,7 @@ export const MonitorOpenaiOverview: MonitorOverviewComponent = React.memo(
 
     return (
       <MonitorStatsBlock
-        title="Usage"
+        title={t('Usage')}
         desc={dayjs(data.updatedAt).format('YYYY-MM-DD')}
         text={`$${payload.totalUsed} / $${payload.allUSD}`}
       />

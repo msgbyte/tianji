@@ -2,6 +2,7 @@ import { Tag } from 'antd';
 import React from 'react';
 import { formatNumber } from '../../utils/common';
 import { useGlobalStateStore } from '../../store/global';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface MetricCardProps {
   value?: number;
@@ -22,6 +23,7 @@ export const MetricCard: React.FC<MetricCardProps> = React.memo((props) => {
     format = formatNumber,
     hideComparison = false,
   } = props;
+  const { t } = useTranslation();
   const showPreviousPeriod = useGlobalStateStore(
     (state) => state.showPreviousPeriod
   );
@@ -47,7 +49,7 @@ export const MetricCard: React.FC<MetricCardProps> = React.memo((props) => {
             {format(prev)}
           </div>
           <div className="flex items-center whitespace-nowrap font-bold">
-            <span className="mr-2">Previous {label}</span>
+            <span className="mr-2">{t('Previous {{label}}', { label })} </span>
           </div>
         </div>
       )}

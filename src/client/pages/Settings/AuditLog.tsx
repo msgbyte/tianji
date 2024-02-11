@@ -8,8 +8,10 @@ import { last } from 'lodash-es';
 import { useWatch } from '../../hooks/useWatch';
 import { ColorTag } from '../../components/ColorTag';
 import dayjs from 'dayjs';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const AuditLog: React.FC = React.memo(() => {
+  const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -53,7 +55,7 @@ export const AuditLog: React.FC = React.memo(() => {
 
   return (
     <div>
-      <PageHeader title="Audit Log" />
+      <PageHeader title={t('Audit Log')} />
 
       <Card>
         <List>
@@ -81,9 +83,9 @@ export const AuditLog: React.FC = React.memo(() => {
                   >
                     {isLoaderRow ? (
                       hasNextPage ? (
-                        'Loading more...'
+                        t('Loading more...')
                       ) : (
-                        'Nothing more to load'
+                        t('Nothing more to load')
                       )
                     ) : (
                       <div className="flex items-center">

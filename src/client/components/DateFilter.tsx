@@ -6,6 +6,7 @@ import { DateRange, useGlobalStateStore } from '../store/global';
 import { compact } from 'lodash-es';
 import clsx from 'clsx';
 import { useGlobalRangeDate } from '../hooks/useGlobalRangeDate';
+import { useTranslation } from '@i18next-toolkit/react';
 
 const { RangePicker } = DatePicker;
 
@@ -13,6 +14,7 @@ interface DateFilterProps {
   className?: string;
 }
 export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
+  const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -26,19 +28,19 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
       },
       items: compact([
         {
-          label: 'Today',
+          label: t('Today'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Today });
           },
         },
         {
-          label: 'Last 24 Hours',
+          label: t('Last 24 Hours'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Last24Hours });
           },
         },
         {
-          label: 'Yesterday',
+          label: t('Yesterday'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Yesterday });
           },
@@ -47,13 +49,13 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
           type: 'divider',
         },
         {
-          label: 'This week',
+          label: t('This week'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.ThisWeek });
           },
         },
         {
-          label: 'Last 7 days',
+          label: t('Last 7 days'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Last7Days });
           },
@@ -62,25 +64,25 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
           type: 'divider',
         },
         {
-          label: 'This Month',
+          label: t('This Month'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.ThisMonth });
           },
         },
         {
-          label: 'Last 30 days',
+          label: t('Last 30 days'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Last30Days });
           },
         },
         {
-          label: 'Last 90 days',
+          label: t('Last 90 days'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Last90Days });
           },
         },
         {
-          label: 'This year',
+          label: t('This year'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.ThisYear });
           },
@@ -89,7 +91,7 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
           type: 'divider',
         },
         {
-          label: 'Custom',
+          label: t('Custom'),
           onClick: () => {
             setShowPicker(true);
           },
@@ -123,7 +125,7 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
 
       {showPicker && (
         <Modal
-          title="Select your date range"
+          title={t('Select your date range')}
           open={showPicker}
           onCancel={() => setShowPicker(false)}
           onOk={() => {

@@ -9,10 +9,12 @@ import { WebsiteVisitorMap } from '../../components/website/WebsiteVisitorMap';
 import { DateFilter } from '../../components/DateFilter';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const WebsiteVisitorMapPage: React.FC = React.memo(() => {
   const { websiteId } = useParams();
   const workspaceId = useCurrentWorkspaceId();
+  const { t } = useTranslation();
   const { data: website, isLoading } = trpc.website.info.useQuery({
     workspaceId,
     websiteId: websiteId!,
@@ -40,7 +42,8 @@ export const WebsiteVisitorMapPage: React.FC = React.memo(() => {
           onClick={() => navigate(`/website/${websiteId}`)}
         />
         <div>
-          <span className="font-bold">{website.name}</span>'s visitor map
+          <span className="font-bold">{website.name}</span>
+          {t("'s visitor map")}
         </div>
         <DateFilter />
       </div>
