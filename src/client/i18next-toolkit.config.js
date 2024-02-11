@@ -1,6 +1,5 @@
-import type { I18nextToolkitConfig } from '@i18next-toolkit/cli';
-
-export default {
+/** @type {import('@i18next-toolkit/cli').I18nextToolkitConfig} */
+const config = {
   locales: ['en', 'zh', 'jp', 'fr', 'de', 'ru'],
   scanner: {
     verbose: false,
@@ -41,4 +40,6 @@ export default {
       'YYYY-MM-DD HH:mm',
     ],
   },
-} satisfies I18nextToolkitConfig;
+};
+
+module.exports = config;

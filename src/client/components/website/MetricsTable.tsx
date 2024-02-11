@@ -5,6 +5,7 @@ import { AppRouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { sum } from 'lodash-es';
 import { formatNumber } from '../../utils/common';
+import { useTranslation } from '@i18next-toolkit/react';
 
 type MetricsItemType = AppRouterOutput['website']['metrics'][number];
 
@@ -24,8 +25,9 @@ interface MetricsTableProps {
   endAt: number;
 }
 export const MetricsTable: React.FC<MetricsTableProps> = React.memo((props) => {
-  const workspaceId = useCurrentWorkspaceId();
   const { websiteId, title, type, startAt, endAt } = props;
+  const workspaceId = useCurrentWorkspaceId();
+  const { t } = useTranslation();
 
   const { isLoading, data: metrics = [] } = trpc.website.metrics.useQuery({
     workspaceId,
