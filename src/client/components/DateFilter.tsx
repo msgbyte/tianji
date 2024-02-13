@@ -98,7 +98,7 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
         },
       ] as MenuProps['items']),
     }),
-    []
+    [t]
   );
 
   return (
