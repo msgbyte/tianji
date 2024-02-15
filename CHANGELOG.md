@@ -1,5 +1,22 @@
 
 
+## [1.6.0](https://github.com/msgbyte/tianji/compare/v1.5.1...v1.6.0) (2024-02-15)
+
+
+### Features
+
+* add i18n support [#3](https://github.com/msgbyte/tianji/issues/3) ([bf6b121](https://github.com/msgbyte/tianji/commit/bf6b1210417bdf4f59c8dd5d699a0f862bf356c8))
+* add timeout in http monitor [#24](https://github.com/msgbyte/tianji/issues/24) ([8d096d5](https://github.com/msgbyte/tianji/commit/8d096d55e1473af5a4459d73a0ddee37a6b7809c))
+* monitor add max retries to avoid network fluctuation ([97d55da](https://github.com/msgbyte/tianji/commit/97d55da4546aa67d96cb6d49b2fe36cb853e9ba6))
+
+
+### Others
+
+* add i18n update trigger in data filter menu ([80f7933](https://github.com/msgbyte/tianji/commit/80f7933c7b3d1db0551c483819e357c91d36b688))
+* add top padding in smtp template ([393e580](https://github.com/msgbyte/tianji/commit/393e58080a54ba8dcc055bee9a1a2ba2b152f495))
+* beautify SMTP email style ([461e23b](https://github.com/msgbyte/tianji/commit/461e23be2f57094c47b8ff937ce53c05eec501e4))
+* fix ci problem ([0f7b11d](https://github.com/msgbyte/tianji/commit/0f7b11d8422384e771c7ce2164ee5ab72ab058b5))
+
 ## [1.5.1](https://github.com/msgbyte/tianji/compare/v1.5.0...v1.5.1) (2024-02-08)
 
 
