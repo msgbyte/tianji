@@ -24,6 +24,9 @@ importers:
       '@release-it/conventional-changelog':
         specifier: ^8.0.1
         version: 8.0.1(release-it@17.0.1)
+      '@types/fs-extra':
+        specifier: ^11.0.3
+        version: 11.0.3
       '@types/node':
         specifier: ^18.17.12
         version: 18.17.12
@@ -36,6 +39,9 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      fs-extra:
+        specifier: ^11.2.0
+        version: 11.2.0
       release-it:
         specifier: ^17.0.1
         version: 17.0.1(typescript@5.2.2)
