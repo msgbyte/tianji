@@ -48,6 +48,39 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/15">
+          <h3 className="vertical-timeline-element-title">Release v1.6.0</h3>
+          <p>add i18n support</p>
+          <p>add timeout in http monitor</p>
+          <p>monitor add max retries to avoid network fluctuation</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/01">
+          <h3 className="vertical-timeline-element-title">Release v1.5.0</h3>
+          <p>add visitor map</p>
+          <p>add audit log</p>
+          <p>add previous period in website overview</p>
+          <p>add audit log for monitor</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/14">
+          <h3 className="vertical-timeline-element-title">Release v1.4.0</h3>
+          <p>add apprise notification</p>
+          <p>add status page delete action</p>
+          <p>add tcp port monitor</p>
+          <p>allow display current response value in monitor list</p>
+          <p>add arm64 support</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/09">
+          <h3 className="vertical-timeline-element-title">Release v1.3.0</h3>
+          <p>add monitor badge</p>
+          <p>add telegram notification support</p>
+          <p>add tokenizer for notification</p>
+          <p>dashboard card title allow edit</p>
+          <p>add daily cron job to calc workspace usage</p>
+        </VerticalTimelineElement>
+
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/01">
           <h3 className="vertical-timeline-element-title">Release v1.2.0</h3>
           <p>Add custom monitor!</p>
