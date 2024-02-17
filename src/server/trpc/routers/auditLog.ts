@@ -11,7 +11,7 @@ export const auditLogRouter = router({
       openapi: {
         method: 'GET',
         path: '/fetchByCursor',
-        tags: [OPENAPI_TAG.WORKSPACE],
+        tags: [OPENAPI_TAG.AUDIT_LOG],
         description: 'Fetch workspace audit log',
       },
     })

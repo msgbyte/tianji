@@ -2,6 +2,7 @@ import { AppRouterOutput, trpc } from '../api/trpc';
 
 const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   allowRegister: false,
+  alphaMode: false,
 };
 
 /**

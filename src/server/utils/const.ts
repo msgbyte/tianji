@@ -107,4 +107,6 @@ export enum OPENAPI_TAG {
   USER = 'User',
   WEBSITE = 'Website',
   MONITOR = 'Monitor',
+  AUDIT_LOG = 'AuditLog',
+  BILLING = 'Billing',
 }

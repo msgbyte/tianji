@@ -73,8 +73,8 @@ importers:
         specifier: ^1.4.13
         version: 1.4.13(@antv/l7@2.20.14)(react-dom@18.2.0)(react@18.2.0)
       '@i18next-toolkit/react':
-        specifier: ^1.0.4
-        version: 1.0.4(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^1.0.5
+        version: 1.0.5(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0)
       '@loadable/component':
         specifier: ^5.16.3
         version: 5.16.3(react@18.2.0)
@@ -5913,8 +5913,8 @@ packages:
       - buffer
     dev: true
 
-  /@i18next-toolkit/react@1.0.4(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-ZhVIgath7x++jeBe83XRZReHp2VP6tLapVY3zRM0oWnUDaewcmIdKsemorzojqbw0jLorP8gKq4UNR4tMoiVTQ==}
+  /@i18next-toolkit/react@1.0.5(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-Hc34LF6oT602YG/1orQhZhUyZcAr5pznx0oUPQ+5frI0Hg8eE2ahpY0G7XxDZ7+0D0Bcr3E5n2uNEdzg8IDm5A==}
     peerDependencies:
       '@types/react': ^18.2.55
       react: ^18.2.0

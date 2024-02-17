@@ -20,6 +20,7 @@ export const globalRouter = router({
         websiteId: z.string().optional(),
         amapToken: z.string().optional(),
         mapboxToken: z.string().optional(),
+        alphaMode: z.boolean(),
       })
     )
     .query(async ({ input }) => {
@@ -28,10 +29,7 @@ export const globalRouter = router({
         websiteId: env.websiteId,
         amapToken: env.amapToken,
         mapboxToken: env.mapboxToken,
+        alphaMode: env.alphaMode,
       };
     }),
 });
-
-function checkEnvTrusty(env: string | undefined): boolean {
-  return env === '1' || env === 'true';
-}

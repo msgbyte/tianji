@@ -10,6 +10,7 @@ export const env = {
   dbDebug: checkEnvTrusty(process.env.DB_DEBUG),
   amapToken: process.env.AMAP_TOKEN,
   mapboxToken: process.env.MAPBOX_TOKEN,
+  alphaMode: checkEnvTrusty(process.env.ALPHA_MODE),
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
