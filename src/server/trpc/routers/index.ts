@@ -8,6 +8,7 @@ import { globalRouter } from './global';
 import { serverStatusRouter } from './serverStatus';
 import { auditLogRouter } from './auditLog';
 import { billingRouter } from './billing';
+import { telemetryRouter } from './telemetry';
 
 export const appRouter = router({
   global: globalRouter,
@@ -16,6 +17,7 @@ export const appRouter = router({
   website: websiteRouter,
   notification: notificationRouter,
   monitor: monitorRouter,
+  telemetry: telemetryRouter,
   serverStatus: serverStatusRouter,
   auditLog: auditLogRouter,
   billing: billingRouter,

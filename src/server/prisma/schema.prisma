@@ -49,6 +49,7 @@ model Workspace {
   notifications      Notification[]
   monitors           Monitor[]
   monitorStatusPages MonitorStatusPage[]
+  telemetryList      Telemetry[]
 
   // for user currentWorkspace
   selectedUsers       User[] // user list who select this workspace, not use in most of case
@@ -201,9 +202,27 @@ model WebsiteSessionData {
   @@index([sessionId])
 }
 
+model Telemetry {
+  id          String    @id @unique @default(cuid()) @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
+  name        String    @db.VarChar(100)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  sessions TelemetrySession[]
+  events   TelemetryEvent[]
+
+  @@index([workspaceId])
+  @@index([createdAt])
+}
+
 model TelemetrySession {
   id             String   @id @unique @db.Uuid
   workspaceId    String   @db.VarChar(30)
+  telemetryId    String?  @db.VarChar(30) // if null, means Default
   hostname       String?  @db.VarChar(100)
   browser        String?  @db.VarChar(20)
   os             String?  @db.VarChar(20)
@@ -217,6 +236,7 @@ model TelemetrySession {
   accuracyRadius Int?
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
+  telemetry      Telemetry?       @relation(fields: [telemetryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   telemetryEvent TelemetryEvent[]
 
   @@index([createdAt])
@@ -225,8 +245,9 @@ model TelemetrySession {
 
 model TelemetryEvent {
   id          String  @id() @default(cuid()) @db.VarChar(30)
-  sessionId   String  @db.Uuid
   workspaceId String  @db.VarChar(30)
+  telemetryId String? @db.VarChar(30) // if null, means Default
+  sessionId   String  @db.Uuid
   eventName   String? @db.VarChar(100)
   urlOrigin   String  @db.VarChar(500)
   urlPath     String  @db.VarChar(500)
@@ -236,7 +257,8 @@ model TelemetryEvent {
   payload   Json?    @db.Json // Other payload info get from query params, should be a object
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
-  session TelemetrySession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  telemetry Telemetry?       @relation(fields: [telemetryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  session   TelemetrySession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
   @@index([sessionId])

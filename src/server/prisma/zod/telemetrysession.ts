@@ -1,10 +1,11 @@
 import * as z from "zod"
 import * as imports from "./schemas"
-import { CompleteTelemetryEvent, RelatedTelemetryEventModelSchema } from "./index"
+import { CompleteTelemetry, RelatedTelemetryModelSchema, CompleteTelemetryEvent, RelatedTelemetryEventModelSchema } from "./index"
 
 export const TelemetrySessionModelSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
+  telemetryId: z.string().nullish(),
   hostname: z.string().nullish(),
   browser: z.string().nullish(),
   os: z.string().nullish(),
@@ -20,6 +21,7 @@ export const TelemetrySessionModelSchema = z.object({
 })
 
 export interface CompleteTelemetrySession extends z.infer<typeof TelemetrySessionModelSchema> {
+  telemetry?: CompleteTelemetry | null
   telemetryEvent: CompleteTelemetryEvent[]
 }
 
@@ -29,5 +31,6 @@ export interface CompleteTelemetrySession extends z.infer<typeof TelemetrySessio
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
 export const RelatedTelemetrySessionModelSchema: z.ZodSchema<CompleteTelemetrySession> = z.lazy(() => TelemetrySessionModelSchema.extend({
+  telemetry: RelatedTelemetryModelSchema.nullish(),
   telemetryEvent: RelatedTelemetryEventModelSchema.array(),
 }))

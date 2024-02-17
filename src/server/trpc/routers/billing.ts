@@ -1,18 +1,18 @@
 import { z } from 'zod';
-import { router, workspaceProcedure } from '../trpc';
+import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc';
 import { OPENAPI_TAG } from '../../utils/const';
 import { prisma } from '../../model/_client';
+import { OpenApiMeta } from 'trpc-openapi';
 
 export const billingRouter = router({
   usage: workspaceProcedure
-    .meta({
-      openapi: {
+    .meta(
+      buildBillingOpenapi({
         method: 'GET',
         path: '/usage',
-        tags: [OPENAPI_TAG.BILLING],
         description: 'get workspace usage',
-      },
-    })
+      })
+    )
     .input(
       z.object({
         startAt: z.number(),
@@ -51,3 +51,14 @@ export const billingRouter = router({
       };
     }),
 });
+
+function buildBillingOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.BILLING],
+      protect: true,
+      ...meta,
+      path: `/billing${meta.path}`,
+    },
+  };
+}

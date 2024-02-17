@@ -1,20 +1,20 @@
 import { z } from 'zod';
-import { router, workspaceProcedure } from '../trpc';
+import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc';
 import { OPENAPI_TAG } from '../../utils/const';
 import { WorkspaceAuditLogModelSchema } from '../../prisma/zod';
 import { prisma } from '../../model/_client';
 import { fetchDataByCursor } from '../../utils/prisma';
+import { OpenApiMeta } from 'trpc-openapi';
 
 export const auditLogRouter = router({
   fetchByCursor: workspaceProcedure
-    .meta({
-      openapi: {
+    .meta(
+      buildAuditLogOpenapi({
         method: 'GET',
         path: '/fetchByCursor',
-        tags: [OPENAPI_TAG.AUDIT_LOG],
         description: 'Fetch workspace audit log',
-      },
-    })
+      })
+    )
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(50),
@@ -47,3 +47,14 @@ export const auditLogRouter = router({
       };
     }),
 });
+
+function buildAuditLogOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.AUDIT_LOG],
+      protect: true,
+      ...meta,
+      path: `/audit${meta.path}`,
+    },
+  };
+}

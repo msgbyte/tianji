@@ -12,6 +12,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { RiMenuUnfoldLine } from 'react-icons/ri';
 import { useTranslation } from '@i18next-toolkit/react';
 import { LanguageSelector } from '../components/LanguageSelector';
+import { useGlobalConfig } from '../hooks/useConfig';
 
 export const Layout: React.FC = React.memo(() => {
   const [params] = useSearchParams();
@@ -34,6 +35,7 @@ export const Layout: React.FC = React.memo(() => {
   const showHeader = !params.has('hideHeader');
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { alphaMode } = useGlobalConfig();
 
   const accountEl = (
     <Dropdown
@@ -117,6 +119,14 @@ export const Layout: React.FC = React.memo(() => {
                       label={t('Servers')}
                       onClick={() => setOpenDraw(false)}
                     />
+                    {alphaMode && (
+                      <MobileNavItem
+                        to="/telemetry"
+                        label={t('Telemetry')}
+                        onClick={() => setOpenDraw(false)}
+                      />
+                    )}
+
                     <MobileNavItem
                       to="/settings"
                       label={t('Settings')}
@@ -147,6 +157,7 @@ export const Layout: React.FC = React.memo(() => {
                 <NavItem to="/monitor" label={t('Monitor')} />
                 <NavItem to="/website" label={t('Website')} />
                 <NavItem to="/servers" label={t('Servers')} />
+                <NavItem to="/telemetry" label={t('Telemetry')} />
                 <NavItem to="/settings" label={t('Settings')} />
               </div>
 

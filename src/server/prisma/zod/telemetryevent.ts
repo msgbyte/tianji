@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas"
-import { CompleteTelemetrySession, RelatedTelemetrySessionModelSchema } from "./index"
+import { CompleteTelemetry, RelatedTelemetryModelSchema, CompleteTelemetrySession, RelatedTelemetrySessionModelSchema } from "./index"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -10,8 +10,9 @@ const jsonSchema: z.ZodSchema<Json> = z.lazy(() => z.union([literalSchema, z.arr
 
 export const TelemetryEventModelSchema = z.object({
   id: z.string(),
-  sessionId: z.string(),
   workspaceId: z.string(),
+  telemetryId: z.string().nullish(),
+  sessionId: z.string(),
   eventName: z.string().nullish(),
   urlOrigin: z.string(),
   urlPath: z.string(),
@@ -23,6 +24,7 @@ export const TelemetryEventModelSchema = z.object({
 })
 
 export interface CompleteTelemetryEvent extends z.infer<typeof TelemetryEventModelSchema> {
+  telemetry?: CompleteTelemetry | null
   session: CompleteTelemetrySession
 }
 
@@ -32,5 +34,6 @@ export interface CompleteTelemetryEvent extends z.infer<typeof TelemetryEventMod
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
 export const RelatedTelemetryEventModelSchema: z.ZodSchema<CompleteTelemetryEvent> = z.lazy(() => TelemetryEventModelSchema.extend({
+  telemetry: RelatedTelemetryModelSchema.nullish(),
   session: RelatedTelemetrySessionModelSchema,
 }))

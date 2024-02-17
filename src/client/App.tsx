@@ -9,7 +9,7 @@ import { Register } from './pages/Register';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './api/cache';
 import { TokenLoginContainer } from './components/TokenLoginContainer';
-import React, { Suspense, useRef } from 'react';
+import React, { useRef } from 'react';
 import { trpc, trpcClient } from './api/trpc';
 import { MonitorPage } from './pages/Monitor';
 import { WebsitePage } from './pages/Website';
@@ -19,7 +19,7 @@ import { ConfigProvider, theme } from 'antd';
 import clsx from 'clsx';
 import { useSettingsStore } from './store/settings';
 import { StatusPage } from './pages/Status';
-import { Loading } from './components/Loading';
+import { TelemetryPage } from './pages/Telemetry';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info } = useUserStore();
@@ -35,6 +35,7 @@ export const AppRoutes: React.FC = React.memo(() => {
           <Route path="/monitor/*" element={<MonitorPage />} />
           <Route path="/website/*" element={<WebsitePage />} />
           <Route path="/servers" element={<Servers />} />
+          <Route path="/telemetry/*" element={<TelemetryPage />} />
           <Route path="/settings/*" element={<SettingsPage />} />
         </Route>
       ) : (
