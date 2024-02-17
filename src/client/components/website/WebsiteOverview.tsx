@@ -40,17 +40,18 @@ export const WebsiteOverview: React.FC<{
   );
 
   const {
-    pageviews,
-    sessions,
+    data,
     isLoading: isLoadingPageview,
     refetch: refetchPageview,
-  } = useWorkspaceWebsitePageview(
-    website.workspaceId,
-    website.id,
-    startDate.unix() * 1000,
-    endDate.unix() * 1000,
-    unit
-  );
+  } = trpc.website.pageviews.useQuery({
+    workspaceId: website.workspaceId,
+    websiteId: website.id,
+    startAt: startDate.valueOf(),
+    endAt: endDate.valueOf(),
+    unit,
+  });
+  const pageviews = data?.pageviews ?? [];
+  const sessions = data?.sessions ?? [];
 
   const {
     data: stats,

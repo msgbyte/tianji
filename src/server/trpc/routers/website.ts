@@ -5,7 +5,11 @@ import {
   workspaceProcedure,
 } from '../trpc';
 import { z } from 'zod';
-import { getWebsiteOnlineUserCount } from '../../model/website';
+import {
+  getWebsiteOnlineUserCount,
+  getWorkspaceWebsitePageview,
+  getWorkspaceWebsiteStats,
+} from '../../model/website';
 import { prisma } from '../../model/_client';
 import {
   EVENT_COLUMNS,
@@ -18,10 +22,6 @@ import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
 import { websiteInfoSchema } from '../../model/_schema';
 import { OpenApiMeta } from 'trpc-openapi';
 import { hostnameRegex } from '@tianji/shared';
-import {
-  addWorkspaceWebsite,
-  getWorkspaceWebsiteStats,
-} from '../../model/workspace';
 import {
   websiteFilterSchema,
   websiteStatsSchema,
@@ -241,6 +241,74 @@ export const websiteRouter = router({
           };
         });
     }),
+  pageviews: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/pageviews',
+      })
+    )
+    .input(
+      z
+        .object({
+          websiteId: z.string(),
+          startAt: z.number(),
+          endAt: z.number(),
+          unit: z.string().optional(),
+        })
+        .merge(websiteFilterSchema.partial())
+    )
+    .output(z.object({ pageviews: z.any(), sessions: z.any() }))
+    .query(async ({ input }) => {
+      const {
+        websiteId,
+        startAt,
+        endAt,
+        timezone,
+        url,
+        referrer,
+        title,
+        os,
+        browser,
+        device,
+        country,
+        region,
+        city,
+      } = input;
+
+      const { startDate, endDate, unit } = await parseDateRange({
+        websiteId,
+        startAt: Number(startAt),
+        endAt: Number(endAt),
+        unit: String(input.unit),
+      });
+
+      const filters = {
+        startDate,
+        endDate,
+        timezone,
+        unit,
+        url,
+        referrer,
+        title,
+        os,
+        browser,
+        device,
+        country,
+        region,
+        city,
+      };
+
+      const [pageviews, sessions] = await Promise.all([
+        getWorkspaceWebsitePageview(websiteId, filters as QueryFilters),
+        getWorkspaceWebsiteSession(websiteId, filters as QueryFilters),
+      ]);
+
+      return {
+        pageviews,
+        sessions,
+      };
+    }),
   metrics: workspaceProcedure
     .meta(
       buildWebsiteOpenapi({
@@ -379,7 +447,13 @@ export const websiteRouter = router({
     .mutation(async ({ input }) => {
       const { workspaceId, name, domain } = input;
 
-      const website = await addWorkspaceWebsite(workspaceId, name, domain);
+      const website = await prisma.website.create({
+        data: {
+          name,
+          domain,
+          workspaceId,
+        },
+      });
 
       return website;
     }),

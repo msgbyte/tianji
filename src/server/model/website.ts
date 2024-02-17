@@ -12,7 +12,12 @@ import {
 } from '../utils/const';
 import type { DynamicData } from '../utils/types';
 import dayjs from 'dayjs';
-import { QueryFilters, parseFilters } from '../utils/prisma';
+import {
+  QueryFilters,
+  getDateQuery,
+  getTimestampIntervalQuery,
+  parseFilters,
+} from '../utils/prisma';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -343,4 +348,89 @@ export async function getPageviewMetrics(
     order by 2 desc
     limit 100
     `;
+}
+
+export async function getWorkspaceWebsitePageview(
+  websiteId: string,
+  filters: QueryFilters
+) {
+  const { timezone = 'utc', unit = 'day' } = filters;
+  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
+    ...filters,
+  });
+
+  return prisma.$queryRaw`
+    select
+      ${getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} x,
+      count(1) y
+    from "WebsiteEvent"
+      ${joinSession}
+    where "WebsiteEvent"."websiteId" = ${params.websiteId}
+      and "WebsiteEvent"."createdAt" between ${
+        params.startDate
+      }::timestamptz and ${params.endDate}::timestamptz
+      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      ${filterQuery}
+    group by 1
+  `;
+}
+
+export async function getWorkspaceWebsiteSession(
+  websiteId: string,
+  filters: QueryFilters
+) {
+  const { timezone = 'utc', unit = 'day' } = filters;
+  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
+    ...filters,
+  });
+
+  return prisma.$queryRaw`
+    select
+      ${getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} x,
+      count(distinct "WebsiteEvent"."sessionId") y
+    from "WebsiteEvent"
+      ${joinSession}
+    where "WebsiteEvent"."websiteId" = ${params.websiteId}
+      and "WebsiteEvent"."createdAt" between ${
+        params.startDate
+      }::timestamptz and ${params.endDate}::timestamptz
+      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      ${filterQuery}
+    group by 1
+    `;
+}
+
+export async function getWorkspaceWebsiteStats(
+  websiteId: string,
+  filters: QueryFilters
+): Promise<any> {
+  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
+    ...filters,
+  });
+
+  return prisma.$queryRaw`
+    select
+      sum(t.c) as "pageviews",
+      count(distinct t."sessionId") as "uniques",
+      sum(case when t.c = 1 then 1 else 0 end) as "bounces",
+      sum(t.time) as "totaltime"
+    from (
+      select
+        "WebsiteEvent"."sessionId",
+        ${getDateQuery('"WebsiteEvent"."createdAt"', 'hour')},
+        count(*) as c,
+        ${getTimestampIntervalQuery('"WebsiteEvent"."createdAt"')} as "time"
+      from "WebsiteEvent"
+      join "Website"
+        on "WebsiteEvent"."websiteId" = "Website"."id"
+        ${joinSession}
+      where "Website"."id" = ${params.websiteId}
+        and "WebsiteEvent"."createdAt" between ${
+          params.startDate
+        }::timestamptz and ${params.endDate}::timestamptz
+        and "eventType" = ${EVENT_TYPE.pageView}
+        ${filterQuery}
+      group by 1, 2
+    ) as t
+  `;
 }
