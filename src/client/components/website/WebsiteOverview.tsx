@@ -3,10 +3,7 @@ import React, { useMemo } from 'react';
 import { Column, ColumnConfig } from '@ant-design/charts';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
-import {
-  useWorkspaceWebsitePageview,
-  WebsiteInfo,
-} from '../../api/model/website';
+import { WebsiteInfo } from '../../api/model/website';
 import {
   DateUnit,
   formatDate,
