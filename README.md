@@ -6,7 +6,7 @@
 
 <img src="./website/static/img/logo.svg" width="128" />
 
-**Insight into everything**
+**All-in-One Insight Hub**
 
 `Website analytics` + `Uptime Monitor`  + `Server Status` = `Tianji`
 

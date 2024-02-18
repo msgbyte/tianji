@@ -27,6 +27,8 @@ wget https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
 docker compose up -d
 ```
 
+> Default account is **admin**/**admin**, please change password ASAP.
+
 ## Community
 
 Join our thriving community to connect with fellow users, share experiences, and stay updated on the latest features and developments. Collaborate, ask questions, and contribute to the growth of the Tianji community.

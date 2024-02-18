@@ -2,7 +2,7 @@
 
 <img src="./website/static/img/logo.svg" width="128" />
 
-**洞察一切**
+**All-in-One 的数据洞察中心**
 
 `网站分析器` + `状态监控器` + `服务状态上报` = `Tianji`
 
