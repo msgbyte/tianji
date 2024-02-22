@@ -88,19 +88,21 @@ export const AuditLog: React.FC = React.memo(() => {
                         t('Nothing more to load')
                       )
                     ) : (
-                      <div className="flex items-center">
+                      <div className="flex items-center overflow-hidden h-7">
                         {item.relatedType && (
                           <ColorTag label={item.relatedType} />
                         )}
                         <div
-                          className="opacity-60 mr-2 text-xs"
+                          className="opacity-60 mr-2 text-xs w-9"
                           title={dayjs(item.createdAt).format(
                             'YYYY-MM-DD HH:mm:ss'
                           )}
                         >
                           {dayjs(item.createdAt).format('MM-DD HH:mm')}
                         </div>
-                        <div>{item.content}</div>
+                        <div className="overflow-auto h-full flex-1">
+                          {item.content}
+                        </div>
                       </div>
                     )}
                   </List.Item>
