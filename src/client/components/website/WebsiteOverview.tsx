@@ -1,19 +1,12 @@
 import { Button, message, Spin, Switch } from 'antd';
-import React, { useMemo } from 'react';
-import { Column, ColumnConfig } from '@ant-design/charts';
+import React from 'react';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
 import { WebsiteInfo } from '../../api/model/website';
-import {
-  DateUnit,
-  formatDate,
-  formatDateWithUnit,
-  getDateArray,
-} from '../../utils/date';
+import { getDateArray } from '../../utils/date';
 import { useEvent } from '../../hooks/useEvent';
 import { MetricCard } from './MetricCard';
 import { formatNumber, formatShortTime } from '../../utils/common';
-import { useTheme } from '../../hooks/useTheme';
 import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
@@ -22,6 +15,7 @@ import { AppRouterOutput, trpc } from '../../api/trpc';
 import { getUserTimezone } from '../../api/model/user';
 import { useGlobalStateStore } from '../../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
+import { TimeEventChart } from '../TimeEventChart';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
@@ -37,18 +31,32 @@ export const WebsiteOverview: React.FC<{
   );
 
   const {
-    data,
+    data: chartData = [],
     isLoading: isLoadingPageview,
     refetch: refetchPageview,
-  } = trpc.website.pageviews.useQuery({
-    workspaceId: website.workspaceId,
-    websiteId: website.id,
-    startAt: startDate.valueOf(),
-    endAt: endDate.valueOf(),
-    unit,
-  });
-  const pageviews = data?.pageviews ?? [];
-  const sessions = data?.sessions ?? [];
+  } = trpc.website.pageviews.useQuery(
+    {
+      workspaceId: website.workspaceId,
+      websiteId: website.id,
+      startAt: startDate.valueOf(),
+      endAt: endDate.valueOf(),
+      unit,
+    },
+    {
+      select(data) {
+        const pageviews = data.pageviews ?? [];
+        const sessions = data.sessions ?? [];
+
+        const pageviewsArr = getDateArray(pageviews, startDate, endDate, unit);
+        const sessionsArr = getDateArray(sessions, startDate, endDate, unit);
+
+        return [
+          ...pageviewsArr.map((item) => ({ ...item, type: 'pageview' })),
+          ...sessionsArr.map((item) => ({ ...item, type: 'session' })),
+        ];
+      },
+    }
+  );
 
   const {
     data: stats,
@@ -70,16 +78,6 @@ export const WebsiteOverview: React.FC<{
 
     message.success(t('Refreshed'));
   });
-
-  const chartData = useMemo(() => {
-    const pageviewsArr = getDateArray(pageviews, startDate, endDate, unit);
-    const sessionsArr = getDateArray(sessions, startDate, endDate, unit);
-
-    return [
-      ...pageviewsArr.map((item) => ({ ...item, type: 'pageview' })),
-      ...sessionsArr.map((item) => ({ ...item, type: 'session' })),
-    ];
-  }, [pageviews, sessions, unit]);
 
   const loading = isLoadingPageview || isLoadingStats;
 
@@ -145,7 +143,7 @@ export const WebsiteOverview: React.FC<{
       </div>
 
       <div>
-        <StatsChart data={chartData} unit={unit} />
+        <TimeEventChart data={chartData} unit={unit} />
       </div>
     </Spin>
   );
@@ -216,43 +214,3 @@ export const MetricsBar: React.FC<{
   );
 });
 MetricsBar.displayName = 'MetricsBar';
-
-export const StatsChart: React.FC<{
-  data: { x: string; y: number; type: string }[];
-  unit: DateUnit;
-}> = React.memo((props) => {
-  const { colors } = useTheme();
-
-  const config = useMemo(
-    () =>
-      ({
-        data: props.data,
-        isStack: true,
-        xField: 'x',
-        yField: 'y',
-        seriesField: 'type',
-        label: {
-          position: 'middle' as const,
-          style: {
-            fill: '#FFFFFF',
-            opacity: 0.6,
-          },
-        },
-        tooltip: {
-          title: (t) => formatDate(t),
-        },
-        color: [colors.chart.pv, colors.chart.uv],
-        xAxis: {
-          label: {
-            autoHide: true,
-            autoRotate: false,
-            formatter: (text) => formatDateWithUnit(text, props.unit),
-          },
-        },
-      } satisfies ColumnConfig),
-    [props.data, props.unit]
-  );
-
-  return <Column {...config} />;
-});
-StatsChart.displayName = 'StatsChart';
