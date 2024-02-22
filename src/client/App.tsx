@@ -22,14 +22,14 @@ import { StatusPage } from './pages/Status';
 import { TelemetryPage } from './pages/Telemetry';
 
 export const AppRoutes: React.FC = React.memo(() => {
-  const { info } = useUserStore();
+  const { info: userInfo } = useUserStore();
   const { allowRegister } = useGlobalConfig();
 
   useInjectWebsiteScript();
 
   return (
     <Routes>
-      {info ? (
+      {userInfo ? (
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/monitor/*" element={<MonitorPage />} />
@@ -50,7 +50,7 @@ export const AppRoutes: React.FC = React.memo(() => {
       <Route
         path="*"
         element={
-          <Navigate to={info ? '/dashboard' : '/login'} replace={true} />
+          <Navigate to={userInfo ? '/dashboard' : '/login'} replace={true} />
         }
       />
     </Routes>

@@ -157,7 +157,9 @@ export const Layout: React.FC = React.memo(() => {
                 <NavItem to="/monitor" label={t('Monitor')} />
                 <NavItem to="/website" label={t('Website')} />
                 <NavItem to="/servers" label={t('Servers')} />
-                <NavItem to="/telemetry" label={t('Telemetry')} />
+                {alphaMode && (
+                  <NavItem to="/telemetry" label={t('Telemetry')} />
+                )}
                 <NavItem to="/settings" label={t('Settings')} />
               </div>
 

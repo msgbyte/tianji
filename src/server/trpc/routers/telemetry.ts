@@ -33,6 +33,31 @@ export const telemetryRouter = router({
 
       return res;
     }),
+  eventCount: workspaceProcedure
+    .meta(
+      buildTelemetryOpenapi({
+        method: 'GET',
+        path: '/eventCount',
+      })
+    )
+    .input(
+      z.object({
+        telemetryId: z.string(),
+      })
+    )
+    .output(z.number())
+    .query(async ({ input }) => {
+      const { workspaceId, telemetryId } = input;
+
+      const count = await prisma.telemetryEvent.count({
+        where: {
+          workspaceId,
+          telemetryId,
+        },
+      });
+
+      return count;
+    }),
   upsert: workspaceOwnerProcedure
     .meta(
       buildTelemetryOpenapi({

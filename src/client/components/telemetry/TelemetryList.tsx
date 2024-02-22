@@ -12,6 +12,7 @@ import {
 import { useNavigate } from 'react-router';
 import { PageHeader } from '../PageHeader';
 import { useEvent } from '../../hooks/useEvent';
+import { TelemetryCounter } from './TelemetryCounter';
 
 type TelemetryInfo = AppRouterOutput['telemetry']['all'][number];
 
@@ -109,7 +110,19 @@ const TelemetryListTable: React.FC<{
         title: t('Name'),
       },
       {
+        dataIndex: 'id',
+        title: t('Count'),
+        align: 'center',
+        width: 130,
+        render: (id) => {
+          return <TelemetryCounter telemetryId={id} />;
+        },
+      },
+      {
         key: 'action',
+        title: t('Actions'),
+        align: 'right',
+        width: 240,
         render: (_, record) => {
           return (
             <div className="flex gap-2 justify-end">
