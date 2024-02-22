@@ -73,14 +73,14 @@ if (env.allowOpenapi) {
 }
 
 // fallback
-app.get('/*', (req, res) => {
-  if (req.accepts('html')) {
+app.use('/*', (req, res) => {
+  if (req.method === 'GET' && req.accepts('html')) {
     res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
   }
 });
 
 app.use((err: any, req: any, res: any, next: any) => {
-  logger.error(err);
+  logger.error('[express]', err);
   res.status(500).json({ message: err.message });
 });
 

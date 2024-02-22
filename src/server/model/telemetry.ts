@@ -22,6 +22,8 @@ export async function recordTelemetryEvent(req: Request) {
     return;
   }
 
+  const telemetryId = req.params.telemetryId;
+
   const { origin, pathname } = new URL(url);
   const payload = Object.keys(others).length > 0 ? others : undefined;
 
@@ -29,6 +31,7 @@ export async function recordTelemetryEvent(req: Request) {
     data: {
       sessionId: session.id,
       workspaceId,
+      telemetryId,
       eventName,
       urlOrigin: origin,
       urlPath: pathname,
