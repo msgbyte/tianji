@@ -59,7 +59,7 @@ export class MonitorRunner {
           value = -1;
         }
 
-        if (this.retriedNum < maxRetries) {
+        if (value < 0 && this.retriedNum < maxRetries) {
           // can be retry
           this.retriedNum++;
         } else {
