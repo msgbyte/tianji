@@ -41,6 +41,7 @@ export const WebsiteOverview: React.FC<{
       startAt: startDate.valueOf(),
       endAt: endDate.valueOf(),
       unit,
+      timezone: getUserTimezone(),
     },
     {
       select(data) {
