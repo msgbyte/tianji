@@ -26,6 +26,28 @@ Usage of tianji-reporter:
         The workspace id for tianji, this should be a uuid
 ```
 
-the **url** and **workspace** is required, its means you will report your service to which host and which workspace.
+The **url** and **workspace** is required, its means you will report your service to which host and which workspace.
 
-default a server node name will be same with hostname, so you can custom your name with `--name` which can help you identify server.
+Default a server node name will be same with hostname, so you can custom your name with `--name` which can help you identify server.
+
+## Q&A
+
+### How to check tianji reporter service log?
+
+If you install with auto install script, tianji will help you install a service which named `tianji-reporter` in your linux machine.
+
+You can use this command to check tianji reporter log:
+
+```bash
+journalctl -fu tianji-reporter.service
+```
+
+### Not found your machine in server tab even report show success
+
+Maybe your tianji is behind a reverse proxy for example `nginx`.
+
+Please make sure your reverse proxy add websocket support
+
+## Why my machine is always offline?
+
+Please check your server datetime.
