@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { loadWebsite } from '../model/website';
 import { maxDate } from './common';
 import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const';
+import { loadTelemetry } from '../model/telemetry';
 
 const POSTGRESQL_DATE_FORMATS = {
   minute: 'YYYY-MM-DD HH24:MI:00',
@@ -13,22 +14,25 @@ const POSTGRESQL_DATE_FORMATS = {
   year: 'YYYY-01-01',
 };
 
-export interface QueryFilters {
+export interface BaseQueryFilters {
   startDate?: Date;
   endDate?: Date;
   timezone?: string;
   unit?: keyof typeof POSTGRESQL_DATE_FORMATS;
-  eventType?: number;
   url?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+}
+
+export interface WebsiteQueryFilters extends BaseQueryFilters {
+  eventType?: number;
   referrer?: string;
   title?: string;
   query?: string;
   os?: string;
   browser?: string;
   device?: string;
-  country?: string;
-  region?: string;
-  city?: string;
   language?: string;
   event?: string;
 }
@@ -38,9 +42,9 @@ export interface QueryOptions {
   columns?: { [key: string]: string };
 }
 
-export async function parseFilters(
+export async function parseWebsiteFilters(
   websiteId: string,
-  filters: QueryFilters = {},
+  filters: WebsiteQueryFilters = {},
   options: QueryOptions = {}
 ) {
   const website = await loadWebsite(websiteId);
@@ -62,7 +66,7 @@ export async function parseFilters(
             `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`,
           ])
         : Prisma.empty,
-    filterQuery: getFilterQuery(filters, options, websiteDomain),
+    filterQuery: getWebsiteFilterQuery(filters, options, websiteDomain),
     params: {
       ...normalizeFilters(filters),
       websiteId,
@@ -77,6 +81,40 @@ export async function parseFilters(
   };
 }
 
+export async function parseTelemetryFilters(
+  telemetryId: string,
+  filters: BaseQueryFilters = {},
+  options: QueryOptions = {}
+) {
+  const telemetry = await loadTelemetry(telemetryId);
+
+  if (!telemetry) {
+    throw new Error('Not found telemetry');
+  }
+
+  return {
+    joinSession:
+      options?.joinSession ||
+      Object.entries(filters).find(
+        ([key, value]) =>
+          typeof value !== 'undefined' && SESSION_COLUMNS.includes(key)
+      )
+        ? Prisma.sql([
+            `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`,
+          ])
+        : Prisma.empty,
+    filterQuery: getTelemetryFilterQuery(filters, options),
+    params: {
+      ...normalizeFilters(filters),
+      telemetryId,
+      startDate: dayjs(filters.startDate).toISOString(),
+      endDate: filters.endDate
+        ? dayjs(filters.endDate).toISOString()
+        : undefined,
+    },
+  };
+}
+
 function normalizeFilters(filters: Record<string, any> = {}) {
   return Object.keys(filters).reduce((obj, key) => {
     const value = filters[key];
@@ -87,13 +125,13 @@ function normalizeFilters(filters: Record<string, any> = {}) {
   }, {} as Record<string, any>);
 }
 
-export function getFilterQuery(
-  filters: QueryFilters = {},
+export function getWebsiteFilterQuery(
+  filters: WebsiteQueryFilters = {},
   options: QueryOptions = {},
   websiteDomain: string | null = null
 ) {
   const query = Object.keys(filters).reduce<string[]>((arr, name) => {
-    const value: any = filters[name as keyof QueryFilters];
+    const value: any = filters[name as keyof WebsiteQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
     const column = _.get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
@@ -107,6 +145,27 @@ export function getFilterQuery(
           `AND ("WebsiteEvent"."referrerDomain" != ${websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`
         );
       }
+    }
+
+    return arr;
+  }, []);
+
+  return Prisma.sql([query.join('\n')]);
+}
+
+export function getTelemetryFilterQuery(
+  filters: BaseQueryFilters = {},
+  options: QueryOptions = {}
+) {
+  const query = Object.keys(filters).reduce<string[]>((arr, name) => {
+    const value: any = filters[name as keyof BaseQueryFilters];
+    const operator = value?.filter ?? OPERATORS.equals;
+    const column = _.get(FILTER_COLUMNS, name, options?.columns?.[name]);
+
+    // TODO
+
+    if (value !== undefined && column) {
+      arr.push(`AND ${mapFilter(column, operator, name)}`);
     }
 
     return arr;

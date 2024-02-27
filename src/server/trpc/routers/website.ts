@@ -19,7 +19,10 @@ import {
   SESSION_COLUMNS,
 } from '../../utils/const';
 import { parseDateRange } from '../../utils/common';
-import { getSessionMetrics, getPageviewMetrics } from '../../model/website';
+import {
+  getWebsiteSessionMetrics,
+  getWebsitePageviewMetrics,
+} from '../../model/website';
 import { websiteInfoSchema } from '../../model/_schema';
 import { OpenApiMeta } from 'trpc-openapi';
 import { hostnameRegex } from '@tianji/shared';
@@ -28,7 +31,7 @@ import {
   websiteStatsSchema,
 } from '../../model/_schema/filter';
 import dayjs from 'dayjs';
-import { QueryFilters } from '../../utils/prisma';
+import { WebsiteQueryFilters } from '../../utils/prisma';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -163,7 +166,7 @@ export const websiteRouter = router({
         country,
         region,
         city,
-      } as QueryFilters;
+      } as WebsiteQueryFilters;
 
       const [metrics, prevPeriod] = await Promise.all([
         getWorkspaceWebsiteStats(websiteId, {
@@ -301,8 +304,8 @@ export const websiteRouter = router({
       };
 
       const [pageviews, sessions] = await Promise.all([
-        getWorkspaceWebsitePageview(websiteId, filters as QueryFilters),
-        getWorkspaceWebsiteSession(websiteId, filters as QueryFilters),
+        getWorkspaceWebsitePageview(websiteId, filters as WebsiteQueryFilters),
+        getWorkspaceWebsiteSession(websiteId, filters as WebsiteQueryFilters),
       ]);
 
       return {
@@ -397,7 +400,7 @@ export const websiteRouter = router({
       const column = FILTER_COLUMNS[type] || type;
 
       if (SESSION_COLUMNS.includes(type)) {
-        const data = await getSessionMetrics(websiteId, column, filters);
+        const data = await getWebsiteSessionMetrics(websiteId, column, filters);
 
         if (type === 'language') {
           const combined: Record<string, any> = {};
@@ -422,7 +425,11 @@ export const websiteRouter = router({
       }
 
       if (EVENT_COLUMNS.includes(type)) {
-        const data = await getPageviewMetrics(websiteId, column, filters);
+        const data = await getWebsitePageviewMetrics(
+          websiteId,
+          column,
+          filters
+        );
 
         return data.map((d) => ({ x: d.x, y: Number(d.y) }));
       }

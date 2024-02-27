@@ -13,10 +13,10 @@ import {
 import type { DynamicData } from '../utils/types';
 import dayjs from 'dayjs';
 import {
-  QueryFilters,
+  WebsiteQueryFilters,
   getDateQuery,
   getTimestampIntervalQuery,
-  parseFilters,
+  parseWebsiteFilters,
 } from '../utils/prisma';
 
 export interface WebsiteEventPayload {
@@ -277,12 +277,12 @@ export async function getWebsiteOnlineUserCount(
   return Number(res?.[0].x ?? 0);
 }
 
-export async function getSessionMetrics(
+export async function getWebsiteSessionMetrics(
   websiteId: string,
   column: string,
-  filters: QueryFilters
+  filters: WebsiteQueryFilters
 ): Promise<{ x: string; y: number }[]> {
-  const { filterQuery, joinSession, params } = await parseFilters(
+  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
     websiteId,
     {
       ...filters,
@@ -312,14 +312,14 @@ export async function getSessionMetrics(
     limit 100`;
 }
 
-export async function getPageviewMetrics(
+export async function getWebsitePageviewMetrics(
   websiteId: string,
   column: string,
-  filters: QueryFilters
+  filters: WebsiteQueryFilters
 ): Promise<{ x: string; y: number }[]> {
   const eventType =
     column === 'eventName' ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView;
-  const { filterQuery, joinSession, params } = await parseFilters(
+  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
     websiteId,
     {
       ...filters,
@@ -352,12 +352,15 @@ export async function getPageviewMetrics(
 
 export async function getWorkspaceWebsitePageview(
   websiteId: string,
-  filters: QueryFilters
+  filters: WebsiteQueryFilters
 ) {
   const { timezone = 'utc', unit = 'day' } = filters;
-  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
-    ...filters,
-  });
+  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
+    websiteId,
+    {
+      ...filters,
+    }
+  );
 
   return prisma.$queryRaw`
     select
@@ -377,12 +380,15 @@ export async function getWorkspaceWebsitePageview(
 
 export async function getWorkspaceWebsiteSession(
   websiteId: string,
-  filters: QueryFilters
+  filters: WebsiteQueryFilters
 ) {
   const { timezone = 'utc', unit = 'day' } = filters;
-  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
-    ...filters,
-  });
+  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
+    websiteId,
+    {
+      ...filters,
+    }
+  );
 
   return prisma.$queryRaw`
     select
@@ -402,11 +408,14 @@ export async function getWorkspaceWebsiteSession(
 
 export async function getWorkspaceWebsiteStats(
   websiteId: string,
-  filters: QueryFilters
+  filters: WebsiteQueryFilters
 ): Promise<any> {
-  const { filterQuery, joinSession, params } = await parseFilters(websiteId, {
-    ...filters,
-  });
+  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
+    websiteId,
+    {
+      ...filters,
+    }
+  );
 
   return prisma.$queryRaw`
     select

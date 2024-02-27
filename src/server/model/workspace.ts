@@ -1,10 +1,5 @@
 import { prisma } from './_client';
-import {
-  QueryFilters,
-  parseFilters,
-  getDateQuery,
-  getTimestampIntervalQuery,
-} from '../utils/prisma';
+import { parseWebsiteFilters } from '../utils/prisma';
 import { DEFAULT_RESET_DATE, EVENT_TYPE } from '../utils/const';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
@@ -67,7 +62,7 @@ export async function deleteWorkspaceWebsite(
 }
 
 export async function getWorkspaceWebsiteDateRange(websiteId: string) {
-  const { params } = await parseFilters(websiteId, {
+  const { params } = await parseWebsiteFilters(websiteId, {
     startDate: new Date(DEFAULT_RESET_DATE),
   });
 
