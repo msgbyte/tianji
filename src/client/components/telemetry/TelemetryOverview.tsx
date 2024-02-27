@@ -2,42 +2,42 @@ import { Button, message, Spin, Switch } from 'antd';
 import React from 'react';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
-import { WebsiteInfo } from '../../api/model/website';
 import { getDateArray } from '../../utils/date';
 import { useEvent } from '../../hooks/useEvent';
 import { MetricCard } from '../MetricCard';
-import { formatNumber, formatShortTime } from '../../utils/common';
-import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
-import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
-import { useNavigate } from 'react-router';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { getUserTimezone } from '../../api/model/user';
 import { useGlobalStateStore } from '../../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
 import { TimeEventChart } from '../TimeEventChart';
 
-export const WebsiteOverview: React.FC<{
-  website: WebsiteInfo;
+export const TelemetryOverview: React.FC<{
+  workspaceId: string;
+  telemetryId: string;
   showDateFilter?: boolean;
   actions?: React.ReactNode;
 }> = React.memo((props) => {
   const { t } = useTranslation();
-  const { website, showDateFilter = false, actions } = props;
+  const { workspaceId, telemetryId, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
-  const navigate = useNavigate();
   const showPreviousPeriod = useGlobalStateStore(
     (state) => state.showPreviousPeriod
   );
+
+  const { data: info } = trpc.telemetry.info.useQuery({
+    workspaceId,
+    telemetryId,
+  });
 
   const {
     data: chartData = [],
     isLoading: isLoadingPageview,
     refetch: refetchPageview,
-  } = trpc.website.pageviews.useQuery(
+  } = trpc.telemetry.pageviews.useQuery(
     {
-      workspaceId: website.workspaceId,
-      websiteId: website.id,
+      workspaceId,
+      telemetryId,
       startAt: startDate.valueOf(),
       endAt: endDate.valueOf(),
       unit,
@@ -63,9 +63,9 @@ export const WebsiteOverview: React.FC<{
     data: stats,
     isLoading: isLoadingStats,
     refetch: refetchStats,
-  } = trpc.website.stats.useQuery({
-    workspaceId: website.workspaceId,
-    websiteId: website.id,
+  } = trpc.telemetry.stats.useQuery({
+    workspaceId,
+    telemetryId,
     startAt: startDate.unix() * 1000,
     endAt: endDate.unix() * 1000,
     timezone: getUserTimezone(),
@@ -86,28 +86,7 @@ export const WebsiteOverview: React.FC<{
     <Spin spinning={loading}>
       <div className="flex">
         <div className="flex flex-1 text-2xl font-bold items-center">
-          <span className="mr-2" title={website.domain ?? ''}>
-            {website.name}
-          </span>
-
-          {website.monitorId && (
-            <div
-              className="cursor-pointer"
-              onClick={() => navigate(`/monitor/${website.monitorId}`)}
-            >
-              <MonitorHealthBar
-                workspaceId={website.workspaceId}
-                monitorId={website.monitorId}
-              />
-            </div>
-          )}
-
-          <div className="ml-4 text-base font-normal">
-            <WebsiteOnlineCount
-              workspaceId={website.workspaceId}
-              websiteId={website.id}
-            />
-          </div>
+          <span className="mr-2">{info?.name}</span>
         </div>
 
         <div>{actions}</div>
@@ -149,15 +128,13 @@ export const WebsiteOverview: React.FC<{
     </Spin>
   );
 });
-WebsiteOverview.displayName = 'WebsiteOverview';
+TelemetryOverview.displayName = 'TelemetryOverview';
 
 const MetricsBar: React.FC<{
-  stats: AppRouterOutput['website']['stats'];
+  stats: AppRouterOutput['telemetry']['stats'];
 }> = React.memo((props) => {
   const { t } = useTranslation();
-  const { pageviews, uniques, bounces, totaltime } = props.stats || {};
-  const bouncesNum = Math.min(uniques.value, bounces.value) / uniques.value;
-  const prevBouncesNum = Math.min(uniques.prev, bounces.prev) / uniques.prev;
+  const { pageviews, uniques } = props.stats || {};
 
   return (
     <div className="flex gap-5 flex-wrap w-full">
@@ -172,44 +149,6 @@ const MetricsBar: React.FC<{
         value={uniques.value}
         prev={uniques.prev}
         change={uniques.value - uniques.prev}
-      />
-      <MetricCard
-        label={t('bounce rate')}
-        reverseColors={true}
-        value={uniques.value ? bouncesNum * 100 : 0}
-        prev={uniques.prev ? prevBouncesNum * 100 : 0}
-        change={
-          uniques.value && uniques.prev
-            ? bouncesNum * 100 - prevBouncesNum * 100 || 0
-            : 0
-        }
-        format={(n) => formatNumber(n) + '%'}
-      />
-      <MetricCard
-        label={t('average visit time')}
-        value={
-          totaltime.value && pageviews.value
-            ? totaltime.value / (pageviews.value - bounces.value)
-            : 0
-        }
-        prev={
-          totaltime.prev && pageviews.prev
-            ? totaltime.prev / (pageviews.prev - bounces.prev)
-            : 0
-        }
-        change={
-          totaltime.value && pageviews.value
-            ? totaltime.value / (pageviews.value - bounces.value) -
-                totaltime.prev / (pageviews.prev - bounces.prev) || 0
-            : 0
-        }
-        format={(n) =>
-          `${n < 0 ? '-' : ''}${formatShortTime(
-            Math.abs(~~n),
-            ['m', 's'],
-            ' '
-          )}`
-        }
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import { Tag } from 'antd';
 import React from 'react';
-import { formatNumber } from '../../utils/common';
-import { useGlobalStateStore } from '../../store/global';
+import { formatNumber } from '../utils/common';
+import { useGlobalStateStore } from '../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
 
 interface MetricCardProps {

@@ -5,11 +5,11 @@ export const baseFilterSchema = z.object({
   country: z.string(),
   region: z.string(),
   city: z.string(),
+  timezone: z.string(),
 });
 
 export const websiteFilterSchema = baseFilterSchema.merge(
   z.object({
-    timezone: z.string(),
     referrer: z.string(),
     title: z.string(),
     os: z.string(),
@@ -18,14 +18,19 @@ export const websiteFilterSchema = baseFilterSchema.merge(
   })
 );
 
-const websiteStatsItemType = z.object({
+export const statsItemType = z.object({
   value: z.number(),
   prev: z.number(),
 });
 
-export const websiteStatsSchema = z.object({
-  bounces: websiteStatsItemType,
-  pageviews: websiteStatsItemType,
-  totaltime: websiteStatsItemType,
-  uniques: websiteStatsItemType,
+export const baseStatsSchema = z.object({
+  pageviews: statsItemType,
+  uniques: statsItemType,
 });
+
+export const websiteStatsSchema = baseStatsSchema.merge(
+  z.object({
+    totaltime: statsItemType,
+    bounces: statsItemType,
+  })
+);

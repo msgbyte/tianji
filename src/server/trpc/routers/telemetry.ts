@@ -14,14 +14,20 @@ import {
 import { prisma } from '../../model/_client';
 import { TelemetryModelSchema } from '../../prisma/zod';
 import { OpenApiMeta } from 'trpc-openapi';
-import { baseFilterSchema } from '../../model/_schema/filter';
+import {
+  baseFilterSchema,
+  baseStatsSchema,
+  statsItemType,
+} from '../../model/_schema/filter';
 import {
   getTelemetryPageview,
   getTelemetryPageviewMetrics,
   getTelemetrySession,
   getTelemetrySessionMetrics,
+  getTelemetryStats,
 } from '../../model/telemetry';
 import { BaseQueryFilters } from '../../utils/prisma';
+import dayjs from 'dayjs';
 
 export const telemetryRouter = router({
   all: workspaceProcedure
@@ -41,6 +47,31 @@ export const telemetryRouter = router({
         },
         orderBy: {
           updatedAt: 'desc',
+        },
+      });
+
+      return res;
+    }),
+  info: workspaceProcedure
+    .meta(
+      buildTelemetryOpenapi({
+        method: 'GET',
+        path: '/info',
+      })
+    )
+    .input(
+      z.object({
+        telemetryId: z.string(),
+      })
+    )
+    .output(TelemetryModelSchema.nullable())
+    .query(async ({ input }) => {
+      const { workspaceId, telemetryId } = input;
+
+      const res = await prisma.telemetry.findUnique({
+        where: {
+          workspaceId,
+          id: telemetryId,
         },
       });
 
@@ -256,6 +287,85 @@ export const telemetryRouter = router({
       }
 
       return [];
+    }),
+  stats: workspaceProcedure
+    .meta(
+      buildTelemetryOpenapi({
+        method: 'GET',
+        path: '/stats',
+      })
+    )
+    .input(
+      z
+        .object({
+          telemetryId: z.string(),
+          startAt: z.number(),
+          endAt: z.number(),
+          unit: z.string().optional(),
+        })
+        .merge(baseFilterSchema.partial())
+    )
+    .output(baseStatsSchema)
+    .query(async ({ input }) => {
+      const {
+        telemetryId,
+        timezone,
+        url,
+        country,
+        region,
+        city,
+        startAt,
+        endAt,
+      } = input;
+
+      const startDate = new Date(startAt);
+      const endDate = new Date(endAt);
+      // const { startDate, endDate, unit } = await parseDateRange({
+      //   telemetryId,
+      //   startAt: Number(startAt),
+      //   endAt: Number(endAt),
+      //   unit: input.unit,
+      // });
+
+      const diff = dayjs(endDate).diff(startDate, 'minutes');
+      const prevStartDate = dayjs(startDate).subtract(diff, 'minutes').toDate();
+      const prevEndDate = dayjs(endDate).subtract(diff, 'minutes').toDate();
+
+      const filters = {
+        startDate,
+        endDate,
+        timezone,
+        unit: input.unit,
+        url,
+        country,
+        region,
+        city,
+      } as BaseQueryFilters;
+
+      const [metrics, prevPeriod] = await Promise.all([
+        getTelemetryStats(telemetryId, {
+          ...filters,
+          startDate,
+          endDate,
+        }),
+        getTelemetryStats(telemetryId, {
+          ...filters,
+          startDate: prevStartDate,
+          endDate: prevEndDate,
+        }),
+      ]);
+
+      const stats = Object.keys(metrics[0]).reduce((obj, key) => {
+        const current = Number(metrics[0][key]) || 0;
+        const prev = Number(prevPeriod[0][key]) || 0;
+        obj[key] = {
+          value: current,
+          prev,
+        };
+        return obj;
+      }, {} as Record<string, { value: number; prev: number }>);
+
+      return baseStatsSchema.parse(stats);
     }),
 });
 

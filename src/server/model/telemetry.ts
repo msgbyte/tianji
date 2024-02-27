@@ -231,7 +231,8 @@ export async function getTelemetryStats(
     from (
       select
         "TelemetryEvent"."sessionId",
-        ${getDateQuery('"TelemetryEvent"."createdAt"', 'hour')}
+        ${getDateQuery('"TelemetryEvent"."createdAt"', 'hour')},
+        count(*) as c
       from "TelemetryEvent"
       join "Telemetry"
         on "TelemetryEvent"."telemetryId" = "Telemetry"."id"
