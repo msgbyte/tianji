@@ -1,8 +1,8 @@
 /** @type {import('@i18next-toolkit/cli').I18nextToolkitConfig} */
 const config = {
   locales: ['en', 'zh', 'jp', 'fr', 'de', 'ru'],
+  verbose: true,
   scanner: {
-    verbose: false,
     autoImport: false,
     ignoreText: [
       'Tianji',

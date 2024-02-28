@@ -1,4 +1,4 @@
-import { t } from '@i18next-toolkit/react';
+import { Trans, t } from '@i18next-toolkit/react';
 import { Button, Form, Input, Modal, Table } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { AppRouterOutput, trpc } from '../../api/trpc';
@@ -52,6 +52,35 @@ export const TelemetryList: React.FC = React.memo(() => {
     <div>
       <PageHeader
         title={t('Telemetry')}
+        desc={
+          <div>
+            <p>
+              <Trans>
+                Telemetry is a technology that reports access data even on pages
+                that are not under your control. As long as the other website
+                allows the insertion of third-party images (e.g., forums, blogs,
+                and various rich-text editors), then the data can be collected
+                and used to analyze the images when they are loaded by the user.
+              </Trans>
+            </p>
+
+            <p>
+              <Trans>
+                Generally, we will use a one-pixel blank image so that it will
+                not affect the user's normal use.
+              </Trans>
+            </p>
+
+            <p>
+              <Trans>
+                At the same time, we can also use it in some client-side
+                application scenarios, such as collecting the frequency of cli
+                usage, such as collecting the installation of selfhosted apps,
+                and so on.
+              </Trans>
+            </p>
+          </div>
+        }
         action={
           <div>
             <Button
