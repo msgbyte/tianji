@@ -68,6 +68,9 @@ function HomepageMain() {
           ✔ No cookies
         </div>
         <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+          ✔ International support
+        </div>
+        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
           ✔ GDPR & CCPA compliant
         </div>
         <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
@@ -95,6 +98,7 @@ function HomepageMain() {
             <img src="/img/preview1.png" />
             <img src="/img/preview2.png" />
             <img src="/img/preview3.png" />
+            <img src="/img/preview4.png" />
           </Carousel>
         </div>
       </div>
