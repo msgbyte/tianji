@@ -55,7 +55,7 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
-    "@i18next-toolkit/cli": "^1.0.4",
+    "@i18next-toolkit/cli": "^1.0.5",
     "@types/leaflet": "^1.9.8",
     "@types/loadable__component": "^5.13.8",
     "@types/lodash-es": "^4.17.12",
