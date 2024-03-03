@@ -295,7 +295,7 @@ export async function getTelemetryPageviewMetrics(
   );
 
   return prisma.$queryRaw`
-    select ${Prisma.sql([`"${column}"`])}  x, count(*) y
+    select ${Prisma.sql([`"${column}"`])} x, count(*) y
     from "TelemetryEvent"
     ${joinSession}
     where "TelemetryEvent"."telemetryId" = ${telemetryId}
@@ -303,6 +303,31 @@ export async function getTelemetryPageviewMetrics(
       between ${params.startDate}::timestamptz and ${
     params.endDate
   }::timestamptz
+      ${filterQuery}
+    group by 1
+    order by 2 desc
+    limit 100
+    `;
+}
+
+export async function getTelemetryUrlMetrics(
+  telemetryId: string,
+  filters: BaseQueryFilters
+): Promise<{ x: string; y: number }[]> {
+  const { filterQuery, joinSession, params } = await parseTelemetryFilters(
+    telemetryId,
+    {
+      ...filters,
+    }
+  );
+
+  return prisma.$queryRaw`
+    select CONCAT("urlOrigin", "urlPath") x, count(*) y
+    from "TelemetryEvent"
+    ${joinSession}
+    where "TelemetryEvent"."telemetryId" = ${telemetryId}
+      and "TelemetryEvent"."createdAt"
+      between ${params.startDate}::timestamptz and ${params.endDate}::timestamptz
       ${filterQuery}
     group by 1
     order by 2 desc

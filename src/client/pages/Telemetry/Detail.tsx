@@ -4,10 +4,18 @@ import { useParams } from 'react-router';
 import { NotFoundTip } from '../../components/NotFoundTip';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { TelemetryOverview } from '../../components/telemetry/TelemetryOverview';
+import { TelemetryMetricsTable } from '../../components/telemetry/TelemetryMetricsTable';
+import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const TelemetryDetailPage: React.FC = React.memo(() => {
   const { telemetryId } = useParams();
   const workspaceId = useCurrentWorkspaceId();
+  const { t } = useTranslation();
+  const { startDate, endDate } = useGlobalRangeDate();
+
+  const startAt = startDate.valueOf();
+  const endAt = endDate.valueOf();
 
   if (!telemetryId) {
     return <NotFoundTip />;
@@ -21,6 +29,26 @@ export const TelemetryDetailPage: React.FC = React.memo(() => {
             telemetryId={telemetryId}
             showDateFilter={true}
             workspaceId={workspaceId}
+          />
+        </Card.Grid>
+
+        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+          <TelemetryMetricsTable
+            telemetryId={telemetryId}
+            type="source"
+            title={[t('Source'), t('Views')]}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+
+        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+          <TelemetryMetricsTable
+            telemetryId={telemetryId}
+            type="country"
+            title={[t('Countries'), t('Visitors')]}
+            startAt={startAt}
+            endAt={endAt}
           />
         </Card.Grid>
       </Card>

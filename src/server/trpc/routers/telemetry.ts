@@ -25,6 +25,7 @@ import {
   getTelemetrySession,
   getTelemetrySessionMetrics,
   getTelemetryStats,
+  getTelemetryUrlMetrics,
 } from '../../model/telemetry';
 import { BaseQueryFilters } from '../../utils/prisma';
 import dayjs from 'dayjs';
@@ -199,17 +200,8 @@ export const telemetryRouter = router({
     .input(
       z
         .object({
-          websiteId: z.string(),
-          type: z.enum([
-            'url',
-            'language',
-            'referrer',
-            'browser',
-            'os',
-            'device',
-            'country',
-            'event',
-          ]),
+          telemetryId: z.string(),
+          type: z.enum(['source', 'url', 'referrer', 'country']),
           startAt: z.number(),
           endAt: z.number(),
         })
@@ -224,7 +216,7 @@ export const telemetryRouter = router({
       )
     )
     .query(async ({ input }) => {
-      const { websiteId, type, startAt, endAt, url, country, region, city } =
+      const { telemetryId, type, startAt, endAt, url, country, region, city } =
         input;
 
       const startDate = new Date(startAt);
@@ -245,40 +237,27 @@ export const telemetryRouter = router({
         city,
       };
 
+      if (type === 'source') {
+        const data = await getTelemetryUrlMetrics(telemetryId, filters);
+
+        return data.map((d) => ({ x: d.x, y: Number(d.y) }));
+      }
+
       const column = FILTER_COLUMNS[type] || type;
 
       if (SESSION_COLUMNS.includes(type)) {
         const data = await getTelemetrySessionMetrics(
-          websiteId,
+          telemetryId,
           column,
           filters
         );
-
-        if (type === 'language') {
-          const combined: Record<string, any> = {};
-
-          for (const { x, y } of data) {
-            const key = String(x).toLowerCase().split('-')[0];
-
-            if (combined[key] === undefined) {
-              combined[key] = { x: key, y };
-            } else {
-              combined[key].y += y;
-            }
-          }
-
-          return Object.values(combined).map((d) => ({
-            x: d.x,
-            y: Number(d.y),
-          }));
-        }
 
         return data.map((d) => ({ x: d.x, y: Number(d.y) }));
       }
 
       if (EVENT_COLUMNS.includes(type)) {
         const data = await getTelemetryPageviewMetrics(
-          websiteId,
+          telemetryId,
           column,
           filters
         );
