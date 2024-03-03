@@ -18,7 +18,6 @@ export const PageHeader: React.FC<{
         )}
       </div>
 
-      <div className="text-2xl flex-1">{props.title}</div>
       {props.action}
     </div>
   );

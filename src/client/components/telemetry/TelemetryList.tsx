@@ -1,11 +1,12 @@
 import { Trans, t } from '@i18next-toolkit/react';
-import { Button, Form, Input, Modal, Table } from 'antd';
+import { Button, Collapse, Form, Input, Modal, Table, Typography } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { type ColumnsType } from 'antd/es/table/interface';
 import {
   BarChartOutlined,
+  CodeOutlined,
   EditOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
@@ -18,10 +19,11 @@ type TelemetryInfo = AppRouterOutput['telemetry']['all'][number];
 
 export const TelemetryList: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [form] = Form.useForm<{ id?: string; name: string }>();
   const upsertTelemetryMutation = trpc.telemetry.upsert.useMutation();
   const utils = trpc.useUtils();
+  const [modal, contextHolder] = Modal.useModal();
 
   const handleAddTelemetry = useEvent(async () => {
     await form.validateFields();
@@ -35,13 +37,67 @@ export const TelemetryList: React.FC = React.memo(() => {
 
     utils.telemetry.all.refetch();
 
-    setIsModalOpen(false);
+    setIsEditModalOpen(false);
 
     form.resetFields();
   });
 
+  const handleShowUsage = useEvent((info: TelemetryInfo) => {
+    const blankGif = `${window.location.origin}/telemetry/${workspaceId}/${info.id}.gif`;
+    const countBadgeUrl = `${window.location.origin}/telemetry/${workspaceId}/${info.id}/badge.svg`;
+    modal.info({
+      maskClosable: true,
+      title: 'How to Use Telemetry',
+      content: (
+        <div>
+          <p>Here is some way to use telemetry:</p>
+          <h2>Insert to article:</h2>
+          <p>
+            if your article support raw html, you can direct insert it{' '}
+            <Typography.Text code={true} copyable={{ text: blankGif }}>
+              {blankGif}
+            </Typography.Text>
+          </p>
+          <Collapse
+            ghost
+            items={[
+              {
+                label: 'Advanced',
+                children: (
+                  <div>
+                    <p>
+                      Some website will not allow send `referer` field. so its
+                      maybe can not track source. so you can mark it by
+                      yourself. for example:
+                    </p>
+                    <p>
+                      <Typography.Text code={true}>
+                        {blankGif}?url=https://xxxxxxxx
+                      </Typography.Text>
+                    </p>
+                  </div>
+                ),
+              },
+            ]}
+          />
+
+          <h2>Count your website visitor:</h2>
+          <p>
+            if your article support raw html, you can direct insert it{' '}
+            <Typography.Text code={true} copyable={{ text: blankGif }}>
+              {countBadgeUrl}
+            </Typography.Text>
+          </p>
+          <p>
+            Like this: <img src={countBadgeUrl} />
+          </p>
+        </div>
+      ),
+    });
+  });
+
   const handleEditTelemetry = useEvent(async (info: TelemetryInfo) => {
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
     form.setFieldsValue({
       id: info.id,
       name: info.name,
@@ -87,7 +143,7 @@ export const TelemetryList: React.FC = React.memo(() => {
               type="primary"
               icon={<PlusOutlined />}
               size="large"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsEditModalOpen(true)}
             >
               {t('Add Telemetry')}
             </Button>
@@ -95,16 +151,19 @@ export const TelemetryList: React.FC = React.memo(() => {
         }
       />
 
-      <TelemetryListTable onEdit={handleEditTelemetry} />
+      <TelemetryListTable
+        onShowUsage={handleShowUsage}
+        onEdit={handleEditTelemetry}
+      />
 
       <Modal
         title={t('Add Telemetry')}
-        open={isModalOpen}
+        open={isEditModalOpen}
         okButtonProps={{
           loading: upsertTelemetryMutation.isLoading,
         }}
         onOk={() => handleAddTelemetry()}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => setIsEditModalOpen(false)}
       >
         <Form layout="vertical" form={form}>
           <Form.Item name="id" hidden={true} />
@@ -118,6 +177,8 @@ export const TelemetryList: React.FC = React.memo(() => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {contextHolder}
     </div>
   );
 });
@@ -125,6 +186,7 @@ TelemetryList.displayName = 'TelemetryList';
 
 const TelemetryListTable: React.FC<{
   onEdit: (info: TelemetryInfo) => void;
+  onShowUsage: (info: TelemetryInfo) => void;
 }> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
   const { data = [], isLoading } = trpc.telemetry.all.useQuery({
@@ -155,6 +217,12 @@ const TelemetryListTable: React.FC<{
         render: (_, record) => {
           return (
             <div className="flex gap-2 justify-end">
+              <Button
+                icon={<CodeOutlined />}
+                onClick={() => props.onShowUsage(record)}
+              >
+                {t('Usage')}
+              </Button>
               <Button
                 icon={<EditOutlined />}
                 onClick={() => props.onEdit(record)}

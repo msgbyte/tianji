@@ -19,13 +19,13 @@ export async function recordTelemetryEvent(req: Request) {
   }
   const eventName = name ? String(name) : undefined;
 
-  const session = await findSession(req, url);
-  if (!session) {
+  const workspaceId = req.params.workspaceId;
+  if (!workspaceId) {
     return;
   }
 
-  const workspaceId = req.params.workspaceId;
-  if (!workspaceId) {
+  const session = await findSession(req, url);
+  if (!session) {
     return;
   }
 

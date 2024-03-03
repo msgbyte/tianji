@@ -33,6 +33,7 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [ ] utm track
 - [ ] waitlist
 - [ ] survey
+- [ ] lighthouse report
 
 ## Preview
 
