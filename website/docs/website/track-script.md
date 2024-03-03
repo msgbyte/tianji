@@ -14,13 +14,13 @@ the script look like below:
 <script async defer src="https://<your-self-hosted-domain>/tracker.js" data-website-id="xxxxxxxxxxxxx"></script>
 ```
 
-you can get this script code from your tianji website list
+you can get this script code from your **Tianji** website list
 
 ## Report Event
 
-Tianji provide a simple way to report user click event, its easy to help you track which action user like and often to use.
+**Tianji** provide a simple way to report user click event, its easy to help you track which action user like and often to use.
 
-This is a very common method in website analysis. You can use it quickly get it by using tianji.
+This is a very common method in website analysis. You can use it quickly get it by using **Tianji**.
 
 After you inject script code into your website, you just need add a `data-tianji-event` in dom attribute.
 
