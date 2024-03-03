@@ -5,7 +5,7 @@ import { trpc } from '../../api/trpc';
 import { ErrorTip } from '../../components/ErrorTip';
 import { Loading } from '../../components/Loading';
 import { NotFoundTip } from '../../components/NotFoundTip';
-import { MetricsTable } from '../../components/website/MetricsTable';
+import { WebsiteMetricsTable } from '../../components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '../../components/website/WebsiteOverview';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { useCurrentWorkspaceId } from '../../store/user';
@@ -45,7 +45,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           <WebsiteOverview website={website} showDateFilter={true} />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="url"
             title={[t('Pages'), t('Views')]}
@@ -54,7 +54,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="referrer"
             title={[t('Referrers'), t('Views')]}
@@ -63,7 +63,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="browser"
             title={[t('Browser'), t('Visitors')]}
@@ -72,7 +72,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="os"
             title={[t('OS'), t('Visitors')]}
@@ -81,7 +81,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="device"
             title={[t('Devices'), t('Visitors')]}
@@ -90,7 +90,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           />
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="country"
             title={[t('Countries'), t('Visitors')]}
@@ -108,7 +108,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           </Button>
         </Card.Grid>
         <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
-          <MetricsTable
+          <WebsiteMetricsTable
             websiteId={websiteId}
             type="event"
             title={[t('Events'), t('Actions')]}

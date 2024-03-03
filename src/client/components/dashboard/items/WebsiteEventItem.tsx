@@ -1,5 +1,5 @@
 import React from 'react';
-import { MetricsTable } from '../../website/MetricsTable';
+import { WebsiteMetricsTable } from '../../website/WebsiteMetricsTable';
 import { useGlobalRangeDate } from '../../../hooks/useGlobalRangeDate';
 
 export const WebsiteEventItem: React.FC<{
@@ -10,7 +10,7 @@ export const WebsiteEventItem: React.FC<{
   const endAt = endDate.valueOf();
 
   return (
-    <MetricsTable
+    <WebsiteMetricsTable
       websiteId={props.websiteId}
       type="event"
       title={['Events', 'Actions']}
