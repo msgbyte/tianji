@@ -158,7 +158,16 @@ export const telemetryRouter = router({
     )
     .output(z.object({ pageviews: z.any(), sessions: z.any() }))
     .query(async ({ input }) => {
-      const { telemetryId, startAt, endAt, url, country, region, city } = input;
+      const {
+        telemetryId,
+        startAt,
+        endAt,
+        timezone,
+        url,
+        country,
+        region,
+        city,
+      } = input;
 
       const startDate = new Date(startAt);
       const endDate = new Date(endAt);
@@ -174,6 +183,7 @@ export const telemetryRouter = router({
         startDate,
         endDate,
         unit: input.unit,
+        timezone,
         url,
         country,
         region,
@@ -216,8 +226,17 @@ export const telemetryRouter = router({
       )
     )
     .query(async ({ input }) => {
-      const { telemetryId, type, startAt, endAt, url, country, region, city } =
-        input;
+      const {
+        telemetryId,
+        type,
+        startAt,
+        endAt,
+        timezone,
+        url,
+        country,
+        region,
+        city,
+      } = input;
 
       const startDate = new Date(startAt);
       const endDate = new Date(endAt);
@@ -231,6 +250,7 @@ export const telemetryRouter = router({
       const filters = {
         startDate,
         endDate,
+        timezone,
         url,
         country,
         region,
