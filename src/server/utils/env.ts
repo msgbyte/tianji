@@ -11,6 +11,9 @@ export const env = {
   amapToken: process.env.AMAP_TOKEN,
   mapboxToken: process.env.MAPBOX_TOKEN,
   alphaMode: checkEnvTrusty(process.env.ALPHA_MODE),
+  disableAnonymousTelemetry: checkEnvTrusty(
+    process.env.DISABLE_ANONYMOUS_TELEMETRY
+  ),
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {

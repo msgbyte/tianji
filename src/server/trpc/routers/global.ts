@@ -21,6 +21,7 @@ export const globalRouter = router({
         amapToken: z.string().optional(),
         mapboxToken: z.string().optional(),
         alphaMode: z.boolean(),
+        disableAnonymousTelemetry: z.boolean(),
       })
     )
     .query(async ({ input }) => {
@@ -30,6 +31,7 @@ export const globalRouter = router({
         amapToken: env.amapToken,
         mapboxToken: env.mapboxToken,
         alphaMode: env.alphaMode,
+        disableAnonymousTelemetry: env.disableAnonymousTelemetry,
       };
     }),
 });
