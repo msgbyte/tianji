@@ -35,7 +35,6 @@ export const Layout: React.FC = React.memo(() => {
   const showHeader = !params.has('hideHeader');
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { alphaMode } = useGlobalConfig();
 
   const accountEl = (
     <Dropdown
@@ -119,13 +118,11 @@ export const Layout: React.FC = React.memo(() => {
                       label={t('Servers')}
                       onClick={() => setOpenDraw(false)}
                     />
-                    {alphaMode && (
-                      <MobileNavItem
-                        to="/telemetry"
-                        label={t('Telemetry')}
-                        onClick={() => setOpenDraw(false)}
-                      />
-                    )}
+                    <MobileNavItem
+                      to="/telemetry"
+                      label={t('Telemetry')}
+                      onClick={() => setOpenDraw(false)}
+                    />
 
                     <MobileNavItem
                       to="/settings"
@@ -157,9 +154,7 @@ export const Layout: React.FC = React.memo(() => {
                 <NavItem to="/monitor" label={t('Monitor')} />
                 <NavItem to="/website" label={t('Website')} />
                 <NavItem to="/servers" label={t('Servers')} />
-                {alphaMode && (
-                  <NavItem to="/telemetry" label={t('Telemetry')} />
-                )}
+                <NavItem to="/telemetry" label={t('Telemetry')} />
                 <NavItem to="/settings" label={t('Settings')} />
               </div>
 
