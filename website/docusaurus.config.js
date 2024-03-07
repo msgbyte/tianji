@@ -67,7 +67,7 @@ const config = {
         {
           name: 'keywords',
           content:
-            'opensource, free, tianji, umami, uptime, kuma, website, analysis, monitor, serverstatus, docker',
+            'opensource, free, tianji, umami, uptime, kuma, website, analysis, monitor, serverstatus, status page, docker',
         },
         { name: 'twitter:card', content: 'summary_large_image' },
       ],
