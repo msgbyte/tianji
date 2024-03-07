@@ -1,22 +1,43 @@
-FROM node:20-alpine
+# tianji reporter
+FROM golang:1.21.1-bookworm AS reporter
+WORKDIR /app/reporter
 
-WORKDIR /app/tianji
+COPY ./reporter/ ./reporter/
+
+RUN apt update
+RUN cd reporter && go build .
+
+# # Base ------------------------------
+FROM node:20-alpine AS base
 
 RUN npm install -g pnpm@8.3.1
+RUN apk add --update --no-cache python3 py3-pip g++ make
+
+# Tianji frontend ------------------------------
+FROM base AS docker-static
+WORKDIR /app/tianji
 
 COPY . .
 
-RUN apk add --update --no-cache python3 py3-pip g++ make
-
 RUN pnpm install --frozen-lockfile
 
-RUN pnpm build
+RUN pnpm build:static
 
-# make sure run after pnpm build completed to avoid break system packages
-# Push client(only support pure text message)
+# Tianji server ------------------------------
+FROM base AS docker-server
+WORKDIR /app/tianji
+
+COPY . .
+
+RUN pnpm install --filter @tianji/server... --config.dedupe-peer-dependents=false
+
+RUN mkdir -p ./src/server/public
+RUN COPY --from=docker-static /app/tianji/src/server/public /app/tianji/src/server/public
+
+RUN pnpm build:server
+
 RUN pip install apprise --break-system-packages
 
-# remove unused source file
 RUN rm -rf ./src/client
 RUN rm -rf ./website
 RUN rm -rf ./reporter
