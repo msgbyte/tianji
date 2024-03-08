@@ -14,7 +14,7 @@ RUN npm install -g pnpm@8.3.1
 RUN apk add --update --no-cache python3 py3-pip g++ make
 
 # Tianji frontend ------------------------------
-FROM base AS docker-static
+FROM base AS static
 WORKDIR /app/tianji
 
 COPY . .
@@ -24,7 +24,7 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm build:static
 
 # Tianji server ------------------------------
-FROM base AS docker-server
+FROM base AS app
 WORKDIR /app/tianji
 
 COPY . .
@@ -32,7 +32,7 @@ COPY . .
 RUN pnpm install --filter @tianji/server... --config.dedupe-peer-dependents=false
 
 RUN mkdir -p ./src/server/public
-RUN COPY --from=docker-static /app/tianji/src/server/public /app/tianji/src/server/public
+COPY --from=static /app/tianji/src/server/public /app/tianji/src/server/public
 
 RUN pnpm build:server
 
