@@ -403,7 +403,7 @@ export const AddServerStep: React.FC = React.memo(() => {
           ),
         },
         {
-          title: t('Waiting for receive UDP pack'),
+          title: t('Waiting for receive report pack'),
           description: (
             <div>
               {diffServerNames.length === 0 || checking === false ? (
