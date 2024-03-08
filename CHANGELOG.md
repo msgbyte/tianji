@@ -1,5 +1,58 @@
 
 
+## [1.7.0](https://github.com/msgbyte/tianji/compare/v1.6.0...v1.7.0) (2024-03-08)
+
+
+### Features
+
+* add alpha mode and usage page ([d3df3f2](https://github.com/msgbyte/tianji/commit/d3df3f2692b7bf97759d104f748710afd7b38f00))
+* add telemetry event count ([e79c4b4](https://github.com/msgbyte/tianji/commit/e79c4b48190c9c1867210399b13e8e4d7386fcd0))
+* add telemetry feature desc ([011ac6c](https://github.com/msgbyte/tianji/commit/011ac6c71389f0430d995396992e649fa0d5bc91))
+* add telemetry list ([5e720ab](https://github.com/msgbyte/tianji/commit/5e720abb11ae3615b07155aff320f46b5d8f95d1))
+* add telemetry metrics table ([38dd60f](https://github.com/msgbyte/tianji/commit/38dd60feeec35142cd08e4fe4fe2151b5acee400))
+* add telemetry overview ([5bad815](https://github.com/msgbyte/tianji/commit/5bad815e62352fa2ee5835233e98d3f1370890b8))
+* add telemetry trpc feature ([0bd98ad](https://github.com/msgbyte/tianji/commit/0bd98adf96fde351cda499ca215cedf36d5ec724))
+* add tianji anonymous telemetry ([ceef5c4](https://github.com/msgbyte/tianji/commit/ceef5c4b71e89bfdb60bf24406a5ab5b6eb930d7))
+* add usage button for telemetry ([daef9ff](https://github.com/msgbyte/tianji/commit/daef9ff08471f3de5a7cf975265d7fae3b28062e))
+* telemetry add telemetryId report ([355690e](https://github.com/msgbyte/tianji/commit/355690eb7505a3a3174e88eb7febd17fc0e288c7))
+
+
+### Bug Fixes
+
+* fix audit log too long will broken style problem ([b02e0b7](https://github.com/msgbyte/tianji/commit/b02e0b75d67cdf7e64e6606adad9496c2ff722af))
+* fix logic problem of retry ([ce891e9](https://github.com/msgbyte/tianji/commit/ce891e9254ef82ace8993232b50dee4ffa0673f2))
+* fix pageviews not include timezone problem ([439eb83](https://github.com/msgbyte/tianji/commit/439eb83748b2fd6386027fdf63252f0a60ab8582))
+* fix telemetry lost timezone problem ([40e1bac](https://github.com/msgbyte/tianji/commit/40e1bac541c198fcd6e35600e17fffe1cdd4ddfd))
+
+
+### Document
+
+* add framework support document ([1802717](https://github.com/msgbyte/tianji/commit/18027170b8da78a05f362c1fdcfc0cdbfa018514))
+* add Q&A for tianji reporter ([b50de6b](https://github.com/msgbyte/tianji/commit/b50de6b4e026491ecc7e33b876a68ba2282c2faf))
+* update changelog ([4b35cc0](https://github.com/msgbyte/tianji/commit/4b35cc0588e0e7d0ff54795b5c57fa9bef647b7c))
+* update docs, add account tip in intro page ([5d99bff](https://github.com/msgbyte/tianji/commit/5d99bffa87efc5b8279707041c63b6fbd6b42027))
+* update intro document ([2afb5e5](https://github.com/msgbyte/tianji/commit/2afb5e55f7689a02542af37e4e98d27f7d8bef53))
+* update keyword ([1872a5d](https://github.com/msgbyte/tianji/commit/1872a5d437a1e61a459c16372533b93f6e54a1e0))
+* update openapi ([5b36d10](https://github.com/msgbyte/tianji/commit/5b36d10346477a047a0af801a7842ea0fa84e4ae))
+* update openapi.json ([6f77452](https://github.com/msgbyte/tianji/commit/6f77452ae9a8dff1849e139c9496a026868ab746))
+* update preview/wechat image, and add feature tag of i18n ([a94e10b](https://github.com/msgbyte/tianji/commit/a94e10b93f0233377bc1ac7edbeb5d65c1fc28d1))
+* update tianji keywords ([d0c8bf9](https://github.com/msgbyte/tianji/commit/d0c8bf9f0e3e2e0b8d025998e47c0d182f3c6db1))
+* update wechat qrcode ([070f499](https://github.com/msgbyte/tianji/commit/070f4990a65cf322611f4ecce798639ba51898dc))
+
+
+### Others
+
+* add sealos config ([f87e5b3](https://github.com/msgbyte/tianji/commit/f87e5b32f9c08fa3fd31d15547ec559f3f897432))
+* improve dockerfile build ([6464a59](https://github.com/msgbyte/tianji/commit/6464a59d791b3fa93ca0b97ca0e1776274bc09b6))
+* refactor chart render and perf pageview data handle logic ([4fe61a6](https://github.com/msgbyte/tianji/commit/4fe61a6d7c11c99ce3fd4b8ec0cfa2c78cb5c077))
+* refactor website pageview endpoint to trpc ([dd0ad8c](https://github.com/msgbyte/tianji/commit/dd0ad8c5deb217673285ada601c3121815eb37b8))
+* remove alpha mode for telemetry ([e387b70](https://github.com/msgbyte/tianji/commit/e387b70c3a1511772a548f727bcadfc4a43a92d0))
+* rename MetricsTable to WebsiteMetricsTable ([1306187](https://github.com/msgbyte/tianji/commit/1306187f01e91d400f228bcd3f4c7ed4ad8576d4))
+* update docker file to multi stage builds ([ebc91d9](https://github.com/msgbyte/tianji/commit/ebc91d95317418241a01cf580c423947559f593c))
+* update translation ([49fc136](https://github.com/msgbyte/tianji/commit/49fc136fb836cfa178c20809f758bbc13cbdaa46))
+* upgrade @i18next-toolkit/cli version ([d8b23a7](https://github.com/msgbyte/tianji/commit/d8b23a746801b3f35d9d86126b37eef53bd84f17))
+* upgrade i18next-toolkit cli version and add translation of telemetry ([4711987](https://github.com/msgbyte/tianji/commit/4711987779733bc12a156767a87cfd6c19b6c8c7))
+
 ## [1.6.0](https://github.com/msgbyte/tianji/compare/v1.5.1...v1.6.0) (2024-02-15)
 
 
