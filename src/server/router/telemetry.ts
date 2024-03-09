@@ -73,18 +73,21 @@ telemetryRouter.get(
     query('name').optional().isString(),
     query('url').optional().isURL(),
     query('title').optional().isString(),
-    query('start').optional().isNumeric()
+    query('start').optional().isNumeric(),
+    query('fullNum').optional().isBoolean()
   ),
   async (req, res) => {
     const title = req.query.title || 'visitor';
     const start = req.query.start ? Number(req.query.start) : 0;
+    const fullNum = req.query.fullNum === 'true';
 
     recordTelemetryEvent(req);
     const num = await sumTelemetryEvent(req);
+    const count = num + start;
 
     const svg = makeBadge({
       label: String(title),
-      message: numify(num + start),
+      message: fullNum ? String(count) : numify(count),
       color: 'green',
     });
 

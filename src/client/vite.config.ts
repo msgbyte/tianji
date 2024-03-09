@@ -10,7 +10,7 @@ export default defineConfig({
   },
   clearScreen: false,
   server: {
-    host: '0.0.0.0',
+    // host: '0.0.0.0',
     proxy: {
       '/socket.io': {
         target: 'ws://localhost:12345',
