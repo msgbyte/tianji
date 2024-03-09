@@ -1,5 +1,17 @@
 
 
+## [1.7.2](https://github.com/msgbyte/tianji/compare/v1.7.1...v1.7.2) (2024-03-09)
+
+
+### Bug Fixes
+
+* fix telemetry session query failed problem ([c5dfa15](https://github.com/msgbyte/tianji/commit/c5dfa15096e80c030ecc45abef798b74c7676f72))
+
+
+### Document
+
+* add README visitor countor ([f0a1ed3](https://github.com/msgbyte/tianji/commit/f0a1ed3cdf17f7b0988c03efeb4f3d264100c227))
+
 ## [1.7.1](https://github.com/msgbyte/tianji/compare/v1.7.0...v1.7.1) (2024-03-09)
 
 
