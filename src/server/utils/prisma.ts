@@ -100,7 +100,7 @@ export async function parseTelemetryFilters(
           typeof value !== 'undefined' && SESSION_COLUMNS.includes(key)
       )
         ? Prisma.sql([
-            `inner join "WebsiteSession" on "WebsiteEvent"."sessionId" = "WebsiteSession"."id"`,
+            `inner join "TelemetrySession" on "TelemetryEvent"."sessionId" = "TelemetrySession"."id"`,
           ])
         : Prisma.empty,
     filterQuery: getTelemetryFilterQuery(filters, options),
