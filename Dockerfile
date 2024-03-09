@@ -32,6 +32,7 @@ COPY . .
 RUN pnpm install --filter @tianji/server... --config.dedupe-peer-dependents=false
 
 RUN mkdir -p ./src/server/public
+COPY --from=static /app/tianji/geo /app/tianji/geo
 COPY --from=static /app/tianji/src/server/public /app/tianji/src/server/public
 
 RUN pnpm build:server
