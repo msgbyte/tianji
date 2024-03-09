@@ -1,5 +1,12 @@
 
 
+## [1.7.1](https://github.com/msgbyte/tianji/compare/v1.7.0...v1.7.1) (2024-03-09)
+
+
+### Bug Fixes
+
+* fix geo library dont copy problem ([b19292e](https://github.com/msgbyte/tianji/commit/b19292e8f69e23ec4a5ba5bff8368b574dc20b53))
+
 ## [1.7.0](https://github.com/msgbyte/tianji/compare/v1.6.0...v1.7.0) (2024-03-08)
 
 
