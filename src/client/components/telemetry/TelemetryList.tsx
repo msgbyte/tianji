@@ -84,7 +84,7 @@ export const TelemetryList: React.FC = React.memo(() => {
           <h2>Count your website visitor:</h2>
           <p>
             if your article support raw html, you can direct insert it{' '}
-            <Typography.Text code={true} copyable={{ text: blankGif }}>
+            <Typography.Text code={true} copyable={{ text: countBadgeUrl }}>
               {countBadgeUrl}
             </Typography.Text>
           </p>
