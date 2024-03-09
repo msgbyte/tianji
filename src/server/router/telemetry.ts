@@ -56,7 +56,14 @@ telemetryRouter.get(
   async (req, res) => {
     recordTelemetryEvent(req);
 
-    res.header('Content-Type', 'image/gif').status(200).send(blankGifBuffer);
+    res
+      .header('Content-Type', 'image/gif')
+      .header(
+        'Cache-Control',
+        'no-cache,max-age=0,no-store,s-maxage=0,proxy-revalidate'
+      )
+      .status(200)
+      .send(blankGifBuffer);
   }
 );
 
@@ -81,6 +88,13 @@ telemetryRouter.get(
       color: 'green',
     });
 
-    res.header('Content-Type', 'image/svg+xml').status(200).send(svg);
+    res
+      .header('Content-Type', 'image/svg+xml')
+      .header(
+        'Cache-Control',
+        'no-cache,max-age=0,no-store,s-maxage=0,proxy-revalidate'
+      )
+      .status(200)
+      .send(svg);
   }
 );
