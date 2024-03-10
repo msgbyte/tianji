@@ -1,5 +1,13 @@
 
 
+## [1.7.3](https://github.com/msgbyte/tianji/compare/v1.7.2...v1.7.3) (2024-03-10)
+
+
+### Others
+
+* add fullNum props in telemetry badge ([44d5fb3](https://github.com/msgbyte/tianji/commit/44d5fb3f50c8e08fc9cc1e93133dad7883e251bd))
+* remove http cache to fit github environment(maybe) ([6f76a04](https://github.com/msgbyte/tianji/commit/6f76a04abe3e572ae56b873b7d2cd6f9e419c15a))
+
 ## [1.7.2](https://github.com/msgbyte/tianji/compare/v1.7.1...v1.7.2) (2024-03-09)
 
 
