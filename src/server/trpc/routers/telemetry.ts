@@ -211,7 +211,7 @@ export const telemetryRouter = router({
       z
         .object({
           telemetryId: z.string(),
-          type: z.enum(['source', 'url', 'referrer', 'country']),
+          type: z.enum(['source', 'url', 'event', 'referrer', 'country']),
           startAt: z.number(),
           endAt: z.number(),
         })

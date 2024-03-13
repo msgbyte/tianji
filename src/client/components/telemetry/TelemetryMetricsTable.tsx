@@ -12,7 +12,7 @@ type MetricsItemType = AppRouterOutput['telemetry']['metrics'][number];
 interface MetricsTableProps {
   telemetryId: string;
   title: [string, string];
-  type: 'source' | 'url' | 'referrer' | 'country';
+  type: 'source' | 'url' | 'event' | 'referrer' | 'country';
   startAt: number;
   endAt: number;
 }

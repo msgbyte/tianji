@@ -32,7 +32,7 @@ export const TelemetryDetailPage: React.FC = React.memo(() => {
           />
         </Card.Grid>
 
-        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
           <TelemetryMetricsTable
             telemetryId={telemetryId}
             type="source"
@@ -42,7 +42,17 @@ export const TelemetryDetailPage: React.FC = React.memo(() => {
           />
         </Card.Grid>
 
-        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+          <TelemetryMetricsTable
+            telemetryId={telemetryId}
+            type="event"
+            title={[t('Events'), t('Views')]}
+            startAt={startAt}
+            endAt={endAt}
+          />
+        </Card.Grid>
+
+        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
           <TelemetryMetricsTable
             telemetryId={telemetryId}
             type="country"
