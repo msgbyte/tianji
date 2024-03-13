@@ -49,6 +49,12 @@ function Timeline() {
         </VerticalTimelineElement>
 
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/15">
+          <h3 className="vertical-timeline-element-title">Release v1.7.0</h3>
+          <p>add telemetry feature</p>
+          <p>improve docker image size(reduce 40% size)</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/15">
           <h3 className="vertical-timeline-element-title">Release v1.6.0</h3>
           <p>add i18n support</p>
           <p>add timeout in http monitor</p>
