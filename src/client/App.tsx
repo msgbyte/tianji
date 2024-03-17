@@ -16,10 +16,11 @@ import { WebsitePage } from './pages/Website';
 import { useGlobalConfig } from './hooks/useConfig';
 import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
 import { ConfigProvider, theme } from 'antd';
-import clsx from 'clsx';
-import { useSettingsStore } from './store/settings';
+import { useColorSchema } from './store/settings';
 import { StatusPage } from './pages/Status';
 import { TelemetryPage } from './pages/Telemetry';
+import { LayoutV2 } from './pages/LayoutV2';
+import { isDev } from './utils/env';
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info: userInfo } = useUserStore();
@@ -30,7 +31,7 @@ export const AppRoutes: React.FC = React.memo(() => {
   return (
     <Routes>
       {userInfo ? (
-        <Route element={<Layout />}>
+        <Route element={isDev ? <LayoutV2 /> : <Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/monitor/*" element={<MonitorPage />} />
           <Route path="/website/*" element={<WebsitePage />} />
@@ -60,17 +61,12 @@ AppRoutes.displayName = 'AppRoutes';
 
 export const App: React.FC = React.memo(() => {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const colorScheme = useSettingsStore((state) => state.colorScheme);
+  const colorScheme = useColorSchema();
   const algorithm =
     colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
 
   return (
-    <div
-      ref={rootRef}
-      className={clsx('App', {
-        dark: colorScheme === 'dark',
-      })}
-    >
+    <div ref={rootRef} className="App">
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
