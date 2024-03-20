@@ -1,19 +1,9 @@
 import * as React from 'react';
 import {
-  LuAlertCircle,
-  LuArchive,
   LuAreaChart,
-  LuFile,
   LuFilePieChart,
-  LuInbox,
-  LuMessagesSquare,
   LuMonitorDot,
-  LuMoreVertical,
-  LuSend,
   LuServer,
-  LuShoppingCart,
-  LuTrash2,
-  LuUsers2,
   LuWifi,
 } from 'react-icons/lu';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -33,10 +23,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useUserInfo } from '@/store/user';
 import { Button } from '@/components/ui/button';
 import { UserConfig } from './Layout/UserConfig';
+import { Outlet } from '@tanstack/react-router';
+import { CommonList, CommonListItem } from '@/components/CommonList';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
-export const LayoutV2: React.FC = React.memo(() => {
+export const LayoutV2: React.FC<{
+  list: React.ReactNode;
+}> = React.memo((props) => {
   const [layout = defaultLayout, setLayout] = useLocalStorageState(
     'react-resizable-panels:layout',
     { defaultValue: defaultLayout }
@@ -127,11 +121,13 @@ export const LayoutV2: React.FC = React.memo(() => {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={layout[1]} minSize={30}>
-          <div>1</div>
+          <div>{props.list}</div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={layout[2]}>
-          <div>2</div>
+          <div>
+            <Outlet />
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </TooltipProvider>
