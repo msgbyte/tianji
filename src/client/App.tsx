@@ -21,6 +21,22 @@ import { StatusPage } from './pages/Status';
 import { TelemetryPage } from './pages/Telemetry';
 import { LayoutV2 } from './pages/LayoutV2';
 import { isDev } from './utils/env';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+
+const router = createRouter({
+  routeTree,
+  context: {
+    userInfo: undefined,
+  },
+});
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info: userInfo } = useUserStore();
@@ -64,21 +80,26 @@ export const App: React.FC = React.memo(() => {
   const colorScheme = useColorSchema();
   const algorithm =
     colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
+  const { info: userInfo } = useUserStore();
 
   return (
     <div ref={rootRef} className="App">
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <ConfigProvider
-              theme={{ algorithm }}
-              getPopupContainer={() => rootRef.current!}
-            >
-              <TokenLoginContainer>
-                <AppRoutes />
-              </TokenLoginContainer>
-            </ConfigProvider>
-          </BrowserRouter>
+          <ConfigProvider
+            theme={{ algorithm }}
+            getPopupContainer={() => rootRef.current!}
+          >
+            <TokenLoginContainer>
+              {isDev ? (
+                <RouterProvider router={router} context={{ userInfo }} />
+              ) : (
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              )}
+            </TokenLoginContainer>
+          </ConfigProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </div>

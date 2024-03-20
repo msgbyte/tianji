@@ -11,6 +11,7 @@ module.exports = {
       './index.html',
       './components/**/*.{js,jsx,ts,tsx}',
       './pages/**/*.{js,jsx,ts,tsx}',
+      './routes/**/*.{js,jsx,ts,tsx}',
     ],
   },
   theme: {
@@ -84,7 +85,7 @@ module.exports = {
   },
   darkMode: 'class',
   corePlugins: {
-    preflight: false,
+    preflight: true,
   },
   plugins: [animate],
 } satisfies Config;
