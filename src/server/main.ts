@@ -66,6 +66,12 @@ app.use('/serverStatus', serverStatusRouter);
 
 app.use('/trpc', trpcExpressMiddleware);
 
+if (env.customTrackerScriptName) {
+  app.get(`/${env.customTrackerScriptName}`, (req, res) =>
+    res.sendFile(path.resolve(__dirname, './public/tracker.js'))
+  );
+}
+
 if (env.allowOpenapi) {
   app.use('/open/_ui', swaggerUI.serve, swaggerUI.setup(trpcOpenapiDocument));
   app.use('/open/_document', (req, res) => res.send(trpcOpenapiDocument));

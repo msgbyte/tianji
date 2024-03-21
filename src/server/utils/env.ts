@@ -14,6 +14,7 @@ export const env = {
   disableAnonymousTelemetry: checkEnvTrusty(
     process.env.DISABLE_ANONYMOUS_TELEMETRY
   ),
+  customTrackerScriptName: process.env.CUSTOM_TRACKER_SCRIPT_NAME,
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {

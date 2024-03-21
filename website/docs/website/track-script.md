@@ -31,3 +31,21 @@ for example:
 ```
 
 Now, when user click this button, your dashboard will receive new event
+
+
+## Modify default script name
+
+> This feature available on v1.7.4+
+
+You can use environment `CUSTOM_TRACKER_SCRIPT_NAME` when you start it
+
+for example:
+```
+CUSTOM_TRACKER_SCRIPT_NAME="my-tracker.js"
+```
+
+then you can visit your tracker script with `"https://<your-self-hosted-domain>/my-tracker.js"`
+
+This is to help you avoid some ad-blockers.
+
+You do not need the `.js` suffix. It can be any path you choose, even you can use as `CUSTOM_TRACKER_SCRIPT_NAME="this/is/very/long/path"`
