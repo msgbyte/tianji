@@ -165,15 +165,15 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   }
 
   return (
-    <div className="w-full h-full overflow-auto">
+    <div className="h-full w-full overflow-auto">
       <Spin spinning={isLoading}>
         <Space className="w-full" direction="vertical">
           <div className="flex justify-between">
             <Space direction="vertical">
-              <div className="text-2xl flex items-center gap-2">
+              <div className="flex items-center gap-2 text-2xl">
                 <span>{monitorInfo.name}</span>
                 {monitorInfo.active === false && (
-                  <div className="bg-red-500 rounded-full px-2 py-0.5 text-white text-xs">
+                  <div className="rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
                     {t('Stopped')}
                   </div>
                 )}
@@ -187,7 +187,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               </div>
             </Space>
 
-            <div className="text-black dark:text-gray-200 text-opacity-75">
+            <div className="text-black text-opacity-75 dark:text-gray-200">
               {t('Monitored for {{dayNum}} days', {
                 dayNum: dayjs().diff(dayjs(monitorInfo.createdAt), 'days'),
               })}

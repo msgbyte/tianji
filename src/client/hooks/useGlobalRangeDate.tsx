@@ -30,7 +30,7 @@ export function useGlobalRangeDate(): {
 
       return {
         label: (
-          <div className="flex gap-2 items-center flex-nowrap">
+          <div className="flex flex-nowrap items-center gap-2">
             <CalendarOutlined />
             <span>
               {`${dayjs(_startDate).format('YYYY-MM-DD HH:mm')} - ${dayjs(

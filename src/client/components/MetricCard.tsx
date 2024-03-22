@@ -29,8 +29,8 @@ export const MetricCard: React.FC<MetricCardProps> = React.memo((props) => {
   );
 
   return (
-    <div className="flex flex-col justify-center min-w-[140px] min-h-[90px]">
-      <div className="flex items-center whitespace-nowrap font-bold text-4xl">
+    <div className="flex min-h-[90px] min-w-[140px] flex-col justify-center">
+      <div className="flex items-center whitespace-nowrap text-4xl font-bold">
         {format(value)}
       </div>
       <div className="flex items-center whitespace-nowrap font-bold">
@@ -44,8 +44,8 @@ export const MetricCard: React.FC<MetricCardProps> = React.memo((props) => {
       </div>
 
       {showPreviousPeriod && (
-        <div className="mt-2 lg:mt-4 opacity-60">
-          <div className="flex items-center whitespace-nowrap font-bold text-4xl">
+        <div className="mt-2 opacity-60 lg:mt-4">
+          <div className="flex items-center whitespace-nowrap text-4xl font-bold">
             {format(prev)}
           </div>
           <div className="flex items-center whitespace-nowrap font-bold">

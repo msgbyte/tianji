@@ -216,7 +216,7 @@ const TelemetryListTable: React.FC<{
         width: 240,
         render: (_, record) => {
           return (
-            <div className="flex gap-2 justify-end">
+            <div className="flex justify-end gap-2">
               <Button
                 icon={<CodeOutlined />}
                 onClick={() => props.onShowUsage(record)}

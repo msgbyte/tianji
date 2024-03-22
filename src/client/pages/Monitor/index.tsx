@@ -15,9 +15,9 @@ export const MonitorPage: React.FC = React.memo(() => {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full flex-col">
       <div>
-        <div className="px-4 pt-4 flex gap-4">
+        <div className="flex gap-4 px-4 pt-4">
           <Button
             type="primary"
             size="large"
@@ -34,7 +34,7 @@ export const MonitorPage: React.FC = React.memo(() => {
           </Button>
         </div>
       </div>
-      <div className="py-5 flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden py-5">
         <div className="w-5/12 rounded bg-gray-50 dark:bg-gray-800">
           <MonitorList />
         </div>

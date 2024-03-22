@@ -117,7 +117,7 @@ interface UseSocketSubscribeListOptions<K, T> {
 const defaultFilter = () => true;
 export function useSocketSubscribeList<
   K extends keyof SubscribeEventMap = keyof SubscribeEventMap,
-  T = SubscribeEventData<K>
+  T = SubscribeEventData<K>,
 >(name: K, options: UseSocketSubscribeListOptions<K, T> = {}): T[] {
   const { filter = defaultFilter } = options;
   const { subscribe } = useSocket();

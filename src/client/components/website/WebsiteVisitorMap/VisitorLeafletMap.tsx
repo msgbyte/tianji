@@ -40,7 +40,7 @@ export const VisitorLeafletMap: React.FC<{
 }> = React.memo((props) => {
   return (
     <MapContainer
-      className="w-full h-[60vh]"
+      className="h-[60vh] w-full"
       center={mapCenter}
       zoom={2}
       minZoom={2}

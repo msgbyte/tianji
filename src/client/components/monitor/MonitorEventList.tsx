@@ -35,15 +35,15 @@ export const MonitorEventList: React.FC<MonitorEventListProps> = React.memo(
               navigate(`/monitor/${item.monitorId}`);
             }}
           >
-            <div className="flex items-center w-full gap-2">
+            <div className="flex w-full items-center gap-2">
               <div
                 className={clsx(
-                  'min-w-[62px] py-1 px-2 rounded-full text-white inline-block text-center',
+                  'inline-block min-w-[62px] rounded-full px-2 py-1 text-center text-white',
                   item.type === 'UP'
                     ? 'bg-green-400'
                     : item.type === 'DOWN'
-                    ? 'bg-red-500'
-                    : 'bg-amber-400'
+                      ? 'bg-red-500'
+                      : 'bg-amber-400'
                 )}
               >
                 {item.type}

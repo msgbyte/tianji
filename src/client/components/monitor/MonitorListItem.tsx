@@ -70,7 +70,7 @@ export const MonitorListItem: React.FC<{
     <div
       className={clsx(
         className,
-        'flex rounded-lg py-3 px-4 mb-1 bg-green-500 bg-opacity-0 hover:bg-opacity-10 items-center',
+        'mb-1 flex items-center rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10',
         onClick && 'cursor-pointer'
       )}
       onClick={onClick}
@@ -78,7 +78,7 @@ export const MonitorListItem: React.FC<{
       <div>
         <span
           className={clsx(
-            'min-w-[62px] p-0.5 rounded-full text-white inline-block text-center',
+            'inline-block min-w-[62px] rounded-full p-0.5 text-center text-white',
             upPercent === 100 ? 'bg-green-400' : 'bg-amber-400'
           )}
         >

@@ -44,7 +44,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
         <Card.Grid hoverable={false} className="!w-full">
           <WebsiteOverview website={website} showDateFilter={true} />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="url"
@@ -53,7 +53,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="referrer"
@@ -62,7 +62,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="browser"
@@ -71,7 +71,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="os"
@@ -80,7 +80,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/3 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="device"
@@ -89,7 +89,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             endAt={endAt}
           />
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="country"
@@ -99,7 +99,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
           />
           <Button
             size="small"
-            className="m-auto flex flex-row-reverse items-center mt-1"
+            className="m-auto mt-1 flex flex-row-reverse items-center"
             styles={{ icon: { marginRight: 0, marginLeft: 8 } }}
             icon={<RightOutlined className="m-0" />}
             onClick={() => navigate(`/website/${websiteId}/map`)}
@@ -107,7 +107,7 @@ export const WebsiteDetail: React.FC = React.memo(() => {
             {t('Visitor Map')}
           </Button>
         </Card.Grid>
-        <Card.Grid hoverable={false} className="!w-1/2 min-h-[470px]">
+        <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
           <WebsiteMetricsTable
             websiteId={websiteId}
             type="event"

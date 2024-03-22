@@ -10,7 +10,7 @@ export const useSettingsStore = create<SettingsState>()(
     () =>
       ({
         colorScheme: 'light' as const,
-      } as SettingsState),
+      }) as SettingsState,
     {
       name: 'settings',
     }

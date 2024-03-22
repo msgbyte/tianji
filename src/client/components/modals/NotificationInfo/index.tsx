@@ -104,7 +104,7 @@ export const NotificationInfoModal: React.FC<NotificationInfoModalProps> =
           </div>
         }
       >
-        <div className="overflow-y-auto max-h-[80vh]">
+        <div className="max-h-[80vh] overflow-y-auto">
           <Form
             preserve={false}
             form={form}

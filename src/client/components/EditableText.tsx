@@ -23,7 +23,7 @@ export const EditableText: React.FC<EditableTextProps> = React.memo((props) => {
         <Input
           className={clsx(
             props.className,
-            'border-0 p-0 outline-0 !shadow-none rounded-none'
+            'rounded-none border-0 p-0 !shadow-none outline-0'
           )}
           value={text}
           onChange={(e) => setText(e.target.value)}

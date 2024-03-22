@@ -65,7 +65,7 @@ LanguageSelector.displayName = 'LanguageSelector';
 export const CountryFlag: React.FC<{ code: string }> = React.memo((props) => {
   return (
     <img
-      className="w-[27px] h-[18px] ml-6"
+      className="ml-6 h-[18px] w-[27px]"
       src={`/locales/${props.code}/flag.png`}
     />
   );

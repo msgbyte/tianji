@@ -37,7 +37,7 @@ export const TimeEventChart: React.FC<{
             formatter: (text) => formatDateWithUnit(text, props.unit),
           },
         },
-      } satisfies ColumnConfig),
+      }) satisfies ColumnConfig,
     [props.data, props.unit]
   );
 

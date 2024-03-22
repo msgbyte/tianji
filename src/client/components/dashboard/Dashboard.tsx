@@ -51,7 +51,7 @@ export const Dashboard: React.FC = React.memo(() => {
     <div className="py-4">
       <div
         className={clsx(
-          'flex gap-2 justify-end bg-white dark:bg-gray-900 py-2',
+          'flex justify-end gap-2 bg-white py-2 dark:bg-gray-900',
           isEditMode && 'sticky top-0 z-10'
         )}
       >

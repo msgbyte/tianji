@@ -129,7 +129,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
             const trackScript = `<script async defer src="${location.origin}/tracker.js" data-website-id="${record.id}"></script>`;
 
             return (
-              <div className="flex gap-2 justify-end">
+              <div className="flex justify-end gap-2">
                 <ModalButton
                   buttonProps={{
                     icon: <CodeOutlined />,
@@ -147,7 +147,7 @@ const WebsiteListTable: React.FC<{ workspaceId: string }> = React.memo(
                             format: 'text/plain',
                             text: trackScript,
                           }}
-                          className="h-[96px] flex p-2 rounded bg-black bg-opacity-5 border border-black border-opacity-10 overflow-auto"
+                          className="flex h-[96px] overflow-auto rounded border border-black border-opacity-10 bg-black bg-opacity-5 p-2"
                         >
                           <span>{trackScript}</span>
                         </Typography.Paragraph>

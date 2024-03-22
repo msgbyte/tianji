@@ -26,9 +26,9 @@ export const Usage: React.FC = React.memo(() => {
       <PageHeader title={t('Usage')} />
 
       <Card>
-        <div className="text-lg mb-2">
+        <div className="mb-2 text-lg">
           {t('Statistic Date')}:
-          <span className="font-bold ml-2">
+          <span className="ml-2 font-bold">
             {startDate.format('YYYY/MM/DD')} - {endDate.format('YYYY/MM/DD')}
           </span>
         </div>

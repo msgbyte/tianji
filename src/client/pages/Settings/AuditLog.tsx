@@ -59,7 +59,7 @@ export const AuditLog: React.FC = React.memo(() => {
 
       <Card>
         <List>
-          <div ref={parentRef} className="h-[560px] overflow-auto w-full">
+          <div ref={parentRef} className="h-[560px] w-full overflow-auto">
             {virtualItems.length === 0 && <Empty />}
 
             <div
@@ -88,19 +88,19 @@ export const AuditLog: React.FC = React.memo(() => {
                         t('Nothing more to load')
                       )
                     ) : (
-                      <div className="flex items-center overflow-hidden h-7">
+                      <div className="flex h-7 items-center overflow-hidden">
                         {item.relatedType && (
                           <ColorTag label={item.relatedType} />
                         )}
                         <div
-                          className="opacity-60 mr-2 text-xs w-9"
+                          className="mr-2 w-9 text-xs opacity-60"
                           title={dayjs(item.createdAt).format(
                             'YYYY-MM-DD HH:mm:ss'
                           )}
                         >
                           {dayjs(item.createdAt).format('MM-DD HH:mm')}
                         </div>
-                        <div className="overflow-auto h-full flex-1">
+                        <div className="h-full flex-1 overflow-auto">
                           {item.content}
                         </div>
                       </div>

@@ -85,17 +85,17 @@ export const TelemetryOverview: React.FC<{
   return (
     <Spin spinning={loading}>
       <div className="flex">
-        <div className="flex flex-1 text-2xl font-bold items-center">
+        <div className="flex flex-1 items-center text-2xl font-bold">
           <span className="mr-2">{info?.name}</span>
         </div>
 
         <div>{actions}</div>
       </div>
 
-      <div className="flex mb-10 flex-wrap justify-between">
+      <div className="mb-10 flex flex-wrap justify-between">
         <div className="flex-1">{stats && <MetricsBar stats={stats} />}</div>
 
-        <div className="flex items-center gap-2 justify-end flex-wrap w-full lg:w-1/3">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 lg:w-1/3">
           <div className="mr-2">
             <Switch
               checked={showPreviousPeriod}
@@ -137,7 +137,7 @@ const MetricsBar: React.FC<{
   const { pageviews, uniques } = props.stats || {};
 
   return (
-    <div className="flex gap-5 flex-wrap w-full">
+    <div className="flex w-full flex-wrap gap-5">
       <MetricCard
         label={t('views')}
         value={pageviews.value}

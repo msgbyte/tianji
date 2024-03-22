@@ -29,7 +29,7 @@ export const StatusPageServices: React.FC<StatusPageServicesProps> = React.memo(
     }
 
     return (
-      <div className="p-2.5 flex flex-col gap-4 rounded-md border border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col gap-4 rounded-md border border-gray-200 p-2.5 dark:border-gray-700">
         {list.length > 0 ? (
           list.map((item) => (
             <MonitorListItem

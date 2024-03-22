@@ -56,8 +56,8 @@ export const Servers: React.FC = React.memo(() => {
 
   return (
     <div>
-      <div className="h-24 flex items-center">
-        <div className="text-2xl flex-1">{t('Servers')}</div>
+      <div className="flex h-24 items-center">
+        <div className="flex-1 text-2xl">{t('Servers')}</div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1 text-gray-500">
             <Switch
@@ -311,7 +311,7 @@ export const InstallScript: React.FC = React.memo(() => {
           format: 'text/plain',
           text: command,
         }}
-        className="h-[96px] flex p-2 rounded bg-black bg-opacity-5 border border-black border-opacity-10 overflow-auto"
+        className="flex h-[96px] overflow-auto rounded border border-black border-opacity-10 bg-black bg-opacity-5 p-2"
       >
         <span>{command}</span>
       </Typography.Paragraph>

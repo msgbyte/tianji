@@ -25,10 +25,10 @@ export const Register: React.FC = React.memo(() => {
   });
 
   return (
-    <div className="w-full h-full flex justify-center items-center">
+    <div className="flex h-full w-full items-center justify-center">
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
-          <img className="w-24 h-24" src="/icon.svg" />
+          <img className="h-24 w-24" src="/icon.svg" />
         </div>
         <Typography.Title className="text-center" level={2}>
           {t('Register Account')}

@@ -26,10 +26,10 @@ export const Login: React.FC = React.memo(() => {
   const { allowRegister } = useGlobalConfig();
 
   return (
-    <div className="w-full h-full flex justify-center items-center dark:bg-gray-900">
+    <div className="flex h-full w-full items-center justify-center dark:bg-gray-900">
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
-          <img className="w-24 h-24" src="/icon.svg" />
+          <img className="h-24 w-24" src="/icon.svg" />
         </div>
         <Typography.Title className="text-center" level={2}>
           Tianji

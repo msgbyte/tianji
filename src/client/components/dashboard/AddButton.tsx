@@ -154,7 +154,7 @@ export const DashboardItemAddButton: React.FC = React.memo(() => {
             <span>{t('Add')}</span>
             <DownOutlined
               className={clsx(
-                'transition-transform scale-y-75',
+                'scale-y-75 transition-transform',
                 open && 'rotate-180'
               )}
             />

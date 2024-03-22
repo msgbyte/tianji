@@ -115,7 +115,7 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
             {label}
             <DownOutlined
               className={clsx(
-                'transition-transform scale-y-75',
+                'scale-y-75 transition-transform',
                 showDropdown ? 'rotate-180' : 'rotate-0'
               )}
             />

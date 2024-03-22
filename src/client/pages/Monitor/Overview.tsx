@@ -14,7 +14,7 @@ export const MonitorOverview: React.FC = React.memo(() => {
 
   return (
     <div className="px-2">
-      <div className="grid gap-4 grid-cols-2">
+      <div className="grid grid-cols-2 gap-4">
         <Card hoverable={true}>
           <div>{t('Monitors')}</div>
           <div className="text-2xl font-semibold">{monitors.length}</div>

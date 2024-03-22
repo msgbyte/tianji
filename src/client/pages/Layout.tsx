@@ -80,9 +80,9 @@ export const Layout: React.FC = React.memo(() => {
   );
 
   return (
-    <div className="flex flex-col h-full dark:bg-gray-900 dark:text-gray-300">
+    <div className="flex h-full flex-col dark:bg-gray-900 dark:text-gray-300">
       {showHeader && (
-        <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-4 sticky top-0 z-20 h-[62px]">
+        <div className="sticky top-0 z-20 flex h-[62px] items-center bg-gray-100 px-4 dark:bg-gray-800">
           {isMobile && (
             <>
               <Button
@@ -96,7 +96,7 @@ export const Layout: React.FC = React.memo(() => {
                 placement="left"
                 closeIcon={false}
               >
-                <div className="flex flex-col h-full pt-12">
+                <div className="flex h-full flex-col pt-12">
                   <div className="flex-1">
                     <MobileNavItem
                       to="/dashboard"
@@ -142,8 +142,8 @@ export const Layout: React.FC = React.memo(() => {
             </>
           )}
 
-          <div className="px-2 mr-10 font-bold flex items-center">
-            <img src="/icon.svg" className="w-10 h-10 mr-2" />
+          <div className="mr-10 flex items-center px-2 font-bold">
+            <img src="/icon.svg" className="mr-2 h-10 w-10" />
             <span className="text-xl dark:text-gray-200">Tianji</span>
           </div>
 
@@ -171,9 +171,9 @@ export const Layout: React.FC = React.memo(() => {
           )}
         </div>
       )}
-      <div className="flex-1 w-full overflow-hidden">
-        <div className="h-full px-1 sm:px-4 overflow-auto">
-          <div className="max-w-7xl m-auto">
+      <div className="w-full flex-1 overflow-hidden">
+        <div className="h-full overflow-auto px-1 sm:px-4">
+          <div className="m-auto max-w-7xl">
             <Outlet />
           </div>
         </div>

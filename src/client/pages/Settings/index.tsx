@@ -54,7 +54,7 @@ export const SettingsPage: React.FC = React.memo(() => {
 
   return (
     <div className="flex h-full">
-      <div className="w-full md:w-1/6 pt-10">
+      <div className="w-full pt-10 md:w-1/6">
         <Menu
           className="h-full"
           onClick={onClick}
@@ -63,7 +63,7 @@ export const SettingsPage: React.FC = React.memo(() => {
           items={items}
         />
       </div>
-      <div className="w-full md:w-5/6 py-2 px-4">
+      <div className="w-full px-4 py-2 md:w-5/6">
         <Routes>
           <Route path="/" element={<WebsiteList />} />
           <Route path="/websites" element={<WebsiteList />} />

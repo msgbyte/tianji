@@ -8,12 +8,12 @@ export const PageHeader: React.FC<{
   action?: React.ReactNode;
 }> = React.memo((props) => {
   return (
-    <div className="h-24 flex items-center">
-      <div className="text-2xl flex-1">
+    <div className="flex h-24 items-center">
+      <div className="flex-1 text-2xl">
         {props.title}
         {props.desc && (
           <Tooltip title={props.desc}>
-            <QuestionCircleOutlined className="text-sm ml-2 cursor-help" />
+            <QuestionCircleOutlined className="ml-2 cursor-help text-sm" />
           </Tooltip>
         )}
       </div>

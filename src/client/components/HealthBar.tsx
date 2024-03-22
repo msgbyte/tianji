@@ -27,10 +27,10 @@ export const HealthBar: React.FC<HealthBarProps> = React.memo((props) => {
           key={i}
           title={beat.title}
           className={clsx(
-            'rounded-full hover:scale-150 transition-transform',
+            'rounded-full transition-transform hover:scale-150',
             {
-              'w-[5px] h-4': size === 'small',
-              'w-2 h-8': size === 'large',
+              'h-4 w-[5px]': size === 'small',
+              'h-8 w-2': size === 'large',
             },
             {
               'bg-green-500': beat.status === 'health',

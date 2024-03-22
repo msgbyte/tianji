@@ -59,9 +59,9 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
           return (
             <div className="flex">
               <div className="w-12 text-right">{formatNumber(val)}</div>
-              <div className="inline-block w-12 relative border-l ml-1 px-1">
+              <div className="relative ml-1 inline-block w-12 border-l px-1">
                 <div
-                  className="bg-blue-300 absolute h-full bg-opacity-25 left-0 top-0 pointer-events-none"
+                  className="pointer-events-none absolute left-0 top-0 h-full bg-blue-300 bg-opacity-25"
                   style={{ width: `${percent}%` }}
                 />
                 <span>{percent.toFixed(0)}%</span>

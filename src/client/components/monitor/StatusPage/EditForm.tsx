@@ -75,7 +75,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
               return (
                 <>
                   <Form.Item label={t('Monitors')}>
-                    <div className="flex flex-col gap-2 mb-2">
+                    <div className="mb-2 flex flex-col gap-2">
                       {fields.map((field, index) => (
                         // monitor item
                         <>
@@ -95,7 +95,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                               <MonitorPicker />
                             </Form.Item>
 
-                            <div className="flex item-center">
+                            <div className="item-center flex">
                               <div className="flex-1">
                                 <Form.Item
                                   name={[field.name, 'showCurrent']}
@@ -105,13 +105,13 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                                   <Switch size="small" />
                                 </Form.Item>
 
-                                <span className="text-sm align-middle ml-1">
+                                <span className="ml-1 align-middle text-sm">
                                   {t('Show Current Response')}
                                 </span>
                               </div>
 
                               <MinusCircleOutlined
-                                className="text-lg mt-1.5"
+                                className="mt-1.5 text-lg"
                                 onClick={() => remove(field.name)}
                               />
                             </div>

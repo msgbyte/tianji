@@ -79,8 +79,8 @@ export const WebsiteInfo: React.FC = React.memo(() => {
 
   return (
     <div>
-      <div className="h-24 flex items-center">
-        <div className="text-2xl flex-1">{t('Website Info')}</div>
+      <div className="flex h-24 items-center">
+        <div className="flex-1 text-2xl">{t('Website Info')}</div>
       </div>
 
       <div>

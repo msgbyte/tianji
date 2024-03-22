@@ -87,21 +87,21 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
     });
 
     return (
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <HealthBar size={size} beats={beats} />
 
         {showCurrentStatus && (
           <>
             {last(beats)?.status === 'health' ? (
-              <div className="bg-green-500 text-white px-4 py-1 rounded-full text-lg font-bold">
+              <div className="rounded-full bg-green-500 px-4 py-1 text-lg font-bold text-white">
                 {t('UP')}
               </div>
             ) : last(beats)?.status === 'error' ? (
-              <div className="bg-red-600 text-white px-4 py-1 rounded-full text-lg font-bold">
+              <div className="rounded-full bg-red-600 px-4 py-1 text-lg font-bold text-white">
                 {t('DOWN')}
               </div>
             ) : (
-              <div className="bg-gray-400 text-white px-4 py-1 rounded-full text-lg font-bold">
+              <div className="rounded-full bg-gray-400 px-4 py-1 text-lg font-bold text-white">
                 {t('NONE')}
               </div>
             )}

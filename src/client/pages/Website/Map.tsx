@@ -35,7 +35,7 @@ export const WebsiteVisitorMapPage: React.FC = React.memo(() => {
 
   return (
     <div className="py-6">
-      <div className="pb-2 flex items-center justify-between">
+      <div className="flex items-center justify-between pb-2">
         <Button
           size="large"
           icon={<LeftOutlined />}

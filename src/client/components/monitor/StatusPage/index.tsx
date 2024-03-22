@@ -64,9 +64,9 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
     );
 
     return (
-      <div className="w-full h-full flex">
+      <div className="flex h-full w-full">
         {editMode && (
-          <div className="w-1/3 overflow-auto py-8 px-4 border-r border-gray-300 dark:border-gray-600">
+          <div className="w-1/3 overflow-auto border-r border-gray-300 px-4 py-8 dark:border-gray-600">
             <MonitorStatusPageEditForm
               isLoading={loading}
               initialValues={info ?? {}}
@@ -77,12 +77,12 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
         )}
         <div
           className={clsx(
-            'mx-auto py-8 px-4 overflow-auto',
+            'mx-auto overflow-auto px-4 py-8',
             !editMode ? 'w-4/5' : 'w-2/3'
           )}
         >
           <div className="flex">
-            <div className="text-2xl mb-4 flex-1">{info?.title}</div>
+            <div className="mb-4 flex-1 text-2xl">{info?.title}</div>
 
             <ColorSchemeSwitcher />
           </div>
@@ -99,7 +99,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             </div>
           )}
 
-          <div className="text-lg mb-2">{t('Services')}</div>
+          <div className="mb-2 text-lg">{t('Services')}</div>
 
           {info && (
             <StatusPageServices

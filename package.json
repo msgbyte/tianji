@@ -30,6 +30,7 @@
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "fs-extra": "^11.2.0",
+    "prettier-plugin-tailwindcss": "^0.5.12",
     "release-it": "^17.0.1",
     "tar": "^6.1.15",
     "ts-node": "^10.9.1",
