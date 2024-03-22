@@ -77,6 +77,9 @@ export const websiteRouter = router({
         where: {
           workspaceId,
         },
+        orderBy: {
+          updatedAt: 'desc',
+        },
       });
 
       return websites;
