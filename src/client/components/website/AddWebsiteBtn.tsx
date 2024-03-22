@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
+import { useEvent } from '@/hooks/useEvent';
 import { Input } from '../ui/input';
 import { preventDefault } from '@/utils/dom';
 import { trpc } from '@/api/trpc';

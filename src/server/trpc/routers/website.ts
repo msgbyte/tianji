@@ -64,7 +64,7 @@ export const websiteRouter = router({
     .meta({
       openapi: {
         method: 'GET',
-        path: `/workspace/{workspaceId}/website/all`,
+        path: '/workspace/{workspaceId}/website/all',
         tags: [OPENAPI_TAG.WEBSITE],
         protect: true,
       },
