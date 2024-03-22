@@ -1,5 +1,6 @@
 import { trpc } from '@/api/trpc';
 import { CommonList } from '@/components/CommonList';
+import { CommonSidebar } from '@/components/CommonSidebar';
 import { Separator } from '@/components/ui/separator';
 import { AddWebsiteBtn } from '@/components/website/AddWebsiteBtn';
 import { useDataReady } from '@/hooks/useDataReady';
@@ -54,18 +55,19 @@ function WebsiteComponent() {
   return (
     <LayoutV2
       list={
-        <div>
-          <div className="flex items-center px-4 py-2">
-            <h1 className="text-xl font-bold">{t('Website')}</h1>
+        <CommonSidebar
+          header={
+            <>
+              <h1 className="text-xl font-bold">{t('Website')}</h1>
 
-            <div className="ml-auto">
-              <AddWebsiteBtn />
-            </div>
-          </div>
-          <Separator />
-
+              <div className="ml-auto">
+                <AddWebsiteBtn />
+              </div>
+            </>
+          }
+        >
           <CommonList hasSearch={true} items={items} />
-        </div>
+        </CommonSidebar>
       }
     />
   );

@@ -17,14 +17,10 @@ import { cn } from '@/utils/style';
 import { Separator } from '@/components/ui/separator';
 import { Nav } from './Layout/Nav';
 import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
-import { ColorSchemeSwitcher } from '@/components/ColorSchemeSwitcher';
-import { LanguageSelector } from '@/components/LanguageSelector';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useUserInfo } from '@/store/user';
-import { Button } from '@/components/ui/button';
 import { UserConfig } from './Layout/UserConfig';
 import { Outlet } from '@tanstack/react-router';
-import { CommonList, CommonListItem } from '@/components/CommonList';
+import { trpc } from '@/api/trpc';
+import { useCurrentWorkspaceId } from '@/store/user';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -41,6 +37,10 @@ export const LayoutV2: React.FC<{
       defaultValue: false,
     }
   );
+  const workspaceId = useCurrentWorkspaceId();
+  const { data: serviceCount } = trpc.workspace.getServiceCount.useQuery({
+    workspaceId,
+  });
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -83,13 +83,13 @@ export const LayoutV2: React.FC<{
             links={[
               {
                 title: 'Website',
-                label: '128',
+                label: String(serviceCount?.website ?? ''),
                 icon: LuAreaChart,
                 variant: 'default',
               },
               {
                 title: 'Monitor',
-                label: '9',
+                label: String(serviceCount?.monitor ?? ''),
                 icon: LuMonitorDot,
                 variant: 'ghost',
               },
@@ -101,13 +101,13 @@ export const LayoutV2: React.FC<{
               },
               {
                 title: 'Telemetry',
-                label: '',
+                label: String(serviceCount?.telemetry ?? ''),
                 icon: LuWifi,
                 variant: 'ghost',
               },
               {
                 title: 'Pages',
-                label: '',
+                label: String(serviceCount?.page ?? ''),
                 icon: LuFilePieChart,
                 variant: 'ghost',
               },
@@ -121,7 +121,7 @@ export const LayoutV2: React.FC<{
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={layout[1]} minSize={30}>
-          <div>{props.list}</div>
+          <div className="h-full overflow-hidden">{props.list}</div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={layout[2]}>

@@ -46,7 +46,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
   const finalList = searchResult ?? props.items;
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       {props.hasSearch && (
         <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <form>
@@ -63,7 +63,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
         </div>
       )}
 
-      <ScrollArea className="h-screen">
+      <ScrollArea className="flex-1">
         <div className="flex flex-col gap-2 p-4 pt-0">
           {finalList.map((item) => {
             const isSelected = item.href === location.pathname;
@@ -105,7 +105,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
           })}
         </div>
       </ScrollArea>
-    </>
+    </div>
   );
 });
 CommonList.displayName = 'CommonList';
