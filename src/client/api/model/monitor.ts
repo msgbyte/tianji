@@ -1,10 +1,10 @@
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '../trpc';
 
 export function useMonitorUpsert() {
-  const context = trpc.useContext();
+  const utils = trpc.useUtils();
   const mutation = trpc.monitor.upsert.useMutation({
     onSuccess: (data) => {
-      context.monitor.all.reset({
+      utils.monitor.all.refetch({
         workspaceId: data.workspaceId,
       });
 

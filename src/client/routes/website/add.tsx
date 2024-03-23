@@ -25,7 +25,7 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 
 export const Route = createFileRoute('/website/add')({
   beforeLoad: routeAuthBeforeLoad,
-  component: WebsiteDetailComponent,
+  component: WebsiteAddComponent,
 });
 
 const addFormSchema = z.object({
@@ -33,7 +33,7 @@ const addFormSchema = z.object({
   domain: z.union([z.string().ip(), z.string().regex(hostnameRegex)]),
 });
 
-function WebsiteDetailComponent() {
+function WebsiteAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const addWebsiteMutation = trpc.website.add.useMutation();

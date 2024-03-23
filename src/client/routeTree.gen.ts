@@ -13,10 +13,13 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as WebsiteImport } from './routes/website'
 import { Route as RegisterImport } from './routes/register'
+import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as WebsiteWebsiteIdImport } from './routes/website/$websiteId'
+import { Route as MonitorAddImport } from './routes/monitor/add'
+import { Route as MonitorMonitorIdImport } from './routes/monitor/$monitorId'
 
 // Create/Update Routes
 
@@ -27,6 +30,11 @@ const WebsiteRoute = WebsiteImport.update({
 
 const RegisterRoute = RegisterImport.update({
   path: '/register',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const MonitorRoute = MonitorImport.update({
+  path: '/monitor',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -50,6 +58,16 @@ const WebsiteWebsiteIdRoute = WebsiteWebsiteIdImport.update({
   getParentRoute: () => WebsiteRoute,
 } as any)
 
+const MonitorAddRoute = MonitorAddImport.update({
+  path: '/add',
+  getParentRoute: () => MonitorRoute,
+} as any)
+
+const MonitorMonitorIdRoute = MonitorMonitorIdImport.update({
+  path: '/$monitorId',
+  getParentRoute: () => MonitorRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -62,6 +80,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/monitor': {
+      preLoaderRoute: typeof MonitorImport
+      parentRoute: typeof rootRoute
+    }
     '/register': {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
@@ -69,6 +91,14 @@ declare module '@tanstack/react-router' {
     '/website': {
       preLoaderRoute: typeof WebsiteImport
       parentRoute: typeof rootRoute
+    }
+    '/monitor/$monitorId': {
+      preLoaderRoute: typeof MonitorMonitorIdImport
+      parentRoute: typeof MonitorImport
+    }
+    '/monitor/add': {
+      preLoaderRoute: typeof MonitorAddImport
+      parentRoute: typeof MonitorImport
     }
     '/website/$websiteId': {
       preLoaderRoute: typeof WebsiteWebsiteIdImport
@@ -86,6 +116,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
   LoginRoute,
+  MonitorRoute.addChildren([MonitorMonitorIdRoute, MonitorAddRoute]),
   RegisterRoute,
   WebsiteRoute.addChildren([WebsiteWebsiteIdRoute, WebsiteAddRoute]),
 ])

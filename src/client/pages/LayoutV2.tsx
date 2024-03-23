@@ -85,31 +85,31 @@ export const LayoutV2: React.FC<{
                 title: 'Website',
                 label: String(serviceCount?.website ?? ''),
                 icon: LuAreaChart,
-                variant: 'default',
+                to: '/website',
               },
               {
                 title: 'Monitor',
                 label: String(serviceCount?.monitor ?? ''),
                 icon: LuMonitorDot,
-                variant: 'ghost',
+                to: '/monitor',
               },
               {
                 title: 'Servers',
                 label: '',
                 icon: LuServer,
-                variant: 'ghost',
+                to: '/server',
               },
               {
                 title: 'Telemetry',
                 label: String(serviceCount?.telemetry ?? ''),
                 icon: LuWifi,
-                variant: 'ghost',
+                to: '/telemetry',
               },
               {
                 title: 'Pages',
                 label: String(serviceCount?.page ?? ''),
                 icon: LuFilePieChart,
-                variant: 'ghost',
+                to: '/page',
               },
             ]}
           />
