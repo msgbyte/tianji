@@ -92,7 +92,10 @@ export const App: React.FC = React.memo(() => {
           >
             <TokenLoginContainer>
               {isDev ? (
-                <RouterProvider router={router} context={{ userInfo }} />
+                // Compatible with old routes
+                <BrowserRouter>
+                  <RouterProvider router={router} context={{ userInfo }} />
+                </BrowserRouter>
               ) : (
                 <BrowserRouter>
                   <AppRoutes />

@@ -1,20 +1,20 @@
 import { trpc } from '@/api/trpc';
+import { CommonHeader } from '@/components/CommonHeader';
 import { CommonList } from '@/components/CommonList';
-import { CommonSidebar } from '@/components/CommonSidebar';
-import { Separator } from '@/components/ui/separator';
-import { AddWebsiteBtn } from '@/components/website/AddWebsiteBtn';
+import { CommonWrapper } from '@/components/CommonWrapper';
+import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
+import { useEvent } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
   createFileRoute,
-  getRouteApi,
   useNavigate,
+  useRouterState,
 } from '@tanstack/react-router';
-
-const routeApi = getRouteApi('/website/$websiteId');
+import { LuPlus } from 'react-icons/lu';
 
 export const Route = createFileRoute('/website')({
   beforeLoad: routeAuthBeforeLoad,
@@ -28,6 +28,9 @@ function WebsiteComponent() {
     workspaceId,
   });
   const navigate = useNavigate();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
 
   const items = data.map((item) => ({
     id: item.id,
@@ -36,12 +39,11 @@ function WebsiteComponent() {
     tags: [],
     href: `/website/${item.id}`,
   }));
-  const params = routeApi.useParams<{ websiteId: string }>();
 
   useDataReady(
     () => data.length > 0,
     () => {
-      if (!params.websiteId && data[0]) {
+      if (pathname === Route.fullPath) {
         navigate({
           to: '/website/$websiteId',
           params: {
@@ -52,22 +54,33 @@ function WebsiteComponent() {
     }
   );
 
+  const handleClickAdd = useEvent(() => {
+    navigate({
+      to: '/website/add',
+    });
+  });
+
   return (
     <LayoutV2
       list={
-        <CommonSidebar
+        <CommonWrapper
           header={
-            <>
-              <h1 className="text-xl font-bold">{t('Website')}</h1>
-
-              <div className="ml-auto">
-                <AddWebsiteBtn />
-              </div>
-            </>
+            <CommonHeader
+              title={t('Website')}
+              actions={
+                <Button
+                  variant="outline"
+                  Icon={LuPlus}
+                  onClick={handleClickAdd}
+                >
+                  {t('Add')}
+                </Button>
+              }
+            />
           }
         >
           <CommonList hasSearch={true} items={items} />
-        </CommonSidebar>
+        </CommonWrapper>
       }
     />
   );
