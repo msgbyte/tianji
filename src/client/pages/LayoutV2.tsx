@@ -120,12 +120,12 @@ export const LayoutV2: React.FC<{
           <UserConfig isCollapsed={isCollapsed} />
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={layout[1]} minSize={30}>
+        <ResizablePanel defaultSize={layout[1]} minSize={25}>
           <div className="h-full overflow-hidden">{props.list}</div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={layout[2]}>
-          <div>
+          <div className="h-full overflow-hidden">
             <Outlet />
           </div>
         </ResizablePanel>

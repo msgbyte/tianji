@@ -15,6 +15,7 @@ import { Route as WebsiteImport } from './routes/website'
 import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
 import { Route as IndexImport } from './routes/index'
+import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as WebsiteWebsiteIdImport } from './routes/website/$websiteId'
 
 // Create/Update Routes
@@ -37,6 +38,11 @@ const LoginRoute = LoginImport.update({
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const WebsiteAddRoute = WebsiteAddImport.update({
+  path: '/add',
+  getParentRoute: () => WebsiteRoute,
 } as any)
 
 const WebsiteWebsiteIdRoute = WebsiteWebsiteIdImport.update({
@@ -68,6 +74,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteWebsiteIdImport
       parentRoute: typeof WebsiteImport
     }
+    '/website/add': {
+      preLoaderRoute: typeof WebsiteAddImport
+      parentRoute: typeof WebsiteImport
+    }
   }
 }
 
@@ -77,7 +87,7 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   LoginRoute,
   RegisterRoute,
-  WebsiteRoute.addChildren([WebsiteWebsiteIdRoute]),
+  WebsiteRoute.addChildren([WebsiteWebsiteIdRoute, WebsiteAddRoute]),
 ])
 
 /* prettier-ignore-end */
