@@ -10,7 +10,7 @@ import { useFuseSearch } from '@/hooks/useFuseSearch';
 export interface CommonListItem {
   id: string;
   title: string;
-  content: React.ReactNode;
+  content?: React.ReactNode;
   tags: string[];
   href: string;
 }
@@ -46,12 +46,12 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
   const finalList = searchResult ?? props.items;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {props.hasSearch && (
-        <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 p-4 backdrop-blur">
           <form>
             <div className="relative">
-              <LuSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <LuSearch className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
               <Input
                 placeholder="Search"
                 className="pl-8"
@@ -72,7 +72,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
               <button
                 key={item.id}
                 className={cn(
-                  'flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent',
+                  'hover:bg-accent flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all',
                   isSelected && 'bg-muted'
                 )}
                 onClick={() =>
@@ -88,7 +88,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                     </div>
                   </div>
                 </div>
-                <div className="line-clamp-2 text-xs text-muted-foreground">
+                <div className="text-muted-foreground line-clamp-2 text-xs">
                   {item.content}
                 </div>
                 {item.tags.length > 0 ? (

@@ -4,7 +4,6 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
-import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
@@ -14,9 +13,8 @@ import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Card } from 'antd';
-import { LuArrowRight } from 'react-icons/lu';
 
 export const Route = createFileRoute('/website/$websiteId')({
   beforeLoad: routeAuthBeforeLoad,

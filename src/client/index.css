@@ -66,6 +66,11 @@ a {
 @tailwind components;
 @tailwind utilities;
 
+/* use for adapt new design, avoid preflight conflict */
+.ant-btn-primary {
+  background-color: #1677ff;
+}
+
 /* https://ui.shadcn.com/themes */
 @layer base {
   :root {
