@@ -12,7 +12,14 @@ import {
 import { SESSION_COLUMNS } from '../utils/const';
 
 export async function recordTelemetryEvent(req: Request) {
-  const { url = req.headers.referer, name, ...others } = req.query;
+  const {
+    url = req.headers.referer,
+    name,
+    title,
+    start,
+    fullNum,
+    ...others
+  } = req.query;
 
   if (!(url && typeof url === 'string')) {
     return;
@@ -272,8 +279,8 @@ export async function getTelemetrySessionMetrics(
     where "TelemetryEvent"."telemetryId" = ${telemetryId}
       and "TelemetryEvent"."createdAt"
       between ${params.startDate}::timestamptz and ${
-    params.endDate
-  }::timestamptz
+        params.endDate
+      }::timestamptz
       ${filterQuery}
     group by 1
     ${includeCountry ? Prisma.sql([', 3']) : Prisma.empty}
@@ -301,8 +308,8 @@ export async function getTelemetryPageviewMetrics(
     where "TelemetryEvent"."telemetryId" = ${telemetryId}
       and "TelemetryEvent"."createdAt"
       between ${params.startDate}::timestamptz and ${
-    params.endDate
-  }::timestamptz
+        params.endDate
+      }::timestamptz
       ${filterQuery}
     group by 1
     order by 2 desc

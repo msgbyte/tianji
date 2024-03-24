@@ -3,6 +3,7 @@ import { query, validate } from '../middleware/validate';
 import { recordTelemetryEvent, sumTelemetryEvent } from '../model/telemetry';
 import { generateETag, numify } from '../utils/common';
 import { makeBadge } from 'badge-maker';
+import { env } from '../utils/env';
 
 export const telemetryRouter = Router();
 
@@ -60,7 +61,11 @@ telemetryRouter.get(
     query('url').optional().isURL()
   ),
   async (req, res) => {
-    recordTelemetryEvent(req);
+    if (env.isTest) {
+      await recordTelemetryEvent(req);
+    } else {
+      recordTelemetryEvent(req);
+    }
 
     res
       .header('Content-Type', 'image/gif')
@@ -87,7 +92,11 @@ telemetryRouter.get(
     const start = req.query.start ? Number(req.query.start) : 0;
     const fullNum = req.query.fullNum === 'true';
 
-    recordTelemetryEvent(req);
+    if (env.isTest) {
+      await recordTelemetryEvent(req);
+    } else {
+      recordTelemetryEvent(req);
+    }
     const num = await sumTelemetryEvent(req);
     const count = num + start;
 
