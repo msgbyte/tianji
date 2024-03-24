@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { getLocation } from '../detect';
+import fs from 'fs-extra';
+import { libraryPath } from '../lib';
 
-describe('detect', () => {
+describe.runIf(fs.existsSync(libraryPath.geoPath))('detect', () => {
   describe('getLocation', () => {
     test('should detect local ip', async () => {
       const location = await getLocation('127.0.0.1');
@@ -18,7 +20,7 @@ describe('detect', () => {
       expect(location).toHaveProperty('city', 'Walnut');
       expect(location).toHaveProperty('longitude', -117.8512);
       expect(location).toHaveProperty('latitude', 34.0233);
-      expect(location).toHaveProperty('accuracy_radius', 20);
+      expect(location).toHaveProperty('accuracyRadius', 20);
     });
   });
 });

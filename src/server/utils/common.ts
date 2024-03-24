@@ -48,6 +48,14 @@ export function hashUuid(...args: string[]) {
   return v5(hash(...args), v5.DNS);
 }
 
+/**
+ * generate hash with md5
+ * which use in unimportant scene
+ */
+export function md5(input: string) {
+  return crypto.createHash('md5').update(input).digest('hex');
+}
+
 export function isValidDate(input: any) {
   return dayjs(input).isValid();
 }
@@ -239,4 +247,8 @@ export function numify(num: number): string {
   ).toString();
 
   return result;
+}
+
+export function generateETag(data: string) {
+  return `"${md5(data)}"`;
 }

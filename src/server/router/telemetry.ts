@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { query, validate } from '../middleware/validate';
 import { recordTelemetryEvent, sumTelemetryEvent } from '../model/telemetry';
-import { numify } from '../utils/common';
+import { generateETag, numify } from '../utils/common';
 import { makeBadge } from 'badge-maker';
 
 export const telemetryRouter = Router();
@@ -11,6 +11,9 @@ const blankGifBuffer = Buffer.from(
   'base64'
 );
 
+/**
+ * @deprecated please use route with telemetry id
+ */
 telemetryRouter.get(
   '/:workspaceId/blank.gif',
   validate(
@@ -24,6 +27,9 @@ telemetryRouter.get(
   }
 );
 
+/**
+ * @deprecated please use route with telemetry id
+ */
 telemetryRouter.get(
   '/:workspaceId/badge.svg',
   validate(
@@ -97,6 +103,7 @@ telemetryRouter.get(
         'Cache-Control',
         'no-cache,max-age=0,no-store,s-maxage=0,proxy-revalidate'
       )
+      .header('etag', generateETag(`${title}|${count}`))
       .status(200)
       .send(svg);
   }
