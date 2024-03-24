@@ -6,10 +6,12 @@ import { MonitorProvider } from './types';
 import { openaiProvider } from './openai';
 import { customProvider } from './custom';
 import { tcpProvider } from './tcp';
+import { dnsProvider } from './dns';
 
 export const monitorProviders: MonitorProvider[] = [
   pingProvider, // ping
   tcpProvider, // tcp
+  dnsProvider, // tcp
   httpProvider, // http
   openaiProvider, // openai
   customProvider, // custom node script
