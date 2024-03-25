@@ -1,8 +1,16 @@
-import { publicProcedure, router, workspaceOwnerProcedure } from '../trpc';
+import {
+  OpenApiMetaInfo,
+  publicProcedure,
+  router,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} from '../trpc';
 import { z } from 'zod';
 import { prisma } from '../../model/_client';
 import { workspaceDashboardLayoutSchema } from '../../model/_schema';
 import { Prisma } from '@prisma/client';
+import { OPENAPI_TAG } from '../../utils/const';
+import { OpenApiMeta } from 'trpc-openapi';
 
 export const workspaceRouter = router({
   getUserWorkspaceRole: publicProcedure
@@ -26,6 +34,54 @@ export const workspaceRouter = router({
       });
 
       return relation?.role ?? null;
+    }),
+  getServiceCount: workspaceProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'GET',
+        path: '/getServiceCount',
+      })
+    )
+    .output(
+      z.object({
+        website: z.number(),
+        monitor: z.number(),
+        telemetry: z.number(),
+        page: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { workspaceId } = input;
+
+      const [website, monitor, telemetry, page] = await Promise.all([
+        prisma.website.count({
+          where: {
+            workspaceId,
+          },
+        }),
+        prisma.monitor.count({
+          where: {
+            workspaceId,
+          },
+        }),
+        prisma.telemetry.count({
+          where: {
+            workspaceId,
+          },
+        }),
+        prisma.monitorStatusPage.count({
+          where: {
+            workspaceId,
+          },
+        }),
+      ]);
+
+      return {
+        website,
+        monitor,
+        telemetry,
+        page,
+      };
     }),
   updateDashboardOrder: workspaceOwnerProcedure
     .input(
@@ -64,3 +120,14 @@ export const workspaceRouter = router({
       });
     }),
 });
+
+function buildWorkspaceOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.WORKSPACE],
+      protect: true,
+      ...meta,
+      path: `/workspace/{workspaceId}${meta.path}`,
+    },
+  };
+}

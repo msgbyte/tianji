@@ -16,10 +16,28 @@ import { WebsitePage } from './pages/Website';
 import { useGlobalConfig } from './hooks/useConfig';
 import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
 import { ConfigProvider, theme } from 'antd';
-import clsx from 'clsx';
-import { useSettingsStore } from './store/settings';
+import { useColorSchema } from './store/settings';
 import { StatusPage } from './pages/Status';
 import { TelemetryPage } from './pages/Telemetry';
+import { isDev } from './utils/env';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+import { DefaultNotFound } from './components/DefaultNotFound';
+
+const router = createRouter({
+  routeTree,
+  context: {
+    userInfo: undefined,
+  },
+  defaultNotFoundComponent: DefaultNotFound,
+});
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 export const AppRoutes: React.FC = React.memo(() => {
   const { info: userInfo } = useUserStore();
@@ -60,29 +78,32 @@ AppRoutes.displayName = 'AppRoutes';
 
 export const App: React.FC = React.memo(() => {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const colorScheme = useSettingsStore((state) => state.colorScheme);
+  const colorScheme = useColorSchema();
   const algorithm =
     colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
+  const { info: userInfo } = useUserStore();
 
   return (
-    <div
-      ref={rootRef}
-      className={clsx('App', {
-        dark: colorScheme === 'dark',
-      })}
-    >
+    <div ref={rootRef} className="App">
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <ConfigProvider
-              theme={{ algorithm }}
-              getPopupContainer={() => rootRef.current!}
-            >
-              <TokenLoginContainer>
-                <AppRoutes />
-              </TokenLoginContainer>
-            </ConfigProvider>
-          </BrowserRouter>
+          <ConfigProvider
+            theme={{ algorithm }}
+            getPopupContainer={() => rootRef.current!}
+          >
+            <TokenLoginContainer>
+              {isDev ? (
+                // Compatible with old routes
+                <BrowserRouter>
+                  <RouterProvider router={router} context={{ userInfo }} />
+                </BrowserRouter>
+              ) : (
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              )}
+            </TokenLoginContainer>
+          </ConfigProvider>
         </QueryClientProvider>
       </trpc.Provider>
     </div>

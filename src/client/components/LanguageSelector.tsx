@@ -2,6 +2,7 @@ import React from 'react';
 import { setLanguage, useTranslation } from '@i18next-toolkit/react';
 import { Button, Dropdown } from 'antd';
 import { LuLanguages } from 'react-icons/lu';
+import { CountryFlag } from './CountryFlag';
 
 export const LanguageSelector: React.FC = React.memo(() => {
   const { i18n } = useTranslation();
@@ -58,16 +59,3 @@ export const LanguageSelector: React.FC = React.memo(() => {
   );
 });
 LanguageSelector.displayName = 'LanguageSelector';
-
-/**
- * image is from discord
- */
-export const CountryFlag: React.FC<{ code: string }> = React.memo((props) => {
-  return (
-    <img
-      className="ml-6 h-[18px] w-[27px]"
-      src={`/locales/${props.code}/flag.png`}
-    />
-  );
-});
-CountryFlag.displayName = 'CountryFlag';
