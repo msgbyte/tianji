@@ -19,16 +19,17 @@ import { ConfigProvider, theme } from 'antd';
 import { useColorSchema } from './store/settings';
 import { StatusPage } from './pages/Status';
 import { TelemetryPage } from './pages/Telemetry';
-import { LayoutV2 } from './pages/LayoutV2';
 import { isDev } from './utils/env';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
+import { DefaultNotFound } from './components/DefaultNotFound';
 
 const router = createRouter({
   routeTree,
   context: {
     userInfo: undefined,
   },
+  defaultNotFoundComponent: DefaultNotFound,
 });
 
 // Register the router instance for type safety
@@ -47,7 +48,7 @@ export const AppRoutes: React.FC = React.memo(() => {
   return (
     <Routes>
       {userInfo ? (
-        <Route element={isDev ? <LayoutV2 /> : <Layout />}>
+        <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/monitor/*" element={<MonitorPage />} />
           <Route path="/website/*" element={<WebsitePage />} />

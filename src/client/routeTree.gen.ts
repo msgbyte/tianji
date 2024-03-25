@@ -15,6 +15,7 @@ import { Route as WebsiteImport } from './routes/website'
 import { Route as RegisterImport } from './routes/register'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
+import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as WebsiteWebsiteIdImport } from './routes/website/$websiteId'
@@ -40,6 +41,11 @@ const MonitorRoute = MonitorImport.update({
 
 const LoginRoute = LoginImport.update({
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DashboardRoute = DashboardImport.update({
+  path: '/dashboard',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,6 +80,10 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/dashboard': {
+      preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -115,6 +125,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  DashboardRoute,
   LoginRoute,
   MonitorRoute.addChildren([MonitorMonitorIdRoute, MonitorAddRoute]),
   RegisterRoute,

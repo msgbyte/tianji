@@ -9,6 +9,7 @@ module.exports = {
     relative: true,
     files: [
       './index.html',
+      './App.tsx',
       './components/**/*.{js,jsx,ts,tsx}',
       './pages/**/*.{js,jsx,ts,tsx}',
       './routes/**/*.{js,jsx,ts,tsx}',
