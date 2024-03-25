@@ -11,7 +11,7 @@ export interface CommonListItem {
   id: string;
   title: string;
   content?: React.ReactNode;
-  tags: string[];
+  tags?: string[];
   href: string;
 }
 
@@ -91,7 +91,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                 <div className="text-muted-foreground line-clamp-2 text-xs">
                   {item.content}
                 </div>
-                {item.tags.length > 0 ? (
+                {Array.isArray(item.tags) && item.tags.length > 0 ? (
                   <div className="flex items-center gap-2">
                     {item.tags.map((tag) => (
                       <Badge key={tag} variant={getBadgeVariantFromLabel(tag)}>

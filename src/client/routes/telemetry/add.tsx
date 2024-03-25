@@ -1,10 +1,13 @@
-import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
+import { useEvent } from '@/hooks/useEvent';
+import { useCurrentWorkspaceId } from '@/store/user';
+import { trpc } from '@/api/trpc';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { CommonWrapper } from '@/components/CommonWrapper';
+import { routeAuthBeforeLoad } from '@/utils/route';
+import { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -14,28 +17,23 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useEvent } from '@/hooks/useEvent';
 import { Input } from '@/components/ui/input';
-import { useCurrentWorkspaceId } from '@/store/user';
-import { trpc } from '@/api/trpc';
-import { hostnameRegex } from '@tianji/shared';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { CommonWrapper } from '@/components/CommonWrapper';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-export const Route = createFileRoute('/website/add')({
+export const Route = createFileRoute('/telemetry/add')({
   beforeLoad: routeAuthBeforeLoad,
-  component: WebsiteAddComponent,
+  component: TelemetryAddComponent,
 });
 
 const addFormSchema = z.object({
   name: z.string(),
-  domain: z.union([z.string().ip(), z.string().regex(hostnameRegex)]),
 });
 
-function WebsiteAddComponent() {
+function TelemetryAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const addWebsiteMutation = trpc.website.add.useMutation();
+  const addTelemetryMutation = trpc.telemetry.upsert.useMutation();
   const utils = trpc.useUtils();
   const navigate = useNavigate();
 
@@ -43,24 +41,22 @@ function WebsiteAddComponent() {
     resolver: zodResolver(addFormSchema),
     defaultValues: {
       name: '',
-      domain: '',
     },
   });
 
   const onSubmit = useEvent(async (values: z.infer<typeof addFormSchema>) => {
-    const res = await addWebsiteMutation.mutateAsync({
+    const res = await addTelemetryMutation.mutateAsync({
       workspaceId,
       name: values.name,
-      domain: values.domain,
     });
 
-    utils.website.all.refetch();
+    utils.telemetry.all.refetch();
     form.reset();
 
     navigate({
-      to: '/website/$websiteId',
+      to: '/telemetry/$telemetryId',
       params: {
-        websiteId: res.id,
+        telemetryId: res.id,
       },
     });
   });
@@ -79,33 +75,20 @@ function WebsiteAddComponent() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('Website Name')}</FormLabel>
+                      <FormLabel>{t('Telemetry Name')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
                       <FormDescription>
-                        {t('Website Name to Display')}
+                        {t('Telemetry Name to Display')}
                       </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="domain"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('Domain')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder="example.com" {...field} />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </CardContent>
               <CardFooter>
-                <Button type="submit" loading={addWebsiteMutation.isLoading}>
+                <Button type="submit" loading={addTelemetryMutation.isLoading}>
                   {t('Create')}
                 </Button>
               </CardFooter>

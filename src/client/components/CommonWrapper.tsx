@@ -8,9 +8,11 @@ export const CommonWrapper: React.FC<CommonWrapperProps> = React.memo(
   (props) => {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex h-[52px] items-center px-4 py-2">
-          {props.header}
-        </div>
+        {props.header && (
+          <div className="flex h-[52px] items-center px-4 py-2">
+            {props.header}
+          </div>
+        )}
 
         <Separator />
 
