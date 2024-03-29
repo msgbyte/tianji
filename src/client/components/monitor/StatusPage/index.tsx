@@ -75,6 +75,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             />
           </div>
         )}
+
         <div
           className={clsx(
             'mx-auto overflow-auto px-4 py-8',

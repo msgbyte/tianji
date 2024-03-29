@@ -6,8 +6,6 @@ interface RouterContext {
   userInfo: any;
 }
 
-const defaultLayout: [number, number, number] = [265, 440, 655];
-
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => {
     return (

@@ -21,15 +21,17 @@ export const Route = createFileRoute('/monitor/add')({
 function MonitorAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const addWebsiteMutation = trpc.website.add.useMutation();
   const navigate = useNavigate();
   const mutation = useMonitorUpsert();
+  const utils = trpc.useUtils();
 
   const handleSubmit = useEvent(async (values: MonitorInfoEditorValues) => {
     const res = await mutation.mutateAsync({
       ...values,
       workspaceId,
     });
+
+    utils.monitor.all.refetch();
 
     navigate({
       to: '/monitor/$monitorId',

@@ -554,6 +554,9 @@ export const monitorRouter = router({
         where: {
           workspaceId,
         },
+        orderBy: {
+          updatedAt: 'desc',
+        },
       });
     }),
   getPageInfo: publicProcedure
