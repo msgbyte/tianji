@@ -40,6 +40,10 @@ const config = {
       'YYYY-MM-DD HH:mm',
     ],
   },
+  translator: {
+    type: 'openai',
+    model: 'gpt-4'
+  },
 };
 
 module.exports = config;

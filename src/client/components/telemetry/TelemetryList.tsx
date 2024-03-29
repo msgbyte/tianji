@@ -1,5 +1,15 @@
 import { Trans, t } from '@i18next-toolkit/react';
-import { Button, Collapse, Form, Input, Modal, Table, Typography } from 'antd';
+import {
+  Alert,
+  Button,
+  Collapse,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Table,
+  Typography,
+} from 'antd';
 import React, { useMemo, useState } from 'react';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
@@ -9,11 +19,13 @@ import {
   CodeOutlined,
   EditOutlined,
   PlusOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import { PageHeader } from '../PageHeader';
 import { useEvent } from '../../hooks/useEvent';
 import { TelemetryCounter } from './TelemetryCounter';
+import { LuDelete, LuTrash } from 'react-icons/lu';
 
 type TelemetryInfo = AppRouterOutput['telemetry']['all'][number];
 
@@ -189,10 +201,15 @@ const TelemetryListTable: React.FC<{
   onShowUsage: (info: TelemetryInfo) => void;
 }> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
-  const { data = [], isLoading } = trpc.telemetry.all.useQuery({
+  const {
+    data = [],
+    isLoading,
+    refetch,
+  } = trpc.telemetry.all.useQuery({
     workspaceId,
   });
   const navigate = useNavigate();
+  const deleteMutation = trpc.telemetry.delete.useMutation();
 
   const columns = useMemo((): ColumnsType<TelemetryInfo> => {
     return [
@@ -217,6 +234,25 @@ const TelemetryListTable: React.FC<{
         render: (_, record) => {
           return (
             <div className="flex justify-end gap-2">
+              <Popconfirm
+                title={t('Confirm to delete this telemetry: [{{name}}]', {
+                  name: record.name,
+                })}
+                disabled={deleteMutation.isLoading}
+                onConfirm={async () => {
+                  await deleteMutation.mutateAsync({
+                    telemetryId: record.id,
+                    workspaceId,
+                  });
+                  await refetch();
+                }}
+              >
+                <Button
+                  danger={true}
+                  disabled={deleteMutation.isLoading}
+                  icon={<DeleteOutlined />}
+                />
+              </Popconfirm>
               <Button
                 icon={<CodeOutlined />}
                 onClick={() => props.onShowUsage(record)}

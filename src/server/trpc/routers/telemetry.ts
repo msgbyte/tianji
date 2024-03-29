@@ -139,6 +139,29 @@ export const telemetryRouter = router({
         });
       }
     }),
+  delete: workspaceOwnerProcedure
+    .meta(
+      buildTelemetryOpenapi({
+        method: 'POST',
+        path: '/delete',
+      })
+    )
+    .input(
+      z.object({
+        telemetryId: z.string(),
+      })
+    )
+    .output(TelemetryModelSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, telemetryId } = input;
+
+      return prisma.telemetry.delete({
+        where: {
+          id: telemetryId,
+          workspaceId,
+        },
+      });
+    }),
   pageviews: workspaceProcedure
     .meta(
       buildTelemetryOpenapi({
@@ -354,15 +377,18 @@ export const telemetryRouter = router({
         }),
       ]);
 
-      const stats = Object.keys(metrics[0]).reduce((obj, key) => {
-        const current = Number(metrics[0][key]) || 0;
-        const prev = Number(prevPeriod[0][key]) || 0;
-        obj[key] = {
-          value: current,
-          prev,
-        };
-        return obj;
-      }, {} as Record<string, { value: number; prev: number }>);
+      const stats = Object.keys(metrics[0]).reduce(
+        (obj, key) => {
+          const current = Number(metrics[0][key]) || 0;
+          const prev = Number(prevPeriod[0][key]) || 0;
+          obj[key] = {
+            value: current,
+            prev,
+          };
+          return obj;
+        },
+        {} as Record<string, { value: number; prev: number }>
+      );
 
       return baseStatsSchema.parse(stats);
     }),
