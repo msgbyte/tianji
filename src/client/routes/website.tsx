@@ -14,7 +14,8 @@ import {
   useNavigate,
   useRouterState,
 } from '@tanstack/react-router';
-import { LuPlus } from 'react-icons/lu';
+import { useEffect } from 'react';
+import { LuEye, LuPlus } from 'react-icons/lu';
 
 export const Route = createFileRoute('/website')({
   beforeLoad: routeAuthBeforeLoad,
@@ -39,19 +40,19 @@ function WebsiteComponent() {
     href: `/website/${item.id}`,
   }));
 
-  useDataReady(
-    () => data.length > 0,
-    () => {
-      if (pathname === Route.fullPath) {
-        navigate({
-          to: '/website/$websiteId',
-          params: {
-            websiteId: data[0].id,
-          },
-        });
-      }
+  useEffect(() => {
+    if (pathname === Route.fullPath) {
+      navigate({
+        to: '/website/overview',
+      });
     }
-  );
+  }, []);
+
+  const handleClickOverview = useEvent(() => {
+    navigate({
+      to: '/website/overview',
+    });
+  });
 
   const handleClickAdd = useEvent(() => {
     navigate({
@@ -67,13 +68,22 @@ function WebsiteComponent() {
             <CommonHeader
               title={t('Website')}
               actions={
-                <Button
-                  variant="outline"
-                  Icon={LuPlus}
-                  onClick={handleClickAdd}
-                >
-                  {t('Add')}
-                </Button>
+                <div className="space-x-2">
+                  <Button
+                    variant="outline"
+                    Icon={LuEye}
+                    onClick={handleClickOverview}
+                  >
+                    {t('Overview')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    Icon={LuPlus}
+                    onClick={handleClickAdd}
+                  >
+                    {t('Add')}
+                  </Button>
+                </div>
               }
             />
           }
