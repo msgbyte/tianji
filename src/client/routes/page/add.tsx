@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { trpc } from '@/api/trpc';
+import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { Card, CardContent } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -19,7 +19,9 @@ export const Route = createFileRoute('/page/add')({
 function PageAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const createPageMutation = trpc.monitor.createPage.useMutation();
+  const createPageMutation = trpc.monitor.createPage.useMutation({
+    onError: defaultErrorHandler,
+  });
   const navigate = useNavigate();
   const utils = trpc.useUtils();
 

@@ -3,7 +3,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { trpc } from '@/api/trpc';
+import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -33,7 +33,9 @@ const addFormSchema = z.object({
 function TelemetryAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const addTelemetryMutation = trpc.telemetry.upsert.useMutation();
+  const addTelemetryMutation = trpc.telemetry.upsert.useMutation({
+    onError: defaultErrorHandler,
+  });
   const utils = trpc.useUtils();
   const navigate = useNavigate();
 
