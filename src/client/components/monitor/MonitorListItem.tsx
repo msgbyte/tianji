@@ -85,6 +85,7 @@ export const MonitorListItem: React.FC<{
           {upPercent}%
         </span>
       </div>
+
       <div className="flex-1 pl-2">
         <div className="text-base">{monitorName}</div>
         {/* <div>

@@ -2,6 +2,7 @@ import { trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonList } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { MonitorHealthBar } from '@/components/monitor/MonitorHealthBar';
 import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
@@ -35,6 +36,14 @@ function MonitorComponent() {
   const items = data.map((item) => ({
     id: item.id,
     title: item.name,
+    content: (
+      <MonitorHealthBar
+        workspaceId={workspaceId}
+        monitorId={item.id}
+        showPercent={true}
+        showCurrentStatus={true}
+      />
+    ),
     tags: [item.type],
     href: `/monitor/${item.id}`,
   }));

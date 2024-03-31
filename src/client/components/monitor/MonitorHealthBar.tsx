@@ -8,6 +8,7 @@ import { useWatch } from '../../hooks/useWatch';
 import { getMonitorProvider, getProviderDisplay } from './provider';
 import { MonitorProvider } from './provider/types';
 import { useTranslation } from '@i18next-toolkit/react';
+import clsx from 'clsx';
 
 interface MonitorHealthBarProps {
   workspaceId: string;
@@ -16,6 +17,7 @@ interface MonitorHealthBarProps {
   count?: number;
   size?: HealthBarProps['size'];
   showCurrentStatus?: boolean;
+  showPercent?: boolean;
   onBeatsItemUpdate?: (
     items: ({ value: number; createdAt: string | Date } | null)[]
   ) => void;
@@ -26,9 +28,10 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
     const {
       workspaceId,
       monitorId,
-      size,
+      size = 'small',
       count = 20,
       showCurrentStatus = false,
+      showPercent = false,
     } = props;
     const { data: recent = [] } = trpc.monitor.recentData.useQuery({
       workspaceId,
@@ -82,26 +85,78 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
       });
     }, [items, provider]);
 
+    const upPercent = useMemo(() => {
+      let up = 0;
+      beats.forEach((b) => {
+        if (!b) {
+          return;
+        }
+
+        if (b.status === 'health') {
+          up++;
+        }
+      });
+
+      return parseFloat(((up / beats.length) * 100).toFixed(1));
+    }, [beats]);
+
     useWatch([items], () => {
       props.onBeatsItemUpdate?.(items);
     });
 
     return (
-      <div className="flex items-center justify-between">
-        <HealthBar size={size} beats={beats} />
+      <div className="flex items-center">
+        {showPercent && (
+          <span
+            className={clsx(
+              'mr-2 inline-block min-w-[62px] rounded-full p-0.5 text-center text-white',
+              upPercent === 100 ? 'bg-green-400' : 'bg-amber-400',
+              {
+                'min-w-[50px] text-sm': size === 'small',
+              }
+            )}
+          >
+            {upPercent}%
+          </span>
+        )}
+
+        <div className="flex-1">
+          <HealthBar size={size} beats={beats} />
+        </div>
 
         {showCurrentStatus && (
           <>
             {last(beats)?.status === 'health' ? (
-              <div className="rounded-full bg-green-500 px-4 py-1 text-lg font-bold text-white">
+              <div
+                className={clsx(
+                  'rounded-full bg-green-500 px-4 py-1 text-lg font-bold text-white',
+                  {
+                    'text-sm': size === 'small',
+                  }
+                )}
+              >
                 {t('UP')}
               </div>
             ) : last(beats)?.status === 'error' ? (
-              <div className="rounded-full bg-red-600 px-4 py-1 text-lg font-bold text-white">
+              <div
+                className={clsx(
+                  'rounded-full bg-red-600 px-4 py-1 text-lg font-bold text-white',
+                  {
+                    'text-sm': size === 'small',
+                  }
+                )}
+              >
                 {t('DOWN')}
               </div>
             ) : (
-              <div className="rounded-full bg-gray-400 px-4 py-1 text-lg font-bold text-white">
+              <div
+                className={clsx(
+                  'rounded-full bg-gray-400 px-4 py-1 text-lg font-bold text-white',
+                  {
+                    'text-sm': size === 'small',
+                  }
+                )}
+              >
                 {t('NONE')}
               </div>
             )}
