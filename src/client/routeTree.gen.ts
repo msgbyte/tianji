@@ -19,6 +19,7 @@ import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
+import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as WebsiteWebsiteIdImport } from './routes/website/$websiteId'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
@@ -68,6 +69,11 @@ const DashboardRoute = DashboardImport.update({
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const WebsiteOverviewRoute = WebsiteOverviewImport.update({
+  path: '/overview',
+  getParentRoute: () => WebsiteRoute,
 } as any)
 
 const WebsiteAddRoute = WebsiteAddImport.update({
@@ -178,6 +184,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteAddImport
       parentRoute: typeof WebsiteImport
     }
+    '/website/overview': {
+      preLoaderRoute: typeof WebsiteOverviewImport
+      parentRoute: typeof WebsiteImport
+    }
   }
 }
 
@@ -191,7 +201,11 @@ export const routeTree = rootRoute.addChildren([
   PageRoute.addChildren([PageSlugRoute, PageAddRoute]),
   RegisterRoute,
   TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
-  WebsiteRoute.addChildren([WebsiteWebsiteIdRoute, WebsiteAddRoute]),
+  WebsiteRoute.addChildren([
+    WebsiteWebsiteIdRoute,
+    WebsiteAddRoute,
+    WebsiteOverviewRoute,
+  ]),
 ])
 
 /* prettier-ignore-end */
