@@ -17,7 +17,7 @@ import {
 import { useEvent } from '@/hooks/useEvent';
 import { Input } from '@/components/ui/input';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { trpc } from '@/api/trpc';
+import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { hostnameRegex } from '@tianji/shared';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
@@ -35,7 +35,9 @@ const addFormSchema = z.object({
 function WebsiteAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const addWebsiteMutation = trpc.website.add.useMutation();
+  const addWebsiteMutation = trpc.website.add.useMutation({
+    onError: defaultErrorHandler,
+  });
   const utils = trpc.useUtils();
   const navigate = useNavigate();
 

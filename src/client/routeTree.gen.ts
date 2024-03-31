@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as WebsiteImport } from './routes/website'
 import { Route as TelemetryImport } from './routes/telemetry'
+import { Route as ServerImport } from './routes/server'
 import { Route as RegisterImport } from './routes/register'
 import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
@@ -38,6 +39,11 @@ const WebsiteRoute = WebsiteImport.update({
 
 const TelemetryRoute = TelemetryImport.update({
   path: '/telemetry',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ServerRoute = ServerImport.update({
+  path: '/server',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -144,6 +150,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
+    '/server': {
+      preLoaderRoute: typeof ServerImport
+      parentRoute: typeof rootRoute
+    }
     '/telemetry': {
       preLoaderRoute: typeof TelemetryImport
       parentRoute: typeof rootRoute
@@ -200,6 +210,7 @@ export const routeTree = rootRoute.addChildren([
   MonitorRoute.addChildren([MonitorMonitorIdRoute, MonitorAddRoute]),
   PageRoute.addChildren([PageSlugRoute, PageAddRoute]),
   RegisterRoute,
+  ServerRoute,
   TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
   WebsiteRoute.addChildren([
     WebsiteWebsiteIdRoute,

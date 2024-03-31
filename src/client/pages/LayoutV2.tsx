@@ -24,9 +24,10 @@ import { useCurrentWorkspaceId } from '@/store/user';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
-export const LayoutV2: React.FC<{
-  list: React.ReactNode;
-}> = React.memo((props) => {
+interface LayoutProps extends React.PropsWithChildren {
+  list?: React.ReactNode;
+}
+export const LayoutV2: React.FC<LayoutProps> = React.memo((props) => {
   const [layout = defaultLayout, setLayout] = useLocalStorageState(
     'react-resizable-panels:layout',
     { defaultValue: defaultLayout }
@@ -47,7 +48,13 @@ export const LayoutV2: React.FC<{
       <ResizablePanelGroup
         direction="horizontal"
         onLayout={(sizes: number[]) => {
-          setLayout(sizes as typeof defaultLayout);
+          if (sizes.length === 3) {
+            setLayout(sizes as typeof defaultLayout);
+          } else if (sizes.length === 2) {
+            const listSize = layout[1];
+            const rest = 100 - sizes[0] - listSize;
+            setLayout([sizes[0], listSize, rest]);
+          }
         }}
         className="h-full items-stretch"
       >
@@ -119,14 +126,22 @@ export const LayoutV2: React.FC<{
 
           <UserConfig isCollapsed={isCollapsed} />
         </ResizablePanel>
+
+        {props.list && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={layout[1]} minSize={25}>
+              <div className="h-full overflow-hidden">{props.list}</div>
+            </ResizablePanel>
+          </>
+        )}
+
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={layout[1]} minSize={25}>
-          <div className="h-full overflow-hidden">{props.list}</div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={layout[2]}>
+        <ResizablePanel
+          defaultSize={props.list ? layout[2] : layout[1] + layout[2]}
+        >
           <div className="h-full overflow-hidden">
-            <Outlet />
+            {props.children ?? <Outlet />}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
