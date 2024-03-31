@@ -88,7 +88,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                     </div>
                   </div>
                 </div>
-                <div className="text-muted-foreground line-clamp-2 text-xs">
+                <div className="text-muted-foreground line-clamp-2 w-full text-xs">
                   {item.content}
                 </div>
                 {Array.isArray(item.tags) && item.tags.length > 0 ? (
