@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEventWithLoading } from '@/hooks/useEvent';
@@ -77,10 +78,10 @@ export const ServerContent: React.FC = React.memo(() => {
                 disabled={loading}
                 onConfirm={handleClearOfflineNode}
               >
-                <Button size="large" loading={loading}>
-                  {t('Clear Offline')}
-                </Button>
+                <Button loading={loading}>{t('Clear Offline')}</Button>
               </Popconfirm>
+
+              <Separator orientation="vertical" className="h-6" />
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>

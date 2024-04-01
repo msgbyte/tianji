@@ -13,9 +13,12 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
+import { useEvent } from '@/hooks/useEvent';
+import { useSettingsStore } from '@/store/settings';
 import { useUserInfo } from '@/store/user';
 import { languages } from '@/utils/constants';
 import { useTranslation, setLanguage } from '@i18next-toolkit/react';
+import { useNavigate } from '@tanstack/react-router';
 import React from 'react';
 import { LuMoreVertical } from 'react-icons/lu';
 
@@ -24,7 +27,15 @@ interface UserConfigProps {
 }
 export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
   const userInfo = useUserInfo();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const navigate = useNavigate();
+  const colorScheme = useSettingsStore((state) => state.colorScheme);
+
+  const handleChangeColorSchema = useEvent((colorScheme) => {
+    useSettingsStore.setState({
+      colorScheme,
+    });
+  });
 
   const avatar = (
     <Avatar>
@@ -64,10 +75,28 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
         )}
 
         <DropdownMenuContent>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              navigate({
+                to: '/settings/profile',
+              })
+            }
+          >
+            {t('Profile')}
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() =>
+              navigate({
+                to: '/settings/notifications',
+              })
+            }
+          >
+            {t('Notifications')}
+          </DropdownMenuItem>
+
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Language</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>{t('Language')}</DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuRadioGroup
@@ -87,14 +116,24 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
             </DropdownMenuPortal>
           </DropdownMenuSub>
 
-          <DropdownMenuItem
-            className="cursor-default"
-            onSelect={(e) => {
-              e.preventDefault();
-            }}
-          >
-            <ColorSchemeSwitcher />
-          </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>{t('Theme')}</DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup
+                  value={colorScheme}
+                  onValueChange={handleChangeColorSchema}
+                >
+                  <DropdownMenuRadioItem value={'dark'}>
+                    {t('Dark')}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value={'light'}>
+                    {t('Light')}
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

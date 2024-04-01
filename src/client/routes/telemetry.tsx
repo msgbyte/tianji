@@ -65,7 +65,7 @@ function TelemetryComponent() {
           header={
             <CommonHeader
               title={t('Telemetry')}
-              desc={
+              tip={
                 <div className="space-y-2">
                   <p>
                     <Trans>

@@ -60,7 +60,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const Comp = asChild ? Slot : 'button';
 
-    const icon = Icon ? <Icon className="mr-1" /> : undefined;
+    const icon = Icon ? (
+      <Icon className={cn(props.children && 'mr-1')} />
+    ) : undefined;
     const children = (
       <>
         {loading ? <Spinner className="mr-1" /> : icon}

@@ -78,11 +78,10 @@ function WebsiteComponent() {
                   </Button>
                   <Button
                     variant="outline"
+                    size="icon"
                     Icon={LuPlus}
                     onClick={handleClickAdd}
-                  >
-                    {t('Add')}
-                  </Button>
+                  />
                 </div>
               }
             />
