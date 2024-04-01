@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { useUserStore } from '../../store/user';
 import { useEvent } from '../../hooks/useEvent';
-import { useNavigate } from 'react-router';
 import { clearJWT } from '../auth';
+import { useNavigate } from '@tanstack/react-router';
 
 /**
  * Mock
@@ -18,7 +18,10 @@ export function useLogout() {
   const logout = useEvent(() => {
     useUserStore.setState({ info: null });
     clearJWT();
-    navigate('/login');
+    navigate({
+      to: '/login',
+      replace: true,
+    });
   });
 
   return logout;

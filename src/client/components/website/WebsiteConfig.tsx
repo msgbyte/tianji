@@ -1,6 +1,5 @@
 import { Button, Form, Input, message, Popconfirm, Tabs } from 'antd';
 import React from 'react';
-import { useNavigate, useParams } from 'react-router';
 import { deleteWorkspaceWebsite } from '../../api/model/website';
 import { useRequest } from '../../hooks/useRequest';
 import { useCurrentWorkspaceId } from '../../store/user';
@@ -18,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEvent } from '../../hooks/useEvent';
 import { hostnameValidator } from '../../utils/validator';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useNavigate } from '@tanstack/react-router';
 
 export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
   (props) => {
@@ -57,7 +57,9 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
 
       message.success(t('Delete Success'));
 
-      navigate('/settings/websites');
+      navigate({
+        to: '/website',
+      });
     });
 
     if (!workspaceId) {

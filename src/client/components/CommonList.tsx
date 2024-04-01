@@ -6,6 +6,7 @@ import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { LuSearch } from 'react-icons/lu';
 import { Input } from './ui/input';
 import { useFuseSearch } from '@/hooks/useFuseSearch';
+import { Empty } from 'antd';
 
 export interface CommonListItem {
   id: string;
@@ -65,6 +66,8 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
 
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-2 p-4">
+          {finalList.length === 0 && <Empty />}
+
           {finalList.map((item) => {
             const isSelected = item.href === location.pathname;
 

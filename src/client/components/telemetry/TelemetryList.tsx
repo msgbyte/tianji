@@ -26,11 +26,10 @@ import {
   PlusOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router';
 import { PageHeader } from '../PageHeader';
 import { useEvent } from '../../hooks/useEvent';
 import { TelemetryCounter } from './TelemetryCounter';
-import { LuDelete, LuTrash } from 'react-icons/lu';
+import { useNavigate } from '@tanstack/react-router';
 
 type TelemetryInfo = AppRouterOutput['telemetry']['all'][number];
 
@@ -276,7 +275,12 @@ const TelemetryListTable: React.FC<{
               <Button
                 icon={<BarChartOutlined />}
                 onClick={() => {
-                  navigate(`/telemetry/${record.id}`);
+                  navigate({
+                    to: '/telemetry/$telemetryId',
+                    params: {
+                      telemetryId: record.id,
+                    },
+                  });
                 }}
               >
                 {t('View')}

@@ -5,17 +5,21 @@ import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorStatusPage } from '@/components/monitor/StatusPage';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from '@i18next-toolkit/react';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { LuEye } from 'react-icons/lu';
 
 export const Route = createFileRoute('/page/$slug')({
   beforeLoad: routeAuthBeforeLoad,
-  component: PageDetailComponent,
+  component: PageComponent,
 });
 
-function PageDetailComponent() {
+function PageComponent() {
   const { slug } = Route.useParams<{ slug: string }>();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { data: pageInfo, isLoading } = trpc.monitor.getPageInfo.useQuery({
     slug,
   });
@@ -33,10 +37,21 @@ function PageDetailComponent() {
   }
 
   return (
-    <CommonWrapper header={<CommonHeader title={pageInfo.title} />}>
-      {/* <ScrollArea className="h-full overflow-hidden"> */}
-      <MonitorStatusPage slug={slug} />
-      {/* </ScrollArea> */}
+    <CommonWrapper
+      header={
+        <CommonHeader
+          title={pageInfo.title}
+          actions={
+            <Link to="/status/$slug" params={{ slug }} target="_blank">
+              <Button variant="outline" Icon={LuEye}>
+                {t('Preview')}
+              </Button>
+            </Link>
+          }
+        />
+      }
+    >
+      <MonitorStatusPage slug={slug} showBackBtn={false} />
     </CommonWrapper>
   );
 }

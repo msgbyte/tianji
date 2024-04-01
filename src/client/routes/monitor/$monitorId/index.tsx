@@ -10,7 +10,7 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/monitor/$monitorId')({
+export const Route = createFileRoute('/monitor/$monitorId/')({
   beforeLoad: routeAuthBeforeLoad,
   component: MonitorDetailComponent,
 });

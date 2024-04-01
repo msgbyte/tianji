@@ -14,7 +14,6 @@ import { MonitorInfo as MonitorInfoType } from '../../../types';
 import { MonitorHealthBar } from './MonitorHealthBar';
 import { last } from 'lodash-es';
 import { ColorTag } from '../ColorTag';
-import { useNavigate } from 'react-router';
 import { MonitorEventList } from './MonitorEventList';
 import { useEvent } from '../../hooks/useEvent';
 import { MonitorDataMetrics } from './MonitorDataMetrics';
@@ -22,6 +21,7 @@ import { MonitorDataChart } from './MonitorDataChart';
 import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { MonitorBadgeView } from './MonitorBadgeView';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useNavigate } from '@tanstack/react-router';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -109,7 +109,8 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
         });
         await trpcUtils.monitor.all.refetch();
 
-        navigate('/monitor', {
+        navigate({
+          to: '/monitor',
           replace: true,
         });
       },
@@ -198,7 +199,12 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             <Button
               type="primary"
               onClick={() => {
-                navigate(`/monitor/${monitorInfo.id}/edit`);
+                navigate({
+                  to: '/monitor/$monitorId/edit',
+                  params: {
+                    monitorId: monitorInfo.id,
+                  },
+                });
               }}
             >
               {t('Edit')}

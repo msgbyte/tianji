@@ -12,18 +12,25 @@ import {
 } from '@/components/monitor/MonitorInfoEditor';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useMonitorUpsert } from '@/api/model/monitor';
+import { Loading } from '@/components/Loading';
+import { ErrorTip } from '@/components/ErrorTip';
 import { CommonHeader } from '@/components/CommonHeader';
 
-export const Route = createFileRoute('/monitor/add')({
+export const Route = createFileRoute('/monitor/$monitorId/edit')({
   beforeLoad: routeAuthBeforeLoad,
-  component: MonitorAddComponent,
+  component: PageComponent,
 });
 
-function MonitorAddComponent() {
+function PageComponent() {
   const { t } = useTranslation();
+  const { monitorId } = Route.useParams<{ monitorId: string }>();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const mutation = useMonitorUpsert();
+  const { data: monitor, isLoading } = trpc.monitor.get.useQuery({
+    monitorId,
+    workspaceId,
+  });
 
   const handleSubmit = useEvent(async (values: MonitorInfoEditorValues) => {
     const res = await mutation.mutateAsync({
@@ -36,15 +43,34 @@ function MonitorAddComponent() {
       params: {
         monitorId: res.id,
       },
+      replace: true,
     });
   });
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!monitor) {
+    return <ErrorTip />;
+  }
+
   return (
-    <CommonWrapper header={<CommonHeader title={t('Add Monitor')} />}>
+    <CommonWrapper
+      header={<CommonHeader title={monitor.name} desc={t('Edit')} />}
+    >
       <div className="p-4">
         <Card>
           <CardContent className="pt-4">
-            <MonitorInfoEditor onSave={handleSubmit} />
+            <MonitorInfoEditor
+              initialValues={
+                {
+                  ...monitor,
+                  notificationIds: monitor.notifications.map((n) => n.id),
+                } as MonitorInfoEditorValues
+              }
+              onSave={handleSubmit}
+            />
           </CardContent>
         </Card>
       </div>

@@ -20,7 +20,7 @@ import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
 import { UserConfig } from './Layout/UserConfig';
 import { Outlet } from '@tanstack/react-router';
 import { trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useUserStore } from '@/store/user';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -38,10 +38,15 @@ export const LayoutV2: React.FC<LayoutProps> = React.memo((props) => {
       defaultValue: false,
     }
   );
-  const workspaceId = useCurrentWorkspaceId();
-  const { data: serviceCount } = trpc.workspace.getServiceCount.useQuery({
-    workspaceId,
-  });
+  const workspaceId = useUserStore((state) => state.info?.currentWorkspace?.id);
+  const { data: serviceCount } = trpc.workspace.getServiceCount.useQuery(
+    {
+      workspaceId: workspaceId!,
+    },
+    {
+      enabled: !!workspaceId,
+    }
+  );
 
   return (
     <TooltipProvider delayDuration={0}>
