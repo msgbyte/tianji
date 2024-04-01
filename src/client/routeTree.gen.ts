@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as WebsiteImport } from './routes/website'
 import { Route as TelemetryImport } from './routes/telemetry'
+import { Route as SettingsImport } from './routes/settings'
 import { Route as ServerImport } from './routes/server'
 import { Route as RegisterImport } from './routes/register'
 import { Route as PageImport } from './routes/page'
@@ -22,13 +23,18 @@ import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
-import { Route as WebsiteWebsiteIdImport } from './routes/website/$websiteId'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
 import { Route as TelemetryTelemetryIdImport } from './routes/telemetry/$telemetryId'
+import { Route as SettingsUsageImport } from './routes/settings/usage'
+import { Route as SettingsProfileImport } from './routes/settings/profile'
+import { Route as SettingsNotificationsImport } from './routes/settings/notifications'
+import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as MonitorMonitorIdImport } from './routes/monitor/$monitorId'
+import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
+import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 
 // Create/Update Routes
 
@@ -39,6 +45,11 @@ const WebsiteRoute = WebsiteImport.update({
 
 const TelemetryRoute = TelemetryImport.update({
   path: '/telemetry',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SettingsRoute = SettingsImport.update({
+  path: '/settings',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -87,11 +98,6 @@ const WebsiteAddRoute = WebsiteAddImport.update({
   getParentRoute: () => WebsiteRoute,
 } as any)
 
-const WebsiteWebsiteIdRoute = WebsiteWebsiteIdImport.update({
-  path: '/$websiteId',
-  getParentRoute: () => WebsiteRoute,
-} as any)
-
 const TelemetryAddRoute = TelemetryAddImport.update({
   path: '/add',
   getParentRoute: () => TelemetryRoute,
@@ -100,6 +106,26 @@ const TelemetryAddRoute = TelemetryAddImport.update({
 const TelemetryTelemetryIdRoute = TelemetryTelemetryIdImport.update({
   path: '/$telemetryId',
   getParentRoute: () => TelemetryRoute,
+} as any)
+
+const SettingsUsageRoute = SettingsUsageImport.update({
+  path: '/usage',
+  getParentRoute: () => SettingsRoute,
+} as any)
+
+const SettingsProfileRoute = SettingsProfileImport.update({
+  path: '/profile',
+  getParentRoute: () => SettingsRoute,
+} as any)
+
+const SettingsNotificationsRoute = SettingsNotificationsImport.update({
+  path: '/notifications',
+  getParentRoute: () => SettingsRoute,
+} as any)
+
+const SettingsAuditLogRoute = SettingsAuditLogImport.update({
+  path: '/auditLog',
+  getParentRoute: () => SettingsRoute,
 } as any)
 
 const PageAddRoute = PageAddImport.update({
@@ -120,6 +146,16 @@ const MonitorAddRoute = MonitorAddImport.update({
 const MonitorMonitorIdRoute = MonitorMonitorIdImport.update({
   path: '/$monitorId',
   getParentRoute: () => MonitorRoute,
+} as any)
+
+const WebsiteWebsiteIdIndexRoute = WebsiteWebsiteIdIndexImport.update({
+  path: '/$websiteId/',
+  getParentRoute: () => WebsiteRoute,
+} as any)
+
+const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
+  path: '/$websiteId/config',
+  getParentRoute: () => WebsiteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -154,6 +190,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServerImport
       parentRoute: typeof rootRoute
     }
+    '/settings': {
+      preLoaderRoute: typeof SettingsImport
+      parentRoute: typeof rootRoute
+    }
     '/telemetry': {
       preLoaderRoute: typeof TelemetryImport
       parentRoute: typeof rootRoute
@@ -178,6 +218,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageAddImport
       parentRoute: typeof PageImport
     }
+    '/settings/auditLog': {
+      preLoaderRoute: typeof SettingsAuditLogImport
+      parentRoute: typeof SettingsImport
+    }
+    '/settings/notifications': {
+      preLoaderRoute: typeof SettingsNotificationsImport
+      parentRoute: typeof SettingsImport
+    }
+    '/settings/profile': {
+      preLoaderRoute: typeof SettingsProfileImport
+      parentRoute: typeof SettingsImport
+    }
+    '/settings/usage': {
+      preLoaderRoute: typeof SettingsUsageImport
+      parentRoute: typeof SettingsImport
+    }
     '/telemetry/$telemetryId': {
       preLoaderRoute: typeof TelemetryTelemetryIdImport
       parentRoute: typeof TelemetryImport
@@ -186,16 +242,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TelemetryAddImport
       parentRoute: typeof TelemetryImport
     }
-    '/website/$websiteId': {
-      preLoaderRoute: typeof WebsiteWebsiteIdImport
-      parentRoute: typeof WebsiteImport
-    }
     '/website/add': {
       preLoaderRoute: typeof WebsiteAddImport
       parentRoute: typeof WebsiteImport
     }
     '/website/overview': {
       preLoaderRoute: typeof WebsiteOverviewImport
+      parentRoute: typeof WebsiteImport
+    }
+    '/website/$websiteId/config': {
+      preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
+      parentRoute: typeof WebsiteImport
+    }
+    '/website/$websiteId/': {
+      preLoaderRoute: typeof WebsiteWebsiteIdIndexImport
       parentRoute: typeof WebsiteImport
     }
   }
@@ -211,11 +271,18 @@ export const routeTree = rootRoute.addChildren([
   PageRoute.addChildren([PageSlugRoute, PageAddRoute]),
   RegisterRoute,
   ServerRoute,
+  SettingsRoute.addChildren([
+    SettingsAuditLogRoute,
+    SettingsNotificationsRoute,
+    SettingsProfileRoute,
+    SettingsUsageRoute,
+  ]),
   TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
   WebsiteRoute.addChildren([
-    WebsiteWebsiteIdRoute,
     WebsiteAddRoute,
     WebsiteOverviewRoute,
+    WebsiteWebsiteIdConfigRoute,
+    WebsiteWebsiteIdIndexRoute,
   ]),
 ])
 

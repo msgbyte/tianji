@@ -41,7 +41,7 @@ function WebsiteOverviewComponent() {
 
   return (
     <CommonWrapper
-      header={<h1 className="text-xl font-bold">{t('Add Website')}</h1>}
+      header={<h1 className="text-xl font-bold">{t('Website Overview')}</h1>}
     >
       <ScrollArea className="h-full overflow-hidden p-4">
         {websites.length === 0 && isLoading === false && (
