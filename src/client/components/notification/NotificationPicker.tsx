@@ -3,9 +3,9 @@ import React from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { ColorTag } from '../ColorTag';
-import { useNavigate } from 'react-router';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useNavigate } from '@tanstack/react-router';
 
 interface NotificationPickerProps extends SelectProps<string> {}
 export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
@@ -26,7 +26,11 @@ export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
                 <div className="mb-1">{t('Not found any notification')}</div>
                 <Button
                   icon={<PlusOutlined />}
-                  onClick={() => navigate('/settings/notifications')}
+                  onClick={() =>
+                    navigate({
+                      to: '/settings/notifications',
+                    })
+                  }
                 >
                   {t('Create Now')}
                 </Button>

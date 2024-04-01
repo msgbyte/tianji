@@ -3,12 +3,14 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button, Card, Form, Input, Modal, Typography } from 'antd';
+import { Card, Form, Input, Modal, Popconfirm, Typography } from 'antd';
 import { useLogout } from '@/api/model/user';
 import { trpc, defaultSuccessHandler, defaultErrorHandler } from '@/api/trpc';
 import { useUserStore } from '@/store/user';
 import { useState } from 'react';
 import { CommonHeader } from '@/components/CommonHeader';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute('/settings/profile')({
   beforeLoad: routeAuthBeforeLoad,
@@ -45,13 +47,22 @@ function PageComponent() {
               </Form.Item>
               <Form.Item label={t('Password')}>
                 <Button
-                  danger={true}
+                  variant="destructive"
                   onClick={() => setOpenChangePassword(true)}
                 >
                   {t('Change Password')}
                 </Button>
               </Form.Item>
             </Form>
+
+            <Separator className="mb-4" />
+
+            <Popconfirm
+              title={t('Confirm to logout')}
+              onConfirm={() => logout()}
+            >
+              <Button variant="destructive">{t('Logout')}</Button>
+            </Popconfirm>
           </Card>
 
           <Modal

@@ -25,6 +25,7 @@ import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
 import { Route as TelemetryTelemetryIdImport } from './routes/telemetry/$telemetryId'
+import { Route as StatusSlugImport } from './routes/status/$slug'
 import { Route as SettingsUsageImport } from './routes/settings/usage'
 import { Route as SettingsProfileImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsImport } from './routes/settings/notifications'
@@ -32,9 +33,10 @@ import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
-import { Route as MonitorMonitorIdImport } from './routes/monitor/$monitorId'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
+import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
+import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 
 // Create/Update Routes
 
@@ -108,6 +110,11 @@ const TelemetryTelemetryIdRoute = TelemetryTelemetryIdImport.update({
   getParentRoute: () => TelemetryRoute,
 } as any)
 
+const StatusSlugRoute = StatusSlugImport.update({
+  path: '/status/$slug',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const SettingsUsageRoute = SettingsUsageImport.update({
   path: '/usage',
   getParentRoute: () => SettingsRoute,
@@ -143,19 +150,24 @@ const MonitorAddRoute = MonitorAddImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
-const MonitorMonitorIdRoute = MonitorMonitorIdImport.update({
-  path: '/$monitorId',
-  getParentRoute: () => MonitorRoute,
-} as any)
-
 const WebsiteWebsiteIdIndexRoute = WebsiteWebsiteIdIndexImport.update({
   path: '/$websiteId/',
   getParentRoute: () => WebsiteRoute,
 } as any)
 
+const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
+  path: '/$monitorId/',
+  getParentRoute: () => MonitorRoute,
+} as any)
+
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
   path: '/$websiteId/config',
   getParentRoute: () => WebsiteRoute,
+} as any)
+
+const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
+  path: '/$monitorId/edit',
+  getParentRoute: () => MonitorRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -202,10 +214,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteImport
       parentRoute: typeof rootRoute
     }
-    '/monitor/$monitorId': {
-      preLoaderRoute: typeof MonitorMonitorIdImport
-      parentRoute: typeof MonitorImport
-    }
     '/monitor/add': {
       preLoaderRoute: typeof MonitorAddImport
       parentRoute: typeof MonitorImport
@@ -234,6 +242,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsUsageImport
       parentRoute: typeof SettingsImport
     }
+    '/status/$slug': {
+      preLoaderRoute: typeof StatusSlugImport
+      parentRoute: typeof rootRoute
+    }
     '/telemetry/$telemetryId': {
       preLoaderRoute: typeof TelemetryTelemetryIdImport
       parentRoute: typeof TelemetryImport
@@ -250,9 +262,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/monitor/$monitorId/edit': {
+      preLoaderRoute: typeof MonitorMonitorIdEditImport
+      parentRoute: typeof MonitorImport
+    }
     '/website/$websiteId/config': {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
+    }
+    '/monitor/$monitorId/': {
+      preLoaderRoute: typeof MonitorMonitorIdIndexImport
+      parentRoute: typeof MonitorImport
     }
     '/website/$websiteId/': {
       preLoaderRoute: typeof WebsiteWebsiteIdIndexImport
@@ -267,7 +287,11 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   DashboardRoute,
   LoginRoute,
-  MonitorRoute.addChildren([MonitorMonitorIdRoute, MonitorAddRoute]),
+  MonitorRoute.addChildren([
+    MonitorAddRoute,
+    MonitorMonitorIdEditRoute,
+    MonitorMonitorIdIndexRoute,
+  ]),
   PageRoute.addChildren([PageSlugRoute, PageAddRoute]),
   RegisterRoute,
   ServerRoute,
@@ -284,6 +308,7 @@ export const routeTree = rootRoute.addChildren([
     WebsiteWebsiteIdConfigRoute,
     WebsiteWebsiteIdIndexRoute,
   ]),
+  StatusSlugRoute,
 ])
 
 /* prettier-ignore-end */

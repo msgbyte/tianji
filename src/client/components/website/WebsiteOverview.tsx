@@ -10,12 +10,12 @@ import { formatNumber, formatShortTime } from '../../utils/common';
 import { WebsiteOnlineCount } from './WebsiteOnlineCount';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { MonitorHealthBar } from '../monitor/MonitorHealthBar';
-import { useNavigate } from 'react-router';
 import { AppRouterOutput, trpc } from '../../api/trpc';
 import { getUserTimezone } from '../../api/model/user';
 import { useGlobalStateStore } from '../../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
 import { TimeEventChart } from '../TimeEventChart';
+import { Link } from '@tanstack/react-router';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
@@ -25,7 +25,6 @@ export const WebsiteOverview: React.FC<{
   const { t } = useTranslation();
   const { website, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
-  const navigate = useNavigate();
   const showPreviousPeriod = useGlobalStateStore(
     (state) => state.showPreviousPeriod
   );
@@ -91,15 +90,16 @@ export const WebsiteOverview: React.FC<{
           </span>
 
           {website.monitorId && (
-            <div
+            <Link
               className="cursor-pointer"
-              onClick={() => navigate(`/monitor/${website.monitorId}`)}
+              to="/monitor/$monitorId"
+              params={{ monitorId: website.monitorId }}
             >
               <MonitorHealthBar
                 workspaceId={website.workspaceId}
                 monitorId={website.monitorId}
               />
-            </div>
+            </Link>
           )}
 
           <div className="ml-4 text-base font-normal">

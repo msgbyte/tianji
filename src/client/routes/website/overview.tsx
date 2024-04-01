@@ -1,29 +1,13 @@
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { useEvent } from '@/hooks/useEvent';
-import { Input } from '@/components/ui/input';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { trpc } from '@/api/trpc';
-import { hostnameRegex } from '@tianji/shared';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { Empty } from 'antd';
-import { LuPlus } from 'react-icons/lu';
+import { LuArrowRight, LuPlus } from 'react-icons/lu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const Route = createFileRoute('/website/overview')({
@@ -46,6 +30,7 @@ function WebsiteOverviewComponent() {
       <ScrollArea className="h-full overflow-hidden p-4">
         {websites.length === 0 && isLoading === false && (
           <Empty
+            className="pt-8"
             description={
               <div className="py-2">
                 <div className="mb-1">
@@ -68,7 +53,19 @@ function WebsiteOverviewComponent() {
 
         <div className="space-y-10 p-4">
           {websites.map((website) => (
-            <WebsiteOverview website={website} />
+            <WebsiteOverview
+              website={website}
+              actions={
+                <Link
+                  to="/website/$websiteId"
+                  params={{ websiteId: website.id }}
+                >
+                  <Button size="lg">
+                    {t('View Details')} <LuArrowRight className="ml-2" />
+                  </Button>
+                </Link>
+              }
+            />
           ))}
         </div>
       </ScrollArea>

@@ -1,11 +1,10 @@
 import { Button, Form, Input, Typography } from 'antd';
-import { useNavigate } from 'react-router';
 import { useRequest } from '../hooks/useRequest';
 import { trpc } from '../api/trpc';
 import { setJWT } from '../api/auth';
 import { setUserInfo } from '../store/user';
 import { useTranslation } from '@i18next-toolkit/react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/register')({
   component: RegisterComponent,
@@ -25,14 +24,17 @@ function RegisterComponent() {
     setJWT(res.token);
     setUserInfo(res.info);
 
-    navigate('/dashboard');
+    navigate({
+      to: '/',
+      replace: true,
+    });
   });
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center dark:bg-gray-900">
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
-          <img className="h-24 w-24" src="/icon.svg" />
+          <img className="m-auto h-24 w-24  " src="/icon.svg" />
         </div>
         <Typography.Title className="text-center" level={2}>
           {t('Register Account')}

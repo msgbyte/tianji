@@ -8,25 +8,26 @@ import {
 } from './EditForm';
 import clsx from 'clsx';
 import { useRequest } from '../../../hooks/useRequest';
-import { useNavigate } from 'react-router';
 import { ColorSchemeSwitcher } from '../../ColorSchemeSwitcher';
 import { StatusPageServices } from './Services';
 import { useTranslation } from '@i18next-toolkit/react';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 interface MonitorStatusPageProps {
   slug: string;
+  showBackBtn?: boolean;
 }
 
 export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
-    const { slug } = props;
+    const { slug, showBackBtn = true } = props;
 
     const { data: info } = trpc.monitor.getPageInfo.useQuery({
       slug,
     });
     const editPageMutation = trpc.monitor.editPage.useMutation();
-    const trpcUtils = trpc.useContext();
+    const trpcUtils = trpc.useUtils();
     const navigate = useNavigate();
 
     const allowEdit = useAllowEdit(info?.workspaceId);
@@ -58,7 +59,13 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
 
         if (info.slug !== newPageInfo.slug) {
           // if slug is changed, should to navigate to new url
-          navigate(`/status/${newPageInfo.slug}`);
+          navigate({
+            to: '/status/$slug',
+            params: {
+              slug: newPageInfo.slug,
+            },
+            replace: true,
+          });
         }
       }
     );
@@ -94,9 +101,11 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
                 {t('Edit')}
               </Button>
 
-              <Button type="default" onClick={() => navigate(`/`)}>
-                {t('Back to Admin')}
-              </Button>
+              {showBackBtn && (
+                <Link to="/">
+                  <Button type="default">{t('Back to Admin')}</Button>
+                </Link>
+              )}
             </div>
           )}
 
