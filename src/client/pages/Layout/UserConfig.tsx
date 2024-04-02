@@ -1,4 +1,3 @@
-import { ColorSchemeSwitcher } from '@/components/ColorSchemeSwitcher';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
