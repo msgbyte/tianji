@@ -20,7 +20,7 @@ import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
 import { UserConfig } from './Layout/UserConfig';
 import { Outlet } from '@tanstack/react-router';
 import { trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId, useUserStore } from '@/store/user';
+import { useUserStore } from '@/store/user';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -48,6 +48,62 @@ export const LayoutV2: React.FC<LayoutProps> = React.memo((props) => {
     }
   );
 
+  const navbar = (
+    <>
+      <div
+        className={cn(
+          'flex h-[52px] items-center justify-center',
+          isCollapsed ? 'h-[52px]' : 'px-2'
+        )}
+      >
+        <WorkspaceSwitcher isCollapsed={isCollapsed} />
+      </div>
+      <Separator />
+      <Nav
+        isCollapsed={isCollapsed}
+        links={[
+          {
+            title: 'Website',
+            label: String(serviceCount?.website ?? ''),
+            icon: LuAreaChart,
+            to: '/website',
+          },
+          {
+            title: 'Monitor',
+            label: String(serviceCount?.monitor ?? ''),
+            icon: LuMonitorDot,
+            to: '/monitor',
+          },
+          {
+            title: 'Servers',
+            label: '',
+            icon: LuServer,
+            to: '/server',
+          },
+          {
+            title: 'Telemetry',
+            label: String(serviceCount?.telemetry ?? ''),
+            icon: LuWifi,
+            to: '/telemetry',
+          },
+          {
+            title: 'Pages',
+            label: String(serviceCount?.page ?? ''),
+            icon: LuFilePieChart,
+            to: '/page',
+          },
+        ]}
+      />
+      <Separator />
+      <div className="flex-1" />
+      <Separator />
+
+      <div className={cn(isCollapsed && 'm-auto')}>
+        <UserConfig isCollapsed={isCollapsed} />
+      </div>
+    </>
+  );
+
   return (
     <TooltipProvider delayDuration={0}>
       <ResizablePanelGroup
@@ -65,9 +121,9 @@ export const LayoutV2: React.FC<LayoutProps> = React.memo((props) => {
       >
         <ResizablePanel
           defaultSize={layout[0]}
-          collapsedSize={4}
+          collapsedSize={1}
           collapsible={true}
-          minSize={15}
+          minSize={10}
           maxSize={20}
           onCollapse={() => {
             setIsCollapsed(true);
@@ -81,55 +137,7 @@ export const LayoutV2: React.FC<LayoutProps> = React.memo((props) => {
               'min-w-[50px] transition-all duration-300 ease-in-out'
           )}
         >
-          <div
-            className={cn(
-              'flex h-[52px] items-center justify-center',
-              isCollapsed ? 'h-[52px]' : 'px-2'
-            )}
-          >
-            <WorkspaceSwitcher isCollapsed={isCollapsed} />
-          </div>
-          <Separator />
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: 'Website',
-                label: String(serviceCount?.website ?? ''),
-                icon: LuAreaChart,
-                to: '/website',
-              },
-              {
-                title: 'Monitor',
-                label: String(serviceCount?.monitor ?? ''),
-                icon: LuMonitorDot,
-                to: '/monitor',
-              },
-              {
-                title: 'Servers',
-                label: '',
-                icon: LuServer,
-                to: '/server',
-              },
-              {
-                title: 'Telemetry',
-                label: String(serviceCount?.telemetry ?? ''),
-                icon: LuWifi,
-                to: '/telemetry',
-              },
-              {
-                title: 'Pages',
-                label: String(serviceCount?.page ?? ''),
-                icon: LuFilePieChart,
-                to: '/page',
-              },
-            ]}
-          />
-          <Separator />
-          <div className="flex-1" />
-          <Separator />
-
-          <UserConfig isCollapsed={isCollapsed} />
+          {navbar}
         </ResizablePanel>
 
         {props.list && (
