@@ -12,6 +12,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { useEvent } from '@/hooks/useEvent';
 import { useSettingsStore } from '@/store/settings';
@@ -19,6 +21,7 @@ import { useUserInfo } from '@/store/user';
 import { languages } from '@/utils/constants';
 import { useTranslation, setLanguage } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
+import { version } from '@tianji/shared';
 import React from 'react';
 import { LuMoreVertical } from 'react-icons/lu';
 
@@ -38,7 +41,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
   });
 
   const avatar = (
-    <Avatar>
+    <Avatar size={props.isCollapsed ? 'sm' : 'default'}>
       <AvatarFallback>
         {(userInfo?.username ?? '').substring(0, 2).toUpperCase()}
       </AvatarFallback>
@@ -134,6 +137,31 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>{t('Community')}</DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onClick={() => window.open('https://discord.gg/8Vv47wAEej')}
+                >
+                  {t('Join Discord')}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => window.open('https://twitter.com/moonrailgun')}
+                >
+                  {t('Follow Twitter')}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+
+          <DropdownMenuLabel className="text-muted">
+            v{version}
+          </DropdownMenuLabel>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
