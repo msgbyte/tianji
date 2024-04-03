@@ -8,7 +8,7 @@ export const LayoutV2: React.FC<LayoutProps> = React.memo((props) => {
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    return <MobileLayout />;
+    return <MobileLayout {...props} />;
   }
 
   return <DesktopLayout {...props} />;

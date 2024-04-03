@@ -23,6 +23,7 @@ import { isDev } from './utils/env';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { DefaultNotFound } from './components/DefaultNotFound';
+import { TooltipProvider } from './components/ui/tooltip';
 
 const router = createRouter({
   routeTree,
@@ -95,7 +96,9 @@ export const App: React.FC = React.memo(() => {
               {isDev ? (
                 // Compatible with old routes
                 <BrowserRouter>
-                  <RouterProvider router={router} context={{ userInfo }} />
+                  <TooltipProvider delayDuration={0}>
+                    <RouterProvider router={router} context={{ userInfo }} />
+                  </TooltipProvider>
                 </BrowserRouter>
               ) : (
                 <BrowserRouter>
