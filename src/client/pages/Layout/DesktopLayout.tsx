@@ -22,6 +22,7 @@ import { Outlet } from '@tanstack/react-router';
 import { trpc } from '@/api/trpc';
 import { useUserStore } from '@/store/user';
 import { LayoutProps } from './types';
+import { useTranslation } from '@i18next-toolkit/react';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -45,6 +46,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
       enabled: !!workspaceId,
     }
   );
+  const { t } = useTranslation();
 
   const navbar = (
     <>
@@ -61,31 +63,31 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
         isCollapsed={isCollapsed}
         links={[
           {
-            title: 'Website',
+            title: t('Website'),
             label: String(serviceCount?.website ?? ''),
             icon: LuAreaChart,
             to: '/website',
           },
           {
-            title: 'Monitor',
+            title: t('Monitor'),
             label: String(serviceCount?.monitor ?? ''),
             icon: LuMonitorDot,
             to: '/monitor',
           },
           {
-            title: 'Servers',
+            title: t('Servers'),
             label: '',
             icon: LuServer,
             to: '/server',
           },
           {
-            title: 'Telemetry',
+            title: t('Telemetry'),
             label: String(serviceCount?.telemetry ?? ''),
             icon: LuWifi,
             to: '/telemetry',
           },
           {
-            title: 'Pages',
+            title: t('Pages'),
             label: String(serviceCount?.page ?? ''),
             icon: LuFilePieChart,
             to: '/page',
@@ -103,60 +105,57 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
   );
 
   return (
-    <TooltipProvider delayDuration={0}>
-      <ResizablePanelGroup
-        direction="horizontal"
-        onLayout={(sizes: number[]) => {
-          if (sizes.length === 3) {
-            setLayout(sizes as typeof defaultLayout);
-          } else if (sizes.length === 2) {
-            const listSize = layout[1];
-            const rest = 100 - sizes[0] - listSize;
-            setLayout([sizes[0], listSize, rest]);
-          }
+    <ResizablePanelGroup
+      direction="horizontal"
+      onLayout={(sizes: number[]) => {
+        if (sizes.length === 3) {
+          setLayout(sizes as typeof defaultLayout);
+        } else if (sizes.length === 2) {
+          const listSize = layout[1];
+          const rest = 100 - sizes[0] - listSize;
+          setLayout([sizes[0], listSize, rest]);
+        }
+      }}
+      className="h-full items-stretch"
+    >
+      <ResizablePanel
+        defaultSize={layout[0]}
+        collapsedSize={1}
+        collapsible={true}
+        minSize={10}
+        maxSize={20}
+        onCollapse={() => {
+          setIsCollapsed(true);
         }}
-        className="h-full items-stretch"
-      >
-        <ResizablePanel
-          defaultSize={layout[0]}
-          collapsedSize={1}
-          collapsible={true}
-          minSize={10}
-          maxSize={20}
-          onCollapse={() => {
-            setIsCollapsed(true);
-          }}
-          onExpand={() => {
-            setIsCollapsed(false);
-          }}
-          className={cn(
-            'flex flex-col',
-            isCollapsed &&
-              'min-w-[50px] transition-all duration-300 ease-in-out'
-          )}
-        >
-          {navbar}
-        </ResizablePanel>
-
-        {props.list && (
-          <>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={layout[1]} minSize={25}>
-              <div className="h-full overflow-hidden">{props.list}</div>
-            </ResizablePanel>
-          </>
+        onExpand={() => {
+          setIsCollapsed(false);
+        }}
+        className={cn(
+          'flex flex-col',
+          isCollapsed && 'min-w-[50px] transition-all duration-300 ease-in-out'
         )}
+      >
+        {navbar}
+      </ResizablePanel>
 
-        <ResizableHandle withHandle />
-        <ResizablePanel
-          defaultSize={props.list ? layout[2] : layout[1] + layout[2]}
-        >
-          <div className="h-full overflow-hidden">
-            {props.children ?? <Outlet />}
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </TooltipProvider>
+      {props.list && (
+        <>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={layout[1]} minSize={25}>
+            <div className="h-full overflow-hidden">{props.list}</div>
+          </ResizablePanel>
+        </>
+      )}
+
+      <ResizableHandle withHandle />
+      <ResizablePanel
+        defaultSize={props.list ? layout[2] : layout[1] + layout[2]}
+      >
+        <div className="h-full overflow-hidden">
+          {props.children ?? <Outlet />}
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 });
 DesktopLayout.displayName = 'DesktopLayout';

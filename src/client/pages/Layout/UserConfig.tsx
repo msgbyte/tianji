@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useEvent } from '@/hooks/useEvent';
 import { useSettingsStore } from '@/store/settings';
-import { useUserInfo } from '@/store/user';
+import { useCurrentWorkspaceId, useUserInfo, useUserStore } from '@/store/user';
 import { languages } from '@/utils/constants';
 import { useTranslation, setLanguage } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
@@ -32,6 +32,20 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const colorScheme = useSettingsStore((state) => state.colorScheme);
+  const workspaceId = useCurrentWorkspaceId();
+  const workspaces = useUserStore((state) => {
+    const userInfo = state.info;
+    if (userInfo) {
+      return userInfo.workspaces.map((w) => ({
+        id: w.workspace.id,
+        name: w.workspace.name,
+        role: w.role,
+        current: userInfo.currentWorkspace?.id === w.workspace.id,
+      }));
+    }
+
+    return [];
+  });
 
   const handleChangeColorSchema = useEvent((colorScheme) => {
     useSettingsStore.setState({
@@ -96,6 +110,25 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
           >
             {t('Notifications')}
           </DropdownMenuItem>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>{t('Workspaces')}</DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup value={workspaceId}>
+                  {workspaces.map((workspace) => (
+                    <DropdownMenuRadioItem
+                      key={workspace.id}
+                      value={workspace.id}
+                      disabled={true}
+                    >
+                      {workspace.name}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>{t('Language')}</DropdownMenuSubTrigger>
