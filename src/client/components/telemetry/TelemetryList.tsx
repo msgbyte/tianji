@@ -11,7 +11,12 @@ import {
   Typography,
 } from 'antd';
 import React, { useMemo, useState } from 'react';
-import { AppRouterOutput, trpc } from '../../api/trpc';
+import {
+  AppRouterOutput,
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  trpc,
+} from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { type ColumnsType } from 'antd/es/table/interface';
 import {
@@ -209,7 +214,10 @@ const TelemetryListTable: React.FC<{
     workspaceId,
   });
   const navigate = useNavigate();
-  const deleteMutation = trpc.telemetry.delete.useMutation();
+  const deleteMutation = trpc.telemetry.delete.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
 
   const columns = useMemo((): ColumnsType<TelemetryInfo> => {
     return [
