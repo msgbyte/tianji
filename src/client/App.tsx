@@ -24,6 +24,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { DefaultNotFound } from './components/DefaultNotFound';
 import { TooltipProvider } from './components/ui/tooltip';
+import { Toaster } from './components/ui/sonner';
 
 const router = createRouter({
   routeTree,
@@ -99,6 +100,8 @@ export const App: React.FC = React.memo(() => {
                   <TooltipProvider delayDuration={0}>
                     <RouterProvider router={router} context={{ userInfo }} />
                   </TooltipProvider>
+
+                  <Toaster />
                 </BrowserRouter>
               ) : (
                 <BrowserRouter>
