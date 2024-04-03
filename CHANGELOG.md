@@ -1,5 +1,35 @@
 
 
+## [1.7.4](https://github.com/msgbyte/tianji/compare/v1.7.3...v1.7.4) (2024-04-03)
+
+
+### Features
+
+* add custom tracker script [#37](https://github.com/msgbyte/tianji/issues/37) ([16e0cb0](https://github.com/msgbyte/tianji/commit/16e0cb0f112091238109acf38591af23c7b76b92))
+* add delete telemetry feature [#34](https://github.com/msgbyte/tianji/issues/34) ([d862e6c](https://github.com/msgbyte/tianji/commit/d862e6cb62b716e1fa64c6b206c1961708d2ed1d))
+* add DNS monitor [#45](https://github.com/msgbyte/tianji/issues/45) ([99610cf](https://github.com/msgbyte/tianji/commit/99610cffaeb6da469ce66396d0b6cd6347087d37))
+* add telemetry events chart ([941861f](https://github.com/msgbyte/tianji/commit/941861f8856ec02935b221dbbd488226d69884c4))
+
+
+### Bug Fixes
+
+* fix etag problem for http cache if not show full telemetry number in badge ([bd4e6b5](https://github.com/msgbyte/tianji/commit/bd4e6b5b05b7154b4e34792665e66004bd426286))
+
+
+### Document
+
+* add docker pull badge in README ([cf5edd4](https://github.com/msgbyte/tianji/commit/cf5edd4ab4b2c8d47d14724902ffc541c5527b33))
+* update changelog ([6f556f3](https://github.com/msgbyte/tianji/commit/6f556f3e909ba4a09bf4625bbd9fa3a8924f6e98))
+* update qrcode ([f841361](https://github.com/msgbyte/tianji/commit/f84136106a8ca192f4c4c3bc3f0571bcba2c8d22))
+
+
+### Others
+
+* add article about telemetry introduce ([e06d7ca](https://github.com/msgbyte/tianji/commit/e06d7ca4986bc4926c39c4f3500a45da4d3b9242))
+* add default handler for delete telemetry action ([6c84a04](https://github.com/msgbyte/tianji/commit/6c84a04fb5fee6330d836e12766678702e927213))
+* add prettier-plugin-tailwindcss ([11fd1a6](https://github.com/msgbyte/tianji/commit/11fd1a616bbff0dcf3b400acf12c865c0cab9aed))
+* update qrcode ([f8f8c14](https://github.com/msgbyte/tianji/commit/f8f8c14e23b4619ce82b5e76d108282bc8c2cc01))
+
 ## [1.7.3](https://github.com/msgbyte/tianji/compare/v1.7.2...v1.7.3) (2024-03-10)
 
 
