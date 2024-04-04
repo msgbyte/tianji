@@ -23,6 +23,7 @@ import { trpc } from '@/api/trpc';
 import { useUserStore } from '@/store/user';
 import { LayoutProps } from './types';
 import { useTranslation } from '@i18next-toolkit/react';
+import { CommandPanel } from '@/components/CommandPanel';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -57,6 +58,10 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
         )}
       >
         <WorkspaceSwitcher isCollapsed={isCollapsed} />
+      </div>
+      <Separator />
+      <div className="p-2">
+        <CommandPanel />
       </div>
       <Separator />
       <Nav
