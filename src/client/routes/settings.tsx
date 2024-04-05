@@ -1,14 +1,9 @@
-import { trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonList } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { Button } from '@/components/ui/button';
-import { useDataReady } from '@/hooks/useDataReady';
-import { useEvent } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
-import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { Trans, useTranslation } from '@i18next-toolkit/react';
+import { useTranslation } from '@i18next-toolkit/react';
 import {
   createFileRoute,
   useNavigate,
@@ -18,10 +13,10 @@ import { useEffect } from 'react';
 
 export const Route = createFileRoute('/settings')({
   beforeLoad: routeAuthBeforeLoad,
-  component: TelemetryComponent,
+  component: PageComponent,
 });
 
-function TelemetryComponent() {
+function PageComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const pathname = useRouterState({

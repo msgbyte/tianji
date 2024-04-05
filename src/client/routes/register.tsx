@@ -1,10 +1,12 @@
-import { Button, Form, Input, Typography } from 'antd';
+import { Form, Typography } from 'antd';
 import { useRequest } from '../hooks/useRequest';
 import { trpc } from '../api/trpc';
 import { setJWT } from '../api/auth';
 import { setUserInfo } from '../store/user';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export const Route = createFileRoute('/register')({
   component: RegisterComponent,
@@ -31,7 +33,7 @@ function RegisterComponent() {
   });
 
   return (
-    <div className="flex h-full w-full items-center justify-center dark:bg-gray-900">
+    <div className="flex h-full w-full items-center justify-center dark:bg-zinc-900">
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
           <img className="m-auto h-24 w-24  " src="/icon.svg" />
@@ -45,21 +47,20 @@ function RegisterComponent() {
             name="username"
             rules={[{ required: true }]}
           >
-            <Input size="large" />
+            <Input />
           </Form.Item>
           <Form.Item
             label={t('Password')}
             name="password"
             rules={[{ required: true }]}
           >
-            <Input.Password size="large" />
+            <Input type="password" />
           </Form.Item>
           <Form.Item>
             <Button
-              type="primary"
-              size="large"
-              htmlType="submit"
-              block={true}
+              size="lg"
+              type="submit"
+              className="w-full"
               loading={loading}
             >
               {t('Register')}

@@ -54,6 +54,7 @@ function WebsiteOverviewComponent() {
         <div className="space-y-10 p-4">
           {websites.map((website) => (
             <WebsiteOverview
+              key={website.id}
               website={website}
               actions={
                 <Link

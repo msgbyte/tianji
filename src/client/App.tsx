@@ -25,6 +25,7 @@ import { routeTree } from './routeTree.gen';
 import { DefaultNotFound } from './components/DefaultNotFound';
 import { TooltipProvider } from './components/ui/tooltip';
 import { Toaster } from './components/ui/sonner';
+import { DefaultError } from './components/DefaultError';
 
 const router = createRouter({
   routeTree,
@@ -32,6 +33,7 @@ const router = createRouter({
     userInfo: undefined,
   },
   defaultNotFoundComponent: DefaultNotFound,
+  defaultErrorComponent: DefaultError,
 });
 
 // Register the router instance for type safety

@@ -8,6 +8,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
+import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
   createFileRoute,
@@ -70,6 +71,9 @@ function WebsiteComponent() {
               actions={
                 <div className="space-x-2">
                   <Button
+                    className={cn(
+                      pathname === '/website/overview' && '!bg-muted'
+                    )}
                     variant="outline"
                     Icon={LuEye}
                     onClick={handleClickOverview}

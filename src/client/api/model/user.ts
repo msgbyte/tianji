@@ -2,7 +2,6 @@ import dayjs from 'dayjs';
 import { useUserStore } from '../../store/user';
 import { useEvent } from '../../hooks/useEvent';
 import { clearJWT } from '../auth';
-import { useNavigate } from '@tanstack/react-router';
 
 /**
  * Mock
@@ -13,15 +12,11 @@ export function getUserTimezone(): string {
 }
 
 export function useLogout() {
-  const navigate = useNavigate();
-
   const logout = useEvent(() => {
+    window.location.href = '/login'; // not good, need to invest to find better way.
+
     useUserStore.setState({ info: null });
     clearJWT();
-    navigate({
-      to: '/login',
-      replace: true,
-    });
   });
 
   return logout;
