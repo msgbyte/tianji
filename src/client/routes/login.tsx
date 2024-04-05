@@ -3,10 +3,12 @@ import { useRequest } from '@/hooks/useRequest';
 import { setJWT } from '@/api/auth';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { trpc } from '@/api/trpc';
-import { Button, Form, Input, Typography } from 'antd';
+import { Form, Typography } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
 import { setUserInfo } from '@/store/user';
 import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export const Route = createFileRoute('/login')({
   validateSearch: z.object({
@@ -59,21 +61,20 @@ function LoginComponent() {
             name="username"
             rules={[{ required: true }]}
           >
-            <Input size="large" />
+            <Input />
           </Form.Item>
           <Form.Item
             label={t('Password')}
             name="password"
             rules={[{ required: true }]}
           >
-            <Input.Password size="large" />
+            <Input type="password" />
           </Form.Item>
           <Form.Item>
             <Button
-              type="primary"
-              size="large"
-              htmlType="submit"
-              block={true}
+              size="lg"
+              type="submit"
+              className="w-full"
               loading={loading}
             >
               {t('Login')}
@@ -83,9 +84,10 @@ function LoginComponent() {
           {allowRegister && (
             <Form.Item>
               <Button
-                size="large"
-                htmlType="button"
-                block={true}
+                variant="secondary"
+                size="lg"
+                type="button"
+                className="w-full"
                 onClick={() => {
                   navigate({
                     to: '/register',

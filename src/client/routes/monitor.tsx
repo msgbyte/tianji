@@ -15,6 +15,7 @@ import {
   useNavigate,
   useRouterState,
 } from '@tanstack/react-router';
+import { compact } from 'lodash-es';
 import { LuPlus } from 'react-icons/lu';
 
 export const Route = createFileRoute('/monitor')({
@@ -44,7 +45,7 @@ function MonitorComponent() {
         showCurrentStatus={true}
       />
     ),
-    tags: [item.type],
+    tags: compact([item.type, item.active ? false : t('Stopped')]),
     href: `/monitor/${item.id}`,
   }));
 

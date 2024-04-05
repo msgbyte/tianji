@@ -26,8 +26,12 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
-export const CommandPanel: React.FC = React.memo(() => {
+interface CommandPanelProps {
+  isCollapsed: boolean;
+}
+export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -53,15 +57,34 @@ export const CommandPanel: React.FC = React.memo(() => {
 
   return (
     <>
-      <Button
-        className="w-full !justify-between"
-        variant="secondary"
-        size="sm"
-        Icon={LuSearch}
-        onClick={() => setOpen(true)}
-      >
-        <span className="rounded bg-black/10 px-1 py-0.5">ctrl + k</span>
-      </Button>
+      {props.isCollapsed ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="secondary"
+              size="icon"
+              Icon={LuSearch}
+              onClick={() => setOpen(true)}
+            />
+          </TooltipTrigger>
+          <TooltipContent side="right" className="flex items-center gap-4">
+            {t('Search and quick jump')}
+            <span className="ml-1 rounded bg-black/10 px-1 py-0.5">
+              ctrl + k
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Button
+          className="w-full !justify-between"
+          variant="secondary"
+          size="sm"
+          Icon={LuSearch}
+          onClick={() => setOpen(true)}
+        >
+          <span className="rounded bg-black/10 px-1 py-0.5">ctrl + k</span>
+        </Button>
+      )}
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <Command loop={true}>

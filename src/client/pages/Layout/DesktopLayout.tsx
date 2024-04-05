@@ -61,7 +61,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
       </div>
       <Separator />
       <div className="p-2">
-        <CommandPanel />
+        <CommandPanel isCollapsed={isCollapsed} />
       </div>
       <Separator />
       <Nav
