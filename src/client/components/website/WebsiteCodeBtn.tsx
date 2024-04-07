@@ -11,6 +11,7 @@ import {
 } from '../ui/dialog';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Typography } from 'antd';
+import { useGlobalConfig } from '@/hooks/useConfig';
 
 interface WebsiteCodeBtnProps {
   websiteId: string;
@@ -18,8 +19,9 @@ interface WebsiteCodeBtnProps {
 export const WebsiteCodeBtn: React.FC<WebsiteCodeBtnProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
+    const { customTrackerScriptName = 'tracker.js' } = useGlobalConfig();
 
-    const trackScript = `<script async defer src="${location.origin}/tracker.js" data-website-id="${props.websiteId}"></script>`;
+    const trackScript = `<script async defer src="${location.origin}/${customTrackerScriptName}" data-website-id="${props.websiteId}"></script>`;
 
     return (
       <Dialog>

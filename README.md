@@ -36,6 +36,7 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [ ] waitlist
 - [ ] survey
 - [ ] lighthouse report
+- [ ] hooks
 
 ## Preview
 
