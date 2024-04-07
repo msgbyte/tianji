@@ -8,6 +8,7 @@
     "dev": "vite --port 10000",
     "build": "vite build",
     "ui:add": "shadcn-ui add",
+    "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "translation:extract": "i18next-toolkit extract",
     "translation:scan": "i18next-toolkit scan",
     "translation:translate": "i18next-toolkit translate",

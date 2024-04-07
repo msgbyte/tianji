@@ -123,8 +123,7 @@ function PageComponent() {
               </Form.Item>
               <Form.Item className="text-right">
                 <Button
-                  type="primary"
-                  htmlType="submit"
+                  type="submit"
                   loading={changePasswordMutation.isLoading}
                 >
                   {t('Submit')}

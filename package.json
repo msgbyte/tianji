@@ -18,7 +18,7 @@
     "build:tracker": "ts-node scripts/build-tracker.ts",
     "build:geo": "ts-node scripts/build-geo.ts",
     "build:openapi": "ts-node scripts/build-openapi-schema.ts",
-    "check:type": "tsc --noEmit --skipLibCheck --module esnext",
+    "check:type": "pnpm -r check:type",
     "release": "release-it",
     "release:patch": "release-it -i patch"
   },

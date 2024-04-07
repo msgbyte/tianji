@@ -8,6 +8,7 @@
     "dev": "nodemon",
     "build": "tsc -p tsconfig.server.json",
     "postinstall": "pnpm db:generate",
+    "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:apply": "prisma migrate deploy",

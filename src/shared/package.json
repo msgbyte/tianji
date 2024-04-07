@@ -9,6 +9,7 @@
     "require": "./dist/cjs/src/shared/src/index.js"
   },
   "scripts": {
+    "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "build": "concurrently npm:build:cjs npm:build:esm",
     "build:cjs": "tsc --module commonjs --outDir ./dist/cjs",
     "build:esm": "tsc --module esnext --outDir ./dist/esm",
