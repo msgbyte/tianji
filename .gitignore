@@ -1,5 +1,5 @@
 .env
-public/tracker.js
+src/client/public/tracker.js
 geo
 
 # Logs

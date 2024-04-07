@@ -50,7 +50,7 @@ app.use('/trpc', trpcExpressMiddleware);
 
 if (env.customTrackerScriptName) {
   app.get(`/${env.customTrackerScriptName}`, (req, res) =>
-    res.sendFile(path.resolve(__dirname, './public/tracker.js'))
+    res.sendFile(path.resolve(process.cwd(), './public/tracker.js'))
   );
 }
 
