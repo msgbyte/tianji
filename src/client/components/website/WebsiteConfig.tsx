@@ -10,10 +10,8 @@ import { MonitorPicker } from '../monitor/MonitorPicker';
 import {
   defaultErrorHandler,
   defaultSuccessHandler,
-  getQueryKey,
   trpc,
 } from '../../api/trpc';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEvent } from '../../hooks/useEvent';
 import { hostnameValidator } from '../../utils/validator';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -25,7 +23,7 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
+    const trpcUtils = trpc.useUtils();
 
     const { data: website, isLoading } = trpc.website.info.useQuery({
       workspaceId,
@@ -33,10 +31,7 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
     });
 
     const updateMutation = trpc.website.updateInfo.useMutation({
-      onSuccess: () => {
-        queryClient.resetQueries(getQueryKey(trpc.website.info));
-        defaultSuccessHandler();
-      },
+      onSuccess: defaultSuccessHandler,
       onError: defaultErrorHandler,
     });
 
@@ -49,6 +44,11 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
           domain: values.domain,
           monitorId: values.monitorId,
         });
+
+        trpcUtils.website.info.refetch({
+          workspaceId,
+          websiteId,
+        });
       }
     );
 
@@ -56,6 +56,8 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
       await deleteWorkspaceWebsite(workspaceId, websiteId!);
 
       message.success(t('Delete Success'));
+
+      await trpcUtils.website.all.refetch({ workspaceId });
 
       navigate({
         to: '/website',

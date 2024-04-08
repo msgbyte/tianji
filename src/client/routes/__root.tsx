@@ -1,5 +1,5 @@
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+// import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Suspense } from 'react';
 
 interface RouterContext {
@@ -13,7 +13,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       // https://github.com/TanStack/router/issues/857
       <Suspense fallback={null}>
         <Outlet />
-        <TanStackRouterDevtools position="bottom-right" />
+
+        {/* <TanStackRouterDevtools position="bottom-right" /> */}
       </Suspense>
     );
   },
