@@ -31,14 +31,29 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const AppRouter: React.FC = React.memo(() => {
+  const { info: userInfo } = useUserStore();
+
+  useInjectWebsiteScript();
+
+  return (
+    <BrowserRouter>
+      {/* Compatible with old routes */}
+      <TooltipProvider delayDuration={0}>
+        <RouterProvider router={router} context={{ userInfo }} />
+      </TooltipProvider>
+
+      <Toaster />
+    </BrowserRouter>
+  );
+});
+AppRouter.displayName = 'AppRouter';
+
 export const App: React.FC = React.memo(() => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const colorScheme = useColorSchema();
   const algorithm =
     colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
-  const { info: userInfo } = useUserStore();
-
-  useInjectWebsiteScript();
 
   return (
     <div ref={rootRef} className="App">
@@ -49,14 +64,7 @@ export const App: React.FC = React.memo(() => {
             getPopupContainer={() => rootRef.current!}
           >
             <TokenLoginContainer>
-              {/* Compatible with old routes */}
-              <BrowserRouter>
-                <TooltipProvider delayDuration={0}>
-                  <RouterProvider router={router} context={{ userInfo }} />
-                </TooltipProvider>
-
-                <Toaster />
-              </BrowserRouter>
+              <AppRouter />
             </TokenLoginContainer>
           </ConfigProvider>
         </QueryClientProvider>
