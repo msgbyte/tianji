@@ -1,5 +1,52 @@
 
 
+## [1.8.0](https://github.com/msgbyte/tianji/compare/v1.7.4...v1.8.0) (2024-04-09)
+
+
+### Features
+
+* add default not found page and dashboard redirect ([3c60261](https://github.com/msgbyte/tianji/commit/3c60261f379e905e8ec7ade80151f3bce00b5789))
+* add telemetry route ([f27f3f2](https://github.com/msgbyte/tianji/commit/f27f3f2f11c031cfbbea4a927e5fad3866920a7d))
+* add translation for new design ([07f64a8](https://github.com/msgbyte/tianji/commit/07f64a87ff1de761501cd0698adb038a0a3a70b3))
+* add website add button and fuse search ([68ace91](https://github.com/msgbyte/tianji/commit/68ace913217bb033537f41a32c224e1fcaf65566))
+* **v2:** add all settings pages ([fa7534a](https://github.com/msgbyte/tianji/commit/fa7534a8e00d62a462351b8dbbb06291bb7d2953))
+* **v2:** add command panel ([af4c6f6](https://github.com/msgbyte/tianji/commit/af4c6f6bd18c83389f2910b3bc7e3a901d46ca83))
+* **v2:** add delete telemetry feature ([07cb0b0](https://github.com/msgbyte/tianji/commit/07cb0b066a1eb40fd333f929dbb5dafde356cb6a))
+* **v2:** add mobile layout ([af1d99d](https://github.com/msgbyte/tianji/commit/af1d99d2ff720d48af03bfcd192ce1da627e3fdb))
+* **v2:** add monitor health bar in list ([539f242](https://github.com/msgbyte/tianji/commit/539f24244a2b76d395cdca3ee19d29b7a26896d1))
+* **v2:** add page list/add/detail ([d97c671](https://github.com/msgbyte/tianji/commit/d97c6719133ee1c2d8c6faa29d18e4520036722d))
+* **v2:** add server page ([20e1963](https://github.com/msgbyte/tianji/commit/20e19633aeacf971dfc0c4855604a2c60d58198b))
+* **v2:** add website detail ([958b1c0](https://github.com/msgbyte/tianji/commit/958b1c09329864463bef724256aee825b770147e))
+* **v2:** add website overview ([6a5de70](https://github.com/msgbyte/tianji/commit/6a5de70fdbf4cbf706274e9f40278fc8dcbd5b25))
+* **v2:** monitor feature ([402b8a6](https://github.com/msgbyte/tianji/commit/402b8a6955278937b8512307f304c428d4f3a441))
+
+
+### Bug Fixes
+
+* fix custom tracker script file route error in production ([2a3e2af](https://github.com/msgbyte/tianji/commit/2a3e2af528e492f587de561988100ada6efb2050))
+* fix custom tracker script name not display in fe problem ([5d8c187](https://github.com/msgbyte/tianji/commit/5d8c18716a1502c1db8f95850f0f762bf4455706))
+* fix website list not refresh when delete website problem ([fcb30a3](https://github.com/msgbyte/tianji/commit/fcb30a375b8f033592cc5af40602d826d527470c))
+
+
+### Document
+
+* add docker image size badge ([cc581f9](https://github.com/msgbyte/tianji/commit/cc581f9c2286eb83d7cbb2486ec6c9adc92c1c02))
+* add document about telemetry parameters ([a219f3b](https://github.com/msgbyte/tianji/commit/a219f3bdbff44f17e9a24a562770ec3b5952d54b))
+
+
+### Others
+
+* add AppRouter to make sure useUserStore run under trpc provider ([2c5ff71](https://github.com/msgbyte/tianji/commit/2c5ff71725a10d9c2c5de3c49be94afa198987d0))
+* basic new layout ([0987ca3](https://github.com/msgbyte/tianji/commit/0987ca37d53eb0bfc74360f0b6995560b6544e6c))
+* improve layout navbar ([6fbf316](https://github.com/msgbyte/tianji/commit/6fbf316c5d1af65a9d741cc5a89798229f5df9c6))
+* move add desktop layout into ([0711c3c](https://github.com/msgbyte/tianji/commit/0711c3c003d1e86130afece1178d2fb32d0d7191))
+* new layout and new router ([3f13447](https://github.com/msgbyte/tianji/commit/3f13447e1fb29cb87a4beacdf454522dfea9ea3d))
+* remvoe old router ([62cc934](https://github.com/msgbyte/tianji/commit/62cc934035683e252368af78ed21975dc2d5d329))
+* replace all old router to new router ([3bb2cc8](https://github.com/msgbyte/tianji/commit/3bb2cc871513cc553adfd0e5014a121d098f2aa3))
+* shadcn ui init ([aeee6ca](https://github.com/msgbyte/tianji/commit/aeee6ca5932504e7bc7284e4ee46687a59687502))
+* **v2:** add common sidebar ([f9a51e4](https://github.com/msgbyte/tianji/commit/f9a51e4c792519b527a467a6f3fecc72e7fbb129))
+* **v2:** login view and register and default error handler and more ([4d260dc](https://github.com/msgbyte/tianji/commit/4d260dc45e6509d649f5afa87de9eb2a5123bd6d))
+
 ## [1.7.4](https://github.com/msgbyte/tianji/compare/v1.7.3...v1.7.4) (2024-04-03)
 
 
