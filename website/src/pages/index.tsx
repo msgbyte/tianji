@@ -13,21 +13,21 @@ function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <header className="container">
-      <div className="text-center mt-10">
-        <LogoSvg className="w-40 h-40" />
+      <div className="mt-10 text-center">
+        <LogoSvg className="h-40 w-40" />
         <h1 className="text-5xl">
           <span className="text-gradient font-bold">Tianji</span>
         </h1>
-        <p className="opacity-60 text-2xl">All-in-One Insight Hub</p>
+        <p className="text-2xl opacity-60">All-in-One Insight Hub</p>
         <div className="text-xl">
           <span className="text-gradient font-bold">Tianji</span> ={' '}
-          <span className="underline font-semibold">Website Analytics</span> +{' '}
-          <span className="underline font-semibold">Uptime Monitor</span> +{' '}
-          <span className="underline font-semibold">Server Status</span>
+          <span className="font-semibold underline">Website Analytics</span> +{' '}
+          <span className="font-semibold underline">Uptime Monitor</span> +{' '}
+          <span className="font-semibold underline">Server Status</span>
         </div>
       </div>
 
-      <div className="text-center my-6">
+      <div className="my-6 text-center">
         {/* <Link
           className="button button--primary button--lg"
           to="mailto:moonrailgun@gmail.com?subject=I want to apply for Tianji early access account&body=Here is my account: <Here place your username>"
@@ -41,13 +41,13 @@ function HomepageHeader() {
           Visit Demo
         </Link> */}
 
-        <div className="w-min m-auto text-left bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg overflow-auto max-w-full">
+        <div className="m-auto w-min max-w-full overflow-auto rounded-lg bg-neutral-100 p-2 text-left dark:bg-neutral-800">
           <div className="whitespace-nowrap">
-            <span className="select-none opacity-50 mr-1">$</span>wget
+            <span className="mr-1 select-none opacity-50">$</span>wget
             https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
           </div>
           <div>
-            <span className="select-none opacity-50 mr-1">$</span>docker compose
+            <span className="mr-1 select-none opacity-50">$</span>docker compose
             up -d
           </div>
         </div>
@@ -63,26 +63,26 @@ function HomepageHeader() {
 function HomepageMain() {
   return (
     <main className="container pb-8">
-      <div className="flex flex-wrap gap-2 justify-around mt-4 mb-8">
-        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+      <div className="mb-8 mt-4 flex flex-wrap justify-around gap-2">
+        <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ No cookies
         </div>
-        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+        <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ International support
         </div>
-        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+        <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ GDPR & CCPA compliant
         </div>
-        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+        <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ Open API
         </div>
-        <div className="px-4 py-2 border rounded border-solid border-gray-300 checked-item">
+        <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ Open Source
         </div>
       </div>
 
       <div className="text-center">
-        <div className="border-8 border-solid border-gray-200 rounded-lg shadow-lg">
+        <div className="rounded-lg border-8 border-solid border-gray-200 shadow-lg">
           <Carousel
             className="cursor-move"
             showThumbs={false}
@@ -95,10 +95,12 @@ function HomepageMain() {
             emulateTouch={true}
             infiniteLoop={true}
           >
-            <img src="/img/preview1.png" />
-            <img src="/img/preview2.png" />
-            <img src="/img/preview3.png" />
-            <img src="/img/preview4.png" />
+            <img src="/img/preview/1.png" />
+            <img src="/img/preview/2.png" />
+            <img src="/img/preview/3.png" />
+            <img src="/img/preview/4.png" />
+            <img src="/img/preview/5.png" />
+            <img src="/img/preview/6.png" />
           </Carousel>
         </div>
       </div>
@@ -108,8 +110,8 @@ function HomepageMain() {
 
 function HomepageFooter() {
   return (
-    <div className="text-center py-8">
-      <div className="text-2xl font-bold mb-8">Join Our Community</div>
+    <div className="py-8 text-center">
+      <div className="mb-8 text-2xl font-bold">Join Our Community</div>
 
       <div className="flex justify-center gap-4">
         <Popover
