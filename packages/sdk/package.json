@@ -1,0 +1,14 @@
+{
+  "name": "tianji-client-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["tianji"],
+  "author": "moonrailgun <moonrailgun@gmail.com>",
+  "license": "MIT"
+}
