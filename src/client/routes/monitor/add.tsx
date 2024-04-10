@@ -13,6 +13,7 @@ import {
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useMonitorUpsert } from '@/api/model/monitor';
 import { CommonHeader } from '@/components/CommonHeader';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const Route = createFileRoute('/monitor/add')({
   beforeLoad: routeAuthBeforeLoad,
@@ -41,13 +42,13 @@ function MonitorAddComponent() {
 
   return (
     <CommonWrapper header={<CommonHeader title={t('Add Monitor')} />}>
-      <div className="p-4">
+      <ScrollArea className="h-full overflow-hidden p-4">
         <Card>
           <CardContent className="pt-4">
             <MonitorInfoEditor onSave={handleSubmit} />
           </CardContent>
         </Card>
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }
