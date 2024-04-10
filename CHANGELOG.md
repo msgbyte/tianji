@@ -1,5 +1,18 @@
 
 
+## [1.8.1](https://github.com/msgbyte/tianji/compare/v1.8.0...v1.8.1) (2024-04-10)
+
+
+### Bug Fixes
+
+* fix cannot add http monitor problem ([6e68cd1](https://github.com/msgbyte/tianji/commit/6e68cd1985967ba7bcda7aa65287a3367a4d1b7d))
+
+
+### Document
+
+* update preview images ([4f9cff7](https://github.com/msgbyte/tianji/commit/4f9cff747d1572b69ed7e404b9bee4f389b19581))
+* update qrcode ([7df1691](https://github.com/msgbyte/tianji/commit/7df16918903b859f6daf59dd500bc10645484d63))
+
 ## [1.8.0](https://github.com/msgbyte/tianji/compare/v1.7.4...v1.8.0) (2024-04-09)
 
 
