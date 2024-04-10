@@ -3,3 +3,4 @@ packages:
   - 'src/server'
   - 'src/shared'
   - 'website'
+  - 'packages/*'
