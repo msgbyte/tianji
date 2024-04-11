@@ -8,7 +8,12 @@
     "prepare": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["tianji"],
+  "keywords": [
+    "tianji"
+  ],
   "author": "moonrailgun <moonrailgun@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "load-script": "^2.0.0"
+  }
 }
