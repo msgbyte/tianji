@@ -2,11 +2,11 @@
 sidebar_position: 1
 ---
 
-# Track Script
+# Tracker Script
 
-## Install
+## Installation
 
-To track website events, you just need inject a simple script(<2kb) into your website.
+To track website events, you just need inject a simple script(< 2 KB) into your website.
 
 the script look like below:
 
@@ -49,3 +49,17 @@ then you can visit your tracker script with `"https://<your-self-hosted-domain>/
 This is to help you avoid some ad-blockers.
 
 You do not need the `.js` suffix. It can be any path you choose, even you can use as `CUSTOM_TRACKER_SCRIPT_NAME="this/is/very/long/path"`
+
+## Tracking Specified Domains Only
+
+Generally the tracker will report all events wherever your site is running. But sometimes we need to ignore events like `localhost`.
+
+Tianji provides an attribute of the tracker script to do that.
+
+You can add `data-domains` into your script. The value should be your root domains to track. Use `,` to separate multiple domains.
+
+```html
+<script async defer src="https://<your-self-hosted-domain>/tracker.js" data-website-id="xxxxxxxxxxxxx" data-domains="website.com,www.website.com"></script>
+```
+
+Then you can just see the events from these domains.
