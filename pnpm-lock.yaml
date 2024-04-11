@@ -61,6 +61,12 @@ importers:
         specifier: ^5.0.12
         version: 5.0.12(@types/node@18.17.12)(less@4.2.0)
 
+  packages/client-sdk:
+    dependencies:
+      load-script:
+        specifier: ^2.0.0
+        version: 2.0.0
+
   src/client:
     dependencies:
       '@ant-design/charts':
@@ -17180,6 +17186,10 @@ packages:
   /liquid-json@0.3.1:
     resolution: {integrity: sha512-wUayTU8MS827Dam6MxgD72Ui+KOSF+u/eIqpatOtjnvgJ0+mnDq33uC2M7J0tPK+upe/DpUAuK4JUU89iBoNKQ==}
     engines: {node: '>=4'}
+    dev: false
+
+  /load-script@2.0.0:
+    resolution: {integrity: sha512-km6cyoPW4rM22JMGb+SHUKPMZVDpUaMpMAKrv8UHWllIxc/qjgMGHD91nY+5hM+/NFs310OZ2pqQeJKs7HqWPA==}
     dev: false
 
   /loader-runner@4.3.0:
