@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "keywords": [
     "tianji"
@@ -15,5 +15,11 @@
   "license": "MIT",
   "dependencies": {
     "load-script": "^2.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.0.0",
+    "happy-dom": "^14.7.1",
+    "msw": "^2.2.13",
+    "vitest": "^1.2.1"
   }
 }
