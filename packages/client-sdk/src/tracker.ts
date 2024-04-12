@@ -68,3 +68,27 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
     );
   });
 }
+
+export function reportEvent(eventName: string, data: Record<string, any>) {
+  const tianji = (window as any).tianji;
+  if (!tianji) {
+    return;
+  }
+
+  tianji.report(eventName, data);
+}
+
+interface IdentifyPayload {
+  email?: string;
+  username?: string;
+  avatar?: string;
+  [key: string]: any;
+}
+export function identify(data: IdentifyPayload) {
+  const tianji = (window as any).tianji;
+  if (!tianji) {
+    return;
+  }
+
+  tianji.identify(data);
+}
