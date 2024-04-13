@@ -58,7 +58,8 @@ telemetryRouter.get(
   '/:workspaceId/:telemetryId.gif',
   validate(
     query('name').optional().isString(),
-    query('url').optional().isURL()
+    query('url').optional().isURL(),
+    query('force').optional().isBoolean()
   ),
   async (req, res) => {
     if (env.isTest) {
@@ -85,7 +86,8 @@ telemetryRouter.get(
     query('url').optional().isURL(),
     query('title').optional().isString(),
     query('start').optional().isNumeric(),
-    query('fullNum').optional().isBoolean()
+    query('fullNum').optional().isBoolean(),
+    query('force').optional().isBoolean()
   ),
   async (req, res) => {
     const title = req.query.title || 'visitor';

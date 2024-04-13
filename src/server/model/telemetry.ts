@@ -6,20 +6,17 @@ import { prisma } from './_client';
 import {
   BaseQueryFilters,
   getDateQuery,
-  getTimestampIntervalQuery,
   parseTelemetryFilters,
 } from '../utils/prisma';
 import { SESSION_COLUMNS } from '../utils/const';
 
 export async function recordTelemetryEvent(req: Request) {
-  const {
-    url = req.headers.referer,
-    name,
-    title,
-    start,
-    fullNum,
-    ...others
-  } = req.query;
+  const { name, title, start, fullNum, force, ...others } = req.query;
+
+  const url =
+    req.query.url && force === 'true'
+      ? req.query.url
+      : req.headers.referer ?? req.query.url;
 
   if (!(url && typeof url === 'string')) {
     return;
