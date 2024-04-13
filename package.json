@@ -17,7 +17,7 @@
     "build:server": "cd src/server && pnpm build",
     "build:tracker": "ts-node scripts/build-tracker.ts",
     "build:geo": "ts-node scripts/build-geo.ts",
-    "build:openapi": "ts-node scripts/build-openapi-schema.ts",
+    "build:openapi": "ts-node --project ./tsconfig.base.json ./scripts/build-openapi-schema.ts",
     "check:type": "pnpm -r check:type",
     "release": "release-it",
     "release:patch": "release-it -i patch"
