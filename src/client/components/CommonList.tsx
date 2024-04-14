@@ -11,6 +11,7 @@ import { Empty } from 'antd';
 export interface CommonListItem {
   id: string;
   title: string;
+  number?: number;
   content?: React.ReactNode;
   tags?: string[];
   href: string;
@@ -84,12 +85,12 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                   })
                 }
               >
-                <div className="flex w-full flex-col gap-1">
-                  <div className="flex items-center">
-                    <div className="flex items-center gap-2">
-                      <div className="font-semibold">{item.title}</div>
-                    </div>
-                  </div>
+                <div className="flex w-full items-center justify-between gap-1">
+                  <div className="font-semibold">{item.title}</div>
+
+                  {item.number && item.number > 0 && (
+                    <span className="opacity-60">{item.number}</span>
+                  )}
                 </div>
 
                 {item.content && (

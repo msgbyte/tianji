@@ -27,6 +27,9 @@ function TelemetryComponent() {
   const { data = [] } = trpc.telemetry.all.useQuery({
     workspaceId,
   });
+  const { data: allEventCount = {} } = trpc.telemetry.allEventCount.useQuery({
+    workspaceId,
+  });
   const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -35,6 +38,7 @@ function TelemetryComponent() {
   const items = data.map((item) => ({
     id: item.id,
     title: item.name,
+    number: allEventCount[item.id] ?? 0,
     href: `/telemetry/${item.id}`,
   }));
 
