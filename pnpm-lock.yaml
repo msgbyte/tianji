@@ -75,7 +75,10 @@ importers:
         version: 14.7.1
       msw:
         specifier: ^2.2.13
-        version: 2.2.13(typescript@5.2.2)
+        version: 2.2.13(typescript@5.4.5)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
       vitest:
         specifier: ^1.2.1
         version: 1.2.1(@types/node@18.17.12)(happy-dom@14.7.1)
@@ -442,7 +445,7 @@ importers:
         version: 0.4.4
       puppeteer:
         specifier: ^21.7.0
-        version: 21.7.0(typescript@5.3.3)
+        version: 21.7.0(typescript@5.4.5)
       request-ip:
         specifier: ^3.3.0
         version: 3.3.0
@@ -460,7 +463,7 @@ importers:
         version: 1.2.0(@trpc/server@10.45.0)(zod@3.22.2)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@18.17.12)(typescript@5.3.3)
+        version: 10.9.1(@types/node@18.17.12)(typescript@5.4.5)
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -551,7 +554,7 @@ importers:
         version: 5.4.2
       prisma-json-types-generator:
         specifier: 3.0.3
-        version: 3.0.3(prisma@5.4.2)(typescript@5.3.3)
+        version: 3.0.3(prisma@5.4.2)(typescript@5.4.5)
       prisma-zod-generator:
         specifier: 0.8.13
         version: 0.8.13(prisma@5.4.2)
@@ -12905,7 +12908,7 @@ packages:
       typescript: 5.2.2
     dev: true
 
-  /cosmiconfig@8.3.6(typescript@5.3.3):
+  /cosmiconfig@8.3.6(typescript@5.4.5):
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -12918,7 +12921,7 @@ packages:
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
-      typescript: 5.3.3
+      typescript: 5.4.5
     dev: false
 
   /cosmiconfig@9.0.0(typescript@5.2.2):
@@ -18774,7 +18777,7 @@ packages:
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  /msw@2.2.13(typescript@5.2.2):
+  /msw@2.2.13(typescript@5.4.5):
     resolution: {integrity: sha512-ljFf1xZsU0b4zv1l7xzEmC6OZA6yD06hcx0H+dc8V0VypaP3HGYJa1rMLjQbBWl32ptGhcfwcPCWDB1wjmsftw==}
     engines: {node: '>=18'}
     hasBin: true
@@ -18801,7 +18804,7 @@ packages:
       path-to-regexp: 6.2.2
       strict-event-emitter: 0.5.1
       type-fest: 4.9.0
-      typescript: 5.2.2
+      typescript: 5.4.5
       yargs: 17.7.2
     dev: true
 
@@ -20130,7 +20133,7 @@ packages:
     dependencies:
       lilconfig: 2.1.0
       postcss: 8.4.33
-      ts-node: 10.9.1(@types/node@18.17.12)(typescript@5.3.3)
+      ts-node: 10.9.1(@types/node@18.17.12)(typescript@5.4.5)
       yaml: 2.3.2
     dev: true
 
@@ -20994,7 +20997,7 @@ packages:
       react: 17.0.2
     dev: true
 
-  /prisma-json-types-generator@3.0.3(prisma@5.4.2)(typescript@5.3.3):
+  /prisma-json-types-generator@3.0.3(prisma@5.4.2)(typescript@5.4.5):
     resolution: {integrity: sha512-6TT1J6biRpQdU1Z7ggLeQ74pQNFMxxvT2vwTc9/yYV3znDhy9kW/e/CE6j0XhL8nkP2xzshtCQ1Y/EAh+LO3jQ==}
     engines: {node: '>=14.0'}
     hasBin: true
@@ -21005,7 +21008,7 @@ packages:
       '@prisma/generator-helper': 5.5.2
       prisma: 5.4.2
       tslib: 2.6.2
-      typescript: 5.3.3
+      typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -21212,14 +21215,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /puppeteer@21.7.0(typescript@5.3.3):
+  /puppeteer@21.7.0(typescript@5.4.5):
     resolution: {integrity: sha512-Yy+UUy0b9siJezbhHO/heYUoZQUwyqDK1yOQgblTt0l97tspvDVFkcW9toBlnSvSfkDmMI3Dx9cZL6R8bDArHA==}
     engines: {node: '>=16.13.2'}
     hasBin: true
     requiresBuild: true
     dependencies:
       '@puppeteer/browsers': 1.9.1
-      cosmiconfig: 8.3.6(typescript@5.3.3)
+      cosmiconfig: 8.3.6(typescript@5.4.5)
       puppeteer-core: 21.7.0
     transitivePeerDependencies:
       - bufferutil
@@ -25523,7 +25526,7 @@ packages:
       yn: 3.1.1
     dev: true
 
-  /ts-node@10.9.1(@types/node@18.17.12)(typescript@5.3.3):
+  /ts-node@10.9.1(@types/node@18.17.12)(typescript@5.4.5):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -25549,7 +25552,7 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.3.3
+      typescript: 5.4.5
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
@@ -25697,8 +25700,8 @@ packages:
     hasBin: true
     dev: true
 
-  /typescript@5.3.3:
-    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+  /typescript@5.4.5:
+    resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
