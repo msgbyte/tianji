@@ -2,6 +2,10 @@
 const config = {
   locales: ['en', 'zh', 'jp', 'fr', 'de', 'ru'],
   verbose: true,
+  translator: {
+    type: 'openai',
+    model: 'gpt-4'
+  },
   scanner: {
     autoImport: false,
     ignoreText: [
@@ -39,10 +43,6 @@ const config = {
       'HH:mm',
       'YYYY-MM-DD HH:mm',
     ],
-  },
-  translator: {
-    type: 'openai',
-    model: 'gpt-4'
   },
 };
 
