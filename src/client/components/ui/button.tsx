@@ -63,7 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : 'button';
 
     const icon = Icon ? (
-      <Icon className={cn(props.children && 'mr-1')} />
+      <Icon className={cn(props.children ? 'mr-1' : '')} />
     ) : undefined;
     const children = (
       <>
