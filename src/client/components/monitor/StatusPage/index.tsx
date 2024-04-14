@@ -1,4 +1,3 @@
-import { Button } from 'antd';
 import React, { useState } from 'react';
 import { trpc } from '../../../api/trpc';
 import { useAllowEdit } from './useAllowEdit';
@@ -12,6 +11,8 @@ import { ColorSchemeSwitcher } from '../../ColorSchemeSwitcher';
 import { StatusPageServices } from './Services';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { Helmet } from 'react-helmet';
+import { Button } from '@/components/ui/button';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -72,6 +73,13 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
 
     return (
       <div className="flex h-full w-full">
+        <Helmet>
+          <title>
+            {info?.title}
+            {info?.description && ` | ${info?.description}`}
+          </title>
+        </Helmet>
+
         {editMode && (
           <div className="w-1/3 overflow-auto border-r border-gray-300 px-4 py-8 dark:border-gray-600">
             <MonitorStatusPageEditForm
@@ -97,13 +105,11 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
 
           {allowEdit && !editMode && (
             <div className="mb-4 flex gap-2">
-              <Button type="primary" onClick={() => setEditMode(true)}>
-                {t('Edit')}
-              </Button>
+              <Button onClick={() => setEditMode(true)}>{t('Edit')}</Button>
 
               {showBackBtn && (
                 <Link to="/">
-                  <Button type="default">{t('Back to Admin')}</Button>
+                  <Button variant="outline">{t('Back to Admin')}</Button>
                 </Link>
               )}
             </div>

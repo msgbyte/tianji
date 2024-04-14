@@ -1,9 +1,10 @@
-import { Button, Divider, Form, Input, Switch, Typography } from 'antd';
+import { Switch, Divider, Form, Input, Typography } from 'antd';
 import React from 'react';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { MonitorPicker } from '../MonitorPicker';
 import { urlSlugValidator } from '../../../utils/validator';
 import { useTranslation } from '@i18next-toolkit/react';
+import { Button } from '@/components/ui/button';
+import { LuMinusCircle, LuPlus } from 'react-icons/lu';
 
 const { Text } = Typography;
 
@@ -96,7 +97,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                             </Form.Item>
 
                             <div className="item-center flex">
-                              <div className="flex-1">
+                              <div className="flex flex-1 items-center">
                                 <Form.Item
                                   name={[field.name, 'showCurrent']}
                                   valuePropName="checked"
@@ -110,8 +111,8 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                                 </span>
                               </div>
 
-                              <MinusCircleOutlined
-                                className="mt-1.5 text-lg"
+                              <LuMinusCircle
+                                className="mt-1.5 cursor-pointer text-lg"
                                 onClick={() => remove(field.name)}
                               />
                             </div>
@@ -121,10 +122,10 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                     </div>
 
                     <Button
-                      type="dashed"
+                      variant="dashed"
                       onClick={() => add()}
                       style={{ width: '60%' }}
-                      icon={<PlusOutlined />}
+                      Icon={LuPlus}
                     >
                       {t('Add Monitor')}
                     </Button>
@@ -137,12 +138,12 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           </Form.List>
 
           <div className="flex gap-4">
-            <Button type="primary" htmlType="submit" loading={props.isLoading}>
+            <Button type="submit" loading={props.isLoading}>
               {props.saveButtonLabel ?? t('Save')}
             </Button>
 
             {props.onCancel && (
-              <Button htmlType="button" onClick={props.onCancel}>
+              <Button variant="outline" type="button" onClick={props.onCancel}>
                 {t('Cancel')}
               </Button>
             )}
