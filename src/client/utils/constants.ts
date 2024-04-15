@@ -14,15 +14,16 @@ export const languages = [
   {
     label: '日本語',
     key: 'jp',
+  },  
+  {
+    label: 'Português',
+    key: 'pt',
   },
   {
     label: 'Русский',
     key: 'ru',
   },
-  {
-    label: 'Português',
-    key: 'pt',
-  },
+
   {
     label: '简体中文',
     key: 'zh',
