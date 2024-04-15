@@ -34,6 +34,13 @@ monitorRouter.get(
             color: 'red',
           });
 
-    res.header('Content-Type', 'image/svg+xml').send(svg);
+    res
+      .header('Content-Type', 'image/svg+xml')
+      .header(
+        'Cache-Control',
+        'no-cache,max-age=0,no-store,s-maxage=0,proxy-revalidate'
+      )
+      .status(200)
+      .send(svg);
   }
 );
