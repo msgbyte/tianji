@@ -35,14 +35,14 @@ export const LanguageSelector: React.FC = React.memo(() => {
             itemIcon: <CountryFlag code="jp" />,
           },
           {
-            label: 'Русский',
-            key: 'ru',
-            itemIcon: <CountryFlag code="ru" />,
-          },
-          {
             label: 'Português',
             key: 'pt',
             itemIcon: <CountryFlag code="pt" />,
+          },
+          {
+            label: 'Русский',
+            key: 'ru',
+            itemIcon: <CountryFlag code="ru" />,
           },
           {
             label: '简体中文',
