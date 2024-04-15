@@ -20,6 +20,10 @@ export const languages = [
     key: 'ru',
   },
   {
+    label: 'Português',
+    key: 'pt',
+  },
+  {
     label: '简体中文',
     key: 'zh',
   },
