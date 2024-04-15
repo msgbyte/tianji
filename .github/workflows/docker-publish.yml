@@ -27,7 +27,7 @@ jobs:
         with:
           images: |
             moonrailgun/tianji
-            ghcr.io/moonrailgun/tianji
+            ghcr.io/msgbyte/tianji
           tags: |
             type=semver,pattern={{version}}
       - name: Login to DockerHub

@@ -24,7 +24,7 @@ jobs:
         with:
           images: |
             moonrailgun/tianji
-            ghcr.io/moonrailgun/tianji
+            ghcr.io/msgbyte/tianji
           tags: |
             type=sha
       - name: Login to DockerHub
