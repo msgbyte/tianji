@@ -1,5 +1,33 @@
 
 
+## [1.8.2](https://github.com/msgbyte/tianji/compare/v1.8.1...v1.8.2) (2024-04-16)
+
+
+### Features
+
+* add telemetry event count ([8a3c93f](https://github.com/msgbyte/tianji/commit/8a3c93fff71a42a48041af1008f701e9868982c7))
+* add track function ([6349931](https://github.com/msgbyte/tianji/commit/6349931714063edb9d17cb45b1a200bb04d48d25))
+* Adding Portuguese (pt-PT) Translation ([#52](https://github.com/msgbyte/tianji/issues/52)) ([49fa50c](https://github.com/msgbyte/tianji/commit/49fa50c3cd12a693738aa4b6a7ef3fbdd9fc1da6))
+* telemetry add force to improve url fetch logic ([ac7b44e](https://github.com/msgbyte/tianji/commit/ac7b44e86276819be34ed91eea0b108747fa2c66))
+
+
+### Document
+
+* update openapi ([1db0832](https://github.com/msgbyte/tianji/commit/1db0832d989123a05f034a128d9717da0091f1b7))
+* update README ([8acbbb5](https://github.com/msgbyte/tianji/commit/8acbbb56f5401e62e183e73606feb82a3d2890b4))
+
+
+### Others
+
+* add title for status page and update UI style for it. ([d3ce409](https://github.com/msgbyte/tianji/commit/d3ce4090022841fa1a7f5624cd958d0ba2dc4e6c))
+* fix ci problem ([932d78b](https://github.com/msgbyte/tianji/commit/932d78b172feb4a49a2fd8079180ce9c1f38147f))
+* init client sdk ([699aedc](https://github.com/msgbyte/tianji/commit/699aedc272b4ba614280d2cfd92020734303a707))
+* remove cache for monitor badge ([10d9438](https://github.com/msgbyte/tianji/commit/10d943854143dff66810793f965d3b0992c569dd))
+* rename and add init tracker function ([cdcd6e2](https://github.com/msgbyte/tianji/commit/cdcd6e228467780f87ebab1e2af3f9e22d849196))
+* update docker registry name ([48210d2](https://github.com/msgbyte/tianji/commit/48210d29acf50e9fd1d42d23afb22ab431012f2b))
+* update translation ([9ce882b](https://github.com/msgbyte/tianji/commit/9ce882ba39b131ad5be89071bd33ff599edeaf4e))
+* upgrade i18next-toolkit and ant design icons, and update translation ([1dec411](https://github.com/msgbyte/tianji/commit/1dec411dd342ca2001d8a276bd4076d1b89a59fe))
+
 ## [1.8.1](https://github.com/msgbyte/tianji/compare/v1.8.0...v1.8.1) (2024-04-10)
 
 
