@@ -18,6 +18,7 @@ export const MonitorStatusPageModelSchema = z.object({
    * [MonitorStatusPageList]
    */
   monitorList: imports.MonitorStatusPageListSchema,
+  domain: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

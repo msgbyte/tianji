@@ -1,7 +1,7 @@
 import { Switch, Divider, Form, Input, Typography } from 'antd';
 import React from 'react';
 import { MonitorPicker } from '../MonitorPicker';
-import { urlSlugValidator } from '../../../utils/validator';
+import { domainValidator, urlSlugValidator } from '../../../utils/validator';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { LuMinusCircle, LuPlus } from 'react-icons/lu';
@@ -12,6 +12,7 @@ export interface MonitorStatusPageEditFormValues {
   title: string;
   slug: string;
   monitorList: PrismaJson.MonitorStatusPageList;
+  domain: string;
 }
 
 interface MonitorStatusPageEditFormProps {
@@ -69,6 +70,25 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             ]}
           >
             <Input addonBefore={`${window.origin}/status/`} />
+          </Form.Item>
+
+          <Form.Item
+            label={t('Custom Domain')}
+            name="domain"
+            extra={
+              <div>
+                {t(
+                  'You can config your status page in your own domain, for example: status.example.com'
+                )}
+              </div>
+            }
+            rules={[
+              {
+                validator: domainValidator,
+              },
+            ]}
+          >
+            <Input />
           </Form.Item>
 
           <Form.List name="monitorList">

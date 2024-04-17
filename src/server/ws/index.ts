@@ -3,6 +3,7 @@ import { Server as HTTPServer } from 'http';
 import { jwtVerify } from '../middleware/auth';
 import { socketEventBus } from './shared';
 import { isCuid } from '../utils/common';
+import { logger } from '../utils/logger';
 
 export function initSocketio(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
@@ -30,7 +31,7 @@ export function initSocketio(httpServer: HTTPServer) {
         try {
           const user = jwtVerify(token);
 
-          console.log('[Socket] Authenticated via JWT:', user.username);
+          logger.info('[Socket] Authenticated via JWT:', user.username);
 
           socket.data.user = user;
           socket.data.token = token;

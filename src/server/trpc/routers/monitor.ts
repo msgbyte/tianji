@@ -31,6 +31,7 @@ import {
   MonitorInfoWithNotificationIds,
   MonitorPublicInfoSchema,
 } from '../../model/_schema/monitor';
+import { monitorPageManager } from '../../model/monitor/page/manager';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -599,12 +600,14 @@ export const monitorRouter = router({
           MonitorStatusPageModelSchema.pick({
             description: true,
             monitorList: true,
+            domain: true,
           }).partial()
         )
     )
     .output(MonitorStatusPageModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, slug, title, description, monitorList } = input;
+      const { workspaceId, slug, title, description, monitorList, domain } =
+        input;
 
       const existSlugCount = await prisma.monitorStatusPage.count({
         where: {
@@ -616,17 +619,30 @@ export const monitorRouter = router({
         throw new Error('This slug has been existed');
       }
 
-      const res = await prisma.monitorStatusPage.create({
+      if (domain && !(await monitorPageManager.checkDomain(domain))) {
+        throw new Error('This domain has been used');
+      }
+
+      const page = await prisma.monitorStatusPage.create({
         data: {
           workspaceId,
           slug,
           title,
           description,
           monitorList,
+          domain: domain || null, // make sure not ''
         },
       });
 
-      return res;
+      if (page.domain) {
+        monitorPageManager.updatePageDomain(page.domain, {
+          workspaceId: page.workspaceId,
+          pageId: page.id,
+          slug: page.slug,
+        });
+      }
+
+      return page;
     }),
   editPage: workspaceOwnerProcedure
     .meta(
@@ -644,12 +660,14 @@ export const monitorRouter = router({
           title: true,
           description: true,
           monitorList: true,
+          domain: true,
         }).partial()
       )
     )
     .output(MonitorStatusPageModelSchema)
     .mutation(async ({ input }) => {
-      const { id, workspaceId, slug, title, description, monitorList } = input;
+      const { id, workspaceId, slug, title, description, monitorList, domain } =
+        input;
 
       if (slug) {
         const existSlugCount = await prisma.monitorStatusPage.count({
@@ -666,7 +684,11 @@ export const monitorRouter = router({
         }
       }
 
-      return prisma.monitorStatusPage.update({
+      if (domain && !(await monitorPageManager.checkDomain(domain))) {
+        throw new Error('This domain has been used');
+      }
+
+      const page = await prisma.monitorStatusPage.update({
         where: {
           id,
           workspaceId,
@@ -676,8 +698,19 @@ export const monitorRouter = router({
           title,
           description,
           monitorList,
+          domain: domain || null,
         },
       });
+
+      if (page.domain) {
+        monitorPageManager.updatePageDomain(page.domain, {
+          workspaceId: page.workspaceId,
+          pageId: page.id,
+          slug: page.slug,
+        });
+      }
+
+      return page;
     }),
   deletePage: workspaceOwnerProcedure
     .meta(

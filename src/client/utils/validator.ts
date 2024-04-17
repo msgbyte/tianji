@@ -17,6 +17,15 @@ export const hostnameValidator: Validator = (rule, value, callback) => {
   }
 };
 
+export const domainValidator: Validator = (rule, value, callback) => {
+  try {
+    z.string().regex(hostnameRegex).parse(value);
+    callback();
+  } catch (err) {
+    callback('Not valid, it should be domain, for example: example.com');
+  }
+};
+
 export const urlSlugValidator: Validator = (rule, value, callback) => {
   try {
     z.string().regex(slugRegex).parse(value);

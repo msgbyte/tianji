@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { trpc } from '../../../api/trpc';
 import { useAllowEdit } from './useAllowEdit';
 import {
@@ -37,6 +37,17 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
     });
 
     const monitorList = info?.monitorList ?? [];
+
+    const initialValues = useMemo(() => {
+      if (!info) {
+        return {};
+      }
+
+      return {
+        ...info,
+        domain: info.domain ?? '',
+      };
+    }, [info]);
 
     const [{ loading }, handleSave] = useRequest(
       async (values: MonitorStatusPageEditFormValues) => {
@@ -84,7 +95,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
           <div className="w-1/3 overflow-auto border-r border-gray-300 px-4 py-8 dark:border-gray-600">
             <MonitorStatusPageEditForm
               isLoading={loading}
-              initialValues={info ?? {}}
+              initialValues={initialValues}
               onFinish={handleSave}
               onCancel={() => setEditMode(false)}
             />

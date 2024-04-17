@@ -355,6 +355,7 @@ model MonitorStatusPage {
   /// [MonitorStatusPageList]
   /// @zod.custom(imports.MonitorStatusPageListSchema)
   monitorList Json     @default("[]") // monitor list
+  domain      String? // custom domain which can add cname record
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 

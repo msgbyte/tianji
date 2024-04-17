@@ -19,6 +19,7 @@ import { logger } from './utils/logger';
 import { monitorRouter } from './router/monitor';
 import { healthRouter } from './router/health';
 import path from 'path';
+import { monitorPageManager } from './model/monitor/page/manager';
 
 const app = express();
 
@@ -27,7 +28,6 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(morgan('tiny'));
 app.use(cors());
-app.use(express.static('public'));
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
@@ -59,6 +59,26 @@ if (env.allowOpenapi) {
   app.use('/open/_document', (req, res) => res.send(trpcOpenapiDocument));
   app.use('/open', trpcOpenapiHttpHandler);
 }
+
+// Custom Status Page
+app.use('/*', (req, res, next) => {
+  if (req.baseUrl === '/' || req.baseUrl === '') {
+    const customDomain = monitorPageManager.findPageDomain(req.hostname);
+    if (customDomain) {
+      res
+        .status(200)
+        .send(
+          `<body style="padding: 0; margin: 0;"><iframe style="border:none; width: 100%; height: 100%;" title="" src="/status/${customDomain.slug}" /></body>`
+        );
+      return;
+    }
+  }
+
+  next();
+});
+
+// Static
+app.use(express.static('public'));
 
 // fallback
 app.use('/*', (req, res) => {
