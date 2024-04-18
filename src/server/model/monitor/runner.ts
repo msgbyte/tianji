@@ -63,6 +63,8 @@ export class MonitorRunner {
           // can be retry
           this.retriedNum++;
         } else {
+          this.retriedNum = 0; // make sure its will throw error in every retry times
+
           // check event update
           if (value < 0 && currentStatus === 'UP') {
             // UP -> DOWN
@@ -80,7 +82,6 @@ export class MonitorRunner {
             currentStatus = 'DOWN';
           } else if (value > 0 && currentStatus === 'DOWN') {
             // DOWN -> UP
-            this.retriedNum = 0;
             await this.createEvent(
               'UP',
               `Monitor [${monitor.name}] has been up`
