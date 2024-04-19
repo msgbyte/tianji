@@ -6,14 +6,14 @@ import { TokenLoginContainer } from './components/TokenLoginContainer';
 import React, { useRef } from 'react';
 import { trpc, trpcClient } from './api/trpc';
 import { useInjectWebsiteScript } from './hooks/useInjectWebsiteScript';
-import { ConfigProvider, theme } from 'antd';
-import { useColorSchema } from './store/settings';
+import { ConfigProvider } from 'antd';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { DefaultNotFound } from './components/DefaultNotFound';
 import { TooltipProvider } from './components/ui/tooltip';
 import { Toaster } from './components/ui/sonner';
 import { DefaultError } from './components/DefaultError';
+import { useAntdTheme } from './hooks/useTheme';
 
 const router = createRouter({
   routeTree,
@@ -51,16 +51,14 @@ AppRouter.displayName = 'AppRouter';
 
 export const App: React.FC = React.memo(() => {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const colorScheme = useColorSchema();
-  const algorithm =
-    colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
+  const theme = useAntdTheme();
 
   return (
     <div ref={rootRef} className="App">
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <ConfigProvider
-            theme={{ algorithm }}
+            theme={theme}
             getPopupContainer={() => rootRef.current!}
           >
             <TokenLoginContainer>

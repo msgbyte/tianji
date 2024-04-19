@@ -70,6 +70,10 @@ a {
 .ant-btn-primary {
   background-color: #1677ff;
 }
+.ant-switch {
+  @apply bg-muted;
+  /* background: hsl(var(--muted)); */
+}
 
 /* https://ui.shadcn.com/themes */
 @layer base {
