@@ -14,7 +14,11 @@ export const languages = [
   {
     label: '日本語',
     key: 'jp',
-  },  
+  },
+  {
+    label: 'Polski',
+    key: 'pl',
+  },
   {
     label: 'Português',
     key: 'pt',
