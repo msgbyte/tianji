@@ -48,6 +48,29 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 
 ![](./website/static/img/preview3.png)
 
+## Translation
+
+### Add a new translation
+
+modify those file:
+- `src/client/i18next-toolkit.config.cjs` in this file, edit country code
+- `src/client/utils/constants.ts` in this file, add for display
+
+Then, run below code to auto generate
+
+```bash
+cd src/client
+pnpm install
+pnpm run translation:extract
+pnpm run translation:translate # this will call chatgpt to run auto translation, so you need set env `OPENAPI_KEY` to make sure run correct
+```
+
+Then manual check translation file in `src/client/public/locales`
+
+### Improve translation
+
+Direct update  `src/client/public/locales`
+
 ## Open Source
 
 `Tianji` is open source with `Apache 2.0` license.
