@@ -15,6 +15,7 @@ import { useMonitorUpsert } from '@/api/model/monitor';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { CommonHeader } from '@/components/CommonHeader';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const Route = createFileRoute('/monitor/$monitorId/edit')({
   beforeLoad: routeAuthBeforeLoad,
@@ -59,7 +60,7 @@ function PageComponent() {
     <CommonWrapper
       header={<CommonHeader title={monitor.name} desc={t('Edit')} />}
     >
-      <div className="p-4">
+      <ScrollArea className="h-full overflow-hidden p-4">
         <Card>
           <CardContent className="pt-4">
             <MonitorInfoEditor
@@ -73,7 +74,7 @@ function PageComponent() {
             />
           </CardContent>
         </Card>
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }
