@@ -42,6 +42,9 @@ const config = {
       'GET',
       'HH:mm',
       'YYYY-MM-DD HH:mm',
+      'CPU',
+      'RAM',
+      'HDD'
     ],
   },
 };

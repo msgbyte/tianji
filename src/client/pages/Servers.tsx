@@ -232,13 +232,13 @@ export const ServerList: React.FC<{
       },
       {
         dataIndex: ['payload', 'cpu'],
-        title: t('CPU'),
+        title: 'CPU',
         width: 80,
         render: (val) => `${val}%`,
       },
       {
         key: 'ram',
-        title: t('RAM'),
+        title: 'RAM',
         width: 120,
         render: (_, record) => {
           return (
@@ -251,7 +251,7 @@ export const ServerList: React.FC<{
       },
       {
         key: 'hdd',
-        title: t('HDD'),
+        title: 'HDD',
         width: 120,
         render: (_, record) => {
           return (
