@@ -25,8 +25,12 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
     <div className="flex h-svh flex-col">
       <div className="flex h-[52px] items-center justify-between px-2">
         <Sheet>
-          <SheetTrigger>
-            <Button variant="outline" size="icon">
+          <SheetTrigger disabled={!Boolean(props.list)}>
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={!Boolean(props.list)}
+            >
               <LuMenu />
             </Button>
           </SheetTrigger>
@@ -35,7 +39,7 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
           </SheetContent>
         </Sheet>
 
-        <div>
+        <div className="rounded-md dark:bg-white/10">
           <img className="m-auto h-8 w-8" src="/icon.svg" />
         </div>
 

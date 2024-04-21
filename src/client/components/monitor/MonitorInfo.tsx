@@ -22,6 +22,7 @@ import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { MonitorBadgeView } from './MonitorBadgeView';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -33,6 +34,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const [currectResponse, setCurrentResponse] = useState(0);
   const navigate = useNavigate();
   const [showBadge, setShowBadge] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     data: monitorInfo,
@@ -171,99 +173,97 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
         <Space className="w-full" direction="vertical">
           <div className="flex justify-between">
             <Space direction="vertical">
-              <div className="flex items-center gap-2 text-2xl">
-                <span>{monitorInfo.name}</span>
-                {monitorInfo.active === false && (
-                  <div className="rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
-                    {t('Stopped')}
-                  </div>
-                )}
-              </div>
-
               <div>
                 <ColorTag label={monitorInfo.type} />
                 <span>
                   {getMonitorLink(monitorInfo as any as MonitorInfoType)}
                 </span>
               </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    navigate({
+                      to: '/monitor/$monitorId/edit',
+                      params: {
+                        monitorId: monitorInfo.id,
+                      },
+                    });
+                  }}
+                >
+                  {t('Edit')}
+                </Button>
+
+                {monitorInfo.active ? (
+                  <Button
+                    loading={changeActiveMutation.isLoading}
+                    onClick={handleStop}
+                  >
+                    {t('Stop')}
+                  </Button>
+                ) : (
+                  <Button
+                    loading={changeActiveMutation.isLoading}
+                    onClick={handleStart}
+                  >
+                    {t('Start')}
+                  </Button>
+                )}
+
+                <Dropdown
+                  trigger={['click']}
+                  placement="bottomRight"
+                  menu={{
+                    items: [
+                      {
+                        key: 'badge',
+                        label: t('Show Badge'),
+                        onClick: () => setShowBadge(true),
+                      },
+                      {
+                        type: 'divider',
+                      },
+                      {
+                        key: 'delete',
+                        label: t('Delete'),
+                        danger: true,
+                        onClick: handleDelete,
+                      },
+                    ],
+                  }}
+                >
+                  <Button icon={<MoreOutlined />} />
+                </Dropdown>
+
+                <Modal
+                  open={showBadge}
+                  onCancel={() => setShowBadge(false)}
+                  onOk={() => setShowBadge(false)}
+                  destroyOnClose={true}
+                  centered={true}
+                >
+                  <MonitorBadgeView
+                    workspaceId={workspaceId}
+                    monitorId={monitorId}
+                    monitorName={monitorInfo.name}
+                  />
+                </Modal>
+              </div>
             </Space>
 
             <div className="text-black text-opacity-75 dark:text-gray-200">
-              {t('Monitored for {{dayNum}} days', {
-                dayNum: dayjs().diff(dayjs(monitorInfo.createdAt), 'days'),
-              })}
+              <div>
+                {t('Monitored for {{dayNum}} days', {
+                  dayNum: dayjs().diff(dayjs(monitorInfo.createdAt), 'days'),
+                })}
+              </div>
+              {monitorInfo.active === false && (
+                <div className="inline-block rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
+                  {t('Stopped')}
+                </div>
+              )}
             </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              type="primary"
-              onClick={() => {
-                navigate({
-                  to: '/monitor/$monitorId/edit',
-                  params: {
-                    monitorId: monitorInfo.id,
-                  },
-                });
-              }}
-            >
-              {t('Edit')}
-            </Button>
-
-            {monitorInfo.active ? (
-              <Button
-                loading={changeActiveMutation.isLoading}
-                onClick={handleStop}
-              >
-                {t('Stop')}
-              </Button>
-            ) : (
-              <Button
-                loading={changeActiveMutation.isLoading}
-                onClick={handleStart}
-              >
-                {t('Start')}
-              </Button>
-            )}
-
-            <Dropdown
-              trigger={['click']}
-              placement="bottomRight"
-              menu={{
-                items: [
-                  {
-                    key: 'badge',
-                    label: t('Show Badge'),
-                    onClick: () => setShowBadge(true),
-                  },
-                  {
-                    type: 'divider',
-                  },
-                  {
-                    key: 'delete',
-                    label: t('Delete'),
-                    danger: true,
-                    onClick: handleDelete,
-                  },
-                ],
-              }}
-            >
-              <Button icon={<MoreOutlined />} />
-            </Dropdown>
-
-            <Modal
-              open={showBadge}
-              onCancel={() => setShowBadge(false)}
-              onOk={() => setShowBadge(false)}
-              destroyOnClose={true}
-              centered={true}
-            >
-              <MonitorBadgeView
-                workspaceId={workspaceId}
-                monitorId={monitorId}
-                monitorName={monitorInfo.name}
-              />
-            </Modal>
           </div>
 
           <Card>
@@ -271,8 +271,8 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               workspaceId={workspaceId}
               monitorId={monitorId}
               monitorType={monitorInfo.type}
-              count={40}
-              size="large"
+              count={isMobile ? 30 : 40}
+              size={isMobile ? 'small' : 'large'}
               showCurrentStatus={true}
               onBeatsItemUpdate={(items) => {
                 setCurrentResponse(last(items)?.value ?? 0);
