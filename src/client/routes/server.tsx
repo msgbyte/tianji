@@ -1,15 +1,12 @@
 import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
-import { CommonList } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { ServerList } from '@/components/server/ServerList';
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -19,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
-import { AddServerStep, InstallScript, ServerList } from '@/pages/Servers';
+import { AddServerStep, InstallScript } from '@/pages/Servers';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -115,9 +112,9 @@ export const ServerContent: React.FC = React.memo(() => {
         />
       }
     >
-      <ScrollArea className="h-full overflow-hidden p-4">
+      <div className="h-full overflow-hidden p-4">
         <ServerList hideOfflineServer={hideOfflineServer} />
-      </ScrollArea>
+      </div>
     </CommonWrapper>
   );
 });

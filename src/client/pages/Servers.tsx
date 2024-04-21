@@ -134,6 +134,9 @@ function useServerMap(): Record<string, ServerStatusInfo> {
   return serverMap;
 }
 
+/**
+ * @deprecated
+ */
 export const ServerList: React.FC<{
   hideOfflineServer: boolean;
 }> = React.memo((props) => {
