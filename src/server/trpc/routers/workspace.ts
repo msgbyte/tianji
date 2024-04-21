@@ -11,6 +11,7 @@ import { workspaceDashboardLayoutSchema } from '../../model/_schema';
 import { Prisma } from '@prisma/client';
 import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
+import { getServerCount } from '../../model/serverStatus';
 
 export const workspaceRouter = router({
   getUserWorkspaceRole: publicProcedure
@@ -46,6 +47,7 @@ export const workspaceRouter = router({
       z.object({
         website: z.number(),
         monitor: z.number(),
+        server: z.number(),
         telemetry: z.number(),
         page: z.number(),
       })
@@ -76,9 +78,12 @@ export const workspaceRouter = router({
         }),
       ]);
 
+      const server = getServerCount(workspaceId);
+
       return {
         website,
         monitor,
+        server,
         telemetry,
         page,
       };

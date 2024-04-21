@@ -81,7 +81,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           },
           {
             title: t('Servers'),
-            label: '',
+            label: String(serviceCount?.server ?? ''),
             icon: LuServer,
             to: '/server',
           },

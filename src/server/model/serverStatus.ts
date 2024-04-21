@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { ServerStatusInfo } from '../../types';
 import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared';
 import _ from 'lodash';
@@ -74,4 +73,12 @@ export function clearOfflineServerStatus(workspaceId: string) {
   );
 
   return serverMap[workspaceId];
+}
+
+export function getServerCount(workspaceId: string): number {
+  if (!serverMap[workspaceId]) {
+    return 0;
+  }
+
+  return Object.keys(serverMap[workspaceId]).length;
 }
