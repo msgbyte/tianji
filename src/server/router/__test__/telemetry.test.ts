@@ -5,6 +5,30 @@ import { generateETag } from '../../utils/common';
 describe('telemetry router', () => {
   const { app, createTestUser, createTestTelemetry } = createTestContext();
 
+  describe('/:telemetryId.gif', () => {
+    test('normal', async () => {
+      const { workspace } = await createTestUser();
+      const telemetry = await createTestTelemetry(workspace.id);
+
+      const { status } = await app.get(
+        `/telemetry/${workspace.id}/${telemetry.id}.svg`
+      );
+
+      expect(status).toBe(200);
+    });
+
+    test('with query', async () => {
+      const { workspace } = await createTestUser();
+      const telemetry = await createTestTelemetry(workspace.id);
+
+      const { status } = await app.get(
+        `/telemetry/${workspace.id}/${telemetry.id}.svg?name=tianji-oss&url=http://localhost:10000&v=1.8.2`
+      );
+
+      expect(status).toBe(200);
+    });
+  });
+
   describe('/badge', () => {
     test('check header', async () => {
       const { workspace } = await createTestUser();
