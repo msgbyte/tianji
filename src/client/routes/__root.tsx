@@ -1,3 +1,4 @@
+import { LayoutHeader } from '@/pages/Layout/Header';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 // import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Suspense } from 'react';
@@ -12,6 +13,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     return (
       // https://github.com/TanStack/router/issues/857
       <Suspense fallback={null}>
+        <LayoutHeader />
+
         <Outlet />
 
         {/* <TanStackRouterDevtools position="bottom-right" /> */}

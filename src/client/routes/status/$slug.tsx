@@ -3,7 +3,6 @@ import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorStatusPage } from '@/components/monitor/StatusPage';
-import { Button } from '@/components/ui/button';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/status/$slug')({
