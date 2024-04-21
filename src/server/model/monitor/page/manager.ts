@@ -50,10 +50,13 @@ class MonitorPageManager {
    * check domain existed
    * if domain not been used, return true
    */
-  async checkDomain(domain: string) {
+  async checkDomain(domain: string, excludeMonitorId?: string) {
     const res = await prisma.monitorStatusPage.findFirst({
       where: {
         domain,
+        id: {
+          notIn: excludeMonitorId ? [excludeMonitorId] : [],
+        },
       },
     });
 

@@ -684,8 +684,8 @@ export const monitorRouter = router({
         }
       }
 
-      if (domain && !(await monitorPageManager.checkDomain(domain))) {
-        throw new Error('This domain has been used');
+      if (domain && !(await monitorPageManager.checkDomain(domain, id))) {
+        throw new Error('This domain has been used by others');
       }
 
       const page = await prisma.monitorStatusPage.update({
