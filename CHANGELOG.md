@@ -1,5 +1,36 @@
 
 
+## [1.9.0](https://github.com/msgbyte/tianji/compare/v1.8.2...v1.9.0) (2024-04-22)
+
+
+### Features
+
+* add custom domain support for status page ([a737204](https://github.com/msgbyte/tianji/commit/a73720411cd16376e01dac4fc27fb8d29b057045))
+* add layout header which ensure title of page is correct ([120df2d](https://github.com/msgbyte/tianji/commit/120df2d8b59c50ca104e83f264193af2aacdd125))
+* add pl language support ([761bc71](https://github.com/msgbyte/tianji/commit/761bc712d6a91bce3f622c488bc312ab1ecb9cf6))
+* add server count in desktop layout ([720a1d7](https://github.com/msgbyte/tianji/commit/720a1d744ead46a28845bd3e59926ad37e02cb27))
+
+
+### Bug Fixes
+
+* fix a problem which custom domain canot direct save by domain check ([e2fc922](https://github.com/msgbyte/tianji/commit/e2fc9224c757701031b4c2ce9fe1261db73fcd7f))
+* fix monitor edit can not scroll problem ([06ddd9b](https://github.com/msgbyte/tianji/commit/06ddd9b6f108a10331fe02a8e9d89b77300780a5))
+
+
+### Document
+
+* update document ([92f8700](https://github.com/msgbyte/tianji/commit/92f870025456cf9f9cc6794ea406c0e765b42d6a))
+
+
+### Others
+
+* improve mobile display for monitor and base layout ([fc259f7](https://github.com/msgbyte/tianji/commit/fc259f7d8e9eb0927005189b4acf796520b7ad6f))
+* improve monitor retry logic. make sure send notice when retried ([ffee0b8](https://github.com/msgbyte/tianji/commit/ffee0b8799df8dc6c2537ea4d7e50884faee7591))
+* improve style of antd switch in new UI ([1bd18fa](https://github.com/msgbyte/tianji/commit/1bd18fa412955a69c8560bf93af788816dab982a))
+* redesign servers table in new design ([ccf7b8d](https://github.com/msgbyte/tianji/commit/ccf7b8d4aa5895b1430f4554924923bd122cffc4))
+* update translation ([6e8e6ac](https://github.com/msgbyte/tianji/commit/6e8e6acc70a01a40f36bf8aa2d9b0e1273726355))
+* upgrade @i18next-toolkit/cli to v1.2.1 ([f0bd4dd](https://github.com/msgbyte/tianji/commit/f0bd4dd993e18c42b5bac2e81064e2404e6853aa))
+
 ## [1.8.2](https://github.com/msgbyte/tianji/compare/v1.8.1...v1.8.2) (2024-04-16)
 
 
