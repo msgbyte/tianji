@@ -1,6 +1,8 @@
 import { MonitorProvider } from './type';
 import pingUtils from 'ping';
 import os from 'os';
+import chardet from 'chardet';
+import iconv from 'iconv-lite';
 
 export const ping: MonitorProvider<{
   hostname: string;
@@ -39,7 +41,7 @@ function pingAction(hostname: string, packetSize = 56) {
           resolve(res.time);
         } else {
           if (isWindows) {
-            reject(new Error(exports.convertToUTF8(res.output)));
+            reject(new Error(convertToUTF8(res.output)));
           } else {
             reject(new Error(res.output));
           }
@@ -49,4 +51,11 @@ function pingAction(hostname: string, packetSize = 56) {
         reject(err);
       });
   });
+}
+
+function convertToUTF8(body: string) {
+  const buffer = Buffer.from(body);
+  const guessEncoding = chardet.detect(buffer) ?? 'UTF-8';
+  const str = iconv.decode(buffer, guessEncoding);
+  return str.toString();
 }

@@ -377,6 +377,9 @@ importers:
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
+      chardet:
+        specifier: ^2.0.0
+        version: 2.0.0
       compose-middleware:
         specifier: ^5.0.1
         version: 5.0.1
@@ -410,6 +413,9 @@ importers:
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
+      iconv-lite:
+        specifier: ^0.6.3
+        version: 0.6.3
       is-localhost-ip:
         specifier: ^2.0.0
         version: 2.0.0
@@ -12041,6 +12047,10 @@ packages:
   /chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
     dev: true
+
+  /chardet@2.0.0:
+    resolution: {integrity: sha512-xVgPpulCooDjY6zH4m9YW3jbkaBe3FKIAvF5sj5t7aBNsVl2ljIE+xwJ4iNgiDZHFQvNIpjdKdVOQvvk5ZfxbQ==}
+    dev: false
 
   /charenc@0.0.2:
     resolution: {integrity: sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==}
