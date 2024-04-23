@@ -11,15 +11,24 @@ type WebsiteEventCountSqlReturn = {
 
 export function initCronjob() {
   const dailyJob = Cron('0 2 * * *', async () => {
-    logger.info('Start statistics usage');
+    logger.info('Start daily cronjob');
 
-    await statdailyUsage();
+    try {
+      await statDailyUsage();
+      await clearMonitorDataDaily();
+
+      logger.info('Daily cronjob completed');
+    } catch (err) {
+      logger.error('Daily cronjob error:', err);
+    }
   });
 
   logger.info('Daily job will start at:', dailyJob.nextRun()?.toISOString());
+
+  return { dailyJob };
 }
 
-async function statdailyUsage() {
+async function statDailyUsage() {
   logger.info('Statistics Workspace Daily Usage Start');
   const start = dayjs().subtract(1, 'day').startOf('day').toDate();
   const end = dayjs().startOf('day').toDate();
@@ -124,4 +133,21 @@ async function statdailyUsage() {
   });
 
   logger.info('Statistics Workspace Daily Usage Completed');
+}
+
+/**
+ * Clear over 2 week data
+ */
+async function clearMonitorDataDaily() {
+  const date = dayjs().subtract(2, 'weeks').toDate();
+  logger.info('Start clear monitor data before:', date.toISOString());
+  const res = await prisma.monitorData.deleteMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+    },
+  });
+
+  logger.info('Clear monitor completed, delete record:', res.count);
 }
