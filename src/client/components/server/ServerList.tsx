@@ -139,7 +139,7 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         cell: (props) => dayjs(props.getValue()).format('MMM D HH:mm:ss'),
       }),
     ];
-  }, []);
+  }, [t]);
 
   return (
     <div className="flex h-full flex-col">

@@ -318,6 +318,8 @@ model MonitorEvent {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([monitorId])
 }
 
 model MonitorData {
@@ -329,6 +331,8 @@ model MonitorData {
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
+  @@index([monitorId, createdAt(sort: Desc)])
+  @@index([monitorId, createdAt, value])
 }
 
 // Use for record latest monitor status, for example tls status

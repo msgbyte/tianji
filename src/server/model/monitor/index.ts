@@ -48,17 +48,22 @@ export function getMonitorRecentData(
   monitorId: string,
   take: number
 ) {
-  return prisma.monitorData.findMany({
-    where: {
-      monitor: {
-        id: monitorId,
-        workspaceId,
+  return prisma.monitorData
+    .findMany({
+      where: {
+        monitor: {
+          id: monitorId,
+          workspaceId,
+        },
       },
-    },
-    take: -take,
-    select: {
-      value: true,
-      createdAt: true,
-    },
-  });
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        value: true,
+        createdAt: true,
+      },
+    })
+    .then((arr) => arr.reverse());
 }

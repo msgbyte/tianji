@@ -70,6 +70,9 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
       active: true,
     });
 
+    trpcUtils.monitor.all.refetch({
+      workspaceId,
+    });
     trpcUtils.monitor.get.refetch({
       workspaceId,
       monitorId,
@@ -87,6 +90,9 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
       active: false,
     });
 
+    trpcUtils.monitor.all.refetch({
+      workspaceId,
+    });
     trpcUtils.monitor.get.refetch({
       workspaceId,
       monitorId,

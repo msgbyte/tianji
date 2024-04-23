@@ -15,10 +15,19 @@ export const MonitorDataMetrics: React.FC<{
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { monitorId, monitorType, currectResponse } = props;
-  const { data, isLoading } = trpc.monitor.dataMetrics.useQuery({
-    workspaceId,
-    monitorId,
-  });
+  const { data, isLoading } = trpc.monitor.dataMetrics.useQuery(
+    {
+      workspaceId,
+      monitorId,
+    },
+    {
+      trpc: {
+        context: {
+          skipBatch: true,
+        },
+      },
+    }
+  );
 
   const provider = useMemo(
     () => getMonitorProvider(monitorType),

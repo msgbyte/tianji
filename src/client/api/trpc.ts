@@ -1,7 +1,13 @@
 import { createTRPCReact, getQueryKey } from '@trpc/react-query';
 import type { inferRouterInputs, inferRouterOutputs } from '../../server/trpc';
 import type { AppRouter } from '../../server/trpc/routers';
-import { httpBatchLink, loggerLink, TRPCClientErrorLike } from '@trpc/client';
+import {
+  httpBatchLink,
+  httpLink,
+  loggerLink,
+  splitLink,
+  TRPCClientErrorLike,
+} from '@trpc/client';
 import { getJWT } from './auth';
 import { message } from 'antd';
 import { isDev } from '../utils/env';
@@ -13,6 +19,14 @@ export const trpc = createTRPCReact<AppRouter>();
 export type AppRouterInput = inferRouterInputs<AppRouter>;
 export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 
+const url = '/trpc';
+
+function headers() {
+  return {
+    Authorization: `Bearer ${getJWT()}`,
+  };
+}
+
 export const trpcClient = trpc.createClient({
   links: [
     loggerLink({
@@ -20,13 +34,20 @@ export const trpcClient = trpc.createClient({
         (isDev && typeof window !== 'undefined') ||
         (opts.direction === 'down' && opts.result instanceof Error),
     }),
-    httpBatchLink({
-      url: '/trpc',
-      async headers() {
-        return {
-          Authorization: `Bearer ${getJWT()}`,
-        };
+    splitLink({
+      condition(op) {
+        // check for context property `skipBatch`
+        return op.context.skipBatch === true;
       },
+      true: httpLink({
+        url,
+        headers,
+      }),
+      // when condition is false, use batching
+      false: httpBatchLink({
+        url,
+        headers,
+      }),
     }),
   ],
 });
