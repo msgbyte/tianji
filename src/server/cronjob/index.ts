@@ -3,6 +3,7 @@ import { logger } from '../utils/logger';
 import { prisma } from '../model/_client';
 import dayjs from 'dayjs';
 import { Prisma } from '@prisma/client';
+import { env } from '../utils/env';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -139,6 +140,10 @@ async function statDailyUsage() {
  * Clear over 2 week data
  */
 async function clearMonitorDataDaily() {
+  if (env.disableAutoClear) {
+    return;
+  }
+
   const date = dayjs().subtract(2, 'weeks').toDate();
   logger.info('Start clear monitor data before:', date.toISOString());
   const res = await prisma.monitorData.deleteMany({

@@ -16,6 +16,7 @@ export const env = {
     process.env.DISABLE_ANONYMOUS_TELEMETRY
   ),
   customTrackerScriptName: process.env.CUSTOM_TRACKER_SCRIPT_NAME,
+  disableAutoClear: checkEnvTrusty(process.env.DISABLE_AUTO_CLEAR), // disable auto clear old data cronjob
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
