@@ -1,5 +1,29 @@
 
 
+## [1.9.1](https://github.com/msgbyte/tianji/compare/v1.9.0...v1.9.1) (2024-04-24)
+
+
+### Features
+
+* add env DISABLE_AUTO_CLEAR ([5938c38](https://github.com/msgbyte/tianji/commit/5938c38349f25037df9f14b1f06a60e42e78f965))
+
+
+### Bug Fixes
+
+* fix ping action throw error in windows ([89fed46](https://github.com/msgbyte/tianji/commit/89fed4666d81fbbcfe704aa5a88e0270eafb367a))
+
+
+### Document
+
+* add document for how to install tianji without docker [#56](https://github.com/msgbyte/tianji/issues/56) ([fe0b596](https://github.com/msgbyte/tianji/commit/fe0b596d29ecdd546110443d9101815f792db4ef))
+
+
+### Others
+
+* add daily cronjob to clear old monitor data ([3d1be2b](https://github.com/msgbyte/tianji/commit/3d1be2b5e9b20f6ba13ec71b68c047d94e2c171e))
+* improve monitor query performance ([f5c13cb](https://github.com/msgbyte/tianji/commit/f5c13cb02f1cbe760ebcb7a0c3c120eff649ded8))
+* update polish translation ([#55](https://github.com/msgbyte/tianji/issues/55)) ([47cd26c](https://github.com/msgbyte/tianji/commit/47cd26cd868ccae61207c0702faee48c786967e1))
+
 ## [1.9.0](https://github.com/msgbyte/tianji/compare/v1.8.2...v1.9.0) (2024-04-22)
 
 
