@@ -1,5 +1,22 @@
 
 
+## [1.9.2](https://github.com/msgbyte/tianji/compare/v1.9.1...v1.9.2) (2024-04-25)
+
+
+### Features
+
+* add delete feature for pages ([6500f90](https://github.com/msgbyte/tianji/commit/6500f90096c6b7bd954c75621a22f9b6f87f8e07))
+
+
+### Bug Fixes
+
+* [#57](https://github.com/msgbyte/tianji/issues/57) fix domain validator must be required problem ([5767d45](https://github.com/msgbyte/tianji/commit/5767d4595ba7a233adf4a13cc7bd7b29f05d2f17))
+
+
+### Others
+
+* improve domainRegex ([8c64481](https://github.com/msgbyte/tianji/commit/8c6448132070ecc4402ca16c476d4a7e3255bd5c))
+
 ## [1.9.1](https://github.com/msgbyte/tianji/compare/v1.9.0...v1.9.1) (2024-04-24)
 
 
