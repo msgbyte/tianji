@@ -1,4 +1,5 @@
 import { trpc } from '@/api/trpc';
+import { AlertConfirm } from '@/components/AlertConfirm';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
@@ -6,10 +7,11 @@ import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorStatusPage } from '@/components/monitor/StatusPage';
 import { Button } from '@/components/ui/button';
+import { useEvent } from '@/hooks/useEvent';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { LuEye } from 'react-icons/lu';
+import { LuEye, LuTrash } from 'react-icons/lu';
 
 export const Route = createFileRoute('/page/$slug')({
   beforeLoad: routeAuthBeforeLoad,
@@ -22,6 +24,29 @@ function PageComponent() {
   const navigate = useNavigate();
   const { data: pageInfo, isLoading } = trpc.monitor.getPageInfo.useQuery({
     slug,
+  });
+  const trpcUtils = trpc.useUtils();
+
+  const deletePageMutation = trpc.monitor.deletePage.useMutation();
+
+  const handleDelete = useEvent(async () => {
+    if (!pageInfo) {
+      return;
+    }
+
+    await deletePageMutation.mutateAsync({
+      workspaceId: pageInfo.workspaceId,
+      id: pageInfo.id,
+    });
+
+    trpcUtils.monitor.getAllPages.refetch({
+      workspaceId: pageInfo.workspaceId,
+    });
+
+    navigate({
+      to: '/page',
+      replace: true,
+    });
   });
 
   if (!slug) {
@@ -42,11 +67,21 @@ function PageComponent() {
         <CommonHeader
           title={pageInfo.title}
           actions={
-            <Link to="/status/$slug" params={{ slug }} target="_blank">
-              <Button variant="outline" Icon={LuEye}>
-                {t('Preview')}
-              </Button>
-            </Link>
+            <div className="space-x-2">
+              <AlertConfirm
+                title={t('Confirm to delete this page?')}
+                content={t('It will permanently delete the relevant data')}
+                onConfirm={handleDelete}
+              >
+                <Button variant="outline" size="icon" Icon={LuTrash} />
+              </AlertConfirm>
+
+              <Link to="/status/$slug" params={{ slug }} target="_blank">
+                <Button variant="outline" Icon={LuEye}>
+                  {t('Preview')}
+                </Button>
+              </Link>
+            </div>
           }
         />
       }
