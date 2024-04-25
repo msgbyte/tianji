@@ -582,6 +582,10 @@ importers:
       dayjs:
         specifier: 1.11.10
         version: 1.11.10
+    devDependencies:
+      vitest:
+        specifier: ^1.2.1
+        version: 1.2.1(@types/node@18.17.12)(happy-dom@14.7.1)
 
   website:
     dependencies:

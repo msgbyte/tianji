@@ -10,6 +10,7 @@
   },
   "scripts": {
     "check:type": "tsc --noEmit --skipLibCheck --module esnext",
+    "test": "vitest",
     "build": "concurrently npm:build:cjs npm:build:esm",
     "build:cjs": "tsc --module commonjs --outDir ./dist/cjs",
     "build:esm": "tsc --module esnext --outDir ./dist/esm",
@@ -19,5 +20,8 @@
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "dependencies": {
     "dayjs": "^1.11.9"
+  },
+  "devDependencies": {
+    "vitest": "^1.2.1"
   }
 }

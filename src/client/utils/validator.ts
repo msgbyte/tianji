@@ -1,6 +1,6 @@
 import { RuleObject } from 'antd/es/form';
 import { z } from 'zod';
-import { hostnameRegex, slugRegex } from '@tianji/shared';
+import { hostnameRegex, slugRegex, domainRegex } from '@tianji/shared';
 
 type Validator = (
   rule: RuleObject,
@@ -24,7 +24,7 @@ export const domainValidator: Validator = (rule, value, callback) => {
       return;
     }
 
-    z.string().regex(hostnameRegex).parse(value);
+    z.string().regex(domainRegex).parse(value);
     callback();
   } catch (err) {
     callback('Not valid, it should be domain, for example: example.com');
