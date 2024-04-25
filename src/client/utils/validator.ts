@@ -19,6 +19,11 @@ export const hostnameValidator: Validator = (rule, value, callback) => {
 
 export const domainValidator: Validator = (rule, value, callback) => {
   try {
+    if (!rule.required && !value) {
+      callback();
+      return;
+    }
+
     z.string().regex(hostnameRegex).parse(value);
     callback();
   } catch (err) {
