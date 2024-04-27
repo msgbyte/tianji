@@ -55,6 +55,7 @@ model Workspace {
   selectedUsers       User[] // user list who select this workspace, not use in most of case
   workspaceDailyUsage WorkspaceDailyUsage[]
   workspaceAuditLog   WorkspaceAuditLog[]
+  surveys             Survey[]
 }
 
 model WorkspacesOnUsers {
@@ -399,4 +400,47 @@ model WorkspaceAuditLog {
 enum WorkspaceAuditLogType {
   Monitor
   Notification
+}
+
+model Survey {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String
+  /// [SurveyPayload]
+  /// @zod.custom(imports.SurveyPayloadSchema)
+  payload     Json     @db.Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace        Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  surveyResultList SurveyResult[]
+
+  @@index([workspaceId])
+}
+
+model SurveyResult {
+  id             String   @id @default(cuid()) @db.VarChar(30)
+  surveyId       String   @db.VarChar(30)
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  sessionId      String   @db.Uuid
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  payload        Json     @db.Json
+  browser        String?  @db.VarChar(20)
+  os             String?  @db.VarChar(20)
+  language       String?  @db.VarChar(35)
+  ip             String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
+  country        String?  @db.Char(2)
+  subdivision1   String?  @db.VarChar(20)
+  subdivision2   String?  @db.VarChar(50)
+  city           String?  @db.VarChar(50)
+  longitude      Float?
+  latitude       Float?
+  accuracyRadius Int?
+
+
+  survey Survey @relation(fields: [surveyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([surveyId])
+  @@index([sessionId])
 }

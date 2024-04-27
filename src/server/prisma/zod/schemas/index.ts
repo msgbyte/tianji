@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const CommonPayloadSchema = z.record(z.string(), z.any());
+
 export const MonitorStatusPageListSchema = z.array(
   z.object({
     id: z.string(),
@@ -7,4 +9,11 @@ export const MonitorStatusPageListSchema = z.array(
   })
 );
 
-export const CommonPayloadSchema = z.record(z.string(), z.any());
+export const SurveyPayloadSchema = z.object({
+  items: z.object({
+    label: z.string(),
+    name: z.string(),
+    type: z.enum(['text', 'select', 'email']),
+    options: z.array(z.string()).optional(),
+  }),
+});

@@ -1,5 +1,8 @@
 import type { JWTPayload } from '../middleware/auth';
-import type { MonitorStatusPageListSchema } from '../prisma/zod/schemas';
+import type {
+  MonitorStatusPageListSchema,
+  SurveyPayloadSchema,
+} from '../prisma/zod/schemas';
 
 declare global {
   namespace Express {
@@ -13,5 +16,6 @@ declare global {
       items: any[];
     } | null;
     type MonitorStatusPageList = z.infer<typeof MonitorStatusPageListSchema>;
+    type SurveyPayload = z.infer<typeof SurveyPayloadSchema>;
   }
 }

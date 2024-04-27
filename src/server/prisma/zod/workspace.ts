@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas"
-import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteUser, RelatedUserModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema } from "./index"
+import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteUser, RelatedUserModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema } from "./index"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -34,6 +34,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   selectedUsers: CompleteUser[]
   workspaceDailyUsage: CompleteWorkspaceDailyUsage[]
   workspaceAuditLog: CompleteWorkspaceAuditLog[]
+  surveys: CompleteSurvey[]
 }
 
 /**
@@ -51,4 +52,5 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   selectedUsers: RelatedUserModelSchema.array(),
   workspaceDailyUsage: RelatedWorkspaceDailyUsageModelSchema.array(),
   workspaceAuditLog: RelatedWorkspaceAuditLogModelSchema.array(),
+  surveys: RelatedSurveyModelSchema.array(),
 }))
