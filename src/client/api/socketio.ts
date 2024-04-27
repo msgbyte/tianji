@@ -86,7 +86,7 @@ export function useSocket() {
     }
   );
 
-  return { emit, subscribe };
+  return { socket, emit, subscribe };
 }
 
 export function useSocketSubscribe<T>(
