@@ -11,7 +11,7 @@ export const TipIcon: React.FC<TipIconProps> = React.memo((props) => {
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger type="button">
         <LuHelpCircle className={className} />
       </TooltipTrigger>
 

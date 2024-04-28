@@ -50,12 +50,13 @@ export const workspaceRouter = router({
         server: z.number(),
         telemetry: z.number(),
         page: z.number(),
+        survey: z.number(),
       })
     )
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
-      const [website, monitor, telemetry, page] = await Promise.all([
+      const [website, monitor, telemetry, page, survey] = await Promise.all([
         prisma.website.count({
           where: {
             workspaceId,
@@ -76,6 +77,11 @@ export const workspaceRouter = router({
             workspaceId,
           },
         }),
+        prisma.survey.count({
+          where: {
+            workspaceId,
+          },
+        }),
       ]);
 
       const server = getServerCount(workspaceId);
@@ -86,6 +92,7 @@ export const workspaceRouter = router({
         server,
         telemetry,
         page,
+        survey,
       };
     }),
   updateDashboardOrder: workspaceOwnerProcedure

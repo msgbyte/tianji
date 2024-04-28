@@ -9,6 +9,7 @@ import { serverStatusRouter } from './serverStatus';
 import { auditLogRouter } from './auditLog';
 import { billingRouter } from './billing';
 import { telemetryRouter } from './telemetry';
+import { surveyRouter } from './survey';
 
 export const appRouter = router({
   global: globalRouter,
@@ -18,6 +19,7 @@ export const appRouter = router({
   notification: notificationRouter,
   monitor: monitorRouter,
   telemetry: telemetryRouter,
+  survey: surveyRouter,
   serverStatus: serverStatusRouter,
   auditLog: auditLogRouter,
   billing: billingRouter,

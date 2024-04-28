@@ -16,7 +16,7 @@ import { SurveyPayloadSchema } from '../../prisma/zod/schemas';
 import { buildCursorResponseSchema } from '../../utils/schema';
 import { fetchDataByCursor } from '../../utils/prisma';
 
-export const telemetryRouter = router({
+export const surveyRouter = router({
   all: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
@@ -88,6 +88,28 @@ export const telemetryRouter = router({
       });
 
       return count;
+    }),
+  allResultCount: workspaceProcedure
+    .meta(
+      buildSurveyOpenapi({
+        method: 'GET',
+        path: '/allResultCount',
+      })
+    )
+    .output(z.record(z.string(), z.number()))
+    .query(async () => {
+      const res = await prisma.surveyResult.groupBy({
+        by: ['surveyId'],
+        _count: true,
+      });
+
+      return res.reduce<Record<string, number>>((prev, item) => {
+        if (item.surveyId) {
+          prev[item.surveyId] = item._count;
+        }
+
+        return prev;
+      }, {});
     }),
   submit: publicProcedure
     .meta(

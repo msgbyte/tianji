@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as WebsiteImport } from './routes/website'
 import { Route as TelemetryImport } from './routes/telemetry'
+import { Route as SurveyImport } from './routes/survey'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ServerImport } from './routes/server'
 import { Route as RegisterImport } from './routes/register'
@@ -25,6 +26,8 @@ import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
 import { Route as TelemetryTelemetryIdImport } from './routes/telemetry/$telemetryId'
+import { Route as SurveyAddImport } from './routes/survey/add'
+import { Route as SurveySurveyIdImport } from './routes/survey/$surveyId'
 import { Route as StatusSlugImport } from './routes/status/$slug'
 import { Route as SettingsUsageImport } from './routes/settings/usage'
 import { Route as SettingsProfileImport } from './routes/settings/profile'
@@ -47,6 +50,11 @@ const WebsiteRoute = WebsiteImport.update({
 
 const TelemetryRoute = TelemetryImport.update({
   path: '/telemetry',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SurveyRoute = SurveyImport.update({
+  path: '/survey',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -108,6 +116,16 @@ const TelemetryAddRoute = TelemetryAddImport.update({
 const TelemetryTelemetryIdRoute = TelemetryTelemetryIdImport.update({
   path: '/$telemetryId',
   getParentRoute: () => TelemetryRoute,
+} as any)
+
+const SurveyAddRoute = SurveyAddImport.update({
+  path: '/add',
+  getParentRoute: () => SurveyRoute,
+} as any)
+
+const SurveySurveyIdRoute = SurveySurveyIdImport.update({
+  path: '/$surveyId',
+  getParentRoute: () => SurveyRoute,
 } as any)
 
 const StatusSlugRoute = StatusSlugImport.update({
@@ -206,6 +224,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
+    '/survey': {
+      preLoaderRoute: typeof SurveyImport
+      parentRoute: typeof rootRoute
+    }
     '/telemetry': {
       preLoaderRoute: typeof TelemetryImport
       parentRoute: typeof rootRoute
@@ -245,6 +267,14 @@ declare module '@tanstack/react-router' {
     '/status/$slug': {
       preLoaderRoute: typeof StatusSlugImport
       parentRoute: typeof rootRoute
+    }
+    '/survey/$surveyId': {
+      preLoaderRoute: typeof SurveySurveyIdImport
+      parentRoute: typeof SurveyImport
+    }
+    '/survey/add': {
+      preLoaderRoute: typeof SurveyAddImport
+      parentRoute: typeof SurveyImport
     }
     '/telemetry/$telemetryId': {
       preLoaderRoute: typeof TelemetryTelemetryIdImport
@@ -301,6 +331,7 @@ export const routeTree = rootRoute.addChildren([
     SettingsProfileRoute,
     SettingsUsageRoute,
   ]),
+  SurveyRoute.addChildren([SurveySurveyIdRoute, SurveyAddRoute]),
   TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
   WebsiteRoute.addChildren([
     WebsiteAddRoute,

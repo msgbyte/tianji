@@ -4,6 +4,7 @@ import {
   LuFilePieChart,
   LuMonitorDot,
   LuServer,
+  LuTableProperties,
   LuWifi,
 } from 'react-icons/lu';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -96,6 +97,12 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             label: String(serviceCount?.page ?? ''),
             icon: LuFilePieChart,
             to: '/page',
+          },
+          {
+            title: t('Survey'),
+            label: String(serviceCount?.survey ?? ''),
+            icon: LuTableProperties,
+            to: '/survey',
           },
         ]}
       />

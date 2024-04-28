@@ -65,7 +65,7 @@ function TelemetryAddComponent() {
 
   return (
     <CommonWrapper
-      header={<h1 className="text-xl font-bold">{t('Add Website')}</h1>}
+      header={<h1 className="text-xl font-bold">{t('Add Telemetry')}</h1>}
     >
       <div className="p-4">
         <Form {...form}>
