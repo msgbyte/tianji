@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "tsc",
+    "generate:client": "openapi-ts -i ../../website/openapi.json -o src/open/client",
     "test": "vitest"
   },
   "keywords": [
@@ -17,6 +18,7 @@
     "load-script": "^2.0.0"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.42.1",
     "@testing-library/dom": "^10.0.0",
     "happy-dom": "^14.7.1",
     "msw": "^2.2.13",
