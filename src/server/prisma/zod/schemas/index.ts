@@ -10,10 +10,12 @@ export const MonitorStatusPageListSchema = z.array(
 );
 
 export const SurveyPayloadSchema = z.object({
-  items: z.object({
-    label: z.string(),
-    name: z.string(),
-    type: z.enum(['text', 'select', 'email']),
-    options: z.array(z.string()).optional(),
-  }),
+  items: z.array(
+    z.object({
+      label: z.string(),
+      name: z.string(),
+      type: z.enum(['text', 'select', 'email']),
+      options: z.array(z.string()).optional(),
+    })
+  ),
 });

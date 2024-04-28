@@ -377,6 +377,9 @@ importers:
       '@trpc/server':
         specifier: ^10.45.0
         version: 10.45.0
+      accept-language-parser:
+        specifier: ^1.5.0
+        version: 1.5.0
       axios:
         specifier: ^1.5.0
         version: 1.5.0
@@ -501,6 +504,9 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.0
         version: 8.4.0
+      '@types/accept-language-parser':
+        specifier: ^1.5.6
+        version: 1.5.6
       '@types/bcryptjs':
         specifier: ^2.4.3
         version: 2.4.3
@@ -9967,6 +9973,10 @@ packages:
       d3-voronoi: 1.1.2
     dev: false
 
+  /@types/accept-language-parser@1.5.6:
+    resolution: {integrity: sha512-lhSQUsAhAtbKjYgaw3f0c4EQKNQHFXhX87+OXUIqDHMkycvHGaqGskSRtnzysIUiqHPqNJ4BqI5SE++drsxx6A==}
+    dev: true
+
   /@types/acorn@4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}
     dependencies:
@@ -10753,6 +10763,10 @@ packages:
     dependencies:
       event-target-shim: 5.0.1
     dev: true
+
+  /accept-language-parser@1.5.0:
+    resolution: {integrity: sha512-QhyTbMLYo0BBGg1aWbeMG4ekWtds/31BrEU+DONOg/7ax23vxpL03Pb7/zBmha2v7vdD3AyzZVWBVGEZxKOXWw==}
+    dev: false
 
   /accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}

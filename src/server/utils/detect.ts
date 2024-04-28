@@ -12,8 +12,10 @@ import {
 } from './const';
 import maxmind, { Reader, CityResponse } from 'maxmind';
 import { libraryPath } from './lib';
+import { IncomingMessage } from 'http';
+import { parse as pareseAcceptLanguage } from 'accept-language-parser';
 
-export async function getRequestInfo(req: Request) {
+export async function getRequestInfo(req: IncomingMessage) {
   const userAgent = req.headers['user-agent'];
   const ip = getIpAddress(req);
   const location = await getLocation(ip);
@@ -28,11 +30,14 @@ export async function getRequestInfo(req: Request) {
   } = location ?? {};
   const browser = browserName(userAgent ?? '');
   const os = detectOS(userAgent ?? '');
+  const language: string | undefined =
+    pareseAcceptLanguage(req.headers['accept-language'])[0]?.code ?? undefined;
 
   return {
     userAgent,
     browser,
     os,
+    language,
     ip,
     country,
     subdivision1,
@@ -57,7 +62,7 @@ export async function getClientInfo(
   };
 }
 
-export function getIpAddress(req: Request): string {
+export function getIpAddress(req: IncomingMessage): string {
   // Custom header
   if (
     process.env.CLIENT_IP_HEADER &&

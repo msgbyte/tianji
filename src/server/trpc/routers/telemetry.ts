@@ -427,7 +427,7 @@ function buildTelemetryOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       tags: [OPENAPI_TAG.TELEMETRY],
       protect: true,
       ...meta,
-      path: `/workspace/{workspaceId}${meta.path}`,
+      path: `/workspace/{workspaceId}/telemetry${meta.path}`,
     },
   };
 }

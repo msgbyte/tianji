@@ -110,4 +110,5 @@ export enum OPENAPI_TAG {
   AUDIT_LOG = 'AuditLog',
   BILLING = 'Billing',
   TELEMETRY = 'Telemetry',
+  SURVEY = 'Survey',
 }

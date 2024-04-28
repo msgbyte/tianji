@@ -25,6 +25,7 @@
     "@prisma/client": "5.4.2",
     "@tianji/shared": "workspace:^",
     "@trpc/server": "^10.45.0",
+    "accept-language-parser": "^1.5.0",
     "axios": "^1.5.0",
     "badge-maker": "^3.3.1",
     "bcryptjs": "^2.4.3",
@@ -68,6 +69,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.0",
+    "@types/accept-language-parser": "^1.5.6",
     "@types/bcryptjs": "^2.4.3",
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.15",

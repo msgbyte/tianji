@@ -11,7 +11,7 @@ export function createContext({ req }: { req: IncomingMessage }) {
   const authorization = req.headers['authorization'] ?? '';
   const token = authorization.replace('Bearer ', '');
 
-  return { token };
+  return { token, req };
 }
 
 type Context = inferAsyncReturnType<typeof createContext>;

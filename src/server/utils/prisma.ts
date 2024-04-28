@@ -116,13 +116,16 @@ export async function parseTelemetryFilters(
 }
 
 function normalizeFilters(filters: Record<string, any> = {}) {
-  return Object.keys(filters).reduce((obj, key) => {
-    const value = filters[key];
+  return Object.keys(filters).reduce(
+    (obj, key) => {
+      const value = filters[key];
 
-    obj[key] = value?.value ?? value;
+      obj[key] = value?.value ?? value;
 
-    return obj;
-  }, {} as Record<string, any>);
+      return obj;
+    },
+    {} as Record<string, any>
+  );
 }
 
 export function getWebsiteFilterQuery(
@@ -217,11 +220,24 @@ type ExtractFindManyReturnType<T> = T extends (
   ? R
   : never;
 
+/**
+ * @example
+ * const { items, nextCursor } = await fetchDataByCursor(
+ *   prisma.workspaceAuditLog,
+ *   {
+ *     where: {
+ *       workspaceId,
+ *     },
+ *     limit,
+ *     cursor,
+ *   }
+ * );
+ */
 export async function fetchDataByCursor<
   Model extends {
     findMany: (args?: any) => Prisma.PrismaPromise<any>;
   },
-  CursorType
+  CursorType,
 >(
   fetchModel: Model,
   options: {
