@@ -2,9 +2,10 @@
 const config = {
   locales: ['en', 'zh', 'jp', 'fr', 'de', 'pl', 'pt', 'ru'],
   verbose: true,
+  namespaces: ['translation'],
   translator: {
     type: 'openai',
-    model: 'gpt-4'
+    model: 'gpt-4',
   },
   scanner: {
     autoImport: false,
@@ -44,7 +45,7 @@ const config = {
       'YYYY-MM-DD HH:mm',
       'CPU',
       'RAM',
-      'HDD'
+      'HDD',
     ],
   },
 };

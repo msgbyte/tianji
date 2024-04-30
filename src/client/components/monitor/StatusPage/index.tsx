@@ -13,6 +13,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
+import { MarkdownViewer } from '@/components/MarkdownEditor';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -125,6 +126,11 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
               )}
             </div>
           )}
+
+          {/* Desc */}
+          <div className="mb-4">
+            <MarkdownViewer value={info?.description ?? ''} />
+          </div>
 
           <div className="mb-2 text-lg">{t('Services')}</div>
 

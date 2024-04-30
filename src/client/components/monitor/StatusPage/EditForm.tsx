@@ -5,12 +5,14 @@ import { domainValidator, urlSlugValidator } from '../../../utils/validator';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { LuMinusCircle, LuPlus } from 'react-icons/lu';
+import { MarkdownEditor } from '@/components/MarkdownEditor';
 
 const { Text } = Typography;
 
 export interface MonitorStatusPageEditFormValues {
   title: string;
   slug: string;
+  description: string;
   monitorList: PrismaJson.MonitorStatusPageList;
   domain: string;
 }
@@ -70,6 +72,10 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             ]}
           >
             <Input addonBefore={`${window.origin}/status/`} />
+          </Form.Item>
+
+          <Form.Item label={t('Description')} name="description">
+            <MarkdownEditor value={''} />
           </Form.Item>
 
           <Form.Item

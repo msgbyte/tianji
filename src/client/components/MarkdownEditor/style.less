@@ -1,0 +1,42 @@
+.bytemd .bytemd-toolbar-right [bytemd-tippy-path='5'] {
+  // Hidden github icon
+  display: none;
+}
+
+.bytemd-fullscreen.bytemd {
+  z-index: 99;
+}
+
+.dark {
+  .bytemd {
+    @apply bg-zinc-900 border-zinc-800 text-foreground;
+
+    .bytemd-toolbar {
+      @apply bg-zinc-900 border-zinc-800;
+
+      .bytemd-toolbar-icon:hover {
+        @apply bg-muted;
+      }
+    }
+
+    .bytemd-preview {
+      @apply border-zinc-800;
+    }
+
+    .CodeMirror {
+      @apply bg-zinc-900 text-foreground;
+
+      .CodeMirror-cursor {
+        @apply border-foreground;
+      }
+
+      .CodeMirror-selected {
+        @apply bg-zinc-800;
+      }
+    }
+
+    .bytemd-status {
+      @apply border-zinc-800;
+    }
+  }
+}

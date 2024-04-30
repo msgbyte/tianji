@@ -21,6 +21,8 @@
     "@ant-design/icons": "^5.3.6",
     "@antv/l7": "^2.20.14",
     "@antv/larkmap": "^1.4.13",
+    "@bytemd/plugin-gfm": "^1.21.0",
+    "@bytemd/react": "^1.21.0",
     "@hookform/resolvers": "^3.3.4",
     "@i18next-toolkit/react": "^1.0.6",
     "@loadable/component": "^5.16.3",
@@ -52,6 +54,7 @@
     "antd": "^5.13.1",
     "array-move": "^3.0.1",
     "axios": "^1.5.0",
+    "bytemd": "^1.21.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^1.0.0",
@@ -88,7 +91,7 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
-    "@i18next-toolkit/cli": "^1.2.1",
+    "@i18next-toolkit/cli": "^1.2.2",
     "@tanstack/router-vite-plugin": "^1.20.5",
     "@types/leaflet": "^1.9.8",
     "@types/loadable__component": "^5.13.8",
