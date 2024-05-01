@@ -1,4 +1,9 @@
-import { defaultErrorHandler, defaultSuccessHandler, trpc } from '@/api/trpc';
+import {
+  AppRouterOutput,
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  trpc,
+} from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -8,10 +13,18 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEvent } from '@/hooks/useEvent';
 import { AlertConfirm } from '@/components/AlertConfirm';
-import { LuTrash } from 'react-icons/lu';
+import { LuPencil, LuTrash } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataTable, createColumnHelper } from '@/components/DataTable';
+import { useMemo } from 'react';
 
-export const Route = createFileRoute('/survey/$surveyId')({
+type SurveyResultItem =
+  AppRouterOutput['survey']['resultList']['items'][number];
+
+const columnHelper = createColumnHelper<SurveyResultItem>();
+
+export const Route = createFileRoute('/survey/$surveyId/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });
@@ -25,6 +38,10 @@ function PageComponent() {
     surveyId,
   });
   const { data: count } = trpc.survey.count.useQuery({
+    workspaceId,
+    surveyId,
+  });
+  const { data: resultList } = trpc.survey.resultList.useInfiniteQuery({
     workspaceId,
     surveyId,
   });
@@ -44,13 +61,47 @@ function PageComponent() {
     });
   });
 
+  const dataSource = resultList?.pages.map((p) => p.items).flat() ?? [];
+
+  const columns = useMemo(() => {
+    return [
+      columnHelper.accessor('id', {
+        header: t('ID'),
+        size: 150,
+      }),
+      ...(info?.payload.items.map((item) =>
+        columnHelper.accessor(`payload.${item.name}`, {
+          header: item.label,
+        })
+      ) ?? []),
+      columnHelper.accessor('createdAt', {
+        header: t('Created At'),
+        size: 150,
+      }),
+    ];
+  }, [t, info]);
+
   return (
     <CommonWrapper
       header={
         <CommonHeader
           title={info?.name ?? ''}
           actions={
-            <div>
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                Icon={LuPencil}
+                onClick={() =>
+                  navigate({
+                    to: '/survey/$surveyId/edit',
+                    params: {
+                      surveyId,
+                    },
+                  })
+                }
+              />
+
               <AlertConfirm
                 title={t('Confirm to delete this survey?')}
                 description={t('Survey name: {{name}} | data count: {{num}}', {
@@ -70,7 +121,18 @@ function PageComponent() {
       <ScrollArea className="h-full overflow-hidden p-4">
         <ScrollBar orientation="horizontal" />
 
-        {/*  */}
+        <div className="mb-4 ">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Count')}</CardTitle>
+            </CardHeader>
+            <CardContent>{count}</CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <DataTable columns={columns} data={dataSource} />
+        </div>
       </ScrollArea>
     </CommonWrapper>
   );

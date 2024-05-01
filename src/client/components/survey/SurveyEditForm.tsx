@@ -243,7 +243,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
 
             <CardFooter>
               <Button type="submit" loading={isLoading}>
-                {t('Create')}
+                {props.defaultValues ? t('Update') : t('Create')}
               </Button>
             </CardFooter>
           </Card>

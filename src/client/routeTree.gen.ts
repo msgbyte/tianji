@@ -27,7 +27,6 @@ import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
 import { Route as TelemetryTelemetryIdImport } from './routes/telemetry/$telemetryId'
 import { Route as SurveyAddImport } from './routes/survey/add'
-import { Route as SurveySurveyIdImport } from './routes/survey/$surveyId'
 import { Route as StatusSlugImport } from './routes/status/$slug'
 import { Route as SettingsUsageImport } from './routes/settings/usage'
 import { Route as SettingsProfileImport } from './routes/settings/profile'
@@ -37,8 +36,10 @@ import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
+import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
+import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 
 // Create/Update Routes
@@ -123,11 +124,6 @@ const SurveyAddRoute = SurveyAddImport.update({
   getParentRoute: () => SurveyRoute,
 } as any)
 
-const SurveySurveyIdRoute = SurveySurveyIdImport.update({
-  path: '/$surveyId',
-  getParentRoute: () => SurveyRoute,
-} as any)
-
 const StatusSlugRoute = StatusSlugImport.update({
   path: '/status/$slug',
   getParentRoute: () => rootRoute,
@@ -173,6 +169,11 @@ const WebsiteWebsiteIdIndexRoute = WebsiteWebsiteIdIndexImport.update({
   getParentRoute: () => WebsiteRoute,
 } as any)
 
+const SurveySurveyIdIndexRoute = SurveySurveyIdIndexImport.update({
+  path: '/$surveyId/',
+  getParentRoute: () => SurveyRoute,
+} as any)
+
 const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
   path: '/$monitorId/',
   getParentRoute: () => MonitorRoute,
@@ -181,6 +182,11 @@ const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
   path: '/$websiteId/config',
   getParentRoute: () => WebsiteRoute,
+} as any)
+
+const SurveySurveyIdEditRoute = SurveySurveyIdEditImport.update({
+  path: '/$surveyId/edit',
+  getParentRoute: () => SurveyRoute,
 } as any)
 
 const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
@@ -268,10 +274,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatusSlugImport
       parentRoute: typeof rootRoute
     }
-    '/survey/$surveyId': {
-      preLoaderRoute: typeof SurveySurveyIdImport
-      parentRoute: typeof SurveyImport
-    }
     '/survey/add': {
       preLoaderRoute: typeof SurveyAddImport
       parentRoute: typeof SurveyImport
@@ -296,6 +298,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorMonitorIdEditImport
       parentRoute: typeof MonitorImport
     }
+    '/survey/$surveyId/edit': {
+      preLoaderRoute: typeof SurveySurveyIdEditImport
+      parentRoute: typeof SurveyImport
+    }
     '/website/$websiteId/config': {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
@@ -303,6 +309,10 @@ declare module '@tanstack/react-router' {
     '/monitor/$monitorId/': {
       preLoaderRoute: typeof MonitorMonitorIdIndexImport
       parentRoute: typeof MonitorImport
+    }
+    '/survey/$surveyId/': {
+      preLoaderRoute: typeof SurveySurveyIdIndexImport
+      parentRoute: typeof SurveyImport
     }
     '/website/$websiteId/': {
       preLoaderRoute: typeof WebsiteWebsiteIdIndexImport
@@ -331,7 +341,11 @@ export const routeTree = rootRoute.addChildren([
     SettingsProfileRoute,
     SettingsUsageRoute,
   ]),
-  SurveyRoute.addChildren([SurveySurveyIdRoute, SurveyAddRoute]),
+  SurveyRoute.addChildren([
+    SurveyAddRoute,
+    SurveySurveyIdEditRoute,
+    SurveySurveyIdIndexRoute,
+  ]),
   TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
   WebsiteRoute.addChildren([
     WebsiteAddRoute,
