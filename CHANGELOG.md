@@ -1,5 +1,18 @@
 
 
+## [1.9.3](https://github.com/msgbyte/tianji/compare/v1.9.2...v1.9.3) (2024-05-01)
+
+
+### Features
+
+* add markdown editor for page description ([7e1faf8](https://github.com/msgbyte/tianji/commit/7e1faf82588d4a3ca8cd3423a9df2b779053eeac))
+
+
+### Others
+
+* add server page reconnect ([c950e4a](https://github.com/msgbyte/tianji/commit/c950e4a3f8fc45a73c70079813658302ee364aee))
+* update Polish translation ([#59](https://github.com/msgbyte/tianji/issues/59)) ([dd8ea66](https://github.com/msgbyte/tianji/commit/dd8ea6623fa5bb5631eb00d8c79c2e9ebbc82e1d))
+
 ## [1.9.2](https://github.com/msgbyte/tianji/compare/v1.9.1...v1.9.2) (2024-04-25)
 
 
