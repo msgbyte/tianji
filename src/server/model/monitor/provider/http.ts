@@ -69,7 +69,19 @@ export const http: MonitorProvider<{
       rejectUnauthorized: !ignoreTLS,
     };
 
-    config.httpsAgent = new https.Agent(httpsAgentOptions);
+    const httpsAgent = (config.httpsAgent = new https.Agent(httpsAgentOptions));
+    httpsAgent.once('keylog', (line, tlsSocket) => {
+      tlsSocket.once('secureConnect', async () => {
+        try {
+          const { valid, certInfo } = checkCertificate(tlsSocket);
+
+          await saveMonitorStatus(monitor.id, 'tls', {
+            valid,
+            certInfo,
+          });
+        } catch (err) {}
+      });
+    });
 
     try {
       const startTime = dayjs();
@@ -77,15 +89,8 @@ export const http: MonitorProvider<{
 
       const diff = dayjs().diff(startTime, 'ms');
 
-      if (url.startsWith('https:')) {
-        try {
-          const { valid, certInfo } = checkCertificate(res);
-
-          await saveMonitorStatus(monitor.id, 'tls', {
-            valid,
-            certInfo,
-          });
-        } catch (err) {}
+      if (res.status >= 400) {
+        return -1;
       }
 
       return diff;
@@ -96,13 +101,13 @@ export const http: MonitorProvider<{
   },
 };
 
-function checkCertificate(res: AxiosResponse<any, any>) {
-  if (!res.request.res.socket) {
+function checkCertificate(tlsSocket: any) {
+  if (!tlsSocket) {
     throw new Error('No socket found');
   }
 
-  const info = res.request.res.socket.getPeerCertificate(true);
-  const valid = res.request.res.socket.authorized || false;
+  const info = tlsSocket.getPeerCertificate(true);
+  const valid = tlsSocket.authorized || false;
 
   logger.debug('cert', 'Parsing Certificate Info', info);
 
