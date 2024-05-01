@@ -16,6 +16,7 @@ import {
   LuMonitorDot,
   LuSearch,
   LuServer,
+  LuTableProperties,
   LuUserCircle2,
   LuWifi,
 } from 'react-icons/lu';
@@ -133,6 +134,14 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                 <LuFilePieChart className="mr-2 h-4 w-4" />
                 {t('Pages')}
               </CommandItem>
+              <CommandItem
+                onSelect={handleJump({
+                  to: '/survey',
+                })}
+              >
+                <LuTableProperties className="mr-2 h-4 w-4" />
+                {t('Survey')}
+              </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading={t('Settings')}>
@@ -180,6 +189,9 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
       workspaceId,
     });
     const { data: pages = [] } = trpc.monitor.getAllPages.useQuery({
+      workspaceId,
+    });
+    const { data: surveys = [] } = trpc.survey.all.useQuery({
       workspaceId,
     });
 
@@ -251,6 +263,22 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
           >
             <LuFilePieChart className="mr-2 h-4 w-4" />
             {p.title}
+          </CommandItem>
+        ))}
+        {surveys.map((s) => (
+          <CommandItem
+            key={s.id}
+            value={s.id}
+            keywords={[s.name, s.id]}
+            onSelect={handleJump({
+              to: '/survey/$surveyId',
+              params: {
+                surveyId: s.id,
+              },
+            })}
+          >
+            <LuTableProperties className="mr-2 h-4 w-4" />
+            {s.name}
           </CommandItem>
         ))}
       </CommandGroup>
