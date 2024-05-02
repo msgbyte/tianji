@@ -20,6 +20,7 @@ export const MonitorModelSchema = z.object({
    * [CommonPayload]
    */
   payload: imports.CommonPayloadSchema,
+  trendingMode: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

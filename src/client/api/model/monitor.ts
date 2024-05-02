@@ -8,6 +8,11 @@ export function useMonitorUpsert() {
         workspaceId: data.workspaceId,
       });
 
+      utils.monitor.get.refetch({
+        workspaceId: data.workspaceId,
+        monitorId: data.id,
+      });
+
       defaultSuccessHandler();
     },
     onError: defaultErrorHandler,

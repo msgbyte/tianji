@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Monitor } from '../../../server/types/prisma';
-import { Button, Form, Input, InputNumber, Select } from 'antd';
+import { Button, Form, Input, InputNumber, Select, Switch } from 'antd';
 import { getMonitorProvider, monitorProviders } from './provider';
 import { useEventWithLoading } from '../../hooks/useEvent';
 import { NotificationPicker } from '../notification/NotificationPicker';
@@ -12,6 +12,7 @@ export type MonitorInfoEditorValues = Omit<
 > & {
   id?: string;
   payload: Record<string, any>;
+  trendingMode: boolean;
   notificationIds?: string[];
 };
 
@@ -21,6 +22,7 @@ const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
   active: true,
   interval: 60,
   maxRetries: 0,
+  trendingMode: false,
 };
 
 interface MonitorInfoEditorProps {
@@ -104,6 +106,15 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
           </Form.Item>
 
           {formEl}
+
+          <Form.Item
+            label={t('Trending Mode')}
+            name="trendingMode"
+            valuePropName="checked"
+            tooltip={t('Y Axis will not start from zero')}
+          >
+            <Switch />
+          </Form.Item>
 
           <Form.Item label={t('Notification')} name="notificationIds">
             <NotificationPicker allowClear={true} mode="multiple" />

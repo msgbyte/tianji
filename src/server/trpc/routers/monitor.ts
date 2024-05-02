@@ -128,6 +128,7 @@ export const monitorRouter = router({
         active: z.boolean().default(true),
         interval: z.number().int().min(5).max(10000).default(20),
         maxRetries: z.number().int().min(0).max(10).default(0),
+        trendingMode: z.boolean().default(false),
         notificationIds: z.array(z.string()).default([]),
         payload: z.object({}).passthrough(),
       })
@@ -142,6 +143,7 @@ export const monitorRouter = router({
         active,
         interval,
         maxRetries,
+        trendingMode,
         notificationIds,
         payload,
       } = input;
@@ -154,6 +156,7 @@ export const monitorRouter = router({
         active,
         interval,
         maxRetries,
+        trendingMode,
         notificationIds,
         payload,
       });

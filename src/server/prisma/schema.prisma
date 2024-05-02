@@ -284,20 +284,21 @@ model Notification {
 }
 
 model Monitor {
-  id          String   @id() @default(cuid()) @db.VarChar(30)
-  workspaceId String   @db.VarChar(30)
-  name        String   @db.VarChar(100)
-  type        String   @db.VarChar(100)
-  active      Boolean  @default(true) @db.Boolean
-  interval    Int      @default(20) @db.Integer
-  maxRetries  Int      @default(0) @db.Integer
+  id           String   @id() @default(cuid()) @db.VarChar(30)
+  workspaceId  String   @db.VarChar(30)
+  name         String   @db.VarChar(100)
+  type         String   @db.VarChar(100)
+  active       Boolean  @default(true) @db.Boolean
+  interval     Int      @default(20) @db.Integer
+  maxRetries   Int      @default(0) @db.Integer
   // TODO
   // retryInterval Int       @default(0) @db.Integer
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
-  payload     Json     @db.Json
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  payload      Json     @db.Json
+  trendingMode Boolean  @default(false) @db.Boolean
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 

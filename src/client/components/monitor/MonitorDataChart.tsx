@@ -1,7 +1,7 @@
 import { AreaConfig, Area } from '@ant-design/charts';
 import { Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { uniqBy } from 'lodash-es';
+import { max, min, uniqBy } from 'lodash-es';
 import React, { useState, useMemo } from 'react';
 import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';
@@ -97,6 +97,16 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
     }, [_recentData, _data, subscribedDataList]);
 
     const config = useMemo<AreaConfig>(() => {
+      const values = data.map((d) => d.value);
+      const maxValue = max(values) ?? 0;
+      const minValue = min(values) ?? 0;
+
+      const isTrendingMode = monitorInfo?.trendingMode ?? false; // if true, y axis not start from 0
+
+      const yMin = isTrendingMode
+        ? Math.max(minValue - (maxValue - minValue) / 10, 0)
+        : 0;
+
       return {
         data,
         height: 200,
@@ -104,6 +114,9 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
         yField: 'value',
         smooth: true,
         meta: {
+          value: {
+            min: yMin,
+          },
           time: {
             formatter(value) {
               return dayjs(value).format(
@@ -112,6 +125,10 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
             },
           },
         },
+        // need explore how to display null data
+        // xAxis: {
+        //   type: 'time',
+        // },
         color: 'rgb(34 197 94 / 0.8)',
         areaStyle: () => {
           return {
