@@ -30,9 +30,13 @@ const MonitorHttp: React.FC = React.memo(() => {
             },
           },
         ]}
+        tooltip={t(
+          'For HTTPS monitoring, if any notification method is assigned, notifications will be sent at 1, 3, 7 and 14 days before expiration.'
+        )}
       >
         <Input placeholder="https://example.com" />
       </Form.Item>
+
       <Form.Item
         label="Method"
         name={['payload', 'method']}
@@ -161,6 +165,9 @@ export const MonitorHttpOverview: MonitorOverviewComponent = React.memo(
     return (
       <MonitorStatsBlock
         title={t('Cert Exp.')}
+        tooltip={t(
+          'For HTTPS monitoring, if any notification method is assigned, notifications will be sent at 1, 3, 7 and 14 days before expiration.'
+        )}
         desc={dayjs(payload.certInfo?.validTo).format('YYYY-MM-DD')}
         text={t('{{num}} days', {
           num: payload.certInfo?.daysRemaining,

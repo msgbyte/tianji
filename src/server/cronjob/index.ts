@@ -4,6 +4,9 @@ import { prisma } from '../model/_client';
 import dayjs from 'dayjs';
 import { Prisma } from '@prisma/client';
 import { env } from '../utils/env';
+import { sendNotification } from '../model/notification';
+import { token } from '../model/notification/token';
+import _ from 'lodash';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -15,8 +18,11 @@ export function initCronjob() {
     logger.info('Start daily cronjob');
 
     try {
-      await statDailyUsage();
-      await clearMonitorDataDaily();
+      await Promise.all([
+        statDailyUsage().catch(logger.error),
+        clearMonitorDataDaily().catch(logger.error),
+        dailyHTTPCertCheckNotify().catch(logger.error),
+      ]);
 
       logger.info('Daily cronjob completed');
     } catch (err) {
@@ -30,7 +36,7 @@ export function initCronjob() {
 }
 
 async function statDailyUsage() {
-  logger.info('Statistics Workspace Daily Usage Start');
+  logger.info('[statDailyUsage] Statistics Workspace Daily Usage Start');
   const start = dayjs().subtract(1, 'day').startOf('day').toDate();
   const end = dayjs().startOf('day').toDate();
   const date = dayjs().subtract(1, 'day').toDate();
@@ -133,7 +139,7 @@ async function statDailyUsage() {
     skipDuplicates: true,
   });
 
-  logger.info('Statistics Workspace Daily Usage Completed');
+  logger.info('[statDailyUsage] Statistics Workspace Daily Usage Completed');
 }
 
 /**
@@ -145,7 +151,10 @@ async function clearMonitorDataDaily() {
   }
 
   const date = dayjs().subtract(2, 'weeks').toDate();
-  logger.info('Start clear monitor data before:', date.toISOString());
+  logger.info(
+    '[clearMonitorDataDaily] Start clear monitor data before:',
+    date.toISOString()
+  );
   const res = await prisma.monitorData.deleteMany({
     where: {
       createdAt: {
@@ -154,5 +163,72 @@ async function clearMonitorDataDaily() {
     },
   });
 
-  logger.info('Clear monitor completed, delete record:', res.count);
+  logger.info(
+    '[clearMonitorDataDaily] Clear monitor completed, delete record:',
+    res.count
+  );
+}
+
+/**
+ * Https notify
+ */
+
+async function dailyHTTPCertCheckNotify() {
+  logger.info('[dailyHTTPCertCheckNotify] Start run dailyHTTPCertCheckNotify');
+  const start = Date.now();
+
+  const res = await prisma.$queryRaw<
+    { monitorId: string; daysRemaining: number }[]
+  >`
+    SELECT "monitorId", (payload -> 'certInfo' ->> 'daysRemaining')::int as "daysRemaining"
+    FROM "MonitorStatus"
+    WHERE "statusName" = 'tls'
+      AND "updatedAt" >= now() - interval '1 day'
+      AND (payload -> 'certInfo' ->> 'daysRemaining')::int in (1, 3, 7, 14);
+  `;
+
+  logger.info(`[dailyHTTPCertCheckNotify] find ${res.length} records`);
+
+  const monitors = await prisma.monitor.findMany({
+    where: {
+      id: {
+        in: res.map((r) => r.monitorId),
+      },
+    },
+    include: {
+      notifications: true,
+    },
+  });
+
+  let sendCount = 0;
+
+  for (const m of monitors) {
+    if (m.active === false) {
+      continue;
+    }
+
+    for (const n of m.notifications) {
+      const daysRemaining = res.find(
+        (item) => item.monitorId === m.id
+      )?.daysRemaining;
+      if (!daysRemaining) {
+        continue;
+      }
+
+      const content = `[${m.name}][${_.get(m.payload, 'url')}] Certificate will be expired in ${daysRemaining} days`;
+
+      try {
+        await sendNotification(n, content, [token.text(content)]).catch(
+          logger.error
+        );
+        sendCount++;
+      } catch (err) {
+        logger.error(err);
+      }
+    }
+  }
+
+  logger.info(
+    `[dailyHTTPCertCheckNotify] run completed, send ${sendCount} notifications, time usage: ${Date.now() - start}ms`
+  );
 }

@@ -5,7 +5,9 @@ const config = {
   namespaces: ['translation'],
   translator: {
     type: 'openai',
-    model: 'gpt-4',
+    openai: {
+      modelName: 'gpt-4',
+    },
   },
   scanner: {
     autoImport: false,
