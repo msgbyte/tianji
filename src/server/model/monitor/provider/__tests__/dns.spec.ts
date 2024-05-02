@@ -11,6 +11,7 @@ describe('dns', () => {
       active: true,
       interval: 0,
       maxRetries: 0,
+      trendingMode: false,
       createdAt: new Date(),
       updatedAt: new Date(),
       payload: {
