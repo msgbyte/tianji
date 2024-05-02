@@ -2,6 +2,7 @@ import React from 'react';
 import { NotificationSMTP } from './smtp';
 import { NotificationTelegram } from './telegram';
 import { NotificationApprise } from './apprise';
+import { NotificationFeishu } from './feishu';
 
 interface NotificationStrategy {
   label: string;
@@ -24,5 +25,10 @@ export const notificationStrategies: NotificationStrategy[] = [
     label: 'Telegram',
     name: 'telegram',
     form: NotificationTelegram,
+  },
+  {
+    label: 'Feishu',
+    name: 'feishu',
+    form: NotificationFeishu,
   },
 ];

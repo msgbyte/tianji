@@ -18,11 +18,11 @@ export class BaseContentTokenizer {
   }
 
   parseTitle(token: TitleContentToken) {
-    return token.content;
+    return token.content + '\n';
   }
 
   parseParagraph(token: ParagraphContentToken) {
-    return token.content;
+    return token.content + '\n';
   }
 
   parseNewline(token: NewlineContentToken) {
