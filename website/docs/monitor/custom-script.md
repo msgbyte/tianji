@@ -10,7 +10,7 @@ Here is some example
 
 ## Examples
 
-### get available service number from health endpoint
+### get tailchat available service number from health endpoint
 
 ```js
 const res = await request({
@@ -33,6 +33,20 @@ const res = await request({
 
 return res.data.stargazers_count ?? -1
 ```
+
+replace `msgbyte/tianji` to your own repo name
+
+### get docker pull count
+
+```js
+const res = await request({
+  url: "https://hub.docker.com/v2/repositories/moonrailgun/tianji/"
+});
+
+return res.data.pull_count;
+```
+
+replace `moonrailgun/tianji` to your own image name
 
 
 ### or more
