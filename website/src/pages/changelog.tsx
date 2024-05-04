@@ -37,7 +37,7 @@ const timelineStyle: Record<string, VerticalTimelineElementProps> = {
 
 function Timeline() {
   return (
-    <div className="bg-gray-100 dark:bg-neutral-700">
+    <div className="bg-gray-100 dark:bg-opacity-0">
       <VerticalTimeline>
         <VerticalTimelineElement {...timelineStyle.current} date="now">
           <h3 className="vertical-timeline-element-title">Still Developing</h3>
@@ -48,7 +48,7 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/15">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/03/08">
           <h3 className="vertical-timeline-element-title">Release v1.7.0</h3>
           <p>add telemetry feature</p>
           <p>improve docker image size(reduce 40% size)</p>
