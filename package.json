@@ -20,7 +20,8 @@
     "build:openapi": "ts-node --project ./tsconfig.base.json ./scripts/build-openapi-schema.ts && cd packages/client-sdk && pnpm generate:client",
     "check:type": "pnpm -r check:type",
     "release": "release-it",
-    "release:patch": "release-it -i patch"
+    "release:patch": "release-it -i patch",
+    "release:packages": "pnpm -r --filter \"./packages/*\" publish --registry=https://registry.npmjs.com/"
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^8.0.1",

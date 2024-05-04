@@ -3,6 +3,9 @@
   "extends": "@tsconfig/docusaurus/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "strict": false
+    "strict": false,
+    "paths": {
+      "@/utils/style": ["../src/client/utils/style"]
+    }
   }
 }

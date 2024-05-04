@@ -27,11 +27,13 @@
     "react-icons": "^4.12.0",
     "react-responsive-carousel": "^3.2.23",
     "react-slick": "^0.29.0",
-    "react-vertical-timeline-component": "^3.6.0"
+    "react-vertical-timeline-component": "^3.6.0",
+    "tianji-client-sdk": "workspace:^"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "2.4.3",
     "@tsconfig/docusaurus": "^1.0.5",
+    "@types/react": "^18.2.22",
     "@types/react-slick": "^0.23.11",
     "@types/react-vertical-timeline-component": "^3.3.6",
     "autoprefixer": "^10.4.16",

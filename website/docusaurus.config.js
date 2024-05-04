@@ -84,6 +84,7 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
+          { to: '/pricing', label: 'Pricing', position: 'left' },
           { to: '/changelog', label: 'Changelog', position: 'left' },
           { to: '/api', label: 'API', position: 'left' },
           {

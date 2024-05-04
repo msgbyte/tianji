@@ -659,6 +659,9 @@ importers:
       react-vertical-timeline-component:
         specifier: ^3.6.0
         version: 3.6.0(react@17.0.2)
+      tianji-client-sdk:
+        specifier: workspace:^
+        version: link:../packages/client-sdk
     devDependencies:
       '@docusaurus/module-type-aliases':
         specifier: 2.4.3
@@ -666,6 +669,9 @@ importers:
       '@tsconfig/docusaurus':
         specifier: ^1.0.5
         version: 1.0.5
+      '@types/react':
+        specifier: ^18.2.22
+        version: 18.2.78
       '@types/react-slick':
         specifier: ^0.23.11
         version: 0.23.11
@@ -20803,7 +20809,7 @@ packages:
     dependencies:
       lilconfig: 2.1.0
       postcss: 8.4.33
-      ts-node: 10.9.1(@types/node@18.17.12)(typescript@5.4.5)
+      ts-node: 10.9.1(@types/node@18.17.12)(typescript@4.7.4)
       yaml: 2.3.2
     dev: true
 
@@ -26311,6 +26317,7 @@ packages:
       typescript: 5.4.5
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
+    dev: false
 
   /ts-pattern@4.3.0:
     resolution: {integrity: sha512-pefrkcd4lmIVR0LA49Imjf9DYLK8vtWhqBPA3Ya1ir8xCW0O2yjL9dsCVvI7pCodLC5q7smNpEtDR2yVulQxOg==}
