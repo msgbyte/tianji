@@ -927,10 +927,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyAll(data: $OpenApiTs['/workspace/{workspaceId}/survey//all']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//all']['get']['res'][200]> {
+    public static surveyAll(data: $OpenApiTs['/workspace/{workspaceId}/survey/all']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/all']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/survey//all',
+            url: '/workspace/{workspaceId}/survey/all',
             path: {
                 workspaceId: data.workspaceId
             }
@@ -944,10 +944,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyGet(data: $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}']['get']['res'][200]> {
+    public static surveyGet(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/survey//{surveyId}',
+            url: '/workspace/{workspaceId}/survey/{surveyId}',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
@@ -963,10 +963,10 @@ export class SurveyService {
      * @returns unknown Error response
      * @throws ApiError
      */
-    public static surveyCount(data: $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/count']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/count']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/count']['get']['res'][200]> {
+    public static surveyCount(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/survey//{surveyId}/count',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/count',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
@@ -981,10 +981,10 @@ export class SurveyService {
      * @returns unknown Error response
      * @throws ApiError
      */
-    public static surveyAllResultCount(data: $OpenApiTs['/workspace/{workspaceId}/survey//allResultCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//allResultCount']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey//allResultCount']['get']['res'][200]> {
+    public static surveyAllResultCount(data: $OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/survey//allResultCount',
+            url: '/workspace/{workspaceId}/survey/allResultCount',
             path: {
                 workspaceId: data.workspaceId
             }
@@ -999,10 +999,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveySubmit(data: $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/submit']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/submit']['post']['res'][200]> {
+    public static surveySubmit(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/workspace/{workspaceId}/survey//{surveyId}/submit',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/submit',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
@@ -1019,10 +1019,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyCreate(data: $OpenApiTs['/workspace/{workspaceId}/survey//create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//create']['post']['res'][200]> {
+    public static surveyCreate(data: $OpenApiTs['/workspace/{workspaceId}/survey/create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/create']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/workspace/{workspaceId}/survey//create',
+            url: '/workspace/{workspaceId}/survey/create',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -1039,10 +1039,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyUpdate(data: $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/update']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/update']['patch']['res'][200]> {
+    public static surveyUpdate(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/update']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/update']['patch']['res'][200]> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/workspace/{workspaceId}/survey//{surveyId}/update',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/update',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
@@ -1059,10 +1059,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyDelete(data: $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/delete']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/delete']['delete']['res'][200]> {
+    public static surveyDelete(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/delete']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/delete']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/workspace/{workspaceId}/survey//{surveyId}/delete',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/delete',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
@@ -1079,10 +1079,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyResultList(data: $OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/result/list']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey//{surveyId}/result/list']['get']['res'][200]> {
+    public static surveyResultList(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/result/list']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/result/list']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/survey//{surveyId}/result/list',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/result/list',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId

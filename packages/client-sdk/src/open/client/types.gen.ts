@@ -439,6 +439,7 @@ export type $OpenApiTs = {
                     payload: {
                         [key: string]: unknown;
                     };
+                    trendingMode: boolean;
                     createdAt: string;
                     updatedAt: string;
                     notifications: Array<{
@@ -469,6 +470,7 @@ export type $OpenApiTs = {
                     payload: {
                         [key: string]: unknown;
                     };
+                    trendingMode: boolean;
                     createdAt: string;
                     updatedAt: string;
                     notifications: Array<{
@@ -497,6 +499,7 @@ export type $OpenApiTs = {
                     payload: {
                         [key: string]: unknown;
                     };
+                    trendingMode: boolean;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -532,6 +535,7 @@ export type $OpenApiTs = {
                     active?: boolean;
                     interval?: number;
                     maxRetries?: number;
+                    trendingMode?: boolean;
                     notificationIds?: Array<(string)>;
                     payload: {
                         [key: string]: unknown;
@@ -554,6 +558,7 @@ export type $OpenApiTs = {
                     payload: {
                         [key: string]: unknown;
                     };
+                    trendingMode: boolean;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -603,6 +608,7 @@ export type $OpenApiTs = {
                     payload: {
                         [key: string]: unknown;
                     };
+                    trendingMode: boolean;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1091,7 +1097,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//all': {
+    '/workspace/{workspaceId}/survey/all': {
         get: {
             req: {
                 workspaceId: string;
@@ -1118,7 +1124,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//{surveyId}': {
+    '/workspace/{workspaceId}/survey/{surveyId}': {
         get: {
             req: {
                 surveyId: string;
@@ -1146,7 +1152,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//{surveyId}/count': {
+    '/workspace/{workspaceId}/survey/{surveyId}/count': {
         get: {
             req: {
                 surveyId: string;
@@ -1166,7 +1172,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//allResultCount': {
+    '/workspace/{workspaceId}/survey/allResultCount': {
         get: {
             req: {
                 workspaceId: string;
@@ -1185,7 +1191,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//{surveyId}/submit': {
+    '/workspace/{workspaceId}/survey/{surveyId}/submit': {
         post: {
             req: {
                 requestBody: {
@@ -1204,7 +1210,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//create': {
+    '/workspace/{workspaceId}/survey/create': {
         post: {
             req: {
                 requestBody: {
@@ -1242,7 +1248,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//{surveyId}/update': {
+    '/workspace/{workspaceId}/survey/{surveyId}/update': {
         patch: {
             req: {
                 requestBody: {
@@ -1281,7 +1287,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//{surveyId}/delete': {
+    '/workspace/{workspaceId}/survey/{surveyId}/delete': {
         delete: {
             req: {
                 surveyId: string;
@@ -1309,7 +1315,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/survey//{surveyId}/result/list': {
+    '/workspace/{workspaceId}/survey/{surveyId}/result/list': {
         get: {
             req: {
                 cursor?: string;

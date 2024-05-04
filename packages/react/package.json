@@ -1,0 +1,28 @@
+{
+  "name": "tianji-client-react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "generate:client": "openapi-ts -i ../../website/openapi.json -o src/open/client",
+    "test": "vitest"
+  },
+  "keywords": [
+    "tianji"
+  ],
+  "author": "moonrailgun <moonrailgun@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "tianji-client-sdk": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.22",
+    "react": "^18.3.1"
+  },
+  "peerDependencies": {
+    "@types/react": "^18.2.22",
+    "react": "^18.3.1"
+  }
+}

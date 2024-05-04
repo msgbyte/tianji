@@ -292,7 +292,7 @@ function buildSurveyOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       tags: [OPENAPI_TAG.SURVEY],
       protect: true,
       ...meta,
-      path: `/workspace/{workspaceId}/survey/${meta.path}`,
+      path: `/workspace/{workspaceId}/survey${meta.path}`,
     },
   };
 }
