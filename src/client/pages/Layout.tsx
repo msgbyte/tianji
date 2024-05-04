@@ -7,12 +7,11 @@ import { Button, Divider, Drawer, Dropdown } from 'antd';
 import { useUserStore } from '../store/user';
 import { useLogout } from '../api/model/user';
 import { ColorSchemeSwitcher } from '../components/ColorSchemeSwitcher';
-import { version } from '@tianji/shared';
+import { version } from '@/utils/env';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { RiMenuUnfoldLine } from 'react-icons/ri';
 import { useTranslation } from '@i18next-toolkit/react';
 import { LanguageSelector } from '../components/LanguageSelector';
-import { useGlobalConfig } from '../hooks/useConfig';
 
 export const Layout: React.FC = React.memo(() => {
   const [params] = useSearchParams();

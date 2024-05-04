@@ -20,7 +20,7 @@ import { useCurrentWorkspaceId, useUserInfo, useUserStore } from '@/store/user';
 import { languages } from '@/utils/constants';
 import { useTranslation, setLanguage } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
-import { version } from '@tianji/shared';
+import { version } from '@/utils/env';
 import React from 'react';
 import { LuMoreVertical } from 'react-icons/lu';
 

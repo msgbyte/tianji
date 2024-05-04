@@ -17,9 +17,14 @@ RUN apk add --update --no-cache python3 py3-pip g++ make
 FROM base AS static
 WORKDIR /app/tianji
 
+# use with --build-arg VERSION=xxxx
+ARG VERSION
+
 COPY . .
 
 RUN pnpm install --frozen-lockfile
+
+ENV VITE_VERSION=$VERSION
 
 RUN pnpm build:static
 
