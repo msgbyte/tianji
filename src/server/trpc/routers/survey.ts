@@ -15,6 +15,7 @@ import { getRequestInfo } from '../../utils/detect';
 import { SurveyPayloadSchema } from '../../prisma/zod/schemas';
 import { buildCursorResponseSchema } from '../../utils/schema';
 import { fetchDataByCursor } from '../../utils/prisma';
+import { Prisma } from '@prisma/client';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -259,8 +260,10 @@ export const surveyRouter = router({
     .input(
       z.object({
         surveyId: z.string(),
-        limit: z.number().min(1).max(100).default(50),
+        limit: z.number().min(1).max(1000).default(50),
         cursor: z.string().optional(),
+        startAt: z.number().optional(),
+        endAt: z.number().optional(),
       })
     )
     .output(buildCursorResponseSchema(SurveyResultModelSchema))
@@ -268,12 +271,21 @@ export const surveyRouter = router({
       const limit = input.limit;
       const { cursor, surveyId } = input;
 
+      const where: Prisma.SurveyResultWhereInput = {
+        surveyId,
+      };
+
+      if (input.startAt && input.endAt) {
+        where.createdAt = {
+          gte: new Date(input.startAt),
+          lte: new Date(input.endAt),
+        };
+      }
+
       const { items, nextCursor } = await fetchDataByCursor(
         prisma.surveyResult,
         {
-          where: {
-            surveyId,
-          },
+          where,
           limit,
           cursor,
         }

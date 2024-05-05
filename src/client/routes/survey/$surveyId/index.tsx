@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable, createColumnHelper } from '@/components/DataTable';
 import { useMemo } from 'react';
+import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -126,7 +127,12 @@ function PageComponent() {
             <CardHeader>
               <CardTitle>{t('Count')}</CardTitle>
             </CardHeader>
-            <CardContent>{count}</CardContent>
+            <CardContent className="flex justify-between">
+              <div>{count}</div>
+              <div>
+                <SurveyDownloadBtn surveyId={surveyId} />
+              </div>
+            </CardContent>
           </Card>
         </div>
 
