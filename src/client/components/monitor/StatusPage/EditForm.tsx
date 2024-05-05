@@ -75,7 +75,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           </Form.Item>
 
           <Form.Item label={t('Description')} name="description">
-            <MarkdownEditor value={''} />
+            <MarkdownEditorFormItem />
           </Form.Item>
 
           <Form.Item
@@ -179,3 +179,11 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
     );
   });
 MonitorStatusPageEditForm.displayName = 'MonitorStatusPageEditForm';
+
+export const MarkdownEditorFormItem: React.FC<{
+  value?: string;
+  onChange?: (val: string) => void;
+}> = React.memo((props) => {
+  return <MarkdownEditor value={props.value ?? ''} onChange={props.onChange} />;
+});
+MarkdownEditorFormItem.displayName = 'MarkdownEditorFormItem';
