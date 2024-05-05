@@ -9,6 +9,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
+import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
   createFileRoute,
@@ -78,6 +79,7 @@ function MonitorComponent() {
               title={t('Monitor')}
               actions={
                 <Button
+                  className={cn(pathname === '/monitor/add' && '!bg-muted')}
                   variant="outline"
                   Icon={LuPlus}
                   onClick={handleClickAdd}

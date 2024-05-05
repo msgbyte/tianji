@@ -8,6 +8,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
+import { cn } from '@/utils/style';
 import { Trans, useTranslation } from '@i18next-toolkit/react';
 import {
   createFileRoute,
@@ -101,6 +102,7 @@ function TelemetryComponent() {
               }
               actions={
                 <Button
+                  className={cn(pathname === '/telemetry/add' && '!bg-muted')}
                   variant="outline"
                   Icon={LuPlus}
                   onClick={handleClickAdd}

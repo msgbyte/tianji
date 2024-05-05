@@ -81,6 +81,7 @@ function WebsiteComponent() {
                     {t('Overview')}
                   </Button>
                   <Button
+                    className={cn(pathname === '/website/add' && '!bg-muted')}
                     variant="outline"
                     size="icon"
                     Icon={LuPlus}
