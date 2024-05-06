@@ -11,3 +11,5 @@ export function stopPropagation(e: Event) {
 export function preventDefault(e: Event) {
   e.preventDefault();
 }
+
+export const rootEl = document.getElementById('root');
