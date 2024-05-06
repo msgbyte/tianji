@@ -1,5 +1,37 @@
 
 
+## [1.9.4](https://github.com/msgbyte/tianji/compare/v1.9.3...v1.9.4) (2024-05-06)
+
+
+### Features
+
+* add add page selected state for add button in sidebar header ([d31d203](https://github.com/msgbyte/tianji/commit/d31d20364ef214de9f4e1c9f864303c7d440a63c))
+* add cronjob for send https certificate expired notification ([7b95c55](https://github.com/msgbyte/tianji/commit/7b95c55a70c290eba4bef464589fc406536b0354))
+* add feishu notification ([f6fc210](https://github.com/msgbyte/tianji/commit/f6fc210b65948fe19e4166ed99f083ddda3a1282))
+* monitor add trending mode ([d77e132](https://github.com/msgbyte/tianji/commit/d77e1321f43c034434564d3d1d090b8713df963a))
+
+
+### Bug Fixes
+
+* [#61](https://github.com/msgbyte/tianji/issues/61) fix font family problem ([b4872a4](https://github.com/msgbyte/tianji/commit/b4872a47e7144178cb9357b4777f01913f7d18e4))
+* fix status page markdown editor preview cannot render correct problem ([eccb322](https://github.com/msgbyte/tianji/commit/eccb322ead49a09458b5961377be99392c44aa83))
+
+
+### Document
+
+* add example of docker pull image size ([4761c2d](https://github.com/msgbyte/tianji/commit/4761c2dd20e354f649ed2e5ebfce80870e535120))
+* adding one-click deploy buttons to README.md ([#60](https://github.com/msgbyte/tianji/issues/60)) ([7cfafe4](https://github.com/msgbyte/tianji/commit/7cfafe49d792cf7884d7919def46fe30f3b36d20))
+* update release date of version 1.7.0 ([755aeaf](https://github.com/msgbyte/tianji/commit/755aeafa23d91c3bedc02a18b284f002e72d749b))
+
+
+### Others
+
+* add docker canary image version display ([dc4d88f](https://github.com/msgbyte/tianji/commit/dc4d88fc4731d3e81ef38c078bd71abc8731bc1e))
+* fix ci problem ([18f3073](https://github.com/msgbyte/tianji/commit/18f3073e94b314da086cb6fe8d617781200de7ca))
+* improve server list update at display ([51675f6](https://github.com/msgbyte/tianji/commit/51675f6129752ccdbf1e987b2228043333c9af11))
+* improve TLS chain fetch way, to make sure can get tls info correct ([cc910b7](https://github.com/msgbyte/tianji/commit/cc910b7ee67f151fa92944f10c3b1e365bc74cb3))
+* update translation ([e4b0150](https://github.com/msgbyte/tianji/commit/e4b01502bcad94d96b7ee5e8fe9a693a6a944cda))
+
 ## [1.9.3](https://github.com/msgbyte/tianji/compare/v1.9.2...v1.9.3) (2024-05-01)
 
 
