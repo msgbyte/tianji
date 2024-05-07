@@ -16,6 +16,7 @@ interface MetricsTableProps {
     | 'url'
     | 'language'
     | 'referrer'
+    | 'title'
     | 'browser'
     | 'os'
     | 'device'

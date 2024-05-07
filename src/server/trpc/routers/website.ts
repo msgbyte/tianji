@@ -184,15 +184,18 @@ export const websiteRouter = router({
         }),
       ]);
 
-      const stats = Object.keys(metrics[0]).reduce((obj, key) => {
-        const current = Number(metrics[0][key]) || 0;
-        const prev = Number(prevPeriod[0][key]) || 0;
-        obj[key] = {
-          value: current,
-          prev,
-        };
-        return obj;
-      }, {} as Record<string, { value: number; prev: number }>);
+      const stats = Object.keys(metrics[0]).reduce(
+        (obj, key) => {
+          const current = Number(metrics[0][key]) || 0;
+          const prev = Number(prevPeriod[0][key]) || 0;
+          obj[key] = {
+            value: current,
+            prev,
+          };
+          return obj;
+        },
+        {} as Record<string, { value: number; prev: number }>
+      );
 
       return websiteStatsSchema.parse(stats);
     }),
@@ -330,6 +333,7 @@ export const websiteRouter = router({
           'url',
           'language',
           'referrer',
+          'title',
           'browser',
           'os',
           'device',

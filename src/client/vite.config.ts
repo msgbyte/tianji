@@ -36,6 +36,9 @@ export default defineConfig({
       '/api/workspace': {
         target: 'http://localhost:12345',
       },
+      '/api/website/send': {
+        target: 'http://localhost:12345',
+      },
     },
   },
 });

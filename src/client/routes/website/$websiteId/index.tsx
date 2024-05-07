@@ -128,7 +128,16 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
+          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+            <WebsiteMetricsTable
+              websiteId={websiteId}
+              type="title"
+              title={[t('Title'), t('Views')]}
+              startAt={startAt}
+              endAt={endAt}
+            />
+          </Card.Grid>
+          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="country"
@@ -141,7 +150,7 @@ function WebsiteDetailComponent() {
               <WebsiteVisitorMapBtn websiteId={websiteId} />
             </div>
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
+          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="event"
