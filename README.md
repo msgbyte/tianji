@@ -79,6 +79,8 @@ And its inspired by `umami` license which under `MIT` and `uptime-kuma` which un
 
 ### One-Click Deployment
 
+[![Deploy on Sealos](https://cdn.jsdelivr.net/gh/labring-actions/templates@main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dtianji)
+
 [![Deploy to RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/?app_id=270)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/msgbyte/tianji)

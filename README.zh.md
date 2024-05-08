@@ -30,3 +30,7 @@
 `Tianji` is open source with `Apache 2.0` license.
 
 And its inspired by `umami` license which under `MIT` and `uptime-kuma` which under `MIT` license too
+
+### One-Click Deployment
+
+[![Deploy on Sealos](https://cdn.jsdelivr.net/gh/labring-actions/templates@main/Deploy-on-Sealos.svg)](https://bja.sealos.run/?openapp=system-template%3FtemplateName%3Dtianji)
