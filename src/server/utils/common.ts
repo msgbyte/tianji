@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { getWorkspaceWebsiteDateRange } from '../model/workspace';
 import { isCuid } from '@paralleldrive/cuid2';
 import { getMinimumUnit } from '@tianji/shared';
+import { env } from './env';
 
 export { isCuid };
 
@@ -151,8 +152,7 @@ function getDataType(value: any): string {
 /**
  * Secret for auth and cacheTokenGenerate
  */
-export const jwtSecret =
-  process.env.JWT_SECRET || hashUuid(dayjs().format('YYYYMMDD'));
+export const jwtSecret = env.jwtSecret;
 
 export function createToken(payload: any, secret = jwtSecret, options?: any) {
   return jwt.sign(payload, secret, options);

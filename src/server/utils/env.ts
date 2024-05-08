@@ -1,6 +1,13 @@
+import { v1 as uuid } from 'uuid';
+
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
   isTest: process.env.NODE_ENV === 'test',
+  jwtSecret:
+    !process.env.JWT_SECRET ||
+    process.env.JWT_SECRET === 'replace-me-with-a-random-string'
+      ? uuid()
+      : process.env.JWT_SECRET,
   port: Number(process.env.PORT || 12345),
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI),
