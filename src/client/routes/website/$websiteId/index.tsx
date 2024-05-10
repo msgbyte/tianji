@@ -141,7 +141,7 @@ function WebsiteDetailComponent() {
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="country"
-              title={[t('Countries'), t('Visitors')]}
+              title={[t('Country or Region'), t('Visitors')]}
               startAt={startAt}
               endAt={endAt}
             />

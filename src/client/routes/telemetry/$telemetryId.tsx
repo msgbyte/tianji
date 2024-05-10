@@ -196,7 +196,7 @@ function TelemetryDetailComponent() {
             <TelemetryMetricsTable
               telemetryId={telemetryId}
               type="country"
-              title={[t('Countries'), t('Visitors')]}
+              title={[t('Country or Region'), t('Visitors')]}
               startAt={startAt}
               endAt={endAt}
             />

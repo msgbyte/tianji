@@ -90,6 +90,7 @@
   "k5ec0de4": "For HTTPS monitoring, if any notification method is assigned, notifications will be sent at 1, 3, 7 and 14 days before expiration.",
   "k5ecf04b0": "View",
   "k6067f0ff": "Ignore TLS/SSL error",
+  "k611549c6": "Country or Region",
   "k621317b5": "New page",
   "k62e19375": "Last updated at: {{date}}",
   "k646a3a80": "{{monitorName}}'s Metrics",
