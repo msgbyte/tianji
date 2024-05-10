@@ -6,7 +6,13 @@ sidebar_position: 1
 
 Compared with traditional monitoring services, **Tianji** supports custom scripts to support more customized scenarios.
 
-Here is some example
+Essentially, you can understand it as a restricted, memory safe JavaScript runtime that accepts a number to display on your chart. The most common scenario is the time required for network requests to access an url. Of course, it can also be other things, such as your OpenAI balance, your github star number, and all the information that can be expressed in numbers.
+
+if this script return -1, its means this work is failed, and try to send notification to you, just like normal monitor.
+
+If you want to view the trend of a number's changes, opening the trending mode can help you better discover subtle changes in the number
+
+Here is some example:
 
 ## Examples
 
