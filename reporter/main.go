@@ -66,7 +66,7 @@ func main() {
 	log.Println("Version:", version)
 
 	for {
-		log.Println("Send report data to:", parsedURL.String())
+		log.Println("Sending report data to:", parsedURL.String())
 		payload := ReportData{
 			WorkspaceId: *WorkspaceId,
 			Name:        name,
