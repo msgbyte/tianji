@@ -46,7 +46,11 @@ export default function Pricing(): JSX.Element {
               ]}
               button={
                 <Link to="/">
-                  <Button className="w-full" size="large">
+                  <Button
+                    className="w-full"
+                    size="large"
+                    data-tianji-event="price-install-with-docker-compose"
+                  >
                     Install with Docker Compose
                   </Button>
                 </Link>
@@ -149,6 +153,7 @@ export const Waitlist: React.FC = React.memo(() => {
         size="large"
         loading={loading}
         onClick={handleSubmit}
+        data-tianji-event="price-joinwaitlist"
       >
         Join Waitlist
       </Button>
