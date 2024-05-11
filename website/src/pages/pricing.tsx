@@ -127,6 +127,7 @@ export const Waitlist: React.FC = React.memo(() => {
       message.success(
         'Success, we will contact to you if we publish cloud version'
       );
+      setEmail('');
     } catch (err) {
       message.error(String(err));
     }
