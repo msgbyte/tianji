@@ -83,8 +83,8 @@ export const WebsiteOverview: React.FC<{
 
   return (
     <Spin spinning={loading}>
-      <div className="flex">
-        <div className="flex flex-1 items-center text-2xl font-bold">
+      <div className="flex flex-col-reverse sm:flex-row">
+        <div className="flex flex-1 flex-col gap-2 text-2xl font-bold sm:flex-row sm:items-center">
           <span className="mr-2" title={website.domain ?? ''}>
             {website.name}
           </span>
@@ -102,7 +102,7 @@ export const WebsiteOverview: React.FC<{
             </Link>
           )}
 
-          <div className="ml-4 text-base font-normal">
+          <div className="text-base font-normal">
             <WebsiteOnlineCount
               workspaceId={website.workspaceId}
               websiteId={website.id}

@@ -17,7 +17,7 @@ export const WebsiteOnlineCount: React.FC<{
   if (typeof count === 'number' && count > 0) {
     return (
       <div className="flex items-center space-x-2">
-        <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+        <div className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-green-500" />
         <span>
           {count} {t('current visitor')}
         </span>

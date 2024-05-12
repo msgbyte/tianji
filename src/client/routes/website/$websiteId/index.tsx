@@ -83,7 +83,10 @@ function WebsiteDetailComponent() {
           <Card.Grid hoverable={false} className="!w-full">
             <WebsiteOverview website={website} showDateFilter={true} />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/2"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="url"
@@ -92,7 +95,10 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/2">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/2"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="referrer"
@@ -101,7 +107,10 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="browser"
@@ -110,7 +119,10 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="os"
@@ -119,7 +131,10 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="device"
@@ -128,7 +143,10 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="title"
@@ -137,7 +155,10 @@ function WebsiteDetailComponent() {
               endAt={endAt}
             />
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="country"
@@ -150,7 +171,10 @@ function WebsiteDetailComponent() {
               <WebsiteVisitorMapBtn websiteId={websiteId} />
             </div>
           </Card.Grid>
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+          >
             <WebsiteMetricsTable
               websiteId={websiteId}
               type="event"

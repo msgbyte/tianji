@@ -2,7 +2,6 @@ import React from 'react';
 import {
   LuAreaChart,
   LuFilePieChart,
-  LuMenu,
   LuMonitorDot,
   LuMoreVertical,
   LuServer,
@@ -16,19 +15,8 @@ import { cn } from '@/utils/style';
 import { Separator } from '@/components/ui/separator';
 import { LayoutProps } from './types';
 import { UserConfig } from './UserConfig';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { MobileLayoutMenu } from './Menu';
 
 export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
   const { t } = useTranslation();
@@ -36,20 +24,7 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
   return (
     <div className="flex h-svh flex-col">
       <div className="flex h-[52px] items-center justify-between px-2">
-        <Sheet>
-          <SheetTrigger disabled={!Boolean(props.list)}>
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={!Boolean(props.list)}
-            >
-              <LuMenu />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-11/12">
-            <ScrollArea className="h-full">{props.list}</ScrollArea>
-          </SheetContent>
-        </Sheet>
+        <MobileLayoutMenu list={props.list} />
 
         <div className="rounded-md dark:bg-white/10">
           <img className="m-auto h-8 w-8" src="/icon.svg" />

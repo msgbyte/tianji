@@ -172,7 +172,10 @@ function TelemetryDetailComponent() {
             />
           </Card.Grid>
 
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="min-h-[470px] !w-full sm:!w-1/3"
+          >
             <TelemetryMetricsTable
               telemetryId={telemetryId}
               type="source"
@@ -182,7 +185,10 @@ function TelemetryDetailComponent() {
             />
           </Card.Grid>
 
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="min-h-[470px] !w-full sm:!w-1/3"
+          >
             <TelemetryMetricsTable
               telemetryId={telemetryId}
               type="event"
@@ -192,7 +198,10 @@ function TelemetryDetailComponent() {
             />
           </Card.Grid>
 
-          <Card.Grid hoverable={false} className="min-h-[470px] !w-1/3">
+          <Card.Grid
+            hoverable={false}
+            className="min-h-[470px] !w-full sm:!w-1/3"
+          >
             <TelemetryMetricsTable
               telemetryId={telemetryId}
               type="country"

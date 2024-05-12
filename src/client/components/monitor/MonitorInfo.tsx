@@ -177,7 +177,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     <div className="h-full w-full overflow-auto">
       <Spin spinning={isLoading}>
         <Space className="w-full" direction="vertical">
-          <div className="flex justify-between">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-between">
             <Space direction="vertical">
               <div>
                 <ColorTag label={monitorInfo.type} />

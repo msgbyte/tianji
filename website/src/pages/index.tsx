@@ -82,7 +82,7 @@ function HomepageMain() {
       </div>
 
       <div className="text-center">
-        <div className="rounded-lg border-8 border-solid border-gray-200 shadow-lg">
+        <div className="rounded-lg border-8 border-solid border-gray-200 shadow-lg dark:border-gray-800">
           <Carousel
             className="cursor-move"
             showThumbs={false}
