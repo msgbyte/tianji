@@ -136,7 +136,16 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
       columnHelper.accessor('updatedAt', {
         header: t('updatedAt'),
         size: 130,
-        cell: (props) => dayjs(props.getValue()).fromNow(),
+        cell: (props) => (
+          <Tooltip>
+            <TooltipTrigger className="cursor-default">
+              <span>{dayjs(props.getValue()).fromNow()}</span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {dayjs(props.getValue()).format('YYYY-MM-DD HH:mm:ss')}
+            </TooltipContent>
+          </Tooltip>
+        ),
       }),
     ];
   }, [t]);

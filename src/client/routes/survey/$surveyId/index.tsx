@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable, createColumnHelper } from '@/components/DataTable';
 import { useMemo } from 'react';
 import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
+import dayjs from 'dayjs';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -77,7 +78,8 @@ function PageComponent() {
       ) ?? []),
       columnHelper.accessor('createdAt', {
         header: t('Created At'),
-        size: 150,
+        size: 130,
+        cell: (props) => dayjs(props.getValue()).format('YYYY-MM-DD HH:mm:ss'),
       }),
     ];
   }, [t, info]);
