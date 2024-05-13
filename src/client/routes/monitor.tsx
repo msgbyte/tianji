@@ -27,7 +27,7 @@ export const Route = createFileRoute('/monitor')({
 function MonitorComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [] } = trpc.monitor.all.useQuery({
+  const { data = [], isLoading } = trpc.monitor.all.useQuery({
     workspaceId,
   });
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ function MonitorComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} />
+          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
         </CommonWrapper>
       }
     />

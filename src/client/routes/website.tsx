@@ -26,7 +26,7 @@ export const Route = createFileRoute('/website')({
 function WebsiteComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [] } = trpc.website.all.useQuery({
+  const { data = [], isLoading } = trpc.website.all.useQuery({
     workspaceId,
   });
   const navigate = useNavigate();
@@ -92,7 +92,7 @@ function WebsiteComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} />
+          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
         </CommonWrapper>
       }
     />

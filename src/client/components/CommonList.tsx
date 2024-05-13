@@ -7,6 +7,7 @@ import { LuSearch } from 'react-icons/lu';
 import { Input } from './ui/input';
 import { useFuseSearch } from '@/hooks/useFuseSearch';
 import { Empty } from 'antd';
+import { globalEventBus } from '@/utils/event';
 
 export interface CommonListItem {
   id: string;
@@ -18,6 +19,7 @@ export interface CommonListItem {
 }
 
 interface CommonListProps {
+  isLoading?: boolean;
   hasSearch?: boolean;
   items: CommonListItem[];
 }
@@ -67,7 +69,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
 
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-2 p-4">
-          {finalList.length === 0 && <Empty />}
+          {finalList.length === 0 && !props.isLoading && <Empty />}
 
           {finalList.map((item) => {
             const isSelected = item.href === location.pathname;
@@ -79,11 +81,12 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                   'hover:bg-accent flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all',
                   isSelected && 'bg-muted'
                 )}
-                onClick={() =>
+                onClick={() => {
+                  globalEventBus.emit('commonListSelected');
                   navigate({
                     to: item.href,
-                  })
-                }
+                  });
+                }}
               >
                 <div className="flex w-full items-center justify-between gap-1">
                   <div className="font-semibold">{item.title}</div>

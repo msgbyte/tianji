@@ -4,7 +4,7 @@ const config = {
   verbose: true,
   namespaces: ['translation'],
   translator: {
-    type: 'openai',
+    type: 'prompt',
     openai: {
       modelName: 'gpt-4',
     },

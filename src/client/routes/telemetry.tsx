@@ -25,7 +25,7 @@ export const Route = createFileRoute('/telemetry')({
 function TelemetryComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [] } = trpc.telemetry.all.useQuery({
+  const { data = [], isLoading } = trpc.telemetry.all.useQuery({
     workspaceId,
   });
   const { data: allEventCount = {} } = trpc.telemetry.allEventCount.useQuery({
@@ -113,7 +113,7 @@ function TelemetryComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} />
+          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
         </CommonWrapper>
       }
     />

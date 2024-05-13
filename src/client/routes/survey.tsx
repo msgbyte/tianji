@@ -24,7 +24,7 @@ export const Route = createFileRoute('/survey')({
 function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [] } = trpc.survey.all.useQuery({
+  const { data = [], isLoading } = trpc.survey.all.useQuery({
     workspaceId,
   });
   const { data: allResultCount = {} } = trpc.survey.allResultCount.useQuery({
@@ -81,7 +81,7 @@ function PageComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} />
+          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
         </CommonWrapper>
       }
     />

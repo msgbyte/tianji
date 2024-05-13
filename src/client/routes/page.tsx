@@ -25,7 +25,7 @@ export const Route = createFileRoute('/page')({
 function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [] } = trpc.monitor.getAllPages.useQuery({
+  const { data = [], isLoading } = trpc.monitor.getAllPages.useQuery({
     workspaceId,
   });
   const navigate = useNavigate();
@@ -80,7 +80,7 @@ function PageComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} />
+          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
         </CommonWrapper>
       }
     />
