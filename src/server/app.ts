@@ -20,9 +20,12 @@ import { monitorRouter } from './router/monitor';
 import { healthRouter } from './router/health';
 import path from 'path';
 import { monitorPageManager } from './model/monitor/page/manager';
+import { ExpressAuth } from '@auth/express';
+import { authConfig } from './model/auth';
 
 const app = express();
 
+app.set('trust proxy', true);
 app.use(compression());
 app.use(express.json());
 app.use(passport.initialize());
@@ -39,6 +42,7 @@ app.use(
   })
 );
 
+app.use('/auth/*', ExpressAuth(authConfig));
 app.use('/health', healthRouter);
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
