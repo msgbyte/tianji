@@ -1,14 +1,20 @@
 import { v1 as uuid } from 'uuid';
+import md5 from 'md5';
+
+const jwtSecret =
+  !process.env.JWT_SECRET ||
+  process.env.JWT_SECRET === 'replace-me-with-a-random-string'
+    ? uuid()
+    : process.env.JWT_SECRET;
 
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
   isTest: process.env.NODE_ENV === 'test',
-  jwtSecret:
-    !process.env.JWT_SECRET ||
-    process.env.JWT_SECRET === 'replace-me-with-a-random-string'
-      ? uuid()
-      : process.env.JWT_SECRET,
+  jwtSecret,
   port: Number(process.env.PORT || 12345),
+  auth: {
+    secret: process.env.AUTH_SECRET || md5(jwtSecret),
+  },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
   websiteId: process.env.WEBSITE_ID,
