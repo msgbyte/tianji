@@ -32,16 +32,16 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
     {
       keys: [
         {
-          name: 'id',
+          name: 'title',
           weight: 1,
         },
         {
-          name: 'title',
-          weight: 0.7,
+          name: 'id',
+          weight: 0.6,
         },
         {
           name: 'tags',
-          weight: 0.3,
+          weight: 0.4,
         },
       ],
     }
