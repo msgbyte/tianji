@@ -1,5 +1,45 @@
 
 
+## [1.10.0](https://github.com/msgbyte/tianji/compare/v1.9.4...v1.10.0) (2024-05-15)
+
+
+### Features
+
+* [#62](https://github.com/msgbyte/tianji/issues/62) add title section in website ([d5895dc](https://github.com/msgbyte/tianji/commit/d5895dc4a9d9d161fd17ebeb7d55b0304101b3aa))
+* add survey backend endpoint ([2764262](https://github.com/msgbyte/tianji/commit/27642625ac9612ceeb1329d0aa3db8004af87844))
+* add survey command panel ([c9bf016](https://github.com/msgbyte/tianji/commit/c9bf016fbf0c7216aa944118efda6b6f0acde350))
+* add survey delete action ([12cd54e](https://github.com/msgbyte/tianji/commit/12cd54eafe63446471b0366d18cdaaea4ac95532))
+* add survey download feature ([eebf00f](https://github.com/msgbyte/tianji/commit/eebf00f882cd8906aff2316936da9b2496018a53))
+* add survey usage button ([2b75a8e](https://github.com/msgbyte/tianji/commit/2b75a8edad4285c524846438c79acfae7b013923))
+* add tianji event for pricing page ([6606b25](https://github.com/msgbyte/tianji/commit/6606b253d84da09e1d821c00bd97bd7b2abf7452))
+* add tianji-client-react package and useTianjiSurvey hooks which can easy to get survey info ([0fc112f](https://github.com/msgbyte/tianji/commit/0fc112fc329f0364914044f6f2727765307023ef))
+* add website pricing page ([6674c19](https://github.com/msgbyte/tianji/commit/6674c19e87d3a628a2a305f9d5db48e365189b0c))
+* survey basic fe framework and add new form ([010fd00](https://github.com/msgbyte/tianji/commit/010fd00be348cb5de0207cf1aea58fb43117130a))
+* survey detail and edit ([a596011](https://github.com/msgbyte/tianji/commit/a596011960db230a8241e4f59bac5d33597cdc9a))
+* survey sdk and openapi client ([f7f191a](https://github.com/msgbyte/tianji/commit/f7f191a53da03334b8b08844c7c51b19727828d1))
+
+
+### Document
+
+* Add one-click deploy on sealos ([#64](https://github.com/msgbyte/tianji/issues/64)) ([fc79c57](https://github.com/msgbyte/tianji/commit/fc79c5758817d95b1058e4c0093c88b262973d52))
+* clear email input when submit success in price page ([3d16d8e](https://github.com/msgbyte/tianji/commit/3d16d8edd8c89fd3d553ad461a5ae383862b80fb))
+* reduce homepage image size to improve user network ([6865a7c](https://github.com/msgbyte/tianji/commit/6865a7ca0bae30f017837a5e54a171be8ce6d85a))
+* update custom script document ([7d370b4](https://github.com/msgbyte/tianji/commit/7d370b4fc51a52ee91b2d94afcc9d2367fcc5fbb))
+* update qrcode ([ebb6c51](https://github.com/msgbyte/tianji/commit/ebb6c51f81d75b2736213403772f5418e778224e))
+
+
+### Others
+
+* add tooltip and time display on table ([9d3c034](https://github.com/msgbyte/tianji/commit/9d3c0344eee7b4309fad2e7ab827090136541d51))
+* change weight of commit list search ([cc0bd73](https://github.com/msgbyte/tianji/commit/cc0bd73ed1c48c1fed0da95fcfc2890d1cd73012))
+* change word: Countries -> Country or Region ([1ad9aa9](https://github.com/msgbyte/tianji/commit/1ad9aa95f9886342a6771cd6501d448f7801916e))
+* common list add loading state ([9780aff](https://github.com/msgbyte/tianji/commit/9780affebca31f709d4f8f20e6c8f2593f1b198a))
+* define survey model ([9143cc4](https://github.com/msgbyte/tianji/commit/9143cc468cd15d83b5419521adc9834576488b56))
+* improve mobile display ([b2fb183](https://github.com/msgbyte/tianji/commit/b2fb1832e1a2573c7e5ad8abc38a937e4e63d1a1))
+* improve mobile layout navbar display if have much features ([fd9108e](https://github.com/msgbyte/tianji/commit/fd9108e77fd8c0f4db5840512f1f0e9a73bce4d3))
+* remove unused code ([342c076](https://github.com/msgbyte/tianji/commit/342c076966dcd2ede5341067a069743c09b967d1))
+* update jwt secret generator more safe for user ([6e8c280](https://github.com/msgbyte/tianji/commit/6e8c28026e890774ce3edb49febde1f606aa0aee))
+
 ## [1.9.4](https://github.com/msgbyte/tianji/compare/v1.9.3...v1.9.4) (2024-05-06)
 
 
