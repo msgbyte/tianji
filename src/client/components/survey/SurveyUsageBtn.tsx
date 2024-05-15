@@ -29,8 +29,6 @@ export const SurveyUsageBtn: React.FC<SurveyUsageBtnProps> = React.memo(
       surveyId,
     });
 
-    const fields = info?.payload.items ?? [];
-
     const exampleCode = generateSurveyExampleCode(window.location.origin, info);
 
     return (
