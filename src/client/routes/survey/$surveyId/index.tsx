@@ -20,6 +20,7 @@ import { DataTable, createColumnHelper } from '@/components/DataTable';
 import { useMemo } from 'react';
 import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
 import dayjs from 'dayjs';
+import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -124,14 +125,15 @@ function PageComponent() {
       <ScrollArea className="h-full overflow-hidden p-4">
         <ScrollBar orientation="horizontal" />
 
-        <div className="mb-4 ">
+        <div className="mb-4">
           <Card>
             <CardHeader>
               <CardTitle>{t('Count')}</CardTitle>
             </CardHeader>
             <CardContent className="flex justify-between">
               <div>{count}</div>
-              <div>
+              <div className="flex gap-2">
+                <SurveyUsageBtn surveyId={surveyId} />
                 <SurveyDownloadBtn surveyId={surveyId} />
               </div>
             </CardContent>

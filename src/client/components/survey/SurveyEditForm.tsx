@@ -53,7 +53,7 @@ export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
 function generateDefaultItem() {
   return {
     label: 'New Field',
-    name: 'field-' + generateRandomString(4),
+    name: 'field_' + generateRandomString(4),
     type: 'text' as const,
   };
 }

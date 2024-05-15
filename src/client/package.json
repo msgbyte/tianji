@@ -12,7 +12,7 @@
     "translation:extract": "i18next-toolkit extract",
     "translation:scan": "i18next-toolkit scan",
     "translation:translate": "i18next-toolkit translate",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",

@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`survey > example code 1`] = `
+"import { submitSurvey, initOpenapiSDK } from 'tianji-client-sdk';
+
+initOpenapiSDK('https://example.com');
+
+/**
+ * Submit Survey into Test
+ *
+ * @param {text} textField Text
+ */
+async function submitForm(textField) {
+  try {
+    await submitSurvey(
+      '<workspaceId>',
+      '<surveyId>',
+      {
+        textField, // Text
+      }
+    );
+    console.log('Submit success');
+  } catch (err) {
+    console.error(err);
+    throw new Error(err);
+  }
+};"
+`;
