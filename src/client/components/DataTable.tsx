@@ -19,7 +19,7 @@ import {
 import { Empty } from 'antd';
 import React from 'react';
 import { Button } from './ui/button';
-import { LuArrowRight } from 'react-icons/lu';
+import { LuChevronRight } from 'react-icons/lu';
 import { cn } from '@/utils/style';
 
 export type { ColumnDef };
@@ -50,6 +50,8 @@ export function DataTable<TData>({
     getRowCanExpand: () => canExpand,
   });
 
+  const columnLen = canExpand ? columns.length + 1 : columns.length;
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -62,10 +64,10 @@ export function DataTable<TData>({
                     variant="ghost"
                     size="icon"
                     className={cn(
-                      'mr-1 h-5 w-5',
+                      'mr-1 h-5 w-5 transition-transform',
                       table.getIsAllRowsExpanded() && 'rotate-90'
                     )}
-                    Icon={LuArrowRight}
+                    Icon={LuChevronRight}
                     onClick={table.getToggleAllRowsExpandedHandler()}
                   />
                 </TableHead>
@@ -100,10 +102,10 @@ export function DataTable<TData>({
                         variant="ghost"
                         size="icon"
                         className={cn(
-                          'mr-1 h-5 w-5',
+                          'mr-1 h-5 w-5 transition-transform',
                           row.getIsExpanded() && 'rotate-90'
                         )}
-                        Icon={LuArrowRight}
+                        Icon={LuChevronRight}
                         onClick={row.getToggleExpandedHandler()}
                       />
                     </TableCell>
@@ -120,25 +122,23 @@ export function DataTable<TData>({
                 </TableRow>
               );
 
-              if (row.getIsExpanded() && ExpandComponent) {
-                return (
-                  <>
-                    {renderedRow}
+              return (
+                <>
+                  {renderedRow}
 
+                  {row.getIsExpanded() && ExpandComponent && (
                     <TableRow key={row.id + 'expand'}>
-                      <TableCell colSpan={table.getAllLeafColumns().length + 1}>
+                      <TableCell colSpan={columnLen}>
                         <ExpandComponent row={row.original} />
                       </TableCell>
                     </TableRow>
-                  </>
-                );
-              } else {
-                return renderedRow;
-              }
+                  )}
+                </>
+              );
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columnLen} className="h-24 text-center">
                 <Empty />
               </TableCell>
             </TableRow>
