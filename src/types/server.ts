@@ -21,4 +21,34 @@ export interface ServerStatusInfoPayload {
   network_rx: number;
   network_in: number;
   network_out: number;
+
+  // docker info
+  docker?: ServerStatusDockerContainerPayload[];
+}
+
+export interface ServerStatusDockerContainerPayload {
+  id: string;
+  image: string;
+  imageId: string;
+  ports: ServerStatusDockerContainerPort[];
+  createdAt: number;
+  state: string;
+  status: string;
+  cpuPercent: number;
+  memory: number;
+  memLimit: number;
+  memPercent: number;
+  storageWriteSize: number;
+  storageReadSize: number;
+  networkRx: number;
+  networkTx: number;
+  ioRead: number;
+  ioWrite: number;
+}
+
+export interface ServerStatusDockerContainerPort {
+  IP: string;
+  PrivatePort: number;
+  PublicPort: number;
+  Type: 'tcp' | 'udp';
 }

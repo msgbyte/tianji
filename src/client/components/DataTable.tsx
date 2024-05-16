@@ -5,6 +5,7 @@ import {
   useReactTable,
   createColumnHelper,
   getExpandedRowModel,
+  ExpandedState,
 } from '@tanstack/react-table';
 
 import {
@@ -17,6 +18,9 @@ import {
 } from '@/components/ui/table';
 import { Empty } from 'antd';
 import React from 'react';
+import { Button } from './ui/button';
+import { LuArrowRight } from 'react-icons/lu';
+import { cn } from '@/utils/style';
 
 export type { ColumnDef };
 export { createColumnHelper };
@@ -32,10 +36,18 @@ export function DataTable<TData>({
   data,
   ExpandComponent,
 }: DataTableProps<TData>) {
+  const [expanded, setExpanded] = React.useState<ExpandedState>({});
+  const canExpand = Boolean(ExpandComponent);
+
   const table = useReactTable({
     data,
     columns,
+    state: {
+      expanded,
+    },
+    onExpandedChange: setExpanded,
     getCoreRowModel: getCoreRowModel(),
+    getRowCanExpand: () => canExpand,
   });
 
   return (
@@ -44,6 +56,21 @@ export function DataTable<TData>({
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
+              {canExpand && (
+                <TableHead className="w-9">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      'mr-1 h-5 w-5',
+                      table.getIsAllRowsExpanded() && 'rotate-90'
+                    )}
+                    Icon={LuArrowRight}
+                    onClick={table.getToggleAllRowsExpandedHandler()}
+                  />
+                </TableHead>
+              )}
+
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead key={header.id}>
@@ -67,7 +94,22 @@ export function DataTable<TData>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getCanExpand() && (
+                    <TableCell className="w-9">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          'mr-1 h-5 w-5',
+                          row.getIsExpanded() && 'rotate-90'
+                        )}
+                        Icon={LuArrowRight}
+                        onClick={row.getToggleExpandedHandler()}
+                      />
+                    </TableCell>
+                  )}
+
+                  {row.getVisibleCells().map((cell, i) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -84,7 +126,7 @@ export function DataTable<TData>({
                     {renderedRow}
 
                     <TableRow key={row.id + 'expand'}>
-                      <TableCell colSpan={table.getAllLeafColumns().length}>
+                      <TableCell colSpan={table.getAllLeafColumns().length + 1}>
                         <ExpandComponent row={row.original} />
                       </TableCell>
                     </TableRow>

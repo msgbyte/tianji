@@ -43,22 +43,23 @@ type ReportDataPayload struct {
 }
 
 type DockerDataPayload struct {
-	ID               string  `json:"id"`
-	Image            string  `json:"image"`
-	ImageID          string  `json:"imageId"`
-	CreatedAt        int64   `json:"createdAt"`
-	State            string  `json:"state"`
-	Status           string  `json:"status"`
-	CpuPercent       float64 `json:"cpuPercent"`
-	Memory           float64 `json:"memory"`
-	MemLimit         uint64  `json:"memLimit"`
-	MemPercent       float64 `json:"memPercent"`
-	StorageWriteSize uint64  `json:"storageWriteSize"`
-	StorageReadSize  uint64  `json:"storageReadSize"`
-	NetworkRx        float64 `json:"networkRx"`
-	NetworkTx        float64 `json:"networkTx"`
-	IORead           uint64  `json:"ioRead"`
-	IOWrite          uint64  `json:"ioWrite"`
+	ID               string             `json:"id"`
+	Image            string             `json:"image"`
+	ImageID          string             `json:"imageId"`
+	Ports            []dockerTypes.Port `json:"ports"`
+	CreatedAt        int64              `json:"createdAt"`
+	State            string             `json:"state"`
+	Status           string             `json:"status"`
+	CpuPercent       float64            `json:"cpuPercent"`
+	Memory           float64            `json:"memory"`
+	MemLimit         uint64             `json:"memLimit"`
+	MemPercent       float64            `json:"memPercent"`
+	StorageWriteSize uint64             `json:"storageWriteSize"`
+	StorageReadSize  uint64             `json:"storageReadSize"`
+	NetworkRx        float64            `json:"networkRx"`
+	NetworkTx        float64            `json:"networkTx"`
+	IORead           uint64             `json:"ioRead"`
+	IOWrite          uint64             `json:"ioWrite"`
 }
 
 var checkIP int
@@ -303,6 +304,7 @@ func GetDockerStat() ([]DockerDataPayload, error) {
 			ID:               container.ID[:10],
 			Image:            container.Image,
 			ImageID:          container.ImageID,
+			Ports:            container.Ports,
 			CreatedAt:        container.Created,
 			State:            container.State,
 			Status:           container.Status,

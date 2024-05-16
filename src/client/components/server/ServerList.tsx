@@ -13,6 +13,8 @@ import { filesize } from 'filesize';
 import prettyMilliseconds from 'pretty-ms';
 import { UpDownCounter } from '../UpDownCounter';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import { ServerRowExpendView } from './ServerRowExpendView';
+import { FaDocker } from 'react-icons/fa';
 
 const columnHelper = createColumnHelper<ServerStatusInfo>();
 
@@ -45,23 +47,37 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
       columnHelper.display({
         header: t('Status'),
         size: 90,
-        cell: (props) =>
-          isServerOnline(props.row.original) ? (
-            <Badge status="success" text={t('online')} />
-          ) : (
-            <Tooltip>
-              <TooltipTrigger>
-                <Badge status="error" text="offline" />
-              </TooltipTrigger>
-              <TooltipContent>
-                {t('Last online: {{time}}', {
-                  time: dayjs(props.row.original.updatedAt).format(
-                    'YYYY-MM-DD HH:mm:ss'
-                  ),
-                })}
-              </TooltipContent>
-            </Tooltip>
-          ),
+        cell: (props) => (
+          <div className="flex gap-2">
+            {isServerOnline(props.row.original) ? (
+              <Badge status="success" text={t('online')} />
+            ) : (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Badge status="error" text="offline" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('Last online: {{time}}', {
+                    time: dayjs(props.row.original.updatedAt).format(
+                      'YYYY-MM-DD HH:mm:ss'
+                    ),
+                  })}
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {props.row.original.payload.docker && (
+              <Tooltip>
+                <TooltipTrigger onClick={props.row.getToggleExpandedHandler()}>
+                  <FaDocker />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('Docker in running in this server')}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        ),
       }),
       columnHelper.accessor('name', {
         header: t('Node Name'),
@@ -111,10 +127,15 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         cell: (props) => (
           <div className="text-xs">
             <div>
-              {filesize(props.row.original.payload.memory_used * 1000)} /{' '}
+              {filesize(props.row.original.payload.memory_used * 1024, {
+                base: 2,
+              })}{' '}
+              /{' '}
             </div>
             <div>
-              {filesize(props.row.original.payload.memory_total * 1000)}
+              {filesize(props.row.original.payload.memory_total * 1024, {
+                base: 2,
+              })}
             </div>
           </div>
         ),
@@ -125,10 +146,15 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         cell: (props) => (
           <div className="text-xs">
             <div>
-              {filesize(props.row.original.payload.hdd_used * 1000 * 1000)} /{' '}
+              {filesize(props.row.original.payload.hdd_used * 1024 * 1024, {
+                base: 2,
+              })}{' '}
+              /{' '}
             </div>
             <div>
-              {filesize(props.row.original.payload.hdd_total * 1000 * 1000)}
+              {filesize(props.row.original.payload.hdd_total * 1024 * 1024, {
+                base: 2,
+              })}
             </div>
           </div>
         ),
@@ -160,7 +186,11 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
 
       <ScrollArea className="flex-1 overflow-hidden">
         <ScrollBar orientation="horizontal" />
-        <DataTable columns={columns} data={dataSource} />
+        <DataTable
+          columns={columns}
+          data={dataSource}
+          ExpandComponent={ServerRowExpendView}
+        />
       </ScrollArea>
     </div>
   );
