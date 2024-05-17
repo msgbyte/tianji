@@ -139,7 +139,7 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
                   <Switch checked={showAll} onCheckedChange={setShowAll} />
                   <div>{t('Show All')}</div>
                 </div>
-                <DataTable columns={columns} data={data} />
+                <DataTable columns={columns} data={data ?? []} />
               </div>
             )}
           </TabsContent>

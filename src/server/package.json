@@ -24,7 +24,7 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.4.2",
     "@tianji/shared": "workspace:^",
-    "@trpc/server": "^10.45.0",
+    "@trpc/server": "^10.45.2",
     "accept-language-parser": "^1.5.0",
     "axios": "^1.5.0",
     "badge-maker": "^3.3.1",
