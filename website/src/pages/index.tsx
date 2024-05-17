@@ -7,12 +7,18 @@ import { Carousel } from 'react-responsive-carousel';
 import { Popover } from 'antd';
 import { RiDiscordFill, RiTwitterXFill, RiWechatFill } from 'react-icons/ri';
 import { BlockCard } from '../components/BlockCard';
+import { HomepageHeaderLight } from '../components/homepage/HeaderLight';
+import { HomepageFeatures } from '../components/homepage/Features';
+import { HomepageSimpleLight } from '../components/homepage/SimpleLight';
+import { LuGithub } from 'react-icons/lu';
+
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
+
   return (
-    <header className="container">
+    <header className="container relative">
       <div className="mt-10 text-center">
         <LogoSvg className="h-40 w-40" />
         <h1 className="text-5xl">
@@ -23,7 +29,8 @@ function HomepageHeader() {
           <span className="text-gradient font-bold">Tianji</span> ={' '}
           <span className="font-semibold underline">Website Analytics</span> +{' '}
           <span className="font-semibold underline">Uptime Monitor</span> +{' '}
-          <span className="font-semibold underline">Server Status</span>
+          <span className="font-semibold underline">Server Status</span> +{' '}
+          <span className="font-semibold underline">More...</span>
         </div>
       </div>
 
@@ -41,7 +48,10 @@ function HomepageHeader() {
           Visit Demo
         </Link> */}
 
-        <div className="m-auto w-min max-w-full overflow-auto rounded-lg bg-neutral-100 p-2 text-left dark:bg-neutral-800">
+        <div
+          className="m-auto w-min max-w-full overflow-auto rounded-lg bg-neutral-100 p-2 text-left dark:bg-neutral-800"
+          style={{ boxShadow: '0px 0px 100px 0px rgba(0, 119, 230, 0.40)' }}
+        >
           <div className="whitespace-nowrap">
             <span className="mr-1 select-none opacity-50">$</span>wget
             https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
@@ -56,6 +66,24 @@ function HomepageHeader() {
           ASAP.
         </small>
       </div>
+
+      <div className="mb-16 flex justify-center gap-4">
+        <Link
+          to="/docs/intro"
+          className="cursor-pointer rounded-full bg-blue-500 px-8 py-3 text-lg font-bold text-white hover:bg-blue-800 hover:text-white hover:no-underline"
+          data-tianji-event="homepage-getstart"
+        >
+          Get Start
+        </Link>
+        <Link
+          to={'https://github.com/msgbyte/tianji'}
+          className="flex cursor-pointer items-center gap-2 rounded-full bg-zinc-800 px-8 py-3 text-lg font-bold text-white hover:bg-zinc-600 hover:text-white hover:no-underline"
+          data-tianji-event="homepage-star"
+        >
+          <LuGithub />
+          <span>Star</span>
+        </Link>
+      </div>
     </header>
   );
 }
@@ -63,7 +91,7 @@ function HomepageHeader() {
 function HomepageMain() {
   return (
     <main className="container pb-8">
-      <div className="mb-8 mt-4 flex flex-wrap justify-around gap-2">
+      {/* <div className="mb-8 mt-4 flex flex-wrap justify-around gap-2">
         <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ No cookies
         </div>
@@ -79,12 +107,26 @@ function HomepageMain() {
         <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ Open Source
         </div>
+      </div> */}
+
+      {/* Features */}
+      <div className="relative mb-32 mt-32">
+        <HomepageFeatures />
+
+        <HomepageSimpleLight
+          className="right-[-600px] top-[-50px]"
+          colorSet="blue"
+        />
       </div>
 
-      <div className="text-center">
-        <div className="rounded-lg border-8 border-solid border-gray-200 shadow-lg dark:border-gray-800">
+      <div className="mb-16 text-center text-5xl font-bold text-white">
+        Preview
+      </div>
+
+      <div className="relative text-center">
+        <div className="rounded-lg border-8 border-solid border-gray-200 shadow-lg dark:border-zinc-800">
           <Carousel
-            className="cursor-move"
+            className="cursor-move overflow-hidden rounded-lg"
             showThumbs={false}
             showStatus={false}
             showIndicators={true}
@@ -103,6 +145,11 @@ function HomepageMain() {
             <img src="/img/preview/6.png" />
           </Carousel>
         </div>
+
+        <HomepageSimpleLight
+          className="left-[-600px] top-[-160px]"
+          colorSet="cyan"
+        />
       </div>
     </main>
   );
@@ -110,8 +157,10 @@ function HomepageMain() {
 
 function HomepageFooter() {
   return (
-    <div className="py-8 text-center">
-      <div className="mb-8 text-2xl font-bold">Join Our Community</div>
+    <div className="relative py-8 text-center">
+      <div id="join-community" className="mb-8 text-4xl font-bold">
+        Join Our Community
+      </div>
 
       <div className="flex justify-center gap-4">
         <Popover
@@ -150,11 +199,15 @@ export default function Home(): JSX.Element {
       title={`Tianji = Website Analytics + Uptime Monitor + Server Status`}
       description={siteConfig.tagline}
     >
-      <HomepageHeader />
+      <div className="relative z-0 bg-black">
+        <HomepageHeaderLight />
 
-      <HomepageMain />
+        <HomepageHeader />
 
-      <HomepageFooter />
+        <HomepageMain />
+
+        <HomepageFooter />
+      </div>
     </Layout>
   );
 }

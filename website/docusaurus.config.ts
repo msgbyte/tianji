@@ -74,6 +74,11 @@ const config: Config = {
       },
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
+    colorMode: {
+      defaultMode: 'dark',
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
+    },
     navbar: {
       title: 'Tianji',
       logo: {
