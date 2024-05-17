@@ -8,6 +8,7 @@ import { Input } from './ui/input';
 import { useFuseSearch } from '@/hooks/useFuseSearch';
 import { Empty } from 'antd';
 import { globalEventBus } from '@/utils/event';
+import { Spinner } from './ui/spinner';
 
 export interface CommonListItem {
   id: string;
@@ -69,6 +70,12 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
 
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-2 p-4">
+          {props.isLoading && (
+            <div className="flex justify-center py-8">
+              <Spinner size={24} />
+            </div>
+          )}
+
           {finalList.length === 0 && !props.isLoading && <Empty />}
 
           {finalList.map((item) => {
