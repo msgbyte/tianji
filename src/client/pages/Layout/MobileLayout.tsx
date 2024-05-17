@@ -5,7 +5,6 @@ import {
   LuMonitorDot,
   LuMoreVertical,
   LuServer,
-  LuTableProperties,
   LuWifi,
 } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -17,6 +16,7 @@ import { LayoutProps } from './types';
 import { UserConfig } from './UserConfig';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { MobileLayoutMenu } from './Menu';
+import { RiSurveyLine } from 'react-icons/ri';
 
 export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
   const { t } = useTranslation();
@@ -75,7 +75,7 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
                 />
                 <MobileNavItem
                   title={t('Survey')}
-                  icon={LuTableProperties}
+                  icon={RiSurveyLine}
                   to="/survey"
                   extraModal={true}
                 />

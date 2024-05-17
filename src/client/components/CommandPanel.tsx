@@ -16,10 +16,11 @@ import {
   LuMonitorDot,
   LuSearch,
   LuServer,
-  LuTableProperties,
   LuUserCircle2,
   LuWifi,
 } from 'react-icons/lu';
+import { RiSurveyLine } from 'react-icons/ri';
+
 import { NavigateOptions, useNavigate } from '@tanstack/react-router';
 import { useEvent } from '@/hooks/useEvent';
 import { useCommandState } from 'cmdk';
@@ -139,7 +140,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                   to: '/survey',
                 })}
               >
-                <LuTableProperties className="mr-2 h-4 w-4" />
+                <RiSurveyLine className="mr-2 h-4 w-4" />
                 {t('Survey')}
               </CommandItem>
             </CommandGroup>
@@ -277,7 +278,7 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
               },
             })}
           >
-            <LuTableProperties className="mr-2 h-4 w-4" />
+            <RiSurveyLine className="mr-2 h-4 w-4" />
             {s.name}
           </CommandItem>
         ))}

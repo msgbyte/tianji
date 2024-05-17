@@ -4,10 +4,8 @@ import {
   LuFilePieChart,
   LuMonitorDot,
   LuServer,
-  LuTableProperties,
   LuWifi,
 } from 'react-icons/lu';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -25,6 +23,7 @@ import { useUserStore } from '@/store/user';
 import { LayoutProps } from './types';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommandPanel } from '@/components/CommandPanel';
+import { RiSurveyLine } from 'react-icons/ri';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -101,7 +100,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           {
             title: t('Survey'),
             label: String(serviceCount?.survey ?? ''),
-            icon: LuTableProperties,
+            icon: RiSurveyLine,
             to: '/survey',
           },
         ]}
