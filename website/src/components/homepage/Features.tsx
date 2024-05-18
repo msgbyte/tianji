@@ -1,6 +1,7 @@
 import Link from '@docusaurus/Link';
 import React from 'react';
 import {
+  LuAreaChart,
   LuCode2,
   LuCookie,
   LuFileArchive,
@@ -114,7 +115,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
           <div className="mt-4 flex flex-col gap-2 pl-2">
             <div className="flex items-start gap-2">
               <div className="rounded-lg bg-white bg-opacity-20 p-1">
-                <LuNetwork className="block" size={18} />
+                <LuAreaChart className="block" size={18} />
               </div>
               <div className="text-md font-bold text-white">
                 Website Analytics
@@ -253,7 +254,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
               className="cursor-pointer rounded-lg bg-white px-8 py-2 font-bold text-zinc-900 hover:bg-zinc-200 hover:text-zinc-800 hover:no-underline"
               data-tianji-event="homepage-features-join"
             >
-              Join
+              Join Our Community
             </Link>
           </div>
         </div>
