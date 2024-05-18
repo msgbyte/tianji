@@ -32,8 +32,4 @@ export const languages = [
     label: '简体中文',
     key: 'zh',
   },
-  {
-    label: 'Urdu',
-    key: 'ur',
-  },
 ];
