@@ -54,16 +54,20 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
           cell: (props) =>
             props
               .getValue()
-              .map((item, i) => (
-                <div
-                  key={i}
-                >{`${item.IP}:${item.PublicPort} -> ${item.PrivatePort} / ${item.Type}`}</div>
-              )),
+              .map((item, i) =>
+                item.IP ? (
+                  <div
+                    key={i}
+                  >{`${item.IP}:${item.PublicPort} -> ${item.PrivatePort} / ${item.Type}`}</div>
+                ) : (
+                  <div key={i}>{`${item.PrivatePort} / ${item.Type}`}</div>
+                )
+              ),
         }),
         columnHelper.accessor('cpuPercent', {
           header: 'CPU(%)',
           size: 90,
-          cell: (props) => `${props.getValue() * 100}%`,
+          cell: (props) => `${Number(props.getValue().toFixed(2))}%`,
         }),
         columnHelper.display({
           header: t('Memory'),

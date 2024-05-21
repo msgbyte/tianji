@@ -1,5 +1,42 @@
 
 
+## [1.11.1](https://github.com/msgbyte/tianji/compare/v1.11.0...v1.11.1) (2024-05-21)
+
+
+### Bug Fixes
+
+* fix display problem in docker panel ([e3d0555](https://github.com/msgbyte/tianji/commit/e3d0555c454cf7e49a9301a28f65cf863fc50573))
+
+
+### Others
+
+* add survey add state ([3ecd7aa](https://github.com/msgbyte/tianji/commit/3ecd7aa171f7be0b8c7dfdeff7d140294d8819bc))
+
+## [1.11.0](https://github.com/msgbyte/tianji/compare/v1.10.0...v1.11.0) (2024-05-20)
+
+
+### Features
+
+* add reporter send docker info ([1dfa24d](https://github.com/msgbyte/tianji/commit/1dfa24df1b52544bee134cc6dcc94f744026bc03))
+* add server docker expend view ([c6433f3](https://github.com/msgbyte/tianji/commit/c6433f310b821b4e8b3cb55df1e9ccadda7d97f4))
+
+
+### Document
+
+* new homepage ([a20396a](https://github.com/msgbyte/tianji/commit/a20396ad97cec9a54461411e8e79af9fc6571c6b))
+* update website style ([8e96c06](https://github.com/msgbyte/tianji/commit/8e96c06d94b71c74235769eb5ff691c951cc2064))
+* uprade docs website to v3.3.2 ([eacf7fc](https://github.com/msgbyte/tianji/commit/eacf7fc56f2f23b301470eca51747d52fe1d78e4))
+
+
+### Others
+
+* add loading state for common list ([00d40c8](https://github.com/msgbyte/tianji/commit/00d40c8410c0c7c94438518344cd7c946cc64879))
+* change datatable expend icon and add transition ([74bd9ef](https://github.com/msgbyte/tianji/commit/74bd9ef3d96c1f2940c0717b61466edc7d0b44ca))
+* move dependency place ([dec6a8b](https://github.com/msgbyte/tianji/commit/dec6a8b7c59deac561e68abed46334e7a072f8c5))
+* update survey icon ([0ea7515](https://github.com/msgbyte/tianji/commit/0ea7515ad21e8d4e3fd798bf3e1341f0caf56821))
+* upgrade tianji-client-sdk version ([9a0a1ea](https://github.com/msgbyte/tianji/commit/9a0a1eacb693dd816ee68db2e217f8f6e48528c6))
+* upgrade trpc version to 10.45.2 ([7c94caf](https://github.com/msgbyte/tianji/commit/7c94caf0ed777f9558bbdc84c26eba32d60105a1))
+
 ## [1.10.0](https://github.com/msgbyte/tianji/compare/v1.9.4...v1.10.0) (2024-05-15)
 
 
