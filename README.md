@@ -34,8 +34,9 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [x] website
 - [ ] team collaboration
 - [ ] utm track
-- [ ] waitlist
-- [ ] survey
+- [x] waitlist
+- [x] survey
+  - [ ] survey page
 - [ ] lighthouse report
 - [ ] hooks
 - [ ] links
