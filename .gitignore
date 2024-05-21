@@ -26,3 +26,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+
+# add:
+docker-compose.yaml
+build.sh
+TODO
