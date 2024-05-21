@@ -8,6 +8,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { LayoutV2 } from '@/pages/LayoutV2';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
+import { cn } from '@/utils/style';
 import { Trans, useTranslation } from '@i18next-toolkit/react';
 import {
   createFileRoute,
@@ -71,6 +72,7 @@ function PageComponent() {
               title={t('Survey')}
               actions={
                 <Button
+                  className={cn(pathname === '/survey/add' && '!bg-muted')}
                   variant="outline"
                   Icon={LuPlus}
                   onClick={handleClickAdd}
