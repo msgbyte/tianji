@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Layouts, Layout } from 'react-grid-layout';
 import { mapValues } from 'lodash-es';
 import { v1 as uuid } from 'uuid';
+import { MonitorDataChart } from '../monitor/MonitorDataChart';
 
 export type DashboardItemType =
   | 'websiteOverview'
@@ -9,10 +10,11 @@ export type DashboardItemType =
   | 'monitorHealthBar'
   | 'monitorMetrics'
   | 'monitorChart'
-  | 'monitorEvents';
+  | 'monitorEvents'
+  | 'monitorDataChart';
 
 export interface DashboardItem {
-  key: string; // match with layout, not equal
+  key: string;
   id: string;
   title: string;
   type: DashboardItemType;
@@ -95,4 +97,10 @@ export const defaultItemLayout: Record<DashboardItemType, Omit<Layout, 'i'>> = {
   monitorMetrics: { x: 0, y: Infinity, w: 2, h: 3 },
   monitorChart: { x: 0, y: Infinity, w: 2, h: 6 },
   monitorEvents: { x: 0, y: Infinity, w: 2, h: 10 },
+  monitorDataChart: { x: 0, y: Infinity, w: 2, h: 8 },
+};
+
+// Add the MonitorDataChart component to be shown
+export const MonitorDataChartComponent = () => {
+  return <MonitorDataChart />;
 };

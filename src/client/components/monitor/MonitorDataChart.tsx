@@ -157,7 +157,8 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
 
     return (
       <div>
-        <div className="mb-4 text-right">
+          <Area {...config} />
+        <div className="mt-4 text-right">
           <Select
             className="w-20 text-center"
             size="small"
@@ -172,7 +173,6 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
           </Select>
         </div>
 
-        <Area {...config} />
       </div>
     );
   }

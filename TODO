@@ -1,0 +1,8 @@
+git clone https://github.com/msgbyte/tianji.git
+cd tianji
+pnpm install
+
+pnpm build
+
+
+better dashboard
