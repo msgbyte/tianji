@@ -1,5 +1,17 @@
 
 
+## [1.11.1](https://github.com/msgbyte/tianji/compare/v1.11.0...v1.11.1) (2024-05-21)
+
+
+### Bug Fixes
+
+* fix display problem in docker panel ([e3d0555](https://github.com/msgbyte/tianji/commit/e3d0555c454cf7e49a9301a28f65cf863fc50573))
+
+
+### Others
+
+* add survey add state ([3ecd7aa](https://github.com/msgbyte/tianji/commit/3ecd7aa171f7be0b8c7dfdeff7d140294d8819bc))
+
 ## [1.11.0](https://github.com/msgbyte/tianji/compare/v1.10.0...v1.11.0) (2024-05-20)
 
 
