@@ -1,6 +1,6 @@
 {
   "name": "tianji-client-sdk",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -9,6 +9,10 @@
     "generate:client": "openapi-ts -i ../../website/openapi.json -o src/open/client",
     "test": "vitest"
   },
+  "files": [
+    "lib",
+    "src"
+  ],
   "keywords": [
     "tianji"
   ],
