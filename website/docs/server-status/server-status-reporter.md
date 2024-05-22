@@ -30,6 +30,21 @@ The **url** and **workspace** is required, its means you will report your servic
 
 Default a server node name will be same with hostname, so you can custom your name with `--name` which can help you identify server.
 
+## Auto install script
+
+You can get your auto install script in `Tianji` -> `Servers` -> `Add` -> `Auto` tab
+
+its will auto download reporter and create linux service in your machine. so its need root permission.
+
+### Uninstall
+
+if you wanna uninstall reporter service, you can use this command like:
+```bash
+curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | bash -s uninstall
+``` 
+
+major change is append `-s uninstall` after your install command.
+
 ## Q&A
 
 ### How to check tianji reporter service log?
