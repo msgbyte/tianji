@@ -172,6 +172,12 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
 
           <DropdownMenuSeparator />
 
+          <DropdownMenuItem
+            onClick={() => window.open('https://tianji.msgbyte.com/docs/intro')}
+          >
+            {t('Document')}
+          </DropdownMenuItem>
+
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>{t('Community')}</DropdownMenuSubTrigger>
             <DropdownMenuPortal>
