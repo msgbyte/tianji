@@ -1,4 +1,4 @@
-import { LayoutHeader } from '@/pages/Layout/Header';
+import { LayoutHeader } from '@/components/layout/Header';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 // import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Suspense } from 'react';

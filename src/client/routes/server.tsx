@@ -1,6 +1,8 @@
 import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { AddServerStep } from '@/components/server/AddServerStep';
+import { InstallScript } from '@/components/server/InstallScript';
 import { ServerList } from '@/components/server/ServerList';
 import {
   AlertDialog,
@@ -14,8 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEventWithLoading } from '@/hooks/useEvent';
-import { LayoutV2 } from '@/pages/LayoutV2';
-import { AddServerStep, InstallScript } from '@/pages/Servers';
+import { Layout } from '@/components/layout';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -32,9 +33,9 @@ export const Route = createFileRoute('/server')({
 
 function ServerComponent() {
   return (
-    <LayoutV2>
+    <Layout>
       <ServerContent />
-    </LayoutV2>
+    </Layout>
   );
 }
 

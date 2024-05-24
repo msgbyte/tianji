@@ -6,7 +6,7 @@ import { MonitorHealthBar } from '@/components/monitor/MonitorHealthBar';
 import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
-import { LayoutV2 } from '@/pages/LayoutV2';
+import { Layout } from '@/components/layout';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
@@ -71,7 +71,7 @@ function MonitorComponent() {
   });
 
   return (
-    <LayoutV2
+    <Layout
       list={
         <CommonWrapper
           header={
