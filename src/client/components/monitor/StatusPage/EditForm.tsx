@@ -133,7 +133,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                                 </Form.Item>
 
                                 <span className="ml-1 align-middle text-sm">
-                                  {t('Show Current Response')}
+                                  {t('Show Latest Value')}
                                 </span>
                               </div>
 
