@@ -14,6 +14,10 @@ export const env = {
   port: Number(process.env.PORT || 12345),
   auth: {
     secret: process.env.AUTH_SECRET || md5(jwtSecret),
+    email: {
+      server: process.env.EMAIL_SERVER,
+      from: process.env.EMAIL_FROM,
+    },
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),

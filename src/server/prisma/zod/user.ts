@@ -1,9 +1,13 @@
 import * as z from "zod"
 import * as imports from "./schemas"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema } from "./index"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteAccount, RelatedAccountModelSchema, CompleteSession, RelatedSessionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema } from "./index"
 
 export const UserModelSchema = z.object({
   id: z.string(),
+  name: z.string().nullish(),
+  email: z.string().nullish(),
+  emailVerified: z.date().nullish(),
+  image: z.string().nullish(),
   username: z.string(),
   password: z.string(),
   role: z.string(),
@@ -15,6 +19,8 @@ export const UserModelSchema = z.object({
 
 export interface CompleteUser extends z.infer<typeof UserModelSchema> {
   currentWorkspace: CompleteWorkspace
+  accounts: CompleteAccount[]
+  sessions: CompleteSession[]
   workspaces: CompleteWorkspacesOnUsers[]
 }
 
@@ -25,5 +31,7 @@ export interface CompleteUser extends z.infer<typeof UserModelSchema> {
  */
 export const RelatedUserModelSchema: z.ZodSchema<CompleteUser> = z.lazy(() => UserModelSchema.extend({
   currentWorkspace: RelatedWorkspaceModelSchema,
+  accounts: RelatedAccountModelSchema.array(),
+  sessions: RelatedSessionModelSchema.array(),
   workspaces: RelatedWorkspacesOnUsersModelSchema.array(),
 }))
