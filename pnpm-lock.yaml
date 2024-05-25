@@ -410,7 +410,7 @@ importers:
         version: 0.5.5(express@4.18.2)(nodemailer@6.9.8)
       '@auth/prisma-adapter':
         specifier: ^2.1.0
-        version: 2.1.0(@prisma/client@5.4.2)(nodemailer@6.9.8)
+        version: 2.1.0(@prisma/client@5.14.0)(nodemailer@6.9.8)
       '@paralleldrive/cuid2':
         specifier: ^2.2.2
         version: 2.2.2
@@ -1956,13 +1956,13 @@ packages:
       - nodemailer
     dev: false
 
-  /@auth/prisma-adapter@2.1.0(@prisma/client@5.4.2)(nodemailer@6.9.8):
+  /@auth/prisma-adapter@2.1.0(@prisma/client@5.14.0)(nodemailer@6.9.8):
     resolution: {integrity: sha512-x1gYsi8xCFdxpEM6pxhh7OTV+VHB3PgID2L18y8F1kXu+PbcEWt4VZSQ8zk6dI/4YRStcuwQdHe7neCpczr0mg==}
     peerDependencies:
       '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5'
     dependencies:
       '@auth/core': 0.31.0(nodemailer@6.9.8)
-      '@prisma/client': 5.4.2(prisma@5.4.2)
+      '@prisma/client': 5.14.0(prisma@5.14.0)
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'
