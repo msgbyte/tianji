@@ -48,6 +48,18 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/04/22">
+          <h3 className="vertical-timeline-element-title">Release v1.9.0</h3>
+          <p>add custom domain support for status page</p>
+          <p>Add pl language!</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/04/09">
+          <h3 className="vertical-timeline-element-title">Release v1.8.0</h3>
+          <p>New Design!</p>
+          <p>Add pt language!</p>
+        </VerticalTimelineElement>
+
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/03/08">
           <h3 className="vertical-timeline-element-title">Release v1.7.0</h3>
           <p>add telemetry feature</p>
