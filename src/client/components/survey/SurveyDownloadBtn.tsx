@@ -112,6 +112,7 @@ export const SurveyDownloadBtn: React.FC<SurveyDownloadBtnProps> = React.memo(
                 'subdivision1',
                 'subdivision2',
                 'city',
+                'createdAt',
               ]),
             };
           })
