@@ -58,3 +58,27 @@ pm2 start ./dist/src/server/main.js --name tianji
 ```
 
 Default, `Tianji` will run on http://localhost:12345
+
+# Frequently Asked Questions
+
+## Install `isolated-vm` failed
+
+If you are using python 3.12, its will report error like this:
+
+```
+ModuleNotFoundError: No module named 'distutils'
+```
+
+Its because of python 3.12 remove `distutils` from builtin module. now we have good resolution about it.
+
+You can switch your python version from 3.12 to 3.9 can resolve it.
+
+### How to resolve it in brew controlled python
+
+```bash
+brew install python@3.9
+rm /opt/homebrew/bin/python3
+ln -sf /opt/homebrew/bin/python3 /opt/homebrew/bin/python3.9
+```
+
+then you can check version with `python3 --version`
