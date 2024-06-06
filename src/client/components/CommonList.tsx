@@ -9,6 +9,7 @@ import { useFuseSearch } from '@/hooks/useFuseSearch';
 import { Empty } from 'antd';
 import { globalEventBus } from '@/utils/event';
 import { Spinner } from './ui/spinner';
+import { formatNumber } from '@/utils/common';
 
 export interface CommonListItem {
   id: string;
@@ -99,7 +100,9 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                   <div className="font-semibold">{item.title}</div>
 
                   {item.number && item.number > 0 && (
-                    <span className="opacity-60">{item.number}</span>
+                    <span className="opacity-60" title={String(item.number)}>
+                      {formatNumber(item.number)}
+                    </span>
                   )}
                 </div>
 

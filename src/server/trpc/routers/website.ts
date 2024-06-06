@@ -84,6 +84,51 @@ export const websiteRouter = router({
 
       return websites;
     }),
+  allOverview: workspaceProcedure
+    .meta({
+      openapi: {
+        method: 'GET',
+        path: '/workspace/{workspaceId}/website/allOverview',
+        tags: [OPENAPI_TAG.WEBSITE],
+        protect: true,
+      },
+    })
+    .output(z.record(z.string(), z.number()))
+    .query(async ({ input }) => {
+      const { workspaceId } = input;
+
+      const websiteIds = (
+        await prisma.website.findMany({
+          where: {
+            workspaceId,
+          },
+          select: {
+            id: true,
+          },
+        })
+      ).map((item) => item.id);
+
+      const res = await prisma.websiteEvent.groupBy({
+        by: ['websiteId'],
+        where: {
+          websiteId: {
+            in: [...websiteIds],
+          },
+          createdAt: {
+            gte: dayjs().subtract(1, 'day').toDate(),
+          },
+        },
+        _count: true,
+      });
+
+      return res.reduce<Record<string, number>>((prev, item) => {
+        if (item.websiteId) {
+          prev[item.websiteId] = item._count;
+        }
+
+        return prev;
+      }, {});
+    }),
   info: workspaceProcedure
     .meta(
       buildWebsiteOpenapi({

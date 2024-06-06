@@ -1,9 +1,8 @@
 import { trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
-import { CommonList } from '@/components/CommonList';
+import { CommonList, CommonListItem } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
-import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
 import { Layout } from '@/components/layout';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -29,15 +28,19 @@ function WebsiteComponent() {
   const { data = [], isLoading } = trpc.website.all.useQuery({
     workspaceId,
   });
+  const { data: overviewData = {} } = trpc.website.allOverview.useQuery({
+    workspaceId,
+  });
   const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
 
-  const items = data.map((item) => ({
+  const items: CommonListItem[] = data.map((item) => ({
     id: item.id,
     title: item.name,
     content: item.domain,
+    number: overviewData[item.id] ?? 0,
     href: `/website/${item.id}`,
   }));
 
