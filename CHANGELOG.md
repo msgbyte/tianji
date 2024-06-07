@@ -1,5 +1,37 @@
 
 
+## [1.11.2](https://github.com/msgbyte/tianji/compare/v1.11.1...v1.11.2) (2024-06-07)
+
+
+### Features
+
+* add createdAt field in survey download csv ([618aedf](https://github.com/msgbyte/tianji/commit/618aedf1963559c07af696fb3483d4c073ba7c29))
+* add document entry ([ad4b67c](https://github.com/msgbyte/tianji/commit/ad4b67ca459837cabcb1f274c7e10ec03bf128f5))
+* add website view count in website list ([8ac5b11](https://github.com/msgbyte/tianji/commit/8ac5b11d4962de05cefe3d5be7c014f4f8bb7c9a))
+
+
+### Document
+
+* add install script uninstall document ([bffb9d6](https://github.com/msgbyte/tianji/commit/bffb9d6729adba7fd66468e9a618b68c68d09366))
+* add prepare markdown ([98a8878](https://github.com/msgbyte/tianji/commit/98a887825f5df8385dc14c45e7e8ce2bc49c4b87))
+* update changelog ([0c5c993](https://github.com/msgbyte/tianji/commit/0c5c993236ba51dfb0242af01459f4024e2038a6))
+* update environment document ([52a8927](https://github.com/msgbyte/tianji/commit/52a89276c8ef707e5283161336296c3f040354d2))
+* update manual document ([1dafea6](https://github.com/msgbyte/tianji/commit/1dafea61c78e01ed28e665ee9048afde433415a9))
+* update manual install document [#56](https://github.com/msgbyte/tianji/issues/56) ([154b8b4](https://github.com/msgbyte/tianji/commit/154b8b4b6405c721342a681f366d3914536dc62a))
+* update manual install faq ([4564347](https://github.com/msgbyte/tianji/commit/45643476985f65e730c4906a719a3931849cd9bb))
+* update readme roadmap ([58445f9](https://github.com/msgbyte/tianji/commit/58445f9249eb8785003d381cc4527835edba485c))
+* update wechat qrcode ([26da461](https://github.com/msgbyte/tianji/commit/26da4613683394bb628f9af444bf0f620d4b563a))
+
+
+### Others
+
+* increase timeout factor of interval ([4e8d761](https://github.com/msgbyte/tianji/commit/4e8d7613a40ba20e425caa2308846f663029ffe2))
+* remove unused code ([328a4e8](https://github.com/msgbyte/tianji/commit/328a4e856cee0cf38c0beb1611ac2bc643bbd981))
+* update env example ([80713e0](https://github.com/msgbyte/tianji/commit/80713e0fceac5ab07045532cd5759ff3a54522db))
+* update sdk publish file module type ([ed0c2e9](https://github.com/msgbyte/tianji/commit/ed0c2e9d1da882acaa55854229336aa05476fd06))
+* update translation ([d74ba8d](https://github.com/msgbyte/tianji/commit/d74ba8d283cb804cd7947ffc3804608ef24c41f7))
+* upgrade prisma version to 5.14.0 ([a0ab1da](https://github.com/msgbyte/tianji/commit/a0ab1da6b60b3c608fb72b24f36b80e6ef954fe9))
+
 ## [1.11.1](https://github.com/msgbyte/tianji/compare/v1.11.0...v1.11.1) (2024-05-21)
 
 
