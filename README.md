@@ -40,6 +40,7 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [ ] lighthouse report
 - [ ] hooks
 - [ ] links
+- [ ] helm install support
 
 ## Preview
 
