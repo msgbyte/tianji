@@ -61,10 +61,14 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
     </Avatar>
   );
 
-  const name = <div className="flex-1">{userInfo?.username ?? ''}</div>;
+  const name = (
+    <div className="flex-1 overflow-hidden text-ellipsis">
+      {userInfo?.username ?? ''}
+    </div>
+  );
 
   const more = (
-    <Button variant="outline" size="icon">
+    <Button variant="outline" size="icon" className="shrink-0">
       <LuMoreVertical />
     </Button>
   );
