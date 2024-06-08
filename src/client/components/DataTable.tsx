@@ -75,7 +75,7 @@ export function DataTable<TData>({
 
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-nowrap">
                     {header.isPlaceholder
                       ? null
                       : flexRender(

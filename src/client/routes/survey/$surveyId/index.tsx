@@ -21,6 +21,7 @@ import { useMemo } from 'react';
 import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
 import dayjs from 'dayjs';
 import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
+import { Scrollbar } from '@radix-ui/react-scroll-area';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -122,10 +123,8 @@ function PageComponent() {
         />
       }
     >
-      <ScrollArea className="h-full overflow-hidden p-4">
-        <ScrollBar orientation="horizontal" />
-
-        <div className="mb-4">
+      <div className="h-full overflow-hidden p-4">
+        <div className="mb-4 w-full">
           <Card>
             <CardHeader>
               <CardTitle>{t('Count')}</CardTitle>
@@ -140,10 +139,12 @@ function PageComponent() {
           </Card>
         </div>
 
-        <div>
+        <ScrollArea className="w-full">
+          <Scrollbar orientation="horizontal" />
+
           <DataTable columns={columns} data={dataSource} />
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
     </CommonWrapper>
   );
 }
