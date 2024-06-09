@@ -33,6 +33,7 @@ jobs:
 
       - name: Update Helm Deps
         run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
           cd k8s/helm
           helm dependency update
 
