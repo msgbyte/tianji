@@ -40,7 +40,12 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [ ] lighthouse report
 - [ ] hooks
 - [ ] links
-- [ ] helm install support
+- [x] helm install support
+  - [ ] allow install from public
+- [ ] improve monitor reporter usage
+  - [ ] uninstall guide
+  - [ ] download from server
+  - [ ] custom params guide
 
 ## Preview
 
