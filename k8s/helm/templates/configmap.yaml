@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tianji.fullname" . }}
+  labels:
+    {{- include "tianji.labels" . | nindent 4 }}
+data:
+  DATABASE_URL: postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.auth.database }}
+  {{/*
+    Rather than maintain a comprehensive ConfigMap, we map all sub-keys of the "env" value here.
+    This allows for more flexibility and less Chart churn as Drone evolves.
+  */}}
+{{- range $envKey, $envVal := .Values.env }}
+  {{ $envKey | upper }}: {{ $envVal | quote }}
+{{- end }}
