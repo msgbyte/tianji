@@ -31,6 +31,11 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
+      - name: Update Helm Deps
+        run: |
+          cd k8s/helm
+          helm dependency update
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
