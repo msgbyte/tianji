@@ -48,6 +48,11 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/05/15">
+          <h3 className="vertical-timeline-element-title">Release v1.10.0</h3>
+          <p>add survey</p>
+        </VerticalTimelineElement>
+
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/04/22">
           <h3 className="vertical-timeline-element-title">Release v1.9.0</h3>
           <p>add custom domain support for status page</p>
