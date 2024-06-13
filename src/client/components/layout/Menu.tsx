@@ -3,14 +3,16 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { LuMenu } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useGlobalEventSubscribe } from '@/utils/event';
+import { useRouterState } from '@tanstack/react-router';
+import { useWatch } from '@/hooks/useWatch';
 
 export const MobileLayoutMenu: React.FC<{
   list?: React.ReactNode;
 }> = React.memo((props) => {
   const [open, setOpen] = useState(false);
+  const state = useRouterState();
 
-  useGlobalEventSubscribe('commonListSelected', () => {
+  useWatch([state.location.href], () => {
     setOpen(false);
   });
 
