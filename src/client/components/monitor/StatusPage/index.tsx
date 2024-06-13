@@ -106,7 +106,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
         <div
           className={clsx(
             'mx-auto overflow-auto px-4 py-8',
-            !editMode ? 'w-4/5' : 'w-2/3'
+            !editMode ? 'w-4/5 sm:w-full' : 'w-2/3'
           )}
         >
           <div className="flex">

@@ -112,7 +112,7 @@ export function DataTable<TData>({
                   )}
 
                   {row.getVisibleCells().map((cell, i) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-nowrap">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

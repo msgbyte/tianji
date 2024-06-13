@@ -10,6 +10,7 @@ import {
   MonitorStatusPageEditForm,
   MonitorStatusPageEditFormValues,
 } from '@/components/monitor/StatusPage/EditForm';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const Route = createFileRoute('/page/add')({
   beforeLoad: routeAuthBeforeLoad,
@@ -47,17 +48,19 @@ function PageAddComponent() {
     <CommonWrapper
       header={<h1 className="text-xl font-bold">{t('Add Page')}</h1>}
     >
-      <div className="p-4">
-        <Card>
-          <CardContent className="pt-4">
-            <MonitorStatusPageEditForm
-              saveButtonLabel="Next"
-              isLoading={createPageMutation.isLoading}
-              onFinish={handleSubmit}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <ScrollArea className="h-full">
+        <div className="p-4">
+          <Card>
+            <CardContent className="pt-4">
+              <MonitorStatusPageEditForm
+                saveButtonLabel="Next"
+                isLoading={createPageMutation.isLoading}
+                onFinish={handleSubmit}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }

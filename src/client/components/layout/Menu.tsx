@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRouterState } from '@tanstack/react-router';
 import { useWatch } from '@/hooks/useWatch';
+import { cn } from '@/utils/style';
 
 export const MobileLayoutMenu: React.FC<{
   list?: React.ReactNode;
@@ -16,21 +17,19 @@ export const MobileLayoutMenu: React.FC<{
     setOpen(false);
   });
 
-  if (!props.list) {
-    return <div />;
-  }
-
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger>
-        <Button variant="outline" size="icon">
-          <LuMenu />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-11/12">
-        <ScrollArea className="h-full">{props.list}</ScrollArea>
-      </SheetContent>
-    </Sheet>
+    <div className={cn(props.list ? 'opacity-100' : 'opacity-0')}>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger>
+          <Button variant="outline" size="icon">
+            <LuMenu />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-11/12">
+          <ScrollArea className="h-full">{props.list}</ScrollArea>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 });
 MobileLayoutMenu.displayName = 'MobileLayoutMenu';
