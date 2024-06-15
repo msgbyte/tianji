@@ -1,5 +1,26 @@
 
 
+## [1.11.3](https://github.com/msgbyte/tianji/compare/tianji-0.1.17...1.11.3) (2024-06-15)
+
+
+### Bug Fixes
+
+* fix setting page not display correct problem ([fdce6b4](https://github.com/msgbyte/tianji/commit/fdce6b42f1e9817dba76072adaf732040bf3f8d3))
+
+
+### Document
+
+* [#68](https://github.com/msgbyte/tianji/issues/68) add document to how to install with helm ([95a8e99](https://github.com/msgbyte/tianji/commit/95a8e9968ba72f6e13db227c0b5695f6d12e388a))
+* add improve monitor reporter usage roadmap [#75](https://github.com/msgbyte/tianji/issues/75) ([caab72d](https://github.com/msgbyte/tianji/commit/caab72dac58f2f6131d195f3bdbb29e41fa8bb0f))
+* update changelog ([0deec1f](https://github.com/msgbyte/tianji/commit/0deec1fc55e30dcb1a71f835ba51b48b46310e3d))
+
+
+### Others
+
+* improve mobile display for tianji ([e9a1b61](https://github.com/msgbyte/tianji/commit/e9a1b61a7f3eec1050df9cf7e4ad3644f787091b))
+* improve sidebar hide logic ([cae0c1d](https://github.com/msgbyte/tianji/commit/cae0c1d6c094a1662e1e390962ed10b8eabe73ea))
+* update cr config ([f91110b](https://github.com/msgbyte/tianji/commit/f91110b313fb7f874813d2f76919476a4cf24631))
+
 ## [1.11.2](https://github.com/msgbyte/tianji/compare/v1.11.1...v1.11.2) (2024-06-07)
 
 
