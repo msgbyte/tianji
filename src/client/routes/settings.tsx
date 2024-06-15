@@ -2,7 +2,6 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { CommonList } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Layout } from '@/components/layout';
-// import { LayoutV2 } from '@/pages/LayoutV2';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
