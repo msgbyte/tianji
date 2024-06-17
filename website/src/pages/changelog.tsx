@@ -48,6 +48,12 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/05/20">
+          <h3 className="vertical-timeline-element-title">Release v1.11.0</h3>
+          <p>add server docker view</p>
+          <p>new homepage</p>
+        </VerticalTimelineElement>
+
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/05/15">
           <h3 className="vertical-timeline-element-title">Release v1.10.0</h3>
           <p>add survey</p>
