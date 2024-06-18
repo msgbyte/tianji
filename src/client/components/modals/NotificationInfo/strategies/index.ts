@@ -3,6 +3,7 @@ import { NotificationSMTP } from './smtp';
 import { NotificationTelegram } from './telegram';
 import { NotificationApprise } from './apprise';
 import { NotificationFeishu } from './feishu';
+import { NotificationWebhook } from './webhook';
 
 interface NotificationStrategy {
   label: string;
@@ -30,5 +31,10 @@ export const notificationStrategies: NotificationStrategy[] = [
     label: 'Feishu',
     name: 'feishu',
     form: NotificationFeishu,
+  },
+  {
+    label: 'Webhook',
+    name: 'webhook',
+    form: NotificationWebhook,
   },
 ];
