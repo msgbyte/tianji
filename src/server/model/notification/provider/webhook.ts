@@ -1,6 +1,7 @@
 import { NotificationProvider } from './type';
 import { baseContentTokenizer } from '../token';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 interface WebhookPayload {
   webhookUrl: string;
@@ -16,8 +17,10 @@ export const webhook: NotificationProvider = {
 
     await axios.post(webhookUrl, {
       notification,
+      title,
       content,
       raw: message,
+      time: dayjs().toISOString(),
     });
   },
 };
