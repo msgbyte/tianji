@@ -1,5 +1,27 @@
 
 
+## [1.11.4](https://github.com/msgbyte/tianji/compare/v1.11.3...v1.11.4) (2024-06-21)
+
+
+### Features
+
+* add server install script usage guide ([4943d2d](https://github.com/msgbyte/tianji/commit/4943d2dd8e4495f3e03631d7f332b9a630e79b49))
+* add webhook notification ([90df8e8](https://github.com/msgbyte/tianji/commit/90df8e8e36c618868110c3b9a0119b1b69184546))
+* webhook add title and time ([a91d1ff](https://github.com/msgbyte/tianji/commit/a91d1ffffe41b61b9792d92865e8d8f65db27b0f))
+
+
+### Document
+
+* add document about server status page custom domain ([f06e788](https://github.com/msgbyte/tianji/commit/f06e788f454df877d7030e603aff5b882fcf7a82))
+* add webhook document ([61c1b0e](https://github.com/msgbyte/tianji/commit/61c1b0e06504fca8fc35c41a7bb15130e7c08f24))
+* update changelog ([ee16e6c](https://github.com/msgbyte/tianji/commit/ee16e6cd76c9138ce343b208f6c8d0026f0ee6c9))
+* update wechat qrcode ([0d2c4f9](https://github.com/msgbyte/tianji/commit/0d2c4f97f96494a4874c4b3a30bd633202f35b2f))
+
+
+### Others
+
+* update release it ([3bfd11a](https://github.com/msgbyte/tianji/commit/3bfd11a7b6b2395cbe24653fea52c415c14bc1ca))
+
 ## [1.11.3](https://github.com/msgbyte/tianji/compare/tianji-0.1.17...1.11.3) (2024-06-15)
 
 
