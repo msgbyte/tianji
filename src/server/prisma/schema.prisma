@@ -56,6 +56,7 @@ model Workspace {
   workspaceDailyUsage WorkspaceDailyUsage[]
   workspaceAuditLog   WorkspaceAuditLog[]
   surveys             Survey[]
+  feedChannels        FeedChannel[]
 }
 
 model WorkspacesOnUsers {
@@ -438,9 +439,39 @@ model SurveyResult {
   latitude       Float?
   accuracyRadius Int?
 
-
   survey Survey @relation(fields: [surveyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([surveyId])
   @@index([sessionId])
+}
+
+model FeedChannel {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  events    FeedEvent[]
+
+  @@index([workspaceId])
+}
+
+model FeedEvent {
+  id           String   @id @default(cuid()) @db.VarChar(30)
+  channelId    String   @db.VarChar(30)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  eventName    String
+  eventContent String
+  tags         String[]
+  source       String // custom text or third-party integrations
+  senderId     String? // maybe user id
+  senderName   String? // use for display who
+  important    Boolean
+
+  channel FeedChannel @relation(fields: [channelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([channelId])
 }

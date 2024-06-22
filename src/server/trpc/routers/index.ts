@@ -10,6 +10,7 @@ import { auditLogRouter } from './auditLog';
 import { billingRouter } from './billing';
 import { telemetryRouter } from './telemetry';
 import { surveyRouter } from './survey';
+import { feedRouter } from './feed';
 
 export const appRouter = router({
   global: globalRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   serverStatus: serverStatusRouter,
   auditLog: auditLogRouter,
   billing: billingRouter,
+  feed: feedRouter,
 });
 
 export type AppRouter = typeof appRouter;

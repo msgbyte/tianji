@@ -51,21 +51,6 @@ export class UserService {
         });
     }
     
-    /**
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns unknown Successful response
-     * @throws ApiError
-     */
-    public static userRegister(data: $OpenApiTs['/register']['post']['req']): CancelablePromise<$OpenApiTs['/register']['post']['res'][200]> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/register',
-            body: data.requestBody,
-            mediaType: 'application/json'
-        });
-    }
-    
 }
 
 export class WorkspaceService {
@@ -117,6 +102,23 @@ export class WebsiteService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/website/all',
+            path: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns number Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static websiteAllOverview(data: $OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/website/allOverview',
             path: {
                 workspaceId: data.workspaceId
             }
@@ -1076,6 +1078,8 @@ export class SurveyService {
      * @param data.surveyId
      * @param data.limit
      * @param data.cursor
+     * @param data.startAt
+     * @param data.endAt
      * @returns unknown Successful response
      * @throws ApiError
      */
@@ -1089,7 +1093,9 @@ export class SurveyService {
             },
             query: {
                 limit: data.limit,
-                cursor: data.cursor
+                cursor: data.cursor,
+                startAt: data.startAt,
+                endAt: data.endAt
             }
         });
     }
@@ -1138,6 +1144,43 @@ export class BillingService {
                 workspaceId: data.workspaceId,
                 startAt: data.startAt,
                 endAt: data.endAt
+            }
+        });
+    }
+    
+}
+
+export class FeedService {
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedChannels(data: $OpenApiTs['/workspace/{workspaceId}/feed/channels']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/channels']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/feed/channels',
+            path: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.channelId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedEvents(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/events']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/events']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/feed/{channelId}/events',
+            path: {
+                workspaceId: data.workspaceId,
+                channelId: data.channelId
             }
         });
     }

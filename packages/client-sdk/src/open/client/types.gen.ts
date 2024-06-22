@@ -104,49 +104,6 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/register': {
-        post: {
-            req: {
-                requestBody: {
-                    username: string;
-                    password: string;
-                };
-            };
-            res: {
-                /**
-                 * Successful response
-                 */
-                200: {
-                    info: {
-                        username: string;
-                        id: string;
-                        role: string;
-                        createdAt: string;
-                        updatedAt: string;
-                        deletedAt: string | null;
-                        currentWorkspace: {
-                            id: string;
-                            name: string;
-                            dashboardLayout: {
-                                layouts: {
-                                    [key: string]: (unknown[]);
-                                };
-                                items: unknown[];
-                            } | null;
-                        };
-                        workspaces: Array<{
-                            role: string;
-                            workspace: {
-                                id: string;
-                                name: string;
-                            };
-                        }>;
-                    };
-                    token: string;
-                };
-            };
-        };
-    };
     '/workspace/{workspaceId}/getServiceCount': {
         get: {
             req: {
@@ -208,6 +165,25 @@ export type $OpenApiTs = {
                     updatedAt: string;
                     deletedAt: string | null;
                 }>;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/website/allOverview': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
             };
         };
     };
@@ -345,7 +321,7 @@ export type $OpenApiTs = {
                 region?: string;
                 startAt: number;
                 title?: string;
-                type: 'url' | 'language' | 'referrer' | 'browser' | 'os' | 'device' | 'country' | 'event';
+                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'device' | 'country' | 'event';
                 url?: string;
                 websiteId: string;
                 workspaceId: string;
@@ -1319,7 +1295,9 @@ export type $OpenApiTs = {
         get: {
             req: {
                 cursor?: string;
+                endAt?: number;
                 limit?: number;
+                startAt?: number;
                 surveyId: string;
                 workspaceId: string;
             };
@@ -1394,6 +1372,54 @@ export type $OpenApiTs = {
                     websiteEventCount: number;
                     monitorExecutionCount: number;
                 };
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/channels': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    _count: {
+                        events: number;
+                    };
+                }>;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/{channelId}/events': {
+        get: {
+            req: {
+                channelId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    channelId: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    important: boolean;
+                }>;
             };
         };
     };

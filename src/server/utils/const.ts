@@ -111,4 +111,5 @@ export enum OPENAPI_TAG {
   BILLING = 'Billing',
   TELEMETRY = 'Telemetry',
   SURVEY = 'Survey',
+  FEED = 'Feed',
 }
