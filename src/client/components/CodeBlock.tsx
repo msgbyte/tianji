@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { LuCopy, LuCopyCheck } from 'react-icons/lu';
 import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
+import { ScrollBar } from './ui/scroll-area';
 
 export const CodeBlock: React.FC<{
   code: string;
@@ -20,7 +21,7 @@ export const CodeBlock: React.FC<{
   });
 
   return (
-    <div className="group relative overflow-auto">
+    <div className="group relative w-full overflow-auto">
       <pre className="rounded-sm border border-zinc-800 bg-zinc-900 p-3 pr-12 text-sm">
         <code>{props.code}</code>
       </pre>

@@ -1397,6 +1397,49 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/workspace/{workspaceId}/feed/{channelId}/info': {
+        get: {
+            req: {
+                channelId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                } | null;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/{channelId}/update': {
+        post: {
+            req: {
+                channelId: string;
+                requestBody: {
+                    name: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                } | null;
+            };
+        };
+    };
     '/workspace/{workspaceId}/feed/{channelId}/events': {
         get: {
             req: {
@@ -1420,6 +1463,82 @@ export type $OpenApiTs = {
                     senderName?: string | null;
                     important: boolean;
                 }>;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/createChannel': {
+        post: {
+            req: {
+                requestBody: {
+                    name: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/{channelId}': {
+        delete: {
+            req: {
+                channelId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+            };
+        };
+    };
+    '/feed/{channelId}/send': {
+        post: {
+            req: {
+                channelId: string;
+                requestBody: {
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    important: boolean;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    channelId: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    important: boolean;
+                };
             };
         };
     };

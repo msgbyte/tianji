@@ -1174,6 +1174,45 @@ export class FeedService {
      * @returns unknown Successful response
      * @throws ApiError
      */
+    public static feedChannelInfo(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/info']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/info']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/feed/{channelId}/info',
+            path: {
+                workspaceId: data.workspaceId,
+                channelId: data.channelId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.channelId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedUpdateChannelInfo(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/update']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/update']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/feed/{channelId}/update',
+            path: {
+                workspaceId: data.workspaceId,
+                channelId: data.channelId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.channelId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
     public static feedEvents(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/events']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/events']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -1182,6 +1221,62 @@ export class FeedService {
                 workspaceId: data.workspaceId,
                 channelId: data.channelId
             }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedCreateChannel(data: $OpenApiTs['/workspace/{workspaceId}/feed/createChannel']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/createChannel']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/feed/createChannel',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.channelId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedDeleteChannel(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace/{workspaceId}/feed/{channelId}',
+            path: {
+                workspaceId: data.workspaceId,
+                channelId: data.channelId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.channelId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedSendEvent(data: $OpenApiTs['/feed/{channelId}/send']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/send']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/{channelId}/send',
+            path: {
+                channelId: data.channelId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
         });
     }
     

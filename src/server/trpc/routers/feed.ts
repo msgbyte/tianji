@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc';
+import {
+  OpenApiMetaInfo,
+  publicProcedure,
+  router,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} from '../trpc';
 import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
 import { FeedChannelModelSchema, FeedEventModelSchema } from '../../prisma/zod';
@@ -43,6 +49,65 @@ export const feedRouter = router({
 
       return channels;
     }),
+  channelInfo: workspaceProcedure
+    .meta(
+      buildFeedOpenapi({
+        method: 'GET',
+        path: '/{channelId}/info',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+      })
+    )
+    .output(FeedChannelModelSchema.nullable())
+    .query(async ({ input }) => {
+      const { channelId, workspaceId } = input;
+
+      const channel = prisma.feedChannel.findFirst({
+        where: {
+          workspaceId,
+          id: channelId,
+        },
+      });
+
+      return channel;
+    }),
+  updateChannelInfo: workspaceProcedure
+    .meta(
+      buildFeedOpenapi({
+        method: 'POST',
+        path: '/{channelId}/update',
+      })
+    )
+    .input(
+      z
+        .object({
+          channelId: z.string(),
+        })
+        .merge(
+          FeedChannelModelSchema.pick({
+            name: true,
+          })
+        )
+    )
+    .output(FeedChannelModelSchema.nullable())
+    .mutation(async ({ input }) => {
+      const { channelId, workspaceId, name } = input;
+
+      const channel = prisma.feedChannel.update({
+        where: {
+          workspaceId,
+          id: channelId,
+        },
+        data: {
+          name,
+        },
+      });
+
+      return channel;
+    }),
   events: workspaceProcedure
     .meta(
       buildFeedOpenapi({
@@ -66,6 +131,93 @@ export const feedRouter = router({
       });
 
       return events;
+    }),
+  createChannel: workspaceOwnerProcedure
+    .meta(
+      buildFeedOpenapi({
+        method: 'POST',
+        path: '/createChannel',
+      })
+    )
+    .input(
+      FeedChannelModelSchema.pick({
+        name: true,
+      })
+    )
+    .output(FeedChannelModelSchema)
+    .mutation(async ({ input }) => {
+      const { name, workspaceId } = input;
+
+      const channel = await prisma.feedChannel.create({
+        data: {
+          workspaceId,
+          name,
+        },
+      });
+
+      return channel;
+    }),
+  deleteChannel: workspaceOwnerProcedure
+    .meta(
+      buildFeedOpenapi({
+        method: 'DELETE',
+        path: '/{channelId}',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+      })
+    )
+    .output(FeedChannelModelSchema)
+    .mutation(async ({ input }) => {
+      const { channelId, workspaceId } = input;
+
+      const channel = await prisma.feedChannel.delete({
+        where: {
+          workspaceId,
+          id: channelId,
+        },
+      });
+
+      return channel;
+    }),
+  sendEvent: publicProcedure
+    .meta({
+      openapi: {
+        tags: [OPENAPI_TAG.FEED],
+        protect: false,
+        method: 'POST',
+        path: '/feed/{channelId}/send',
+      },
+    })
+    .input(
+      FeedEventModelSchema.pick({
+        eventName: true,
+        eventContent: true,
+        tags: true,
+        source: true,
+        senderId: true,
+        senderName: true,
+        important: true,
+      }).merge(
+        z.object({
+          channelId: z.string(),
+        })
+      )
+    )
+    .output(FeedEventModelSchema)
+    .mutation(async ({ input }) => {
+      const { channelId, ...data } = input;
+
+      const event = await prisma.feedEvent.create({
+        data: {
+          ...data,
+          channelId: channelId,
+        },
+      });
+
+      return event;
     }),
 });
 

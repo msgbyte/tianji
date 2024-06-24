@@ -17,7 +17,7 @@ import {
 } from '@tanstack/react-router';
 import { LuPlus } from 'react-icons/lu';
 
-export const Route = createFileRoute('/survey')({
+export const Route = createFileRoute('/feed')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });
@@ -25,10 +25,7 @@ export const Route = createFileRoute('/survey')({
 function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [], isLoading } = trpc.survey.all.useQuery({
-    workspaceId,
-  });
-  const { data: allResultCount = {} } = trpc.survey.allResultCount.useQuery({
+  const { data: channels = [], isLoading } = trpc.feed.channels.useQuery({
     workspaceId,
   });
   const navigate = useNavigate();
@@ -36,21 +33,21 @@ function PageComponent() {
     select: (state) => state.location.pathname,
   });
 
-  const items = data.map((item) => ({
+  const items = channels.map((item) => ({
     id: item.id,
     title: item.name,
-    number: allResultCount[item.id] ?? 0,
-    href: `/survey/${item.id}`,
+    number: item._count.events ?? 0,
+    href: `/feed/${item.id}`,
   }));
 
   useDataReady(
-    () => data.length > 0,
+    () => channels.length > 0,
     () => {
       if (pathname === Route.fullPath) {
         navigate({
-          to: '/survey/$surveyId',
+          to: '/feed/$channelId',
           params: {
-            surveyId: data[0].id,
+            channelId: channels[0].id,
           },
         });
       }
@@ -59,7 +56,7 @@ function PageComponent() {
 
   const handleClickAdd = useEvent(() => {
     navigate({
-      to: '/survey/add',
+      to: '/feed/add',
     });
   });
 
@@ -69,10 +66,10 @@ function PageComponent() {
         <CommonWrapper
           header={
             <CommonHeader
-              title={t('Survey')}
+              title={t('Feed')}
               actions={
                 <Button
-                  className={cn(pathname === '/survey/add' && '!bg-muted')}
+                  className={cn(pathname === '/feed/add' && '!bg-muted')}
                   variant="outline"
                   Icon={LuPlus}
                   onClick={handleClickAdd}

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {
+  LuActivitySquare,
   LuAreaChart,
   LuFilePieChart,
   LuMonitorDot,
@@ -102,6 +103,12 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             label: String(serviceCount?.survey ?? ''),
             icon: RiSurveyLine,
             to: '/survey',
+          },
+          {
+            title: t('Feed'),
+            label: '',
+            icon: LuActivitySquare,
+            to: '/feed',
           },
         ]}
       />

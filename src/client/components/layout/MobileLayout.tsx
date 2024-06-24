@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  LuActivitySquare,
   LuAreaChart,
   LuFilePieChart,
   LuMonitorDot,
@@ -77,6 +78,12 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
                   title={t('Survey')}
                   icon={RiSurveyLine}
                   to="/survey"
+                  extraModal={true}
+                />
+                <MobileNavItem
+                  title={t('Feed')}
+                  icon={LuActivitySquare}
+                  to="/feed"
                   extraModal={true}
                 />
               </div>

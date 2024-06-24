@@ -20,6 +20,7 @@ import { Route as RegisterImport } from './routes/register'
 import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
+import { Route as FeedImport } from './routes/feed'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
@@ -35,12 +36,15 @@ import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
+import { Route as FeedAddImport } from './routes/feed/add'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
+import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
+import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 
 // Create/Update Routes
 
@@ -86,6 +90,11 @@ const MonitorRoute = MonitorImport.update({
 
 const LoginRoute = LoginImport.update({
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const FeedRoute = FeedImport.update({
+  path: '/feed',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -164,6 +173,11 @@ const MonitorAddRoute = MonitorAddImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
+const FeedAddRoute = FeedAddImport.update({
+  path: '/add',
+  getParentRoute: () => FeedRoute,
+} as any)
+
 const WebsiteWebsiteIdIndexRoute = WebsiteWebsiteIdIndexImport.update({
   path: '/$websiteId/',
   getParentRoute: () => WebsiteRoute,
@@ -177,6 +191,11 @@ const SurveySurveyIdIndexRoute = SurveySurveyIdIndexImport.update({
 const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
   path: '/$monitorId/',
   getParentRoute: () => MonitorRoute,
+} as any)
+
+const FeedChannelIdIndexRoute = FeedChannelIdIndexImport.update({
+  path: '/$channelId/',
+  getParentRoute: () => FeedRoute,
 } as any)
 
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
@@ -194,6 +213,11 @@ const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
+const FeedChannelIdEditRoute = FeedChannelIdEditImport.update({
+  path: '/$channelId/edit',
+  getParentRoute: () => FeedRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -204,6 +228,10 @@ declare module '@tanstack/react-router' {
     }
     '/dashboard': {
       preLoaderRoute: typeof DashboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/feed': {
+      preLoaderRoute: typeof FeedImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -241,6 +269,10 @@ declare module '@tanstack/react-router' {
     '/website': {
       preLoaderRoute: typeof WebsiteImport
       parentRoute: typeof rootRoute
+    }
+    '/feed/add': {
+      preLoaderRoute: typeof FeedAddImport
+      parentRoute: typeof FeedImport
     }
     '/monitor/add': {
       preLoaderRoute: typeof MonitorAddImport
@@ -294,6 +326,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/feed/$channelId/edit': {
+      preLoaderRoute: typeof FeedChannelIdEditImport
+      parentRoute: typeof FeedImport
+    }
     '/monitor/$monitorId/edit': {
       preLoaderRoute: typeof MonitorMonitorIdEditImport
       parentRoute: typeof MonitorImport
@@ -305,6 +341,10 @@ declare module '@tanstack/react-router' {
     '/website/$websiteId/config': {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
+    }
+    '/feed/$channelId/': {
+      preLoaderRoute: typeof FeedChannelIdIndexImport
+      parentRoute: typeof FeedImport
     }
     '/monitor/$monitorId/': {
       preLoaderRoute: typeof MonitorMonitorIdIndexImport
@@ -326,6 +366,11 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
   DashboardRoute,
+  FeedRoute.addChildren([
+    FeedAddRoute,
+    FeedChannelIdEditRoute,
+    FeedChannelIdIndexRoute,
+  ]),
   LoginRoute,
   MonitorRoute.addChildren([
     MonitorAddRoute,
