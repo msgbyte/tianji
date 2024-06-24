@@ -10,6 +10,54 @@ import { OPENAPI_TAG } from '../../utils/const';
 import { OpenApiMeta } from 'trpc-openapi';
 import { FeedChannelModelSchema, FeedEventModelSchema } from '../../prisma/zod';
 import { prisma } from '../../model/_client';
+import _ from 'lodash';
+
+export const feedIntegrationRouter = router({
+  github: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'POST',
+        path: '/{channelId}/github',
+      })
+    )
+    .input(
+      z
+        .object({
+          channelId: z.string(),
+        })
+        .passthrough()
+    )
+    .output(z.string())
+    .mutation(async ({ input, ctx }) => {
+      const eventType = ctx.req.headers['X-GitHub-Event'];
+      const { channelId, ...data } = input;
+
+      if (eventType === 'push') {
+        const pusher = `${_.get(data, 'pusher.name')}<${_.get(data, 'pusher.email')}>`;
+        const commits = _.map(_.get(data, 'commits') as any[], 'id').join(', ');
+        const fullName = _.get(data, 'repository.full_name');
+        const ref = String(_.get(data, 'ref'));
+        const senderId = String(_.get(data, 'sender.id'));
+        const senderName = String(_.get(data, 'sender.login'));
+        const url = String(_.get(data, 'compare'));
+        await prisma.feedEvent.create({
+          data: {
+            channelId: channelId,
+            eventName: 'push',
+            eventContent: `${pusher} push commit ${commits} to [${ref}] in ${fullName}`,
+            tags: [],
+            source: 'github',
+            senderId,
+            senderName,
+            important: false,
+            url,
+          },
+        });
+      }
+
+      return 'ok';
+    }),
+});
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -183,14 +231,12 @@ export const feedRouter = router({
       return channel;
     }),
   sendEvent: publicProcedure
-    .meta({
-      openapi: {
-        tags: [OPENAPI_TAG.FEED],
-        protect: false,
+    .meta(
+      buildFeedPublicOpenapi({
         method: 'POST',
-        path: '/feed/{channelId}/send',
-      },
-    })
+        path: '/{channelId}/send',
+      })
+    )
     .input(
       FeedEventModelSchema.pick({
         eventName: true,
@@ -219,6 +265,7 @@ export const feedRouter = router({
 
       return event;
     }),
+  integration: feedIntegrationRouter,
 });
 
 function buildFeedOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
@@ -228,6 +275,17 @@ function buildFeedOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       protect: true,
       ...meta,
       path: `/workspace/{workspaceId}/feed${meta.path}`,
+    },
+  };
+}
+
+function buildFeedPublicOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.FEED],
+      protect: false,
+      ...meta,
+      path: `/feed${meta.path}`,
     },
   };
 }
