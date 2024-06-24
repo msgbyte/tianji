@@ -469,6 +469,7 @@ model FeedEvent {
   source       String // custom text or third-party integrations
   senderId     String? // maybe user id
   senderName   String? // use for display who
+  url          String? // url link
   important    Boolean
 
   channel FeedChannel @relation(fields: [channelId], references: [id], onUpdate: Cascade, onDelete: Cascade)

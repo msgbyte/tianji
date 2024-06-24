@@ -13,6 +13,7 @@ export const FeedEventModelSchema = z.object({
   source: z.string(),
   senderId: z.string().nullish(),
   senderName: z.string().nullish(),
+  url: z.string().nullish(),
   important: z.boolean(),
 })
 
