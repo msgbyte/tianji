@@ -43,7 +43,7 @@ export const feedIntegrationRouter = router({
         await prisma.feedEvent.create({
           data: {
             channelId: channelId,
-            eventName: 'push',
+            eventName: eventType,
             eventContent: `${pusher} push commit ${commits} to [${ref}] in ${fullName}`,
             tags: [],
             source: 'github',
@@ -53,6 +53,59 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
+      } else if (eventType === 'star') {
+        const starCount = _.get(data, 'repository.stargazers_count');
+        const fullName = _.get(data, 'repository.full_name');
+        const senderId = String(_.get(data, 'sender.id'));
+        const senderName = String(_.get(data, 'sender.login'));
+        const url = String(_.get(data, 'compare'));
+        await prisma.feedEvent.create({
+          data: {
+            channelId: channelId,
+            eventName: eventType,
+            eventContent: `${senderName} star repo [${fullName}], now is ${starCount}.`,
+            tags: [],
+            source: 'github',
+            senderId,
+            senderName,
+            important: false,
+            url,
+          },
+        });
+      } else if (eventType === 'issues') {
+        const action = _.get(data, 'action') as 'opened' | 'closed';
+        const starCount = _.get(data, 'repository.stargazers_count');
+        const fullName = _.get(data, 'repository.full_name');
+        const senderId = String(_.get(data, 'sender.id'));
+        const senderName = String(_.get(data, 'sender.login'));
+        const url = String(_.get(data, 'issue.url'));
+        const title = String(_.get(data, 'issue.title'));
+
+        let eventName = eventType;
+        let eventContent = '';
+        if (action === 'opened') {
+          eventName = 'open_issue';
+          eventContent = `${senderName} open issue [${title}] in repo [${fullName}]`;
+        } else if (action === 'closed') {
+          eventName = 'close_issue';
+          eventContent = `${senderName} close issue [${title}] in repo [${fullName}]`;
+        }
+
+        if (eventContent) {
+          await prisma.feedEvent.create({
+            data: {
+              channelId: channelId,
+              eventName: eventName,
+              eventContent: `${senderName} star repo [${fullName}], now is ${starCount}.`,
+              tags: [],
+              source: 'github',
+              senderId,
+              senderName,
+              important: false,
+              url,
+            },
+          });
+        }
       }
 
       return 'ok';
