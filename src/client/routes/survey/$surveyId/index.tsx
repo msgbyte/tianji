@@ -139,6 +139,8 @@ function PageComponent() {
           </Card>
         </div>
 
+        <div className="mb-2 text-lg font-bold">{t('Preview')}</div>
+
         <ScrollArea className="w-full">
           <Scrollbar orientation="horizontal" />
 
