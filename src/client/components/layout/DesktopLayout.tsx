@@ -106,7 +106,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           },
           {
             title: t('Feed'),
-            label: '',
+            label: String(serviceCount?.feed ?? ''),
             icon: LuActivitySquare,
             to: '/feed',
           },
