@@ -40,11 +40,13 @@ export const AlertConfirm: React.FC<AlertConfirmProps> = React.memo((props) => {
 
         <AlertDialogFooter>
           <AlertDialogCancel onClick={props.onCancel}>
-            {t('Cancel')}
+            {props.onConfirm ? t('Cancel') : t('Continue')}
           </AlertDialogCancel>
-          <AlertDialogAction onClick={props.onConfirm}>
-            {t('Confirm')}
-          </AlertDialogAction>
+          {props.onConfirm && (
+            <AlertDialogAction onClick={props.onConfirm}>
+              {t('Confirm')}
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

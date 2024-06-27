@@ -13,12 +13,11 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEvent } from '@/hooks/useEvent';
 import { AlertConfirm } from '@/components/AlertConfirm';
-import { LuPencil, LuTrash } from 'react-icons/lu';
+import { LuPencil, LuTrash, LuWebhook } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
-import { Scrollbar } from '@radix-ui/react-scroll-area';
-import { Empty } from 'antd';
 import { FeedApiGuide } from '@/components/feed/FeedApiGuide';
 import { FeedEventItem } from '@/components/feed/FeedEventItem';
+import { FeedIntegration } from '@/components/feed/FeedIntegration';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -60,6 +59,15 @@ function PageComponent() {
           title={info?.name ?? ''}
           actions={
             <div className="space-x-2">
+              {info?.id && (
+                <AlertConfirm
+                  title={t('Integration')}
+                  content={<FeedIntegration feedId={info.id} />}
+                >
+                  <Button variant="default" size="icon" Icon={LuWebhook} />
+                </AlertConfirm>
+              )}
+
               <Button
                 variant="outline"
                 size="icon"
