@@ -29,7 +29,7 @@ export const feedIntegrationRouter = router({
     )
     .output(z.string())
     .mutation(async ({ input, ctx }) => {
-      const eventType = ctx.req.headers['X-GitHub-Event'];
+      const eventType = ctx.req.headers['x-github-event'];
       const { channelId, ...data } = input;
 
       if (eventType === 'push') {
@@ -53,6 +53,8 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
+
+        return 'ok';
       } else if (eventType === 'star') {
         const starCount = _.get(data, 'repository.stargazers_count');
         const fullName = _.get(data, 'repository.full_name');
@@ -72,6 +74,8 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
+
+        return 'ok';
       } else if (eventType === 'issues') {
         const action = _.get(data, 'action') as 'opened' | 'closed';
         const starCount = _.get(data, 'repository.stargazers_count');
@@ -105,10 +109,12 @@ export const feedIntegrationRouter = router({
               url,
             },
           });
+
+          return 'ok';
         }
       }
 
-      return 'ok';
+      return 'not supported';
     }),
 });
 

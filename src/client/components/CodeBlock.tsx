@@ -22,7 +22,7 @@ export const CodeBlock: React.FC<{
 
   return (
     <div className="group relative w-full overflow-auto">
-      <pre className="rounded-sm border border-zinc-800 bg-zinc-900 p-3 pr-12 text-sm">
+      <pre className="max-h-96 rounded-sm border border-zinc-800 bg-zinc-900 p-3 pr-12 text-sm">
         <code>{props.code}</code>
       </pre>
       <Button

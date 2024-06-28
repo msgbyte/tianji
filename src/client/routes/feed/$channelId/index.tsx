@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { FeedApiGuide } from '@/components/feed/FeedApiGuide';
 import { FeedEventItem } from '@/components/feed/FeedEventItem';
 import { FeedIntegration } from '@/components/feed/FeedIntegration';
+import { DialogWrapper } from '@/components/DialogWrapper';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -60,12 +61,12 @@ function PageComponent() {
           actions={
             <div className="space-x-2">
               {info?.id && (
-                <AlertConfirm
+                <DialogWrapper
                   title={t('Integration')}
                   content={<FeedIntegration feedId={info.id} />}
                 >
                   <Button variant="default" size="icon" Icon={LuWebhook} />
-                </AlertConfirm>
+                </DialogWrapper>
               )}
 
               <Button
@@ -101,9 +102,11 @@ function PageComponent() {
         </div>
       ) : (
         <ScrollArea className="h-full overflow-hidden p-4">
-          {(events ?? []).map((event) => (
-            <FeedEventItem key={event.id} event={event} />
-          ))}
+          <div className="space-y-2">
+            {(events ?? []).map((event) => (
+              <FeedEventItem key={event.id} event={event} />
+            ))}
+          </div>
         </ScrollArea>
       )}
     </CommonWrapper>
