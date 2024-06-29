@@ -11,6 +11,7 @@ import { OpenApiMeta } from 'trpc-openapi';
 import { FeedChannelModelSchema, FeedEventModelSchema } from '../../prisma/zod';
 import { prisma } from '../../model/_client';
 import _ from 'lodash';
+import { subscribeEventBus } from '../../ws/shared';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -32,6 +33,21 @@ export const feedIntegrationRouter = router({
       const eventType = ctx.req.headers['x-github-event'];
       const { channelId, ...data } = input;
 
+      const workspaceId = await prisma.feedChannel
+        .findFirst({
+          where: {
+            id: channelId,
+          },
+          select: {
+            workspaceId: true,
+          },
+        })
+        .then((res) => res?.workspaceId);
+
+      if (!workspaceId) {
+        return 'Not found';
+      }
+
       if (eventType === 'push') {
         const pusher = `${_.get(data, 'pusher.name')}<${_.get(data, 'pusher.email')}>`;
         const commits = _.map(_.get(data, 'commits') as any[], 'id').join(', ');
@@ -40,7 +56,7 @@ export const feedIntegrationRouter = router({
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
         const url = String(_.get(data, 'compare'));
-        await prisma.feedEvent.create({
+        const event = await prisma.feedEvent.create({
           data: {
             channelId: channelId,
             eventName: eventType,
@@ -53,6 +69,7 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
+        subscribeEventBus.emit('onReceiveFeedEvent', workspaceId, event);
 
         return 'ok';
       } else if (eventType === 'star') {
@@ -61,7 +78,7 @@ export const feedIntegrationRouter = router({
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
         const url = String(_.get(data, 'compare'));
-        await prisma.feedEvent.create({
+        const event = await prisma.feedEvent.create({
           data: {
             channelId: channelId,
             eventName: eventType,
@@ -74,6 +91,7 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
+        subscribeEventBus.emit('onReceiveFeedEvent', workspaceId, event);
 
         return 'ok';
       } else if (eventType === 'issues') {
@@ -96,7 +114,7 @@ export const feedIntegrationRouter = router({
         }
 
         if (eventContent) {
-          await prisma.feedEvent.create({
+          const event = await prisma.feedEvent.create({
             data: {
               channelId: channelId,
               eventName: eventName,
@@ -109,6 +127,7 @@ export const feedIntegrationRouter = router({
               url,
             },
           });
+          subscribeEventBus.emit('onReceiveFeedEvent', workspaceId, event);
 
           return 'ok';
         }
@@ -234,6 +253,10 @@ export const feedRouter = router({
       const events = await prisma.feedEvent.findMany({
         where: {
           channelId: channelId,
+        },
+        take: 50,
+        orderBy: {
+          createdAt: 'desc',
         },
       });
 

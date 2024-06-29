@@ -1,9 +1,4 @@
-import {
-  AppRouterOutput,
-  defaultErrorHandler,
-  defaultSuccessHandler,
-  trpc,
-} from '@/api/trpc';
+import { defaultErrorHandler, defaultSuccessHandler, trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,6 +14,8 @@ import { FeedApiGuide } from '@/components/feed/FeedApiGuide';
 import { FeedEventItem } from '@/components/feed/FeedEventItem';
 import { FeedIntegration } from '@/components/feed/FeedIntegration';
 import { DialogWrapper } from '@/components/DialogWrapper';
+import { useSocketSubscribeList } from '@/api/socketio';
+import { useMemo } from 'react';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -33,7 +30,7 @@ function PageComponent() {
     workspaceId,
     channelId,
   });
-  const { data: events } = trpc.feed.events.useQuery({
+  const { data: events = [] } = trpc.feed.events.useQuery({
     workspaceId,
     channelId,
   });
@@ -52,6 +49,15 @@ function PageComponent() {
       replace: true,
     });
   });
+
+  const realtimeEvents = useSocketSubscribeList('onReceiveFeedEvent', {
+    filter: (event) => event.channelId === channelId,
+  });
+
+  const fullEvents = useMemo(
+    () => [...realtimeEvents, ...events],
+    [realtimeEvents, events]
+  );
 
   return (
     <CommonWrapper
@@ -96,14 +102,14 @@ function PageComponent() {
         />
       }
     >
-      {events && events.length === 0 ? (
+      {fullEvents && fullEvents.length === 0 ? (
         <div className="w-full overflow-hidden p-4">
           <FeedApiGuide channelId={channelId} />
         </div>
       ) : (
         <ScrollArea className="h-full overflow-hidden p-4">
           <div className="space-y-2">
-            {(events ?? []).map((event) => (
+            {(fullEvents ?? []).map((event) => (
               <FeedEventItem key={event.id} event={event} />
             ))}
           </div>

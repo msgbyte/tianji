@@ -1,13 +1,15 @@
-import { MonitorData } from '@prisma/client';
 import { EventEmitter } from 'eventemitter-strict';
 import { Socket } from 'socket.io';
 import { MaybePromise, ServerStatusInfo } from '../../types';
+import { FeedEvent, MonitorData } from '@prisma/client';
+import { Serialize } from '../types/utils';
 
 type SubscribeEventFn<T> = (workspaceId: string, eventData: T) => void;
 
 export interface SubscribeEventMap {
   onServerStatusUpdate: SubscribeEventFn<Record<string, ServerStatusInfo>>;
   onMonitorReceiveNewData: SubscribeEventFn<MonitorData>;
+  onReceiveFeedEvent: SubscribeEventFn<Serialize<FeedEvent>>;
 }
 
 type SocketEventFn<T, U = unknown> = (
@@ -29,14 +31,14 @@ export const socketEventBus = new EventEmitter<SocketEventMap>();
 export const subscribeEventBus = new EventEmitter<SubscribeEventMap>();
 
 type SubscribeInitializerFn<
-  T extends keyof SubscribeEventMap = keyof SubscribeEventMap
+  T extends keyof SubscribeEventMap = keyof SubscribeEventMap,
 > = (
   workspaceId: string,
   socket: Socket
 ) => MaybePromise<Parameters<SubscribeEventMap[T]>[1]> | MaybePromise<void>;
 const subscribeInitializerList: [
   keyof SubscribeEventMap,
-  SubscribeInitializerFn
+  SubscribeInitializerFn,
 ][] = [];
 
 let i = 0;
