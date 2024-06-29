@@ -1,5 +1,5 @@
 import React from 'react';
-import { LuGithub } from 'react-icons/lu';
+import { LuGithub, LuPlug } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CodeBlock } from '../CodeBlock';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -10,7 +10,7 @@ export const FeedIntegration: React.FC<{
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-wrap p-2">
+    <div className="flex flex-wrap justify-center gap-2 p-2">
       <FeedIntegrationItem
         icon={<LuGithub size={32} />}
         label="Github"
@@ -25,6 +25,33 @@ export const FeedIntegration: React.FC<{
             />
 
             <div>{t('Dont remember send data with application/json')}</div>
+          </div>
+        }
+      />
+
+      <FeedIntegrationItem
+        icon={<LuPlug size={32} />}
+        label="Custom"
+        content={
+          <div>
+            <div className="text-lg font-bold">{t('Custom Request')}</div>
+
+            <div>{t('Send POST request to')}:</div>
+
+            <CodeBlock
+              code={`POST ${window.location.origin}/open/feed/${props.feedId}/send
+
+Body
+{
+  eventName: "",
+  eventContent: "",
+  tags: [],
+  source: "",
+  senderId: "",
+  senderName: "",
+  important: false,
+}`}
+            />
           </div>
         }
       />
