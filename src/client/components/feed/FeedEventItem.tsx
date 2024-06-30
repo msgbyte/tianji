@@ -10,13 +10,18 @@ export const FeedEventItem: React.FC<{ event: FeedEventItemType }> = React.memo(
   ({ event }) => {
     return (
       <div className="border-muted flex items-center rounded-lg border px-4 py-2">
-        <div className="flex-1">
-          <div className="mb-2">{event.eventName}</div>
+        <div className="flex-1 gap-2">
+          <div className="mb-2 flex gap-2">
+            <div>{event.eventContent}</div>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             <Badge>{event.source}</Badge>
 
+            <Badge variant="secondary">{event.eventName}</Badge>
+
             {event.tags.map((tag) => (
-              <Badge variant="secondary">{tag}</Badge>
+              <Badge variant="outline">{tag}</Badge>
             ))}
           </div>
         </div>
