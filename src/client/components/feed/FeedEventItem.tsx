@@ -3,6 +3,7 @@ import React from 'react';
 import { Badge } from '../ui/badge';
 import dayjs from 'dayjs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { MarkdownViewer } from '../MarkdownEditor';
 
 type FeedEventItemType = AppRouterOutput['feed']['events'][number];
 
@@ -12,7 +13,9 @@ export const FeedEventItem: React.FC<{ event: FeedEventItemType }> = React.memo(
       <div className="border-muted flex items-center rounded-lg border px-4 py-2">
         <div className="flex-1 gap-2">
           <div className="mb-2 flex gap-2">
-            <div>{event.eventContent}</div>
+            <div>
+              <MarkdownViewer value={event.eventContent} />
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">

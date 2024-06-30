@@ -1,8 +1,6 @@
 import React from 'react';
 import { Editor, EditorProps } from '@bytemd/react';
 import { plugins } from './plugins';
-import 'bytemd/dist/index.css';
-import './style.less';
 import { useLocale } from './useLocale';
 
 interface MarkdownEditorProps extends EditorProps {}

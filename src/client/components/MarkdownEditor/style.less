@@ -7,12 +7,20 @@
   z-index: 99;
 }
 
+.markdown {
+  .markdown-body {
+    a {
+      text-decoration: underline dotted;
+    }
+  }
+}
+
 .dark {
   .bytemd {
-    @apply bg-zinc-900 border-zinc-800 text-foreground;
+    @apply text-foreground border-zinc-800 bg-zinc-900;
 
     .bytemd-toolbar {
-      @apply bg-zinc-900 border-zinc-800;
+      @apply border-zinc-800 bg-zinc-900;
 
       .bytemd-toolbar-icon:hover {
         @apply bg-muted;
@@ -24,7 +32,7 @@
     }
 
     .CodeMirror {
-      @apply bg-zinc-900 text-foreground;
+      @apply text-foreground bg-zinc-900;
 
       .CodeMirror-cursor {
         @apply border-foreground;

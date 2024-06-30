@@ -43,9 +43,11 @@ export const feedIntegrationRouter = router({
       }
 
       if (eventType === 'push') {
-        const pusher = `${_.get(data, 'pusher.name')}<${_.get(data, 'pusher.email')}>`;
+        const pusherName = _.get(data, 'pusher.name');
+        const pusherEmail = _.get(data, 'pusher.email');
         const commits = _.map(_.get(data, 'commits') as any[], 'id').join(', ');
         const fullName = _.get(data, 'repository.full_name');
+        const repoUrl = _.get(data, 'repository.html_url');
         const ref = String(_.get(data, 'ref'));
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
@@ -54,7 +56,7 @@ export const feedIntegrationRouter = router({
           data: {
             channelId: channelId,
             eventName: eventType,
-            eventContent: `${pusher} push commit ${commits} to [${ref}] in ${fullName}`,
+            eventContent: `[${pusherName}](${pusherEmail}) push commit **${commits}** to [${ref}] in [${fullName}](${repoUrl})`,
             tags: [],
             source: 'github',
             senderId,
@@ -69,10 +71,13 @@ export const feedIntegrationRouter = router({
           serializeJSON(event)
         );
 
+        console.log('serializeJSON(event)', serializeJSON(event));
+
         return 'ok';
       } else if (eventType === 'star') {
         const starCount = _.get(data, 'repository.stargazers_count');
         const fullName = _.get(data, 'repository.full_name');
+        const repoUrl = _.get(data, 'repository.html_url');
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
         const url = String(_.get(data, 'compare'));
@@ -80,7 +85,7 @@ export const feedIntegrationRouter = router({
           data: {
             channelId: channelId,
             eventName: eventType,
-            eventContent: `${senderName} star repo [${fullName}], now is ${starCount}.`,
+            eventContent: `${senderName} star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
             tags: [],
             source: 'github',
             senderId,
@@ -100,6 +105,7 @@ export const feedIntegrationRouter = router({
         const action = _.get(data, 'action') as 'opened' | 'closed';
         const starCount = _.get(data, 'repository.stargazers_count');
         const fullName = _.get(data, 'repository.full_name');
+        const repoUrl = _.get(data, 'repository.html_url');
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
         const url = String(_.get(data, 'issue.url'));
@@ -109,10 +115,10 @@ export const feedIntegrationRouter = router({
         let eventContent = '';
         if (action === 'opened') {
           eventName = 'open_issue';
-          eventContent = `${senderName} open issue [${title}] in repo [${fullName}]`;
+          eventContent = `${senderName} open issue [${title}] in repo [${fullName}](${repoUrl})`;
         } else if (action === 'closed') {
           eventName = 'close_issue';
-          eventContent = `${senderName} close issue [${title}] in repo [${fullName}]`;
+          eventContent = `${senderName} close issue [${title}] in repo [${fullName}](${repoUrl})`;
         }
 
         if (eventContent) {
