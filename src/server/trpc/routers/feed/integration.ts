@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { subscribeEventBus } from '../../../ws/shared';
 import { OpenApiMeta } from 'trpc-openapi';
 import { OPENAPI_TAG } from '../../../utils/const';
+import { serializeJSON } from '../../../utils/json';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -62,7 +63,11 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
-        subscribeEventBus.emit('onReceiveFeedEvent', workspaceId, event);
+        subscribeEventBus.emit(
+          'onReceiveFeedEvent',
+          workspaceId,
+          serializeJSON(event)
+        );
 
         return 'ok';
       } else if (eventType === 'star') {
@@ -84,7 +89,11 @@ export const feedIntegrationRouter = router({
             url,
           },
         });
-        subscribeEventBus.emit('onReceiveFeedEvent', workspaceId, event);
+        subscribeEventBus.emit(
+          'onReceiveFeedEvent',
+          workspaceId,
+          serializeJSON(event)
+        );
 
         return 'ok';
       } else if (eventType === 'issues') {
@@ -120,7 +129,11 @@ export const feedIntegrationRouter = router({
               url,
             },
           });
-          subscribeEventBus.emit('onReceiveFeedEvent', workspaceId, event);
+          subscribeEventBus.emit(
+            'onReceiveFeedEvent',
+            workspaceId,
+            serializeJSON(event)
+          );
 
           return 'ok';
         }
