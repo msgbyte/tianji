@@ -45,7 +45,9 @@ export const feedIntegrationRouter = router({
       if (eventType === 'push') {
         const pusherName = _.get(data, 'pusher.name');
         const pusherEmail = _.get(data, 'pusher.email');
-        const commits = _.map(_.get(data, 'commits') as any[], 'id').join(', ');
+        const commits = _.map(_.get(data, 'commits') as any[], (val) =>
+          String(val.id).substring(0, 9)
+        ).join(', ');
         const fullName = _.get(data, 'repository.full_name');
         const repoUrl = _.get(data, 'repository.html_url');
         const ref = String(_.get(data, 'ref'));
@@ -70,8 +72,6 @@ export const feedIntegrationRouter = router({
           workspaceId,
           serializeJSON(event)
         );
-
-        console.log('serializeJSON(event)', serializeJSON(event));
 
         return 'ok';
       } else if (eventType === 'star') {
