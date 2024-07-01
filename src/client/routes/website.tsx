@@ -95,7 +95,14 @@ function WebsiteComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
+          <CommonList
+            hasSearch={true}
+            items={items}
+            isLoading={isLoading}
+            emptyDescription={t(
+              'Not any website has been added, you can add your website and integrate with Tianji to get more information.'
+            )}
+          />
         </CommonWrapper>
       }
     />

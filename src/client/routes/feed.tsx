@@ -80,7 +80,14 @@ function PageComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
+          <CommonList
+            hasSearch={true}
+            items={items}
+            isLoading={isLoading}
+            emptyDescription={t(
+              'Not have any feed channel yet. Use feed feature to receive all event from network or your own service.'
+            )}
+          />
         </CommonWrapper>
       }
     />

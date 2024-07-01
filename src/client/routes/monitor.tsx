@@ -90,7 +90,14 @@ function MonitorComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
+          <CommonList
+            hasSearch={true}
+            items={items}
+            isLoading={isLoading}
+            emptyDescription={t(
+              'Not have any monitor yet, add one to monitor your server status realtime.'
+            )}
+          />
         </CommonWrapper>
       }
     />

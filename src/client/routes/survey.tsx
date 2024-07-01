@@ -83,7 +83,14 @@ function PageComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
+          <CommonList
+            hasSearch={true}
+            items={items}
+            isLoading={isLoading}
+            emptyDescription={t(
+              'Not have any survey yet, create a survey to collect user feedback about your user service.'
+            )}
+          />
         </CommonWrapper>
       }
     />

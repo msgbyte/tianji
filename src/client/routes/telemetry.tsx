@@ -113,7 +113,14 @@ function TelemetryComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
+          <CommonList
+            hasSearch={true}
+            items={items}
+            isLoading={isLoading}
+            emptyDescription={t(
+              'Not any telemetry yet, telemetry is a useful way to track your post in others website which allow insert your own image.'
+            )}
+          />
         </CommonWrapper>
       }
     />

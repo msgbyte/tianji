@@ -24,6 +24,7 @@ interface CommonListProps {
   isLoading?: boolean;
   hasSearch?: boolean;
   items: CommonListItem[];
+  emptyDescription?: React.ReactNode;
 }
 export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
   const { location } = useRouterState();
@@ -77,7 +78,9 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
             </div>
           )}
 
-          {finalList.length === 0 && !props.isLoading && <Empty />}
+          {finalList.length === 0 && !props.isLoading && (
+            <Empty description={props.emptyDescription} />
+          )}
 
           {finalList.map((item) => {
             const isSelected = item.href === location.pathname;

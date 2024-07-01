@@ -80,7 +80,14 @@ function PageComponent() {
             />
           }
         >
-          <CommonList hasSearch={true} items={items} isLoading={isLoading} />
+          <CommonList
+            hasSearch={true}
+            items={items}
+            isLoading={isLoading}
+            emptyDescription={t(
+              'No any status page yet, you can create a new one to show your service status to public.'
+            )}
+          />
         </CommonWrapper>
       }
     />
