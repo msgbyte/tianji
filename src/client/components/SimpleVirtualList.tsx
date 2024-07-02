@@ -1,5 +1,6 @@
 import { useWatch } from '@/hooks/useWatch';
-import { VirtualItem, useVirtualizer } from '@tanstack/react-virtual';
+import { useTranslation } from '@i18next-toolkit/react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Empty } from 'antd';
 import { last } from 'lodash-es';
 import React, { useRef } from 'react';
@@ -9,8 +10,9 @@ interface VirtualListProps<T = any> {
   hasNextPage: boolean | undefined;
   isFetchingNextPage: boolean;
   onFetchNextPage: () => void;
-  estimateSize: (index: number) => number;
-  renderItem: (item: VirtualItem) => React.ReactElement;
+  estimateSize: number;
+  renderItem: (item: T) => React.ReactElement;
+  renderEmpty?: () => React.ReactElement;
 }
 export const SimpleVirtualList: React.FC<VirtualListProps> = React.memo(
   (props) => {
@@ -21,14 +23,15 @@ export const SimpleVirtualList: React.FC<VirtualListProps> = React.memo(
       onFetchNextPage,
       estimateSize,
       renderItem,
+      renderEmpty,
     } = props;
 
     const parentRef = useRef<HTMLDivElement>(null);
-
+    const { t } = useTranslation();
     const rowVirtualizer = useVirtualizer({
       count: hasNextPage ? allData.length + 1 : allData.length,
       getScrollElement: () => parentRef.current,
-      estimateSize,
+      estimateSize: () => estimateSize,
       overscan: 5,
     });
 
@@ -52,7 +55,7 @@ export const SimpleVirtualList: React.FC<VirtualListProps> = React.memo(
 
     return (
       <div ref={parentRef} className="h-full w-full overflow-auto">
-        {virtualItems.length === 0 && <Empty />}
+        {virtualItems.length === 0 && (renderEmpty ? renderEmpty() : <Empty />)}
 
         <div
           className="relative w-full"
@@ -60,7 +63,27 @@ export const SimpleVirtualList: React.FC<VirtualListProps> = React.memo(
             height: `${rowVirtualizer.getTotalSize()}px`,
           }}
         >
-          {virtualItems.map((virtualItem) => renderItem(virtualItem))}
+          {virtualItems.map((virtualItem) => {
+            const isLoaderRow = virtualItem.index > allData.length - 1;
+            const data = allData[virtualItem.index];
+
+            return (
+              <div
+                key={virtualItem.index}
+                className="absolute left-0 top-0 w-full"
+                style={{
+                  height: `${virtualItem.size}px`,
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              >
+                {isLoaderRow
+                  ? hasNextPage
+                    ? t('Loading more...')
+                    : t('Nothing more to load')
+                  : renderItem(data)}
+              </div>
+            );
+          })}
         </div>
       </div>
     );

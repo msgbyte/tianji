@@ -26,9 +26,14 @@ function PageComponent() {
   const parentRef = useRef<HTMLDivElement>(null);
 
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    trpc.auditLog.fetchByCursor.useInfiniteQuery({
-      workspaceId,
-    });
+    trpc.auditLog.fetchByCursor.useInfiniteQuery(
+      {
+        workspaceId,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
 
   const allData = useMemo(() => {
     if (!data) {
@@ -65,57 +70,31 @@ function PageComponent() {
 
   return (
     <CommonWrapper header={<CommonHeader title={t('Audit Log')} />}>
-      <ScrollArea className="h-full overflow-hidden p-4">
-        <List>
-          <SimpleVirtualList
-            allData={allData}
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            onFetchNextPage={fetchNextPage}
-            estimateSize={() => 48}
-            renderItem={(item) => {
-              const isLoaderRow = item.index > allData.length - 1;
-              const data = allData[item.index];
-
-              return (
-                <List.Item
-                  key={item.index}
-                  className="absolute left-0 top-0 w-full"
-                  style={{
-                    height: `${item.size}px`,
-                    transform: `translateY(${item.start}px)`,
-                  }}
+      <div className="h-full overflow-hidden p-4">
+        <SimpleVirtualList
+          allData={allData}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onFetchNextPage={fetchNextPage}
+          estimateSize={48}
+          renderItem={(item) => {
+            return (
+              <div className="flex h-full w-full items-center overflow-hidden border-b border-white border-opacity-10 text-sm">
+                {item.relatedType && <ColorTag label={item.relatedType} />}
+                <div
+                  className="mr-2 w-9 text-xs opacity-60"
+                  title={dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
                 >
-                  {isLoaderRow ? (
-                    hasNextPage ? (
-                      t('Loading more...')
-                    ) : (
-                      t('Nothing more to load')
-                    )
-                  ) : (
-                    <div className="flex h-7 items-center overflow-hidden">
-                      {data.relatedType && (
-                        <ColorTag label={data.relatedType} />
-                      )}
-                      <div
-                        className="mr-2 w-9 text-xs opacity-60"
-                        title={dayjs(data.createdAt).format(
-                          'YYYY-MM-DD HH:mm:ss'
-                        )}
-                      >
-                        {dayjs(data.createdAt).format('MM-DD HH:mm')}
-                      </div>
-                      <div className="h-full flex-1 overflow-auto">
-                        {data.content}
-                      </div>
-                    </div>
-                  )}
-                </List.Item>
-              );
-            }}
-          />
-        </List>
-      </ScrollArea>
+                  {dayjs(item.createdAt).format('MM-DD HH:mm')}
+                </div>
+                <div className="h-full flex-1 overflow-auto">
+                  {item.content}
+                </div>
+              </div>
+            );
+          }}
+        />
+      </div>
     </CommonWrapper>
   );
 }
