@@ -1,7 +1,6 @@
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -16,6 +15,7 @@ import { FeedIntegration } from '@/components/feed/FeedIntegration';
 import { DialogWrapper } from '@/components/DialogWrapper';
 import { useSocketSubscribeList } from '@/api/socketio';
 import { useMemo } from 'react';
+import { SimpleVirtualList } from '@/components/SimpleVirtualList';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -30,10 +30,18 @@ function PageComponent() {
     workspaceId,
     channelId,
   });
-  const { data: events = [] } = trpc.feed.events.useQuery({
-    workspaceId,
-    channelId,
-  });
+
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    trpc.feed.fetchEventsByCursor.useInfiniteQuery(
+      {
+        workspaceId,
+        channelId,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
+
   const deleteMutation = trpc.feed.deleteChannel.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
@@ -55,8 +63,8 @@ function PageComponent() {
   });
 
   const fullEvents = useMemo(
-    () => [...realtimeEvents, ...events],
-    [realtimeEvents, events]
+    () => [...realtimeEvents, ...(data?.pages.flatMap((p) => p.items) ?? [])],
+    [realtimeEvents, data]
   );
 
   return (
@@ -102,19 +110,21 @@ function PageComponent() {
         />
       }
     >
-      {fullEvents && fullEvents.length === 0 ? (
-        <div className="w-full overflow-hidden p-4">
-          <FeedApiGuide channelId={channelId} />
-        </div>
-      ) : (
-        <ScrollArea className="h-full overflow-hidden p-4">
-          <div className="space-y-2">
-            {(fullEvents ?? []).map((event) => (
-              <FeedEventItem key={event.id} event={event} />
-            ))}
-          </div>
-        </ScrollArea>
-      )}
+      <div className="h-full w-full overflow-hidden p-4">
+        <SimpleVirtualList
+          allData={fullEvents}
+          estimateSize={100}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onFetchNextPage={fetchNextPage}
+          renderItem={(item) => <FeedEventItem className="mb-2" event={item} />}
+          renderEmpty={() => (
+            <div className="w-full overflow-hidden p-4">
+              <FeedApiGuide channelId={channelId} />
+            </div>
+          )}
+        />
+      </div>
     </CommonWrapper>
   );
 }

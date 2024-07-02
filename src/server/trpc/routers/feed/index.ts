@@ -15,6 +15,7 @@ import {
 import { prisma } from '../../../model/_client';
 import _ from 'lodash';
 import { buildFeedPublicOpenapi, feedIntegrationRouter } from './integration';
+import { fetchDataByCursor } from '../../../utils/prisma';
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -113,33 +114,42 @@ export const feedRouter = router({
 
       return channel;
     }),
-  events: workspaceProcedure
+  fetchEventsByCursor: workspaceProcedure
     .meta(
       buildFeedOpenapi({
         method: 'GET',
-        path: '/{channelId}/events',
+        path: '/{channelId}/fetchEventsByCursor',
+        description: 'Fetch workspace feed channel events',
       })
     )
     .input(
       z.object({
         channelId: z.string(),
+        limit: z.number().min(1).max(100).default(50),
+        cursor: z.string().optional(),
       })
     )
-    .output(z.array(FeedEventModelSchema))
+    .output(
+      z.object({
+        items: z.array(FeedEventModelSchema),
+        nextCursor: z.string().optional(),
+      })
+    )
     .query(async ({ input }) => {
-      const { channelId } = input;
+      const { channelId, cursor, limit } = input;
 
-      const events = await prisma.feedEvent.findMany({
+      const { items, nextCursor } = await fetchDataByCursor(prisma.feedEvent, {
         where: {
-          channelId: channelId,
+          channelId,
         },
-        take: 50,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        limit,
+        cursor,
       });
 
-      return events;
+      return {
+        items,
+        nextCursor,
+      };
     }),
   createChannel: workspaceOwnerProcedure
     .meta(
