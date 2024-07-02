@@ -13,6 +13,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useWatch } from '@/hooks/useWatch';
 import dayjs from 'dayjs';
 import { ColorTag } from '@/components/ColorTag';
+import { SimpleVirtualList } from '@/components/SimpleVirtualList';
 
 export const Route = createFileRoute('/settings/auditLog')({
   beforeLoad: routeAuthBeforeLoad,
@@ -66,57 +67,53 @@ function PageComponent() {
     <CommonWrapper header={<CommonHeader title={t('Audit Log')} />}>
       <ScrollArea className="h-full overflow-hidden p-4">
         <List>
-          <div ref={parentRef} className="h-full w-full overflow-auto">
-            {virtualItems.length === 0 && <Empty />}
+          <SimpleVirtualList
+            allData={allData}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onFetchNextPage={fetchNextPage}
+            estimateSize={() => 48}
+            renderItem={(item) => {
+              const isLoaderRow = item.index > allData.length - 1;
+              const data = allData[item.index];
 
-            <div
-              className="relative w-full"
-              style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-              }}
-            >
-              {virtualItems.map((virtualRow) => {
-                const isLoaderRow = virtualRow.index > allData.length - 1;
-                const item = allData[virtualRow.index];
-
-                return (
-                  <List.Item
-                    key={virtualRow.index}
-                    className="absolute left-0 top-0 w-full"
-                    style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    {isLoaderRow ? (
-                      hasNextPage ? (
-                        t('Loading more...')
-                      ) : (
-                        t('Nothing more to load')
-                      )
+              return (
+                <List.Item
+                  key={item.index}
+                  className="absolute left-0 top-0 w-full"
+                  style={{
+                    height: `${item.size}px`,
+                    transform: `translateY(${item.start}px)`,
+                  }}
+                >
+                  {isLoaderRow ? (
+                    hasNextPage ? (
+                      t('Loading more...')
                     ) : (
-                      <div className="flex h-7 items-center overflow-hidden">
-                        {item.relatedType && (
-                          <ColorTag label={item.relatedType} />
+                      t('Nothing more to load')
+                    )
+                  ) : (
+                    <div className="flex h-7 items-center overflow-hidden">
+                      {data.relatedType && (
+                        <ColorTag label={data.relatedType} />
+                      )}
+                      <div
+                        className="mr-2 w-9 text-xs opacity-60"
+                        title={dayjs(data.createdAt).format(
+                          'YYYY-MM-DD HH:mm:ss'
                         )}
-                        <div
-                          className="mr-2 w-9 text-xs opacity-60"
-                          title={dayjs(item.createdAt).format(
-                            'YYYY-MM-DD HH:mm:ss'
-                          )}
-                        >
-                          {dayjs(item.createdAt).format('MM-DD HH:mm')}
-                        </div>
-                        <div className="h-full flex-1 overflow-auto">
-                          {item.content}
-                        </div>
+                      >
+                        {dayjs(data.createdAt).format('MM-DD HH:mm')}
                       </div>
-                    )}
-                  </List.Item>
-                );
-              })}
-            </div>
-          </div>
+                      <div className="h-full flex-1 overflow-auto">
+                        {data.content}
+                      </div>
+                    </div>
+                  )}
+                </List.Item>
+              );
+            }}
+          />
         </List>
       </ScrollArea>
     </CommonWrapper>
