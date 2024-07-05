@@ -26,8 +26,12 @@ export const FeedApiGuide: React.FC<{ channelId: string }> = React.memo(
         <CardHeader>
           <div>{t('You can send any message into this channel with:')}</div>
         </CardHeader>
-        <CardContent className="flex w-full overflow-hidden">
+        <CardContent className="flex w-full flex-col gap-5 overflow-hidden">
           <CodeBlock code={code} />
+
+          <div className="pl-2 font-bold">{t('OR')}</div>
+
+          <div>{t('Integrate with third party with webhook')}</div>
         </CardContent>
       </Card>
     );
