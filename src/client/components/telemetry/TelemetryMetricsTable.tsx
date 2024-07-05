@@ -73,6 +73,7 @@ export const TelemetryMetricsTable: React.FC<MetricsTableProps> = React.memo(
         pagination={{
           pageSize: 10,
           hideOnSinglePage: true,
+          showSizeChanger: false,
         }}
         size="small"
       />

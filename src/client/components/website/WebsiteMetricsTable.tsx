@@ -82,6 +82,7 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
         pagination={{
           pageSize: 10,
           hideOnSinglePage: true,
+          showSizeChanger: false,
         }}
         size="small"
       />
