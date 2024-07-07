@@ -10,7 +10,7 @@ export const env = {
       : process.env.JWT_SECRET,
   port: Number(process.env.PORT || 12345),
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
-  allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI),
+  allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
   websiteId: process.env.WEBSITE_ID,
   sandboxMemoryLimit: process.env.SANDBOX_MEMORY_LIMIT
     ? Number(process.env.SANDBOX_MEMORY_LIMIT)
