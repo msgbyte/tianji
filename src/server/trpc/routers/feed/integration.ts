@@ -13,6 +13,7 @@ export const feedIntegrationRouter = router({
       buildFeedPublicOpenapi({
         method: 'POST',
         path: '/{channelId}/github',
+        summary: 'integrate with github webhook',
       })
     )
     .input(
