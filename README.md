@@ -41,9 +41,9 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [ ] hooks
 - [ ] links
 - [x] helm install support
-  - [ ] allow install from public
+  - [x] allow install from public
 - [ ] improve monitor reporter usage
-  - [ ] uninstall guide
+  - [x] uninstall guide
   - [ ] download from server
   - [ ] custom params guide
 
