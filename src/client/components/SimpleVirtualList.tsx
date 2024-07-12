@@ -60,7 +60,7 @@ export const SimpleVirtualList: React.FC<VirtualListProps> = React.memo(
         <div
           className="relative w-full"
           style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
+            height: rowVirtualizer.getTotalSize(),
           }}
         >
           {virtualItems.map((virtualItem) => {
