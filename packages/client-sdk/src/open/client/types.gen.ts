@@ -120,6 +120,7 @@ export type $OpenApiTs = {
                     telemetry: number;
                     page: number;
                     survey: number;
+                    feed: number;
                 };
             };
         };
@@ -1388,6 +1389,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    notifyFrequency: string;
                     createdAt: string;
                     updatedAt: string;
                     _count: {
@@ -1408,9 +1410,11 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
+                    notificationIds: Array<(string)>;
                     id: string;
                     workspaceId: string;
                     name: string;
+                    notifyFrequency: string;
                     createdAt: string;
                     updatedAt: string;
                 } | null;
@@ -1422,7 +1426,9 @@ export type $OpenApiTs = {
             req: {
                 channelId: string;
                 requestBody: {
+                    notificationIds?: Array<(string)>;
                     name: string;
+                    notifyFrequency: string;
                 };
                 workspaceId: string;
             };
@@ -1431,38 +1437,46 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
+                    notificationIds: Array<(string)>;
                     id: string;
                     workspaceId: string;
                     name: string;
+                    notifyFrequency: string;
                     createdAt: string;
                     updatedAt: string;
                 } | null;
             };
         };
     };
-    '/workspace/{workspaceId}/feed/{channelId}/events': {
+    '/workspace/{workspaceId}/feed/{channelId}/fetchEventsByCursor': {
         get: {
             req: {
                 channelId: string;
+                cursor?: string;
+                limit?: number;
                 workspaceId: string;
             };
             res: {
                 /**
                  * Successful response
                  */
-                200: Array<{
-                    id: string;
-                    channelId: string;
-                    createdAt: string;
-                    updatedAt: string;
-                    eventName: string;
-                    eventContent: string;
-                    tags: Array<(string)>;
-                    source: string;
-                    senderId?: string | null;
-                    senderName?: string | null;
-                    important: boolean;
-                }>;
+                200: {
+                    items: Array<{
+                        id: string;
+                        channelId: string;
+                        createdAt: string;
+                        updatedAt: string;
+                        eventName: string;
+                        eventContent: string;
+                        tags: Array<(string)>;
+                        source: string;
+                        senderId?: string | null;
+                        senderName?: string | null;
+                        url?: string | null;
+                        important: boolean;
+                    }>;
+                    nextCursor?: string;
+                };
             };
         };
     };
@@ -1471,6 +1485,8 @@ export type $OpenApiTs = {
             req: {
                 requestBody: {
                     name: string;
+                    notifyFrequency: string;
+                    notificationIds?: Array<(string)>;
                 };
                 workspaceId: string;
             };
@@ -1479,9 +1495,11 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
+                    notificationIds: Array<(string)>;
                     id: string;
                     workspaceId: string;
                     name: string;
+                    notifyFrequency: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1502,6 +1520,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    notifyFrequency: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1537,7 +1556,27 @@ export type $OpenApiTs = {
                     source: string;
                     senderId?: string | null;
                     senderName?: string | null;
+                    url?: string | null;
                     important: boolean;
+                };
+            };
+        };
+    };
+    '/feed/{channelId}/github': {
+        post: {
+            req: {
+                channelId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
                 };
             };
         };

@@ -1207,19 +1207,26 @@ export class FeedService {
     }
     
     /**
+     * Fetch workspace feed channel events
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.channelId
+     * @param data.limit
+     * @param data.cursor
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static feedEvents(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/events']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/events']['get']['res'][200]> {
+    public static feedFetchEventsByCursor(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/fetchEventsByCursor']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/fetchEventsByCursor']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/feed/{channelId}/events',
+            url: '/workspace/{workspaceId}/feed/{channelId}/fetchEventsByCursor',
             path: {
                 workspaceId: data.workspaceId,
                 channelId: data.channelId
+            },
+            query: {
+                limit: data.limit,
+                cursor: data.cursor
             }
         });
     }
@@ -1277,6 +1284,24 @@ export class FeedService {
             },
             body: data.requestBody,
             mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * integrate with github webhook
+     * @param data The data for the request.
+     * @param data.channelId
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static feedIntegrationGithub(data: $OpenApiTs['/feed/{channelId}/github']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/github']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/github']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/{channelId}/github',
+            path: {
+                channelId: data.channelId
+            }
         });
     }
     

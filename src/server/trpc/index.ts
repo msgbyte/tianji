@@ -30,5 +30,5 @@ export const trpcOpenapiDocument = generateOpenApiDocument(appRouter, {
   title: 'Tianji OpenAPI',
   description,
   version: `v${version}`,
-  baseUrl: '/open',
+  baseUrl: 'http://localhost:12345/open',
 });
