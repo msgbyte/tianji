@@ -59,7 +59,7 @@ export const feedIntegrationRouter = router({
           data: {
             channelId: channelId,
             eventName: eventType,
-            eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit **${commits}** to [${ref}] in [${fullName}](${repoUrl})`,
+            eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit **${commits}** to **${ref}** in [${fullName}](${repoUrl})`,
             tags: [],
             source: 'github',
             senderId,
