@@ -1,11 +1,12 @@
 import * as z from "zod"
 import * as imports from "./schemas"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFeedEvent, RelatedFeedEventModelSchema } from "./index"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFeedEvent, RelatedFeedEventModelSchema, CompleteNotification, RelatedNotificationModelSchema } from "./index"
 
 export const FeedChannelModelSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
   name: z.string(),
+  notifyFrequency: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -13,6 +14,7 @@ export const FeedChannelModelSchema = z.object({
 export interface CompleteFeedChannel extends z.infer<typeof FeedChannelModelSchema> {
   workspace: CompleteWorkspace
   events: CompleteFeedEvent[]
+  notifications: CompleteNotification[]
 }
 
 /**
@@ -23,4 +25,5 @@ export interface CompleteFeedChannel extends z.infer<typeof FeedChannelModelSche
 export const RelatedFeedChannelModelSchema: z.ZodSchema<CompleteFeedChannel> = z.lazy(() => FeedChannelModelSchema.extend({
   workspace: RelatedWorkspaceModelSchema,
   events: RelatedFeedEventModelSchema.array(),
+  notifications: RelatedNotificationModelSchema.array(),
 }))

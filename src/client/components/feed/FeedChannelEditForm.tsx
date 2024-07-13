@@ -16,9 +16,19 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+import { NotificationPicker } from '../notification/NotificationPicker';
 
 const addFormSchema = z.object({
   name: z.string(),
+  notificationIds: z.array(z.string()).default([]),
+  notifyFrequency: z.enum(['event', 'day', 'week', 'month']),
 });
 
 export type FeedChannelEditFormValues = z.infer<typeof addFormSchema>;
@@ -35,6 +45,8 @@ export const FeedChannelEditForm: React.FC<FeedChannelEditFormProps> =
       resolver: zodResolver(addFormSchema),
       defaultValues: props.defaultValues ?? {
         name: 'New Channel',
+        notificationIds: [],
+        notifyFrequency: 'day',
       },
     });
 
@@ -62,6 +74,61 @@ export const FeedChannelEditForm: React.FC<FeedChannelEditFormProps> =
                     <FormDescription>
                       {t('Channel Name to Display')}
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notificationIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Notification')}</FormLabel>
+                    <FormControl>
+                      <NotificationPicker
+                        className="w-full"
+                        {...field}
+                        allowClear={true}
+                        mode="multiple"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t('Select Notification for send')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notifyFrequency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Notification Frequency')}</FormLabel>
+                    <FormControl>
+                      <Select
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="event">
+                            {t('Every Event')}
+                          </SelectItem>
+                          <SelectItem value="day">{t('Every Day')}</SelectItem>
+                          <SelectItem value="week">
+                            {t('Every Week')}
+                          </SelectItem>
+                          <SelectItem value="month">
+                            {t('Every Month')}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

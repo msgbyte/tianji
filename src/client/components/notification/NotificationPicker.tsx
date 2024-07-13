@@ -7,7 +7,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 
-interface NotificationPickerProps extends SelectProps<string> {}
+interface NotificationPickerProps extends SelectProps<string[]> {}
 export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
   (props) => {
     const { t } = useTranslation();

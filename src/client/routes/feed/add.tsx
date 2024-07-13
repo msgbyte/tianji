@@ -26,8 +26,8 @@ function PageComponent() {
 
   const onSubmit = useEvent(async (values: FeedChannelEditFormValues) => {
     const res = await createMutation.mutateAsync({
+      ...values,
       workspaceId,
-      name: values.name,
     });
 
     utils.feed.channels.refetch();

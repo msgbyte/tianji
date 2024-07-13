@@ -67,18 +67,39 @@ export const feedRouter = router({
         channelId: z.string(),
       })
     )
-    .output(FeedChannelModelSchema.nullable())
+    .output(
+      z
+        .object({
+          notificationIds: z.array(z.string()),
+        })
+        .merge(FeedChannelModelSchema)
+        .nullable()
+    )
     .query(async ({ input }) => {
       const { channelId, workspaceId } = input;
 
-      const channel = prisma.feedChannel.findFirst({
+      const channel = await prisma.feedChannel.findFirst({
         where: {
           workspaceId,
           id: channelId,
         },
+        include: {
+          notifications: {
+            select: {
+              id: true,
+            },
+          },
+        },
       });
 
-      return channel;
+      if (!channel) {
+        return null;
+      }
+
+      return {
+        ...channel,
+        notificationIds: channel?.notifications.map((n) => n.id),
+      };
     }),
   updateChannelInfo: workspaceProcedure
     .meta(
@@ -91,28 +112,48 @@ export const feedRouter = router({
       z
         .object({
           channelId: z.string(),
+          notificationIds: z.array(z.string()).default([]),
         })
         .merge(
           FeedChannelModelSchema.pick({
             name: true,
+            notifyFrequency: true,
           })
         )
     )
-    .output(FeedChannelModelSchema.nullable())
+    .output(
+      z
+        .object({
+          notificationIds: z.array(z.string()),
+        })
+        .merge(FeedChannelModelSchema)
+        .nullable()
+    )
     .mutation(async ({ input }) => {
-      const { channelId, workspaceId, name } = input;
+      const { channelId, workspaceId, name, notifyFrequency, notificationIds } =
+        input;
 
-      const channel = prisma.feedChannel.update({
+      const channel = await prisma.feedChannel.update({
         where: {
           workspaceId,
           id: channelId,
         },
         data: {
           name,
+          notifyFrequency,
+          notifications: {
+            set: notificationIds.map((id) => ({
+              id,
+            })),
+          },
         },
       });
 
-      return channel;
+      if (!channel) {
+        return null;
+      }
+
+      return { ...channel, notificationIds };
     }),
   fetchEventsByCursor: workspaceProcedure
     .meta(
@@ -161,20 +202,45 @@ export const feedRouter = router({
     .input(
       FeedChannelModelSchema.pick({
         name: true,
-      })
+        notifyFrequency: true,
+      }).merge(
+        z.object({
+          notificationIds: z.array(z.string()).default([]),
+        })
+      )
     )
-    .output(FeedChannelModelSchema)
+    .output(
+      z
+        .object({
+          notificationIds: z.array(z.string()),
+        })
+        .merge(FeedChannelModelSchema)
+    )
     .mutation(async ({ input }) => {
-      const { name, workspaceId } = input;
+      const { name, workspaceId, notifyFrequency, notificationIds } = input;
 
       const channel = await prisma.feedChannel.create({
         data: {
           workspaceId,
           name,
+          notifyFrequency,
+          notifications: {
+            connect: notificationIds.map((id) => ({ id })),
+          },
+        },
+        include: {
+          notifications: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
 
-      return channel;
+      return {
+        ...channel,
+        notificationIds: channel?.notifications.map((n) => n.id),
+      };
     }),
   deleteChannel: workspaceOwnerProcedure
     .meta(

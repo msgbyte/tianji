@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteMonitor, RelatedMonitorModelSchema } from "./index"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -23,6 +23,7 @@ export const NotificationModelSchema = z.object({
 export interface CompleteNotification extends z.infer<typeof NotificationModelSchema> {
   workspace: CompleteWorkspace
   monitors: CompleteMonitor[]
+  feedChannels: CompleteFeedChannel[]
 }
 
 /**
@@ -33,4 +34,5 @@ export interface CompleteNotification extends z.infer<typeof NotificationModelSc
 export const RelatedNotificationModelSchema: z.ZodSchema<CompleteNotification> = z.lazy(() => NotificationModelSchema.extend({
   workspace: RelatedWorkspaceModelSchema,
   monitors: RelatedMonitorModelSchema.array(),
+  feedChannels: RelatedFeedChannelModelSchema.array(),
 }))

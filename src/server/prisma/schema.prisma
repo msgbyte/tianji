@@ -280,7 +280,8 @@ model Notification {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  monitors Monitor[]
+  monitors     Monitor[]
+  feedChannels FeedChannel[]
 
   @@index([workspaceId])
 }
@@ -446,14 +447,16 @@ model SurveyResult {
 }
 
 model FeedChannel {
-  id          String   @id @default(cuid()) @db.VarChar(30)
-  workspaceId String   @db.VarChar(30)
-  name        String
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  id              String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId     String   @db.VarChar(30)
+  name            String
+  notifyFrequency String   @default("day")
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
-  workspace Workspace   @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  events    FeedEvent[]
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  events        FeedEvent[]
+  notifications Notification[]
 
   @@index([workspaceId])
 }
