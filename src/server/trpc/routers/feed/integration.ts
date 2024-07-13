@@ -59,7 +59,7 @@ export const feedIntegrationRouter = router({
           data: {
             channelId: channelId,
             eventName: eventType,
-            eventContent: `[${pusherName}](${pusherEmail}) push commit **${commits}** to [${ref}] in [${fullName}](${repoUrl})`,
+            eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit **${commits}** to [${ref}] in [${fullName}](${repoUrl})`,
             tags: [],
             source: 'github',
             senderId,
@@ -81,12 +81,13 @@ export const feedIntegrationRouter = router({
         const repoUrl = _.get(data, 'repository.html_url');
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
+        const senderUrl = String(_.get(data, 'sender.html_url'));
         const url = String(_.get(data, 'compare'));
         const event = await prisma.feedEvent.create({
           data: {
             channelId: channelId,
             eventName: eventType,
-            eventContent: `${senderName} star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
+            eventContent: `[${senderName}](${senderUrl}) star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
             tags: [],
             source: 'github',
             senderId,

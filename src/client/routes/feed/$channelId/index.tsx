@@ -38,6 +38,7 @@ function PageComponent() {
         channelId,
       },
       {
+        refetchOnWindowFocus: false,
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       }
     );
