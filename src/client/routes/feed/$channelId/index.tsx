@@ -15,7 +15,7 @@ import { FeedIntegration } from '@/components/feed/FeedIntegration';
 import { DialogWrapper } from '@/components/DialogWrapper';
 import { useSocketSubscribeList } from '@/api/socketio';
 import { useMemo } from 'react';
-import { SimpleVirtualList } from '@/components/SimpleVirtualList';
+import { DynamicVirtualList } from '@/components/DynamicVirtualList';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -112,7 +112,7 @@ function PageComponent() {
       }
     >
       <div className="h-full w-full overflow-hidden p-4">
-        <SimpleVirtualList
+        <DynamicVirtualList
           allData={fullEvents}
           estimateSize={100}
           hasNextPage={hasNextPage}

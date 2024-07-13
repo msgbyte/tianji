@@ -17,12 +17,12 @@ export const FeedEventItem: React.FC<{
   return (
     <div
       className={cn(
-        'border-muted flex items-center rounded-lg border px-4 py-2',
+        'border-muted flex items-center overflow-hidden rounded-lg border px-2 py-2 sm:px-3',
         className
       )}
     >
-      <div className="flex-1 gap-2">
-        <div className="mb-2 flex items-center gap-2 text-sm">
+      <div className="flex-1 gap-2 overflow-hidden">
+        <div className="mb-2 flex w-full items-center gap-2 overflow-hidden text-sm">
           <div className="border-muted rounded-lg border p-2">
             <FeedIcon source={event.source} size={24} />
           </div>
@@ -31,25 +31,27 @@ export const FeedEventItem: React.FC<{
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Badge>{event.source}</Badge>
+        <div className="flex justify-between">
+          <div className="flex flex-wrap gap-2">
+            <Badge>{event.source}</Badge>
 
-          <Badge variant="secondary">{event.eventName}</Badge>
+            <Badge variant="secondary">{event.eventName}</Badge>
 
-          {event.tags.map((tag) => (
-            <Badge variant="outline">{tag}</Badge>
-          ))}
+            {event.tags.map((tag) => (
+              <Badge variant="outline">{tag}</Badge>
+            ))}
+          </div>
+
+          <Tooltip>
+            <TooltipTrigger className="cursor-default self-end text-xs opacity-60">
+              <div>{dayjs(event.createdAt).fromNow()}</div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{dayjs(event.createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
-
-      <Tooltip>
-        <TooltipTrigger className="cursor-default self-end text-xs opacity-60">
-          <div>{dayjs(event.createdAt).fromNow()}</div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{dayjs(event.createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
-        </TooltipContent>
-      </Tooltip>
     </div>
   );
 });
