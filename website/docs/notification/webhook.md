@@ -8,6 +8,8 @@ If you need a more flexible notification method, you can try using custom webhoo
 
 ### Example Result
 
+Tianji system will send a POST request with below example content.
+
 ```json
 {
     "notification": {
