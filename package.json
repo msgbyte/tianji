@@ -43,6 +43,7 @@
     "eventemitter-strict": "^1.0.1",
     "zod": "^3.22.2"
   },
+  "packageManager": "pnpm@9.5.0",
   "pnpm": {
     "overrides": {
       "dayjs": "1.11.10"
