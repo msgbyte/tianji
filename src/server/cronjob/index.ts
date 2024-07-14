@@ -21,6 +21,8 @@ export function initCronjob() {
       await Promise.all([
         statDailyUsage().catch(logger.error),
         clearMonitorDataDaily().catch(logger.error),
+        clearMonitorEventDaily().catch(logger.error),
+        clearAuditLogDaily().catch(logger.error),
         dailyHTTPCertCheckNotify().catch(logger.error),
       ]);
 
@@ -165,6 +167,60 @@ async function clearMonitorDataDaily() {
 
   logger.info(
     '[clearMonitorDataDaily] Clear monitor completed, delete record:',
+    res.count
+  );
+}
+
+/**
+ * Clear over 2 week data
+ */
+async function clearMonitorEventDaily() {
+  if (env.disableAutoClear) {
+    return;
+  }
+
+  const date = dayjs().subtract(2, 'weeks').toDate();
+  logger.info(
+    '[clearMonitorEventDaily] Start clear monitor data before:',
+    date.toISOString()
+  );
+  const res = await prisma.monitorEvent.deleteMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+    },
+  });
+
+  logger.info(
+    '[clearMonitorEventDaily] Clear monitor completed, delete record:',
+    res.count
+  );
+}
+
+/**
+ * Clear over 4 week data
+ */
+async function clearAuditLogDaily() {
+  if (env.disableAutoClear) {
+    return;
+  }
+
+  const date = dayjs().subtract(4, 'weeks').toDate();
+  logger.info(
+    '[clearAuditLogDaily] Start clear log data before:',
+    date.toISOString()
+  );
+  const res = await prisma.workspaceAuditLog.deleteMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+    },
+  });
+
+  logger.info(
+    '[clearAuditLogDaily] Clear log completed, delete record:',
     res.count
   );
 }
