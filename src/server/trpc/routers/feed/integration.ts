@@ -2,10 +2,9 @@ import { z } from 'zod';
 import { OpenApiMetaInfo, publicProcedure, router } from '../../trpc';
 import { prisma } from '../../../model/_client';
 import _ from 'lodash';
-import { subscribeEventBus } from '../../../ws/shared';
 import { OpenApiMeta } from 'trpc-openapi';
 import { OPENAPI_TAG } from '../../../utils/const';
-import { serializeJSON } from '../../../utils/json';
+import { createFeedEvent } from '../../../model/feed/event';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -55,24 +54,18 @@ export const feedIntegrationRouter = router({
         const senderId = String(_.get(data, 'sender.id'));
         const senderName = String(_.get(data, 'sender.login'));
         const url = String(_.get(data, 'compare'));
-        const event = await prisma.feedEvent.create({
-          data: {
-            channelId: channelId,
-            eventName: eventType,
-            eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit **${commits}** to **${ref}** in [${fullName}](${repoUrl})`,
-            tags: [],
-            source: 'github',
-            senderId,
-            senderName,
-            important: false,
-            url,
-          },
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: eventType,
+          eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit **${commits}** to **${ref}** in [${fullName}](${repoUrl})`,
+          tags: [],
+          source: 'github',
+          senderId,
+          senderName,
+          important: false,
+          url,
         });
-        subscribeEventBus.emit(
-          'onReceiveFeedEvent',
-          workspaceId,
-          serializeJSON(event)
-        );
 
         return 'ok';
       } else if (eventType === 'star') {
@@ -83,24 +76,18 @@ export const feedIntegrationRouter = router({
         const senderName = String(_.get(data, 'sender.login'));
         const senderUrl = String(_.get(data, 'sender.html_url'));
         const url = String(_.get(data, 'compare'));
-        const event = await prisma.feedEvent.create({
-          data: {
-            channelId: channelId,
-            eventName: eventType,
-            eventContent: `[${senderName}](${senderUrl}) star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
-            tags: [],
-            source: 'github',
-            senderId,
-            senderName,
-            important: false,
-            url,
-          },
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: eventType,
+          eventContent: `[${senderName}](${senderUrl}) star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
+          tags: [],
+          source: 'github',
+          senderId,
+          senderName,
+          important: false,
+          url,
         });
-        subscribeEventBus.emit(
-          'onReceiveFeedEvent',
-          workspaceId,
-          serializeJSON(event)
-        );
 
         return 'ok';
       } else if (eventType === 'issues') {
@@ -124,24 +111,17 @@ export const feedIntegrationRouter = router({
         }
 
         if (eventContent) {
-          const event = await prisma.feedEvent.create({
-            data: {
-              channelId: channelId,
-              eventName: eventName,
-              eventContent: `${senderName} star repo [${fullName}], now is ${starCount}.`,
-              tags: [],
-              source: 'github',
-              senderId,
-              senderName,
-              important: false,
-              url,
-            },
+          await createFeedEvent(workspaceId, {
+            channelId: channelId,
+            eventName: eventName,
+            eventContent: `${senderName} star repo [${fullName}], now is ${starCount}.`,
+            tags: [],
+            source: 'github',
+            senderId,
+            senderName,
+            important: false,
+            url,
           });
-          subscribeEventBus.emit(
-            'onReceiveFeedEvent',
-            workspaceId,
-            serializeJSON(event)
-          );
 
           return 'ok';
         }
