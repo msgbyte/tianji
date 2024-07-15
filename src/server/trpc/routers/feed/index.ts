@@ -16,6 +16,7 @@ import { prisma } from '../../../model/_client';
 import _ from 'lodash';
 import { buildFeedPublicOpenapi, feedIntegrationRouter } from './integration';
 import { fetchDataByCursor } from '../../../utils/prisma';
+import { delFeedEventNotifyCache } from '../../../model/feed/event';
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -148,6 +149,8 @@ export const feedRouter = router({
           },
         },
       });
+
+      delFeedEventNotifyCache(channelId);
 
       if (!channel) {
         return null;

@@ -2,11 +2,13 @@ import { Cron } from 'croner';
 import { logger } from '../utils/logger';
 import { prisma } from '../model/_client';
 import dayjs from 'dayjs';
-import { Prisma } from '@prisma/client';
+import { FeedChannelNotifyFrequency, Prisma } from '@prisma/client';
 import { env } from '../utils/env';
 import { sendNotification } from '../model/notification';
 import { token } from '../model/notification/token';
 import _ from 'lodash';
+import pMap from 'p-map';
+import { sendFeedEventsNotify } from '../model/feed/event';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -24,6 +26,7 @@ export function initCronjob() {
         clearMonitorEventDaily().catch(logger.error),
         clearAuditLogDaily().catch(logger.error),
         dailyHTTPCertCheckNotify().catch(logger.error),
+        checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
       ]);
 
       logger.info('Daily cronjob completed');
@@ -31,6 +34,8 @@ export function initCronjob() {
       logger.error('Daily cronjob error:', err);
     }
   });
+
+  // TODO: add more cronjob
 
   logger.info('Daily job will start at:', dailyJob.nextRun()?.toISOString());
 
@@ -287,4 +292,55 @@ async function dailyHTTPCertCheckNotify() {
   logger.info(
     `[dailyHTTPCertCheckNotify] run completed, send ${sendCount} notifications, time usage: ${Date.now() - start}ms`
   );
+}
+
+async function checkFeedEventsNotify(
+  notifyFrequency: FeedChannelNotifyFrequency
+) {
+  logger.info(
+    '[checkFeedEventsNotify] Start run checkFeedEventsNotify with:',
+    notifyFrequency
+  );
+
+  const channels = await prisma.feedChannel.findMany({
+    where: {
+      notifyFrequency,
+    },
+    include: {
+      notifications: true,
+    },
+  });
+
+  let startDate = dayjs().subtract(1, 'day').toDate();
+
+  if (notifyFrequency === FeedChannelNotifyFrequency.month) {
+    startDate = dayjs().subtract(1, 'month').toDate();
+  }
+
+  if (notifyFrequency === FeedChannelNotifyFrequency.week) {
+    startDate = dayjs().subtract(1, 'week').toDate();
+  }
+
+  logger.info(`[checkFeedEventsNotify] find ${channels.length} channel`);
+
+  await pMap(
+    channels,
+    async (channel) => {
+      const events = await prisma.feedEvent.findMany({
+        where: {
+          channelId: channel.id,
+          createdAt: {
+            gte: startDate,
+          },
+        },
+      });
+
+      sendFeedEventsNotify(channel.notifications, events);
+    },
+    {
+      concurrency: 5,
+    }
+  );
+
+  logger.info(`[checkFeedEventsNotify] completed.`);
 }
