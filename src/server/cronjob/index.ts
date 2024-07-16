@@ -35,11 +35,44 @@ export function initCronjob() {
     }
   });
 
+  const weeklyJob = Cron('0 2 * * 1', async () => {
+    logger.info('Start weekly cronjob');
+
+    try {
+      await Promise.all([
+        checkFeedEventsNotify(FeedChannelNotifyFrequency.week),
+      ]);
+
+      logger.info('Weekly cronjob completed');
+    } catch (err) {
+      logger.error('Weekly cronjob error:', err);
+    }
+  });
+
+  const monthlyJob = Cron('0 2 1 * *', async () => {
+    logger.info('Start monthly cronjob');
+
+    try {
+      await Promise.all([
+        checkFeedEventsNotify(FeedChannelNotifyFrequency.month),
+      ]);
+
+      logger.info('Monthly cronjob completed');
+    } catch (err) {
+      logger.error('Monthly cronjob error:', err);
+    }
+  });
+
   // TODO: add more cronjob
 
   logger.info('Daily job will start at:', dailyJob.nextRun()?.toISOString());
+  logger.info('Weekly job will start at:', weeklyJob.nextRun()?.toISOString());
+  logger.info(
+    'Monthly job will start at:',
+    monthlyJob.nextRun()?.toISOString()
+  );
 
-  return { dailyJob };
+  return { dailyJob, weeklyJob, monthlyJob };
 }
 
 async function statDailyUsage() {
