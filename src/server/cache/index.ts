@@ -37,7 +37,9 @@ export function buildQueryWithCache<T, Args extends any[]>(
 
     const realValue = await fetchFn(...args);
 
-    await cacheManager.set(key, JSON.stringify(cachedValue));
+    if (realValue) {
+      await cacheManager.set(key, JSON.stringify(realValue));
+    }
 
     return realValue;
   };

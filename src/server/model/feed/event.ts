@@ -10,6 +10,7 @@ import { serializeJSON } from '../../utils/json';
 import { buildQueryWithCache } from '../../cache';
 import { sendNotification } from '../notification';
 import { token } from '../notification/token';
+import { logger } from '../../utils/logger';
 
 const { get: getFeedEventNotify, del: delFeedEventNotifyCache } =
   buildQueryWithCache(async (channelId: string) => {
@@ -69,7 +70,9 @@ export async function sendFeedEventsNotify(
 
   await Promise.all(
     notifications.map((notification) =>
-      sendNotification(notification, 'Feed Report', eventTokens)
+      sendNotification(notification, 'Feed Report', eventTokens).catch((err) =>
+        logger.error('[Notification] sendFeedEventsNotify', err)
+      )
     )
   );
 }
