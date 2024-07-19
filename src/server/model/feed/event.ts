@@ -59,7 +59,7 @@ export async function createFeedEvent(
 export async function sendFeedEventsNotify(
   channel: Pick<
     z.infer<typeof FeedChannelModelSchema>,
-    'name' | 'notifyFrequency'
+    'id' | 'name' | 'notifyFrequency'
   > & {
     notifications: z.infer<typeof NotificationModelSchema>[];
   },
@@ -95,7 +95,12 @@ export async function sendFeedEventsNotify(
   await Promise.all(
     channel.notifications.map((notification) =>
       sendNotification(notification, 'Feed Report', eventTokens).catch((err) =>
-        logger.error('[Notification] sendFeedEventsNotify', err)
+        logger.error(
+          '[Notification] sendFeedEventsNotify',
+          channel.id,
+          notification.id,
+          err
+        )
       )
     )
   );

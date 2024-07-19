@@ -11,7 +11,7 @@ describe('telemetry router', () => {
       const telemetry = await createTestTelemetry(workspace.id);
 
       const { status } = await app.get(
-        `/telemetry/${workspace.id}/${telemetry.id}.svg`
+        `/telemetry/${workspace.id}/${telemetry.id}.gif`
       );
 
       expect(status).toBe(200);
@@ -22,7 +22,7 @@ describe('telemetry router', () => {
       const telemetry = await createTestTelemetry(workspace.id);
 
       const { status } = await app.get(
-        `/telemetry/${workspace.id}/${telemetry.id}.svg?name=tianji-oss&url=http://localhost:10000&v=1.8.2`
+        `/telemetry/${workspace.id}/${telemetry.id}.gif?name=tianji-oss&url=https://google.com&v=1.8.2`
       );
 
       expect(status).toBe(200);

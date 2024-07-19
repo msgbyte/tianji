@@ -81,9 +81,10 @@ app.use('/*', (req, res, next) => {
 app.use(express.static('public'));
 
 // fallback
+const webEntry = path.join(process.cwd(), 'public', 'index.html');
 app.use('/*', (req, res) => {
   if (req.method === 'GET' && req.accepts('html')) {
-    res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+    res.sendFile(webEntry);
   }
 });
 
