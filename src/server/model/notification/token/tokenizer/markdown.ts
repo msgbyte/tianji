@@ -1,5 +1,6 @@
 import {
   ImageContentToken,
+  ListContentToken,
   ParagraphContentToken,
   TitleContentToken,
   UrlContentToken,
@@ -31,5 +32,13 @@ export class MarkdownContentTokenizer extends BaseContentTokenizer {
 
   parseUrl(token: UrlContentToken): string {
     return `[${token.title ?? ''}](${token.url})`;
+  }
+
+  parseList(token: ListContentToken) {
+    return (
+      '\n' +
+      token.items.map((item) => `- ${this.parse([item])}`).join('\n') +
+      '\n'
+    );
   }
 }

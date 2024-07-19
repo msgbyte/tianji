@@ -1,6 +1,7 @@
 import {
   ContentToken,
   ImageContentToken,
+  ListContentToken,
   NewlineContentToken,
   ParagraphContentToken,
   TextContentToken,
@@ -33,7 +34,11 @@ export class BaseContentTokenizer {
     return token.url;
   }
 
-  parse(tokens: ContentToken[]) {
+  parseList(token: ListContentToken) {
+    return token.items.map((item) => this.parse([item])).join('\n');
+  }
+
+  parse(tokens: ContentToken[]): string {
     return tokens
       .map((token) => {
         if (token.type === 'text') {
@@ -54,6 +59,10 @@ export class BaseContentTokenizer {
 
         if (token.type === 'newline') {
           return this.parseNewline(token);
+        }
+
+        if (token.type === 'list') {
+          return this.parseList(token);
         }
 
         return '';

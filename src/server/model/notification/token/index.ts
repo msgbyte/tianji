@@ -5,6 +5,7 @@ import { TelegramContentTokenizer } from './tokenizer/telegram';
 import {
   ContentToken,
   ImageContentToken,
+  ListContentToken,
   NewlineContentToken,
   ParagraphContentToken,
   TextContentToken,
@@ -39,6 +40,10 @@ export const token = {
     type: 'url',
     url,
     title,
+  }),
+  list: (items: ContentToken[]): ListContentToken => ({
+    type: 'list',
+    items,
   }),
 };
 

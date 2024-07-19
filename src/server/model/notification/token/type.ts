@@ -29,10 +29,16 @@ export type UrlContentToken = {
   title?: string;
 };
 
+export type ListContentToken = {
+  type: 'list';
+  items: ContentToken[];
+};
+
 export type ContentToken =
   | TextContentToken
   | ImageContentToken
   | TitleContentToken
   | ParagraphContentToken
   | NewlineContentToken
-  | UrlContentToken;
+  | UrlContentToken
+  | ListContentToken;

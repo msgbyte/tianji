@@ -1,5 +1,6 @@
 import {
   ImageContentToken,
+  ListContentToken,
   NewlineContentToken,
   ParagraphContentToken,
   TitleContentToken,
@@ -36,5 +37,9 @@ export class HTMLContentTokenizer extends BaseContentTokenizer {
 
   parseUrl(token: UrlContentToken): string {
     return `<a href="${token.url}">${token.title ?? token.url}</a>`;
+  }
+
+  parseList(token: ListContentToken) {
+    return `<ul>${token.items.map((item) => `<li>${this.parse([item])}</li>`).join('')}</ul>`;
   }
 }
