@@ -1,16 +1,17 @@
-import {
-  FeedChannelNotifyFrequency,
-  FeedEvent,
-  Notification,
-  Prisma,
-} from '@prisma/client';
+import { FeedChannelNotifyFrequency, FeedEvent, Prisma } from '@prisma/client';
 import { subscribeEventBus } from '../../ws/shared';
 import { prisma } from '../_client';
 import { serializeJSON } from '../../utils/json';
 import { buildQueryWithCache } from '../../cache';
 import { sendNotification } from '../notification';
-import { token } from '../notification/token';
+import { ContentToken, token } from '../notification/token';
 import { logger } from '../../utils/logger';
+import {
+  FeedChannelModelSchema,
+  NotificationModelSchema,
+} from '../../prisma/zod';
+import dayjs from 'dayjs';
+import { z } from 'zod';
 
 const { get: getFeedEventNotify, del: delFeedEventNotifyCache } =
   buildQueryWithCache(async (channelId: string) => {
@@ -24,10 +25,10 @@ const { get: getFeedEventNotify, del: delFeedEventNotifyCache } =
     });
 
     if (!channel) {
-      return [null, []] as const;
+      return null;
     }
 
-    return [channel.notifyFrequency, channel.notifications] as const;
+    return channel;
   });
 
 export { delFeedEventNotifyCache };
@@ -46,30 +47,53 @@ export async function createFeedEvent(
   );
 
   if (event.channelId) {
-    const [notify, notifications] = await getFeedEventNotify(event.channelId);
+    const channel = await getFeedEventNotify(event.channelId);
 
-    if (notify === FeedChannelNotifyFrequency.event) {
+    if (channel?.notifyFrequency === FeedChannelNotifyFrequency.event) {
       // send notify every event
-      sendFeedEventsNotify(notifications, [event]);
+      sendFeedEventsNotify(channel, [event]);
     }
   }
 }
 
 export async function sendFeedEventsNotify(
-  notifications: Notification[],
+  channel: Pick<
+    z.infer<typeof FeedChannelModelSchema>,
+    'name' | 'notifyFrequency'
+  > & {
+    notifications: z.infer<typeof NotificationModelSchema>[];
+  },
   events: FeedEvent[]
 ) {
-  const eventTokens = events
-    .map((event) => [
-      token.text(
-        `[${event.eventName}] ${event.senderName}: ${event.eventContent}`
-      ),
-      token.newline(),
-    ])
-    .flat();
+  let frequencyToken = token.paragraph('Range: Every Event');
+  if (channel.notifyFrequency === FeedChannelNotifyFrequency.day) {
+    frequencyToken = token.paragraph(
+      `Range: Daily | ${dayjs().subtract(1, 'day').toISOString()} - ${dayjs().toISOString()}`
+    );
+  } else if (channel.notifyFrequency === FeedChannelNotifyFrequency.week) {
+    frequencyToken = token.paragraph(
+      `Range: Weekly | ${dayjs().subtract(1, 'week').toISOString()} - ${dayjs().toISOString()}`
+    );
+  } else if (channel.notifyFrequency === FeedChannelNotifyFrequency.month) {
+    frequencyToken = token.paragraph(
+      `Range: Monthly | ${dayjs().subtract(1, 'month').toISOString()} - ${dayjs().toISOString()}`
+    );
+  }
+
+  const eventTokens: ContentToken[] = [
+    token.title('Feed Report from Channel: ' + channel.name, 2),
+    frequencyToken,
+    token.list(
+      events.map((event) =>
+        token.text(
+          `[${event.eventName}] ${event.senderName}: ${event.eventContent}`
+        )
+      )
+    ),
+  ];
 
   await Promise.all(
-    notifications.map((notification) =>
+    channel.notifications.map((notification) =>
       sendNotification(notification, 'Feed Report', eventTokens).catch((err) =>
         logger.error('[Notification] sendFeedEventsNotify', err)
       )

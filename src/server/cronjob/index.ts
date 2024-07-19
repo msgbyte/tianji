@@ -368,7 +368,7 @@ async function checkFeedEventsNotify(
         },
       });
 
-      sendFeedEventsNotify(channel.notifications, events);
+      sendFeedEventsNotify(channel, events);
     },
     {
       concurrency: 5,
