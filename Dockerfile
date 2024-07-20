@@ -10,7 +10,7 @@ RUN cd reporter && go build .
 # # Base ------------------------------
 FROM node:20-alpine AS base
 
-RUN npm install -g pnpm@8.3.1
+RUN npm install -g pnpm@9.5.0
 RUN apk add --update --no-cache python3 py3-pip g++ make
 
 # Tianji frontend ------------------------------
