@@ -368,7 +368,15 @@ async function checkFeedEventsNotify(
         },
       });
 
-      sendFeedEventsNotify(channel, events);
+      if (events.length === 0) {
+        logger.info(
+          'Skip send events report because not include any events in this channel',
+          channel.id
+        );
+        return;
+      }
+
+      await sendFeedEventsNotify(channel, events);
     },
     {
       concurrency: 5,
