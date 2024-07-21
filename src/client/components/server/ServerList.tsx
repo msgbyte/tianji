@@ -15,6 +15,7 @@ import { UpDownCounter } from '../UpDownCounter';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { ServerRowExpendView } from './ServerRowExpendView';
 import { FaDocker } from 'react-icons/fa';
+import { ColorizedText } from './ColorizedText';
 
 const columnHelper = createColumnHelper<ServerStatusInfo>();
 
@@ -119,7 +120,11 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
       columnHelper.accessor('payload.cpu', {
         header: 'CPU',
         size: 80,
-        cell: (props) => `${props.getValue()}%`,
+        cell: (props) => (
+          <ColorizedText percent={props.getValue() / 100}>
+            {props.getValue()}%
+          </ColorizedText>
+        ),
       }),
       columnHelper.display({
         header: 'RAM',
@@ -127,9 +132,16 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         cell: (props) => (
           <div className="text-xs">
             <div>
-              {filesize(props.row.original.payload.memory_used * 1024, {
-                base: 2,
-              })}{' '}
+              <ColorizedText
+                percent={
+                  props.row.original.payload.memory_used /
+                  props.row.original.payload.memory_total
+                }
+              >
+                {filesize(props.row.original.payload.memory_used * 1024, {
+                  base: 2,
+                })}
+              </ColorizedText>{' '}
               /{' '}
             </div>
             <div>
@@ -146,9 +158,16 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         cell: (props) => (
           <div className="text-xs">
             <div>
-              {filesize(props.row.original.payload.hdd_used * 1024 * 1024, {
-                base: 2,
-              })}{' '}
+              <ColorizedText
+                percent={
+                  props.row.original.payload.hdd_used /
+                  props.row.original.payload.hdd_total
+                }
+              >
+                {filesize(props.row.original.payload.hdd_used * 1024 * 1024, {
+                  base: 2,
+                })}
+              </ColorizedText>{' '}
               /{' '}
             </div>
             <div>
