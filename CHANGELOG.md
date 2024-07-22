@@ -1,5 +1,74 @@
 
 
+## [1.12.0](https://github.com/msgbyte/tianji/compare/v1.11.4...v1.12.0) (2024-07-22)
+
+
+### Features
+
+* add channel feed notification ([67bfda3](https://github.com/msgbyte/tianji/commit/67bfda30bc95b5b8d11ff3994c6d097106e2c248))
+* add colorized text for server status which help user find problem ([f2b20c5](https://github.com/msgbyte/tianji/commit/f2b20c5ef9a8d46aecb51b7c33720831c4e1ddf6))
+* add custom feed integration ([765cc41](https://github.com/msgbyte/tianji/commit/765cc41c0637879c08f0cbb882d0decd03fc6e66))
+* add date range and improve report display ([6e68a80](https://github.com/msgbyte/tianji/commit/6e68a8044dbda7a391800589ebb4cc2c828a8dbc))
+* add dialog wrapper and improve display of webhook modal ([adb1cc3](https://github.com/msgbyte/tianji/commit/adb1cc391926b9fcea71f2db780e387b980b0b1d))
+* add feed channel count ([a7688f0](https://github.com/msgbyte/tianji/commit/a7688f02af6a51d3786d4c91114a0e398c880fab))
+* add feed endpoint ([f459c6b](https://github.com/msgbyte/tianji/commit/f459c6beeadaea6368e07375efa4845fe994305b))
+* add feed event item created time ([926ea98](https://github.com/msgbyte/tianji/commit/926ea980ff130ba93c491fce9445b668f88175aa))
+* add feed event notification with event and daily ([7bfd92b](https://github.com/msgbyte/tianji/commit/7bfd92be0b90cc5b9556a91f38627bdf015492d9))
+* add feed page ([96a5a33](https://github.com/msgbyte/tianji/commit/96a5a33ad61c8b7bb4e4eae535acc659632aa914))
+* add github integration support ([12fe9f0](https://github.com/msgbyte/tianji/commit/12fe9f0384ab08bc9013b22eb29140b14dae559f))
+* add integration modal ([af5f6ad](https://github.com/msgbyte/tianji/commit/af5f6ad9f5853c344ceefe7a5e34730f364bfeae))
+* add list content token ([7736bf8](https://github.com/msgbyte/tianji/commit/7736bf89dc94524d0cce6dc0b42a6ef430ecab2e))
+* add more clear job ([b6bca6c](https://github.com/msgbyte/tianji/commit/b6bca6c250ded389b863e6e11adb77e5aa1b2911))
+* add realtime feed event and desc feed list ([478d0c2](https://github.com/msgbyte/tianji/commit/478d0c2af3dd65d743a1ab36c0099a8449dc5224))
+* add VirtualList support for feed events ([caf7e9c](https://github.com/msgbyte/tianji/commit/caf7e9ca72358772f3e47b593e7553b78578b226))
+* add weekly and monthly cron job ([03904d2](https://github.com/msgbyte/tianji/commit/03904d26e08fbb755983568ed4dec7667f52982a))
+* feed add markdown support ([56bbe09](https://github.com/msgbyte/tianji/commit/56bbe09005013276c0ac7324354cb63533ecd18e))
+* github feed add star and issue support ([29939b6](https://github.com/msgbyte/tianji/commit/29939b6709e143ab9f68d008b79be38b3f13a6e7))
+
+
+### Bug Fixes
+
+* fix auditlog cannot fetch more data problem ([1b859e3](https://github.com/msgbyte/tianji/commit/1b859e31768b0f5b1a844989745e37e30d6ed478))
+* fix problem of send notification ([82bb2ad](https://github.com/msgbyte/tianji/commit/82bb2ad267ae1f2922924fddb986b9f4e619eb1e))
+
+
+### Document
+
+* update category order ([b2480b0](https://github.com/msgbyte/tianji/commit/b2480b0ed57eccbc741de0652edbda8548b68db9))
+* update roadmap ([e10cdfd](https://github.com/msgbyte/tianji/commit/e10cdfdf2612448938711b42fab2b8f160c3cab2))
+* update webhooks document ([b355a67](https://github.com/msgbyte/tianji/commit/b355a677d3e36de4f53a73c59e23ab1aa0cb690e))
+* update wechat qrcode ([503df45](https://github.com/msgbyte/tianji/commit/503df4546da7d11035f301db18650b4552d484f0))
+
+
+### Others
+
+* add document for endpoint ([537503f](https://github.com/msgbyte/tianji/commit/537503f288735de3c73f759291338ca74ce8d5d1))
+* add dynamic virtual list ([01d81f3](https://github.com/msgbyte/tianji/commit/01d81f39296b80899c4fcaadda8dffa3f3f28803))
+* add empty description message ([66ec94f](https://github.com/msgbyte/tianji/commit/66ec94fd08c24b901a0b8814cec5e246b6f6454f))
+* add env openapi default value ([685d050](https://github.com/msgbyte/tianji/commit/685d05074b9a994081eade85cceb5f3b001c74df))
+* add feed event url ([ac930cd](https://github.com/msgbyte/tianji/commit/ac930cd05e19e69e5ec9a7b059e56043685426ee))
+* add preview text ([3d9b67a](https://github.com/msgbyte/tianji/commit/3d9b67a430536d04adaab035e29bb21d4f2b0051))
+* add simple virtual list ([b7670da](https://github.com/msgbyte/tianji/commit/b7670da7db231d7f46f0cafc4ed30c2d46981c0a))
+* change create feed event to local ([ab179e9](https://github.com/msgbyte/tianji/commit/ab179e9af6f2f17f2ac93be8e046a71b67f90eb1))
+* change feed channel notifyFrequency type to enum ([2ce5597](https://github.com/msgbyte/tianji/commit/2ce5597dfe1c51cbec86c13b1b6a3fe5eecf2e53))
+* change push message in github event ([1d4aecf](https://github.com/msgbyte/tianji/commit/1d4aecff9559e30d5274073f8c64002cce54aaef))
+* fix ci problem ([865e56f](https://github.com/msgbyte/tianji/commit/865e56f40e7351d21c995f7a9c0fafbcc7b75993))
+* fix ci problem ([4d15ccc](https://github.com/msgbyte/tianji/commit/4d15cccd1b8718f862a482564703eb905f1839c2))
+* improve display in feed channel list ([15c6290](https://github.com/msgbyte/tianji/commit/15c6290587521abd6ce4a6325fc13456d1b10f42))
+* improve feed event item display ([17f87c1](https://github.com/msgbyte/tianji/commit/17f87c191a9b1fcbcb39e73e1830ccb29b6e634c))
+* improve logger and test case ([9796d42](https://github.com/msgbyte/tianji/commit/9796d428466f21adcfa42e04f04cbfe2d15aff3c))
+* remove unused code ([2f6e92d](https://github.com/msgbyte/tianji/commit/2f6e92d166ac1635b87151147c12f13146136d38))
+* remove unused size changer ([6ccd0ed](https://github.com/msgbyte/tianji/commit/6ccd0ede7b4c1bd8caad0697f66e61db8ea1feb9))
+* skip event report if not have any events ([f814691](https://github.com/msgbyte/tianji/commit/f814691538578972bdeefe574e74a8dacb261a59))
+* split integration route from feed route ([a4c31fe](https://github.com/msgbyte/tianji/commit/a4c31fe2da2b4213726579042ac93aa0547f0cc7))
+* update feed guide ([c34b012](https://github.com/msgbyte/tianji/commit/c34b0124fac27fa2e48d2705cab8f07935d7fa02))
+* update openapi base url and regenerate openapi document ([616a623](https://github.com/msgbyte/tianji/commit/616a623e40ea86e68595449f7a9d290630a5b116))
+* update tag and content ([85a2a59](https://github.com/msgbyte/tianji/commit/85a2a598d76a5835e32772f04b6b2cf0e0d6dccf))
+* update translation ([fc6ee73](https://github.com/msgbyte/tianji/commit/fc6ee733663231347a22aa7df83e4f4a454f4bd6))
+* upgrade pnpm version in ci ([a2cb8b0](https://github.com/msgbyte/tianji/commit/a2cb8b0538d69d2209faa9574c509e49ec7d55ee))
+* upgrade pnpm version in dockerfile ([1b89c3b](https://github.com/msgbyte/tianji/commit/1b89c3b5a808b57f1a695b86a8f35e4199e0ed7c))
+* upgrade pnpm version to v9.5.0 ([63de6d7](https://github.com/msgbyte/tianji/commit/63de6d7aa514a5e1a2e206785a8426336cb323fa))
+
 ## [1.11.4](https://github.com/msgbyte/tianji/compare/v1.11.3...v1.11.4) (2024-06-21)
 
 
