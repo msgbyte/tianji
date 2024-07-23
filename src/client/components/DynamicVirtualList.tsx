@@ -12,6 +12,7 @@ interface VirtualListProps<T = any> {
   onFetchNextPage: () => void;
   estimateSize: number;
   renderItem: (item: T) => React.ReactElement;
+  getItemKey?: (index: number) => string | number;
   renderEmpty?: () => React.ReactElement;
 }
 export const DynamicVirtualList: React.FC<VirtualListProps> = React.memo(
@@ -22,6 +23,7 @@ export const DynamicVirtualList: React.FC<VirtualListProps> = React.memo(
       isFetchingNextPage,
       onFetchNextPage,
       estimateSize,
+      getItemKey,
       renderItem,
       renderEmpty,
     } = props;
@@ -33,6 +35,7 @@ export const DynamicVirtualList: React.FC<VirtualListProps> = React.memo(
       getScrollElement: () => parentRef.current,
       estimateSize: () => estimateSize,
       overscan: 5,
+      getItemKey,
     });
 
     const virtualItems = rowVirtualizer.getVirtualItems();

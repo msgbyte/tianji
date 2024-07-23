@@ -16,6 +16,7 @@ import { DialogWrapper } from '@/components/DialogWrapper';
 import { useSocketSubscribeList } from '@/api/socketio';
 import { useMemo } from 'react';
 import { DynamicVirtualList } from '@/components/DynamicVirtualList';
+import { reverse } from 'lodash-es';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -64,7 +65,10 @@ function PageComponent() {
   });
 
   const fullEvents = useMemo(
-    () => [...realtimeEvents, ...(data?.pages.flatMap((p) => p.items) ?? [])],
+    () => [
+      ...reverse(realtimeEvents),
+      ...(data?.pages.flatMap((p) => p.items) ?? []),
+    ],
     [realtimeEvents, data]
   );
 
@@ -118,7 +122,10 @@ function PageComponent() {
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           onFetchNextPage={fetchNextPage}
-          renderItem={(item) => <FeedEventItem className="mb-2" event={item} />}
+          getItemKey={(index) => fullEvents[index].id}
+          renderItem={(item) => (
+            <FeedEventItem className="animate-fade-in mb-2" event={item} />
+          )}
           renderEmpty={() => (
             <div className="w-full overflow-hidden p-4">
               <FeedApiGuide channelId={channelId} />
