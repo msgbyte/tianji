@@ -1,4 +1,4 @@
-import { Button, Form, Input, message, Popconfirm, Tabs } from 'antd';
+import { Button, Form, Input, message, Popconfirm } from 'antd';
 import React from 'react';
 import { deleteWorkspaceWebsite } from '../../api/model/website';
 import { useRequest } from '../../hooks/useRequest';
@@ -16,6 +16,8 @@ import { useEvent } from '../../hooks/useEvent';
 import { hostnameValidator } from '../../utils/validator';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { AlertConfirm } from '../AlertConfirm';
 
 export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
   (props) => {
@@ -83,8 +85,12 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
     return (
       <div>
         <div>
-          <Tabs>
-            <Tabs.TabPane key={'detail'} tab={'Detail'}>
+          <Tabs defaultValue="detail">
+            <TabsList>
+              <TabsTrigger value="detail">{t('Detail')}</TabsTrigger>
+              <TabsTrigger value="data">{t('Data')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="detail">
               <Form
                 layout="vertical"
                 initialValues={{
@@ -134,18 +140,17 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
                   </Button>
                 </Form.Item>
               </Form>
-            </Tabs.TabPane>
-
-            <Tabs.TabPane key={'data'} tab={'Data'}>
-              <Popconfirm
+            </TabsContent>
+            <TabsContent value="data">
+              <AlertConfirm
                 title={t('Delete Website')}
                 onConfirm={() => handleDeleteWebsite()}
               >
                 <Button type="primary" danger={true}>
                   {t('Delete Website')}
                 </Button>
-              </Popconfirm>
-            </Tabs.TabPane>
+              </AlertConfirm>
+            </TabsContent>
           </Tabs>
         </div>
       </div>

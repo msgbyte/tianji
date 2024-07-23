@@ -32,17 +32,22 @@ function PageComponent() {
     channelId,
   });
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    trpc.feed.fetchEventsByCursor.useInfiniteQuery(
-      {
-        workspaceId,
-        channelId,
-      },
-      {
-        refetchOnWindowFocus: false,
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-      }
-    );
+  const {
+    data,
+    isInitialLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = trpc.feed.fetchEventsByCursor.useInfiniteQuery(
+    {
+      workspaceId,
+      channelId,
+    },
+    {
+      refetchOnWindowFocus: false,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
 
   const deleteMutation = trpc.feed.deleteChannel.useMutation({
     onSuccess: defaultSuccessHandler,
@@ -128,7 +133,7 @@ function PageComponent() {
           )}
           renderEmpty={() => (
             <div className="w-full overflow-hidden p-4">
-              <FeedApiGuide channelId={channelId} />
+              {!isInitialLoading && <FeedApiGuide channelId={channelId} />}
             </div>
           )}
         />
