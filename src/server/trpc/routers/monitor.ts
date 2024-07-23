@@ -29,7 +29,7 @@ import { runCodeInVM } from '../../model/monitor/provider/custom';
 import { createAuditLog } from '../../model/auditLog';
 import {
   MonitorInfoWithNotificationIds,
-  MonitorPublicInfoSchema,
+  monitorPublicInfoSchema,
 } from '../../model/_schema/monitor';
 import { monitorPageManager } from '../../model/monitor/page/manager';
 
@@ -107,7 +107,7 @@ export const monitorRouter = router({
         monitorIds: z.array(z.string()),
       })
     )
-    .output(z.array(MonitorPublicInfoSchema))
+    .output(z.array(monitorPublicInfoSchema))
     .query(async ({ input }) => {
       const { monitorIds } = input;
 

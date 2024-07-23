@@ -1,5 +1,5 @@
 import { prisma } from '../_client';
-import { MonitorPublicInfoSchema } from '../_schema/monitor';
+import { monitorPublicInfoSchema } from '../_schema/monitor';
 import { MonitorManager } from './manager';
 
 export const monitorManager = new MonitorManager();
@@ -13,7 +13,7 @@ export async function getMonitorPublicInfos(monitorIds: string[]) {
     },
   });
 
-  return res.map((item) => MonitorPublicInfoSchema.parse(item));
+  return res.map((item) => monitorPublicInfoSchema.parse(item));
 }
 
 export function getMonitorData(

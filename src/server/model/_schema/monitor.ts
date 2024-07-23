@@ -5,7 +5,7 @@ export type MonitorInfoWithNotificationIds = MonitorInfo & {
   notifications: { id: string }[];
 };
 
-export const MonitorPublicInfoSchema = MonitorModelSchema.pick({
+export const monitorPublicInfoSchema = MonitorModelSchema.pick({
   id: true,
   name: true,
   type: true,

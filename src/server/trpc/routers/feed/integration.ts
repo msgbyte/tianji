@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { OpenApiMeta } from 'trpc-openapi';
 import { OPENAPI_TAG } from '../../../utils/const';
 import { createFeedEvent } from '../../../model/feed/event';
+import { tencentCloudAlarmSchema } from '../../../model/_schema/feed';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -39,7 +40,7 @@ export const feedIntegrationRouter = router({
         .then((res) => res?.workspaceId);
 
       if (!workspaceId) {
-        return 'Not found';
+        throw new Error('Not found Workspace');
       }
 
       if (eventType === 'push') {
@@ -127,7 +128,91 @@ export const feedIntegrationRouter = router({
         }
       }
 
-      return 'not supported';
+      return 'Not supported yet';
+    }),
+  tencentCloudAlarm: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'POST',
+        path: '/{channelId}/tencent-cloud/alarm',
+        summary: 'integrate with tencent-cloud webhook',
+      })
+    )
+    .input(
+      z
+        .object({
+          channelId: z.string(),
+        })
+        .passthrough()
+    )
+    .output(z.string())
+    .mutation(async ({ input, ctx }) => {
+      const { channelId, ...data } = input;
+
+      const workspaceId = await prisma.feedChannel
+        .findFirst({
+          where: {
+            id: channelId,
+          },
+          select: {
+            workspaceId: true,
+          },
+        })
+        .then((res) => res?.workspaceId);
+
+      if (!workspaceId) {
+        throw new Error('Not found Workspace');
+      }
+
+      const res = tencentCloudAlarmSchema.safeParse(data);
+      if (!res.success) {
+        throw new Error('Input not valid');
+      }
+
+      const alarm = res.data;
+
+      if (alarm.alarmType === 'event') {
+        const conditions = alarm.alarmPolicyInfo.conditions;
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: alarm.alarmType,
+          eventContent: `[${alarm.alarmStatus === '1' ? 'Trigger' : 'Recover'}] **${alarm.alarmObjInfo.dimensions.unInstanceId}** ${alarm.alarmPolicyInfo.policyName} ${conditions.productShowName} ${conditions.eventShowName}.`,
+          tags: [
+            alarm.alarmObjInfo.appId,
+            alarm.alarmObjInfo.dimensions.unInstanceId,
+          ],
+          source: 'tencent-cloud',
+          senderId: alarm.alarmObjInfo.appId,
+          senderName: alarm.alarmPolicyInfo.policyName,
+          important: alarm.alarmStatus === '1',
+        });
+
+        return 'ok';
+      }
+
+      if (alarm.alarmType === 'metric') {
+        const conditions = alarm.alarmPolicyInfo.conditions;
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: alarm.alarmType,
+          eventContent: `[${alarm.alarmStatus === '1' ? 'Trigger' : 'Recover'}] **${alarm.alarmObjInfo.dimensions.unInstanceId}** ${alarm.alarmPolicyInfo.policyName} ${conditions.metricShowName} ${conditions.calcType} ${conditions.calcValue}${conditions.calcUnit} (current: ${conditions.currentValue}${conditions.unit}) [${alarm.firstOccurTime} - ${alarm.durationTime}](keep: ${alarm.durationTime}s).`,
+          tags: [
+            alarm.alarmObjInfo.appId,
+            alarm.alarmObjInfo.dimensions.unInstanceId,
+            ...(alarm.alarmPolicyInfo.tag ?? []).map(String),
+          ],
+          source: 'tencent-cloud',
+          senderId: alarm.alarmObjInfo.appId,
+          senderName: alarm.alarmPolicyInfo.policyName,
+          important: alarm.alarmStatus === '1',
+        });
+
+        return 'ok';
+      }
+
+      return 'Not supported yet';
     }),
 });
 
