@@ -1,5 +1,28 @@
 
 
+## [1.12.1](https://github.com/msgbyte/tianji/compare/v1.12.0...v1.12.1) (2024-07-25)
+
+
+### Features
+
+* add tencent cloud integration ([8585ea4](https://github.com/msgbyte/tianji/commit/8585ea4196e61934508f33e5120df8d854d6b18f))
+
+
+### Bug Fixes
+
+* fix code block not display well in light mode [#80](https://github.com/msgbyte/tianji/issues/80) ([0835fc5](https://github.com/msgbyte/tianji/commit/0835fc588bd0967d578abe34af9596fea2f29390))
+
+
+### Document
+
+* update pnpm version in manual install document ([9a7afed](https://github.com/msgbyte/tianji/commit/9a7afed08cb4aa80839fb83328a8ff300ac2141e))
+
+
+### Others
+
+* add fade in animation ([35a6e20](https://github.com/msgbyte/tianji/commit/35a6e20717d42ed4719b7dd441a89b079973d30e))
+* change website config tabs to shadcn ui and improve ui ([f112adc](https://github.com/msgbyte/tianji/commit/f112adc696f7d2ded5d7619cf900e8156ea92d37))
+
 ## [1.12.0](https://github.com/msgbyte/tianji/compare/v1.11.4...v1.12.0) (2024-07-22)
 
 
