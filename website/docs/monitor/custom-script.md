@@ -54,6 +54,27 @@ return res.data.pull_count;
 
 replace `moonrailgun/tianji` to your own image name
 
+### example for match text
+
+```js
+const start = Date.now();
+const res = await request({
+  url: "https://example.com/"
+});
+
+const usage = Date.now() - start;
+
+const matched = /maintain/.test(String(res.data));
+
+if(matched) {
+  return -1;
+}
+
+return usage;
+```
+
+return `-1` means somthing wrong. in this case, its means in html body include `maintain` text.
+
 
 ### or more
 
