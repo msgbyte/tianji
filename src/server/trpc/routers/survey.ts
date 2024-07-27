@@ -126,7 +126,7 @@ export const surveyRouter = router({
         payload: z.record(z.string(), z.any()),
       })
     )
-    .output(z.any())
+    .output(z.string())
     .mutation(async ({ input, ctx }) => {
       const { req } = ctx;
       const { workspaceId, surveyId, payload } = input;
@@ -166,6 +166,8 @@ export const surveyRouter = router({
           accuracyRadius,
         },
       });
+
+      return 'success';
     }),
   create: workspaceOwnerProcedure
     .meta(

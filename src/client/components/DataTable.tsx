@@ -148,3 +148,4 @@ export function DataTable<TData>({
     </div>
   );
 }
+DataTable.displayName = 'DataTable';

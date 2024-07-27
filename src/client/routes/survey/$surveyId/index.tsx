@@ -22,6 +22,7 @@ import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
 import dayjs from 'dayjs';
 import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
 import { Scrollbar } from '@radix-ui/react-scroll-area';
+import { VirtualizedInfiniteDataTable } from '@/components/VirtualizedInfiniteDataTable';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -45,10 +46,21 @@ function PageComponent() {
     workspaceId,
     surveyId,
   });
-  const { data: resultList } = trpc.survey.resultList.useInfiniteQuery({
-    workspaceId,
-    surveyId,
-  });
+  const {
+    data: resultList,
+    hasNextPage,
+    fetchNextPage,
+    isFetching,
+    isLoading,
+  } = trpc.survey.resultList.useInfiniteQuery(
+    {
+      workspaceId,
+      surveyId,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
   const deleteMutation = trpc.survey.delete.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
@@ -65,13 +77,11 @@ function PageComponent() {
     });
   });
 
-  const dataSource = resultList?.pages.map((p) => p.items).flat() ?? [];
-
   const columns = useMemo(() => {
     return [
       columnHelper.accessor('id', {
         header: t('ID'),
-        size: 150,
+        size: 230,
       }),
       ...(info?.payload.items.map((item) =>
         columnHelper.accessor(`payload.${item.name}`, {
@@ -80,7 +90,7 @@ function PageComponent() {
       ) ?? []),
       columnHelper.accessor('createdAt', {
         header: t('Created At'),
-        size: 130,
+        size: 200,
         cell: (props) => dayjs(props.getValue()).format('YYYY-MM-DD HH:mm:ss'),
       }),
     ];
@@ -123,7 +133,7 @@ function PageComponent() {
         />
       }
     >
-      <div className="h-full overflow-hidden p-4">
+      <div className="flex h-full flex-col overflow-hidden p-4">
         <div className="mb-4 w-full">
           <Card>
             <CardHeader>
@@ -141,11 +151,16 @@ function PageComponent() {
 
         <div className="mb-2 text-lg font-bold">{t('Preview')}</div>
 
-        <ScrollArea className="w-full">
-          <Scrollbar orientation="horizontal" />
-
-          <DataTable columns={columns} data={dataSource} />
-        </ScrollArea>
+        <div className="flex-1 overflow-hidden">
+          <VirtualizedInfiniteDataTable
+            columns={columns}
+            data={resultList}
+            onFetchNextPage={fetchNextPage}
+            isFetching={isFetching}
+            isLoading={isLoading}
+            hasNextPage={hasNextPage}
+          />
+        </div>
       </div>
     </CommonWrapper>
   );
