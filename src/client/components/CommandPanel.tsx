@@ -10,6 +10,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import {
+  LuActivitySquare,
   LuAreaChart,
   LuBellDot,
   LuFilePieChart,
@@ -143,6 +144,14 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                 <RiSurveyLine className="mr-2 h-4 w-4" />
                 {t('Survey')}
               </CommandItem>
+              <CommandItem
+                onSelect={handleJump({
+                  to: '/feed',
+                })}
+              >
+                <LuActivitySquare className="mr-2 h-4 w-4" />
+                {t('Feed')}
+              </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading={t('Settings')}>
@@ -193,6 +202,9 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
       workspaceId,
     });
     const { data: surveys = [] } = trpc.survey.all.useQuery({
+      workspaceId,
+    });
+    const { data: feedChannels = [] } = trpc.feed.channels.useQuery({
       workspaceId,
     });
 
@@ -280,6 +292,22 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
           >
             <RiSurveyLine className="mr-2 h-4 w-4" />
             {s.name}
+          </CommandItem>
+        ))}
+        {feedChannels.map((channel) => (
+          <CommandItem
+            key={channel.id}
+            value={channel.id}
+            keywords={[channel.name, channel.id]}
+            onSelect={handleJump({
+              to: '/feed/$channelId',
+              params: {
+                channelId: channel.id,
+              },
+            })}
+          >
+            <LuActivitySquare className="mr-2 h-4 w-4" />
+            {channel.name}
           </CommandItem>
         ))}
       </CommandGroup>

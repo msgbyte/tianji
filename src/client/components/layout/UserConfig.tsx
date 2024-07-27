@@ -201,7 +201,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
             </DropdownMenuPortal>
           </DropdownMenuSub>
 
-          <DropdownMenuLabel className="text-muted">
+          <DropdownMenuLabel className="text-muted-foreground dark:text-muted">
             v{version}
           </DropdownMenuLabel>
         </DropdownMenuContent>
