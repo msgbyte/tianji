@@ -6,6 +6,7 @@ import { OpenApiMeta } from 'trpc-openapi';
 import { OPENAPI_TAG } from '../../../utils/const.js';
 import { createFeedEvent } from '../../../model/feed/event.js';
 import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';
+import { logger } from '../../../utils/logger.js';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -166,7 +167,8 @@ export const feedIntegrationRouter = router({
 
       const res = tencentCloudAlarmSchema.safeParse(data);
       if (!res.success) {
-        throw new Error('Input not valid');
+        logger.error('[TencentCloudAlarm] input parse error:', res.error);
+        throw new Error('Input not valid,' + JSON.stringify(res.error));
       }
 
       const alarm = res.data;
