@@ -28,7 +28,7 @@ import { NotificationPicker } from '../notification/NotificationPicker';
 const addFormSchema = z.object({
   name: z.string(),
   notificationIds: z.array(z.string()).default([]),
-  notifyFrequency: z.enum(['event', 'day', 'week', 'month']),
+  notifyFrequency: z.enum(['none', 'event', 'day', 'week', 'month']),
 });
 
 export type FeedChannelEditFormValues = z.infer<typeof addFormSchema>;
@@ -46,7 +46,7 @@ export const FeedChannelEditForm: React.FC<FeedChannelEditFormProps> =
       defaultValues: props.defaultValues ?? {
         name: 'New Channel',
         notificationIds: [],
-        notifyFrequency: 'day',
+        notifyFrequency: 'none',
       },
     });
 
@@ -116,6 +116,7 @@ export const FeedChannelEditForm: React.FC<FeedChannelEditFormProps> =
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="none">{t('None')}</SelectItem>
                           <SelectItem value="event">
                             {t('Every Event')}
                           </SelectItem>

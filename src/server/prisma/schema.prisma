@@ -447,6 +447,7 @@ model SurveyResult {
 }
 
 enum FeedChannelNotifyFrequency {
+  none
   event
   day
   week
