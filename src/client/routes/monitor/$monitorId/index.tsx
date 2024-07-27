@@ -5,10 +5,20 @@ import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorInfo } from '@/components/monitor/MonitorInfo';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { createFileRoute } from '@tanstack/react-router';
+import { useTranslation } from '@i18next-toolkit/react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { pick } from 'lodash-es';
+import { LuCopy, LuMoreVertical } from 'react-icons/lu';
 
 export const Route = createFileRoute('/monitor/$monitorId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -22,6 +32,8 @@ function MonitorDetailComponent() {
     workspaceId,
     monitorId,
   });
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
   if (!monitorId) {
     return <ErrorTip />;
@@ -36,7 +48,44 @@ function MonitorDetailComponent() {
   }
 
   return (
-    <CommonWrapper header={<CommonHeader title={monitor.name} />}>
+    <CommonWrapper
+      header={
+        <CommonHeader
+          title={monitor.name}
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild={true} className="cursor-pointer">
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <LuMoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={() =>
+                    navigate({
+                      to: '/monitor/add',
+                      search: pick(monitor, [
+                        'name',
+                        'type',
+                        'notifications',
+                        'interval',
+                        'maxRetries',
+                        'trendingMode',
+                        'payload',
+                      ]),
+                    })
+                  }
+                >
+                  <LuCopy className="mr-2" />
+                  {t('Duplicate')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
+      }
+    >
       <ScrollArea className="h-full overflow-hidden p-4">
         <MonitorInfo monitorId={monitor.id} />
       </ScrollArea>

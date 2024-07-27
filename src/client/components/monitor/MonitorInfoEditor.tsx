@@ -121,7 +121,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
           </Form.Item>
 
           <Button type="primary" htmlType="submit" loading={isLoading}>
-            {t('Save')}
+            {isEdit ? t('Save') : t('Create')}
           </Button>
         </Form>
       </div>
