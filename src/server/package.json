@@ -2,9 +2,12 @@
   "name": "@tianji/server",
   "private": true,
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=20.11.0"
+  },
   "scripts": {
-    "dev": "nodemon",
+    "dev": "tsx watch --env-file=.env ./main.ts",
     "build": "tsc -p tsconfig.server.json",
     "postinstall": "pnpm db:generate",
     "check:type": "tsc --noEmit --skipLibCheck --module esnext",
@@ -101,6 +104,7 @@
     "prisma-zod-generator": "0.8.13",
     "supertest": "^6.3.4",
     "tailwindcss": "^3.3.5",
+    "tsx": "^4.16.2",
     "vite": "^5.0.12",
     "vitest": "^1.2.1"
   }

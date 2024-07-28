@@ -3,17 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
-  "types": "./dist/cjs/src/shared/src/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./dist/esm/src/shared/src/index.js",
-    "require": "./dist/cjs/src/shared/src/index.js"
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js"
   },
   "scripts": {
     "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "test": "vitest",
-    "build": "concurrently npm:build:cjs npm:build:esm",
-    "build:cjs": "tsc --module commonjs --outDir ./dist/cjs",
-    "build:esm": "tsc --module esnext --outDir ./dist/esm",
+    "build": "tsup",
     "postinstall": "pnpm build"
   },
   "keywords": [],
@@ -22,6 +20,7 @@
     "dayjs": "^1.11.9"
   },
   "devDependencies": {
+    "tsup": "^8.2.3",
     "vitest": "^1.2.1"
   }
 }
