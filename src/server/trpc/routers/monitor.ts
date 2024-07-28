@@ -4,34 +4,34 @@ import {
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
-} from '../trpc';
-import { prisma } from '../../model/_client';
+} from '../trpc.js';
+import { prisma } from '../../model/_client.js';
 import { z } from 'zod';
 import {
   getMonitorData,
   getMonitorPublicInfos,
   getMonitorRecentData,
   monitorManager,
-} from '../../model/monitor';
+} from '../../model/monitor/index.js';
 import dayjs from 'dayjs';
 import {
   monitorEventSchema,
   monitorInfoWithNotificationIdSchema,
   monitorStatusSchema,
-} from '../../model/_schema';
-import { OPENAPI_TAG } from '../../utils/const';
+} from '../../model/_schema/index.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import {
   MonitorModelSchema,
   MonitorStatusPageModelSchema,
-} from '../../prisma/zod';
-import { runCodeInVM } from '../../model/monitor/provider/custom';
-import { createAuditLog } from '../../model/auditLog';
+} from '../../prisma/zod/index.js';
+import { runCodeInVM } from '../../model/monitor/provider/custom.js';
+import { createAuditLog } from '../../model/auditLog.js';
 import {
   MonitorInfoWithNotificationIds,
   monitorPublicInfoSchema,
-} from '../../model/_schema/monitor';
-import { monitorPageManager } from '../../model/monitor/page/manager';
+} from '../../model/_schema/monitor.js';
+import { monitorPageManager } from '../../model/monitor/page/manager.js';
 
 export const monitorRouter = router({
   all: workspaceProcedure

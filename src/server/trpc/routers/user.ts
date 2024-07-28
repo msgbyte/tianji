@@ -1,4 +1,4 @@
-import { protectProedure, publicProcedure, router } from '../trpc';
+import { protectProedure, publicProcedure, router } from '../trpc.js';
 import { z } from 'zod';
 import {
   authUser,
@@ -7,12 +7,12 @@ import {
   createAdminUser,
   createUser,
   getUserCount,
-} from '../../model/user';
-import { jwtSign } from '../../middleware/auth';
+} from '../../model/user.js';
+import { jwtSign } from '../../middleware/auth.js';
 import { TRPCError } from '@trpc/server';
-import { env } from '../../utils/env';
-import { userInfoSchema } from '../../model/_schema/index';
-import { OPENAPI_TAG } from '../../utils/const';
+import { env } from '../../utils/env.js';
+import { userInfoSchema } from '../../model/_schema/index.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
 
 export const userRouter = router({
   login: publicProcedure

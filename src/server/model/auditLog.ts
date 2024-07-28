@@ -1,5 +1,5 @@
 import { WorkspaceAuditLogType } from '@prisma/client';
-import { prisma } from './_client';
+import { prisma } from './_client.js';
 
 /**
  * create audit log which can query by log

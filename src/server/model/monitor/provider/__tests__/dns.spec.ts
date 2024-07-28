@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { dns } from '../dns';
+import { dns } from '../dns.js';
 
 describe('dns', () => {
   test('run', async () => {

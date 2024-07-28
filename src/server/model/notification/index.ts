@@ -1,7 +1,7 @@
 import { Notification } from '@prisma/client';
-import { notificationProviders } from './provider';
-import { ExactType } from '../../../types';
-import { ContentToken } from './token';
+import { notificationProviders } from './provider/index.js';
+import { ExactType } from '../../../types/index.js';
+import { ContentToken } from './token/index.js';
 
 export async function sendNotification(
   notification: ExactType<

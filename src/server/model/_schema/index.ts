@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MonitorModelSchema } from '../../prisma/zod';
+import { MonitorModelSchema } from '../../prisma/zod/index.js';
 
 // Match prisma `JsonValue`
 export const jsonFieldSchema = z.union([

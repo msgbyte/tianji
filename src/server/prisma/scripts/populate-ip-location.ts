@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { getLocation } from '../../utils/detect';
+import { getLocation } from '../../utils/detect.js';
 import pMap from 'p-map';
 
 const prisma = new PrismaClient();

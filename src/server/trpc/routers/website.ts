@@ -3,35 +3,35 @@ import {
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
-} from '../trpc';
+} from '../trpc.js';
 import { z } from 'zod';
 import {
   getWebsiteOnlineUserCount,
   getWorkspaceWebsitePageview,
   getWorkspaceWebsiteSession,
   getWorkspaceWebsiteStats,
-} from '../../model/website';
-import { prisma } from '../../model/_client';
+} from '../../model/website.js';
+import { prisma } from '../../model/_client.js';
 import {
   EVENT_COLUMNS,
   FILTER_COLUMNS,
   OPENAPI_TAG,
   SESSION_COLUMNS,
-} from '../../utils/const';
-import { parseDateRange } from '../../utils/common';
+} from '../../utils/const.js';
+import { parseDateRange } from '../../utils/common.js';
 import {
   getWebsiteSessionMetrics,
   getWebsitePageviewMetrics,
-} from '../../model/website';
-import { websiteInfoSchema } from '../../model/_schema';
+} from '../../model/website.js';
+import { websiteInfoSchema } from '../../model/_schema/index.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import { hostnameRegex } from '@tianji/shared';
 import {
   websiteFilterSchema,
   websiteStatsSchema,
-} from '../../model/_schema/filter';
+} from '../../model/_schema/filter.js';
 import dayjs from 'dayjs';
-import { WebsiteQueryFilters } from '../../utils/prisma';
+import { WebsiteQueryFilters } from '../../utils/prisma.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([

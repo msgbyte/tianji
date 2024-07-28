@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { MonitorProvider } from './type';
+import { MonitorProvider } from './type.js';
 import axios from 'axios';
-import { saveMonitorStatus } from './_utils';
+import { saveMonitorStatus } from './_utils.js';
 import _ from 'lodash';
 
 const openaiCreditGrantsSchema = z.object({

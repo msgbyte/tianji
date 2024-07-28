@@ -1,5 +1,5 @@
 import { Handler } from 'express';
-import { getWorkspaceUser } from '../model/workspace';
+import { getWorkspaceUser } from '../model/workspace.js';
 import { ROLES } from '@tianji/shared';
 
 export function workspacePermission(roles: ROLES[] = []): Handler {
@@ -11,7 +11,7 @@ export function workspacePermission(roles: ROLES[] = []): Handler {
       throw new Error('Cannot find workspace id');
     }
 
-    const userId = req.user!.id;
+    const userId = (req.user as any).id;
 
     if (!userId) {
       throw new Error('This middleware should be use after auth()');

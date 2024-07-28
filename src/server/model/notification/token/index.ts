@@ -1,7 +1,7 @@
-import { BaseContentTokenizer } from './tokenizer/base';
-import { HTMLContentTokenizer } from './tokenizer/html';
-import { MarkdownContentTokenizer } from './tokenizer/markdown';
-import { TelegramContentTokenizer } from './tokenizer/telegram';
+import { BaseContentTokenizer } from './tokenizer/base.js';
+import { HTMLContentTokenizer } from './tokenizer/html.js';
+import { MarkdownContentTokenizer } from './tokenizer/markdown.js';
+import { TelegramContentTokenizer } from './tokenizer/telegram.js';
 import {
   ContentToken,
   ImageContentToken,
@@ -11,7 +11,7 @@ import {
   TextContentToken,
   TitleContentToken,
   UrlContentToken,
-} from './type';
+} from './type.js';
 
 export type { ContentToken };
 

@@ -1,6 +1,6 @@
 import { describe, test } from 'vitest';
-import { apprise } from '../apprise';
-import { token } from '../../token';
+import { apprise } from '../apprise.js';
+import { token } from '../../token/index.js';
 
 describe.runIf(!!process.env.TEST_APPRISE_URL)('apprise', () => {
   test('apprise should be work', async () => {

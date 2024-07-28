@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteMonitor, RelatedMonitorModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteMonitor, RelatedMonitorModelSchema } from "./index.js"
 
 export const MonitorDataModelSchema = z.object({
   id: z.string(),

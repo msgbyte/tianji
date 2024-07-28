@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteMonitor, RelatedMonitorModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteMonitor, RelatedMonitorModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string

@@ -1,8 +1,12 @@
-import { router, workspaceOwnerProcedure, workspaceProcedure } from '../trpc';
+import {
+  router,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} from '../trpc.js';
 import { z } from 'zod';
-import { prisma } from '../../model/_client';
-import { sendNotification } from '../../model/notification';
-import { token } from '../../model/notification/token';
+import { prisma } from '../../model/_client.js';
+import { sendNotification } from '../../model/notification/index.js';
+import { token } from '../../model/notification/token/index.js';
 
 export const notificationRouter = router({
   all: workspaceProcedure.query(({ input }) => {

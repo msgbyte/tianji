@@ -1,9 +1,9 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { jwtVerify } from '../middleware/auth';
-import { socketEventBus } from './shared';
-import { isCuid } from '../utils/common';
-import { logger } from '../utils/logger';
+import { jwtVerify } from '../middleware/auth.js';
+import { socketEventBus } from './shared.js';
+import { isCuid } from '../utils/common.js';
+import { logger } from '../utils/logger.js';
 
 export function initSocketio(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {

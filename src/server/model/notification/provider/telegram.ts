@@ -1,7 +1,7 @@
-import { NotificationProvider } from './type';
-import { telegramContentTokenizer, token } from '../token';
+import { NotificationProvider } from './type.js';
+import { telegramContentTokenizer, token } from '../token/index.js';
 import axios from 'axios';
-import { ImageContentToken } from '../token/type';
+import { ImageContentToken } from '../token/type.js';
 
 interface TelegramPayload {
   botToken: string;

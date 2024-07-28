@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getBillingCreditGrants } from '../openai';
+import { getBillingCreditGrants } from '../openai.js';
 
 describe.runIf(!!process.env.TEST_OPENAI_SESS_KEY)('openai', () => {
   test('getBillingCreditGrants should be ok', async () => {

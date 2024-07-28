@@ -1,9 +1,9 @@
-import { MonitorProvider } from './type';
+import { MonitorProvider } from './type.js';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { logger } from '../../../utils/logger';
+import { logger } from '../../../utils/logger.js';
 import dayjs from 'dayjs';
 import https from 'https';
-import { saveMonitorStatus } from './_utils';
+import { saveMonitorStatus } from './_utils.js';
 
 export const http: MonitorProvider<{
   url: string;

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { getLocation } from '../detect';
+import { getLocation } from '../detect.js';
 import fs from 'fs-extra';
-import { libraryPath } from '../lib';
+import { libraryPath } from '../lib.js';
 
 describe.runIf(fs.existsSync(libraryPath.geoPath))('detect', () => {
   describe('getLocation', () => {

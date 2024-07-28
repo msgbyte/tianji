@@ -1,7 +1,7 @@
 import * as z from "zod"
-import * as imports from "./schemas"
+import * as imports from "./schemas/index.js"
 import { FeedChannelNotifyFrequency } from "@prisma/client"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFeedEvent, RelatedFeedEventModelSchema, CompleteNotification, RelatedNotificationModelSchema } from "./index"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFeedEvent, RelatedFeedEventModelSchema, CompleteNotification, RelatedNotificationModelSchema } from "./index.js"
 
 export const FeedChannelModelSchema = z.object({
   id: z.string(),

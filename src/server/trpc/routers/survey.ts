@@ -5,16 +5,19 @@ import {
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
-} from '../trpc';
-import { OPENAPI_TAG } from '../../utils/const';
-import { prisma } from '../../model/_client';
-import { SurveyModelSchema, SurveyResultModelSchema } from '../../prisma/zod';
+} from '../trpc.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
+import { prisma } from '../../model/_client.js';
+import {
+  SurveyModelSchema,
+  SurveyResultModelSchema,
+} from '../../prisma/zod/index.js';
 import { OpenApiMeta } from 'trpc-openapi';
-import { hashUuid } from '../../utils/common';
-import { getRequestInfo } from '../../utils/detect';
-import { SurveyPayloadSchema } from '../../prisma/zod/schemas';
-import { buildCursorResponseSchema } from '../../utils/schema';
-import { fetchDataByCursor } from '../../utils/prisma';
+import { hashUuid } from '../../utils/common.js';
+import { getRequestInfo } from '../../utils/detect.js';
+import { SurveyPayloadSchema } from '../../prisma/zod/schemas/index.js';
+import { buildCursorResponseSchema } from '../../utils/schema.js';
+import { fetchDataByCursor } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
 
 export const surveyRouter = router({

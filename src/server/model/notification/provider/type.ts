@@ -1,5 +1,5 @@
 import { Notification } from '@prisma/client';
-import { ContentToken } from '../token';
+import { ContentToken } from '../token/index.js';
 
 export interface NotificationProvider {
   send: (

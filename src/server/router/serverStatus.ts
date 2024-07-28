@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { body, header, param, validate } from '../middleware/validate';
-import { recordServerStatus } from '../model/serverStatus';
+import { body, header, param, validate } from '../middleware/validate.js';
+import { recordServerStatus } from '../model/serverStatus.js';
 import fs from 'fs-extra';
-import { libraryPath } from '../utils/lib';
+import { libraryPath } from '../utils/lib.js';
 
 export const serverStatusRouter = Router();
 

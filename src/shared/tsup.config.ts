@@ -12,6 +12,5 @@ export default defineConfig((options) => {
     tsconfig: 'tsconfig.json',
     splitting: false,
     sourcemap: true,
-    external: ['react'],
   };
 });

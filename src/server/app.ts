@@ -4,24 +4,24 @@ import compression from 'compression';
 import swaggerUI from 'swagger-ui-express';
 import passport from 'passport';
 import morgan from 'morgan';
-import { websiteRouter } from './router/website';
-import { workspaceRouter } from './router/workspace';
-import { telemetryRouter } from './router/telemetry';
+import { websiteRouter } from './router/website.js';
+import { workspaceRouter } from './router/workspace.js';
+import { telemetryRouter } from './router/telemetry.js';
 import {
   trpcExpressMiddleware,
   trpcOpenapiDocument,
   trpcOpenapiHttpHandler,
-} from './trpc';
-import { env } from './utils/env';
+} from './trpc/index.js';
+import { env } from './utils/env.js';
 import cors from 'cors';
-import { serverStatusRouter } from './router/serverStatus';
-import { logger } from './utils/logger';
-import { monitorRouter } from './router/monitor';
-import { healthRouter } from './router/health';
+import { serverStatusRouter } from './router/serverStatus.js';
+import { logger } from './utils/logger.js';
+import { monitorRouter } from './router/monitor.js';
+import { healthRouter } from './router/health.js';
 import path from 'path';
-import { monitorPageManager } from './model/monitor/page/manager';
+import { monitorPageManager } from './model/monitor/page/manager.js';
 import { ExpressAuth } from '@auth/express';
-import { authConfig } from './model/auth';
+import { authConfig } from './model/auth.js';
 
 const app = express();
 

@@ -1,7 +1,7 @@
-import { prisma } from '../../model/_client';
-import { hashUuid } from '../../utils/common';
+import { prisma } from '../../model/_client.js';
+import { hashUuid } from '../../utils/common.js';
 import { faker } from '@faker-js/faker';
-import { getLocation } from '../../utils/detect';
+import { getLocation } from '../../utils/detect.js';
 import dayjs from 'dayjs';
 import { WebsiteSession } from '@prisma/client';
 

@@ -1,5 +1,5 @@
 import * as z from "zod"
-import * as imports from "./schemas"
+import * as imports from "./schemas/index.js"
 
 export const VerificationTokenModelSchema = z.object({
   identifier: z.string(),

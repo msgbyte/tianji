@@ -1,9 +1,12 @@
 import { Router } from 'express';
-import { param, validate, query } from '../middleware/validate';
-import { numify } from '../utils/common';
+import { param, validate, query } from '../middleware/validate.js';
+import { numify } from '../utils/common.js';
 import { makeBadge } from 'badge-maker';
-import { getMonitorPublicInfos, getMonitorRecentData } from '../model/monitor';
-import { checkEnvTrusty } from '../utils/env';
+import {
+  getMonitorPublicInfos,
+  getMonitorRecentData,
+} from '../model/monitor/index.js';
+import { checkEnvTrusty } from '../utils/env.js';
 
 export const monitorRouter = Router();
 

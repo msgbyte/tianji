@@ -1,11 +1,13 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { createContext } from './trpc';
-import { appRouter } from './routers';
+import { createContext } from './trpc.js';
+import { appRouter } from './routers/index.js';
 import {
   createOpenApiHttpHandler,
   generateOpenApiDocument,
 } from 'trpc-openapi';
-import { version } from '../../../package.json';
+const packageJson = await import('../../../package.json', {
+  assert: { type: 'json' },
+});
 
 export type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
@@ -20,7 +22,7 @@ export const trpcExpressMiddleware = trpcExpress.createExpressMiddleware({
 export const trpcOpenapiHttpHandler = createOpenApiHttpHandler({
   router: appRouter,
   createContext,
-});
+} as any);
 
 const description = `
   <h3>Insight into everything</h3>
@@ -29,6 +31,6 @@ const description = `
 export const trpcOpenapiDocument = generateOpenApiDocument(appRouter, {
   title: 'Tianji OpenAPI',
   description,
-  version: `v${version}`,
+  version: `v${packageJson.default.version}`,
   baseUrl: 'http://localhost:12345/open',
 });

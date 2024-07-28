@@ -1,9 +1,9 @@
-import { findUser } from '../model/user';
+import { findUser } from '../model/user.js';
 import passport from 'passport';
 import { Handler } from 'express';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
-import { jwtSecret } from '../utils/common';
+import { jwtSecret } from '../utils/common.js';
 
 export const jwtIssuer = process.env.JWT_ISSUER || 'tianji.msgbyte.com';
 export const jwtAudience = process.env.JWT_AUDIENCE || 'msgbyte.com';

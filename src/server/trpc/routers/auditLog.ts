@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc';
-import { OPENAPI_TAG } from '../../utils/const';
-import { WorkspaceAuditLogModelSchema } from '../../prisma/zod';
-import { prisma } from '../../model/_client';
-import { fetchDataByCursor } from '../../utils/prisma';
+import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
+import { WorkspaceAuditLogModelSchema } from '../../prisma/zod/index.js';
+import { prisma } from '../../model/_client.js';
+import { fetchDataByCursor } from '../../utils/prisma.js';
 import { OpenApiMeta } from 'trpc-openapi';
 
 export const auditLogRouter = router({

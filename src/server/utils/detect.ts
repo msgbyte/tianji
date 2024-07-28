@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import type { WebsiteEventPayload } from '../model/website';
+import type { WebsiteEventPayload } from '../model/website.js';
 import { getClientIp } from 'request-ip';
 import isLocalhost from 'is-localhost-ip';
 import { browserName, detectOS, OperatingSystem } from 'detect-browser';
@@ -9,9 +9,9 @@ import {
   LAPTOP_SCREEN_WIDTH,
   MOBILE_OS,
   MOBILE_SCREEN_WIDTH,
-} from './const';
+} from './const.js';
 import maxmind, { Reader, CityResponse } from 'maxmind';
-import { libraryPath } from './lib';
+import { libraryPath } from './lib.js';
 import { IncomingMessage } from 'http';
 import { parse as pareseAcceptLanguage } from 'accept-language-parser';
 

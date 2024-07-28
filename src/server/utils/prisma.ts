@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import _ from 'lodash';
-import { loadWebsite } from '../model/website';
-import { maxDate } from './common';
-import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const';
-import { loadTelemetry } from '../model/telemetry';
+import { loadWebsite } from '../model/website.js';
+import { maxDate } from './common.js';
+import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
+import { loadTelemetry } from '../model/telemetry.js';
 
 const POSTGRESQL_DATE_FORMATS = {
   minute: 'YYYY-MM-DD HH24:MI:00',

@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteUser, RelatedUserModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteUser, RelatedUserModelSchema } from "./index.js"
 
 export const AccountModelSchema = z.object({
   userId: z.string(),

@@ -1,13 +1,13 @@
 import { Monitor, Notification } from '@prisma/client';
-import { subscribeEventBus } from '../../ws/shared';
-import { prisma } from '../_client';
-import { monitorProviders } from './provider';
-import { sendNotification } from '../notification';
+import { subscribeEventBus } from '../../ws/shared.js';
+import { prisma } from '../_client.js';
+import { monitorProviders } from './provider/index.js';
+import { sendNotification } from '../notification/index.js';
 import dayjs from 'dayjs';
-import { logger } from '../../utils/logger';
-import { token } from '../notification/token';
-import { ContentToken } from '../notification/token/type';
-import { createAuditLog } from '../auditLog';
+import { logger } from '../../utils/logger.js';
+import { token } from '../notification/token/index.js';
+import { ContentToken } from '../notification/token/type.js';
+import { createAuditLog } from '../auditLog.js';
 
 /**
  * Class which actually run monitor data collect

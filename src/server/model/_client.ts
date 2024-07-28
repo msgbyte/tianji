@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { logger } from '../utils/logger';
-import { env } from '../utils/env';
+import { logger } from '../utils/logger.js';
+import { env } from '../utils/env.js';
 
 const debugEvent = {
   emit: 'event',

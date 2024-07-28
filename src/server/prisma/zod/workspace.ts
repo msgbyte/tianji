@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteUser, RelatedUserModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteUser, RelatedUserModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string

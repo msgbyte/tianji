@@ -1,7 +1,7 @@
-import { NotificationProvider } from './type';
+import { NotificationProvider } from './type.js';
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { htmlContentTokenizer } from '../token';
+import { htmlContentTokenizer } from '../token/index.js';
 
 interface SMTPPayload {
   hostname: string;

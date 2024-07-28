@@ -1,4 +1,4 @@
-require('dotenv').config();
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
@@ -20,7 +20,7 @@ if (process.env.MAXMIND_LICENSE_KEY) {
     `?edition_id=${db}&license_key=${process.env.MAXMIND_LICENSE_KEY}&suffix=tar.gz`;
 }
 
-const dest = path.resolve(__dirname, '../geo');
+const dest = path.resolve(process.cwd(), './geo');
 
 if (!fs.existsSync(dest)) {
   fs.mkdirSync(dest);

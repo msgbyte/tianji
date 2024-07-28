@@ -1,4 +1,4 @@
-import { MonitorProvider } from './type';
+import { MonitorProvider } from './type.js';
 import { Resolver } from 'dns';
 
 export const dns: MonitorProvider<{

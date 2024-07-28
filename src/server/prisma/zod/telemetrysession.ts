@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteTelemetry, RelatedTelemetryModelSchema, CompleteTelemetryEvent, RelatedTelemetryEventModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteTelemetry, RelatedTelemetryModelSchema, CompleteTelemetryEvent, RelatedTelemetryEventModelSchema } from "./index.js"
 
 export const TelemetrySessionModelSchema = z.object({
   id: z.string(),
