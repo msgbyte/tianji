@@ -1,9 +1,9 @@
 import supertest from 'supertest';
 import { afterAll } from 'vitest';
-import { app } from '../app';
-import { prisma } from '../model/_client';
+import { app } from '../app.js';
+import { prisma } from '../model/_client.js';
 import { PrismaPromise } from '@prisma/client';
-import { createUser } from '../model/user';
+import { createUser } from '../model/user.js';
 import { nanoid } from 'nanoid';
 
 export function createTestContext() {

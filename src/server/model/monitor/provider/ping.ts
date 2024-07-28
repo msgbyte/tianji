@@ -1,4 +1,4 @@
-import { MonitorProvider } from './type';
+import { MonitorProvider } from './type.js';
 import pingUtils from 'ping';
 import os from 'os';
 import chardet from 'chardet';

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { md5 } from '../common';
+import { md5 } from '../common.js';
 
 describe('md5', () => {
   test('normal test', async () => {

@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteWebsiteSession, RelatedWebsiteSessionModelSchema, CompleteWebsiteEventData, RelatedWebsiteEventDataModelSchema, CompleteWebsiteSessionData, RelatedWebsiteSessionDataModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteWebsiteSession, RelatedWebsiteSessionModelSchema, CompleteWebsiteEventData, RelatedWebsiteEventDataModelSchema, CompleteWebsiteSessionData, RelatedWebsiteSessionDataModelSchema } from "./index.js"
 
 export const WebsiteModelSchema = z.object({
   id: z.string(),

@@ -1,5 +1,5 @@
-import { router, workspaceOwnerProcedure } from '../trpc';
-import { clearOfflineServerStatus } from '../../model/serverStatus';
+import { router, workspaceOwnerProcedure } from '../trpc.js';
+import { clearOfflineServerStatus } from '../../model/serverStatus.js';
 
 export const serverStatusRouter = router({
   clearOfflineServerStatus: workspaceOwnerProcedure.mutation(

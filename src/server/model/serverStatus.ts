@@ -1,5 +1,5 @@
-import { ServerStatusInfo } from '../../types';
-import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared';
+import { ServerStatusInfo } from '../../types/index.js';
+import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared.js';
 import _ from 'lodash';
 import { isServerOnline } from '@tianji/shared';
 

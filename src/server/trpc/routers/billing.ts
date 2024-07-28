@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc';
-import { OPENAPI_TAG } from '../../utils/const';
-import { prisma } from '../../model/_client';
+import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
+import { prisma } from '../../model/_client.js';
 import { OpenApiMeta } from 'trpc-openapi';
 
 export const billingRouter = router({

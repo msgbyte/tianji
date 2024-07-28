@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { body, validate } from '../middleware/validate';
+import { body, validate } from '../middleware/validate.js';
 import * as yup from 'yup';
-import { COLLECTION_TYPE } from '../utils/const';
+import { COLLECTION_TYPE } from '../utils/const.js';
 import {
   findSession,
   saveWebsiteEvent,
   saveWebsiteSessionData,
-} from '../model/website';
-import { createToken } from '../utils/common';
+} from '../model/website.js';
+import { createToken } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
 
 export const websiteRouter = Router();

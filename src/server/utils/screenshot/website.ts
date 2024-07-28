@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
-import { jwtSign } from '../../middleware/auth';
+import { jwtSign } from '../../middleware/auth.js';
 import { SYSTEM_ROLES } from '@tianji/shared';
-import { env } from '../env';
+import { env } from '../env.js';
 
 /**
  * take a screenshot for website detail

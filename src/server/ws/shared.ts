@@ -1,8 +1,8 @@
 import { EventEmitter } from 'eventemitter-strict';
 import { Socket } from 'socket.io';
-import { MaybePromise, ServerStatusInfo } from '../../types';
+import { MaybePromise, ServerStatusInfo } from '../../types/index.js';
 import { FeedEvent, MonitorData } from '@prisma/client';
-import { Serialize } from '../types/utils';
+import { Serialize } from '../types/utils.js';
 
 type SubscribeEventFn<T> = (workspaceId: string, eventData: T) => void;
 

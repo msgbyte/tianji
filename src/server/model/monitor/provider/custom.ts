@@ -1,7 +1,7 @@
-import { MonitorProvider } from './type';
+import { MonitorProvider } from './type.js';
 import ivm from 'isolated-vm';
-import { buildSandbox, environmentScript } from '../../../utils/sandbox';
-import { env } from '../../../utils/env';
+import { buildSandbox, environmentScript } from '../../../utils/sandbox.js';
+import { env } from '../../../utils/env.js';
 
 export const custom: MonitorProvider<{
   code: string;

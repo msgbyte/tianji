@@ -14,7 +14,7 @@ generator json {
 generator zod {
   provider    = "zod-prisma"
   modelSuffix = "ModelSchema"
-  imports     = "./zod/schemas"
+  imports     = "./zod/schemas/index.js"
 }
 
 model User {

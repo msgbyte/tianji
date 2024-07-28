@@ -1,6 +1,6 @@
 import dgram from 'dgram';
-import { recordServerStatus } from '../model/serverStatus';
-import { logger } from '../utils/logger';
+import { recordServerStatus } from '../model/serverStatus.js';
+import { logger } from '../utils/logger.js';
 
 export function initUdpServer(port: number) {
   const server = dgram.createSocket('udp4');

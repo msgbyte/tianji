@@ -1,14 +1,14 @@
 import { Cron } from 'croner';
-import { logger } from '../utils/logger';
-import { prisma } from '../model/_client';
+import { logger } from '../utils/logger.js';
+import { prisma } from '../model/_client.js';
 import dayjs from 'dayjs';
 import { FeedChannelNotifyFrequency, Prisma } from '@prisma/client';
-import { env } from '../utils/env';
-import { sendNotification } from '../model/notification';
-import { token } from '../model/notification/token';
+import { env } from '../utils/env.js';
+import { sendNotification } from '../model/notification/index.js';
+import { token } from '../model/notification/token/index.js';
 import _ from 'lodash';
 import pMap from 'p-map';
-import { sendFeedEventsNotify } from '../model/feed/event';
+import { sendFeedEventsNotify } from '../model/feed/event.js';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;

@@ -1,5 +1,5 @@
-import { logger } from '../../../utils/logger';
-import { prisma } from '../../_client';
+import { logger } from '../../../utils/logger.js';
+import { prisma } from '../../_client.js';
 
 class MonitorPageManager {
   private customDomainPage: Record<

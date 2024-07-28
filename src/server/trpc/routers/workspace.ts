@@ -4,14 +4,14 @@ import {
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
-} from '../trpc';
+} from '../trpc.js';
 import { z } from 'zod';
-import { prisma } from '../../model/_client';
-import { workspaceDashboardLayoutSchema } from '../../model/_schema';
+import { prisma } from '../../model/_client.js';
+import { workspaceDashboardLayoutSchema } from '../../model/_schema/index.js';
 import { Prisma } from '@prisma/client';
-import { OPENAPI_TAG } from '../../utils/const';
+import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-openapi';
-import { getServerCount } from '../../model/serverStatus';
+import { getServerCount } from '../../model/serverStatus.js';
 
 export const workspaceRouter = router({
   getUserWorkspaceRole: publicProcedure

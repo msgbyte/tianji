@@ -1,14 +1,14 @@
 import { Prisma, Telemetry, TelemetrySession } from '@prisma/client';
 import { Request } from 'express';
-import { hashUuid } from '../utils/common';
-import { getRequestInfo } from '../utils/detect';
-import { prisma } from './_client';
+import { hashUuid } from '../utils/common.js';
+import { getRequestInfo } from '../utils/detect.js';
+import { prisma } from './_client.js';
 import {
   BaseQueryFilters,
   getDateQuery,
   parseTelemetryFilters,
-} from '../utils/prisma';
-import { SESSION_COLUMNS } from '../utils/const';
+} from '../utils/prisma.js';
+import { SESSION_COLUMNS } from '../utils/const.js';
 
 export async function recordTelemetryEvent(req: Request) {
   const { name, title, start, fullNum, force, ...others } = req.query;

@@ -7,7 +7,7 @@ import {
   TextContentToken,
   TitleContentToken,
   UrlContentToken,
-} from '../type';
+} from '../type.js';
 
 export class BaseContentTokenizer {
   parseText(token: TextContentToken) {

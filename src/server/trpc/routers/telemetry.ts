@@ -4,21 +4,21 @@ import {
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
-} from '../trpc';
+} from '../trpc.js';
 import {
   EVENT_COLUMNS,
   FILTER_COLUMNS,
   OPENAPI_TAG,
   SESSION_COLUMNS,
-} from '../../utils/const';
-import { prisma } from '../../model/_client';
-import { TelemetryModelSchema } from '../../prisma/zod';
+} from '../../utils/const.js';
+import { prisma } from '../../model/_client.js';
+import { TelemetryModelSchema } from '../../prisma/zod/index.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import {
   baseFilterSchema,
   baseStatsSchema,
   statsItemType,
-} from '../../model/_schema/filter';
+} from '../../model/_schema/filter.js';
 import {
   getTelemetryPageview,
   getTelemetryPageviewMetrics,
@@ -26,8 +26,8 @@ import {
   getTelemetrySessionMetrics,
   getTelemetryStats,
   getTelemetryUrlMetrics,
-} from '../../model/telemetry';
-import { BaseQueryFilters } from '../../utils/prisma';
+} from '../../model/telemetry.js';
+import { BaseQueryFilters } from '../../utils/prisma.js';
 import dayjs from 'dayjs';
 
 export const telemetryRouter = router({

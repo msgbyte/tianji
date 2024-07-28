@@ -1,6 +1,6 @@
 import * as z from "zod"
-import * as imports from "./schemas"
-import { CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index"
+import * as imports from "./schemas/index.js"
+import { CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
 
 export const FeedEventModelSchema = z.object({
   id: z.string(),

@@ -4,8 +4,8 @@ import {
   TextContentToken,
   TitleContentToken,
   UrlContentToken,
-} from '../type';
-import { BaseContentTokenizer } from './base';
+} from '../type.js';
+import { BaseContentTokenizer } from './base.js';
 
 export class TelegramContentTokenizer extends BaseContentTokenizer {
   parseImage(token: ImageContentToken) {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { createTestContext } from '../../tests/utils';
-import { generateETag } from '../../utils/common';
+import { createTestContext } from '../../tests/utils.js';
+import { generateETag } from '../../utils/common.js';
 
 describe('telemetry router', () => {
   const { app, createTestUser, createTestTelemetry } = createTestContext();

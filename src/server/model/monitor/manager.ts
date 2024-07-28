@@ -1,7 +1,7 @@
 import { Monitor, Notification } from '@prisma/client';
-import { prisma } from '../_client';
-import { MonitorRunner } from './runner';
-import { logger } from '../../utils/logger';
+import { prisma } from '../_client.js';
+import { MonitorRunner } from './runner.js';
+import { logger } from '../../utils/logger.js';
 
 export type MonitorUpsertData = Pick<
   Monitor,

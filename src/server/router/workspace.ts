@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { auth } from '../middleware/auth';
-import { param, validate } from '../middleware/validate';
-import { workspacePermission } from '../middleware/workspace';
-import { deleteWorkspaceWebsite } from '../model/workspace';
+import { auth } from '../middleware/auth.js';
+import { param, validate } from '../middleware/validate.js';
+import { workspacePermission } from '../middleware/workspace.js';
+import { deleteWorkspaceWebsite } from '../model/workspace.js';
 import { ROLES } from '@tianji/shared';
 
 export const workspaceRouter = Router();

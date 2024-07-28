@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { publicProcedure, router } from '../trpc';
-import { OPENAPI_TAG } from '../../utils/const';
-import { env } from '../../utils/env';
+import { publicProcedure, router } from '../trpc.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
+import { env } from '../../utils/env.js';
 
 export const globalRouter = router({
   config: publicProcedure

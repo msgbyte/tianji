@@ -1,4 +1,4 @@
-import { MonitorProvider } from './type';
+import { MonitorProvider } from './type.js';
 import tcpp from 'tcp-ping';
 
 export const tcp: MonitorProvider<{

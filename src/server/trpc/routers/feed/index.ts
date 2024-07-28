@@ -5,18 +5,21 @@ import {
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
-} from '../../trpc';
-import { OPENAPI_TAG } from '../../../utils/const';
+} from '../../trpc.js';
+import { OPENAPI_TAG } from '../../../utils/const.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import {
   FeedChannelModelSchema,
   FeedEventModelSchema,
-} from '../../../prisma/zod';
-import { prisma } from '../../../model/_client';
+} from '../../../prisma/zod/index.js';
+import { prisma } from '../../../model/_client.js';
 import _ from 'lodash';
-import { buildFeedPublicOpenapi, feedIntegrationRouter } from './integration';
-import { fetchDataByCursor } from '../../../utils/prisma';
-import { delFeedEventNotifyCache } from '../../../model/feed/event';
+import {
+  buildFeedPublicOpenapi,
+  feedIntegrationRouter,
+} from './integration.js';
+import { fetchDataByCursor } from '../../../utils/prisma.js';
+import { delFeedEventNotifyCache } from '../../../model/feed/event.js';
 
 export const feedRouter = router({
   channels: workspaceProcedure

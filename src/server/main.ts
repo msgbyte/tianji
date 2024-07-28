@@ -1,13 +1,13 @@
 import 'dotenv/config';
-import './init';
-import { initUdpServer } from './udp/server';
+import './init.js';
+import { initUdpServer } from './udp/server.js';
 import { createServer } from 'http';
-import { initSocketio } from './ws';
-import { monitorManager } from './model/monitor';
-import { env } from './utils/env';
-import { initCronjob } from './cronjob';
-import { logger } from './utils/logger';
-import { app } from './app';
+import { initSocketio } from './ws/index.js';
+import { monitorManager } from './model/monitor/index.js';
+import { env } from './utils/env.js';
+import { initCronjob } from './cronjob/index.js';
+import { logger } from './utils/logger.js';
+import { app } from './app.js';
 
 const port = env.port;
 

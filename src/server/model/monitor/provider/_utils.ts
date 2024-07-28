@@ -1,4 +1,4 @@
-import { prisma } from '../../_client';
+import { prisma } from '../../_client.js';
 
 export async function saveMonitorStatus(
   monitorId: string,

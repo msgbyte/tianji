@@ -1,8 +1,8 @@
 import { initTRPC, inferAsyncReturnType, TRPCError } from '@trpc/server';
 import _ from 'lodash';
 import { z } from 'zod';
-import { jwtVerify } from '../middleware/auth';
-import { getWorkspaceUser } from '../model/workspace';
+import { jwtVerify } from '../middleware/auth.js';
+import { getWorkspaceUser } from '../model/workspace.js';
 import { ROLES, SYSTEM_ROLES } from '@tianji/shared';
 import type { IncomingMessage } from 'http';
 import { OpenApiMeta } from 'trpc-openapi';

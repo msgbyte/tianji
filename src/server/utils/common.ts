@@ -1,15 +1,15 @@
 import { v4, v5, validate } from 'uuid';
 import crypto from 'crypto';
-import { DATA_TYPE } from './const';
-import { DynamicDataType } from './types';
+import { DATA_TYPE } from './const.js';
+import { DynamicDataType } from './types.js';
 import dayjs from 'dayjs';
-import minMax from 'dayjs/plugin/minMax';
+import minMax from 'dayjs/plugin/minMax.js';
 import jwt from 'jsonwebtoken';
 import _ from 'lodash';
-import { getWorkspaceWebsiteDateRange } from '../model/workspace';
+import { getWorkspaceWebsiteDateRange } from '../model/workspace.js';
 import { isCuid } from '@paralleldrive/cuid2';
 import { getMinimumUnit } from '@tianji/shared';
-import { env } from './env';
+import { env } from './env.js';
 
 export { isCuid };
 

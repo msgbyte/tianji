@@ -4,8 +4,8 @@ import {
   ParagraphContentToken,
   TitleContentToken,
   UrlContentToken,
-} from '../type';
-import { BaseContentTokenizer } from './base';
+} from '../type.js';
+import { BaseContentTokenizer } from './base.js';
 
 export class MarkdownContentTokenizer extends BaseContentTokenizer {
   parseImage(token: ImageContentToken) {

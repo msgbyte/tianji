@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { query, validate } from '../middleware/validate';
-import { recordTelemetryEvent, sumTelemetryEvent } from '../model/telemetry';
-import { generateETag, numify } from '../utils/common';
+import { query, validate } from '../middleware/validate.js';
+import { recordTelemetryEvent, sumTelemetryEvent } from '../model/telemetry.js';
+import { generateETag, numify } from '../utils/common.js';
 import { makeBadge } from 'badge-maker';
-import { env } from '../utils/env';
+import { env } from '../utils/env.js';
 
 export const telemetryRouter = Router();
 

@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest';
-import { initCronjob } from '.';
+import { initCronjob } from './index.js';
 
 describe.runIf(process.env.TEST_CRONJOB)('cronjob', () => {
   const { dailyJob } = initCronjob();

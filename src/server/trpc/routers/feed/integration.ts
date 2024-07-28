@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { OpenApiMetaInfo, publicProcedure, router } from '../../trpc';
-import { prisma } from '../../../model/_client';
+import { OpenApiMetaInfo, publicProcedure, router } from '../../trpc.js';
+import { prisma } from '../../../model/_client.js';
 import _ from 'lodash';
 import { OpenApiMeta } from 'trpc-openapi';
-import { OPENAPI_TAG } from '../../../utils/const';
-import { createFeedEvent } from '../../../model/feed/event';
-import { tencentCloudAlarmSchema } from '../../../model/_schema/feed';
+import { OPENAPI_TAG } from '../../../utils/const.js';
+import { createFeedEvent } from '../../../model/feed/event.js';
+import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure

@@ -1,5 +1,5 @@
 import { describe, bench } from 'vitest';
-import { prisma } from '../_client';
+import { prisma } from '../_client.js';
 
 const workspaceId = process.env.BENCH_MONITOR_WORKSPACEID;
 const monitorId = process.env.BENCH_MONITOR_ID;

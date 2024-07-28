@@ -1,5 +1,5 @@
-import { NotificationProvider } from './type';
-import { baseContentTokenizer } from '../token';
+import { NotificationProvider } from './type.js';
+import { baseContentTokenizer } from '../token/index.js';
 import axios from 'axios';
 
 interface FeishuPayload {

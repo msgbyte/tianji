@@ -1,4 +1,4 @@
-import { DATA_TYPE } from './const';
+import { DATA_TYPE } from './const.js';
 
 type ObjectValues<T> = T[keyof T];
 export type DynamicDataType = ObjectValues<typeof DATA_TYPE>;

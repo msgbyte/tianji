@@ -1,7 +1,7 @@
 import * as z from "zod"
-import * as imports from "./schemas"
+import * as imports from "./schemas/index.js"
 import { WorkspaceAuditLogType } from "@prisma/client"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
 
 export const WorkspaceAuditLogModelSchema = z.object({
   id: z.string(),

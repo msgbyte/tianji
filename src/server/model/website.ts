@@ -1,23 +1,23 @@
 import { Prisma, Website, WebsiteSession } from '@prisma/client';
-import { flattenJSON, hashUuid, isCuid, parseToken } from '../utils/common';
-import { prisma } from './_client';
+import { flattenJSON, hashUuid, isCuid, parseToken } from '../utils/common.js';
+import { prisma } from './_client.js';
 import { Request } from 'express';
-import { getClientInfo } from '../utils/detect';
+import { getClientInfo } from '../utils/detect.js';
 import {
   DATA_TYPE,
   EVENT_NAME_LENGTH,
   EVENT_TYPE,
   SESSION_COLUMNS,
   URL_LENGTH,
-} from '../utils/const';
-import type { DynamicData } from '../utils/types';
+} from '../utils/const.js';
+import type { DynamicData } from '../utils/types.js';
 import dayjs from 'dayjs';
 import {
   WebsiteQueryFilters,
   getDateQuery,
   getTimestampIntervalQuery,
   parseWebsiteFilters,
-} from '../utils/prisma';
+} from '../utils/prisma.js';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -209,8 +209,8 @@ export async function saveWebsiteEvent(data: {
         a.dynamicDataType === DATA_TYPE.number
           ? parseFloat(a.value).toFixed(4)
           : a.dynamicDataType === DATA_TYPE.date
-          ? a.value.split('.')[0] + 'Z'
-          : a.value.toString(),
+            ? a.value.split('.')[0] + 'Z'
+            : a.value.toString(),
       numberValue: a.dynamicDataType === DATA_TYPE.number ? a.value : null,
       dateValue:
         a.dynamicDataType === DATA_TYPE.date ? new Date(a.value) : null,
@@ -242,8 +242,8 @@ export async function saveWebsiteSessionData(data: {
       a.dynamicDataType === DATA_TYPE.number
         ? parseFloat(a.value).toFixed(4)
         : a.dynamicDataType === DATA_TYPE.date
-        ? a.value.split('.')[0] + 'Z'
-        : a.value.toString(),
+          ? a.value.split('.')[0] + 'Z'
+          : a.value.toString(),
     numberValue: a.dynamicDataType === DATA_TYPE.number ? a.value : null,
     dateValue: a.dynamicDataType === DATA_TYPE.date ? new Date(a.value) : null,
     dataType: a.dynamicDataType,
@@ -302,8 +302,8 @@ export async function getWebsiteSessionMetrics(
     where "WebsiteEvent"."websiteId" = ${websiteId}
       and "WebsiteEvent"."createdAt"
       between ${params.startDate}::timestamptz and ${
-    params.endDate
-  }::timestamptz
+        params.endDate
+      }::timestamptz
       and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
       ${filterQuery}
     group by 1
@@ -339,8 +339,8 @@ export async function getWebsitePageviewMetrics(
     where "WebsiteEvent"."websiteId" = ${websiteId}
       and "WebsiteEvent"."createdAt"
       between ${params.startDate}::timestamptz and ${
-    params.endDate
-  }::timestamptz
+        params.endDate
+      }::timestamptz
       and "eventType" = ${eventType}
       ${excludeDomain}
       ${filterQuery}

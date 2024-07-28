@@ -1,5 +1,5 @@
-import { MonitorInfo } from '../../../types';
-import { MonitorModelSchema } from '../../prisma/zod';
+import { MonitorInfo } from '../../../types/index.js';
+import { MonitorModelSchema } from '../../prisma/zod/monitor.js';
 
 export type MonitorInfoWithNotificationIds = MonitorInfo & {
   notifications: { id: string }[];

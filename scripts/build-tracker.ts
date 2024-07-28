@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import vite from 'vite';
+import * as vite from 'vite';
 
 console.log('Start Build Tracker');
 
@@ -7,13 +7,13 @@ vite
   .build({
     build: {
       lib: {
-        entry: resolve(__dirname, '../src/tracker/index.js'),
+        entry: resolve(process.cwd(), './src/tracker/index.js'),
         name: 'tianji',
         fileName: () => 'tracker.js',
         formats: ['iife'],
       },
       emptyOutDir: false,
-      outDir: resolve(__dirname, '../src/client/public'),
+      outDir: resolve(process.cwd(), './src/client/public'),
     },
   })
   .then((res) => {
