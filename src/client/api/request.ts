@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import axios from 'axios';
 import { get } from 'lodash-es';
-import { getJWT } from './auth';
+import { getJWT } from './authjs';
 
 class RequestError extends Error {}
 

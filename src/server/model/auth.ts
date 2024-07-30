@@ -14,11 +14,14 @@ import { authUser, createUserWithAuthjs } from './user.js';
 import { createTransport } from 'nodemailer';
 import { Theme } from '@auth/core/types';
 import { generateSMTPHTML } from '../utils/smtp.js';
+import { SYSTEM_ROLES } from '@tianji/shared';
+import _ from 'lodash';
 
 export const authConfig: Omit<AuthConfig, 'raw'> = {
   debug: true,
   providers: [
     Credentials({
+      id: 'account',
       name: 'Account',
       credentials: {
         username: { label: 'Username' },
@@ -41,6 +44,7 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
       },
     }),
     Nodemailer({
+      id: 'email',
       name: 'Email',
       ...env.auth.email,
       async sendVerificationRequest(params) {
@@ -63,6 +67,23 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
   ],
   adapter: TianjiPrismaAdapter(prisma),
   secret: env.auth.secret,
+  session: {
+    strategy: 'jwt',
+  },
+  callbacks: {
+    jwt({ token }) {
+      return {
+        ...token,
+        role: SYSTEM_ROLES.user,
+      };
+    },
+    session({ session, token, user }) {
+      _.set(session, ['user', 'id'], token.sub);
+      _.set(session, ['user', 'role'], token.role);
+
+      return session;
+    },
+  },
 };
 
 function toAdapterUser(
@@ -132,9 +153,16 @@ function TianjiPrismaAdapter(
         where: { sessionToken },
         include: { user: true },
       });
-      if (!userAndSession) return null;
+      if (!userAndSession) {
+        return null;
+      }
+
       const { user, ...session } = userAndSession;
-      return { user, session } as {
+
+      return {
+        user: toAdapterUser(user),
+        session,
+      } as {
         user: AdapterUser;
         session: AdapterSession;
       };

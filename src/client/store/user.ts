@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createSocketIOClient } from '../api/socketio';
 import { AppRouterOutput } from '../api/trpc';
 
-type UserLoginInfo = AppRouterOutput['user']['loginWithToken']['info'];
+type UserLoginInfo = NonNullable<AppRouterOutput['user']['info']>;
 
 interface UserState {
   info: UserLoginInfo | null;
@@ -17,7 +17,6 @@ export function setUserInfo(info: UserLoginInfo) {
     // Make sure currentWorkspace existed
     info.currentWorkspace = {
       ...info.workspaces[0].workspace,
-      dashboardLayout: null,
     };
   }
 

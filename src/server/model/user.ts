@@ -36,8 +36,6 @@ const createUserSelect = {
     select: {
       id: true,
       name: true,
-      dashboardOrder: true,
-      dashboardLayout: true,
     },
   },
   workspaces: {
@@ -179,6 +177,17 @@ export async function createUserWithAuthjs(data: Omit<AdapterUser, 'id'>) {
     });
 
     return user;
+  });
+
+  return user;
+}
+
+export async function getUserInfo(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: createUserSelect,
   });
 
   return user;

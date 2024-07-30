@@ -43,7 +43,7 @@ const AppRouter: React.FC = React.memo(() => {
         <RouterProvider router={router} context={{ userInfo }} />
       </TooltipProvider>
 
-      <Toaster />
+      <Toaster position="top-center" />
     </BrowserRouter>
   );
 });

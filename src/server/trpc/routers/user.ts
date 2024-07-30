@@ -7,6 +7,7 @@ import {
   createAdminUser,
   createUser,
   getUserCount,
+  getUserInfo,
 } from '../../model/user.js';
 import { jwtSign } from '../../middleware/auth.js';
 import { TRPCError } from '@trpc/server';
@@ -133,5 +134,11 @@ export const userRouter = router({
       const { oldPassword, newPassword } = input;
 
       return changeUserPassword(userId, oldPassword, newPassword);
+    }),
+  info: protectProedure
+    .input(z.void())
+    .output(userInfoSchema.nullable())
+    .query(async ({ input, ctx }) => {
+      return getUserInfo(ctx.user.id);
     }),
 });

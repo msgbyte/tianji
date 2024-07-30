@@ -1,6 +1,4 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
-import { useRequest } from '@/hooks/useRequest';
-import { setJWT } from '@/api/auth';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { trpc } from '@/api/trpc';
 import { Form, Typography } from 'antd';
@@ -9,6 +7,9 @@ import { setUserInfo } from '@/store/user';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/api/authjs/useAuth';
+import { toast } from 'sonner';
+import { useEventWithLoading } from '@/hooks/useEvent';
 
 export const Route = createFileRoute('/login')({
   validateSearch: z.object({
@@ -28,17 +29,27 @@ export const Route = createFileRoute('/login')({
 function LoginComponent() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const loginMutation = trpc.user.login.useMutation();
   const search = Route.useSearch();
+  const trpcUtils = trpc.useUtils();
 
-  const [{ loading }, handleLogin] = useRequest(async (values: any) => {
-    const res = await loginMutation.mutateAsync({
-      username: values.username,
-      password: values.password,
-    });
+  const { loginWithPassword } = useAuth();
 
-    setJWT(res.token);
-    setUserInfo(res.info);
+  const [handleLogin, loading] = useEventWithLoading(async (values: any) => {
+    const res = await loginWithPassword(values.username, values.password);
+
+    if (res?.error) {
+      toast.error(t('Login failed, please check your username and password'));
+      return;
+    }
+
+    const userInfo = await trpcUtils.user.info.fetch();
+    if (!userInfo) {
+      toast.error(t('Can not get current user info'));
+      return;
+    }
+
+    setUserInfo(userInfo);
+
     navigate({
       to: search.redirect ?? '/',
       replace: true,
