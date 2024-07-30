@@ -19,12 +19,12 @@ generator zod {
 
 model User {
   id                 String    @id @unique @default(cuid()) @db.VarChar(30)
-  name               String?
-  email              String?
-  emailVerified      DateTime?
-  image              String?
   username           String    @unique @db.VarChar(255)
   password           String    @db.VarChar(60)
+  email              String?   @unique
+  emailVerified      DateTime?
+  nickname           String?   @db.VarChar(255)
+  avatar             String?
   role               String    @db.VarChar(50)
   createdAt          DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(6)

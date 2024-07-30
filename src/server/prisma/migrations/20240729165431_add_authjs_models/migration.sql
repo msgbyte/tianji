@@ -1,8 +1,14 @@
+/*
+  Warnings:
+
+  - A unique constraint covering the columns `[email]` on the table `User` will be added. If there are existing duplicate values, this will fail.
+
+*/
 -- AlterTable
-ALTER TABLE "User" ADD COLUMN     "email" TEXT,
+ALTER TABLE "User" ADD COLUMN     "avatar" TEXT,
+ADD COLUMN     "email" TEXT,
 ADD COLUMN     "emailVerified" TIMESTAMP(3),
-ADD COLUMN     "image" TEXT,
-ADD COLUMN     "name" TEXT;
+ADD COLUMN     "nickname" VARCHAR(255);
 
 -- CreateTable
 CREATE TABLE "Account" (
@@ -43,6 +49,9 @@ CREATE TABLE "VerificationToken" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

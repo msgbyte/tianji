@@ -4,6 +4,8 @@ import { ROLES, SYSTEM_ROLES } from '@tianji/shared';
 import { jwtVerify } from '../middleware/auth.js';
 import { TRPCError } from '@trpc/server';
 import { Prisma } from '@prisma/client';
+import { AdapterUser } from '@auth/core/adapters';
+import { md5 } from '../utils/common.js';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -22,6 +24,10 @@ export async function getUserCount(): Promise<number> {
 const createUserSelect = {
   id: true,
   username: true,
+  nickname: true,
+  avatar: true,
+  email: true,
+  emailVerified: true,
   role: true,
   createdAt: true,
   updatedAt: true,
@@ -113,6 +119,52 @@ export async function createUser(username: string, password: string) {
         username,
         password: await hashPassword(password),
         role: SYSTEM_ROLES.user,
+        workspaces: {
+          create: [
+            {
+              role: ROLES.owner,
+              workspaceId: newWorkspace.id,
+            },
+          ],
+        },
+        currentWorkspaceId: newWorkspace.id,
+      },
+      select: createUserSelect,
+    });
+
+    return user;
+  });
+
+  return user;
+}
+
+export async function createUserWithAuthjs(data: Omit<AdapterUser, 'id'>) {
+  const existCount = await prisma.user.count({
+    where: {
+      email: data.email,
+    },
+  });
+
+  if (existCount > 0) {
+    throw new Error('User already exists');
+  }
+
+  const user = await prisma.$transaction(async (p) => {
+    const newWorkspace = await p.workspace.create({
+      data: {
+        name: data.name ?? data.email,
+      },
+    });
+
+    const user = await p.user.create({
+      data: {
+        username: data.email,
+        nickname: data.name,
+        password: await hashPassword(md5(String(Date.now()))),
+        email: data.email,
+        emailVerified: data.emailVerified,
+        role: SYSTEM_ROLES.user,
+        avatar: data.image,
         workspaces: {
           create: [
             {
