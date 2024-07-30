@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { useUserStore } from '../../store/user';
 import { useEvent } from '../../hooks/useEvent';
-import { clearJWT } from '../auth';
+import { clearJWT } from '../authjs';
 
 /**
  * Mock

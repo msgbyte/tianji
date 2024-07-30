@@ -4,10 +4,12 @@ import { z } from 'zod';
 import { jwtVerify } from '../middleware/auth.js';
 import { getWorkspaceUser } from '../model/workspace.js';
 import { ROLES, SYSTEM_ROLES } from '@tianji/shared';
-import type { IncomingMessage } from 'http';
+import type { Request } from 'express';
 import { OpenApiMeta } from 'trpc-openapi';
+import { getSession } from '@auth/express';
+import { authConfig } from '../model/auth.js';
 
-export function createContext({ req }: { req: IncomingMessage }) {
+export async function createContext({ req }: { req: Request }) {
   const authorization = req.headers['authorization'] ?? '';
   const token = authorization.replace('Bearer ', '');
 
@@ -24,23 +26,40 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 const isUser = middleware(async (opts) => {
+  // auth with token
   const token = opts.ctx.token;
 
-  if (!token) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'NoToken' });
+  if (token) {
+    try {
+      const user = jwtVerify(token);
+
+      return opts.next({
+        ctx: {
+          user,
+        },
+      });
+    } catch (err) {
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'TokenInvalid' });
+    }
   }
 
-  try {
-    const user = jwtVerify(token);
+  // auth with session
+  const req = opts.ctx.req;
+  const session = await getSession(req, authConfig);
 
+  if (session) {
     return opts.next({
       ctx: {
-        user,
+        user: {
+          id: session.user?.id,
+          username: session.user?.name,
+          role: SYSTEM_ROLES.user,
+        },
       },
     });
-  } catch (err) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'TokenInvalid' });
   }
+
+  throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No Token or Session' });
 });
 
 export const protectProedure = t.procedure.use(isUser);

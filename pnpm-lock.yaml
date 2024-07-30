@@ -350,6 +350,9 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1(@types/react@18.2.78)(immer@9.0.21)(react@18.2.0)
     devDependencies:
+      '@auth/core':
+        specifier: ^0.34.1
+        version: 0.34.1(nodemailer@6.9.8)
       '@i18next-toolkit/cli':
         specifier: ^1.2.2
         version: 1.2.2(buffer@6.0.3)(typescript@5.5.4)
@@ -422,9 +425,6 @@ importers:
       '@auth/express':
         specifier: ^0.5.5
         version: 0.5.6(express@4.18.2)(nodemailer@6.9.8)
-      '@auth/prisma-adapter':
-        specifier: ^2.1.0
-        version: 2.4.1(@prisma/client@5.14.0(prisma@5.14.0))(nodemailer@6.9.8)
       '@paralleldrive/cuid2':
         specifier: ^2.2.2
         version: 2.2.2
@@ -1172,11 +1172,6 @@ packages:
     resolution: {integrity: sha512-dpXn8spybjpv5/RubHA3mCXrVfLlTjiNcXIb5YNm9o1Ze/9u8lx5I14iFPvePfoeis83bkunFaxV1D2NikNxuA==}
     peerDependencies:
       express: ^4.18.2
-
-  '@auth/prisma-adapter@2.4.1':
-    resolution: {integrity: sha512-VF5IOTHEWHX6WHUxIbsbc12m34cp5T82fzJfi7DmzwBZb89UsoROejV8l0B1dCTZ+pDIS0d4zN9dSa2gIKywNQ==}
-    peerDependencies:
-      '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5'
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -13985,15 +13980,6 @@ snapshots:
     dependencies:
       '@auth/core': 0.34.1(nodemailer@6.9.8)
       express: 4.18.2
-    transitivePeerDependencies:
-      - '@simplewebauthn/browser'
-      - '@simplewebauthn/server'
-      - nodemailer
-
-  '@auth/prisma-adapter@2.4.1(@prisma/client@5.14.0(prisma@5.14.0))(nodemailer@6.9.8)':
-    dependencies:
-      '@auth/core': 0.34.1(nodemailer@6.9.8)
-      '@prisma/client': 5.14.0(prisma@5.14.0)
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'

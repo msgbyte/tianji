@@ -1,7 +1,7 @@
 import { Form, Typography } from 'antd';
 import { useRequest } from '../hooks/useRequest';
 import { trpc } from '../api/trpc';
-import { setJWT } from '../api/auth';
+import { setJWT } from '../api/authjs';
 import { setUserInfo } from '../store/user';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';

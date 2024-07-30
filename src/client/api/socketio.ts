@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { getJWT } from './auth';
+import { getJWT } from './authjs';
 import type { SubscribeEventMap, SocketEventMap } from '../../server/ws/shared';
 import { create } from 'zustand';
 import { useEvent } from '../hooks/useEvent';
