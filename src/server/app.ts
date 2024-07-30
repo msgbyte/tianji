@@ -42,8 +42,8 @@ app.use(
   })
 );
 
-app.use('/auth/*', ExpressAuth(authConfig));
 app.use('/health', healthRouter);
+app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
 app.use('/api/workspace', workspaceRouter);
 app.use('/monitor', monitorRouter);

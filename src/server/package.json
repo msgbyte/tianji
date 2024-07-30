@@ -25,7 +25,6 @@
   "dependencies": {
     "@auth/core": "^0.34.1",
     "@auth/express": "^0.5.5",
-    "@auth/prisma-adapter": "^2.1.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.14.0",
     "@tianji/shared": "workspace:^",

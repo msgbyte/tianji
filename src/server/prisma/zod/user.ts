@@ -4,12 +4,12 @@ import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteAccount, Relate
 
 export const UserModelSchema = z.object({
   id: z.string(),
-  name: z.string().nullish(),
-  email: z.string().nullish(),
-  emailVerified: z.date().nullish(),
-  image: z.string().nullish(),
   username: z.string(),
   password: z.string(),
+  email: z.string().nullish(),
+  emailVerified: z.date().nullish(),
+  nickname: z.string().nullish(),
+  avatar: z.string().nullish(),
   role: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
