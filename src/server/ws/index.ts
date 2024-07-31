@@ -4,6 +4,7 @@ import { jwtVerify } from '../middleware/auth.js';
 import { socketEventBus } from './shared.js';
 import { isCuid } from '../utils/common.js';
 import { logger } from '../utils/logger.js';
+import { getAuthSession, UserAuthPayload } from '../model/auth.js';
 
 export function initSocketio(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
@@ -24,27 +25,36 @@ export function initSocketio(httpServer: HTTPServer) {
       // Auth
       try {
         const token = socket.handshake.auth['token'];
-        if (typeof token !== 'string') {
-          throw new Error('Token cannot be empty');
+        let user: UserAuthPayload;
+        if (token) {
+          user = jwtVerify(token);
+        } else {
+          const session = await getAuthSession(
+            socket.request,
+            socket.handshake.secure
+          );
+          if (!session) {
+            throw new Error('Can not get user info.');
+          }
+
+          user = {
+            id: session.user.id,
+            username: session.user.name,
+            role: session.user.role,
+          };
         }
 
-        try {
-          const user = jwtVerify(token);
+        logger.info('[Socket] Authenticated via JWT:', user.id, user.username);
 
-          logger.info('[Socket] Authenticated via JWT:', user.username);
+        socket.data.user = user;
+        socket.data.token = token;
 
-          socket.data.user = user;
-          socket.data.token = token;
+        const workspaceId = socket.nsp.name.replace(/^\//, '');
+        socket.data.workspaceId = workspaceId;
 
-          const workspaceId = socket.nsp.name.replace(/^\//, '');
-          socket.data.workspaceId = workspaceId;
-
-          next();
-        } catch (err) {
-          console.error(err);
-          next(new Error('TokenInvalid'));
-        }
+        next();
       } catch (err: any) {
+        console.error('[Socket] Authenticated throw error:', err);
         next(err);
       }
     })

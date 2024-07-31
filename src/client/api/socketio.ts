@@ -1,5 +1,4 @@
 import { io, Socket } from 'socket.io-client';
-import { getJWT } from './authjs';
 import type { SubscribeEventMap, SocketEventMap } from '../../server/ws/shared';
 import { create } from 'zustand';
 import { useEvent } from '../hooks/useEvent';
@@ -13,13 +12,9 @@ const useSocketStore = create<{
 }));
 
 export function createSocketIOClient(workspaceId: string) {
-  const token = getJWT();
   const socket = io(`/${workspaceId}`, {
     transports: ['websocket'],
     reconnectionDelayMax: 10000,
-    auth: {
-      token,
-    },
     forceNew: true,
   });
 

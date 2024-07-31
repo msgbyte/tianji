@@ -8,7 +8,6 @@ import {
   splitLink,
   TRPCClientErrorLike,
 } from '@trpc/client';
-import { getJWT } from './authjs';
 import { message } from 'antd';
 import { isDev } from '../utils/env';
 
@@ -22,13 +21,6 @@ export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 const url = '/trpc';
 
 function headers() {
-  const jwt = getJWT();
-  if (jwt) {
-    return {
-      Authorization: `Bearer ${getJWT()}`,
-    };
-  }
-
   return {};
 }
 

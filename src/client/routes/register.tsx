@@ -7,6 +7,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/api/authjs/useAuth';
 
 export const Route = createFileRoute('/register')({
   component: RegisterComponent,
@@ -16,15 +17,18 @@ function RegisterComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const { loginWithPassword } = useAuth();
   const mutation = trpc.user.register.useMutation();
 
   const [{ loading }, handleRegister] = useRequest(async (values: any) => {
-    const res = await mutation.mutateAsync({
+    await mutation.mutateAsync({
       username: values.username,
       password: values.password,
     });
-    setJWT(res.token);
-    setUserInfo(res.info);
+
+    const userInfo = await loginWithPassword(values.username, values.password);
+
+    setUserInfo(userInfo);
 
     navigate({
       to: '/',
