@@ -1,6 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useGlobalConfig } from '@/hooks/useConfig';
-import { trpc } from '@/api/trpc';
 import { Form, Typography } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
 import { setUserInfo } from '@/store/user';
@@ -8,7 +7,6 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/api/authjs/useAuth';
-import { toast } from 'sonner';
 import { useEventWithLoading } from '@/hooks/useEvent';
 
 export const Route = createFileRoute('/login')({
@@ -30,23 +28,11 @@ function LoginComponent() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const search = Route.useSearch();
-  const trpcUtils = trpc.useUtils();
 
   const { loginWithPassword } = useAuth();
 
   const [handleLogin, loading] = useEventWithLoading(async (values: any) => {
-    const res = await loginWithPassword(values.username, values.password);
-
-    if (res?.error) {
-      toast.error(t('Login failed, please check your username and password'));
-      return;
-    }
-
-    const userInfo = await trpcUtils.user.info.fetch();
-    if (!userInfo) {
-      toast.error(t('Can not get current user info'));
-      return;
-    }
+    const userInfo = await loginWithPassword(values.username, values.password);
 
     setUserInfo(userInfo);
 

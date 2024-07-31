@@ -4,13 +4,13 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, Form, Input, Modal, Popconfirm, Typography } from 'antd';
-import { useLogout } from '@/api/model/user';
 import { trpc, defaultSuccessHandler, defaultErrorHandler } from '@/api/trpc';
 import { useUserStore } from '@/store/user';
 import { useState } from 'react';
 import { CommonHeader } from '@/components/CommonHeader';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/api/authjs/useAuth';
 
 export const Route = createFileRoute('/settings/profile')({
   beforeLoad: routeAuthBeforeLoad,
@@ -27,7 +27,7 @@ function PageComponent() {
     onError: defaultErrorHandler,
   });
 
-  const logout = useLogout();
+  const { logout } = useAuth();
 
   return (
     <CommonWrapper header={<CommonHeader title={t('Profile')} />}>

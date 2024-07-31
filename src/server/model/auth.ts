@@ -1,4 +1,4 @@
-import { AuthConfig } from '@auth/core';
+import { Auth, AuthConfig, createActionURL } from '@auth/core';
 import Nodemailer from '@auth/core/providers/nodemailer';
 import Credentials from '@auth/core/providers/credentials';
 import { env } from '../utils/env.js';
@@ -16,9 +16,18 @@ import { Theme } from '@auth/core/types';
 import { generateSMTPHTML } from '../utils/smtp.js';
 import { SYSTEM_ROLES } from '@tianji/shared';
 import _ from 'lodash';
+import { IncomingMessage } from 'http';
+import { type Session } from '@auth/express';
+
+export interface UserAuthPayload {
+  id: string;
+  username: string;
+  role: string;
+}
 
 export const authConfig: Omit<AuthConfig, 'raw'> = {
-  debug: true,
+  debug: env.isProd ? false : true,
+  basePath: '/api/auth',
   providers: [
     Credentials({
       id: 'account',
@@ -85,6 +94,42 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
     },
   },
 };
+
+/**
+ * Pure request of auth session
+ */
+export async function getAuthSession(
+  req: IncomingMessage,
+  secure = false
+): Promise<Session> {
+  const protocol = secure ? 'https:' : 'http:';
+  const url = createActionURL(
+    'session',
+    protocol,
+    // @ts-expect-error
+    new Headers(req.headers),
+    process.env,
+    authConfig.basePath
+  );
+
+  const response = await Auth(
+    new Request(url, { headers: { cookie: req.headers.cookie ?? '' } }),
+    authConfig
+  );
+
+  const { status = 200 } = response;
+
+  const data = await response.json();
+
+  if (!data || !Object.keys(data).length) {
+    return null;
+  }
+
+  if (status === 200) {
+    return data;
+  }
+  throw new Error(data.message);
+}
 
 function toAdapterUser(
   user: Pick<
