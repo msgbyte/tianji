@@ -10,7 +10,7 @@
     "dev": "tsx watch --env-file=.env ./main.ts",
     "build": "tsc",
     "postinstall": "pnpm db:generate",
-    "check:type": "tsc --noEmit --skipLibCheck --module esnext",
+    "check:type": "tsc --noEmit --skipLibCheck",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:apply": "prisma migrate deploy",

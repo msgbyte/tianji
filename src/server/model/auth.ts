@@ -101,7 +101,7 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
 export async function getAuthSession(
   req: IncomingMessage,
   secure = false
-): Promise<Session> {
+): Promise<Session | null> {
   const protocol = secure ? 'https:' : 'http:';
   const url = createActionURL(
     'session',

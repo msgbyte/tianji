@@ -12,7 +12,8 @@
     "strict": true,
     "noEmit": false,
     "rootDirs": ["./", "../"],
-    "typeRoots": ["types/", "node_modules/@types"]
+    "types": ["@auth/core", "@auth/express"],
+    "typeRoots": ["./types/", "./node_modules/@types/", "./node_modules"]
   },
   "include": ["./**/*.ts", "../types/**/*.ts"],
   "exclude": ["node_modules", "dist"]
