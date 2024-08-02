@@ -21,7 +21,6 @@ import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
 import { Route as FeedImport } from './routes/feed'
-import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
@@ -95,11 +94,6 @@ const LoginRoute = LoginImport.update({
 
 const FeedRoute = FeedImport.update({
   path: '/feed',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const DashboardRoute = DashboardImport.update({
-  path: '/dashboard',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -224,10 +218,6 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/dashboard': {
-      preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
     '/feed': {
@@ -365,7 +355,6 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
-  DashboardRoute,
   FeedRoute.addChildren([
     FeedAddRoute,
     FeedChannelIdEditRoute,
