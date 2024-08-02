@@ -22,9 +22,12 @@ export const workspaceSchema = z.object({
 });
 
 export const userInfoSchema = z.object({
-  username: z.string(),
   id: z.string(),
   role: z.string(),
+  username: z.string(),
+  nickname: z.string().nullable(),
+  avatar: z.string().nullable(),
+  email: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
   deletedAt: z.date().nullable(),

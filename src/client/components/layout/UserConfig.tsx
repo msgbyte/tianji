@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,17 +53,18 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
     });
   });
 
+  const nickname = userInfo?.nickname ?? userInfo?.username ?? '';
+
   const avatar = (
     <Avatar size={props.isCollapsed ? 'sm' : 'default'}>
-      <AvatarFallback>
-        {(userInfo?.username ?? '').substring(0, 2).toUpperCase()}
-      </AvatarFallback>
+      <AvatarImage src={userInfo?.avatar ?? undefined} />
+      <AvatarFallback>{nickname.substring(0, 2).toUpperCase()}</AvatarFallback>
     </Avatar>
   );
 
   const name = (
-    <div className="flex-1 overflow-hidden text-ellipsis">
-      {userInfo?.username ?? ''}
+    <div className="flex-1 overflow-hidden text-ellipsis" title={nickname}>
+      {nickname}
     </div>
   );
 
