@@ -1,5 +1,6 @@
 import { v1 as uuid } from 'uuid';
 import md5 from 'md5';
+import _ from 'lodash';
 
 const jwtSecret =
   !process.env.JWT_SECRET ||
@@ -13,10 +14,23 @@ export const env = {
   jwtSecret,
   port: Number(process.env.PORT || 12345),
   auth: {
+    provider: _.compact([
+      !!process.env.EMAIL_SERVER && 'email',
+      !!process.env.AUTH_GITHUB_ID && 'github',
+      !!process.env.AUTH_GOOGLE_ID && 'google',
+    ]),
     secret: process.env.AUTH_SECRET || md5(jwtSecret),
     email: {
       server: process.env.EMAIL_SERVER,
       from: process.env.EMAIL_FROM,
+    },
+    github: {
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    },
+    google: {
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
     },
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),

@@ -6,6 +6,7 @@ const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   allowRegister: false,
   alphaMode: false,
   disableAnonymousTelemetry: false,
+  authProvider: [],
 };
 
 const callAnonymousTelemetry = once(() => {

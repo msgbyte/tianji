@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { useGlobalConfig } from '@/hooks/useConfig';
-import { Form, Typography } from 'antd';
+import { Divider, Form, Typography } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
 import { setUserInfo } from '@/store/user';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/api/authjs/useAuth';
 import { useEventWithLoading } from '@/hooks/useEvent';
+import { LuGithub } from 'react-icons/lu';
 
 export const Route = createFileRoute('/login')({
   validateSearch: z.object({
@@ -29,7 +30,7 @@ function LoginComponent() {
   const { t } = useTranslation();
   const search = Route.useSearch();
 
-  const { loginWithPassword } = useAuth();
+  const { loginWithPassword, loginWithOAuth } = useAuth();
 
   const [handleLogin, loading] = useEventWithLoading(async (values: any) => {
     const userInfo = await loginWithPassword(values.username, values.password);
@@ -41,7 +42,7 @@ function LoginComponent() {
       replace: true,
     });
   });
-  const { allowRegister } = useGlobalConfig();
+  const { allowRegister, authProvider } = useGlobalConfig();
 
   return (
     <div className="flex h-full w-full items-center justify-center dark:bg-gray-900">
@@ -96,6 +97,22 @@ function LoginComponent() {
             </Form.Item>
           )}
         </Form>
+
+        {authProvider.length > 0 && (
+          <>
+            <Divider>{t('Or')}</Divider>
+
+            <div className="flex justify-center">
+              <Button
+                variant="secondary"
+                className="h-12 w-12 p-3"
+                onClick={() => loginWithOAuth('github')}
+              >
+                <LuGithub size={24} />
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

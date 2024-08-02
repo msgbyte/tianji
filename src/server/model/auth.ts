@@ -1,6 +1,7 @@
 import { Auth, AuthConfig, createActionURL } from '@auth/core';
 import Nodemailer from '@auth/core/providers/nodemailer';
 import Credentials from '@auth/core/providers/credentials';
+import Github from '@auth/core/providers/github';
 import { env } from '../utils/env.js';
 import { prisma } from './_client.js';
 import type { PrismaClient, Prisma, User } from '@prisma/client';
@@ -28,7 +29,8 @@ export interface UserAuthPayload {
 export const authConfig: Omit<AuthConfig, 'raw'> = {
   debug: env.isProd ? false : true,
   basePath: '/api/auth',
-  providers: [
+  trustHost: true,
+  providers: _.compact([
     Credentials({
       id: 'account',
       name: 'Account',
@@ -52,28 +54,41 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
         return toAdapterUser(user);
       },
     }),
-    Nodemailer({
-      id: 'email',
-      name: 'Email',
-      ...env.auth.email,
-      async sendVerificationRequest(params) {
-        const { identifier, url, provider, theme } = params;
-        const { host } = new URL(url);
-        const transport = createTransport(provider.server);
-        const result = await transport.sendMail({
-          to: identifier,
-          from: provider.from,
-          subject: `Sign in Tianji to ${host}`,
-          text: `Sign in Tianji to ${host}\n${url}\n\n`,
-          html: nodemailHtmlBody({ url, host, theme }),
-        });
-        const failed = result.rejected.concat(result.pending).filter(Boolean);
-        if (failed.length) {
-          throw new Error(`Email (${failed.join(', ')}) could not be sent`);
-        }
-      },
-    }),
-  ],
+    env.auth.provider.includes('email') &&
+      Nodemailer({
+        id: 'email',
+        name: 'Email',
+        ...env.auth.email,
+        async sendVerificationRequest(params) {
+          const { identifier, url, provider, theme } = params;
+          const { host } = new URL(url);
+          const transport = createTransport(provider.server);
+          const result = await transport.sendMail({
+            to: identifier,
+            from: provider.from,
+            subject: `Sign in Tianji to ${host}`,
+            text: `Sign in Tianji to ${host}\n${url}\n\n`,
+            html: nodemailHtmlBody({ url, host, theme }),
+          });
+          const failed = result.rejected.concat(result.pending).filter(Boolean);
+          if (failed.length) {
+            throw new Error(`Email (${failed.join(', ')}) could not be sent`);
+          }
+        },
+      }),
+    env.auth.provider.includes('github') &&
+      Github({
+        id: 'github',
+        name: 'Github',
+        ...env.auth.github,
+      }),
+    env.auth.provider.includes('google') &&
+      Github({
+        id: 'google',
+        name: 'Google',
+        ...env.auth.google,
+      }),
+  ]),
   adapter: TianjiPrismaAdapter(prisma),
   secret: env.auth.secret,
   session: {

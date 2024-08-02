@@ -23,6 +23,7 @@ export const globalRouter = router({
         alphaMode: z.boolean(),
         disableAnonymousTelemetry: z.boolean(),
         customTrackerScriptName: z.string().optional(),
+        authProvider: z.array(z.string()),
       })
     )
     .query(async ({ input }) => {
@@ -34,6 +35,7 @@ export const globalRouter = router({
         alphaMode: env.alphaMode,
         disableAnonymousTelemetry: env.disableAnonymousTelemetry,
         customTrackerScriptName: env.customTrackerScriptName,
+        authProvider: env.auth.provider,
       };
     }),
 });

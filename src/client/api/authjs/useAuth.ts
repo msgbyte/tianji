@@ -4,6 +4,7 @@ import { useUserStore } from '@/store/user';
 import { toast } from 'sonner';
 import { trpc } from '../trpc';
 import { useTranslation } from '@i18next-toolkit/react';
+import { BuiltInProviderType } from '@auth/core/providers';
 
 export function useAuth() {
   const trpcUtils = trpc.useUtils();
@@ -38,6 +39,32 @@ export function useAuth() {
     }
   );
 
+  const loginWithOAuth = useEvent(async (provider: BuiltInProviderType) => {
+    let res: SignInResponse | undefined;
+    try {
+      res = await signIn(provider, {
+        redirect: false,
+      });
+      console.log('res', res);
+    } catch (err) {
+      toast.error(t('Login failed'));
+      throw err;
+    }
+
+    if (res?.error) {
+      toast.error(t('Login failed'));
+      throw new Error('Login failed');
+    }
+
+    const userInfo = await trpcUtils.user.info.fetch();
+    if (!userInfo) {
+      toast.error(t('Can not get current user info'));
+      throw new Error('Login failed, ');
+    }
+
+    return userInfo;
+  });
+
   const logout = useEvent(async () => {
     await signOut({
       redirect: false,
@@ -49,6 +76,7 @@ export function useAuth() {
 
   return {
     loginWithPassword,
+    loginWithOAuth,
     logout,
   };
 }
