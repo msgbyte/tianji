@@ -421,9 +421,11 @@ model WorkspaceDailyUsage {
   id                    String   @id @unique @default(cuid()) @db.VarChar(30)
   workspaceId           String   @db.VarChar(30)
   date                  DateTime @db.Date // calc every day
-  websiteAcceptedCount  Int // website accept any request count
-  websiteEventCount     Int // website accept event request count
-  monitorExecutionCount Int // monitor exec number count
+  websiteAcceptedCount  Int      @default(0) // website accept any request count
+  websiteEventCount     Int      @default(0) // website accept event request count
+  monitorExecutionCount Int      @default(0) // monitor exec number count
+  surveyCount           Int      @default(0) // survey receive count
+  feedEventCount        Int      @default(0) // feed event receive count
   createdAt             DateTime @default(now()) @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)

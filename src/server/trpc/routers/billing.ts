@@ -24,6 +24,8 @@ export const billingRouter = router({
         websiteAcceptedCount: z.number(),
         websiteEventCount: z.number(),
         monitorExecutionCount: z.number(),
+        surveyCount: z.number(),
+        feedEventCount: z.number(),
       })
     )
     .query(async ({ input }) => {
@@ -41,6 +43,8 @@ export const billingRouter = router({
           websiteAcceptedCount: true,
           websiteEventCount: true,
           monitorExecutionCount: true,
+          surveyCount: true,
+          feedEventCount: true,
         },
       });
 
@@ -48,6 +52,8 @@ export const billingRouter = router({
         websiteAcceptedCount: res._sum.websiteAcceptedCount ?? 0,
         websiteEventCount: res._sum.websiteEventCount ?? 0,
         monitorExecutionCount: res._sum.monitorExecutionCount ?? 0,
+        surveyCount: res._sum.surveyCount ?? 0,
+        feedEventCount: res._sum.feedEventCount ?? 0,
       };
     }),
 });

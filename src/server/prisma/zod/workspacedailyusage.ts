@@ -9,6 +9,8 @@ export const WorkspaceDailyUsageModelSchema = z.object({
   websiteAcceptedCount: z.number().int(),
   websiteEventCount: z.number().int(),
   monitorExecutionCount: z.number().int(),
+  surveyCount: z.number().int(),
+  feedEventCount: z.number().int(),
   createdAt: z.date(),
 })
 

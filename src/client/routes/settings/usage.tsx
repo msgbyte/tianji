@@ -3,7 +3,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Statistic } from 'antd';
 import { useMemo } from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
@@ -45,7 +44,7 @@ function PageComponent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <Card className="flex-1">
                 <CardHeader className="text-muted-foreground">
                   {t('Website Accepted Count')}
@@ -70,6 +69,24 @@ function PageComponent() {
                 </CardHeader>
                 <CardContent>
                   {formatNumber(data?.monitorExecutionCount ?? 0)}
+                </CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
+                  {t('Survey Count')}
+                </CardHeader>
+                <CardContent>
+                  {formatNumber(data?.surveyCount ?? 0)}
+                </CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
+                  {t('Feed Event Count')}
+                </CardHeader>
+                <CardContent>
+                  {formatNumber(data?.feedEventCount ?? 0)}
                 </CardContent>
               </Card>
             </div>

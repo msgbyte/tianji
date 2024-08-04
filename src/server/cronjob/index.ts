@@ -81,9 +81,14 @@ async function statDailyUsage() {
   const end = dayjs().startOf('day').toDate();
   const date = dayjs().subtract(1, 'day').toDate();
 
-  const [websiteAcceptCountRes, websiteEventCountRes, monitorExecutionCount] =
-    await Promise.all([
-      await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
+  const [
+    websiteAcceptCountRes,
+    websiteEventCountRes,
+    monitorExecutionCount,
+    surveyCount,
+    feedEventCount,
+  ] = await Promise.all([
+    await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
         SELECT
           w.id AS workspace_id,
           COALESCE(COUNT(we.id), 0) AS count
@@ -99,7 +104,7 @@ async function statDailyUsage() {
           w.id, w.name
         ORDER BY
           w.id`,
-      await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
+    await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
         SELECT
           w.id AS workspace_id,
           COALESCE(COUNT(we.id), 0) AS count
@@ -116,7 +121,7 @@ async function statDailyUsage() {
           w.id, w.name
         ORDER BY
           w.id`,
-      await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
+    await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
         SELECT
           w.id AS workspace_id,
           COALESCE(COUNT(md.id), 0) AS count
@@ -132,7 +137,39 @@ async function statDailyUsage() {
           w.id
         ORDER BY
           w.id`,
-    ]);
+    await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
+        SELECT
+          w.id AS workspace_id,
+          COALESCE(COUNT(sr.id), 0) AS count
+        FROM
+          "Workspace" w
+        LEFT JOIN
+          "Survey" s ON w.id = s."workspaceId"
+        LEFT JOIN
+          "SurveyResult" sr ON s.id = sr."surveyId"
+        AND sr."createdAt" >= ${start}
+        AND sr."createdAt" < ${end}
+        GROUP BY
+          w.id
+        ORDER BY
+          w.id`,
+    await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
+        SELECT
+          w.id AS workspace_id,
+          COALESCE(COUNT(fe.id), 0) AS count
+        FROM
+          "Workspace" w
+        LEFT JOIN
+          "FeedChannel" fc ON w.id = fc."workspaceId"
+        LEFT JOIN
+          "FeedEvent" fe ON fc.id = fe."channelId"
+            AND fe."createdAt" >= ${start}
+            AND fe."createdAt" < ${end}
+        GROUP BY
+          w.id
+        ORDER BY
+          w.id`,
+  ]);
 
   const map: Map<string, Prisma.WorkspaceDailyUsageCreateManyInput> = new Map();
 
@@ -141,6 +178,8 @@ async function statDailyUsage() {
       websiteAcceptedCount: 0,
       websiteEventCount: 0,
       monitorExecutionCount: 0,
+      surveyCount: 0,
+      feedEventCount: 0,
       date,
     };
 
@@ -171,6 +210,26 @@ async function statDailyUsage() {
       ...map.get(workspaceId),
       workspaceId,
       monitorExecutionCount: Number(item.count),
+    });
+  });
+
+  surveyCount.forEach((item) => {
+    const workspaceId = item.workspace_id;
+    map.set(workspaceId, {
+      ...blank,
+      ...map.get(workspaceId),
+      workspaceId,
+      surveyCount: Number(item.count),
+    });
+  });
+
+  feedEventCount.forEach((item) => {
+    const workspaceId = item.workspace_id;
+    map.set(workspaceId, {
+      ...blank,
+      ...map.get(workspaceId),
+      workspaceId,
+      feedEventCount: Number(item.count),
     });
   });
 
