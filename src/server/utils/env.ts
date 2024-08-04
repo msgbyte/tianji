@@ -19,6 +19,9 @@ export const env = {
       !!process.env.AUTH_GITHUB_ID && 'github',
       !!process.env.AUTH_GOOGLE_ID && 'google',
     ]),
+    restrict: {
+      email: process.env.AUTH_RESTRICT_EMAIL, // for example: @example.com
+    },
     secret: process.env.AUTH_SECRET || md5(jwtSecret),
     email: {
       server: process.env.EMAIL_SERVER,

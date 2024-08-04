@@ -2,6 +2,7 @@ import { Auth, AuthConfig, createActionURL } from '@auth/core';
 import Nodemailer from '@auth/core/providers/nodemailer';
 import Credentials from '@auth/core/providers/credentials';
 import Github from '@auth/core/providers/github';
+import Google from '@auth/core/providers/google';
 import { env } from '../utils/env.js';
 import { prisma } from './_client.js';
 import type { PrismaClient, Prisma, User } from '@prisma/client';
@@ -83,7 +84,7 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
         ...env.auth.github,
       }),
     env.auth.provider.includes('google') &&
-      Github({
+      Google({
         id: 'google',
         name: 'Google',
         ...env.auth.google,
@@ -106,6 +107,23 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
       _.set(session, ['user', 'role'], token.role);
 
       return session;
+    },
+    async signIn({ user, account, profile, email }) {
+      if (account?.type === 'oauth') {
+        if (env.auth.restrict.email) {
+          if (profile?.email) {
+            return profile.email.endsWith(env.auth.restrict.email);
+          }
+        }
+      }
+
+      if (account?.type === 'email' && env.auth.restrict.email) {
+        if (user.email) {
+          return user.email.endsWith(env.auth.restrict.email);
+        }
+      }
+
+      return true;
     },
   },
 };
