@@ -49,11 +49,17 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 
 ## Preview
 
-![](./website/static/img/preview1.png)
+![](./website/static/img/preview/1.png)
 
-![](./website/static/img/preview2.png)
+![](./website/static/img/preview/2.png)
 
-![](./website/static/img/preview3.png)
+![](./website/static/img/preview/3.png)
+
+![](./website/static/img/preview/4.png)
+
+![](./website/static/img/preview/5.png)
+
+![](./website/static/img/preview/6.png)
 
 ## Translation
 
