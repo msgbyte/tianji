@@ -167,7 +167,12 @@ export const feedIntegrationRouter = router({
 
       const res = tencentCloudAlarmSchema.safeParse(data);
       if (!res.success) {
-        logger.error('[TencentCloudAlarm] input parse error:', res.error);
+        logger.error(
+          '[TencentCloudAlarm] input parse error:',
+          res.error,
+          ' | input:',
+          data
+        );
         throw new Error('Input not valid,' + JSON.stringify(res.error));
       }
 
