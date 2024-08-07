@@ -69,6 +69,7 @@ export function VirtualizedInfiniteDataTable<TData>(
   const table = useReactTable({
     data: flatData,
     columns,
+    columnResizeMode: 'onChange',
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -87,13 +88,32 @@ export function VirtualizedInfiniteDataTable<TData>(
     overscan: 5,
   });
 
+  /**
+   * Instead of calling `column.getSize()` on every render for every header
+   * and especially every data cell (very expensive),
+   * we will calculate all column sizes at once at the root table level in a useMemo
+   * and pass the column sizes down as CSS variables to the <table> element.
+   */
+  const columnSizeVars = React.useMemo(() => {
+    const headers = table.getFlatHeaders();
+    const colSizes: { [key: string]: number } = {};
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!;
+      colSizes[`--header-${header.id}-size`] = header.getSize();
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+    }
+    return colSizes;
+  }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
+
+  console.log('columnSizeVars', columnSizeVars);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div
-      className="relative h-full overflow-auto"
+      className="virtualized-infinite-data-table relative h-full overflow-auto"
       onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
       ref={tableContainerRef}
     >
@@ -101,6 +121,7 @@ export function VirtualizedInfiniteDataTable<TData>(
       <table style={{ display: 'grid' }}>
         <TableHeader
           style={{
+            ...columnSizeVars,
             display: 'grid',
             position: 'sticky',
             top: 0,
@@ -116,8 +137,9 @@ export function VirtualizedInfiniteDataTable<TData>(
                 return (
                   <TableHead
                     key={header.id}
+                    className="relative pt-2.5"
                     style={{
-                      width: header.getSize(),
+                      width: `calc(var(--header-${header?.id}-size) * 1px)`,
                     }}
                   >
                     {header.isPlaceholder
@@ -126,6 +148,17 @@ export function VirtualizedInfiniteDataTable<TData>(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+
+                    <div
+                      {...{
+                        onDoubleClick: () => header.column.resetSize(),
+                        onMouseDown: header.getResizeHandler(),
+                        onTouchStart: header.getResizeHandler(),
+                        className: `resizer ${
+                          header.column.getIsResizing() ? 'isResizing' : ''
+                        }`,
+                      }}
+                    />
                   </TableHead>
                 );
               })}
