@@ -27,11 +27,11 @@ const tencentCloudAlarmEventSchema = z.object({
 });
 
 // 定义 metric 类型
-const tencentCloudAlarmMetricSchema = z.object({
+export const tencentCloudAlarmMetricSchema = z.object({
   sessionId: z.string(),
   alarmStatus: z.union([z.literal('0'), z.literal('1')]),
   alarmType: z.literal('metric'),
-  alarmLevel: z.string(),
+  alarmLevel: z.string().optional(),
   alarmObjInfo: z.object({
     region: z.string().optional(),
     namespace: z.string(),
