@@ -1,5 +1,50 @@
 
 
+## [1.13.0](https://github.com/msgbyte/tianji/compare/v1.12.1...v1.13.0) (2024-08-11)
+
+
+### Features
+
+* add authjs backend support ([06d6ecd](https://github.com/msgbyte/tianji/commit/06d6ecd2a3384056be017c5608df282968802196))
+* add avatar and nickname display in user info scope ([03bc9b5](https://github.com/msgbyte/tianji/commit/03bc9b5125070d2675b422723404c96fd2ac95ad))
+* add duplicate feature for monitor ([827cf07](https://github.com/msgbyte/tianji/commit/827cf07c2a70b3437a8381ab3ee16838a348fd91))
+* add email restrict ([0a0a275](https://github.com/msgbyte/tianji/commit/0a0a27549ace51bf0b8c9ef135c50fd859980525))
+* add feed channel into search command panel ([275f30f](https://github.com/msgbyte/tianji/commit/275f30f0487a02e96289d8df5ea107bdd591212e))
+* add github auth integrate ([7f7c95b](https://github.com/msgbyte/tianji/commit/7f7c95b11c664a15732f18b28ea1d154f289fca9))
+* add logout and socketio auth ([e9c64c5](https://github.com/msgbyte/tianji/commit/e9c64c57e7b8bd8912669aef93d3958bb754a057))
+* add none in feed channel ([73dd8c2](https://github.com/msgbyte/tianji/commit/73dd8c25b7f782a882682039a3cba94526af9906))
+* add prisma migrate ([37757f6](https://github.com/msgbyte/tianji/commit/37757f6563d6de71a59aa1b021e7e29e9235eb3b))
+* add support for legacy traditional login methods ([3afac06](https://github.com/msgbyte/tianji/commit/3afac062c417bfeef0536ee49a459de96ac7ae72))
+* add survey count and feed event count ([f149642](https://github.com/msgbyte/tianji/commit/f1496429d30e13af8e810ae1dbc7ba74707d621d))
+* add virtualized data table resizer ([f1aaa70](https://github.com/msgbyte/tianji/commit/f1aaa7040e7953d85b956f398df65873d9104205))
+* add VirtualizedInfiniteDataTable and refactor survey result list ([b2dccec](https://github.com/msgbyte/tianji/commit/b2dccec2834a486dc018ac7b1d267bb327d48422))
+
+
+### Bug Fixes
+
+* fix tencentCloudAlarmMetricSchema incorrect problem ([914046a](https://github.com/msgbyte/tianji/commit/914046aefacafc0500585d55f8a2119685777ac3))
+
+
+### Document
+
+* add custom example for match text ([e4eee42](https://github.com/msgbyte/tianji/commit/e4eee420ea013068bc3d5fc0d9de436a6f69d65f))
+* update README preview images ([bb76c8e](https://github.com/msgbyte/tianji/commit/bb76c8e895d5cb2ba5c8e5889d1a8ae15a605b48))
+
+
+### Others
+
+* add error log for tencent alarm ([af47920](https://github.com/msgbyte/tianji/commit/af4792024f3adc0b152f101e066f84077c98ecf7))
+* add more log for tencent cloud alarm ([ad18666](https://github.com/msgbyte/tianji/commit/ad186668515c40e4127108a689accacc5b782760))
+* add more translations ([05c358b](https://github.com/msgbyte/tianji/commit/05c358b2e5b18d74596fac8bb7ef2a0caf06b527))
+* change all import with .js suffix, which will help nodejs(esm) to import code clear. ([d5d0446](https://github.com/msgbyte/tianji/commit/d5d04468cb210d0e2313ab66d494e09a8337a9d0))
+* fix ci issue of typescript type check ([e5c2b94](https://github.com/msgbyte/tianji/commit/e5c2b9484fb761a2dff2f1e9f3dff3368f371712))
+* fix ci problem ([c7ff366](https://github.com/msgbyte/tianji/commit/c7ff3666a7814936d8e5266df8e183fafbec6f96))
+* fix react-router version ([20e95ef](https://github.com/msgbyte/tianji/commit/20e95ef97328fa1c0a3caab6a0ae20d54480eea0))
+* remove ts-node and change to tsx ([b04ddd4](https://github.com/msgbyte/tianji/commit/b04ddd40ad483b773eeba0141b21ce80bfb4edbe))
+* translate server side code into esm ([5dca262](https://github.com/msgbyte/tianji/commit/5dca262482adaadf6e25385bba0b1061ed9d33a4))
+* update translation file ([7e38e32](https://github.com/msgbyte/tianji/commit/7e38e327bf3d8662e86a9c4320589f15d122ecd1))
+* wip: add auth.js ([3cf3cfa](https://github.com/msgbyte/tianji/commit/3cf3cfa427b1d3ff6704e8839b60781eb7c15b32))
+
 ## [1.12.1](https://github.com/msgbyte/tianji/compare/v1.12.0...v1.12.1) (2024-07-25)
 
 
