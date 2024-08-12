@@ -2,18 +2,17 @@ import { Button, Empty, Select, SelectProps } from 'antd';
 import React from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
-import { ColorTag } from '../ColorTag';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 
-interface NotificationPickerProps extends SelectProps<string[]> {}
-export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
+interface FeedChannelPickerProps extends SelectProps<string[]> {}
+export const FeedChannelPicker: React.FC<FeedChannelPickerProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
     const navigate = useNavigate();
-    const { data: allNotification = [] } = trpc.notification.all.useQuery({
+    const { data: allChannels = [] } = trpc.feed.channels.useQuery({
       workspaceId,
     });
 
@@ -23,12 +22,12 @@ export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
           <Empty
             description={
               <div className="py-2">
-                <div className="mb-1">{t('Not found any notification')}</div>
+                <div className="mb-1">{t('Not found any feed channel')}</div>
                 <Button
                   icon={<PlusOutlined />}
                   onClick={() =>
                     navigate({
-                      to: '/settings/notifications',
+                      to: '/feed/add',
                     })
                   }
                 >
@@ -40,9 +39,8 @@ export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
         }
         {...props}
       >
-        {allNotification.map((m) => (
+        {allChannels.map((m) => (
           <Select.Option key={m.id} value={m.id}>
-            <ColorTag label={m.type} />
             {m.name}
           </Select.Option>
         ))}
@@ -50,4 +48,4 @@ export const NotificationPicker: React.FC<NotificationPickerProps> = React.memo(
     );
   }
 );
-NotificationPicker.displayName = 'NotificationPicker';
+FeedChannelPicker.displayName = 'FeedChannelPicker';
