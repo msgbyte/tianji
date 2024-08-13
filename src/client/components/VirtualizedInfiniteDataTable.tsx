@@ -105,8 +105,6 @@ export function VirtualizedInfiniteDataTable<TData>(
     return colSizes;
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
-  console.log('columnSizeVars', columnSizeVars);
-
   if (isLoading) {
     return <div>Loading...</div>;
   }

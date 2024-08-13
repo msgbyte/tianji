@@ -19,6 +19,7 @@ import { SurveyPayloadSchema } from '../../prisma/zod/schemas/index.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
+import { createFeedEvent } from '../../model/feed/event.js';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -170,6 +171,33 @@ export const surveyRouter = router({
         },
       });
 
+      // async to push into survey
+      prisma.survey
+        .findFirst({
+          where: {
+            id: surveyId,
+            workspaceId,
+          },
+        })
+        .then((survey) => {
+          if (
+            survey &&
+            Array.isArray(survey.feedChannelIds) &&
+            survey.feedChannelIds.length > 0
+          ) {
+            survey.feedChannelIds.forEach((channelId) => {
+              createFeedEvent(workspaceId, {
+                channelId: channelId,
+                eventName: 'receive',
+                eventContent: `survey [${survey.name}] receive a new record.`,
+                tags: [],
+                source: 'survey',
+                important: false,
+              });
+            });
+          }
+        });
+
       return 'success';
     }),
   create: workspaceOwnerProcedure
@@ -183,17 +211,19 @@ export const surveyRouter = router({
       z.object({
         name: z.string(),
         payload: SurveyPayloadSchema,
+        feedChannelIds: z.array(z.string()),
       })
     )
     .output(SurveyModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, name, payload } = input;
+      const { workspaceId, name, payload, feedChannelIds } = input;
 
       const res = await prisma.survey.create({
         data: {
           workspaceId,
           name,
           payload,
+          feedChannelIds,
         },
       });
 
@@ -211,11 +241,12 @@ export const surveyRouter = router({
         surveyId: z.string(),
         name: z.string().optional(),
         payload: SurveyPayloadSchema.optional(),
+        feedChannelIds: z.array(z.string()).optional(),
       })
     )
     .output(SurveyModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, surveyId, name, payload } = input;
+      const { workspaceId, surveyId, name, payload, feedChannelIds } = input;
 
       const res = await prisma.survey.update({
         where: {
@@ -225,6 +256,7 @@ export const surveyRouter = router({
         data: {
           name,
           payload,
+          feedChannelIds,
         },
       });
 

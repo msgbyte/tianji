@@ -16,6 +16,7 @@ export const SurveyModelSchema = z.object({
    * [SurveyPayload]
    */
   payload: imports.SurveyPayloadSchema,
+  feedChannelIds: z.string().array(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

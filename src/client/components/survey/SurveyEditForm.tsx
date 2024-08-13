@@ -33,6 +33,7 @@ import React, { useState } from 'react';
 import { TipIcon } from '../TipIcon';
 import { cn } from '@/utils/style';
 import { Switch } from '../ui/switch';
+import { FeedChannelPicker } from '../feed/FeedChannelPicker';
 
 const addFormSchema = z.object({
   name: z.string(),
@@ -46,6 +47,7 @@ const addFormSchema = z.object({
       })
     ),
   }),
+  feedChannelIds: z.array(z.string()),
 });
 
 export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
@@ -75,6 +77,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
         payload: {
           items: [generateDefaultItem()],
         },
+        feedChannelIds: [],
       },
     });
 
@@ -239,6 +242,27 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                   />
                 </div>
               </div>
+
+              <FormField
+                control={form.control}
+                name="feedChannelIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Feed Channels')}</FormLabel>
+                    <FormControl className="w-full">
+                      <FeedChannelPicker
+                        allowClear={true}
+                        mode="multiple"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t('Select Feed Channel for send')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
 
             <CardFooter>

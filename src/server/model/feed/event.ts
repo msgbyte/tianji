@@ -33,6 +33,9 @@ const { get: getFeedEventNotify, del: delFeedEventNotifyCache } =
 
 export { delFeedEventNotifyCache };
 
+/**
+ * create feed event
+ */
 export async function createFeedEvent(
   workspaceId: string,
   eventData: Prisma.FeedEventCreateArgs['data']
@@ -86,7 +89,7 @@ export async function sendFeedEventsNotify(
     token.list(
       events.map((event) =>
         token.text(
-          `[${event.eventName}] ${event.senderName}: ${event.eventContent}`
+          `[${event.source}:${event.eventName}] ${event.senderName ?? ''}: ${event.eventContent}`
         )
       )
     ),

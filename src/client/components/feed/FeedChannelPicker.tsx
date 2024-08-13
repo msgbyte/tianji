@@ -6,7 +6,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 
-interface FeedChannelPickerProps extends SelectProps<string[]> {}
+interface FeedChannelPickerProps extends SelectProps<string | string[]> {}
 export const FeedChannelPicker: React.FC<FeedChannelPickerProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
