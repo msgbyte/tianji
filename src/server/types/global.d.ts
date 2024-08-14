@@ -1,8 +1,8 @@
-import type { JWTPayload } from '../middleware/auth';
+import type { JWTPayload } from '../middleware/auth.ts';
 import type {
   MonitorStatusPageListSchema,
   SurveyPayloadSchema,
-} from '../prisma/zod/schemas';
+} from '../prisma/zod/schemas/index.ts';
 
 declare global {
   namespace Express {

@@ -20,6 +20,8 @@ import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
 import { createFeedEvent } from '../../model/feed/event.js';
+import { formatString } from '../../utils/template.js';
+import { logger } from '../../utils/logger.js';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -185,15 +187,33 @@ export const surveyRouter = router({
             Array.isArray(survey.feedChannelIds) &&
             survey.feedChannelIds.length > 0
           ) {
+            const templateStr =
+              survey.feedTemplate ||
+              'survey {{_surveyName}} receive a new record.';
+
             survey.feedChannelIds.forEach((channelId) => {
-              createFeedEvent(workspaceId, {
-                channelId: channelId,
-                eventName: 'receive',
-                eventContent: `survey [${survey.name}] receive a new record.`,
-                tags: [],
-                source: 'survey',
-                important: false,
-              });
+              try {
+                const surveyPayload = SurveyPayloadSchema.parse(survey.payload);
+
+                createFeedEvent(workspaceId, {
+                  channelId: channelId,
+                  eventName: 'receive',
+                  eventContent: formatString(templateStr, {
+                    _surveyName: survey.name,
+                    ...Object.fromEntries(
+                      surveyPayload.items.map((item) => [
+                        item.name,
+                        payload[item.name] ?? '',
+                      ])
+                    ),
+                  }),
+                  tags: [],
+                  source: 'survey',
+                  important: false,
+                });
+              } catch (err) {
+                logger.error('[surveySubmitSendFeed]', err);
+              }
             });
           }
         });
@@ -212,11 +232,13 @@ export const surveyRouter = router({
         name: z.string(),
         payload: SurveyPayloadSchema,
         feedChannelIds: z.array(z.string()),
+        feedTemplate: z.string(),
       })
     )
     .output(SurveyModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, name, payload, feedChannelIds } = input;
+      const { workspaceId, name, payload, feedChannelIds, feedTemplate } =
+        input;
 
       const res = await prisma.survey.create({
         data: {
@@ -224,6 +246,7 @@ export const surveyRouter = router({
           name,
           payload,
           feedChannelIds,
+          feedTemplate,
         },
       });
 
@@ -242,11 +265,19 @@ export const surveyRouter = router({
         name: z.string().optional(),
         payload: SurveyPayloadSchema.optional(),
         feedChannelIds: z.array(z.string()).optional(),
+        feedTemplate: z.string().optional(),
       })
     )
     .output(SurveyModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, surveyId, name, payload, feedChannelIds } = input;
+      const {
+        workspaceId,
+        surveyId,
+        name,
+        payload,
+        feedChannelIds,
+        feedTemplate,
+      } = input;
 
       const res = await prisma.survey.update({
         where: {
@@ -257,6 +288,7 @@ export const surveyRouter = router({
           name,
           payload,
           feedChannelIds,
+          feedTemplate,
         },
       });
 

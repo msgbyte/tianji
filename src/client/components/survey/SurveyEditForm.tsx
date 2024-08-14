@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateRandomString } from '@/utils/common';
 import { LuArrowDown, LuArrowUp, LuMinus, LuPlus } from 'react-icons/lu';
@@ -48,6 +48,7 @@ const addFormSchema = z.object({
     ),
   }),
   feedChannelIds: z.array(z.string()),
+  feedTemplate: z.string(),
 });
 
 export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
@@ -78,8 +79,11 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
           items: [generateDefaultItem()],
         },
         feedChannelIds: [],
+        feedTemplate: '',
       },
     });
+
+    const feedChannelIds = form.watch('feedChannelIds');
 
     const [handleSubmit, isLoading] = useEventWithLoading(
       async (values: SurveyEditFormValues) => {
@@ -263,6 +267,36 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                   </FormItem>
                 )}
               />
+
+              {feedChannelIds.length > 0 && (
+                <FormField
+                  control={form.control}
+                  name="feedTemplate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Feed Template')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="survey {{_surveyName}} receive a new record."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        <p>
+                          {t(
+                            'Survey Template String, here are available variables:'
+                          )}
+                        </p>
+                        <p>
+                          {'{{_surveyName}} '}
+                          {fields.map((f) => `{{${f.name}}}`).join(' ')}
+                        </p>
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </CardContent>
 
             <CardFooter>
