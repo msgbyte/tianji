@@ -5,7 +5,13 @@ import { AppRouterOutput } from '@/api/trpc';
  */
 export function generateSurveyExampleCode(
   host: string,
-  info?: AppRouterOutput['survey']['get']
+  info:
+    | Pick<
+        NonNullable<AppRouterOutput['survey']['get']>,
+        'id' | 'name' | 'workspaceId' | 'payload'
+      >
+    | null
+    | undefined
 ): string {
   const fields = info?.payload.items ?? [];
 

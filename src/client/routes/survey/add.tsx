@@ -26,9 +26,8 @@ function PageComponent() {
 
   const onSubmit = useEvent(async (values: SurveyEditFormValues) => {
     const res = await createMutation.mutateAsync({
+      ...values,
       workspaceId,
-      name: values.name,
-      payload: values.payload,
     });
 
     utils.survey.all.refetch();

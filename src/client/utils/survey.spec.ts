@@ -17,8 +17,6 @@ describe('survey', () => {
             },
           ],
         },
-        createdAt: '',
-        updatedAt: '',
       })
     ).matchSnapshot();
   });
