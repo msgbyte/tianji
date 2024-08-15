@@ -17,9 +17,9 @@ import { createTransport } from 'nodemailer';
 import { Theme } from '@auth/core/types';
 import { generateSMTPHTML } from '../utils/smtp.js';
 import { SYSTEM_ROLES } from '@tianji/shared';
-import _ from 'lodash';
 import { IncomingMessage } from 'http';
 import { type Session } from '@auth/express';
+import { compact, set } from 'lodash-es';
 
 export interface UserAuthPayload {
   id: string;
@@ -31,7 +31,7 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
   debug: env.isProd ? false : true,
   basePath: '/api/auth',
   trustHost: true,
-  providers: _.compact([
+  providers: compact([
     Credentials({
       id: 'account',
       name: 'Account',
@@ -103,8 +103,8 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
       };
     },
     session({ session, token, user }) {
-      _.set(session, ['user', 'id'], token.sub);
-      _.set(session, ['user', 'role'], token.role);
+      set(session, ['user', 'id'], token.sub);
+      set(session, ['user', 'role'], token.role);
 
       return session;
     },

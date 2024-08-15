@@ -1,5 +1,4 @@
 import { initTRPC, inferAsyncReturnType, TRPCError } from '@trpc/server';
-import _ from 'lodash';
 import { z } from 'zod';
 import { jwtVerify } from '../middleware/auth.js';
 import { getWorkspaceUser } from '../model/workspace.js';
@@ -8,6 +7,7 @@ import type { Request } from 'express';
 import { OpenApiMeta } from 'trpc-openapi';
 import { getSession } from '@auth/express';
 import { authConfig } from '../model/auth.js';
+import { get } from 'lodash-es';
 
 export async function createContext({ req }: { req: Request }) {
   const authorization = req.headers['authorization'] ?? '';
@@ -97,7 +97,7 @@ function createWorkspacePermissionMiddleware(roles: ROLES[] = []) {
   return isUser.unstable_pipe(async (opts) => {
     const { ctx, input } = opts;
 
-    const workspaceId = _.get(input, 'workspaceId', '');
+    const workspaceId = get(input, 'workspaceId', '');
     if (!workspaceId) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',

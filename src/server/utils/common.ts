@@ -5,7 +5,6 @@ import { DynamicDataType } from './types.js';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax.js';
 import jwt from 'jsonwebtoken';
-import _ from 'lodash';
 import { getWorkspaceWebsiteDateRange } from '../model/workspace.js';
 import { isCuid } from '@paralleldrive/cuid2';
 import { getMinimumUnit } from '@tianji/shared';

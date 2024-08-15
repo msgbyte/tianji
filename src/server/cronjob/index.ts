@@ -6,9 +6,9 @@ import { FeedChannelNotifyFrequency, Prisma } from '@prisma/client';
 import { env } from '../utils/env.js';
 import { sendNotification } from '../model/notification/index.js';
 import { token } from '../model/notification/token/index.js';
-import _ from 'lodash';
 import pMap from 'p-map';
 import { sendFeedEventsNotify } from '../model/feed/event.js';
+import { get } from 'lodash-es';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -368,7 +368,7 @@ async function dailyHTTPCertCheckNotify() {
         continue;
       }
 
-      const content = `[${m.name}][${_.get(m.payload, 'url')}] Certificate will be expired in ${daysRemaining} days`;
+      const content = `[${m.name}][${get(m.payload, 'url')}] Certificate will be expired in ${daysRemaining} days`;
 
       try {
         await sendNotification(n, content, [token.text(content)]).catch(

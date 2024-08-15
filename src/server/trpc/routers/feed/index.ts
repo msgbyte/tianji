@@ -13,7 +13,6 @@ import {
   FeedEventModelSchema,
 } from '../../../prisma/zod/index.js';
 import { prisma } from '../../../model/_client.js';
-import _ from 'lodash';
 import {
   buildFeedPublicOpenapi,
   feedIntegrationRouter,

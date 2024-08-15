@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { OpenApiMetaInfo, publicProcedure, router } from '../../trpc.js';
 import { prisma } from '../../../model/_client.js';
-import _ from 'lodash';
 import { OpenApiMeta } from 'trpc-openapi';
 import { OPENAPI_TAG } from '../../../utils/const.js';
 import { createFeedEvent } from '../../../model/feed/event.js';
 import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';
 import { logger } from '../../../utils/logger.js';
+import { get, map } from 'lodash-es';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -45,17 +45,17 @@ export const feedIntegrationRouter = router({
       }
 
       if (eventType === 'push') {
-        const pusherName = _.get(data, 'pusher.name');
-        const pusherEmail = _.get(data, 'pusher.email');
-        const commits = _.map(_.get(data, 'commits') as any[], (val) =>
+        const pusherName = get(data, 'pusher.name');
+        const pusherEmail = get(data, 'pusher.email');
+        const commits = map(get(data, 'commits') as any[], (val) =>
           String(val.id).substring(0, 9)
         ).join(', ');
-        const fullName = _.get(data, 'repository.full_name');
-        const repoUrl = _.get(data, 'repository.html_url');
-        const ref = String(_.get(data, 'ref'));
-        const senderId = String(_.get(data, 'sender.id'));
-        const senderName = String(_.get(data, 'sender.login'));
-        const url = String(_.get(data, 'compare'));
+        const fullName = get(data, 'repository.full_name');
+        const repoUrl = get(data, 'repository.html_url');
+        const ref = String(get(data, 'ref'));
+        const senderId = String(get(data, 'sender.id'));
+        const senderName = String(get(data, 'sender.login'));
+        const url = String(get(data, 'compare'));
 
         await createFeedEvent(workspaceId, {
           channelId: channelId,
@@ -71,13 +71,13 @@ export const feedIntegrationRouter = router({
 
         return 'ok';
       } else if (eventType === 'star') {
-        const starCount = _.get(data, 'repository.stargazers_count');
-        const fullName = _.get(data, 'repository.full_name');
-        const repoUrl = _.get(data, 'repository.html_url');
-        const senderId = String(_.get(data, 'sender.id'));
-        const senderName = String(_.get(data, 'sender.login'));
-        const senderUrl = String(_.get(data, 'sender.html_url'));
-        const url = String(_.get(data, 'compare'));
+        const starCount = get(data, 'repository.stargazers_count');
+        const fullName = get(data, 'repository.full_name');
+        const repoUrl = get(data, 'repository.html_url');
+        const senderId = String(get(data, 'sender.id'));
+        const senderName = String(get(data, 'sender.login'));
+        const senderUrl = String(get(data, 'sender.html_url'));
+        const url = String(get(data, 'compare'));
 
         await createFeedEvent(workspaceId, {
           channelId: channelId,
@@ -93,14 +93,14 @@ export const feedIntegrationRouter = router({
 
         return 'ok';
       } else if (eventType === 'issues') {
-        const action = _.get(data, 'action') as 'opened' | 'closed';
-        const starCount = _.get(data, 'repository.stargazers_count');
-        const fullName = _.get(data, 'repository.full_name');
-        const repoUrl = _.get(data, 'repository.html_url');
-        const senderId = String(_.get(data, 'sender.id'));
-        const senderName = String(_.get(data, 'sender.login'));
-        const url = String(_.get(data, 'issue.url'));
-        const title = String(_.get(data, 'issue.title'));
+        const action = get(data, 'action') as 'opened' | 'closed';
+        const starCount = get(data, 'repository.stargazers_count');
+        const fullName = get(data, 'repository.full_name');
+        const repoUrl = get(data, 'repository.html_url');
+        const senderId = String(get(data, 'sender.id'));
+        const senderName = String(get(data, 'sender.login'));
+        const url = String(get(data, 'issue.url'));
+        const title = String(get(data, 'issue.title'));
 
         let eventName = eventType;
         let eventContent = '';

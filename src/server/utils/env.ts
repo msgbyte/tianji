@@ -1,6 +1,6 @@
 import { v1 as uuid } from 'uuid';
 import md5 from 'md5';
-import _ from 'lodash';
+import { compact } from 'lodash-es';
 
 const jwtSecret =
   !process.env.JWT_SECRET ||
@@ -14,7 +14,7 @@ export const env = {
   jwtSecret,
   port: Number(process.env.PORT || 12345),
   auth: {
-    provider: _.compact([
+    provider: compact([
       !!process.env.EMAIL_SERVER && 'email',
       !!process.env.AUTH_GITHUB_ID && 'github',
       !!process.env.AUTH_GOOGLE_ID && 'google',

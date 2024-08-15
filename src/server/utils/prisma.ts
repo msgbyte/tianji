@@ -1,10 +1,10 @@
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
-import _ from 'lodash';
 import { loadWebsite } from '../model/website.js';
 import { maxDate } from './common.js';
 import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
 import { loadTelemetry } from '../model/telemetry.js';
+import { get } from 'lodash-es';
 
 const POSTGRESQL_DATE_FORMATS = {
   minute: 'YYYY-MM-DD HH24:MI:00',
@@ -136,7 +136,7 @@ export function getWebsiteFilterQuery(
   const query = Object.keys(filters).reduce<string[]>((arr, name) => {
     const value: any = filters[name as keyof WebsiteQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
-    const column = _.get(FILTER_COLUMNS, name, options?.columns?.[name]);
+    const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
     // TODO
 
@@ -163,7 +163,7 @@ export function getTelemetryFilterQuery(
   const query = Object.keys(filters).reduce<string[]>((arr, name) => {
     const value: any = filters[name as keyof BaseQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
-    const column = _.get(FILTER_COLUMNS, name, options?.columns?.[name]);
+    const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
     // TODO
 

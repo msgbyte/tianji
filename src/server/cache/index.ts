@@ -1,5 +1,5 @@
 import { caching, MemoryCache } from 'cache-manager';
-import _ from 'lodash';
+import { uniqueId } from 'lodash-es';
 
 let _cacheManager: MemoryCache;
 export async function getCacheManager() {
@@ -20,7 +20,7 @@ export async function getCacheManager() {
 export function buildQueryWithCache<T, Args extends any[]>(
   fetchFn: (...args: Args) => Promise<T>
 ) {
-  const id = _.uniqueId('cache-query');
+  const id = uniqueId('cache-query');
 
   const get = async (...args: Args): Promise<T> => {
     const key = [id, ...args.map((a) => JSON.stringify(a))].join('|');
