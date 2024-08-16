@@ -1,5 +1,26 @@
 
 
+## [1.13.1](https://github.com/msgbyte/tianji/compare/v1.13.0...v1.13.1) (2024-08-16)
+
+
+### Features
+
+* add feed template string of survey ([22fc5f9](https://github.com/msgbyte/tianji/commit/22fc5f98f8b646d6505a7a518074f5ce3f40215f))
+* add FeedChannelPicker component ([5f6147e](https://github.com/msgbyte/tianji/commit/5f6147e3b6329c6fbeb7f8b1ac981f38fbe3e97a))
+* add survey result send to feed channel feature ([d986210](https://github.com/msgbyte/tianji/commit/d9862105edd0f528dcf91d29142eaca9d78a8001))
+
+
+### Document
+
+* remove unmaintained readme ([5447f53](https://github.com/msgbyte/tianji/commit/5447f53b303fd43f8121fe9cccf5efc0326b7ace))
+
+
+### Others
+
+* fix ci problem ([3e3dc4c](https://github.com/msgbyte/tianji/commit/3e3dc4c22d765d7eea1d38e9f85c913982c656b6))
+* remove lodash ([49d0da3](https://github.com/msgbyte/tianji/commit/49d0da3a6d54a65db7e11b1e9bb2e45fee228bdc))
+* upgrade i18next-toolkit version ([59840b5](https://github.com/msgbyte/tianji/commit/59840b5f7b1cde4e6173dc1fa3b1bf39d3f701a7))
+
 ## [1.13.0](https://github.com/msgbyte/tianji/compare/v1.12.1...v1.13.0) (2024-08-11)
 
 
