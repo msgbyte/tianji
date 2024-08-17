@@ -1,4 +1,3 @@
-import { CalendarOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { useMemo, useReducer } from 'react';
 import { getMinimumUnit } from '@tianji/shared';

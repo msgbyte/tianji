@@ -120,7 +120,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
           </span>
         )}
 
-        <div className="flex-1">
+        <div className="flex-1 overflow-hidden">
           <HealthBar size={size} beats={beats} />
         </div>
 
@@ -129,7 +129,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
             {last(beats)?.status === 'health' ? (
               <div
                 className={clsx(
-                  'rounded-full bg-green-500 px-4 py-1 text-lg font-bold text-white',
+                  'ml-2 rounded-full bg-green-500 px-4 py-1 text-lg font-bold text-white',
                   {
                     'text-sm': size === 'small',
                   }
@@ -140,7 +140,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
             ) : last(beats)?.status === 'error' ? (
               <div
                 className={clsx(
-                  'rounded-full bg-red-600 px-4 py-1 text-lg font-bold text-white',
+                  'ml-2 rounded-full bg-red-600 px-4 py-1 text-lg font-bold text-white',
                   {
                     'text-sm': size === 'small',
                   }
@@ -151,7 +151,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
             ) : (
               <div
                 className={clsx(
-                  'rounded-full bg-gray-400 px-4 py-1 text-lg font-bold text-white',
+                  'ml-2 rounded-full bg-gray-400 px-4 py-1 text-lg font-bold text-white',
                   {
                     'text-sm': size === 'small',
                   }

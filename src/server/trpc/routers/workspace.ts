@@ -133,6 +133,7 @@ export const workspaceRouter = router({
         workspaceId: z.string(),
       })
     )
+    .output(z.void())
     .mutation(async ({ input, ctx }) => {
       const { workspaceId } = input;
       const userId = ctx.user.id;
