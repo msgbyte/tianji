@@ -8,11 +8,11 @@ import {
   LuFilePieChart,
   LuGithub,
   LuMonitor,
-  LuNetwork,
   LuServer,
   LuSiren,
   LuUsers2,
   LuWifi,
+  LuActivitySquare,
 } from 'react-icons/lu';
 import { FaDocker } from 'react-icons/fa';
 import { RiSurveyLine } from 'react-icons/ri';
@@ -162,6 +162,13 @@ export const HomepageFeatures: React.FC = React.memo(() => {
                 <RiSurveyLine className="block" size={18} />
               </div>
               <div className="text-md font-bold text-white">Survey</div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <div className="rounded-lg bg-white bg-opacity-20 p-1">
+                <LuActivitySquare className="block" size={18} />
+              </div>
+              <div className="text-md font-bold text-white">Feeds</div>
             </div>
           </div>
         </div>
