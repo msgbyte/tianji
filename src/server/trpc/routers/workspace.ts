@@ -1,5 +1,6 @@
 import {
   OpenApiMetaInfo,
+  protectProedure,
   publicProcedure,
   router,
   workspaceOwnerProcedure,
@@ -7,13 +8,119 @@ import {
 } from '../trpc.js';
 import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
-import { workspaceDashboardLayoutSchema } from '../../model/_schema/index.js';
+import {
+  userInfoSchema,
+  workspaceDashboardLayoutSchema,
+} from '../../model/_schema/index.js';
 import { Prisma } from '@prisma/client';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import { getServerCount } from '../../model/serverStatus.js';
+import { ROLES, slugRegex } from '@tianji/shared';
+import { createUserSelect } from '../../model/user.js';
 
 export const workspaceRouter = router({
+  create: protectProedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'POST',
+        path: '/create',
+      })
+    )
+    .input(
+      z.object({
+        name: z
+          .string()
+          .max(60)
+          .min(4)
+          .regex(slugRegex, { message: 'no a valid name' }),
+      })
+    )
+    .output(userInfoSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { name } = input;
+      const userId = ctx.user.id;
+
+      const existed = await prisma.workspace.findFirst({
+        where: {
+          name,
+        },
+      });
+
+      if (existed) {
+        throw new Error('This workspace has been existed');
+      }
+
+      const userInfo = await prisma.$transaction(async (p) => {
+        const newWorkspace = await p.workspace.create({
+          data: {
+            name,
+          },
+        });
+
+        return await p.user.update({
+          data: {
+            currentWorkspaceId: newWorkspace.id,
+            workspaces: {
+              create: {
+                workspaceId: newWorkspace.id,
+                role: ROLES.owner,
+              },
+            },
+          },
+          where: {
+            id: userId,
+          },
+          select: createUserSelect,
+        });
+      });
+
+      return userInfo;
+    }),
+  switch: protectProedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'POST',
+        path: '/switch',
+      })
+    )
+    .input(
+      z.object({
+        workspaceId: z.string(),
+      })
+    )
+    .output(userInfoSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.user.id;
+      const { workspaceId } = input;
+
+      const targetWorkspace = await prisma.workspace.findFirst({
+        where: {
+          id: workspaceId,
+          users: {
+            some: {
+              userId,
+            },
+          },
+        },
+      });
+
+      if (!targetWorkspace) {
+        throw new Error('Target Workspace not found!');
+      }
+
+      const userInfo = await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          currentWorkspaceId: targetWorkspace.id,
+        },
+        select: createUserSelect,
+      });
+
+      return userInfo;
+    }),
   getUserWorkspaceRole: publicProcedure
     .input(
       z.object({
@@ -40,7 +147,7 @@ export const workspaceRouter = router({
     .meta(
       buildWorkspaceOpenapi({
         method: 'GET',
-        path: '/getServiceCount',
+        path: '/{workspaceId}/getServiceCount',
       })
     )
     .output(
@@ -103,6 +210,9 @@ export const workspaceRouter = router({
         feed,
       };
     }),
+  /**
+   * @deprecated
+   */
   updateDashboardOrder: workspaceOwnerProcedure
     .input(
       z.object({
@@ -121,6 +231,9 @@ export const workspaceRouter = router({
         },
       });
     }),
+  /**
+   * @deprecated
+   */
   saveDashboardLayout: workspaceOwnerProcedure
     .input(
       z.object({
@@ -147,7 +260,7 @@ function buildWorkspaceOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       tags: [OPENAPI_TAG.WORKSPACE],
       protect: true,
       ...meta,
-      path: `/workspace/{workspaceId}${meta.path}`,
+      path: `/workspace/${meta.path}`,
     },
   };
 }

@@ -54,6 +54,7 @@ const AvatarFallback = React.forwardRef<
       'bg-muted flex h-full w-full items-center justify-center rounded-full',
       className
     )}
+    delayMs={5000}
     {...props}
   />
 ));

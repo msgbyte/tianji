@@ -21,7 +21,7 @@ export async function getUserCount(): Promise<number> {
   return count;
 }
 
-const createUserSelect = {
+export const createUserSelect = {
   id: true,
   username: true,
   nickname: true,

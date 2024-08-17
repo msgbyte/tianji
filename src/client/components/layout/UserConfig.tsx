@@ -16,13 +16,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useEvent } from '@/hooks/useEvent';
 import { useSettingsStore } from '@/store/settings';
-import { useCurrentWorkspaceId, useUserInfo, useUserStore } from '@/store/user';
+import {
+  setUserInfo,
+  useCurrentWorkspaceId,
+  useUserInfo,
+  useUserStore,
+} from '@/store/user';
 import { languages } from '@/utils/constants';
 import { useTranslation, setLanguage } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { version } from '@/utils/env';
 import React from 'react';
 import { LuMoreVertical } from 'react-icons/lu';
+import { trpc } from '@/api/trpc';
 
 interface UserConfigProps {
   isCollapsed: boolean;
@@ -45,6 +51,11 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
     }
 
     return [];
+  });
+  const switchWorkspaceMutation = trpc.workspace.switch.useMutation({
+    onSuccess: (userInfo) => {
+      setUserInfo(userInfo);
+    },
   });
 
   const handleChangeColorSchema = useEvent((colorScheme) => {
@@ -125,7 +136,12 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
                     <DropdownMenuRadioItem
                       key={workspace.id}
                       value={workspace.id}
-                      disabled={true}
+                      disabled={workspace.id === workspaceId}
+                      onSelect={() =>
+                        switchWorkspaceMutation.mutateAsync({
+                          workspaceId: workspace.id,
+                        })
+                      }
                     >
                       {workspace.name}
                     </DropdownMenuRadioItem>

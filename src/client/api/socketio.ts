@@ -12,6 +12,11 @@ const useSocketStore = create<{
 }));
 
 export function createSocketIOClient(workspaceId: string) {
+  const prev = useSocketStore.getState().socket;
+  if (prev) {
+    prev.disconnect();
+  }
+
   const socket = io(`/${workspaceId}`, {
     transports: ['websocket'],
     reconnectionDelayMax: 10000,
