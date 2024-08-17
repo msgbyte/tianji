@@ -121,6 +121,34 @@ export const workspaceRouter = router({
 
       return userInfo;
     }),
+  delete: workspaceOwnerProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'DELETE',
+        path: '/{workspaceId}',
+      })
+    )
+    .input(
+      z.object({
+        workspaceId: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { workspaceId } = input;
+      const userId = ctx.user.id;
+
+      await prisma.workspace.delete({
+        where: {
+          id: workspaceId,
+          users: {
+            some: {
+              userId,
+              role: ROLES.owner,
+            },
+          },
+        },
+      });
+    }),
   getUserWorkspaceRole: publicProcedure
     .input(
       z.object({
