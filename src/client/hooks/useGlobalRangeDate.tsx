@@ -4,6 +4,7 @@ import { getMinimumUnit } from '@tianji/shared';
 import { DateRange, useGlobalStateStore } from '../store/global';
 import { DateUnit } from '../utils/date';
 import { useTranslation } from '@i18next-toolkit/react';
+import { CalendarOutlined } from '@ant-design/icons';
 
 export function useGlobalRangeDate(): {
   label: React.ReactNode;

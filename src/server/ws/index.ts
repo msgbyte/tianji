@@ -26,6 +26,7 @@ export function initSocketio(httpServer: HTTPServer) {
       try {
         const token = socket.handshake.auth['token'];
         let user: UserAuthPayload;
+
         if (token) {
           user = jwtVerify(token);
         } else {
