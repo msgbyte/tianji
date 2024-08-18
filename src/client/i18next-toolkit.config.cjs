@@ -4,9 +4,10 @@ const config = {
   verbose: true,
   namespaces: ['translation'],
   translator: {
-    type: 'prompt',
+    // type: 'prompt',
+    type: 'openai',
     openai: {
-      modelName: 'gpt-4',
+      modelName: 'gpt-4o-mini',
     },
   },
   scanner: {
