@@ -18,6 +18,7 @@ import { OpenApiMeta } from 'trpc-openapi';
 import { getServerCount } from '../../model/serverStatus.js';
 import { ROLES, slugRegex } from '@tianji/shared';
 import { createUserSelect } from '../../model/user.js';
+import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -149,6 +150,48 @@ export const workspaceRouter = router({
           },
         },
       });
+    }),
+  members: workspaceProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'GET',
+        path: '/{workspaceId}/members',
+      })
+    )
+    .output(
+      z.array(
+        WorkspacesOnUsersModelSchema.merge(
+          z.object({
+            user: z.object({
+              username: z.string(),
+              nickname: z.string().nullable(),
+              email: z.string().nullable(),
+              emailVerified: z.date().nullable(),
+            }),
+          })
+        )
+      )
+    )
+    .query(async ({ input }) => {
+      const { workspaceId } = input;
+
+      const list = await prisma.workspacesOnUsers.findMany({
+        where: {
+          workspaceId,
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              nickname: true,
+              email: true,
+              emailVerified: true,
+            },
+          },
+        },
+      });
+
+      return list;
     }),
   getUserWorkspaceRole: publicProcedure
     .input(

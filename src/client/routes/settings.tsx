@@ -35,6 +35,11 @@ function PageComponent() {
       href: '/settings/notifications',
     },
     {
+      id: 'workspace',
+      title: t('Workspace'),
+      href: '/settings/workspace',
+    },
+    {
       id: 'auditLog',
       title: t('Audit Log'),
       href: '/settings/auditLog',
