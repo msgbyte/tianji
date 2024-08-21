@@ -102,9 +102,8 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
               role="combobox"
               aria-expanded={open}
               className={cn(
-                'w-full justify-between',
-                props.isCollapsed &&
-                  'flex h-9 w-9 items-center justify-center p-0'
+                'flex w-full justify-between',
+                props.isCollapsed && 'h-9 w-9 items-center justify-center p-0'
               )}
             >
               <Avatar
@@ -120,7 +119,12 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
                 </AvatarFallback>
               </Avatar>
 
-              <span className={cn(props.isCollapsed && 'hidden')}>
+              <span
+                className={cn(
+                  'flex-1 overflow-hidden text-ellipsis',
+                  props.isCollapsed && 'hidden'
+                )}
+              >
                 {currentWorkspace.name}
               </span>
 
@@ -156,7 +160,12 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
                         </AvatarFallback>
                       </Avatar>
 
-                      {workspace.name}
+                      <span
+                        className="overflow-hidden text-ellipsis"
+                        title={workspace.name}
+                      >
+                        {workspace.name}
+                      </span>
 
                       <CheckIcon
                         className={cn(
