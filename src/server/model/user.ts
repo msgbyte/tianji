@@ -6,6 +6,7 @@ import { TRPCError } from '@trpc/server';
 import { Prisma } from '@prisma/client';
 import { AdapterUser } from '@auth/core/adapters';
 import { md5 } from '../utils/common.js';
+import { logger } from '../utils/logger.js';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -279,4 +280,63 @@ export async function changeUserPassword(
       password: await hashPassword(newPassword),
     },
   });
+}
+
+/**
+ * let user join workspace
+ */
+export async function joinWorkspace(
+  userId: string,
+  workspaceId: string,
+  role: ROLES = ROLES.readOnly
+) {
+  try {
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        workspaces: {
+          connectOrCreate: {
+            where: {
+              userId_workspaceId: {
+                userId: userId,
+                workspaceId: workspaceId,
+              },
+            },
+            create: {
+              workspaceId: workspaceId,
+              role,
+            },
+          },
+        },
+      },
+    });
+  } catch (err) {
+    logger.error(err);
+    throw new Error('Join Workspace Failed.');
+  }
+}
+
+export async function leaveWorkspace(userId: string, workspaceId: string) {
+  try {
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        workspaces: {
+          delete: {
+            userId_workspaceId: {
+              userId,
+              workspaceId,
+            },
+          },
+        },
+      },
+    });
+  } catch (err) {
+    logger.error(err);
+    throw new Error('Leave Workspace Failed.');
+  }
 }

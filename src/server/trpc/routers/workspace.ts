@@ -17,7 +17,7 @@ import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import { getServerCount } from '../../model/serverStatus.js';
 import { ROLES, slugRegex } from '@tianji/shared';
-import { createUserSelect } from '../../model/user.js';
+import { createUserSelect, joinWorkspace } from '../../model/user.js';
 import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers.js';
 
 export const workspaceRouter = router({
@@ -192,6 +192,35 @@ export const workspaceRouter = router({
       });
 
       return list;
+    }),
+  invite: workspaceOwnerProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'POST',
+        path: '/{workspaceId}/invite',
+      })
+    )
+    .input(
+      z.object({
+        targetUserEmail: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { targetUserEmail, workspaceId } = input;
+      const targetUser = await prisma.user.findUnique({
+        where: {
+          email: targetUserEmail,
+        },
+      });
+
+      if (targetUser) {
+        // if user exist
+        await joinWorkspace(targetUser.id, workspaceId);
+      } else {
+        // user not exist
+        throw new Error('Target user not existed');
+      }
     }),
   getUserWorkspaceRole: publicProcedure
     .input(
