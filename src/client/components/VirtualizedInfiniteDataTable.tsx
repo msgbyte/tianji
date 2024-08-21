@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
 //3 TanStack Libraries!!!
 import {
@@ -35,16 +35,16 @@ export function VirtualizedInfiniteDataTable<TData>(
     props;
 
   //we need a reference to the scrolling element for logic down below
-  const tableContainerRef = React.useRef<HTMLDivElement>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   //flatten the array of arrays from the useInfiniteQuery hook
-  const flatData = React.useMemo(
+  const flatData = useMemo(
     () => data?.pages?.flatMap((page) => page.items) ?? [],
     [data]
   );
 
   //called on scroll and possibly on mount to fetch more data as the user scrolls and reaches bottom of table
-  const fetchMoreOnBottomReached = React.useCallback(
+  const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
@@ -61,8 +61,8 @@ export function VirtualizedInfiniteDataTable<TData>(
     [onFetchNextPage, isFetching, hasNextPage]
   );
 
-  //a check on mount and after a fetch to see if the table is already scrolled to the bottom and immediately needs to fetch more data
-  React.useEffect(() => {
+  // a check on mount and after a fetch to see if the table is already scrolled to the bottom and immediately needs to fetch more data
+  useEffect(() => {
     fetchMoreOnBottomReached(tableContainerRef.current);
   }, [fetchMoreOnBottomReached]);
 
@@ -94,7 +94,7 @@ export function VirtualizedInfiniteDataTable<TData>(
    * we will calculate all column sizes at once at the root table level in a useMemo
    * and pass the column sizes down as CSS variables to the <table> element.
    */
-  const columnSizeVars = React.useMemo(() => {
+  const columnSizeVars = useMemo(() => {
     const headers = table.getFlatHeaders();
     const colSizes: { [key: string]: number } = {};
     for (let i = 0; i < headers.length; i++) {
@@ -118,12 +118,9 @@ export function VirtualizedInfiniteDataTable<TData>(
       {/* Even though we're still using sematic table tags, we must use CSS grid and flexbox for dynamic row heights */}
       <table style={{ display: 'grid' }}>
         <TableHeader
+          className="sticky top-0 z-10 grid"
           style={{
             ...columnSizeVars,
-            display: 'grid',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1,
           }}
         >
           {table.getHeaderGroups().map((headerGroup) => (
@@ -135,7 +132,7 @@ export function VirtualizedInfiniteDataTable<TData>(
                 return (
                   <TableHead
                     key={header.id}
-                    className="relative pt-2.5"
+                    className="relative overflow-hidden text-ellipsis text-nowrap pt-2.5"
                     style={{
                       width: `calc(var(--header-${header?.id}-size) * 1px)`,
                     }}
@@ -164,10 +161,9 @@ export function VirtualizedInfiniteDataTable<TData>(
           ))}
         </TableHeader>
         <TableBody
+          className="relative grid"
           style={{
-            display: 'grid',
             height: `${rowVirtualizer.getTotalSize()}px`, //tells scrollbar how big the table is
-            position: 'relative', //needed for absolute positioning of rows
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -177,11 +173,9 @@ export function VirtualizedInfiniteDataTable<TData>(
                 data-index={virtualRow.index} //needed for dynamic row height measurement
                 ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
                 key={row.id}
+                className="absolute flex w-full"
                 style={{
-                  display: 'flex',
-                  position: 'absolute',
                   transform: `translateY(${virtualRow.start}px)`, //this should always be a `style` as it changes on scroll
-                  width: '100%',
                 }}
               >
                 {row.getVisibleCells().map((cell) => {
@@ -196,8 +190,8 @@ export function VirtualizedInfiniteDataTable<TData>(
                   return (
                     <TableCell
                       key={cell.id}
+                      className="flex"
                       style={{
-                        display: 'flex',
                         width: cell.column.getSize(),
                       }}
                     >

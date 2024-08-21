@@ -23,6 +23,7 @@ import dayjs from 'dayjs';
 import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
 import { Scrollbar } from '@radix-ui/react-scroll-area';
 import { VirtualizedInfiniteDataTable } from '@/components/VirtualizedInfiniteDataTable';
+import { Loading } from '@/components/Loading';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -52,6 +53,7 @@ function PageComponent() {
     fetchNextPage,
     isFetching,
     isLoading,
+    isInitialLoading,
   } = trpc.survey.resultList.useInfiniteQuery(
     {
       workspaceId,
@@ -152,14 +154,18 @@ function PageComponent() {
         <div className="mb-2 text-lg font-bold">{t('Preview')}</div>
 
         <div className="flex-1 overflow-hidden">
-          <VirtualizedInfiniteDataTable
-            columns={columns}
-            data={resultList}
-            onFetchNextPage={fetchNextPage}
-            isFetching={isFetching}
-            isLoading={isLoading}
-            hasNextPage={hasNextPage}
-          />
+          {isInitialLoading ? (
+            <Loading />
+          ) : (
+            <VirtualizedInfiniteDataTable
+              columns={columns}
+              data={resultList}
+              onFetchNextPage={fetchNextPage}
+              isFetching={isFetching}
+              isLoading={isLoading}
+              hasNextPage={hasNextPage}
+            />
+          )}
         </div>
       </div>
     </CommonWrapper>
