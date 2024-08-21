@@ -17,7 +17,11 @@ import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-openapi';
 import { getServerCount } from '../../model/serverStatus.js';
 import { ROLES, slugRegex } from '@tianji/shared';
-import { createUserSelect, joinWorkspace } from '../../model/user.js';
+import {
+  createUserSelect,
+  joinWorkspace,
+  leaveWorkspace,
+} from '../../model/user.js';
 import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers.js';
 
 export const workspaceRouter = router({
@@ -221,6 +225,25 @@ export const workspaceRouter = router({
         // user not exist
         throw new Error('Target user not existed');
       }
+    }),
+  tick: workspaceOwnerProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'DELETE',
+        path: '/{workspaceId}/tick',
+        description: 'Administrator kicks a user out of a workspace.',
+      })
+    )
+    .input(
+      z.object({
+        targetUserId: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { targetUserId, workspaceId } = input;
+
+      leaveWorkspace(targetUserId, workspaceId);
     }),
   getUserWorkspaceRole: publicProcedure
     .input(
