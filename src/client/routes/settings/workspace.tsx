@@ -5,28 +5,81 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCurrentWorkspace } from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
 import { Typography } from 'antd';
-import { AppRouterOutput, trpc } from '@/api/trpc';
+import {
+  AppRouterOutput,
+  defaultErrorHandler,
+  defaultSuccessHandler,
+  trpc,
+} from '@/api/trpc';
 import { createColumnHelper, DataTable } from '@/components/DataTable';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { get } from 'lodash-es';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+import { useEventWithLoading } from '@/hooks/useEvent';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });
 
+const inviteFormSchema = z.object({
+  email: z.string().email(),
+});
+
+type InviteFormValues = z.infer<typeof inviteFormSchema>;
+
 type MemberInfo = AppRouterOutput['workspace']['members'][number];
 const columnHelper = createColumnHelper<MemberInfo>();
 
 function PageComponent() {
   const { t } = useTranslation();
-  const { id, name } = useCurrentWorkspace();
-  const { data: members = [] } = trpc.workspace.members.useQuery({
-    workspaceId: id,
+  const { id: workspaceId, name } = useCurrentWorkspace();
+  const { data: members = [], refetch: refetchMembers } =
+    trpc.workspace.members.useQuery({
+      workspaceId,
+    });
+  const form = useForm<InviteFormValues>({
+    resolver: zodResolver(inviteFormSchema),
+    defaultValues: {
+      email: '',
+    },
   });
+  const inviteMutation = trpc.workspace.invite.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
+
+  const [handleInvite, isLoading] = useEventWithLoading(
+    async (values: InviteFormValues) => {
+      await inviteMutation.mutateAsync({
+        workspaceId,
+        targetUserEmail: values.email,
+      });
+
+      refetchMembers();
+    }
+  );
 
   const columns = useMemo(() => {
     return [
@@ -72,12 +125,44 @@ function PageComponent() {
                 <span className="mr-2">{t('Workspace ID')}:</span>
                 <span>
                   <Typography.Text code={true} copyable={true}>
-                    {id}
+                    {workspaceId}
                   </Typography.Text>
                 </span>
               </div>
             </CardContent>
           </Card>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleInvite)}>
+              <Card>
+                <CardHeader className="text-lg font-bold">
+                  {t('Invite new members by email address')}
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="max-w-[320px]">
+                        <FormLabel />
+                        <FormControl>
+                          <Input placeholder="jane@example.com" {...field} />
+                        </FormControl>
+                        <FormDescription />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+
+                <CardFooter>
+                  <Button type="submit" loading={isLoading}>
+                    {t('Invite')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </form>
+          </Form>
 
           <Card>
             <CardHeader className="text-lg font-bold">
