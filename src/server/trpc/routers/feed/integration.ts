@@ -78,18 +78,33 @@ export const feedIntegrationRouter = router({
         const senderName = String(get(data, 'sender.login'));
         const senderUrl = String(get(data, 'sender.html_url'));
         const url = String(get(data, 'compare'));
+        const action = String(get(data, 'action'));
 
-        await createFeedEvent(workspaceId, {
-          channelId: channelId,
-          eventName: eventType,
-          eventContent: `[${senderName}](${senderUrl}) star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
-          tags: [],
-          source: 'github',
-          senderId,
-          senderName,
-          important: false,
-          url,
-        });
+        if (action === 'created') {
+          await createFeedEvent(workspaceId, {
+            channelId: channelId,
+            eventName: eventType,
+            eventContent: `[${senderName}](${senderUrl}) star repo [${fullName}](${repoUrl}), now is ${starCount}.`,
+            tags: [],
+            source: 'github',
+            senderId,
+            senderName,
+            important: false,
+            url,
+          });
+        } else if (action === 'deleted') {
+          await createFeedEvent(workspaceId, {
+            channelId: channelId,
+            eventName: eventType,
+            eventContent: `[${senderName}](${senderUrl}) unstar repo [${fullName}](${repoUrl}), now is ${starCount}.`,
+            tags: [],
+            source: 'github',
+            senderId,
+            senderName,
+            important: false,
+            url,
+          });
+        }
 
         return 'ok';
       } else if (eventType === 'issues') {
@@ -115,8 +130,8 @@ export const feedIntegrationRouter = router({
         if (eventContent) {
           await createFeedEvent(workspaceId, {
             channelId: channelId,
-            eventName: eventName,
-            eventContent: `${senderName} star repo [${fullName}], now is ${starCount}.`,
+            eventName,
+            eventContent,
             tags: [],
             source: 'github',
             senderId,
