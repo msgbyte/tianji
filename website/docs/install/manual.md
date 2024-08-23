@@ -59,6 +59,22 @@ pm2 start ./dist/src/server/main.js --name tianji
 
 Default, `Tianji` will run on http://localhost:12345
 
+## Update Code to new Version
+
+```bash
+# Checkout new release/tags
+cd tianji
+git fetch --tags
+git checkout -q <version>
+
+# run db migrations
+cd src/server
+pnpm db:migrate:apply
+
+# Restart Server
+pm2 restart tianji
+```
+
 # Frequently Asked Questions
 
 ## Install `isolated-vm` failed
