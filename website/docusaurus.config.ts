@@ -49,7 +49,7 @@ const config: Config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           routeBasePath: '/docs',
-          editUrl: 'https://github.com/msgbyte/tianji/tree/main/website/',
+          editUrl: 'https://github.com/msgbyte/tianji/tree/master/website/',
         },
         theme: {
           customCss: [
