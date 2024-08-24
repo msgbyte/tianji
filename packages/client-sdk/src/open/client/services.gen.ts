@@ -56,14 +56,116 @@ export class UserService {
 export class WorkspaceService {
     /**
      * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceCreate(data: $OpenApiTs['/workspace//create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//create']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace//create',
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceSwitch(data: $OpenApiTs['/workspace//switch']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//switch']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace//switch',
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceGetServiceCount(data: $OpenApiTs['/workspace/{workspaceId}/getServiceCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/getServiceCount']['get']['res'][200]> {
+    public static workspaceDelete(data: $OpenApiTs['/workspace//{workspaceId}']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace//{workspaceId}',
+            path: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceMembers(data: $OpenApiTs['/workspace//{workspaceId}/members']['get']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/members']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/getServiceCount',
+            url: '/workspace//{workspaceId}/members',
+            path: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceInvite(data: $OpenApiTs['/workspace//{workspaceId}/invite']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/invite']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace//{workspaceId}/invite',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * Administrator kicks a user out of a workspace.
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.targetUserId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceTick(data: $OpenApiTs['/workspace//{workspaceId}/tick']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/tick']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace//{workspaceId}/tick',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            query: {
+                targetUserId: data.targetUserId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceGetServiceCount(data: $OpenApiTs['/workspace//{workspaceId}/getServiceCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/getServiceCount']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace//{workspaceId}/getServiceCount',
             path: {
                 workspaceId: data.workspaceId
             }
@@ -998,10 +1100,11 @@ export class SurveyService {
      * @param data.workspaceId
      * @param data.surveyId
      * @param data.requestBody
-     * @returns unknown Successful response
+     * @returns string Successful response
+     * @returns unknown Error response
      * @throws ApiError
      */
-    public static surveySubmit(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200]> {
+    public static surveySubmit(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/workspace/{workspaceId}/survey/{surveyId}/submit',
@@ -1299,6 +1402,24 @@ export class FeedService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/github',
+            path: {
+                channelId: data.channelId
+            }
+        });
+    }
+    
+    /**
+     * integrate with tencent-cloud webhook
+     * @param data The data for the request.
+     * @param data.channelId
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static feedIntegrationTencentCloudAlarm(data: $OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/{channelId}/tencent-cloud/alarm',
             path: {
                 channelId: data.channelId
             }

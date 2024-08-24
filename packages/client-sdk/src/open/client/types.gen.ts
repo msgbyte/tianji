@@ -15,6 +15,7 @@ export type $OpenApiTs = {
                     alphaMode: boolean;
                     disableAnonymousTelemetry: boolean;
                     customTrackerScriptName?: string;
+                    authProvider: Array<(string)>;
                 };
             };
         };
@@ -33,21 +34,18 @@ export type $OpenApiTs = {
                  */
                 200: {
                     info: {
-                        username: string;
                         id: string;
                         role: string;
+                        username: string;
+                        nickname: string | null;
+                        avatar: string | null;
+                        email: string | null;
                         createdAt: string;
                         updatedAt: string;
                         deletedAt: string | null;
                         currentWorkspace: {
                             id: string;
                             name: string;
-                            dashboardLayout: {
-                                layouts: {
-                                    [key: string]: (unknown[]);
-                                };
-                                items: unknown[];
-                            } | null;
                         };
                         workspaces: Array<{
                             role: string;
@@ -75,21 +73,18 @@ export type $OpenApiTs = {
                  */
                 200: {
                     info: {
-                        username: string;
                         id: string;
                         role: string;
+                        username: string;
+                        nickname: string | null;
+                        avatar: string | null;
+                        email: string | null;
                         createdAt: string;
                         updatedAt: string;
                         deletedAt: string | null;
                         currentWorkspace: {
                             id: string;
                             name: string;
-                            dashboardLayout: {
-                                layouts: {
-                                    [key: string]: (unknown[]);
-                                };
-                                items: unknown[];
-                            } | null;
                         };
                         workspaces: Array<{
                             role: string;
@@ -104,7 +99,147 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/getServiceCount': {
+    '/workspace//create': {
+        post: {
+            req: {
+                requestBody: {
+                    name: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    role: string;
+                    username: string;
+                    nickname: string | null;
+                    avatar: string | null;
+                    email: string | null;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt: string | null;
+                    currentWorkspace: {
+                        id: string;
+                        name: string;
+                    };
+                    workspaces: Array<{
+                        role: string;
+                        workspace: {
+                            id: string;
+                            name: string;
+                        };
+                    }>;
+                };
+            };
+        };
+    };
+    '/workspace//switch': {
+        post: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    role: string;
+                    username: string;
+                    nickname: string | null;
+                    avatar: string | null;
+                    email: string | null;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt: string | null;
+                    currentWorkspace: {
+                        id: string;
+                        name: string;
+                    };
+                    workspaces: Array<{
+                        role: string;
+                        workspace: {
+                            id: string;
+                            name: string;
+                        };
+                    }>;
+                };
+            };
+        };
+    };
+    '/workspace//{workspaceId}': {
+        delete: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+            };
+        };
+    };
+    '/workspace//{workspaceId}/members': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    userId: string;
+                    workspaceId: string;
+                    role: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    user: {
+                        username: string;
+                        nickname: string | null;
+                        email: string | null;
+                        emailVerified: string | null;
+                    };
+                }>;
+            };
+        };
+    };
+    '/workspace//{workspaceId}/invite': {
+        post: {
+            req: {
+                requestBody: {
+                    targetUserEmail: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+            };
+        };
+    };
+    '/workspace//{workspaceId}/tick': {
+        delete: {
+            req: {
+                targetUserId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+            };
+        };
+    };
+    '/workspace//{workspaceId}/getServiceCount': {
         get: {
             req: {
                 workspaceId: string;
@@ -1095,6 +1230,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
                     createdAt: string;
                     updatedAt: string;
                 }>;
@@ -1123,6 +1260,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
                     createdAt: string;
                     updatedAt: string;
                 } | null;
@@ -1181,9 +1320,15 @@ export type $OpenApiTs = {
             };
             res: {
                 /**
-                 * Successful response
+                 * Error response
                  */
-                200: unknown;
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
             };
         };
     };
@@ -1200,6 +1345,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
                 };
                 workspaceId: string;
             };
@@ -1219,6 +1366,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1238,6 +1387,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds?: Array<(string)>;
+                    feedTemplate?: string;
                 };
                 surveyId: string;
                 workspaceId: string;
@@ -1258,6 +1409,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1286,6 +1439,8 @@ export type $OpenApiTs = {
                             options?: Array<(string)>;
                         }>;
                     };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1372,6 +1527,8 @@ export type $OpenApiTs = {
                     websiteAcceptedCount: number;
                     websiteEventCount: number;
                     monitorExecutionCount: number;
+                    surveyCount: number;
+                    feedEventCount: number;
                 };
             };
         };
@@ -1389,7 +1546,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
                     _count: {
@@ -1414,7 +1571,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
                 } | null;
@@ -1428,7 +1585,7 @@ export type $OpenApiTs = {
                 requestBody: {
                     notificationIds?: Array<(string)>;
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                 };
                 workspaceId: string;
             };
@@ -1441,7 +1598,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
                 } | null;
@@ -1485,7 +1642,7 @@ export type $OpenApiTs = {
             req: {
                 requestBody: {
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     notificationIds?: Array<(string)>;
                 };
                 workspaceId: string;
@@ -1499,7 +1656,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1520,7 +1677,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    notifyFrequency: string;
+                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1563,6 +1720,25 @@ export type $OpenApiTs = {
         };
     };
     '/feed/{channelId}/github': {
+        post: {
+            req: {
+                channelId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
+            };
+        };
+    };
+    '/feed/{channelId}/tencent-cloud/alarm': {
         post: {
             req: {
                 channelId: string;
