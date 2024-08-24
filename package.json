@@ -18,7 +18,7 @@
     "build:server": "cd src/server && pnpm build",
     "build:tracker": "tsx scripts/build-tracker.ts",
     "build:geo": "tsx scripts/build-geo.ts",
-    "build:openapi": "tsx --project ./tsconfig.base.json ./scripts/build-openapi-schema.ts && cd packages/client-sdk && pnpm generate:client",
+    "build:openapi": "tsx --tsconfig ./tsconfig.base.json ./scripts/build-openapi-schema.ts && cd packages/client-sdk && pnpm generate:client",
     "check:type": "pnpm -r check:type",
     "release": "release-it",
     "release:patch": "release-it -i patch",
