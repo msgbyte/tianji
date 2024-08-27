@@ -9,7 +9,7 @@ export const DefaultError: React.FC = React.memo(() => {
 
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <Card className="min-w-[320px] bg-zinc-900">
+      <Card className="min-w-[320px] bg-zinc-50 dark:bg-zinc-900">
         <CardHeader>
           <div className="text-center">
             <img className="m-auto h-24 w-24" src="/icon.svg" />
