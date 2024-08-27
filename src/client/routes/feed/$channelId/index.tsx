@@ -16,7 +16,7 @@ import { DialogWrapper } from '@/components/DialogWrapper';
 import { useSocketSubscribeList } from '@/api/socketio';
 import { useMemo } from 'react';
 import { DynamicVirtualList } from '@/components/DynamicVirtualList';
-import { reverse } from 'lodash-es';
+import { get, reverse } from 'lodash-es';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -127,7 +127,7 @@ function PageComponent() {
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           onFetchNextPage={fetchNextPage}
-          getItemKey={(index) => fullEvents[index].id}
+          getItemKey={(index) => get(fullEvents, [index, 'id'])}
           renderItem={(item) => (
             <FeedEventItem className="animate-fade-in mb-2" event={item} />
           )}
