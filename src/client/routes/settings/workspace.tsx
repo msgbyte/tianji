@@ -76,6 +76,7 @@ function PageComponent() {
         workspaceId,
         targetUserEmail: values.email,
       });
+      form.reset();
 
       refetchMembers();
     }

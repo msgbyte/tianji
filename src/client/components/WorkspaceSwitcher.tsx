@@ -121,7 +121,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
 
               <span
                 className={cn(
-                  'flex-1 overflow-hidden text-ellipsis',
+                  'flex-1 overflow-hidden text-ellipsis text-left',
                   props.isCollapsed && 'hidden'
                 )}
               >
