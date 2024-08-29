@@ -1,5 +1,12 @@
 
 
+## [1.14.1](https://github.com/msgbyte/tianji/compare/v1.14.0...v1.14.1) (2024-08-29)
+
+
+### Others
+
+* update pnpm version ([b9f5582](https://github.com/msgbyte/tianji/commit/b9f5582a02afffaff5777c85126e91e243ef82aa))
+
 ## [1.14.0](https://github.com/msgbyte/tianji/compare/v1.13.1...v1.14.0) (2024-08-29)
 
 
