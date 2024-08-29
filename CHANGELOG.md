@@ -1,5 +1,44 @@
 
 
+## [1.14.0](https://github.com/msgbyte/tianji/compare/v1.13.1...v1.14.0) (2024-08-29)
+
+
+### Features
+
+* add create workspace and switch workspace ([fac0838](https://github.com/msgbyte/tianji/commit/fac0838d8c7b14c7940170b733db0a33ca297b73))
+* add delete workspace endpoint ([6fecde0](https://github.com/msgbyte/tianji/commit/6fecde0caa422c25ddbb9ec564afb44031b761da))
+* add invite endpoint ([8c8b960](https://github.com/msgbyte/tianji/commit/8c8b960f61926aae415954dbef772e263d738ec5))
+* add invite user form ([e0e0449](https://github.com/msgbyte/tianji/commit/e0e044945f02451ad2b1db8041e91a738589cd5d))
+* add tick trpc endpoint ([7f33e2d](https://github.com/msgbyte/tianji/commit/7f33e2de0d0e0e1b4c2ff5d172f5d6c89e8dcd15))
+* add unstar feed ([446ddaf](https://github.com/msgbyte/tianji/commit/446ddafa0afb534e02f767457973a1594a190f8f))
+* add workspace page ([4918071](https://github.com/msgbyte/tianji/commit/491807165c7a4bd27b30961fdb3d525187d05ca3))
+
+
+### Bug Fixes
+
+* fix a style issue which workspace switch style broken with long name ([cbdb1c4](https://github.com/msgbyte/tianji/commit/cbdb1c4a079fcd19f03750dc3379f3e1aaaeb772))
+* fix some case(maybe) can not key problem ([b64ca8b](https://github.com/msgbyte/tianji/commit/b64ca8b300f2bcbbbcbdf95b4e0d9780c1f64b1b))
+* fix virtualize table loading and column style problem ([bb84661](https://github.com/msgbyte/tianji/commit/bb846616127e8ef823441b945390327a87b2f689))
+
+
+### Document
+
+* add private-policy page ([d136460](https://github.com/msgbyte/tianji/commit/d136460e39a69510e66952e76d42bca4016337a4))
+* update openapi files ([79a7a92](https://github.com/msgbyte/tianji/commit/79a7a923d247a2581cca5b0e912bcbe35a892851))
+* update website feed feature list ([ebd1e5e](https://github.com/msgbyte/tianji/commit/ebd1e5eb6648a424f078047125f31ce3a93bff03))
+
+
+### Others
+
+* add default error style problem ([3cc678f](https://github.com/msgbyte/tianji/commit/3cc678f09ec8d743f17b7b2f296475b2d37c8841))
+* fix ci problem ([f7e1c81](https://github.com/msgbyte/tianji/commit/f7e1c8114b38c740f37e69125bd31fb26e1c2a1f))
+* fix tsconfig problem in tsx ([40df49e](https://github.com/msgbyte/tianji/commit/40df49e1dbb5afda4a2d01b94e298e4f2dfaa2d5))
+* improve healthbar display, will responsive with container size ([3990b0a](https://github.com/msgbyte/tianji/commit/3990b0a872d963900f52a97e869e7f26227c8107))
+* update translation ([e983092](https://github.com/msgbyte/tianji/commit/e9830920378c71371946d526ef20335176cc8f18))
+* upgrade @radix-ui/react-scroll-area to resolve scroll problem ([b862dd7](https://github.com/msgbyte/tianji/commit/b862dd74273faa78c65de916dce0a8fdafe9e834))
+* upgrade package manager ([fa328fb](https://github.com/msgbyte/tianji/commit/fa328fb0bfe9ef47cce1d44ae16aee2628921e30))
+* workspace switcher style and submit form reset ([5f47831](https://github.com/msgbyte/tianji/commit/5f47831f8e3f8df48fd287f6c4a23cb65270c21b))
+
 ## [1.13.1](https://github.com/msgbyte/tianji/compare/v1.13.0...v1.13.1) (2024-08-16)
 
 
