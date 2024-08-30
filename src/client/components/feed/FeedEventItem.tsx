@@ -6,11 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { MarkdownViewer } from '../MarkdownEditor';
 import { FeedIcon } from './FeedIcon';
 import { cn } from '@/utils/style';
-import { Button } from '../ui/button';
-import { LuArchive } from 'react-icons/lu';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { useEvent } from '@/hooks/useEvent';
-import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
 
 type FeedEventItemType =
@@ -19,22 +15,8 @@ type FeedEventItemType =
 export const FeedEventItem: React.FC<{
   className?: string;
   event: FeedEventItemType;
-}> = React.memo(({ className, event }) => {
-  const workspaceId = useCurrentWorkspaceId();
-  const archiveEventMutation = trpc.feed.archiveEvent.useMutation();
-  const trpcUtils = trpc.useUtils();
-  const { t } = useTranslation();
-
-  const handleArchive = useEvent(async () => {
-    await archiveEventMutation.mutateAsync({
-      workspaceId,
-      channelId: event.channelId,
-      eventId: event.id,
-    });
-    trpcUtils.feed.fetchEventsByCursor.refetch();
-    toast.success(t('Event archived'));
-  });
-
+  actions?: React.ReactNode;
+}> = React.memo(({ className, event, actions }) => {
   return (
     <div
       className={cn(
@@ -53,14 +35,7 @@ export const FeedEventItem: React.FC<{
           </div>
         </div>
 
-        <Button
-          size="icon"
-          variant="secondary"
-          className="absolute right-0 top-0 h-6 w-6 overflow-hidden"
-          onClick={handleArchive}
-        >
-          <LuArchive size={12} />
-        </Button>
+        {actions}
 
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2">

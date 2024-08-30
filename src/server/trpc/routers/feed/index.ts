@@ -173,6 +173,7 @@ export const feedRouter = router({
         channelId: z.string(),
         limit: z.number().min(1).max(100).default(50),
         cursor: z.string().optional(),
+        archived: z.boolean().default(false),
       })
     )
     .output(
@@ -182,12 +183,12 @@ export const feedRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const { channelId, cursor, limit } = input;
+      const { channelId, cursor, limit, archived } = input;
 
       const { items, nextCursor } = await fetchDataByCursor(prisma.feedEvent, {
         where: {
           channelId,
-          archived: false,
+          archived,
         },
         limit,
         cursor,
@@ -361,6 +362,31 @@ export const feedRouter = router({
           channelId,
         },
       });
+    }),
+  clearAllArchivedEvents: workspaceOwnerProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'PATCH',
+        path: '/{channelId}/clearAllArchivedEvents',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+      })
+    )
+    .output(z.number())
+    .mutation(async ({ input }) => {
+      const { channelId } = input;
+
+      const res = await prisma.feedEvent.deleteMany({
+        where: {
+          channelId,
+          archived: true,
+        },
+      });
+
+      return res.count;
     }),
   integration: feedIntegrationRouter,
 });
