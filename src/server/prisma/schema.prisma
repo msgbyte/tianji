@@ -531,6 +531,7 @@ model FeedEvent {
   senderName   String? // use for display who
   url          String? // url link
   important    Boolean
+  archived     Boolean  @default(false) @db.Boolean
 
   channel FeedChannel @relation(fields: [channelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 

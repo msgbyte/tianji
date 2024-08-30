@@ -187,6 +187,7 @@ export const feedRouter = router({
       const { items, nextCursor } = await fetchDataByCursor(prisma.feedEvent, {
         where: {
           channelId,
+          archived: false,
         },
         limit,
         cursor,
@@ -306,6 +307,60 @@ export const feedRouter = router({
       });
 
       return event;
+    }),
+  archiveEvent: workspaceOwnerProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'PATCH',
+        path: '/{channelId}/{eventId}/archive',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+        eventId: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { channelId, eventId } = input;
+
+      await prisma.feedEvent.update({
+        data: {
+          archived: true,
+        },
+        where: {
+          id: eventId,
+          channelId,
+        },
+      });
+    }),
+  unarchiveEvent: workspaceOwnerProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'PATCH',
+        path: '/{channelId}/{eventId}/unarchive',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+        eventId: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { channelId, eventId } = input;
+
+      await prisma.feedEvent.update({
+        data: {
+          archived: false,
+        },
+        where: {
+          id: eventId,
+          channelId,
+        },
+      });
     }),
   integration: feedIntegrationRouter,
 });

@@ -15,6 +15,7 @@ export const FeedEventModelSchema = z.object({
   senderName: z.string().nullish(),
   url: z.string().nullish(),
   important: z.boolean(),
+  archived: z.boolean(),
 })
 
 export interface CompleteFeedEvent extends z.infer<typeof FeedEventModelSchema> {

@@ -1,4 +1,4 @@
-import { AppRouterOutput } from '@/api/trpc';
+import { AppRouterOutput, trpc } from '@/api/trpc';
 import React from 'react';
 import { Badge } from '../ui/badge';
 import dayjs from 'dayjs';
@@ -6,6 +6,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { MarkdownViewer } from '../MarkdownEditor';
 import { FeedIcon } from './FeedIcon';
 import { cn } from '@/utils/style';
+import { Button } from '../ui/button';
+import { LuArchive } from 'react-icons/lu';
+import { useCurrentWorkspaceId } from '@/store/user';
+import { useEvent } from '@/hooks/useEvent';
+import { toast } from 'sonner';
+import { useTranslation } from '@i18next-toolkit/react';
 
 type FeedEventItemType =
   AppRouterOutput['feed']['fetchEventsByCursor']['items'][number];
@@ -14,6 +20,21 @@ export const FeedEventItem: React.FC<{
   className?: string;
   event: FeedEventItemType;
 }> = React.memo(({ className, event }) => {
+  const workspaceId = useCurrentWorkspaceId();
+  const archiveEventMutation = trpc.feed.archiveEvent.useMutation();
+  const trpcUtils = trpc.useUtils();
+  const { t } = useTranslation();
+
+  const handleArchive = useEvent(async () => {
+    await archiveEventMutation.mutateAsync({
+      workspaceId,
+      channelId: event.channelId,
+      eventId: event.id,
+    });
+    trpcUtils.feed.fetchEventsByCursor.refetch();
+    toast.success(t('Event archived'));
+  });
+
   return (
     <div
       className={cn(
@@ -21,15 +42,25 @@ export const FeedEventItem: React.FC<{
         className
       )}
     >
-      <div className="flex-1 gap-2 overflow-hidden">
+      <div className="relative flex-1 gap-2 overflow-hidden">
         <div className="mb-2 flex w-full items-center gap-2 overflow-hidden text-sm">
           <div className="border-muted rounded-lg border p-2">
             <FeedIcon source={event.source} size={24} />
           </div>
-          <div>
+
+          <div className="overflow-hidden">
             <MarkdownViewer value={event.eventContent} />
           </div>
         </div>
+
+        <Button
+          size="icon"
+          variant="secondary"
+          className="absolute right-0 top-0 h-6 w-6 overflow-hidden"
+          onClick={handleArchive}
+        >
+          <LuArchive size={12} />
+        </Button>
 
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2">
@@ -46,7 +77,7 @@ export const FeedEventItem: React.FC<{
             <TooltipTrigger className="cursor-default self-end text-xs opacity-60">
               <div>{dayjs(event.createdAt).fromNow()}</div>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="left">
               <p>{dayjs(event.createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
             </TooltipContent>
           </Tooltip>
