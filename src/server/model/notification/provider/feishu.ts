@@ -1,5 +1,5 @@
 import { NotificationProvider } from './type.js';
-import { baseContentTokenizer } from '../token/index.js';
+import { markdownContentTokenizer } from '../token/index.js';
 import axios from 'axios';
 
 interface FeishuPayload {
@@ -17,18 +17,16 @@ export const feishu: NotificationProvider = {
       throw new Error('Is not a valid feishu webhook url');
     }
 
-    const content = baseContentTokenizer.parse(message);
+    const content = markdownContentTokenizer.parse(message);
 
+    // Document: https://open.larksuite.com/document/common-capabilities/message-card/message-cards-content/using-markdown-tags
     await axios.post(webhookUrl, {
       msg_type: 'interactive',
       card: {
         elements: [
           {
-            tag: 'div',
-            text: {
-              content,
-              tag: 'plain_text',
-            },
+            tag: 'markdown',
+            content,
           },
         ],
         header: {
@@ -36,6 +34,7 @@ export const feishu: NotificationProvider = {
             content: title,
             tag: 'plain_text',
           },
+          template: 'blue',
         },
       },
     });
