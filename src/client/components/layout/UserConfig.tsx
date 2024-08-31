@@ -29,6 +29,8 @@ import { version } from '@/utils/env';
 import React from 'react';
 import { LuMoreVertical } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
+import { useSocketConnected } from '@/api/socketio';
+import { cn } from '@/utils/style';
 
 interface UserConfigProps {
   isCollapsed: boolean;
@@ -57,6 +59,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
       setUserInfo(userInfo);
     },
   });
+  const socketConnected = useSocketConnected();
 
   const handleChangeColorSchema = useEvent((colorScheme) => {
     useSettingsStore.setState({
@@ -67,10 +70,21 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
   const nickname = userInfo?.nickname ?? userInfo?.username ?? '';
 
   const avatar = (
-    <Avatar size={props.isCollapsed ? 'sm' : 'default'}>
-      <AvatarImage src={userInfo?.avatar ?? undefined} />
-      <AvatarFallback>{nickname.substring(0, 2).toUpperCase()}</AvatarFallback>
-    </Avatar>
+    <div className="relative">
+      <Avatar size={props.isCollapsed ? 'sm' : 'default'}>
+        {userInfo?.avatar && <AvatarImage src={userInfo.avatar} />}
+
+        <AvatarFallback>
+          {nickname.substring(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div
+        className={cn(
+          'absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white border-opacity-50',
+          socketConnected ? 'bg-green-400' : 'bg-gray-400'
+        )}
+      />
+    </div>
   );
 
   const name = (

@@ -1,4 +1,4 @@
-import { AppRouterOutput, trpc } from '@/api/trpc';
+import { AppRouterOutput } from '@/api/trpc';
 import React from 'react';
 import { Badge } from '../ui/badge';
 import dayjs from 'dayjs';
@@ -6,8 +6,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { MarkdownViewer } from '../MarkdownEditor';
 import { FeedIcon } from './FeedIcon';
 import { cn } from '@/utils/style';
-import { useCurrentWorkspaceId } from '@/store/user';
-import { useTranslation } from '@i18next-toolkit/react';
 
 type FeedEventItemType =
   AppRouterOutput['feed']['fetchEventsByCursor']['items'][number];
@@ -43,8 +41,10 @@ export const FeedEventItem: React.FC<{
 
             <Badge variant="secondary">{event.eventName}</Badge>
 
-            {event.tags.map((tag) => (
-              <Badge variant="outline">{tag}</Badge>
+            {event.tags.map((tag, i) => (
+              <Badge key={i} variant="outline">
+                {tag}
+              </Badge>
             ))}
           </div>
 

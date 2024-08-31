@@ -7,8 +7,10 @@ import { useIsLogined } from '../store/user';
 
 const useSocketStore = create<{
   socket: Socket | null;
+  connected: boolean;
 }>(() => ({
   socket: null,
+  connected: false,
 }));
 
 export function createSocketIOClient(workspaceId: string) {
@@ -21,6 +23,24 @@ export function createSocketIOClient(workspaceId: string) {
     transports: ['websocket'],
     reconnectionDelayMax: 10000,
     forceNew: true,
+  });
+
+  socket.on('connect', () => {
+    useSocketStore.setState({
+      connected: true,
+    });
+  });
+
+  socket.on('disconnect', () => {
+    useSocketStore.setState({
+      connected: false,
+    });
+  });
+
+  socket.on('connect_error', () => {
+    useSocketStore.setState({
+      connected: false,
+    });
   });
 
   useSocketStore.setState({
@@ -109,6 +129,10 @@ export function useSocketSubscribe<T>(
   }, [name]);
 
   return data;
+}
+
+export function useSocketConnected() {
+  return useSocketStore((state) => state.connected);
 }
 
 interface UseSocketSubscribeListOptions<K, T> {

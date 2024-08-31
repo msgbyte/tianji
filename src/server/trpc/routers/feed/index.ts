@@ -50,7 +50,11 @@ export const feedRouter = router({
         include: {
           _count: {
             select: {
-              events: true,
+              events: {
+                where: {
+                  archived: false,
+                },
+              },
             },
           },
         },
