@@ -16,6 +16,7 @@ interface MonitorHealthBarProps {
   monitorType?: string;
   count?: number;
   size?: HealthBarProps['size'];
+  healthBarClassName?: string;
   showCurrentStatus?: boolean;
   showPercent?: boolean;
   onBeatsItemUpdate?: (
@@ -121,7 +122,11 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
         )}
 
         <div className="flex-1 overflow-hidden">
-          <HealthBar size={size} beats={beats} />
+          <HealthBar
+            className={props.healthBarClassName}
+            size={size}
+            beats={beats}
+          />
         </div>
 
         {showCurrentStatus && (

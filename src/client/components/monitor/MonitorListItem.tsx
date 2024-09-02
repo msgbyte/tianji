@@ -70,7 +70,7 @@ export const MonitorListItem: React.FC<{
     <div
       className={clsx(
         className,
-        'mb-1 flex items-center rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10',
+        'mb-1 flex items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10',
         onClick && 'cursor-pointer'
       )}
       onClick={onClick}
@@ -86,7 +86,7 @@ export const MonitorListItem: React.FC<{
         </span>
       </div>
 
-      <div className="flex-1 pl-2">
+      <div className="pl-2">
         <div className="text-base">{monitorName}</div>
         {/* <div>
               {monitor.tags.map((tag) => (
@@ -100,6 +100,16 @@ export const MonitorListItem: React.FC<{
             </div> */}
       </div>
 
+      <div className="flex-1 flex-shrink items-center overflow-hidden px-1">
+        <MonitorHealthBar
+          healthBarClassName="justify-end"
+          workspaceId={workspaceId}
+          monitorId={monitorId}
+          monitorType={monitorType}
+          onBeatsItemUpdate={setBeats}
+        />
+      </div>
+
       {showCurrentResponse && latestResponse && (
         <Tooltip title={t('Current')}>
           <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
@@ -107,15 +117,6 @@ export const MonitorListItem: React.FC<{
           </div>
         </Tooltip>
       )}
-
-      <div className="flex items-center">
-        <MonitorHealthBar
-          workspaceId={workspaceId}
-          monitorId={monitorId}
-          monitorType={monitorType}
-          onBeatsItemUpdate={setBeats}
-        />
-      </div>
     </div>
   );
 });

@@ -1,4 +1,5 @@
 import { useResizeObserver } from '@/hooks/useResizeObserver';
+import { cn } from '@/utils/style';
 import clsx from 'clsx';
 import React from 'react';
 
@@ -10,6 +11,7 @@ export interface HealthBarBeat {
 }
 
 export interface HealthBarProps {
+  className?: string;
   size?: 'small' | 'large';
   beats: HealthBarBeat[];
 }
@@ -23,10 +25,14 @@ export const HealthBar: React.FC<HealthBarProps> = React.memo((props) => {
   return (
     <div
       ref={containerRef}
-      className={clsx('flex', {
-        'gap-[3px]': size === 'small',
-        'gap-1': size === 'large',
-      })}
+      className={cn(
+        'flex',
+        {
+          'gap-[3px] px-0.5 py-1.5': size === 'small',
+          'gap-1 px-0.5 py-2': size === 'large',
+        },
+        props.className
+      )}
     >
       {props.beats
         .slice(
