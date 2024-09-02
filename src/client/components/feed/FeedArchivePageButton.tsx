@@ -64,7 +64,7 @@ export const FeedArchivePageButton: React.FC<FeedArchivePageButtonProps> =
         channelId,
       });
       trpcUtils.feed.fetchEventsByCursor.refetch();
-      toast.success(t('{{count}} events cleared', { count }));
+      toast.success(t('{{num}} events cleared', { num: count }));
     });
 
     const fullEvents = useMemo(
