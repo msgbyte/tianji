@@ -1,5 +1,27 @@
 
 
+## [1.14.2](https://github.com/msgbyte/tianji/compare/v1.14.1...v1.14.2) (2024-09-02)
+
+
+### Features
+
+* add archive feature ([3270164](https://github.com/msgbyte/tianji/commit/3270164710179a534692eabca77285dd28d887a7))
+* add curl feed api guide ([5588aca](https://github.com/msgbyte/tianji/commit/5588aca522646d88b7c9ddb5bff98e23c1d3bc15))
+* add feed archive page ([87b4000](https://github.com/msgbyte/tianji/commit/87b4000c4791a935a0f9247d1c219529105d0801))
+* add socket state ([e095a08](https://github.com/msgbyte/tianji/commit/e095a081b949880a088fd3e2512005d71d024769))
+* feishu add markdown syntax support ([33de808](https://github.com/msgbyte/tianji/commit/33de808f3e4e6a763fc36de96f24e01055907aba))
+
+
+### Document
+
+* update Chinese translation ([9fcc6dd](https://github.com/msgbyte/tianji/commit/9fcc6dda60a6496fb1909cdc5facd0ebb60e9448))
+
+
+### Others
+
+* improve feed event report style ([88f47db](https://github.com/msgbyte/tianji/commit/88f47db118968aa323b6ee0eac6b14e4fe9aa608))
+* update translations ([9966c12](https://github.com/msgbyte/tianji/commit/9966c1277c6bc8df74d9c3ca742b9e98c7577087))
+
 ## [1.14.1](https://github.com/msgbyte/tianji/compare/v1.14.0...v1.14.1) (2024-08-29)
 
 
