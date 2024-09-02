@@ -27,7 +27,11 @@ const app = express();
 
 app.set('trust proxy', true);
 app.use(compression());
-app.use(express.json());
+app.use(
+  express.json({
+    limit: '10mb',
+  })
+);
 app.use(passport.initialize());
 app.use(morgan('tiny'));
 app.use(cors());

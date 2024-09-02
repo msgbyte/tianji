@@ -6,7 +6,7 @@ import { OPENAPI_TAG } from '../../../utils/const.js';
 import { createFeedEvent } from '../../../model/feed/event.js';
 import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';
 import { logger } from '../../../utils/logger.js';
-import { get, map } from 'lodash-es';
+import { compact, fromPairs, get, map } from 'lodash-es';
 
 export const feedIntegrationRouter = router({
   github: publicProcedure
@@ -109,7 +109,6 @@ export const feedIntegrationRouter = router({
         return 'ok';
       } else if (eventType === 'issues') {
         const action = get(data, 'action') as 'opened' | 'closed';
-        const starCount = get(data, 'repository.stargazers_count');
         const fullName = get(data, 'repository.full_name');
         const repoUrl = get(data, 'repository.html_url');
         const senderId = String(get(data, 'sender.id'));
@@ -229,6 +228,73 @@ export const feedIntegrationRouter = router({
           senderId: alarm.alarmObjInfo.appId,
           senderName: alarm.alarmPolicyInfo.policyName,
           important: alarm.alarmStatus === '1',
+        });
+
+        return 'ok';
+      }
+
+      return 'Not supported yet';
+    }),
+  sentry: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'POST',
+        path: '/{channelId}/sentry',
+        summary: 'integrate with sentry webhook',
+      })
+    )
+    .input(
+      z
+        .object({
+          channelId: z.string(),
+        })
+        .passthrough()
+    )
+    .output(z.string())
+    .mutation(async ({ input, ctx }) => {
+      const { channelId, ...data } = input;
+      const eventType = ctx.req.headers['sentry-hook-resource'];
+
+      const workspaceId = await prisma.feedChannel
+        .findFirst({
+          where: {
+            id: channelId,
+          },
+          select: {
+            workspaceId: true,
+          },
+        })
+        .then((res) => res?.workspaceId);
+
+      if (!workspaceId) {
+        throw new Error('Not found Workspace');
+      }
+
+      const action = get(data, 'action');
+
+      if (eventType === 'event_alert' && action === 'triggered') {
+        const message = get(data, 'data.event.message');
+        const tags = fromPairs<string>(get(data as any, 'data.event.tags'));
+        const url = String(get(data, 'data.event.web_url'));
+        const senderId = String(get(data, 'data.actor.id'));
+        const senderName = String(get(data, 'data.actor.name'));
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: 'alert',
+          eventContent: `${message}`,
+          tags: compact([
+            tags['environment'],
+            tags['release'],
+            tags['browser'],
+            tags['os'],
+            tags['device'],
+          ]),
+          source: 'sentry',
+          senderId,
+          senderName,
+          important: false,
+          url,
         });
 
         return 'ok';

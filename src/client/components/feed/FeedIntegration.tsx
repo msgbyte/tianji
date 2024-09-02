@@ -3,6 +3,7 @@ import { LuGithub, LuPlug } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CodeBlock } from '../CodeBlock';
 import { useTranslation } from '@i18next-toolkit/react';
+import { SiSentry } from 'react-icons/si';
 
 export const FeedIntegration: React.FC<{
   feedId: string;
@@ -25,6 +26,22 @@ export const FeedIntegration: React.FC<{
             />
 
             <div>{t('Dont remember send data with application/json')}</div>
+          </div>
+        }
+      />
+
+      <FeedIntegrationItem
+        icon={<SiSentry size={32} />}
+        label="Sentry"
+        content={
+          <div>
+            <div className="text-lg font-bold">{t('Receive Webhooks')}</div>
+
+            <div>{t('Add sentry webhook with url')}:</div>
+
+            <CodeBlock
+              code={`${window.location.origin}/open/feed/${props.feedId}/sentry`}
+            />
           </div>
         }
       />
