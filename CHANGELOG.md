@@ -1,5 +1,18 @@
 
 
+## [1.14.3](https://github.com/msgbyte/tianji/compare/v1.14.2...v1.14.3) (2024-09-02)
+
+
+### Features
+
+* add feed event url support ([8534ab7](https://github.com/msgbyte/tianji/commit/8534ab7ba029e4c98a642f4c927902455e97d4a9))
+* add sentry webhook integration ([546055e](https://github.com/msgbyte/tianji/commit/546055e5559cf460e7d0f1dcce835e905baafc1e))
+
+
+### Bug Fixes
+
+* fix health bar style problem in page ([01d774d](https://github.com/msgbyte/tianji/commit/01d774d3958abd5ee15631eb771e22d5771f405a))
+
 ## [1.14.2](https://github.com/msgbyte/tianji/compare/v1.14.1...v1.14.2) (2024-09-02)
 
 
