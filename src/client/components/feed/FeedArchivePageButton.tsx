@@ -110,7 +110,7 @@ export const FeedArchivePageButton: React.FC<FeedArchivePageButtonProps> =
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="absolute right-0 top-0 h-6 w-6 overflow-hidden"
+                      className="h-6 w-6 overflow-hidden"
                       onClick={() => handleUnArchive(item)}
                     >
                       <LuArchiveRestore size={12} />

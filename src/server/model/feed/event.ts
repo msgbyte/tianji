@@ -12,6 +12,7 @@ import {
 } from '../../prisma/zod/index.js';
 import dayjs from 'dayjs';
 import { z } from 'zod';
+import { compact } from 'lodash-es';
 
 const { get: getFeedEventNotify, del: delFeedEventNotifyCache } =
   buildQueryWithCache(async (channelId: string) => {
@@ -80,9 +81,12 @@ export async function sendFeedEventsNotify(
   const eventTokens: ContentToken[] = [
     token.list(
       events.map((event) =>
-        token.text(
-          `[${event.source}:${event.eventName}] ${event.senderName ?? ''}: ${event.eventContent}`
-        )
+        compact([
+          token.text(
+            `[${event.source}:${event.eventName}] ${event.senderName ?? ''}: ${event.eventContent}`
+          ),
+          event.url && token.url(event.url, '[→]'),
+        ])
       )
     ),
   ];

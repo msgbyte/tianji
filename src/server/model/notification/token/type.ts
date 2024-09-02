@@ -31,7 +31,7 @@ export type UrlContentToken = {
 
 export type ListContentToken = {
   type: 'list';
-  items: ContentToken[];
+  items: ContentToken[][];
 };
 
 export type ContentToken =

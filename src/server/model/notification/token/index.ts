@@ -41,7 +41,7 @@ export const token = {
     url,
     title,
   }),
-  list: (items: ContentToken[]): ListContentToken => ({
+  list: (items: ContentToken[][]): ListContentToken => ({
     type: 'list',
     items,
   }),

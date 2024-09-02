@@ -35,7 +35,7 @@ export class BaseContentTokenizer {
   }
 
   parseList(token: ListContentToken) {
-    return token.items.map((item) => this.parse([item])).join('\n');
+    return token.items.map((tokens) => this.parse(tokens)).join('\n');
   }
 
   parse(tokens: ContentToken[]): string {

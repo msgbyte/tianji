@@ -12,7 +12,13 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEvent } from '@/hooks/useEvent';
 import { AlertConfirm } from '@/components/AlertConfirm';
-import { LuArchive, LuPencil, LuTrash, LuWebhook } from 'react-icons/lu';
+import {
+  LuArchive,
+  LuLink,
+  LuPencil,
+  LuTrash,
+  LuWebhook,
+} from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { FeedApiGuide } from '@/components/feed/FeedApiGuide';
 import { FeedEventItem } from '@/components/feed/FeedEventItem';
@@ -156,14 +162,27 @@ function PageComponent() {
               className="animate-fade-in mb-2"
               event={item}
               actions={
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="absolute right-0 top-0 h-6 w-6 overflow-hidden"
-                  onClick={() => handleArchive(item)}
-                >
-                  <LuArchive size={12} />
-                </Button>
+                <>
+                  {item.url && (
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-6 w-6 overflow-hidden"
+                      onClick={() => window.open(item.url)}
+                    >
+                      <LuLink size={12} />
+                    </Button>
+                  )}
+
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="h-6 w-6 overflow-hidden"
+                    onClick={() => handleArchive(item)}
+                  >
+                    <LuArchive size={12} />
+                  </Button>
+                </>
               }
             />
           )}

@@ -37,7 +37,7 @@ export class MarkdownContentTokenizer extends BaseContentTokenizer {
   parseList(token: ListContentToken) {
     return (
       '\n' +
-      token.items.map((item) => `- ${this.parse([item])}`).join('\n') +
+      token.items.map((tokens) => `- ${this.parse(tokens)}`).join('\n') +
       '\n'
     );
   }

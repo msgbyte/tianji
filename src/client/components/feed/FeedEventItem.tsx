@@ -33,7 +33,7 @@ export const FeedEventItem: React.FC<{
           </div>
         </div>
 
-        {actions}
+        <div className="absolute right-0 top-0 flex gap-1">{actions}</div>
 
         <div className="flex justify-between">
           <div className="flex flex-wrap gap-2">

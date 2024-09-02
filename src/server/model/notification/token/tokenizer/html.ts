@@ -40,6 +40,6 @@ export class HTMLContentTokenizer extends BaseContentTokenizer {
   }
 
   parseList(token: ListContentToken) {
-    return `<ul>${token.items.map((item) => `<li>${this.parse([item])}</li>`).join('')}</ul>`;
+    return `<ul>${token.items.map((tokens) => `<li>${this.parse(tokens)}</li>`).join('')}</ul>`;
   }
 }
