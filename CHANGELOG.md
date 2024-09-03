@@ -1,5 +1,18 @@
 
 
+## [1.14.4](https://github.com/msgbyte/tianji/compare/v1.14.3...v1.14.4) (2024-09-03)
+
+
+### Document
+
+* fix edit page url ([8ccace1](https://github.com/msgbyte/tianji/commit/8ccace127ba6aae012e5c164dbcaa42ee299196c))
+* update manual install to include code update ([2cc098a](https://github.com/msgbyte/tianji/commit/2cc098a5f1f184fa8e627e3d8d65a7910d9967c6))
+
+
+### Others
+
+* fix ci problem which cause build failed ([c4211c2](https://github.com/msgbyte/tianji/commit/c4211c270ffd6b1a6355a871676f0abed0f1e24f))
+
 ## [1.14.3](https://github.com/msgbyte/tianji/compare/v1.14.2...v1.14.3) (2024-09-02)
 
 
