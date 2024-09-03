@@ -49,6 +49,7 @@
   "packageManager": "pnpm@9.7.1",
   "pnpm": {
     "overrides": {
+      "@auth/core": "0.34.1",
       "dayjs": "1.11.10",
       "typescript": "5.5.4"
     },

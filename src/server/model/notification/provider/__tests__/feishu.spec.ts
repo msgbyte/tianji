@@ -15,7 +15,7 @@ describe.runIf(!!process.env.TEST_FEISHU_URL)('feishu', () => {
         token.title('test title', 1),
         token.text('list'),
         token.newline(),
-        token.list([token.text('A'), token.text('B')]),
+        token.list([[token.text('A')], [token.text('B')]]),
       ]
     );
   });
