@@ -67,7 +67,13 @@ cd tianji
 git fetch --tags
 git checkout -q <version>
 
-# run db migrations
+# Update dependencies
+pnpm install
+
+# Build project
+pnpm build
+
+# Run db migrations
 cd src/server
 pnpm db:migrate:apply
 
