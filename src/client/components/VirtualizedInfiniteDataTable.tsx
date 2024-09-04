@@ -126,7 +126,7 @@ export function VirtualizedInfiniteDataTable<TData>(
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="bg-background flex w-full"
+              className="bg-background hover:bg-background flex w-full"
             >
               {headerGroup.headers.map((header) => {
                 return (
