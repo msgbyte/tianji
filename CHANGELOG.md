@@ -1,5 +1,12 @@
 
 
+## [1.14.5](https://github.com/msgbyte/tianji/compare/v1.14.4...v1.14.5) (2024-09-07)
+
+
+### Bug Fixes
+
+* fix row header style issue ([cf4531c](https://github.com/msgbyte/tianji/commit/cf4531c5ddc1758a2d11776f058559622771b311))
+
 ## [1.14.4](https://github.com/msgbyte/tianji/compare/v1.14.3...v1.14.4) (2024-09-03)
 
 
