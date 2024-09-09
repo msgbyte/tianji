@@ -1,5 +1,5 @@
 import { Button, Empty, Select, SelectProps } from 'antd';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { PlusOutlined } from '@ant-design/icons';
@@ -15,6 +15,15 @@ export const FeedChannelPicker: React.FC<FeedChannelPickerProps> = React.memo(
     const { data: allChannels = [] } = trpc.feed.channels.useQuery({
       workspaceId,
     });
+
+    const options = useMemo(
+      () =>
+        allChannels.map((m) => ({
+          label: m.name,
+          value: m.id,
+        })),
+      [allChannels]
+    );
 
     return (
       <Select
@@ -38,13 +47,9 @@ export const FeedChannelPicker: React.FC<FeedChannelPickerProps> = React.memo(
           />
         }
         {...props}
-      >
-        {allChannels.map((m) => (
-          <Select.Option key={m.id} value={m.id}>
-            {m.name}
-          </Select.Option>
-        ))}
-      </Select>
+        options={options}
+        optionFilterProp="label"
+      />
     );
   }
 );
