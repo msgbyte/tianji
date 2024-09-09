@@ -1,5 +1,12 @@
 
 
+## [1.14.6](https://github.com/msgbyte/tianji/compare/v1.14.5...v1.14.6) (2024-09-09)
+
+
+### Features
+
+* add unknown integration log ([d2afa54](https://github.com/msgbyte/tianji/commit/d2afa54301bcdd6a40fe5116b8191196c9b7bb33))
+
 ## [1.14.5](https://github.com/msgbyte/tianji/compare/v1.14.4...v1.14.5) (2024-09-07)
 
 
