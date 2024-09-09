@@ -143,6 +143,8 @@ export const feedIntegrationRouter = router({
         }
       }
 
+      logUnknownIntegration('github', input);
+
       return 'Not supported yet';
     }),
   tencentCloudAlarm: publicProcedure
@@ -233,6 +235,8 @@ export const feedIntegrationRouter = router({
         return 'ok';
       }
 
+      logUnknownIntegration('tencentCloudAlarm', input);
+
       return 'Not supported yet';
     }),
   sentry: publicProcedure
@@ -300,6 +304,8 @@ export const feedIntegrationRouter = router({
         return 'ok';
       }
 
+      logUnknownIntegration('sentry', input);
+
       return 'Not supported yet';
     }),
 });
@@ -313,4 +319,8 @@ export function buildFeedPublicOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       path: `/feed${meta.path}`,
     },
   };
+}
+
+function logUnknownIntegration(source: string, input: any) {
+  logger.info(`[Feed Unknown Integration] ${source}: ${JSON.stringify(input)}`);
 }
