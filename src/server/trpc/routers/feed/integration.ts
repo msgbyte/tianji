@@ -277,6 +277,7 @@ export const feedIntegrationRouter = router({
       const action = get(data, 'action');
 
       if (eventType === 'event_alert' && action === 'triggered') {
+        const title = get(data, 'data.event.title');
         const message = get(data, 'data.event.message');
         const tags = fromPairs<string>(get(data as any, 'data.event.tags'));
         const url = String(get(data, 'data.event.web_url'));
@@ -286,7 +287,7 @@ export const feedIntegrationRouter = router({
         await createFeedEvent(workspaceId, {
           channelId: channelId,
           eventName: 'alert',
-          eventContent: `${message}`,
+          eventContent: `${title} | ${message}`,
           tags: compact([
             tags['environment'],
             tags['release'],
