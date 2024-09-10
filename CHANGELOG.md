@@ -1,5 +1,19 @@
 
 
+## [1.14.7](https://github.com/msgbyte/tianji/compare/v1.14.6...v1.14.7) (2024-09-10)
+
+
+### Document
+
+* add document and website entry in app ([f74289f](https://github.com/msgbyte/tianji/commit/f74289ff0539b4cf4141eafbc6fc6cec12529357))
+
+
+### Others
+
+* improve data table resizer width to make it more easy to use ([2e60945](https://github.com/msgbyte/tianji/commit/2e609452b55c6aa957fdff3dd96b6b617bda13ed))
+* improve notification and feed channel filter logic ([e770e42](https://github.com/msgbyte/tianji/commit/e770e428936aa84c4ce0811c820ef4e43c2cdea3))
+* update sentry feed content ([1895ac7](https://github.com/msgbyte/tianji/commit/1895ac772cec64c92c490a1a06d78df2eae05191))
+
 ## [1.14.6](https://github.com/msgbyte/tianji/compare/v1.14.5...v1.14.6) (2024-09-09)
 
 
