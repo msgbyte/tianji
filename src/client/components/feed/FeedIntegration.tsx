@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CodeBlock } from '../CodeBlock';
 import { useTranslation } from '@i18next-toolkit/react';
 import { SiSentry } from 'react-icons/si';
+import { Link } from '@tanstack/react-router';
 
 export const FeedIntegration: React.FC<{
   feedId: string;
@@ -42,6 +43,17 @@ export const FeedIntegration: React.FC<{
             <CodeBlock
               code={`${window.location.origin}/open/feed/${props.feedId}/sentry`}
             />
+
+            <div className="mt-2">
+              {t('Check here to learn more')}:{' '}
+              <a
+                className="text-blue-500 underline"
+                href="https://tianji.msgbyte.com/docs/feed/sentry"
+                target="_blank"
+              >
+                {t('Document')}
+              </a>
+            </div>
           </div>
         }
       />
