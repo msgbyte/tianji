@@ -83,7 +83,7 @@ export async function sendFeedEventsNotify(
       events.map((event) =>
         compact([
           token.text(
-            `[${event.source}:${event.eventName}] ${event.senderName ?? ''}: ${event.eventContent}`
+            `[${event.source}:${event.eventName}] ${event.eventContent}`
           ),
           event.url && token.url(event.url, '[→]'),
         ])
