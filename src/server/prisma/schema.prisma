@@ -249,6 +249,25 @@ model WebsiteSessionData {
   @@index([sessionId])
 }
 
+enum WebsiteLighthouseReportStatus {
+  Pending
+  Success
+  Failed
+}
+
+model WebsiteLighthouseReport {
+  id        String                        @id() @default(cuid()) @db.VarChar(30)
+  websiteId String?                       @db.VarChar(30)
+  createdAt DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime                      @updatedAt @db.Timestamptz(6)
+  url       String
+  result    String // json string
+  status    WebsiteLighthouseReportStatus @default(Pending)
+
+  @@index([createdAt])
+  @@index([websiteId])
+}
+
 model Telemetry {
   id          String    @id @unique @default(cuid()) @db.VarChar(30)
   workspaceId String    @db.VarChar(30)

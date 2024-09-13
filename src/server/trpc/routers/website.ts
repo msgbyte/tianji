@@ -1,5 +1,6 @@
 import {
   OpenApiMetaInfo,
+  publicProcedure,
   router,
   workspaceOwnerProcedure,
   workspaceProcedure,
@@ -32,6 +33,10 @@ import {
 } from '../../model/_schema/filter.js';
 import dayjs from 'dayjs';
 import { WebsiteQueryFilters } from '../../utils/prisma.js';
+import { WebsiteLighthouseReportStatus } from '@prisma/client';
+import { generateLighthouse } from '../../utils/screenshot/lighthouse.js';
+import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
+import { method } from 'lodash-es';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -549,6 +554,131 @@ export const websiteRouter = router({
       });
 
       return websiteInfo;
+    }),
+  generateLighthouseReport: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'POST',
+        path: '/generateLighthouseReport',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string().cuid2(),
+        url: z.string().url(),
+      })
+    )
+    .output(z.string())
+    .mutation(async ({ input }) => {
+      const { websiteId, url } = input;
+
+      const websiteInfo = await prisma.websiteLighthouseReport.create({
+        data: {
+          url,
+          websiteId,
+          status: WebsiteLighthouseReportStatus.Pending,
+          result: '',
+        },
+      });
+
+      generateLighthouse(url)
+        .then(async (result) => {
+          await prisma.websiteLighthouseReport.update({
+            where: {
+              id: websiteInfo.id,
+            },
+            data: {
+              status: WebsiteLighthouseReportStatus.Success,
+              result: JSON.stringify(result),
+            },
+          });
+        })
+        .catch(async () => {
+          await prisma.websiteLighthouseReport.update({
+            where: {
+              id: websiteInfo.id,
+            },
+            data: {
+              status: WebsiteLighthouseReportStatus.Failed,
+            },
+          });
+        });
+
+      return 'success';
+    }),
+  getLighthouseReport: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/getLighthouseReport',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string().cuid2(),
+      })
+    )
+    .output(
+      z.array(
+        WebsiteLighthouseReportModelSchema.pick({
+          id: true,
+          status: true,
+          createdAt: true,
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const { websiteId } = input;
+
+      const list = await prisma.websiteLighthouseReport.findMany({
+        where: {
+          websiteId,
+        },
+        take: 10,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      return list;
+    }),
+  getLighthouseJSON: publicProcedure
+    .meta({
+      openapi: {
+        tags: [OPENAPI_TAG.WEBSITE],
+        protect: true,
+        method: 'GET',
+        path: '/lighthouse/{lighthouseId}',
+      },
+    })
+    .input(
+      z.object({
+        lighthouseId: z.string().cuid2(),
+      })
+    )
+    .output(z.record(z.string(), z.any()))
+    .query(async ({ input }) => {
+      const { lighthouseId } = input;
+
+      const res = await prisma.websiteLighthouseReport.findFirst({
+        where: {
+          id: lighthouseId,
+        },
+        select: {
+          result: true,
+        },
+      });
+
+      try {
+        return JSON.parse(res?.result ?? '{}');
+      } catch (err) {
+        return {};
+      }
     }),
 });
 

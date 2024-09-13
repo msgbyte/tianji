@@ -50,6 +50,7 @@
     "is-localhost-ip": "^2.0.0",
     "isolated-vm": "^4.7.2",
     "jsonwebtoken": "^9.0.2",
+    "lighthouse": "^12.2.1",
     "lodash-es": "^4.17.21",
     "maxmind": "^4.3.18",
     "md5": "^2.3.0",
