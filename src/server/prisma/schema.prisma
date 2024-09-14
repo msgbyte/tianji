@@ -29,9 +29,7 @@ model User {
   createdAt          DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(6)
   deletedAt          DateTime? @db.Timestamptz(6)
-  currentWorkspaceId String    @db.VarChar(30)
-
-  currentWorkspace Workspace @relation(fields: [currentWorkspaceId], references: [id])
+  currentWorkspaceId String?   @db.VarChar(30)
 
   accounts   Account[]
   sessions   Session[]
@@ -97,7 +95,6 @@ model Workspace {
   telemetryList      Telemetry[]
 
   // for user currentWorkspace
-  selectedUsers       User[] // user list who select this workspace, not use in most of case
   workspaceDailyUsage WorkspaceDailyUsage[]
   workspaceAuditLog   WorkspaceAuditLog[]
   surveys             Survey[]

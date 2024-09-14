@@ -138,7 +138,7 @@ export const userRouter = router({
   info: protectProedure
     .input(z.void())
     .output(userInfoSchema.nullable())
-    .query(async ({ input, ctx }) => {
+    .query(async ({ ctx }) => {
       return getUserInfo(ctx.user.id);
     }),
 });

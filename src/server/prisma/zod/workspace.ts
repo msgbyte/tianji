@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteUser, RelatedUserModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
+import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -31,7 +31,6 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   monitors: CompleteMonitor[]
   monitorStatusPages: CompleteMonitorStatusPage[]
   telemetryList: CompleteTelemetry[]
-  selectedUsers: CompleteUser[]
   workspaceDailyUsage: CompleteWorkspaceDailyUsage[]
   workspaceAuditLog: CompleteWorkspaceAuditLog[]
   surveys: CompleteSurvey[]
@@ -50,7 +49,6 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   monitors: RelatedMonitorModelSchema.array(),
   monitorStatusPages: RelatedMonitorStatusPageModelSchema.array(),
   telemetryList: RelatedTelemetryModelSchema.array(),
-  selectedUsers: RelatedUserModelSchema.array(),
   workspaceDailyUsage: RelatedWorkspaceDailyUsageModelSchema.array(),
   workspaceAuditLog: RelatedWorkspaceAuditLogModelSchema.array(),
   surveys: RelatedSurveyModelSchema.array(),

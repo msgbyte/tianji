@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as WebsiteImport } from './routes/website'
 import { Route as TelemetryImport } from './routes/telemetry'
+import { Route as SwitchWorkspaceImport } from './routes/switchWorkspace'
 import { Route as SurveyImport } from './routes/survey'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ServerImport } from './routes/server'
@@ -55,6 +56,11 @@ const WebsiteRoute = WebsiteImport.update({
 
 const TelemetryRoute = TelemetryImport.update({
   path: '/telemetry',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SwitchWorkspaceRoute = SwitchWorkspaceImport.update({
+  path: '/switchWorkspace',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -258,6 +264,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SurveyImport
       parentRoute: typeof rootRoute
     }
+    '/switchWorkspace': {
+      preLoaderRoute: typeof SwitchWorkspaceImport
+      parentRoute: typeof rootRoute
+    }
     '/telemetry': {
       preLoaderRoute: typeof TelemetryImport
       parentRoute: typeof rootRoute
@@ -391,6 +401,7 @@ export const routeTree = rootRoute.addChildren([
     SurveySurveyIdEditRoute,
     SurveySurveyIdIndexRoute,
   ]),
+  SwitchWorkspaceRoute,
   TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
   WebsiteRoute.addChildren([
     WebsiteAddRoute,

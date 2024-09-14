@@ -33,12 +33,7 @@ export const createUserSelect = {
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-  currentWorkspace: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
+  currentWorkspaceId: true,
   workspaces: {
     select: {
       role: true,

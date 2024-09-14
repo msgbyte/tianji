@@ -23,6 +23,7 @@ import {
   leaveWorkspace,
 } from '../../model/user.js';
 import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers.js';
+import { monitorManager } from '../../model/monitor/index.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -104,7 +105,7 @@ export const workspaceRouter = router({
           id: workspaceId,
           users: {
             some: {
-              userId,
+              userId, // make sure is member of this workspace
             },
           },
         },
@@ -142,6 +143,19 @@ export const workspaceRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { workspaceId } = input;
       const userId = ctx.user.id;
+
+      const monitors = await prisma.monitor.findMany({
+        where: {
+          workspaceId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      await Promise.all(
+        monitors.map((m) => monitorManager.delete(workspaceId, m.id))
+      );
 
       await prisma.workspace.delete({
         where: {

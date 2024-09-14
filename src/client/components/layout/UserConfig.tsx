@@ -18,6 +18,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { useSettingsStore } from '@/store/settings';
 import {
   setUserInfo,
+  useCurrentWorkspace,
   useCurrentWorkspaceId,
   useUserInfo,
   useUserStore,
@@ -41,6 +42,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
   const navigate = useNavigate();
   const colorScheme = useSettingsStore((state) => state.colorScheme);
   const workspaceId = useCurrentWorkspaceId();
+  const currentWorkspace = useCurrentWorkspace();
   const workspaces = useUserStore((state) => {
     const userInfo = state.info;
     if (userInfo) {
@@ -48,7 +50,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
         id: w.workspace.id,
         name: w.workspace.name,
         role: w.role,
-        current: userInfo.currentWorkspace?.id === w.workspace.id,
+        current: currentWorkspace.id === w.workspace.id,
       }));
     }
 

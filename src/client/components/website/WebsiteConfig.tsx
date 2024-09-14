@@ -1,4 +1,4 @@
-import { Button, Form, Input, message, Popconfirm } from 'antd';
+import { Form, Input, message } from 'antd';
 import React from 'react';
 import { deleteWorkspaceWebsite } from '../../api/model/website';
 import { useRequest } from '../../hooks/useRequest';
@@ -18,6 +18,8 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { AlertConfirm } from '../AlertConfirm';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader } from '../ui/card';
 
 export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
   (props) => {
@@ -50,6 +52,14 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
         trpcUtils.website.info.refetch({
           workspaceId,
           websiteId,
+        });
+        trpcUtils.website.all.refetch({ workspaceId });
+
+        navigate({
+          to: '/website/$websiteId',
+          params: {
+            websiteId,
+          },
         });
       }
     );
@@ -135,21 +145,28 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
                 </Form.Item>
 
                 <Form.Item>
-                  <Button size="large" htmlType="submit">
-                    {t('Save')}
-                  </Button>
+                  <Button type="submit">{t('Save')}</Button>
                 </Form.Item>
               </Form>
             </TabsContent>
             <TabsContent value="data">
-              <AlertConfirm
-                title={t('Delete Website')}
-                onConfirm={() => handleDeleteWebsite()}
-              >
-                <Button type="primary" danger={true}>
-                  {t('Delete Website')}
-                </Button>
-              </AlertConfirm>
+              <Card>
+                <CardHeader className="text-lg font-bold">
+                  {t('Danger Zone')}
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <AlertConfirm
+                      title={t('Delete Website')}
+                      onConfirm={() => handleDeleteWebsite()}
+                    >
+                      <Button variant="destructive">
+                        {t('Delete Website')}
+                      </Button>
+                    </AlertConfirm>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

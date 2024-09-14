@@ -37,6 +37,8 @@ import { Button } from '@/components/ui/button';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { AlertConfirm } from '@/components/AlertConfirm';
+import { ROLES } from '@tianji/shared';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -54,7 +56,7 @@ const columnHelper = createColumnHelper<MemberInfo>();
 
 function PageComponent() {
   const { t } = useTranslation();
-  const { id: workspaceId, name } = useCurrentWorkspace();
+  const { id: workspaceId, name, role } = useCurrentWorkspace();
   const { data: members = [], refetch: refetchMembers } =
     trpc.workspace.members.useQuery({
       workspaceId,
@@ -66,6 +68,10 @@ function PageComponent() {
     },
   });
   const inviteMutation = trpc.workspace.invite.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
+  const deleteWorkspaceMutation = trpc.workspace.delete.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
@@ -173,6 +179,41 @@ function PageComponent() {
               <DataTable columns={columns} data={members} />
             </CardContent>
           </Card>
+
+          {role === ROLES.owner && (
+            <Card>
+              <CardHeader className="text-lg font-bold">
+                {t('Danger Zone')}
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <AlertConfirm
+                    title={'Confirm to delete this workspace'}
+                    description={t(
+                      'All content in this workspace will be destory and can not recover.'
+                    )}
+                    onConfirm={async () => {
+                      await deleteWorkspaceMutation.mutateAsync({
+                        workspaceId,
+                      });
+
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 1000);
+                    }}
+                  >
+                    <Button
+                      type="button"
+                      loading={deleteWorkspaceMutation.isLoading}
+                      variant="destructive"
+                    >
+                      {t('Delete Workspace')}
+                    </Button>
+                  </AlertConfirm>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </ScrollArea>
     </CommonWrapper>

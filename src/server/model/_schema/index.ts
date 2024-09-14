@@ -31,7 +31,7 @@ export const userInfoSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   deletedAt: z.date().nullable(),
-  currentWorkspace: workspaceSchema,
+  currentWorkspaceId: z.string().nullable(),
   workspaces: z.array(
     z.object({
       role: z.string(),
