@@ -37,7 +37,7 @@
     "@radix-ui/react-menubar": "^1.0.4",
     "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-progress": "^1.0.3",
-    "@radix-ui/react-scroll-area": "1.2.0-rc.6",
+    "@radix-ui/react-scroll-area": "1.2.0-rc.7",
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
