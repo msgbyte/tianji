@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-import lighthouse, { Result } from 'lighthouse';
+import lighthouse, { Result, generateReport } from 'lighthouse';
 
 export async function generateLighthouse(url: string): Promise<Result> {
   // Use Puppeteer to launch headless Chrome
@@ -32,4 +32,8 @@ export async function generateLighthouse(url: string): Promise<Result> {
   await browser.close();
 
   return lhr;
+}
+
+export function getLighthouseReport(lhr: Result): string {
+  return generateReport(lhr);
 }

@@ -15,6 +15,7 @@ import {
 import { env } from './utils/env.js';
 import cors from 'cors';
 import { serverStatusRouter } from './router/serverStatus.js';
+import { lighthouseRouter } from './router/lighthouse.js';
 import { logger } from './utils/logger.js';
 import { monitorRouter } from './router/monitor.js';
 import { healthRouter } from './router/health.js';
@@ -53,6 +54,7 @@ app.use('/api/workspace', workspaceRouter);
 app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);
 app.use('/serverStatus', serverStatusRouter);
+app.use('/lh', lighthouseRouter);
 
 app.use('/trpc', trpcExpressMiddleware);
 
