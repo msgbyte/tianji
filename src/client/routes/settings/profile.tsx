@@ -37,7 +37,7 @@ function PageComponent() {
             <Form layout="vertical">
               <Form.Item label={t('Current Workspace Id')}>
                 <Typography.Text copyable={true} code={true}>
-                  {userInfo?.currentWorkspace?.id}
+                  {userInfo?.currentWorkspaceId}
                 </Typography.Text>
               </Form.Item>
               <Form.Item label={t('User Id')}>

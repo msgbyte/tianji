@@ -16,6 +16,7 @@ import {
 import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
+import { useAuth } from '@/api/authjs/useAuth';
 
 export const Route = createFileRoute('/switchWorkspace')({
   validateSearch: z.object({
@@ -45,6 +46,7 @@ function PageComponent() {
   const currentWorkspace = useCurrentWorkspaceSafe();
   const search = Route.useSearch();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleEnter = useEvent(() => {
     navigate({
@@ -66,13 +68,14 @@ function PageComponent() {
           <WorkspaceSwitcher isCollapsed={false} />
         </CardContent>
 
-        {currentWorkspace && (
-          <CardFooter className="justify-end">
-            <Button size="sm" onClick={handleEnter}>
-              {t('Enter')}
-            </Button>
-          </CardFooter>
-        )}
+        <CardFooter className="justify-end gap-2">
+          <Button size="sm" variant="outline" onClick={logout}>
+            {t('Logout')}
+          </Button>
+          <Button disabled={!currentWorkspace} size="sm" onClick={handleEnter}>
+            {t('Enter')}
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
