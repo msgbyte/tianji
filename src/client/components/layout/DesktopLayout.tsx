@@ -39,7 +39,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
       defaultValue: false,
     }
   );
-  const workspaceId = useUserStore((state) => state.info?.currentWorkspace?.id);
+  const workspaceId = useUserStore((state) => state.info?.currentWorkspaceId);
   const { data: serviceCount } = trpc.workspace.getServiceCount.useQuery(
     {
       workspaceId: workspaceId!,

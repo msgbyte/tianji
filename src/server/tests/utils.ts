@@ -24,13 +24,13 @@ export function createTestContext() {
       });
 
       await prisma.workspace.delete({
-        where: { id: data.currentWorkspace.id },
+        where: { id: data.currentWorkspaceId! },
       });
     });
 
     return {
       user: data,
-      workspace: data.currentWorkspace,
+      workspace: data.workspaces[0].workspace,
     };
   };
 

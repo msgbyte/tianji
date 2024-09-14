@@ -192,7 +192,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
                       <CheckIcon
                         className={cn(
                           'ml-auto h-4 w-4',
-                          currentWorkspace.id === workspace.id
+                          currentWorkspace?.id === workspace.id
                             ? 'opacity-100'
                             : 'opacity-0'
                         )}
@@ -259,50 +259,6 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
         </DialogContent>
       </Dialog>
     );
-
-    // return (
-    //   <Select value={userInfo.currentWorkspace.id}>
-    //     <SelectTrigger
-    //       className={cn(
-    //         'flex items-center gap-2 [&>span]:line-clamp-1 [&>span]:flex [&>span]:w-full [&>span]:items-center [&>span]:gap-1 [&>span]:truncate [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0',
-    //         props.isCollapsed &&
-    //           'flex h-9 w-9 shrink-0 items-center justify-center p-0 [&>span]:w-auto [&>svg]:hidden'
-    //       )}
-    //       aria-label="Select workspace"
-    //     >
-    //       <SelectValue placeholder="Select workspace">
-    //         <RiRocket2Fill />
-
-    //         <span className={cn('ml-2', props.isCollapsed && 'hidden')}>
-    //           {userInfo.currentWorkspace.name}
-    //         </span>
-    //       </SelectValue>
-    //     </SelectTrigger>
-    //     <SelectContent>
-    //       {userInfo.workspaces.map((w) => (
-    //         <SelectItem key={w.workspace.id} value={w.workspace.id}>
-    //           <div className="[&_svg]:text-foreground flex items-center gap-3 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0">
-    //             <RiRocket2Fill />
-    //             {w.workspace.name}
-    //           </div>
-    //         </SelectItem>
-    //       ))}
-
-    //       <SelectSeparator />
-
-    //       <SelectItem
-    //         value="create"
-    //         onClick={() => console.log('aa')}
-    //         onSelect={() => console.log('bbb')}
-    //       >
-    //         <div className="[&_svg]:text-foreground flex items-center gap-3 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0">
-    //           <LuPlus />
-    //           {t('Create Workspace')}
-    //         </div>
-    //       </SelectItem>
-    //     </SelectContent>
-    //   </Select>
-    // );
   }
 );
 WorkspaceSwitcher.displayName = 'WorkspaceSwitcher';
