@@ -86,8 +86,8 @@ export const MonitorListItem: React.FC<{
         </span>
       </div>
 
-      <div className="pl-2">
-        <div className="text-base">{monitorName}</div>
+      <div className="flex-1 pl-2">
+        <div className="text-nowrap text-base">{monitorName}</div>
         {/* <div>
               {monitor.tags.map((tag) => (
                 <span
@@ -100,7 +100,15 @@ export const MonitorListItem: React.FC<{
             </div> */}
       </div>
 
-      <div className="flex-1 flex-shrink items-center overflow-hidden px-1">
+      {showCurrentResponse && latestResponse && (
+        <Tooltip title={t('Current')}>
+          <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
+            {latestResponse}
+          </div>
+        </Tooltip>
+      )}
+
+      <div className="flex-shrink basis-[160px] items-center overflow-hidden px-1">
         <MonitorHealthBar
           healthBarClassName="justify-end"
           workspaceId={workspaceId}
@@ -109,14 +117,6 @@ export const MonitorListItem: React.FC<{
           onBeatsItemUpdate={setBeats}
         />
       </div>
-
-      {showCurrentResponse && latestResponse && (
-        <Tooltip title={t('Current')}>
-          <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
-            {latestResponse}
-          </div>
-        </Tooltip>
-      )}
     </div>
   );
 });

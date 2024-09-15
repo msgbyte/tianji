@@ -106,11 +106,11 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
         <div
           className={clsx(
             'mx-auto overflow-auto px-4 py-8',
-            !editMode ? 'w-4/5 sm:w-full' : 'w-2/3'
+            !editMode ? 'w-full' : 'w-2/3'
           )}
         >
           <div className="flex">
-            <div className="mb-4 flex-1 text-2xl">{info?.title}</div>
+            <div className="mb-4 flex-1 text-2xl font-bold">{info?.title}</div>
 
             <ColorSchemeSwitcher />
           </div>
@@ -132,7 +132,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             <MarkdownViewer value={info?.description ?? ''} />
           </div>
 
-          <div className="mb-2 text-lg">{t('Services')}</div>
+          <div className="mb-2 text-lg font-semibold">{t('Services')}</div>
 
           {info && (
             <StatusPageServices

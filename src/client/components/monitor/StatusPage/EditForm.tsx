@@ -227,6 +227,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
 
                 <Button
                   variant="dashed"
+                  type="button"
                   onClick={() =>
                     append({
                       id: '',
@@ -242,7 +243,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             )}
           />
 
-          <div className="!mt-8 flex gap-2">
+          <div className="!mt-8 flex justify-end gap-2">
             <Button type="submit" loading={isLoading}>
               {props.saveButtonLabel ?? t('Save')}
             </Button>
