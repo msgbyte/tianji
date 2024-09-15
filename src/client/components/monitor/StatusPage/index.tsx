@@ -13,7 +13,14 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { MarkdownViewer } from '@/components/MarkdownEditor';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -83,6 +90,26 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
       }
     );
 
+    const editBtn = (
+      <Sheet open={editMode} onOpenChange={setEditMode}>
+        <SheetTrigger>
+          <Button>{t('Edit')}</Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="overflow-auto">
+          <SheetHeader>{t('Modify Status Page Info')}</SheetHeader>
+
+          <Separator className="my-4" />
+
+          <MonitorStatusPageEditForm
+            isLoading={loading}
+            initialValues={initialValues}
+            onFinish={handleSave}
+            onCancel={() => setEditMode(false)}
+          />
+        </SheetContent>
+      </Sheet>
+    );
+
     return (
       <div className="flex h-full w-full">
         <Helmet>
@@ -92,21 +119,9 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
           </title>
         </Helmet>
 
-        {editMode && (
-          <div className="w-1/3 overflow-auto border-r border-gray-300 px-4 py-8 dark:border-gray-600">
-            <MonitorStatusPageEditForm
-              isLoading={loading}
-              initialValues={initialValues}
-              onFinish={handleSave}
-              onCancel={() => setEditMode(false)}
-            />
-          </div>
-        )}
-
         <div
           className={clsx(
-            'mx-auto overflow-auto px-4 py-8',
-            !editMode ? 'w-full' : 'w-2/3'
+            'mx-auto w-full overflow-auto px-4 py-8 md:w-4/5 xl:w-3/5'
           )}
         >
           <div className="flex">
@@ -115,11 +130,11 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             <ColorSchemeSwitcher />
           </div>
 
-          {allowEdit && !editMode && (
+          {allowEdit && (
             <div className="mb-4 flex gap-2">
-              <Button onClick={() => setEditMode(true)}>{t('Edit')}</Button>
+              {editBtn}
 
-              {showBackBtn && (
+              {showBackBtn && !editMode && (
                 <Link to="/">
                   <Button variant="outline">{t('Back to Admin')}</Button>
                 </Link>

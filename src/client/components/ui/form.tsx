@@ -12,6 +12,7 @@ import {
 
 import { cn } from "@/utils/style"
 import { Label } from "@/components/ui/label"
+import { useTranslation } from "@i18next-toolkit/react"
 
 const Form = FormProvider
 
@@ -86,9 +87,10 @@ FormItem.displayName = "FormItem"
 
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & {optional?: boolean}
 >(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField()
+  const { t } = useTranslation()
 
   return (
     <Label
@@ -96,7 +98,10 @@ const FormLabel = React.forwardRef<
       className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
       {...props}
-    />
+    >
+      {props.children}
+      {props.optional && <span className="text-xs opacity-40 ml-1">{t('Optional')}</span>}
+    </Label>
   )
 })
 FormLabel.displayName = "FormLabel"

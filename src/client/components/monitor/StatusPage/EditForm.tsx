@@ -2,12 +2,12 @@ import React from 'react';
 import { MonitorPicker } from '../MonitorPicker';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
-import { LuMinus, LuMinusCircle, LuPlus } from 'react-icons/lu';
+import { LuMinusCircle, LuPlus } from 'react-icons/lu';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEventWithLoading } from '@/hooks/useEvent';
-import { Input as AntdInput, Divider, Typography } from 'antd';
+import { Input as AntdInput, Typography } from 'antd';
 import {
   Form,
   FormControl,
@@ -22,6 +22,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { domainRegex, slugRegex } from '@tianji/shared';
 import { useElementSize } from '@/hooks/useResizeObserver';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 const Text = Typography.Text;
 
@@ -140,7 +141,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('Description')}</FormLabel>
+                <FormLabel optional={true}>{t('Description')}</FormLabel>
                 <FormControl>
                   <MarkdownEditorFormItem {...field} />
                 </FormControl>
@@ -155,7 +156,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             name="domain"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('Custom Domain')}</FormLabel>
+                <FormLabel optional={true}>{t('Custom Domain')}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -178,51 +179,41 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             render={() => (
               <FormItem>
                 <FormLabel>{t('Monitor List')}</FormLabel>
-                {fields.map((field, i) => {
-                  const { onChange: onMonitorChange, ...monitorProps } =
-                    form.register(`monitorList.${i}.id`, {
-                      onChange: (e) => console.log(e.target.value),
-                    });
-                  const { onChange: onShowCurrentChange, ...showCurrentProps } =
-                    form.register(`monitorList.${i}.showCurrent`);
+                {fields.map((field, i) => (
+                  <>
+                    {i !== 0 && <Separator className="my-0.5" />}
 
-                  return (
-                    <>
-                      {i !== 0 && <Divider className="my-0.5" />}
+                    <div key={field.key} className="mb-2 flex flex-col gap-1">
+                      <Controller
+                        control={form.control}
+                        name={`monitorList.${i}.id`}
+                        render={({ field }) => <MonitorPicker {...field} />}
+                      />
 
-                      <div key={field.key} className="mb-2 flex flex-col gap-1">
+                      <div className="flex flex-1 items-center">
                         <Controller
                           control={form.control}
-                          name={`monitorList.${i}.id`}
-                          render={({ field }) => <MonitorPicker {...field} />}
+                          name={`monitorList.${i}.showCurrent`}
+                          render={({ field }) => (
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          )}
                         />
 
-                        <div className="flex flex-1 items-center">
-                          <Controller
-                            control={form.control}
-                            name={`monitorList.${i}.showCurrent`}
-                            render={({ field }) => (
-                              <Switch
-                                {...showCurrentProps}
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            )}
-                          />
+                        <span className="ml-1 flex-1 align-middle text-sm">
+                          {t('Show Latest Value')}
+                        </span>
 
-                          <span className="ml-1 flex-1 align-middle text-sm">
-                            {t('Show Latest Value')}
-                          </span>
-
-                          <LuMinusCircle
-                            className="cursor-pointer text-lg"
-                            onClick={() => remove(i)}
-                          />
-                        </div>
+                        <LuMinusCircle
+                          className="cursor-pointer text-lg"
+                          onClick={() => remove(i)}
+                        />
                       </div>
-                    </>
-                  );
-                })}
+                    </div>
+                  </>
+                ))}
                 <FormMessage />
 
                 <Button
