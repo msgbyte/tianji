@@ -18,6 +18,7 @@ import { Route as SurveyImport } from './routes/survey'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ServerImport } from './routes/server'
 import { Route as RegisterImport } from './routes/register'
+import { Route as PlaygroundImport } from './routes/playground'
 import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
@@ -81,6 +82,11 @@ const ServerRoute = ServerImport.update({
 
 const RegisterRoute = RegisterImport.update({
   path: '/register',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PlaygroundRoute = PlaygroundImport.update({
+  path: '/playground',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -248,6 +254,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageImport
       parentRoute: typeof rootRoute
     }
+    '/playground': {
+      preLoaderRoute: typeof PlaygroundImport
+      parentRoute: typeof rootRoute
+    }
     '/register': {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
@@ -387,6 +397,7 @@ export const routeTree = rootRoute.addChildren([
     MonitorMonitorIdIndexRoute,
   ]),
   PageRoute.addChildren([PageSlugRoute, PageAddRoute]),
+  PlaygroundRoute,
   RegisterRoute,
   ServerRoute,
   SettingsRoute.addChildren([
