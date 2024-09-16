@@ -86,7 +86,7 @@ function PageComponent() {
         />
       }
     >
-      <MonitorStatusPage slug={slug} showBackBtn={false} />
+      <MonitorStatusPage slug={slug} showBackBtn={false} fullWidth={true} />
     </CommonWrapper>
   );
 }

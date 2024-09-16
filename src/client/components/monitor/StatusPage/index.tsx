@@ -21,16 +21,18 @@ import {
   SheetHeader,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { cn } from '@/utils/style';
 
 interface MonitorStatusPageProps {
   slug: string;
   showBackBtn?: boolean;
+  fullWidth?: boolean;
 }
 
 export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
-    const { slug, showBackBtn = true } = props;
+    const { slug, showBackBtn = true, fullWidth } = props;
 
     const { data: info } = trpc.monitor.getPageInfo.useQuery({
       slug,
@@ -120,8 +122,9 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
         </Helmet>
 
         <div
-          className={clsx(
-            'mx-auto w-full overflow-auto px-4 py-8 md:w-4/5 xl:w-3/5'
+          className={cn(
+            'mx-auto overflow-auto px-4 py-8',
+            fullWidth ? 'w-full' : 'w-full md:w-4/5 xl:w-3/5'
           )}
         >
           <div className="flex">
