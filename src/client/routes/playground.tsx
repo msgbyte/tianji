@@ -5,6 +5,7 @@ import {
   MonitorStatusPageServiceList,
 } from '@/components/monitor/StatusPage/ServiceList';
 import { useState } from 'react';
+import { EditableText } from '@/components/EditableText';
 
 export const Route = createFileRoute('/playground')({
   beforeLoad: () => {
@@ -45,6 +46,11 @@ function PageComponent() {
 
   return (
     <div>
+      <EditableText
+        defaultValue="fooooooooo"
+        onSave={() => console.log('save')}
+      />
+
       <MonitorStatusPageServiceList value={list} onChange={setList} />
     </div>
   );

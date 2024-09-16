@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { MonitorPicker } from '../MonitorPicker';
 import { Switch } from '@/components/ui/switch';
 import { set } from 'lodash-es';
+import { EditableText } from '@/components/EditableText';
 
 export const leafItemSchema = z.object({
   key: z.string(),
@@ -90,6 +91,24 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
       props.onChange(newList);
     });
 
+    const handleChangeGroupTitle = useEvent(
+      (groupKey: string, title: string) => {
+        const index = props.value.findIndex((item) => item.key === groupKey);
+        if (index === -1) {
+          return;
+        }
+
+        const newList = [...props.value];
+        if (!('children' in newList[index])) {
+          return;
+        }
+
+        newList[index].title = title;
+
+        props.onChange(newList);
+      }
+    );
+
     const handleDeleteItem = useEvent((groupKey: string, itemKey: string) => {
       const newList = [...props.value];
       const groupIndex = newList.findIndex((item) => item.key === groupKey);
@@ -145,31 +164,34 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
           onChange={props.onChange}
           renderGroup={(group, children, level) => (
             <div>
-              <div className={cn('flex items-center gap-2')}>
-                <span>{group.title}</span>
+              {level > 0 && (
+                <div className={cn('flex items-center gap-2')}>
+                  <EditableText
+                    className="flex-1 overflow-hidden text-ellipsis text-nowrap"
+                    defaultValue={group.title}
+                    onSave={(text) => handleChangeGroupTitle(group.key, text)}
+                  />
 
-                {level > 0 && (
-                  <>
-                    <Button
-                      className="h-6 w-6"
-                      variant="outline"
-                      size="icon"
-                      type="button"
-                      Icon={LuPlusCircle}
-                      onClick={() => handleAddItem(group.key)}
-                    />
+                  <Button
+                    className="h-6 w-6"
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    Icon={LuPlusCircle}
+                    onClick={() => handleAddItem(group.key)}
+                  />
 
-                    <Button
-                      className="h-6 w-6"
-                      variant="outline"
-                      size="icon"
-                      type="button"
-                      Icon={LuTrash}
-                      onClick={() => handleDeleteGroup(group.key)}
-                    />
-                  </>
-                )}
-              </div>
+                  <Button
+                    className="h-6 w-6"
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    Icon={LuTrash}
+                    onClick={() => handleDeleteGroup(group.key)}
+                  />
+                </div>
+              )}
+
               <div
                 className={cn(level > 0 && 'border-l-4 border-gray-600 p-2')}
               >
