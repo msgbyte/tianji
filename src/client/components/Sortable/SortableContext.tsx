@@ -2,15 +2,15 @@ import React from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { useEvent } from '@/hooks/useEvent';
 import { reorder } from '@/utils/reorder';
-import { BaseSortableData } from './types';
+import { SortableItem } from './types';
 
-interface SortableContextProps<T extends BaseSortableData = BaseSortableData> {
+interface SortableContextProps<T extends SortableItem> {
   list: T[];
   onChange: (list: T[]) => void;
   children: React.ReactNode;
 }
 
-export const SortableContext = <T extends BaseSortableData>(
+export const SortableContext = <T extends SortableItem>(
   props: SortableContextProps<T>
 ) => {
   const { list, onChange, children } = props;
@@ -37,50 +37,50 @@ export const SortableContext = <T extends BaseSortableData>(
 
       const final = [...list];
       const sourceGroupIndex = final.findIndex(
-        (group) => group.id === result.source.droppableId
+        (group) => group.key === result.source.droppableId
       );
       if (sourceGroupIndex === -1) {
         return;
       }
       const destinationGroupIndex = final.findIndex(
-        (group) => group.id === result.destination?.droppableId
+        (group) => group.key === result.destination?.droppableId
       );
       if (destinationGroupIndex === -1) {
         return;
       }
 
       if (sourceGroupIndex === destinationGroupIndex) {
-        if (!('items' in final[sourceGroupIndex])) {
+        if (!('children' in final[sourceGroupIndex])) {
           return;
         }
 
         // same group
-        final[sourceGroupIndex].items = reorder(
-          final[sourceGroupIndex].items!,
+        final[sourceGroupIndex].children = reorder(
+          final[sourceGroupIndex].children!,
           result.source.index,
           result.destination.index
         );
       } else {
         // cross group
         if (
-          !('items' in final[sourceGroupIndex]) ||
-          !('items' in final[destinationGroupIndex])
+          !('children' in final[sourceGroupIndex]) ||
+          !('children' in final[destinationGroupIndex])
         ) {
           return;
         }
 
         const sourceGroupItems = Array.from(
-          final[sourceGroupIndex].items ?? []
+          final[sourceGroupIndex].children ?? []
         );
         const [removed] = sourceGroupItems.splice(result.source.index, 1);
 
         const destinationGroupItems = Array.from(
-          final[destinationGroupIndex].items ?? []
+          final[destinationGroupIndex].children ?? []
         );
         destinationGroupItems.splice(result.destination.index, 0, removed);
 
-        final[sourceGroupIndex].items = sourceGroupItems;
-        final[destinationGroupIndex].items = destinationGroupItems;
+        final[sourceGroupIndex].children = sourceGroupItems;
+        final[destinationGroupIndex].children = destinationGroupItems;
       }
 
       onChange(final);

@@ -1,6 +1,10 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { isDev } from '@/utils/env';
-import { MonitorStatusPageServiceList } from '@/components/monitor/StatusPage/ServiceList';
+import {
+  MonitorStatusPageServiceItem,
+  MonitorStatusPageServiceList,
+} from '@/components/monitor/StatusPage/ServiceList';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/playground')({
   beforeLoad: () => {
@@ -13,13 +17,35 @@ export const Route = createFileRoute('/playground')({
   component: PageComponent,
 });
 
-function PageComponent(this: {
-  beforeLoad: () => void;
-  component: () => import('react/jsx-runtime').JSX.Element;
-}) {
+function PageComponent() {
+  const [list, setList] = useState<MonitorStatusPageServiceItem[]>([
+    {
+      title: 'Group 1',
+      key: 'group1',
+      children: [
+        {
+          key: 'item1',
+          id: 'fooo',
+          type: 'monitor',
+        },
+      ],
+    },
+    {
+      title: 'Group 2',
+      key: 'group2',
+      children: [
+        {
+          key: 'item2',
+          id: 'barr',
+          type: 'monitor',
+        },
+      ],
+    },
+  ]);
+
   return (
     <div>
-      <MonitorStatusPageServiceList />
+      <MonitorStatusPageServiceList value={list} onChange={setList} />
     </div>
   );
 }

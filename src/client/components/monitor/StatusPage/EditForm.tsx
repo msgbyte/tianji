@@ -1,5 +1,5 @@
 import React from 'react';
-import { MonitorPicker, MonitorPickerOld } from '../MonitorPicker';
+import { MonitorPicker } from '../MonitorPicker';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { LuMinusCircle, LuPlus } from 'react-icons/lu';
@@ -23,17 +23,11 @@ import { domainRegex, slugRegex } from '@tianji/shared';
 import { useElementSize } from '@/hooks/useResizeObserver';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ColorTag } from '@/components/ColorTag';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { CollapsibleTrigger } from '@radix-ui/react-collapsible';
 import { CaretSortIcon } from '@radix-ui/react-icons';
+import { DeprecatedBadge } from '@/components/DeprecatedBadge';
+import { groupItemSchema, MonitorStatusPageServiceList } from './ServiceList';
 
 const Text = Typography.Text;
 
@@ -46,6 +40,15 @@ const editFormSchema = z.object({
     .regex(domainRegex, 'Invalid domain')
     .or(z.literal(''))
     .optional(),
+  body: z
+    .object({
+      groups: z.array(groupItemSchema),
+    })
+    .default({ groups: [] }),
+
+  /**
+   * @deprecated
+   */
   monitorList: z.array(
     z.object({
       id: z.string(),
@@ -77,10 +80,20 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
         description: '',
         domain: '',
         monitorList: [],
+        body: { groups: [] },
       },
     });
 
-    const { fields, append, remove } = useFieldArray({
+    const showDeprecatedMonitorList = props.initialValues
+      ? Array.isArray(props.initialValues.monitorList) &&
+        props.initialValues.monitorList.length > 0
+      : false;
+
+    const {
+      fields: oldMonitorFields,
+      append,
+      remove,
+    } = useFieldArray({
       control: form.control,
       name: 'monitorList',
       keyName: 'key',
@@ -191,74 +204,98 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             </CollapsibleContent>
           </Collapsible>
 
-          {/* MonitorList */}
+          {/* Body */}
           <FormField
             control={form.control}
-            name="monitorList"
-            render={() => (
+            name="body.groups"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('Monitor List')}</FormLabel>
-                {fields.map((field, i) => (
-                  <>
-                    {i !== 0 && <Separator />}
+                <FormLabel>{t('Body')}</FormLabel>
+                <FormControl>
+                  <MonitorStatusPageServiceList
+                    {...field}
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                    <div key={field.key} className="mb-2 flex flex-col gap-2">
-                      <Controller
-                        control={form.control}
-                        name={`monitorList.${i}.id`}
-                        render={({ field }) => (
-                          <MonitorPicker
-                            {...field}
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          />
-                        )}
-                      />
+          {/* MonitorList */}
+          {showDeprecatedMonitorList && (
+            <FormField
+              control={form.control}
+              name="monitorList"
+              render={() => (
+                <FormItem className="opacity-50">
+                  <FormLabel>
+                    {t('Monitor List')}
+                    <DeprecatedBadge tip={t('Please use Body field')} />
+                  </FormLabel>
+                  {oldMonitorFields.map((field, i) => (
+                    <>
+                      {i !== 0 && <Separator />}
 
-                      <div className="flex flex-1 items-center">
+                      <div key={field.key} className="mb-2 flex flex-col gap-2">
                         <Controller
                           control={form.control}
-                          name={`monitorList.${i}.showCurrent`}
+                          name={`monitorList.${i}.id`}
                           render={({ field }) => (
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                            <MonitorPicker
+                              {...field}
+                              value={field.value}
+                              onValueChange={field.onChange}
                             />
                           )}
                         />
 
-                        <span className="ml-1 flex-1 align-middle text-sm">
-                          {t('Show Latest Value')}
-                        </span>
+                        <div className="flex flex-1 items-center">
+                          <Controller
+                            control={form.control}
+                            name={`monitorList.${i}.showCurrent`}
+                            render={({ field }) => (
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            )}
+                          />
 
-                        <LuMinusCircle
-                          className="cursor-pointer text-lg"
-                          onClick={() => remove(i)}
-                        />
+                          <span className="ml-1 flex-1 align-middle text-sm">
+                            {t('Show Latest Value')}
+                          </span>
+
+                          <LuMinusCircle
+                            className="cursor-pointer text-lg"
+                            onClick={() => remove(i)}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </>
-                ))}
+                    </>
+                  ))}
 
-                <FormMessage />
+                  <FormMessage />
 
-                <Button
-                  variant="dashed"
-                  type="button"
-                  onClick={() =>
-                    append({
-                      id: '',
-                      showCurrent: false,
-                    })
-                  }
-                  style={{ width: '60%' }}
-                  Icon={LuPlus}
-                >
-                  {t('Add Monitor')}
-                </Button>
-              </FormItem>
-            )}
-          />
+                  <Button
+                    variant="dashed"
+                    type="button"
+                    onClick={() =>
+                      append({
+                        id: '',
+                        showCurrent: false,
+                      })
+                    }
+                    style={{ width: '60%' }}
+                    Icon={LuPlus}
+                  >
+                    {t('Add Monitor')}
+                  </Button>
+                </FormItem>
+              )}
+            />
+          )}
 
           <div className="!mt-8 flex justify-end gap-2">
             <Button type="submit" loading={isLoading}>

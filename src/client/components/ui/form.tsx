@@ -87,7 +87,7 @@ FormItem.displayName = "FormItem"
 
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & {optional?: boolean}
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & { optional?: boolean }
 >(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField()
   const { t } = useTranslation()
