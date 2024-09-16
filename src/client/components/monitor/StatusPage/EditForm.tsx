@@ -1,5 +1,5 @@
 import React from 'react';
-import { MonitorPicker } from '../MonitorPicker';
+import { MonitorPicker, MonitorPickerOld } from '../MonitorPicker';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { LuMinusCircle, LuPlus } from 'react-icons/lu';
@@ -23,6 +23,17 @@ import { domainRegex, slugRegex } from '@tianji/shared';
 import { useElementSize } from '@/hooks/useResizeObserver';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ColorTag } from '@/components/ColorTag';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { CollapsibleTrigger } from '@radix-ui/react-collapsible';
+import { CaretSortIcon } from '@radix-ui/react-icons';
 
 const Text = Typography.Text;
 
@@ -135,42 +146,50 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             )}
           />
 
-          {/* Description */}
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel optional={true}>{t('Description')}</FormLabel>
-                <FormControl>
-                  <MarkdownEditorFormItem {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Collapsible>
+            <CollapsibleTrigger className="flex w-full items-center justify-between">
+              <span className="text-sm">{t('Advanced')}</span>
+              <CaretSortIcon className="h-4 w-4" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {/* Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel optional={true}>{t('Description')}</FormLabel>
+                    <FormControl>
+                      <MarkdownEditorFormItem {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          {/* Custom Domain */}
-          <FormField
-            control={form.control}
-            name="domain"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel optional={true}>{t('Custom Domain')}</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormDescription>
-                  <div>
-                    {t(
-                      'You can config your status page in your own domain, for example: status.example.com'
-                    )}
-                  </div>
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              {/* Custom Domain */}
+              <FormField
+                control={form.control}
+                name="domain"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel optional={true}>{t('Custom Domain')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      <div>
+                        {t(
+                          'You can config your status page in your own domain, for example: status.example.com'
+                        )}
+                      </div>
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* MonitorList */}
           <FormField
@@ -181,13 +200,19 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                 <FormLabel>{t('Monitor List')}</FormLabel>
                 {fields.map((field, i) => (
                   <>
-                    {i !== 0 && <Separator className="my-0.5" />}
+                    {i !== 0 && <Separator />}
 
-                    <div key={field.key} className="mb-2 flex flex-col gap-1">
+                    <div key={field.key} className="mb-2 flex flex-col gap-2">
                       <Controller
                         control={form.control}
                         name={`monitorList.${i}.id`}
-                        render={({ field }) => <MonitorPicker {...field} />}
+                        render={({ field }) => (
+                          <MonitorPicker
+                            {...field}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          />
+                        )}
                       />
 
                       <div className="flex flex-1 items-center">
@@ -214,6 +239,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                     </div>
                   </>
                 ))}
+
                 <FormMessage />
 
                 <Button

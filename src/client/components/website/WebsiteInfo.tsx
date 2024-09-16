@@ -7,7 +7,7 @@ import { useCurrentWorkspaceId } from '../../store/user';
 import { ErrorTip } from '../ErrorTip';
 import { Loading } from '../Loading';
 import { NoWorkspaceTip } from '../NoWorkspaceTip';
-import { MonitorPicker } from '../monitor/MonitorPicker';
+import { MonitorPickerOld } from '../monitor/MonitorPicker';
 import {
   defaultErrorHandler,
   defaultSuccessHandler,
@@ -126,7 +126,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
                   'You can bind a monitor which will display health status in website overview'
                 )}
               >
-                <MonitorPicker size="large" allowClear={true} />
+                <MonitorPickerOld size="large" allowClear={true} />
               </Form.Item>
 
               <Form.Item>
