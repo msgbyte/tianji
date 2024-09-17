@@ -13,19 +13,7 @@ import { MonitorPicker } from '../MonitorPicker';
 import { Switch } from '@/components/ui/switch';
 import { set } from 'lodash-es';
 import { EditableText } from '@/components/EditableText';
-
-export const leafItemSchema = z.object({
-  key: z.string(),
-  id: z.string(),
-  type: z.enum(['monitor']),
-  showCurrent: z.boolean().default(false).optional(),
-});
-
-export const groupItemSchema = z.object({
-  key: z.string(),
-  title: z.string(),
-  children: z.array(leafItemSchema),
-});
+import { groupItemSchema, leafItemSchema } from './schema';
 
 type GroupItemProps = Omit<z.infer<typeof groupItemSchema>, 'key' | 'children'>;
 type LeafItemProps = Omit<z.infer<typeof leafItemSchema>, 'key'>;
@@ -167,7 +155,7 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
               {level > 0 && (
                 <div className={cn('flex items-center gap-2')}>
                   <EditableText
-                    className="flex-1 overflow-hidden text-ellipsis text-nowrap"
+                    className="flex-1 overflow-hidden text-ellipsis text-nowrap font-bold"
                     defaultValue={group.title}
                     onSave={(text) => handleChangeGroupTitle(group.key, text)}
                   />
@@ -193,7 +181,10 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
               )}
 
               <div
-                className={cn(level > 0 && 'border-l-4 border-gray-600 p-2')}
+                className={cn(
+                  level > 0 &&
+                    'border-l-4 border-gray-300 p-2 dark:border-gray-600'
+                )}
               >
                 {children}
               </div>
@@ -203,7 +194,7 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
             if (item.type === 'monitor') {
               return (
                 <div key={item.key}>
-                  {i !== 0 && <Separator />}
+                  {i !== 0 && <Separator className="my-2" />}
 
                   <div className="mb-2 flex flex-col gap-2">
                     <MonitorPicker

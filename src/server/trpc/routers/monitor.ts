@@ -601,6 +601,7 @@ export const monitorRouter = router({
         .merge(
           MonitorStatusPageModelSchema.pick({
             description: true,
+            body: true,
             monitorList: true,
             domain: true,
           }).partial()
@@ -608,8 +609,15 @@ export const monitorRouter = router({
     )
     .output(MonitorStatusPageModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, slug, title, description, monitorList, domain } =
-        input;
+      const {
+        workspaceId,
+        slug,
+        title,
+        description,
+        body,
+        monitorList,
+        domain,
+      } = input;
 
       const existSlugCount = await prisma.monitorStatusPage.count({
         where: {
@@ -631,6 +639,7 @@ export const monitorRouter = router({
           slug,
           title,
           description,
+          body,
           monitorList,
           domain: domain || null, // make sure not ''
         },
@@ -661,6 +670,7 @@ export const monitorRouter = router({
           slug: true,
           title: true,
           description: true,
+          body: true,
           monitorList: true,
           domain: true,
         }).partial()
@@ -668,8 +678,16 @@ export const monitorRouter = router({
     )
     .output(MonitorStatusPageModelSchema)
     .mutation(async ({ input }) => {
-      const { id, workspaceId, slug, title, description, monitorList, domain } =
-        input;
+      const {
+        id,
+        workspaceId,
+        slug,
+        title,
+        description,
+        body,
+        monitorList,
+        domain,
+      } = input;
 
       if (slug) {
         const existSlugCount = await prisma.monitorStatusPage.count({
@@ -699,6 +717,7 @@ export const monitorRouter = router({
           slug,
           title,
           description,
+          body,
           monitorList,
           domain: domain || null,
         },

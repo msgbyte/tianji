@@ -15,6 +15,10 @@ export const MonitorStatusPageModelSchema = z.object({
   title: z.string(),
   description: z.string(),
   /**
+   * [CommonPayload]
+   */
+  body: imports.CommonPayloadSchema,
+  /**
    * [MonitorStatusPageList]
    */
   monitorList: imports.MonitorStatusPageListSchema,

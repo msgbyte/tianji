@@ -27,7 +27,8 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { CollapsibleTrigger } from '@radix-ui/react-collapsible';
 import { CaretSortIcon } from '@radix-ui/react-icons';
 import { DeprecatedBadge } from '@/components/DeprecatedBadge';
-import { groupItemSchema, MonitorStatusPageServiceList } from './ServiceList';
+import { MonitorStatusPageServiceList } from './ServiceList';
+import { bodySchema } from './schema';
 
 const Text = Typography.Text;
 
@@ -40,11 +41,7 @@ const editFormSchema = z.object({
     .regex(domainRegex, 'Invalid domain')
     .or(z.literal(''))
     .optional(),
-  body: z
-    .object({
-      groups: z.array(groupItemSchema),
-    })
-    .default({ groups: [] }),
+  body: bodySchema,
 
   /**
    * @deprecated

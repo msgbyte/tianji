@@ -22,6 +22,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/utils/style';
+import { StatusPageBody } from './Body';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -150,13 +151,21 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             <MarkdownViewer value={info?.description ?? ''} />
           </div>
 
-          <div className="mb-2 text-lg font-semibold">{t('Services')}</div>
-
+          {/* Body */}
           {info && (
-            <StatusPageServices
-              workspaceId={info.workspaceId}
-              monitorList={monitorList}
-            />
+            <StatusPageBody workspaceId={info.workspaceId} info={info} />
+          )}
+
+          {/* deprecated monitor list */}
+          {info && Array.isArray(monitorList) && monitorList.length > 0 && (
+            <>
+              <div className="mb-2 text-lg font-semibold">{t('Services')}</div>
+
+              <StatusPageServices
+                workspaceId={info.workspaceId}
+                monitorList={monitorList}
+              />
+            </>
           )}
         </div>
       </div>
