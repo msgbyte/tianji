@@ -1,5 +1,36 @@
 
 
+## [1.15.0](https://github.com/msgbyte/tianji/compare/v1.14.7...v1.15.0) (2024-09-18)
+
+
+### Features
+
+* add delete workspace feature [#96](https://github.com/msgbyte/tianji/issues/96) ([2b9a14c](https://github.com/msgbyte/tianji/commit/2b9a14c969c824d630452e0e4e30834f2a9a1b47))
+* add group feature in backend ([4d39cb5](https://github.com/msgbyte/tianji/commit/4d39cb5ef4d95626e600289a1e949e78ccd7906f))
+* add lighthouse endpoint ([28d982e](https://github.com/msgbyte/tianji/commit/28d982e497bfd04351c8495ec9ddd58fc205e771))
+* add lighthouse html report endpoint ([943f7f5](https://github.com/msgbyte/tianji/commit/943f7f594ba90aa037ab5cb1b057f496e8a5fcb2))
+* add logout button in switch workspace page ([6ce2f7f](https://github.com/msgbyte/tianji/commit/6ce2f7fd4dbcd56b5a5f493108138e8c8447619b))
+* add sortable group component ([ef30750](https://github.com/msgbyte/tianji/commit/ef307508026bf516d321da933c298d87efd0b902))
+* refactor sortable group component and add edit body component ([946ecaf](https://github.com/msgbyte/tianji/commit/946ecaf9f946dfb2d85541170a7441ba6e782e5a))
+
+
+### Others
+
+* add body spaces ([12b8ba9](https://github.com/msgbyte/tianji/commit/12b8ba95b7720d384f8ae607cea0f4133d5f4fc4))
+* add new editable text component which allow to change group title ([e323e10](https://github.com/msgbyte/tianji/commit/e323e104e03569b7131dc1aac1e15c548ebe8485))
+* add sortable group component which using react-beautiful-dnd ([91ade2a](https://github.com/msgbyte/tianji/commit/91ade2ab555e43dc36ec32c7e9cb2856ffccd5ae))
+* change edit style and logic, create new MonitorPicker component ([72a1e7b](https://github.com/msgbyte/tianji/commit/72a1e7b0249c69510af7650e19bf939ed88cf550))
+* fix ci problem and remove unused code ([95b51ca](https://github.com/msgbyte/tianji/commit/95b51ca2e160bf835aafb770e0a11b8ad0fc5858))
+* improve admin style in status page ([ed2141a](https://github.com/msgbyte/tianji/commit/ed2141af22a6103ea5be850eff57be7f24d9011b))
+* improve some style in server status page ([427e9e3](https://github.com/msgbyte/tianji/commit/427e9e3eb7684a58a4c2cb597283c5a5319d9dd3))
+* refactor server status edit form with react-hook-form ([6160d7b](https://github.com/msgbyte/tianji/commit/6160d7bcb9d3bf2a8b617b422e80fe7df8839967))
+* remove sender name in notification ([f309000](https://github.com/msgbyte/tianji/commit/f309000a0c3a58a4e1df9c44803ea6a0299fe9ac))
+* remove unused code and improve display view in status page ([f5151aa](https://github.com/msgbyte/tianji/commit/f5151aa2a4185714f1f988a2bad336b90f410b69))
+* update translation ([ef3d344](https://github.com/msgbyte/tianji/commit/ef3d34423b71969f9a9afee0f64394e17a66143f))
+* update translation ([8b86dcd](https://github.com/msgbyte/tianji/commit/8b86dcdceaf738cd27bbe6253825c9ef967c675f))
+* update translation ([42f41cd](https://github.com/msgbyte/tianji/commit/42f41cdbcb2a4452fbdcf6013451d6008d6d97f1))
+* upgrade @radix-ui/react-scroll-area version ([fc1e67e](https://github.com/msgbyte/tianji/commit/fc1e67e005fa7f4502807df1ab02c49b863bc4e4))
+
 ## [1.14.7](https://github.com/msgbyte/tianji/compare/v1.14.6...v1.14.7) (2024-09-10)
 
 
