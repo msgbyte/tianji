@@ -26,7 +26,7 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
     return (
       <div>
         {body.groups.map((group) => (
-          <div key={group.key}>
+          <div key={group.key} className="mb-6">
             <div className="mb-2 text-lg font-semibold">{group.title}</div>
 
             <div className="flex flex-col gap-4 rounded-md border border-gray-200 p-2.5 dark:border-gray-700">
