@@ -5,7 +5,6 @@ import swaggerUI from 'swagger-ui-express';
 import passport from 'passport';
 import morgan from 'morgan';
 import { websiteRouter } from './router/website.js';
-import { workspaceRouter } from './router/workspace.js';
 import { telemetryRouter } from './router/telemetry.js';
 import {
   trpcExpressMiddleware,

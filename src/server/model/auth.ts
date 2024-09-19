@@ -1,4 +1,5 @@
 import { Auth, AuthConfig, createActionURL } from '@auth/core';
+import { type Provider } from '@auth/core/providers';
 import Nodemailer from '@auth/core/providers/nodemailer';
 import Credentials from '@auth/core/providers/credentials';
 import Github from '@auth/core/providers/github';
@@ -89,10 +90,11 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
         name: 'Google',
         ...env.auth.google,
       }),
-    env.auth.provider.includes('custom') && {
-      id: 'custom',
-      ...env.auth.custom,
-    },
+    env.auth.provider.includes('custom') &&
+      ({
+        id: 'custom',
+        ...env.auth.custom,
+      } as Provider),
   ]),
   adapter: TianjiPrismaAdapter(prisma),
   secret: env.auth.secret,
