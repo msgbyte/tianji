@@ -39,31 +39,33 @@ export function useAuth() {
     }
   );
 
-  const loginWithOAuth = useEvent(async (provider: BuiltInProviderType) => {
-    let res: SignInResponse | undefined;
-    try {
-      res = await signIn(provider, {
-        redirect: false,
-      });
-      console.log('res', res);
-    } catch (err) {
-      toast.error(t('Login failed'));
-      throw err;
-    }
+  const loginWithOAuth = useEvent(
+    async (provider: BuiltInProviderType | 'custom') => {
+      let res: SignInResponse | undefined;
+      try {
+        res = await signIn(provider, {
+          redirect: false,
+        });
+        console.log('res', res);
+      } catch (err) {
+        toast.error(t('Login failed'));
+        throw err;
+      }
 
-    if (res?.error) {
-      toast.error(t('Login failed'));
-      throw new Error('Login failed');
-    }
+      if (res?.error) {
+        toast.error(t('Login failed'));
+        throw new Error('Login failed');
+      }
 
-    const userInfo = await trpcUtils.user.info.fetch();
-    if (!userInfo) {
-      toast.error(t('Can not get current user info'));
-      throw new Error('Login failed, ');
-    }
+      const userInfo = await trpcUtils.user.info.fetch();
+      if (!userInfo) {
+        toast.error(t('Can not get current user info'));
+        throw new Error('Login failed, ');
+      }
 
-    return userInfo;
-  });
+      return userInfo;
+    }
+  );
 
   const logout = useEvent(async () => {
     await signOut({

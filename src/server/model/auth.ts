@@ -89,6 +89,10 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
         name: 'Google',
         ...env.auth.google,
       }),
+    env.auth.provider.includes('custom') && {
+      id: 'custom',
+      ...env.auth.custom,
+    },
   ]),
   adapter: TianjiPrismaAdapter(prisma),
   secret: env.auth.secret,

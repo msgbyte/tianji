@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/api/authjs/useAuth';
 import { useEventWithLoading } from '@/hooks/useEvent';
-import { LuGithub } from 'react-icons/lu';
+import { LuGithub, LuLayers } from 'react-icons/lu';
 
 export const Route = createFileRoute('/login')({
   validateSearch: z.object({
@@ -102,14 +102,26 @@ function LoginComponent() {
           <>
             <Divider>{t('Or')}</Divider>
 
-            <div className="flex justify-center">
-              <Button
-                variant="secondary"
-                className="h-12 w-12 p-3"
-                onClick={() => loginWithOAuth('github')}
-              >
-                <LuGithub size={24} />
-              </Button>
+            <div className="flex justify-center gap-2">
+              {authProvider.includes('github') && (
+                <Button
+                  variant="secondary"
+                  className="h-12 w-12 p-3"
+                  onClick={() => loginWithOAuth('github')}
+                >
+                  <LuGithub size={24} />
+                </Button>
+              )}
+
+              {authProvider.includes('custom') && (
+                <Button
+                  variant="secondary"
+                  className="h-12 w-12 p-3"
+                  onClick={() => loginWithOAuth('custom')}
+                >
+                  <LuLayers size={24} />
+                </Button>
+              )}
             </div>
           </>
         )}
