@@ -50,7 +50,6 @@ app.use(
 app.use('/health', healthRouter);
 app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
-app.use('/api/workspace', workspaceRouter);
 app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);
 app.use('/serverStatus', serverStatusRouter);

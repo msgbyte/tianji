@@ -1,7 +1,6 @@
 import { Button, Form, Input, message, Popconfirm, Tabs } from 'antd';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { deleteWorkspaceWebsite } from '../../api/model/website';
 import { useRequest } from '../../hooks/useRequest';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { ErrorTip } from '../ErrorTip';
@@ -27,6 +26,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
   }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const trpcUtils = trpc.useUtils();
 
   const { data: website, isLoading } = trpc.website.info.useQuery({
     workspaceId,
@@ -38,6 +38,9 @@ export const WebsiteInfo: React.FC = React.memo(() => {
       queryClient.resetQueries(getQueryKey(trpc.website.info));
       defaultSuccessHandler();
     },
+    onError: defaultErrorHandler,
+  });
+  const deleteMutation = trpc.website.delete.useMutation({
     onError: defaultErrorHandler,
   });
 
@@ -54,7 +57,12 @@ export const WebsiteInfo: React.FC = React.memo(() => {
   );
 
   const [, handleDeleteWebsite] = useRequest(async () => {
-    await deleteWorkspaceWebsite(workspaceId, websiteId!);
+    if (!websiteId) {
+      return;
+    }
+
+    await deleteMutation.mutateAsync({ workspaceId, websiteId });
+    await trpcUtils.website.all.refetch({ workspaceId });
 
     message.success(t('Delete Success'));
 
@@ -139,7 +147,7 @@ export const WebsiteInfo: React.FC = React.memo(() => {
 
           <Tabs.TabPane key={'data'} tab={'Data'}>
             <Popconfirm
-              title={t('Delete Website')}
+              title={t('Delete Website') + ' ' + website.name}
               onConfirm={() => handleDeleteWebsite()}
             >
               <Button type="primary" danger={true}>

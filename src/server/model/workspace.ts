@@ -47,20 +47,6 @@ export async function getWorkspaceWebsites(workspaceId: string) {
   return workspace?.websites ?? [];
 }
 
-export async function deleteWorkspaceWebsite(
-  workspaceId: string,
-  websiteId: string
-) {
-  const website = await prisma.website.delete({
-    where: {
-      id: websiteId,
-      workspaceId,
-    },
-  });
-
-  return website;
-}
-
 export async function getWorkspaceWebsiteDateRange(websiteId: string) {
   const { params } = await parseWebsiteFilters(websiteId, {
     startDate: new Date(DEFAULT_RESET_DATE),

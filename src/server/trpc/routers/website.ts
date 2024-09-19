@@ -522,6 +522,34 @@ export const websiteRouter = router({
 
       return website;
     }),
+  delete: workspaceOwnerProcedure
+    .meta({
+      openapi: {
+        method: 'DELETE',
+        tags: [OPENAPI_TAG.WEBSITE],
+        protect: true,
+        path: `/workspace/{workspaceId}/website/{websiteId}`,
+      },
+    })
+    .input(
+      z.object({
+        websiteId: z.string(),
+      })
+    )
+    .output(websiteInfoSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, websiteId } = input;
+
+      const website = await prisma.website.delete({
+        where: {
+          id: websiteId,
+          workspaceId,
+        },
+      });
+
+      return website;
+    }),
+
   updateInfo: workspaceOwnerProcedure
     .meta(
       buildWebsiteOpenapi({
