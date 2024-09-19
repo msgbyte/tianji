@@ -1,5 +1,23 @@
 
 
+## [1.15.1](https://github.com/msgbyte/tianji/compare/v1.15.0...v1.15.1) (2024-09-19)
+
+
+### Features
+
+* add custom oidc/oauth provider support ([d0afdf5](https://github.com/msgbyte/tianji/commit/d0afdf5c91d2112d177ab7bb0315586cb64ad8d7))
+
+
+### Bug Fixes
+
+* fix website cannot delete problem [#91](https://github.com/msgbyte/tianji/issues/91) ([90953e4](https://github.com/msgbyte/tianji/commit/90953e490ceea8e5256fd564e4d220b2e7da50b3))
+
+
+### Others
+
+* add account provider ([84e4722](https://github.com/msgbyte/tianji/commit/84e4722f2fc8026de25fa33d23e17db61a6d4437))
+* fix ci problem ([63484d0](https://github.com/msgbyte/tianji/commit/63484d0db59e1ccc178c7427ec7d60fd7f1484b0))
+
 ## [1.15.0](https://github.com/msgbyte/tianji/compare/v1.14.7...v1.15.0) (2024-09-18)
 
 
