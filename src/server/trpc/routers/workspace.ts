@@ -220,15 +220,22 @@ export const workspaceRouter = router({
     )
     .input(
       z.object({
-        targetUserEmail: z.string(),
+        emailOrId: z.string(),
       })
     )
     .output(z.void())
     .mutation(async ({ input }) => {
-      const { targetUserEmail, workspaceId } = input;
-      const targetUser = await prisma.user.findUnique({
+      const { emailOrId, workspaceId } = input;
+      const targetUser = await prisma.user.findFirst({
         where: {
-          email: targetUserEmail,
+          OR: [
+            {
+              email: emailOrId,
+            },
+            {
+              id: emailOrId,
+            },
+          ],
         },
       });
 

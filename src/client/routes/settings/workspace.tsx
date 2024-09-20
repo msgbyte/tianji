@@ -46,7 +46,7 @@ export const Route = createFileRoute('/settings/workspace')({
 });
 
 const inviteFormSchema = z.object({
-  email: z.string().email(),
+  emailOrId: z.string(),
 });
 
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
@@ -64,7 +64,7 @@ function PageComponent() {
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
-      email: '',
+      emailOrId: '',
     },
   });
   const inviteMutation = trpc.workspace.invite.useMutation({
@@ -80,7 +80,7 @@ function PageComponent() {
     async (values: InviteFormValues) => {
       await inviteMutation.mutateAsync({
         workspaceId,
-        targetUserEmail: values.email,
+        emailOrId: values.emailOrId,
       });
       form.reset();
 
@@ -148,12 +148,15 @@ function PageComponent() {
                 <CardContent>
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="emailOrId"
                     render={({ field }) => (
                       <FormItem className="max-w-[320px]">
                         <FormLabel />
                         <FormControl>
-                          <Input placeholder="jane@example.com" {...field} />
+                          <Input
+                            placeholder="jane@example.com or userId"
+                            {...field}
+                          />
                         </FormControl>
                         <FormDescription />
                         <FormMessage />
