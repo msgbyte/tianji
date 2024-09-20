@@ -32,13 +32,13 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [x] telemetry
 - [x] openapi
 - [x] website
-- [ ] team collaboration
+- [x] team collaboration
 - [ ] utm track
 - [x] waitlist
 - [x] survey
   - [ ] survey page
 - [ ] lighthouse report
-- [ ] hooks
+- [x] hooks
 - [ ] links
 - [x] helm install support
   - [x] allow install from public
