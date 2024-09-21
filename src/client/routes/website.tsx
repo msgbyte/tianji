@@ -5,7 +5,7 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import { Layout } from '@/components/layout';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -24,6 +24,7 @@ export const Route = createFileRoute('/website')({
 
 function WebsiteComponent() {
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
   const { t } = useTranslation();
   const { data = [], isLoading } = trpc.website.all.useQuery({
     workspaceId,
@@ -83,13 +84,16 @@ function WebsiteComponent() {
                   >
                     {t('Overview')}
                   </Button>
-                  <Button
-                    className={cn(pathname === '/website/add' && '!bg-muted')}
-                    variant="outline"
-                    size="icon"
-                    Icon={LuPlus}
-                    onClick={handleClickAdd}
-                  />
+
+                  {hasAdminPermission && (
+                    <Button
+                      className={cn(pathname === '/website/add' && '!bg-muted')}
+                      variant="outline"
+                      size="icon"
+                      Icon={LuPlus}
+                      onClick={handleClickAdd}
+                    />
+                  )}
                 </div>
               }
             />

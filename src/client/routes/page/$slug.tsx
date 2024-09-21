@@ -8,6 +8,7 @@ import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorStatusPage } from '@/components/monitor/StatusPage';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
+import { useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -26,6 +27,7 @@ function PageComponent() {
     slug,
   });
   const trpcUtils = trpc.useUtils();
+  const hasAdminPermission = useHasAdminPermission();
 
   const deletePageMutation = trpc.monitor.deletePage.useMutation();
 
@@ -68,13 +70,15 @@ function PageComponent() {
           title={pageInfo.title}
           actions={
             <div className="space-x-2">
-              <AlertConfirm
-                title={t('Confirm to delete this page?')}
-                content={t('It will permanently delete the relevant data')}
-                onConfirm={handleDelete}
-              >
-                <Button variant="outline" size="icon" Icon={LuTrash} />
-              </AlertConfirm>
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Confirm to delete this page?')}
+                  content={t('It will permanently delete the relevant data')}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
+              )}
 
               <Link to="/status/$slug" params={{ slug }} target="_blank">
                 <Button variant="outline" Icon={LuEye}>

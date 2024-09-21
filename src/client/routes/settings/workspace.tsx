@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCurrentWorkspace } from '../../store/user';
+import { useCurrentWorkspace, useHasAdminPermission } from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
 import {
   Card,
@@ -39,6 +39,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { ROLES } from '@tianji/shared';
+import { cn } from '@/utils/style';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -57,6 +58,7 @@ const columnHelper = createColumnHelper<MemberInfo>();
 function PageComponent() {
   const { t } = useTranslation();
   const { id: workspaceId, name, role } = useCurrentWorkspace();
+  const hasAdminPermission = useHasAdminPermission();
   const { data: members = [], refetch: refetchMembers } =
     trpc.workspace.members.useQuery({
       workspaceId,
@@ -129,6 +131,10 @@ function PageComponent() {
             </CardHeader>
             <CardContent>
               <div>
+                <span className="mr-2">{t('Current Role')}:</span>
+                <span className="font-semibold">{role}</span>
+              </div>
+              <div>
                 <span className="mr-2">{t('Workspace ID')}:</span>
                 <span>
                   <Typography.Text code={true} copyable={true}>
@@ -140,7 +146,10 @@ function PageComponent() {
           </Card>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleInvite)}>
+            <form
+              onSubmit={form.handleSubmit(handleInvite)}
+              className={cn(!hasAdminPermission && 'opacity-50')}
+            >
               <Card>
                 <CardHeader className="text-lg font-bold">
                   {t('Invite new members by email address')}
@@ -166,7 +175,11 @@ function PageComponent() {
                 </CardContent>
 
                 <CardFooter>
-                  <Button type="submit" loading={isLoading}>
+                  <Button
+                    type="submit"
+                    loading={isLoading}
+                    disabled={!hasAdminPermission}
+                  >
                     {t('Invite')}
                   </Button>
                 </CardFooter>

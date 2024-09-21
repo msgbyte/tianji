@@ -12,7 +12,11 @@ import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
-import { useCurrentWorkspaceId } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasPermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -34,6 +38,7 @@ function WebsiteDetailComponent() {
   });
   const { startDate, endDate } = useGlobalRangeDate();
   const navigate = useNavigate();
+  const hasAdminPermission = useHasAdminPermission();
 
   if (!websiteId) {
     return <ErrorTip />;
@@ -57,20 +62,22 @@ function WebsiteDetailComponent() {
           title={website.name}
           actions={
             <div className="space-x-2">
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={() =>
-                  navigate({
-                    to: '/website/$websiteId/config',
-                    params: {
-                      websiteId,
-                    },
-                  })
-                }
-              >
-                <LuSettings />
-              </Button>
+              {hasAdminPermission && (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() =>
+                    navigate({
+                      to: '/website/$websiteId/config',
+                      params: {
+                        websiteId,
+                      },
+                    })
+                  }
+                >
+                  <LuSettings />
+                </Button>
+              )}
 
               <WebsiteLighthouseBtn websiteId={website.id} />
 

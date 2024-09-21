@@ -11,10 +11,11 @@ import {
   NotificationInfoModal,
 } from '../../components/modals/NotificationInfo';
 import { useEvent } from '../../hooks/useEvent';
-import { useCurrentWorkspaceId } from '../../store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
 import { Button } from '@/components/ui/button';
 import { LuFileEdit, LuPlus, LuTrash2 } from 'react-icons/lu';
+import { compact } from 'lodash-es';
 
 export const Route = createFileRoute('/settings/notifications')({
   beforeLoad: routeAuthBeforeLoad,
@@ -31,6 +32,7 @@ function PageComponent() {
   const [editingFormData, setEditingFormData] = useState<
     NotificationFormValues | undefined
   >(undefined);
+  const hasAdminPermission = useHasAdminPermission();
 
   const upsertMutation = trpc.notification.upsert.useMutation();
   const deleteMutation = trpc.notification.delete.useMutation();
@@ -69,13 +71,15 @@ function PageComponent() {
           title={t('Notifications')}
           actions={
             <>
-              <Button
-                variant="outline"
-                Icon={LuPlus}
-                onClick={() => handleOpenModal()}
-              >
-                {t('New')}
-              </Button>
+              {hasAdminPermission && (
+                <Button
+                  variant="outline"
+                  Icon={LuPlus}
+                  onClick={() => handleOpenModal()}
+                >
+                  {t('New')}
+                </Button>
+              )}
             </>
           }
         />
@@ -88,35 +92,39 @@ function PageComponent() {
             dataSource={list}
             renderItem={(item) => (
               <List.Item
-                actions={[
-                  <Button
-                    variant="default"
-                    Icon={LuFileEdit}
-                    onClick={() => {
-                      handleOpenModal({
-                        id: item.id,
-                        name: item.name,
-                        type: item.type,
-                        payload: item.payload as Record<string, any>,
-                      });
-                    }}
-                  >
-                    {t('Edit')}
-                  </Button>,
-                  <Popconfirm
-                    title={t('Is delete this item?')}
-                    okButtonProps={{
-                      danger: true,
-                    }}
-                    onConfirm={() => {
-                      handleDelete(item.id);
-                    }}
-                  >
-                    <Button variant="destructive" size="icon">
-                      <LuTrash2 />
+                actions={compact([
+                  hasAdminPermission && (
+                    <Button
+                      variant="default"
+                      Icon={LuFileEdit}
+                      onClick={() => {
+                        handleOpenModal({
+                          id: item.id,
+                          name: item.name,
+                          type: item.type,
+                          payload: item.payload as Record<string, any>,
+                        });
+                      }}
+                    >
+                      {t('Edit')}
                     </Button>
-                  </Popconfirm>,
-                ]}
+                  ),
+                  hasAdminPermission && (
+                    <Popconfirm
+                      title={t('Is delete this item?')}
+                      okButtonProps={{
+                        danger: true,
+                      }}
+                      onConfirm={() => {
+                        handleDelete(item.id);
+                      }}
+                    >
+                      <Button variant="destructive" size="icon">
+                        <LuTrash2 />
+                      </Button>
+                    </Popconfirm>
+                  ),
+                ])}
               >
                 <List.Item.Meta title={item.name} />
               </List.Item>

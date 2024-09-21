@@ -6,8 +6,7 @@ import {
 } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -16,12 +15,11 @@ import { AlertConfirm } from '@/components/AlertConfirm';
 import { LuPencil, LuTrash } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, createColumnHelper } from '@/components/DataTable';
+import { createColumnHelper } from '@/components/DataTable';
 import { useMemo } from 'react';
 import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
 import dayjs from 'dayjs';
 import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
-import { Scrollbar } from '@radix-ui/react-scroll-area';
 import { VirtualizedInfiniteDataTable } from '@/components/VirtualizedInfiniteDataTable';
 import { Loading } from '@/components/Loading';
 
@@ -39,6 +37,7 @@ function PageComponent() {
   const { surveyId } = Route.useParams<{ surveyId: string }>();
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
+  const hasAdminPermission = useHasAdminPermission();
   const { data: info } = trpc.survey.get.useQuery({
     workspaceId,
     surveyId,
@@ -105,31 +104,38 @@ function PageComponent() {
           title={info?.name ?? ''}
           actions={
             <div className="space-x-2">
-              <Button
-                variant="outline"
-                size="icon"
-                Icon={LuPencil}
-                onClick={() =>
-                  navigate({
-                    to: '/survey/$surveyId/edit',
-                    params: {
-                      surveyId,
-                    },
-                  })
-                }
-              />
+              {hasAdminPermission && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  Icon={LuPencil}
+                  onClick={() =>
+                    navigate({
+                      to: '/survey/$surveyId/edit',
+                      params: {
+                        surveyId,
+                      },
+                    })
+                  }
+                />
+              )}
 
-              <AlertConfirm
-                title={t('Confirm to delete this survey?')}
-                description={t('Survey name: {{name}} | data count: {{num}}', {
-                  name: info?.name ?? '',
-                  num: count ?? 0,
-                })}
-                content={t('It will permanently delete the relevant data')}
-                onConfirm={handleDelete}
-              >
-                <Button variant="outline" size="icon" Icon={LuTrash} />
-              </AlertConfirm>
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Confirm to delete this survey?')}
+                  description={t(
+                    'Survey name: {{name}} | data count: {{num}}',
+                    {
+                      name: info?.name ?? '',
+                      num: count ?? 0,
+                    }
+                  )}
+                  content={t('It will permanently delete the relevant data')}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
+              )}
             </div>
           }
         />

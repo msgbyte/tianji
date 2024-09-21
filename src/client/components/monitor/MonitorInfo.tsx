@@ -6,7 +6,7 @@ import {
   defaultSuccessHandler,
   trpc,
 } from '../../api/trpc';
-import { useCurrentWorkspaceId } from '../../store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
 import { Loading } from '../Loading';
 import { getMonitorLink } from './provider';
 import { NotFoundTip } from '../NotFoundTip';
@@ -35,6 +35,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const navigate = useNavigate();
   const [showBadge, setShowBadge] = useState(false);
   const isMobile = useIsMobile();
+  const hasAdminPermission = useHasAdminPermission();
 
   const {
     data: monitorInfo,
@@ -186,76 +187,78 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 </span>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    navigate({
-                      to: '/monitor/$monitorId/edit',
-                      params: {
-                        monitorId: monitorInfo.id,
-                      },
-                    });
-                  }}
-                >
-                  {t('Edit')}
-                </Button>
-
-                {monitorInfo.active ? (
+              {hasAdminPermission && (
+                <div className="flex gap-2">
                   <Button
-                    loading={changeActiveMutation.isLoading}
-                    onClick={handleStop}
+                    type="primary"
+                    onClick={() => {
+                      navigate({
+                        to: '/monitor/$monitorId/edit',
+                        params: {
+                          monitorId: monitorInfo.id,
+                        },
+                      });
+                    }}
                   >
-                    {t('Stop')}
+                    {t('Edit')}
                   </Button>
-                ) : (
-                  <Button
-                    loading={changeActiveMutation.isLoading}
-                    onClick={handleStart}
+
+                  {monitorInfo.active ? (
+                    <Button
+                      loading={changeActiveMutation.isLoading}
+                      onClick={handleStop}
+                    >
+                      {t('Stop')}
+                    </Button>
+                  ) : (
+                    <Button
+                      loading={changeActiveMutation.isLoading}
+                      onClick={handleStart}
+                    >
+                      {t('Start')}
+                    </Button>
+                  )}
+
+                  <Dropdown
+                    trigger={['click']}
+                    placement="bottomRight"
+                    menu={{
+                      items: [
+                        {
+                          key: 'badge',
+                          label: t('Show Badge'),
+                          onClick: () => setShowBadge(true),
+                        },
+                        {
+                          type: 'divider',
+                        },
+                        {
+                          key: 'delete',
+                          label: t('Delete'),
+                          danger: true,
+                          onClick: handleDelete,
+                        },
+                      ],
+                    }}
                   >
-                    {t('Start')}
-                  </Button>
-                )}
+                    <Button icon={<MoreOutlined />} />
+                  </Dropdown>
 
-                <Dropdown
-                  trigger={['click']}
-                  placement="bottomRight"
-                  menu={{
-                    items: [
-                      {
-                        key: 'badge',
-                        label: t('Show Badge'),
-                        onClick: () => setShowBadge(true),
-                      },
-                      {
-                        type: 'divider',
-                      },
-                      {
-                        key: 'delete',
-                        label: t('Delete'),
-                        danger: true,
-                        onClick: handleDelete,
-                      },
-                    ],
-                  }}
-                >
-                  <Button icon={<MoreOutlined />} />
-                </Dropdown>
-
-                <Modal
-                  open={showBadge}
-                  onCancel={() => setShowBadge(false)}
-                  onOk={() => setShowBadge(false)}
-                  destroyOnClose={true}
-                  centered={true}
-                >
-                  <MonitorBadgeView
-                    workspaceId={workspaceId}
-                    monitorId={monitorId}
-                    monitorName={monitorInfo.name}
-                  />
-                </Modal>
-              </div>
+                  <Modal
+                    open={showBadge}
+                    onCancel={() => setShowBadge(false)}
+                    onOk={() => setShowBadge(false)}
+                    destroyOnClose={true}
+                    centered={true}
+                  >
+                    <MonitorBadgeView
+                      workspaceId={workspaceId}
+                      monitorId={monitorId}
+                      monitorName={monitorInfo.name}
+                    />
+                  </Modal>
+                </div>
+              )}
             </Space>
 
             <div className="text-black text-opacity-75 dark:text-gray-200">
@@ -298,29 +301,31 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             <MonitorDataChart monitorId={monitorId} />
           </Card>
 
-          <div className="text-right">
-            <Dropdown
-              trigger={['click']}
-              menu={{
-                items: [
-                  {
-                    key: 'events',
-                    label: t('Events'),
-                    onClick: handleClearEvents,
-                  },
-                  {
-                    key: 'heartbeats',
-                    label: t('Heartbeats'),
-                    onClick: handleClearData,
-                  },
-                ],
-              }}
-            >
-              <Button icon={<DeleteOutlined />} danger={true}>
-                {t('Clear Data')}
-              </Button>
-            </Dropdown>
-          </div>
+          {hasAdminPermission && (
+            <div className="text-right">
+              <Dropdown
+                trigger={['click']}
+                menu={{
+                  items: [
+                    {
+                      key: 'events',
+                      label: t('Events'),
+                      onClick: handleClearEvents,
+                    },
+                    {
+                      key: 'heartbeats',
+                      label: t('Heartbeats'),
+                      onClick: handleClearData,
+                    },
+                  ],
+                }}
+              >
+                <Button icon={<DeleteOutlined />} danger={true}>
+                  {t('Clear Data')}
+                </Button>
+              </Dropdown>
+            </div>
+          )}
 
           <MonitorEventList monitorId={monitorId} />
         </Space>

@@ -2,6 +2,7 @@ import { shallow } from 'zustand/shallow';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { createSocketIOClient } from '../api/socketio';
 import { AppRouterOutput } from '../api/trpc';
+import { ROLES } from '@tianji/shared';
 
 export type UserLoginInfo = NonNullable<AppRouterOutput['user']['info']>;
 
@@ -107,4 +108,37 @@ export function useCurrentWorkspaceId() {
   }
 
   return currentWorkspaceId;
+}
+
+/**
+ * Direct return current workspace role
+ */
+export function useCurrentWorkspaceRole(): ROLES {
+  const workspace = useCurrentWorkspace();
+
+  return (workspace.role as ROLES) || ROLES.readOnly;
+}
+
+export function useHasPermission(role: ROLES): boolean {
+  const currentWorkspaceRole = useCurrentWorkspaceRole();
+
+  if (currentWorkspaceRole === ROLES.owner) {
+    return true;
+  }
+
+  if (currentWorkspaceRole === ROLES.admin && role !== ROLES.owner) {
+    return true;
+  }
+
+  if (currentWorkspaceRole === ROLES.readOnly && role === ROLES.readOnly) {
+    return true;
+  }
+
+  return false;
+}
+
+export function useHasAdminPermission(): boolean {
+  const hasAdminPermission = useHasPermission(ROLES.admin);
+
+  return hasAdminPermission;
 }

@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -34,6 +34,7 @@ function MonitorDetailComponent() {
   });
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const hasAdminPermission = useHasAdminPermission();
 
   if (!monitorId) {
     return <ErrorTip />;
@@ -53,35 +54,42 @@ function MonitorDetailComponent() {
         <CommonHeader
           title={monitor.name}
           actions={
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild={true} className="cursor-pointer">
-                <Button variant="outline" size="icon" className="shrink-0">
-                  <LuMoreVertical />
-                </Button>
-              </DropdownMenuTrigger>
+            <>
+              {hasAdminPermission && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild={true}
+                    className="cursor-pointer"
+                  >
+                    <Button variant="outline" size="icon" className="shrink-0">
+                      <LuMoreVertical />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  onClick={() =>
-                    navigate({
-                      to: '/monitor/add',
-                      search: pick(monitor, [
-                        'name',
-                        'type',
-                        'notifications',
-                        'interval',
-                        'maxRetries',
-                        'trendingMode',
-                        'payload',
-                      ]),
-                    })
-                  }
-                >
-                  <LuCopy className="mr-2" />
-                  {t('Duplicate')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        navigate({
+                          to: '/monitor/add',
+                          search: pick(monitor, [
+                            'name',
+                            'type',
+                            'notifications',
+                            'interval',
+                            'maxRetries',
+                            'trendingMode',
+                            'payload',
+                          ]),
+                        })
+                      }
+                    >
+                      <LuCopy className="mr-2" />
+                      {t('Duplicate')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </>
           }
         />
       }

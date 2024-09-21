@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
 import { Layout } from '@/components/layout';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -35,6 +35,7 @@ function PageComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const hasAdminPermission = useHasAdminPermission();
 
   const items = data.map((item) => ({
     id: item.id,
@@ -71,14 +72,18 @@ function PageComponent() {
             <CommonHeader
               title={t('Survey')}
               actions={
-                <Button
-                  className={cn(pathname === '/survey/add' && '!bg-muted')}
-                  variant="outline"
-                  Icon={LuPlus}
-                  onClick={handleClickAdd}
-                >
-                  {t('Add')}
-                </Button>
+                <>
+                  {hasAdminPermission && (
+                    <Button
+                      className={cn(pathname === '/survey/add' && '!bg-muted')}
+                      variant="outline"
+                      Icon={LuPlus}
+                      onClick={handleClickAdd}
+                    >
+                      {t('Add')}
+                    </Button>
+                  )}
+                </>
               }
             />
           }

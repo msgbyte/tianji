@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { LuArchive, LuArchiveRestore } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { AppRouterOutput, trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { DynamicVirtualList } from '../DynamicVirtualList';
 import { get } from 'lodash-es';
 import { FeedEventItem } from './FeedEventItem';
@@ -28,6 +28,7 @@ export const FeedArchivePageButton: React.FC<FeedArchivePageButtonProps> =
     const clearAllArchivedEventsMutation =
       trpc.feed.clearAllArchivedEvents.useMutation();
     const trpcUtils = trpc.useUtils();
+    const hasAdminPermission = useHasAdminPermission();
 
     const {
       data,
@@ -87,9 +88,11 @@ export const FeedArchivePageButton: React.FC<FeedArchivePageButtonProps> =
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold">{t('Archived Events')}</h1>
 
-            <AlertConfirm onConfirm={handleClear}>
-              <Button size="sm">{t('Clear')}</Button>
-            </AlertConfirm>
+            {hasAdminPermission && (
+              <AlertConfirm onConfirm={handleClear}>
+                <Button size="sm">{t('Clear')}</Button>
+              </AlertConfirm>
+            )}
           </div>
 
           <Separator className="my-2" />

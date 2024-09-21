@@ -6,7 +6,7 @@ import {
 } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -46,6 +46,7 @@ function PageComponent() {
     workspaceId,
     channelId,
   });
+  const hasAdminPermission = useHasAdminPermission();
 
   const {
     data,
@@ -53,7 +54,6 @@ function PageComponent() {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    refetch,
   } = trpc.feed.fetchEventsByCursor.useInfiniteQuery(
     {
       workspaceId,
@@ -122,28 +122,32 @@ function PageComponent() {
 
               <FeedArchivePageButton channelId={channelId} />
 
-              <Button
-                variant="outline"
-                size="icon"
-                Icon={LuPencil}
-                onClick={() =>
-                  navigate({
-                    to: '/feed/$channelId/edit',
-                    params: {
-                      channelId,
-                    },
-                  })
-                }
-              />
+              {hasAdminPermission && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  Icon={LuPencil}
+                  onClick={() =>
+                    navigate({
+                      to: '/feed/$channelId/edit',
+                      params: {
+                        channelId,
+                      },
+                    })
+                  }
+                />
+              )}
 
-              <AlertConfirm
-                title={t('Confirm to delete this channel?')}
-                description={t('All feed will be remove')}
-                content={t('It will permanently delete the relevant data')}
-                onConfirm={handleDelete}
-              >
-                <Button variant="outline" size="icon" Icon={LuTrash} />
-              </AlertConfirm>
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Confirm to delete this channel?')}
+                  description={t('All feed will be remove')}
+                  content={t('It will permanently delete the relevant data')}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
+              )}
             </div>
           }
         />
@@ -174,14 +178,16 @@ function PageComponent() {
                     </Button>
                   )}
 
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-6 w-6 overflow-hidden"
-                    onClick={() => handleArchive(item)}
-                  >
-                    <LuArchive size={12} />
-                  </Button>
+                  {hasAdminPermission && (
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-6 w-6 overflow-hidden"
+                      onClick={() => handleArchive(item)}
+                    >
+                      <LuArchive size={12} />
+                    </Button>
+                  )}
                 </>
               }
             />
