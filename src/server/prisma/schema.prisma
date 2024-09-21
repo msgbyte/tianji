@@ -436,6 +436,17 @@ model MonitorStatusPage {
   @@index([slug])
 }
 
+model StatusPageIncident {
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  name      String   @db.VarChar(100)
+
+  /// [StatusPageIncidentPayload]
+  /// @zod.custom(imports.StatusPageIncidentPayloadSchema)
+  payload Json @db.Json
+}
+
 model WorkspaceDailyUsage {
   id                    String   @id @unique @default(cuid()) @db.VarChar(30)
   workspaceId           String   @db.VarChar(30)

@@ -2,6 +2,7 @@ import type { JWTPayload } from '../middleware/auth.ts';
 import type {
   MonitorStatusPageListSchema,
   SurveyPayloadSchema,
+  StatusPageIncidentPayloadSchema,
 } from '../prisma/zod/schemas/index.ts';
 
 declare global {
@@ -17,5 +18,8 @@ declare global {
     } | null;
     type MonitorStatusPageList = z.infer<typeof MonitorStatusPageListSchema>;
     type SurveyPayload = z.infer<typeof SurveyPayloadSchema>;
+    type StatusPageIncidentPayload = z.infer<
+      typeof StatusPageIncidentPayloadSchema
+    >;
   }
 }

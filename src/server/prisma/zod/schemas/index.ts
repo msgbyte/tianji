@@ -19,3 +19,26 @@ export const SurveyPayloadSchema = z.object({
     })
   ),
 });
+
+export const StatusPageIncidentPayloadSchema = z.object({
+  history: z.array(
+    z.object({
+      message: z.string(),
+      timestamp: z.number(),
+      status: z.enum(['investigating', 'identified', 'monitoring', 'resolved']),
+      components: z.array(
+        z.object({
+          id: z.string(),
+          type: z.enum(['website', 'monitor']),
+          status: z.enum([
+            'operational',
+            'degradedPerformance',
+            'partialOutage',
+            'majorOutage',
+            'underMaintenance',
+          ]),
+        })
+      ),
+    })
+  ),
+});
