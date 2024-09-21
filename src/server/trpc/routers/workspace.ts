@@ -3,6 +3,7 @@ import {
   protectProedure,
   publicProcedure,
   router,
+  workspaceAdminProcedure,
   workspaceOwnerProcedure,
   workspaceProcedure,
 } from '../trpc.js';
@@ -211,7 +212,7 @@ export const workspaceRouter = router({
 
       return list;
     }),
-  invite: workspaceOwnerProcedure
+  invite: workspaceAdminProcedure
     .meta(
       buildWorkspaceOpenapi({
         method: 'POST',

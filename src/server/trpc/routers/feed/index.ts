@@ -3,7 +3,7 @@ import {
   OpenApiMetaInfo,
   publicProcedure,
   router,
-  workspaceOwnerProcedure,
+  workspaceAdminProcedure,
   workspaceProcedure,
 } from '../../trpc.js';
 import { OPENAPI_TAG } from '../../../utils/const.js';
@@ -203,7 +203,7 @@ export const feedRouter = router({
         nextCursor,
       };
     }),
-  createChannel: workspaceOwnerProcedure
+  createChannel: workspaceAdminProcedure
     .meta(
       buildFeedOpenapi({
         method: 'POST',
@@ -253,7 +253,7 @@ export const feedRouter = router({
         notificationIds: channel?.notifications.map((n) => n.id),
       };
     }),
-  deleteChannel: workspaceOwnerProcedure
+  deleteChannel: workspaceAdminProcedure
     .meta(
       buildFeedOpenapi({
         method: 'DELETE',
@@ -313,7 +313,7 @@ export const feedRouter = router({
 
       return event;
     }),
-  archiveEvent: workspaceOwnerProcedure
+  archiveEvent: workspaceAdminProcedure
     .meta(
       buildFeedPublicOpenapi({
         method: 'PATCH',
@@ -340,7 +340,7 @@ export const feedRouter = router({
         },
       });
     }),
-  unarchiveEvent: workspaceOwnerProcedure
+  unarchiveEvent: workspaceAdminProcedure
     .meta(
       buildFeedPublicOpenapi({
         method: 'PATCH',
@@ -367,7 +367,7 @@ export const feedRouter = router({
         },
       });
     }),
-  clearAllArchivedEvents: workspaceOwnerProcedure
+  clearAllArchivedEvents: workspaceAdminProcedure
     .meta(
       buildFeedPublicOpenapi({
         method: 'PATCH',

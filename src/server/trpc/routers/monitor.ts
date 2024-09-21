@@ -2,7 +2,7 @@ import {
   OpenApiMetaInfo,
   publicProcedure,
   router,
-  workspaceOwnerProcedure,
+  workspaceAdminProcedure,
   workspaceProcedure,
 } from '../trpc.js';
 import { prisma } from '../../model/_client.js';
@@ -113,7 +113,7 @@ export const monitorRouter = router({
 
       return getMonitorPublicInfos(monitorIds);
     }),
-  upsert: workspaceOwnerProcedure
+  upsert: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'POST',
@@ -163,7 +163,7 @@ export const monitorRouter = router({
 
       return monitor;
     }),
-  delete: workspaceOwnerProcedure
+  delete: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'DELETE',
@@ -181,7 +181,7 @@ export const monitorRouter = router({
 
       return monitorManager.delete(workspaceId, monitorId);
     }),
-  testCustomScript: workspaceOwnerProcedure
+  testCustomScript: workspaceAdminProcedure
     .input(
       z.object({
         code: z.string(),
@@ -235,7 +235,7 @@ export const monitorRouter = router({
         new Date(endAt)
       );
     }),
-  changeActive: workspaceOwnerProcedure
+  changeActive: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'PATCH',
@@ -462,7 +462,7 @@ export const monitorRouter = router({
 
       return list;
     }),
-  clearEvents: workspaceOwnerProcedure
+  clearEvents: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'DELETE',
@@ -489,7 +489,7 @@ export const monitorRouter = router({
 
       return count;
     }),
-  clearData: workspaceOwnerProcedure
+  clearData: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'DELETE',
@@ -585,7 +585,7 @@ export const monitorRouter = router({
         },
       });
     }),
-  createPage: workspaceOwnerProcedure
+  createPage: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'POST',
@@ -655,7 +655,7 @@ export const monitorRouter = router({
 
       return page;
     }),
-  editPage: workspaceOwnerProcedure
+  editPage: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'PATCH',
@@ -733,7 +733,7 @@ export const monitorRouter = router({
 
       return page;
     }),
-  deletePage: workspaceOwnerProcedure
+  deletePage: workspaceAdminProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'DELETE',

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import {
   OpenApiMetaInfo,
   router,
-  workspaceOwnerProcedure,
+  workspaceAdminProcedure,
   workspaceProcedure,
 } from '../trpc.js';
 import {
@@ -130,7 +130,7 @@ export const telemetryRouter = router({
 
       return count;
     }),
-  upsert: workspaceOwnerProcedure
+  upsert: workspaceAdminProcedure
     .meta(
       buildTelemetryOpenapi({
         method: 'POST',
@@ -166,7 +166,7 @@ export const telemetryRouter = router({
         });
       }
     }),
-  delete: workspaceOwnerProcedure
+  delete: workspaceAdminProcedure
     .meta(
       buildTelemetryOpenapi({
         method: 'POST',

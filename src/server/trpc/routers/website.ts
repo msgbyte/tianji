@@ -2,7 +2,7 @@ import {
   OpenApiMetaInfo,
   publicProcedure,
   router,
-  workspaceOwnerProcedure,
+  workspaceAdminProcedure,
   workspaceProcedure,
 } from '../trpc.js';
 import { z } from 'zod';
@@ -493,7 +493,7 @@ export const websiteRouter = router({
 
       return [];
     }),
-  add: workspaceOwnerProcedure
+  add: workspaceAdminProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -522,7 +522,7 @@ export const websiteRouter = router({
 
       return website;
     }),
-  delete: workspaceOwnerProcedure
+  delete: workspaceAdminProcedure
     .meta({
       openapi: {
         method: 'DELETE',
@@ -550,7 +550,7 @@ export const websiteRouter = router({
       return website;
     }),
 
-  updateInfo: workspaceOwnerProcedure
+  updateInfo: workspaceAdminProcedure
     .meta(
       buildWebsiteOpenapi({
         method: 'PUT',

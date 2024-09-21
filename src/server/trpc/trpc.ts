@@ -82,6 +82,15 @@ export const workspaceProcedure = protectProedure
     })
   )
   .use(createWorkspacePermissionMiddleware());
+
+export const workspaceAdminProcedure = protectProedure
+  .input(
+    z.object({
+      workspaceId: z.string().cuid2(),
+    })
+  )
+  .use(createWorkspacePermissionMiddleware([ROLES.owner, ROLES.admin]));
+
 export const workspaceOwnerProcedure = protectProedure
   .input(
     z.object({
