@@ -226,6 +226,12 @@ type ExtractFindManyWhereType<
   },
 > = NonNullable<Parameters<T['findMany']>[0]>['where'];
 
+type ExtractFindManySelectType<
+  T extends {
+    findMany: (args?: any) => Prisma.PrismaPromise<any>;
+  },
+> = NonNullable<Parameters<T['findMany']>[0]>['select'];
+
 /**
  * @example
  * const { items, nextCursor } = await fetchDataByCursor(
@@ -249,16 +255,25 @@ export async function fetchDataByCursor<
   options: {
     // where: Record<string, any>;
     where: ExtractFindManyWhereType<Model>;
+    select?: ExtractFindManySelectType<Model>;
     limit: number;
     cursor: CursorType;
     cursorName?: string;
     order?: 'asc' | 'desc';
   }
 ) {
-  const { where, limit, cursor, cursorName = 'id', order = 'desc' } = options;
+  const {
+    where,
+    limit,
+    cursor,
+    select,
+    cursorName = 'id',
+    order = 'desc',
+  } = options;
   const items: ExtractFindManyReturnType<Model['findMany']> =
     await fetchModel.findMany({
       where,
+      select,
       take: limit + 1,
       cursor: cursor
         ? {

@@ -32,11 +32,11 @@ import {
   websiteStatsSchema,
 } from '../../model/_schema/filter.js';
 import dayjs from 'dayjs';
-import { WebsiteQueryFilters } from '../../utils/prisma.js';
+import { fetchDataByCursor, WebsiteQueryFilters } from '../../utils/prisma.js';
 import { WebsiteLighthouseReportStatus } from '@prisma/client';
 import { generateLighthouse } from '../../utils/screenshot/lighthouse.js';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
-import { method } from 'lodash-es';
+import { buildCursorResponseSchema } from '../../utils/schema.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -644,36 +644,44 @@ export const websiteRouter = router({
     .input(
       z.object({
         websiteId: z.string().cuid2(),
+        limit: z.number().min(1).max(100).default(10),
+        cursor: z.string().optional(),
       })
     )
     .output(
-      z.array(
+      buildCursorResponseSchema(
         WebsiteLighthouseReportModelSchema.pick({
           id: true,
           status: true,
+          url: true,
           createdAt: true,
         })
       )
     )
     .query(async ({ input }) => {
-      const { websiteId } = input;
+      const { websiteId, limit, cursor } = input;
 
-      const list = await prisma.websiteLighthouseReport.findMany({
-        where: {
-          websiteId,
-        },
-        take: 10,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: {
-          id: true,
-          status: true,
-          createdAt: true,
-        },
-      });
+      const { items, nextCursor } = await fetchDataByCursor(
+        prisma.websiteLighthouseReport,
+        {
+          where: {
+            websiteId,
+          },
+          select: {
+            id: true,
+            status: true,
+            url: true,
+            createdAt: true,
+          },
+          limit,
+          cursor,
+        }
+      );
 
-      return list;
+      return {
+        items,
+        nextCursor,
+      };
     }),
   getLighthouseJSON: publicProcedure
     .meta({

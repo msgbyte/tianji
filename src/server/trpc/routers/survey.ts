@@ -337,8 +337,7 @@ export const surveyRouter = router({
     )
     .output(buildCursorResponseSchema(SurveyResultModelSchema))
     .query(async ({ input }) => {
-      const limit = input.limit;
-      const { cursor, surveyId } = input;
+      const { cursor, surveyId, limit } = input;
 
       const where: Prisma.SurveyResultWhereInput = {
         surveyId,

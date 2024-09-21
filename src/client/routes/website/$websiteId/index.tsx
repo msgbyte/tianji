@@ -7,6 +7,7 @@ import { NotFoundTip } from '@/components/NotFoundTip';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
+import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
@@ -70,6 +71,9 @@ function WebsiteDetailComponent() {
               >
                 <LuSettings />
               </Button>
+
+              <WebsiteLighthouseBtn websiteId={website.id} />
+
               <WebsiteCodeBtn websiteId={website.id} />
             </div>
           }
