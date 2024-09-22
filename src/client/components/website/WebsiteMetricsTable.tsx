@@ -31,6 +31,13 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
     const workspaceId = useCurrentWorkspaceId();
     const { t } = useTranslation();
 
+    const labelMap: Record<string, string> = {
+      desktop: t('Desktop'),
+      laptop: t('Laptop'),
+      tablet: t('Tablet'),
+      mobile: t('Mobile'),
+    };
+
     const { isLoading, data: metrics = [] } = trpc.website.metrics.useQuery({
       workspaceId,
       websiteId,
@@ -47,7 +54,11 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
         dataIndex: 'x',
         ellipsis: true,
         render: (val) =>
-          val ?? <span className="italic opacity-60">{t('(None)')}</span>,
+          val ? (
+            <span>{labelMap[val] ?? val}</span>
+          ) : (
+            <span className="italic opacity-60">{t('(None)')}</span>
+          ),
       },
       {
         title: title[1],

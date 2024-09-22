@@ -5,6 +5,8 @@ import { getLocation } from '../../utils/detect.js';
 import dayjs from 'dayjs';
 import { WebsiteSession } from '@prisma/client';
 
+const websiteId = 'cm1cemqhw0009g2snzh3eqjzr';
+
 async function main() {
   Array.from({ length: 200 }).map(async (_, i) => {
     const session = await createSession();
@@ -28,7 +30,6 @@ main()
 const startDate = dayjs().subtract(30, 'days').toDate();
 const endDate = dayjs().toDate();
 async function createSession() {
-  const websiteId = 'clrytmpbe000lvyo434zxiwqh';
   const hostname = faker.internet.domainName();
   const ip = faker.internet.ipv4();
   const userAgent = faker.internet.userAgent();
@@ -47,7 +48,12 @@ async function createSession() {
     'Mac OS',
     'Windows 10',
   ]);
-  const device = faker.helpers.arrayElement(['desktop', 'mobile', 'tablet']);
+  const device = faker.helpers.arrayElement([
+    'desktop',
+    'mobile',
+    'tablet',
+    'laptop',
+  ]);
   const screen = faker.helpers.arrayElement([
     '1366x768',
     '1920x1080',
@@ -91,29 +97,33 @@ async function createSession() {
   return session;
 }
 
+const randomPagePath = Array.from({ length: 10 }).map(() =>
+  [
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.directoryPath(),
+    faker.system.filePath(),
+  ].join('')
+);
+
 async function createSessionEvent(session: WebsiteSession) {
   await prisma.websiteEvent.createMany({
-    data: Array.from({ length: faker.number.int({ max: 20 }) }).map(() => ({
+    data: Array.from({ length: faker.number.int({ max: 40 }) }).map(() => ({
       sessionId: session.id,
       websiteId: session.websiteId,
-      urlPath: [
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.directoryPath(),
-        faker.system.filePath(),
-      ].join(''), // generate long path
+      urlPath: faker.helpers.arrayElement(randomPagePath), // generate long path
       createdAt: faker.date.between({
         from: session.createdAt,
         to: endDate,
