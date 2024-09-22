@@ -1,6 +1,6 @@
 import { prisma } from './_client.js';
 import { parseWebsiteFilters } from '../utils/prisma.js';
-import { DEFAULT_RESET_DATE, EVENT_TYPE } from '../utils/const.js';
+import { DEFAULT_RESET_DATE } from '../utils/const.js';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
   const info = await prisma.workspacesOnUsers.findFirst({

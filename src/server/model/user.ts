@@ -104,7 +104,7 @@ export async function createUser(username: string, password: string) {
   const user = await prisma.$transaction(async (p) => {
     const newWorkspace = await p.workspace.create({
       data: {
-        name: username,
+        name: username + "'s Personal Workspace",
       },
     });
 
