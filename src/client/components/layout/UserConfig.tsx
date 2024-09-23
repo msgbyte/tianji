@@ -172,7 +172,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuRadioGroup
-                  value={i18n.language}
+                  value={i18n.language ?? 'en'}
                   onValueChange={setLanguage}
                 >
                   {languages.map((language) => (
