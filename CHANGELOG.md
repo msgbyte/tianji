@@ -1,5 +1,25 @@
 
 
+## [1.15.2](https://github.com/msgbyte/tianji/compare/v1.15.1...v1.15.2) (2024-09-23)
+
+
+### Features
+
+* add admin role and change most owner permission to admin ([79ed059](https://github.com/msgbyte/tianji/commit/79ed059d995da6eaabc452a0844b9acb69dc981c))
+* add label map for device type in website ([f16ccb5](https://github.com/msgbyte/tianji/commit/f16ccb56895f65dea530be295b19f04a03c8ed99))
+* add lighthouse reporter generate in website ([d29785a](https://github.com/msgbyte/tianji/commit/d29785a31184fe48913f7c49833c2d35a92c244a))
+* add status page incident model ([d182041](https://github.com/msgbyte/tianji/commit/d1820416f4924b2fc1920383b2d22b042f6e0381))
+* add workspace role permission check, hide non permission action ([4f4f9b5](https://github.com/msgbyte/tianji/commit/4f4f9b5d3f36192ea0f416997a43691674aa79fd))
+
+
+### Others
+
+* change default workspace name ([2058647](https://github.com/msgbyte/tianji/commit/205864720cdcbb5f46bee92fa6c577769a05f167))
+* fix light mode color issues ([fb75a8b](https://github.com/msgbyte/tianji/commit/fb75a8b6545a507c81acafa9cb526afccd39cd35))
+* invite add id support ([6a1f413](https://github.com/msgbyte/tianji/commit/6a1f413a384021d3c91e136be36a8c6375c74f99))
+* update README roadmap ([4a1d704](https://github.com/msgbyte/tianji/commit/4a1d704fbb88bb87f7e9db61f3da1364fb7543c0))
+* update translation ([6bf65cb](https://github.com/msgbyte/tianji/commit/6bf65cb529a2b0c52204063f2a10ad33e7b39aa5))
+
 ## [1.15.1](https://github.com/msgbyte/tianji/compare/v1.15.0...v1.15.1) (2024-09-19)
 
 
