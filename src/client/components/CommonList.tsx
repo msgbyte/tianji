@@ -89,8 +89,9 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
               <button
                 key={item.id}
                 className={cn(
-                  'hover:bg-accent flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all',
-                  isSelected && 'bg-muted'
+                  'flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all',
+                  'hover:bg-gray-50 dark:hover:bg-gray-900',
+                  isSelected && 'bg-gray-50 dark:bg-gray-900'
                 )}
                 onClick={() => {
                   globalEventBus.emit('commonListSelected');

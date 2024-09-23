@@ -43,6 +43,7 @@ function MonitorComponent() {
       <MonitorHealthBar
         workspaceId={workspaceId}
         monitorId={item.id}
+        active={item.active}
         showPercent={true}
         showCurrentStatus={true}
       />

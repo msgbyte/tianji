@@ -9,11 +9,13 @@ import { getMonitorProvider, getProviderDisplay } from './provider';
 import { MonitorProvider } from './provider/types';
 import { useTranslation } from '@i18next-toolkit/react';
 import clsx from 'clsx';
+import { cn } from '@/utils/style';
 
 interface MonitorHealthBarProps {
   workspaceId: string;
   monitorId: string;
   monitorType?: string;
+  active?: boolean;
   count?: number;
   size?: HealthBarProps['size'];
   healthBarClassName?: string;
@@ -29,6 +31,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
     const {
       workspaceId,
       monitorId,
+      active = true,
       size = 'small',
       count = 20,
       showCurrentStatus = false,
@@ -106,7 +109,9 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
     });
 
     return (
-      <div className="flex items-center">
+      <div
+        className={cn('flex items-center', active === false && 'opacity-50')}
+      >
         {showPercent && (
           <span
             className={clsx(
@@ -131,7 +136,18 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
 
         {showCurrentStatus && (
           <>
-            {last(beats)?.status === 'health' ? (
+            {active === false ? (
+              <div
+                className={clsx(
+                  'ml-2 rounded-full bg-gray-400 px-4 py-1 text-lg font-bold text-white',
+                  {
+                    'text-sm': size === 'small',
+                  }
+                )}
+              >
+                {t('Stopped')}
+              </div>
+            ) : last(beats)?.status === 'health' ? (
               <div
                 className={clsx(
                   'ml-2 rounded-full bg-green-500 px-4 py-1 text-lg font-bold text-white',
