@@ -4,7 +4,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { useIntervalUpdate } from '@/hooks/useIntervalUpdate';
 import { useServerMap } from './useServerMap';
 import { isServerOnline } from '@tianji/shared';
-import { max } from 'lodash-es';
+import { max, orderBy } from 'lodash-es';
 import { ServerStatusInfo } from '../../../types';
 import { Badge } from 'antd';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
@@ -30,15 +30,13 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
 
   const dataSource = useMemo(
     () =>
-      Object.values(serverMap)
-        .sort((info) => (isServerOnline(info) ? -1 : 1))
-        .filter((info) => {
-          if (hideOfflineServer) {
-            return isServerOnline(info);
-          }
+      orderBy(Object.values(serverMap), 'name', 'asc').filter((info) => {
+        if (hideOfflineServer) {
+          return isServerOnline(info);
+        }
 
-          return true;
-        }), // make online server is up and offline is down
+        return true;
+      }), // make online server is up and offline is down
     [serverMap, inc, hideOfflineServer]
   );
   const lastUpdatedAt = max(dataSource.map((d) => d.updatedAt));
