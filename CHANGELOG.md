@@ -1,5 +1,19 @@
 
 
+## [1.15.3](https://github.com/msgbyte/tianji/compare/v1.15.2...v1.15.3) (2024-09-24)
+
+
+### Features
+
+* add fixed server list ([4f2c112](https://github.com/msgbyte/tianji/commit/4f2c1129a0421934b43d3b6e02b17d629d275614))
+
+
+### Others
+
+* add language fallback to make sure its can be display correct ([31e8ce4](https://github.com/msgbyte/tianji/commit/31e8ce4ab9beec4af730b9302c0c3b861234123e))
+* clear unused code ([cdc3ce1](https://github.com/msgbyte/tianji/commit/cdc3ce122386e632f6b4350bc3dd4bdf4c17e0ed))
+* improve monitor detail style, enhance style difference ([f2ce1fb](https://github.com/msgbyte/tianji/commit/f2ce1fb10c92a2e2583ec3b36866308954958e1e))
+
 ## [1.15.2](https://github.com/msgbyte/tianji/compare/v1.15.1...v1.15.2) (2024-09-23)
 
 
