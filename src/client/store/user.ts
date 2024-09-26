@@ -3,17 +3,31 @@ import { createWithEqualityFn } from 'zustand/traditional';
 import { createSocketIOClient } from '../api/socketio';
 import { AppRouterOutput } from '../api/trpc';
 import { ROLES } from '@tianji/shared';
+import { immer } from 'zustand/middleware/immer';
 
 export type UserLoginInfo = NonNullable<AppRouterOutput['user']['info']>;
 
 interface UserState {
   info: UserLoginInfo | null;
+  updateCurrentWorkspaceName: (name: string) => void;
 }
 
-export const useUserStore = createWithEqualityFn<UserState>(
-  () => ({
+export const useUserStore = createWithEqualityFn<UserState>()(
+  immer((set) => ({
     info: null,
-  }),
+    updateCurrentWorkspaceName: (name) => {
+      const currentUserInfo = useUserStore.getState().info;
+      if (!currentUserInfo) {
+        return;
+      }
+
+      set((state) => {
+        for (const workspace of state.info?.workspaces ?? []) {
+          workspace.workspace.name = name;
+        }
+      });
+    },
+  })),
   shallow
 );
 

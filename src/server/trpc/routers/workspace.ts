@@ -12,6 +12,7 @@ import { prisma } from '../../model/_client.js';
 import {
   userInfoSchema,
   workspaceDashboardLayoutSchema,
+  workspaceSchema,
 } from '../../model/_schema/index.js';
 import { Prisma } from '@prisma/client';
 import { OPENAPI_TAG } from '../../utils/const.js';
@@ -123,6 +124,33 @@ export const workspaceRouter = router({
       });
 
       return userInfo;
+    }),
+  rename: workspaceOwnerProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'PATCH',
+        path: '/rename',
+      })
+    )
+    .input(
+      z.object({
+        name: z.string().max(60).min(4),
+      })
+    )
+    .output(workspaceSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, name } = input;
+
+      const workspace = await prisma.workspace.update({
+        where: {
+          id: workspaceId,
+        },
+        data: {
+          name,
+        },
+      });
+
+      return workspace;
     }),
   delete: workspaceOwnerProcedure
     .meta(

@@ -3,7 +3,11 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCurrentWorkspace, useHasAdminPermission } from '../../store/user';
+import {
+  useCurrentWorkspace,
+  useHasAdminPermission,
+  useUserStore,
+} from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
 import {
   Card,
@@ -40,6 +44,7 @@ import { z } from 'zod';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { ROLES } from '@tianji/shared';
 import { cn } from '@/utils/style';
+import { Separator } from '@/components/ui/separator';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -63,6 +68,9 @@ function PageComponent() {
     trpc.workspace.members.useQuery({
       workspaceId,
     });
+  const updateCurrentWorkspaceName = useUserStore(
+    (state) => state.updateCurrentWorkspaceName
+  );
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
@@ -73,12 +81,26 @@ function PageComponent() {
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
+  const renameWorkspaceMutation = trpc.workspace.rename.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
   const deleteWorkspaceMutation = trpc.workspace.delete.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
 
-  const [handleInvite, isLoading] = useEventWithLoading(
+  const [renameWorkspaceName, setRenameWorkspaceName] = useState('');
+  const [handleRename, isRenameLoading] = useEventWithLoading(async () => {
+    await renameWorkspaceMutation.mutateAsync({
+      workspaceId,
+      name: renameWorkspaceName,
+    });
+
+    updateCurrentWorkspaceName(renameWorkspaceName);
+  });
+
+  const [handleInvite, isInviteLoading] = useEventWithLoading(
     async (values: InviteFormValues) => {
       await inviteMutation.mutateAsync({
         workspaceId,
@@ -177,7 +199,7 @@ function PageComponent() {
                 <CardFooter>
                   <Button
                     type="submit"
-                    loading={isLoading}
+                    loading={isInviteLoading}
                     disabled={!hasAdminPermission}
                   >
                     {t('Invite')}
@@ -203,6 +225,33 @@ function PageComponent() {
               </CardHeader>
               <CardContent>
                 <div>
+                  <div className="flex items-center gap-2 text-left">
+                    <Input
+                      className="w-60"
+                      placeholder={t('New Workspace Name')}
+                      value={renameWorkspaceName}
+                      onChange={(e) => setRenameWorkspaceName(e.target.value)}
+                    />
+
+                    <AlertConfirm
+                      title={'Confirm to rename this workspace?'}
+                      description={`${name} => ${renameWorkspaceName}`}
+                      onConfirm={handleRename}
+                    >
+                      <Button
+                        type="button"
+                        loading={isRenameLoading}
+                        disabled={
+                          !renameWorkspaceName || name === renameWorkspaceName
+                        }
+                      >
+                        {t('Rename')}
+                      </Button>
+                    </AlertConfirm>
+                  </div>
+
+                  <Separator className="my-4" />
+
                   <AlertConfirm
                     title={'Confirm to delete this workspace'}
                     description={t(
