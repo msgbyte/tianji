@@ -36,11 +36,7 @@ export const workspaceRouter = router({
     )
     .input(
       z.object({
-        name: z
-          .string()
-          .max(60)
-          .min(4)
-          .regex(slugRegex, { message: 'no a valid name' }),
+        name: z.string().max(60).min(4),
       })
     )
     .output(userInfoSchema)
