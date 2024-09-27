@@ -37,6 +37,7 @@ import { WebsiteLighthouseReportStatus } from '@prisma/client';
 import { generateLighthouse } from '../../utils/screenshot/lighthouse.js';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
+import { logger } from '../../utils/logger.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -611,6 +612,7 @@ export const websiteRouter = router({
 
       generateLighthouse(url)
         .then(async (result) => {
+          logger.info('Successfully generated lighthouse report');
           await prisma.websiteLighthouseReport.update({
             where: {
               id: websiteInfo.id,
@@ -621,7 +623,8 @@ export const websiteRouter = router({
             },
           });
         })
-        .catch(async () => {
+        .catch(async (err) => {
+          logger.error('Failed to generate lighthouse report:', err);
           await prisma.websiteLighthouseReport.update({
             where: {
               id: websiteInfo.id,
