@@ -52,6 +52,7 @@ export const env = {
   sandboxMemoryLimit: process.env.SANDBOX_MEMORY_LIMIT
     ? Number(process.env.SANDBOX_MEMORY_LIMIT)
     : 16, // unit: MB
+  puppeteerExecutablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
   dbDebug: checkEnvTrusty(process.env.DB_DEBUG),
   amapToken: process.env.AMAP_TOKEN,
   mapboxToken: process.env.MAPBOX_TOKEN,
