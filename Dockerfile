@@ -7,7 +7,7 @@ COPY ./reporter/ ./reporter/
 RUN apt update
 RUN cd reporter && go build .
 
-# # Base ------------------------------
+# Base ------------------------------
 FROM node:20-alpine AS base
 
 RUN npm install -g pnpm@9.7.1
@@ -31,6 +31,15 @@ RUN pnpm build:static
 # Tianji server ------------------------------
 FROM base AS app
 WORKDIR /app/tianji
+
+# We don't need the standalone Chromium
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+RUN apk add --no-cache \
+    udev \
+    ttf-freefont \
+    chromium
 
 COPY . .
 

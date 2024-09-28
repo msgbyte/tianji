@@ -10,7 +10,10 @@ export async function screenshotWebsiteDetailImage(
   websiteId: string,
   userId: string
 ) {
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({
+    executablePath: env.puppeteerExecutablePath,
+    headless: 'new',
+  });
   const page = await browser.newPage();
   try {
     const jwt = jwtSign({

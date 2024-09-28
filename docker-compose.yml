@@ -2,6 +2,9 @@ version: '3'
 services:
   tianji:
     image: moonrailgun/tianji
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
     ports:
       - "12345:12345"
     environment:
