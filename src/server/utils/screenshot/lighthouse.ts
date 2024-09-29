@@ -8,6 +8,7 @@ export async function generateLighthouse(url: string): Promise<Result> {
   const browser = await puppeteer.launch({
     // Set to false if you want to see the script in action.
     headless: 'new',
+    args: ['--no-sandbox'],
     defaultViewport: null,
     ignoreDefaultArgs: ['--enable-automation'],
   });
