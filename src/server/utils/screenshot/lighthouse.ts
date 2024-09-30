@@ -13,7 +13,7 @@ export async function generateLighthouse(url: string): Promise<Result> {
     // Set to false if you want to see the script in action.
     executablePath: env.puppeteerExecutablePath,
     headless: true,
-    args: ['--no-sandbox', '--single-process', '--disable-dev-shm-usage'],
+    args: ['--no-sandbox', '--disable-dev-shm-usage'],
     defaultViewport: null,
     ignoreDefaultArgs: ['--enable-automation'],
   });
