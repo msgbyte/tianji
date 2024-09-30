@@ -33,6 +33,20 @@ RUN pnpm build:static
 FROM base AS app
 WORKDIR /app/tianji
 
+# We don't need the standalone Chromium in alpine.
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+RUN apk upgrade --no-cache --available \
+    && apk add --no-cache \
+      chromium-swiftshader \
+      ttf-freefont \
+      font-noto-emoji \
+    && apk add --no-cache \
+      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+      font-wqy-zenhei
+
 COPY . .
 
 RUN pnpm install --filter @tianji/server... --config.dedupe-peer-dependents=false
