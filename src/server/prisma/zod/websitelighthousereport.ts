@@ -14,4 +14,5 @@ export const WebsiteLighthouseReportModelSchema = z.object({
   accessibilityScore: z.number().int(),
   bestPracticesScore: z.number().int(),
   seoScore: z.number().int(),
+  errorMessage: z.string().nullish(),
 })

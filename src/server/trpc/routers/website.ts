@@ -649,6 +649,7 @@ export const websiteRouter = router({
             },
             data: {
               status: WebsiteLighthouseReportStatus.Failed,
+              errorMessage: String(err),
             },
           });
         });

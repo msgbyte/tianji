@@ -264,6 +264,7 @@ model WebsiteLighthouseReport {
   accessibilityScore Int                           @default(0)
   bestPracticesScore Int                           @default(0)
   seoScore           Int                           @default(0)
+  errorMessage       String?
 
   @@index([createdAt])
   @@index([websiteId])
