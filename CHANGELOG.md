@@ -1,5 +1,37 @@
 
 
+## [1.15.4](https://github.com/msgbyte/tianji/compare/v1.15.3...v1.15.4) (2024-09-30)
+
+
+### Features
+
+* allow rename workspace ([63e6bfe](https://github.com/msgbyte/tianji/commit/63e6bfe0d1a989479a6c4658d01ea9d84fc84b45))
+
+
+### Bug Fixes
+
+* fix login view split incorrect if not any extra login way ([b16a7c3](https://github.com/msgbyte/tianji/commit/b16a7c3c2c203394c94ccfee8e829bc7685a2457))
+* remove workspace name validation ([7c271dc](https://github.com/msgbyte/tianji/commit/7c271dc3c14fc6c751fb69b16adf6f08bfd5ac7b))
+
+
+### Others
+
+* add ignore in docker build ([ee72f74](https://github.com/msgbyte/tianji/commit/ee72f74e2c68c9baec500b78a3b994c8083abeed))
+* add logger for lighthouse ([9d3e9d8](https://github.com/msgbyte/tianji/commit/9d3e9d89db40aad4a78df8b64ad3d7bfccb94d2e))
+* add no sandbox args in puppeteer ([8b6a740](https://github.com/msgbyte/tianji/commit/8b6a74033c2838a6921c56990e13eedfbc8a559a))
+* docker add puppeteer support ([23c6915](https://github.com/msgbyte/tianji/commit/23c691541db0a51b4765dd0943488def7741c0f4))
+* downgrade alpine version to 3.19 to avoid issue ([e6df595](https://github.com/msgbyte/tianji/commit/e6df595af8ecddf734fe7e72a797921d84dad2c3))
+* improve docker build and lighthouse config ([57ebaf6](https://github.com/msgbyte/tianji/commit/57ebaf6ad361cae3403263009b94566cc7de2293))
+* improve websocket log ([b44e57d](https://github.com/msgbyte/tianji/commit/b44e57dde8d027eb05b7e8db20d490d2b62607cc))
+* try to resolve no screenshot problem by remove single process. ([fe432f1](https://github.com/msgbyte/tianji/commit/fe432f13325adf5fb4cde3dbb2f4f1218cb789e7)), closes [/github.com/GoogleChrome/lighthouse/issues/11537#issuecomment-799895027](https://github.com/msgbyte//github.com/GoogleChrome/lighthouse/issues/11537/issues/issuecomment-799895027)
+* unity esbuild version to resolve vulnerabilities which cause by esbuild ([bcc215c](https://github.com/msgbyte/tianji/commit/bcc215ca5d33126b368b58a9056d02fd93d5a99a))
+* update dockerfile, carry back auto install dependency ([de09059](https://github.com/msgbyte/tianji/commit/de09059e6561a27e160f0e39e7987da8ad05edaa))
+* update translation ([9c35bca](https://github.com/msgbyte/tianji/commit/9c35bca68508f2009434ebf578f0488a948e6b75))
+* upgrade axios version to latest to resolve vulnerabilities ([d73fa10](https://github.com/msgbyte/tianji/commit/d73fa108978b3c965b07dda725fbe6ae20bc4140))
+* upgrade puppeteer to make sure can fit with alpine image chromium version ([f59793d](https://github.com/msgbyte/tianji/commit/f59793d6f18625ad66b26d0a74aaa14c604ea812))
+* upgrade puppeteer usage to fit new version ([1322741](https://github.com/msgbyte/tianji/commit/13227416c05e2eae5a1a99e5d5f3396679e83d89))
+* upgrade puppeteer version to 23.4.1 ([e942769](https://github.com/msgbyte/tianji/commit/e942769af2e2570da71eb23f3ad489e8dcb72e95))
+
 ## [1.15.3](https://github.com/msgbyte/tianji/compare/v1.15.2...v1.15.3) (2024-09-24)
 
 
