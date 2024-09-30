@@ -5,11 +5,11 @@ import { useWatch } from '../../hooks/useWatch';
 import { Loading } from '../Loading';
 import { without } from 'lodash-es';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useSocketSubscribe } from '@/api/socketio';
+import { useSocketSubscribeData } from '@/api/socketio';
 import { ServerStatusInfo } from '../../../types';
 
 function useServerMap(): Record<string, ServerStatusInfo> {
-  const serverMap = useSocketSubscribe<Record<string, ServerStatusInfo>>(
+  const serverMap = useSocketSubscribeData<Record<string, ServerStatusInfo>>(
     'onServerStatusUpdate',
     {}
   );

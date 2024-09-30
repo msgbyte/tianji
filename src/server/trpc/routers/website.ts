@@ -34,11 +34,9 @@ import {
 import dayjs from 'dayjs';
 import { fetchDataByCursor, WebsiteQueryFilters } from '../../utils/prisma.js';
 import { WebsiteLighthouseReportStatus } from '@prisma/client';
-import { generateLighthouse } from '../../utils/screenshot/lighthouse.js';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
-import { logger } from '../../utils/logger.js';
-import { get } from 'lodash-es';
+import { sendBuildLighthouseMessageQueue } from '../../mq/producer.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -600,9 +598,9 @@ export const websiteRouter = router({
     )
     .output(z.string())
     .mutation(async ({ input }) => {
-      const { websiteId, url } = input;
+      const { workspaceId, websiteId, url } = input;
 
-      const websiteInfo = await prisma.websiteLighthouseReport.create({
+      const report = await prisma.websiteLighthouseReport.create({
         data: {
           url,
           websiteId,
@@ -611,48 +609,12 @@ export const websiteRouter = router({
         },
       });
 
-      generateLighthouse(url)
-        .then(async (result) => {
-          logger.info('Successfully generated lighthouse report');
-
-          const performanceScore =
-            Number(get(result, ['categories', 'performance', 'score'], 0)) *
-            100;
-          const accessibilityScore =
-            Number(get(result, ['categories', 'accessibility', 'score'], 0)) *
-            100;
-          const bestPracticesScore =
-            Number(get(result, ['categories', 'best-practices', 'score'], 0)) *
-            100;
-          const seoScore =
-            Number(get(result, ['categories', 'seo', 'score'], 0)) * 100;
-
-          await prisma.websiteLighthouseReport.update({
-            where: {
-              id: websiteInfo.id,
-            },
-            data: {
-              status: WebsiteLighthouseReportStatus.Success,
-              result: JSON.stringify(result),
-              performanceScore,
-              accessibilityScore,
-              bestPracticesScore,
-              seoScore,
-            },
-          });
-        })
-        .catch(async (err) => {
-          logger.error('Failed to generate lighthouse report:', err);
-          await prisma.websiteLighthouseReport.update({
-            where: {
-              id: websiteInfo.id,
-            },
-            data: {
-              status: WebsiteLighthouseReportStatus.Failed,
-              errorMessage: String(err),
-            },
-          });
-        });
+      await sendBuildLighthouseMessageQueue(
+        workspaceId,
+        websiteId,
+        report.id,
+        url
+      );
 
       return 'success';
     }),

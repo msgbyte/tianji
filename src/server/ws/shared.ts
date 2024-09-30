@@ -10,6 +10,7 @@ export interface SubscribeEventMap {
   onServerStatusUpdate: SubscribeEventFn<Record<string, ServerStatusInfo>>;
   onMonitorReceiveNewData: SubscribeEventFn<MonitorData>;
   onReceiveFeedEvent: SubscribeEventFn<Serialize<FeedEvent>>;
+  onLighthouseWorkCompleted: SubscribeEventFn<{ websiteId: string }>;
 }
 
 type SocketEventFn<T, U = unknown> = (

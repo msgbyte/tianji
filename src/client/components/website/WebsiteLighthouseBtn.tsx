@@ -28,6 +28,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { Badge } from '../ui/badge';
 import { LuArrowRight, LuPlus } from 'react-icons/lu';
 import { ROLES } from '@tianji/shared';
+import { useSocketSubscribe } from '@/api/socketio';
 
 interface WebsiteLighthouseBtnProps {
   websiteId: string;
@@ -53,6 +54,16 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
     const createMutation = trpc.website.generateLighthouseReport.useMutation({
       onSuccess: defaultSuccessHandler,
       onError: defaultErrorHandler,
+    });
+
+    useSocketSubscribe('onLighthouseWorkCompleted', (data) => {
+      const { websiteId } = data;
+      if (websiteId !== props.websiteId) {
+        return;
+      }
+
+      refetch();
+      toast.info(t('Lighthouse report completed!'));
     });
 
     const allData = useMemo(() => {

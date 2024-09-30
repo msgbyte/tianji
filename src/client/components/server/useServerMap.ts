@@ -1,10 +1,10 @@
-import { useSocket, useSocketSubscribe } from '@/api/socketio';
+import { useSocket, useSocketSubscribeData } from '@/api/socketio';
 import { ServerStatusInfo } from '../../../types';
 import { useVisibilityChange } from '@/hooks/useVisibilityChange';
 
 export function useServerMap(): Record<string, ServerStatusInfo> {
   const { socket } = useSocket();
-  const serverMap = useSocketSubscribe<Record<string, ServerStatusInfo>>(
+  const serverMap = useSocketSubscribeData<Record<string, ServerStatusInfo>>(
     'onServerStatusUpdate',
     {}
   );

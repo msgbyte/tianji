@@ -109,7 +109,24 @@ export function useSocket() {
   return { socket, emit, subscribe };
 }
 
-export function useSocketSubscribe<T>(
+export function useSocketSubscribe<K extends keyof SubscribeEventMap>(
+  name: K,
+  cb: (data: SubscribeEventData<K>) => void
+) {
+  const { subscribe } = useSocket();
+
+  const fn = useEvent(cb);
+
+  useEffect(() => {
+    const unsubscribe = subscribe(name, fn);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [name]);
+}
+
+export function useSocketSubscribeData<T>(
   name: keyof SubscribeEventMap,
   defaultData: T
 ): T {
