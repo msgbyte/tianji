@@ -35,6 +35,7 @@ WORKDIR /app/tianji
 # We don't need the standalone Chromium
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV DEBUG=puppeteer:*
 
 RUN apk add --no-cache \
     udev \
