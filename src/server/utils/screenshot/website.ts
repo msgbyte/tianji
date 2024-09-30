@@ -12,7 +12,7 @@ export async function screenshotWebsiteDetailImage(
 ) {
   const browser = await puppeteer.launch({
     executablePath: env.puppeteerExecutablePath,
-    headless: 'new',
+    headless: true,
   });
   const page = await browser.newPage();
   try {
