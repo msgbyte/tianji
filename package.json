@@ -51,6 +51,7 @@
     "overrides": {
       "@auth/core": "0.34.1",
       "dayjs": "1.11.10",
+      "esbuild": "0.24.0",
       "typescript": "5.5.4"
     },
     "patchedDependencies": {
