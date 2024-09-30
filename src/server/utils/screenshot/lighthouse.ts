@@ -8,10 +8,9 @@ export async function generateLighthouse(url: string): Promise<Result> {
   const browser = await puppeteer.launch({
     // Set to false if you want to see the script in action.
     headless: 'new',
-    args: ['--no-sandbox', '--single-process'],
+    args: ['--no-sandbox', '--single-process', '--disable-dev-shm-usage'],
     defaultViewport: null,
     ignoreDefaultArgs: ['--enable-automation'],
-    dumpio: true,
   });
 
   try {
@@ -31,11 +30,13 @@ export async function generateLighthouse(url: string): Promise<Result> {
       throw new Error('Lighthouse failed to generate report');
     }
 
-    page.close({ runBeforeUnload: false });
+    await page.close({ runBeforeUnload: false });
 
     const { lhr } = res;
 
     return lhr;
+  } catch (err) {
+    throw err;
   } finally {
     await browser.close();
   }
