@@ -8,31 +8,37 @@ export async function generateLighthouse(url: string): Promise<Result> {
   const browser = await puppeteer.launch({
     // Set to false if you want to see the script in action.
     headless: 'new',
-    args: ['--no-sandbox'],
+    args: ['--no-sandbox', '--single-process'],
     defaultViewport: null,
     ignoreDefaultArgs: ['--enable-automation'],
+    dumpio: true,
   });
-  const page = await browser.newPage();
 
-  // Wait for Lighthouse to open url, then inject our stylesheet.
-  browser.on('targetchanged', async (target) => {
-    if (page && page.url() === url) {
-      await page.addStyleTag({ content: '* {color: red}' });
+  try {
+    const page = await browser.newPage();
+
+    // Wait for Lighthouse to open url, then inject our stylesheet.
+    browser.on('targetchanged', async (target) => {
+      if (page && page.url() === url) {
+        await page.addStyleTag({ content: '* {color: red}' });
+      }
+    });
+
+    // Lighthouse will open the URL.
+    // Puppeteer will observe `targetchanged` and inject our stylesheet.
+    const res = await lighthouse(url, undefined, undefined, page);
+    if (!res) {
+      throw new Error('Lighthouse failed to generate report');
     }
-  });
 
-  // Lighthouse will open the URL.
-  // Puppeteer will observe `targetchanged` and inject our stylesheet.
-  const res = await lighthouse(url, undefined, undefined, page);
-  if (!res) {
-    throw new Error('Lighthouse failed to generate report');
+    page.close({ runBeforeUnload: false });
+
+    const { lhr } = res;
+
+    return lhr;
+  } finally {
+    await browser.close();
   }
-
-  const { lhr } = res;
-
-  await browser.close();
-
-  return lhr;
 }
 
 export function getLighthouseReport(lhr: Result): string {
