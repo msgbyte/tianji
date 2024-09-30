@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/api/authjs/useAuth';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { LuGithub, LuLayers } from 'react-icons/lu';
+import { compact } from 'lodash-es';
 
 export const Route = createFileRoute('/login')({
   validateSearch: z.object({
@@ -43,6 +44,27 @@ function LoginComponent() {
     });
   });
   const { allowRegister, authProvider } = useGlobalConfig();
+
+  const authProviderEl = compact([
+    authProvider.includes('github') && (
+      <Button
+        variant="secondary"
+        className="h-12 w-12 p-3"
+        onClick={() => loginWithOAuth('github')}
+      >
+        <LuGithub size={24} />
+      </Button>
+    ),
+    authProvider.includes('custom') && (
+      <Button
+        variant="secondary"
+        className="h-12 w-12 p-3"
+        onClick={() => loginWithOAuth('custom')}
+      >
+        <LuLayers size={24} />
+      </Button>
+    ),
+  ]);
 
   return (
     <div className="flex h-full w-full items-center justify-center dark:bg-gray-900">
@@ -98,31 +120,11 @@ function LoginComponent() {
           )}
         </Form>
 
-        {authProvider.length > 0 && (
+        {authProviderEl.length > 0 && (
           <>
             <Divider>{t('Or')}</Divider>
 
-            <div className="flex justify-center gap-2">
-              {authProvider.includes('github') && (
-                <Button
-                  variant="secondary"
-                  className="h-12 w-12 p-3"
-                  onClick={() => loginWithOAuth('github')}
-                >
-                  <LuGithub size={24} />
-                </Button>
-              )}
-
-              {authProvider.includes('custom') && (
-                <Button
-                  variant="secondary"
-                  className="h-12 w-12 p-3"
-                  onClick={() => loginWithOAuth('custom')}
-                >
-                  <LuLayers size={24} />
-                </Button>
-              )}
-            </div>
+            <div className="flex justify-center gap-2">{authProviderEl}</div>
           </>
         )}
       </div>
