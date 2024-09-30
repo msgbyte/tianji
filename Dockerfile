@@ -33,21 +33,6 @@ RUN pnpm build:static
 FROM base AS app
 WORKDIR /app/tianji
 
-# We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV DEBUG=puppeteer:*
-
-# NOTICE: Make sure Puppeteer is v22.7.1. Reference: https://pptr.dev/supported-browsers
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    udev \
-    ca-certificates \
-    ttf-freefont
-
 COPY . .
 
 RUN pnpm install --filter @tianji/server... --config.dedupe-peer-dependents=false
