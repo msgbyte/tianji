@@ -10,4 +10,8 @@ export const WebsiteLighthouseReportModelSchema = z.object({
   url: z.string(),
   result: z.string(),
   status: z.nativeEnum(WebsiteLighthouseReportStatus),
+  performanceScore: z.number().int(),
+  accessibilityScore: z.number().int(),
+  bestPracticesScore: z.number().int(),
+  seoScore: z.number().int(),
 })

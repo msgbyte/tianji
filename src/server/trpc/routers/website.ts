@@ -38,6 +38,7 @@ import { generateLighthouse } from '../../utils/screenshot/lighthouse.js';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { logger } from '../../utils/logger.js';
+import { get } from 'lodash-es';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -613,6 +614,19 @@ export const websiteRouter = router({
       generateLighthouse(url)
         .then(async (result) => {
           logger.info('Successfully generated lighthouse report');
+
+          const performanceScore =
+            Number(get(result, ['categories', 'performance', 'score'], 0)) *
+            100;
+          const accessibilityScore =
+            Number(get(result, ['categories', 'accessibility', 'score'], 0)) *
+            100;
+          const bestPracticesScore =
+            Number(get(result, ['categories', 'best-practices', 'score'], 0)) *
+            100;
+          const seoScore =
+            Number(get(result, ['categories', 'seo', 'score'], 0)) * 100;
+
           await prisma.websiteLighthouseReport.update({
             where: {
               id: websiteInfo.id,
@@ -620,6 +634,10 @@ export const websiteRouter = router({
             data: {
               status: WebsiteLighthouseReportStatus.Success,
               result: JSON.stringify(result),
+              performanceScore,
+              accessibilityScore,
+              bestPracticesScore,
+              seoScore,
             },
           });
         })

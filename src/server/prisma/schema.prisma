@@ -253,13 +253,17 @@ enum WebsiteLighthouseReportStatus {
 }
 
 model WebsiteLighthouseReport {
-  id        String                        @id() @default(cuid()) @db.VarChar(30)
-  websiteId String?                       @db.VarChar(30)
-  createdAt DateTime                      @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime                      @updatedAt @db.Timestamptz(6)
-  url       String
-  result    String // json string
-  status    WebsiteLighthouseReportStatus @default(Pending)
+  id                 String                        @id() @default(cuid()) @db.VarChar(30)
+  websiteId          String?                       @db.VarChar(30)
+  createdAt          DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                      @updatedAt @db.Timestamptz(6)
+  url                String
+  result             String // json string
+  status             WebsiteLighthouseReportStatus @default(Pending)
+  performanceScore   Int                           @default(0)
+  accessibilityScore Int                           @default(0)
+  bestPracticesScore Int                           @default(0)
+  seoScore           Int                           @default(0)
 
   @@index([createdAt])
   @@index([websiteId])
