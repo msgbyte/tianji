@@ -29,6 +29,11 @@ export function initSocketio(httpServer: HTTPServer) {
 
         if (token) {
           user = jwtVerify(token);
+          logger.info(
+            '[WebSocket] Authenticated via JWT:',
+            user.id,
+            user.username
+          );
         } else {
           const session = await getAuthSession(
             socket.request,
@@ -43,9 +48,12 @@ export function initSocketio(httpServer: HTTPServer) {
             username: session.user.name,
             role: session.user.role,
           };
+          logger.info(
+            '[WebSocket] Authenticated via Session:',
+            user.id,
+            user.username
+          );
         }
-
-        logger.info('[Socket] Authenticated via JWT:', user.id, user.username);
 
         socket.data.user = user;
         socket.data.token = token;
