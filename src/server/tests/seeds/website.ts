@@ -5,7 +5,7 @@ import { getLocation } from '../../utils/detect.js';
 import dayjs from 'dayjs';
 import { WebsiteSession } from '@prisma/client';
 
-const websiteId = 'cm1cemqhw0009g2snzh3eqjzr';
+const websiteId = 'cly5yay7a001v5tp6xdkzmygh';
 
 async function main() {
   Array.from({ length: 200 }).map(async (_, i) => {

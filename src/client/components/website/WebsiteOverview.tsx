@@ -50,10 +50,11 @@ export const WebsiteOverview: React.FC<{
         const pageviewsArr = getDateArray(pageviews, startDate, endDate, unit);
         const sessionsArr = getDateArray(sessions, startDate, endDate, unit);
 
-        return [
-          ...pageviewsArr.map((item) => ({ ...item, type: 'pageview' })),
-          ...sessionsArr.map((item) => ({ ...item, type: 'session' })),
-        ];
+        return pageviewsArr.map((item, i) => ({
+          pv: item.y,
+          uv: sessionsArr[i]?.y ?? 0,
+          date: item.x,
+        }));
       },
     }
   );
