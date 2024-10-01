@@ -6,9 +6,44 @@ import { OPENAPI_TAG } from '../../../utils/const.js';
 import { createFeedEvent } from '../../../model/feed/event.js';
 import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';
 import { logger } from '../../../utils/logger.js';
-import { compact, fromPairs, get, map } from 'lodash-es';
+import { compact, fromPairs, get, map, uniqueId } from 'lodash-es';
+import { subscribeEventBus } from '../../../ws/shared.js';
 
 export const feedIntegrationRouter = router({
+  playground: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'POST',
+        path: '/playground/{workspaceId}',
+        summary: 'webhook playground',
+      })
+    )
+    .input(
+      z
+        .object({
+          workspaceId: z.string(),
+        })
+        .passthrough()
+    )
+    .output(z.string())
+    .mutation(async ({ input, ctx }) => {
+      const headers = ctx.req.headers;
+      const body = ctx.req.body;
+      const method = ctx.req.method;
+      const url = ctx.req.originalUrl;
+      const workspaceId = input.workspaceId;
+
+      subscribeEventBus.emit('onReceivePlaygroundWebhookRequest', workspaceId, {
+        id: uniqueId('req#'),
+        headers,
+        body,
+        method,
+        url,
+        createdAt: Date.now(),
+      });
+
+      return 'success';
+    }),
   github: publicProcedure
     .meta(
       buildFeedPublicOpenapi({

@@ -4,10 +4,10 @@ import { Button } from './ui/button';
 import { LuCopy, LuCopyCheck } from 'react-icons/lu';
 import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
-import { ScrollBar } from './ui/scroll-area';
 
 export const CodeBlock: React.FC<{
   code: string;
+  height?: number;
 }> = React.memo((props) => {
   const [copied, setCopied] = useState(false);
   const { t } = useTranslation();
@@ -22,7 +22,12 @@ export const CodeBlock: React.FC<{
 
   return (
     <div className="group relative w-full overflow-auto">
-      <pre className="max-h-96 rounded-sm border border-zinc-200 bg-zinc-100 p-3 pr-12 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <pre
+        className="rounded-sm border border-zinc-200 bg-zinc-100 p-3 pr-12 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+        style={{
+          maxHeight: props.height || 384,
+        }}
+      >
         <code>{props.code}</code>
       </pre>
       <Button

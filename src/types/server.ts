@@ -1,3 +1,5 @@
+import { type IncomingHttpHeaders } from 'http';
+
 export interface ServerStatusInfo {
   workspaceId: string;
   name: string;
@@ -51,4 +53,13 @@ export interface ServerStatusDockerContainerPort {
   PrivatePort: number;
   PublicPort: number;
   Type: 'tcp' | 'udp';
+}
+
+export interface PlaygroundWebhookRequestPayload {
+  id: string;
+  url: string;
+  method: string;
+  headers: IncomingHttpHeaders;
+  body: string;
+  createdAt: number;
 }

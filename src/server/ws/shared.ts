@@ -1,6 +1,10 @@
 import { EventEmitter } from 'eventemitter-strict';
 import { Socket } from 'socket.io';
-import { MaybePromise, ServerStatusInfo } from '../../types/index.js';
+import {
+  MaybePromise,
+  PlaygroundWebhookRequestPayload,
+  ServerStatusInfo,
+} from '../../types/index.js';
 import { FeedEvent, MonitorData } from '@prisma/client';
 import { Serialize } from '../types/utils.js';
 
@@ -10,6 +14,7 @@ export interface SubscribeEventMap {
   onServerStatusUpdate: SubscribeEventFn<Record<string, ServerStatusInfo>>;
   onMonitorReceiveNewData: SubscribeEventFn<MonitorData>;
   onReceiveFeedEvent: SubscribeEventFn<Serialize<FeedEvent>>;
+  onReceivePlaygroundWebhookRequest: SubscribeEventFn<PlaygroundWebhookRequestPayload>;
   onLighthouseWorkCompleted: SubscribeEventFn<{ websiteId: string }>;
 }
 

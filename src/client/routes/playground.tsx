@@ -6,6 +6,8 @@ import {
 } from '@/components/monitor/StatusPage/ServiceList';
 import { useState } from 'react';
 import { EditableText } from '@/components/EditableText';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WebhookPlayground } from '@/components/WebhookPlayground';
 
 export const Route = createFileRoute('/playground')({
   beforeLoad: () => {
@@ -45,13 +47,29 @@ function PageComponent() {
   ]);
 
   return (
-    <div>
-      <EditableText
-        defaultValue="fooooooooo"
-        onSave={() => console.log('save')}
-      />
+    <div className="h-full w-full p-4">
+      <Tabs defaultValue="current" className="flex h-full flex-col">
+        <div>
+          <TabsList>
+            <TabsTrigger value="current">Current</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
+        </div>
 
-      <MonitorStatusPageServiceList value={list} onChange={setList} />
+        <TabsContent value="current" className="flex-1 overflow-hidden">
+          <WebhookPlayground />
+        </TabsContent>
+        <TabsContent value="history">
+          <div>
+            <EditableText
+              defaultValue="fooooooooo"
+              onSave={() => console.log('save')}
+            />
+
+            <MonitorStatusPageServiceList value={list} onChange={setList} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
