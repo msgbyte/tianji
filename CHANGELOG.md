@@ -1,5 +1,24 @@
 
 
+## [1.15.5](https://github.com/msgbyte/tianji/compare/v1.15.4...v1.15.5) (2024-10-01)
+
+
+### Features
+
+* add error message for lighthouse ([bb0c574](https://github.com/msgbyte/tianji/commit/bb0c57489347242300c6153ed3908d1822bb692c))
+* add lighthouse score in database fields ([6c2a093](https://github.com/msgbyte/tianji/commit/6c2a0938423385d67309deefa67a3d971bf8d7c8))
+* add webhook playground ([33a0a60](https://github.com/msgbyte/tianji/commit/33a0a60eee53d1ac08cc9accc2e96f06e56ebb52))
+* add webhook playground entry ([92196e4](https://github.com/msgbyte/tianji/commit/92196e4e5bb9b183cfe85aad876115c0e17f824e))
+* add zeromq to make sure lighthouse can only run one at same time ([50a3573](https://github.com/msgbyte/tianji/commit/50a35732ff202f2452b344c2df17aba677426ec3))
+
+
+### Others
+
+* improve avatar display timing for non-avatar user ([04dc1e9](https://github.com/msgbyte/tianji/commit/04dc1e98dd448c0fd6661559722cf594ab2e751e))
+* refactor time event chart to recharts ([1337eaa](https://github.com/msgbyte/tianji/commit/1337eaa2c0ff55651a05878edd722ac1b46a5067))
+* update style of website page card ([b778f8c](https://github.com/msgbyte/tianji/commit/b778f8c982f7df8328c2fffe67783b15cde51c15))
+* upgrade shadcn cli and add recharts ([055f57e](https://github.com/msgbyte/tianji/commit/055f57e087f002b8f891053509e3cad865f1d52b))
+
 ## [1.15.4](https://github.com/msgbyte/tianji/compare/v1.15.3...v1.15.4) (2024-09-30)
 
 
