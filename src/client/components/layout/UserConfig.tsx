@@ -76,7 +76,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
       <Avatar size={props.isCollapsed ? 'sm' : 'default'}>
         {userInfo?.avatar && <AvatarImage src={userInfo.avatar} />}
 
-        <AvatarFallback>
+        <AvatarFallback delayMs={userInfo?.avatar ? undefined : 0}>
           {nickname.substring(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
