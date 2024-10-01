@@ -6,17 +6,14 @@ import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
-import {
-  useCurrentWorkspaceId,
-  useHasAdminPermission,
-  useHasPermission,
-} from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -25,10 +22,10 @@ import { LuSettings } from 'react-icons/lu';
 
 export const Route = createFileRoute('/website/$websiteId/')({
   beforeLoad: routeAuthBeforeLoad,
-  component: WebsiteDetailComponent,
+  component: PageComponent,
 });
 
-function WebsiteDetailComponent() {
+function PageComponent() {
   const { websiteId } = Route.useParams<{ websiteId: string }>();
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
@@ -87,10 +84,10 @@ function WebsiteDetailComponent() {
         />
       }
     >
-      <ScrollArea className="h-full overflow-hidden p-4">
+      <ScrollArea className="h-full overflow-hidden">
         <ScrollBar orientation="horizontal" />
 
-        <Card>
+        <Card bordered={false} className="bg-transparent">
           <Card.Grid hoverable={false} className="!w-full">
             <WebsiteOverview website={website} showDateFilter={true} />
           </Card.Grid>
@@ -120,7 +117,7 @@ function WebsiteDetailComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
           >
             <WebsiteMetricsTable
               websiteId={websiteId}
@@ -132,7 +129,7 @@ function WebsiteDetailComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
           >
             <WebsiteMetricsTable
               websiteId={websiteId}
@@ -144,7 +141,7 @@ function WebsiteDetailComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
           >
             <WebsiteMetricsTable
               websiteId={websiteId}
@@ -156,7 +153,7 @@ function WebsiteDetailComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
           >
             <WebsiteMetricsTable
               websiteId={websiteId}
@@ -168,7 +165,7 @@ function WebsiteDetailComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
           >
             <WebsiteMetricsTable
               websiteId={websiteId}
@@ -184,7 +181,7 @@ function WebsiteDetailComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
           >
             <WebsiteMetricsTable
               websiteId={websiteId}

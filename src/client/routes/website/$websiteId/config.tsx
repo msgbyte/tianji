@@ -13,10 +13,10 @@ import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/website/$websiteId/config')({
   beforeLoad: routeAuthBeforeLoad,
-  component: WebsiteDetailComponent,
+  component: PageComponent,
 });
 
-function WebsiteDetailComponent() {
+function PageComponent() {
   const { websiteId } = Route.useParams<{ websiteId: string }>();
   const workspaceId = useCurrentWorkspaceId();
   const { data: website, isLoading } = trpc.website.info.useQuery({
