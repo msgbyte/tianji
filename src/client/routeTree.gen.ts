@@ -38,6 +38,7 @@ import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
+import { Route as FeedPlaygroundImport } from './routes/feed_/playground'
 import { Route as FeedAddImport } from './routes/feed/add'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
@@ -185,6 +186,11 @@ const MonitorAddRoute = MonitorAddImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
+const FeedPlaygroundRoute = FeedPlaygroundImport.update({
+  path: '/feed/playground',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const FeedAddRoute = FeedAddImport.update({
   path: '/add',
   getParentRoute: () => FeedRoute,
@@ -289,6 +295,10 @@ declare module '@tanstack/react-router' {
     '/feed/add': {
       preLoaderRoute: typeof FeedAddImport
       parentRoute: typeof FeedImport
+    }
+    '/feed/playground': {
+      preLoaderRoute: typeof FeedPlaygroundImport
+      parentRoute: typeof rootRoute
     }
     '/monitor/add': {
       preLoaderRoute: typeof MonitorAddImport
@@ -420,6 +430,7 @@ export const routeTree = rootRoute.addChildren([
     WebsiteWebsiteIdConfigRoute,
     WebsiteWebsiteIdIndexRoute,
   ]),
+  FeedPlaygroundRoute,
   StatusSlugRoute,
 ])
 

@@ -26,6 +26,7 @@ import {
 } from './ui/dropdown-menu';
 import { useEvent } from '@/hooks/useEvent';
 import { useSocketSubscribeList } from '@/api/socketio';
+import { Spinner } from './ui/spinner';
 
 export const WebhookPlayground: React.FC = React.memo(() => {
   const { t } = useTranslation();
@@ -68,7 +69,17 @@ export const WebhookPlayground: React.FC = React.memo(() => {
     <ScrollArea className="flex-1">
       <div className="flex flex-col gap-2 p-2">
         {requestList.length === 0 && (
-          <Empty description={t('Is waiting new request from remote')} />
+          <div className="pt-10">
+            <Empty
+              description={t(
+                'Currently waiting for a new request from the remote server'
+              )}
+            />
+
+            <div className="mt-2 flex justify-center text-center">
+              <Spinner size={24} />
+            </div>
+          </div>
         )}
 
         {reverse(requestList).map((item) => {
@@ -106,11 +117,12 @@ export const WebhookPlayground: React.FC = React.memo(() => {
 
   const webhookUrl = `${window.location.origin}/open/feed/playground/${workspaceId}`;
   const emptyContentFallback = (
-    <div>
+    <div className="pt-8">
       <div>
         <Trans>
-          Set webhook url with <Code children={webhookUrl} />, and keep this
-          window actived, then you can get webhook request here.
+          Set the webhook URL to <Code children={webhookUrl} />, and keep this
+          window active. Once done, you will start receiving webhook requests
+          here.
         </Trans>
       </div>
       <Button
@@ -121,7 +133,7 @@ export const WebhookPlayground: React.FC = React.memo(() => {
           toast.success('Copied into your clipboard!');
         }}
       >
-        {t('Copy Url')}
+        {t('Copy URL')}
       </Button>
     </div>
   );
