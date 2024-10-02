@@ -12,7 +12,22 @@ RUN cd reporter && go build .
 FROM node:20-alpine3.19 AS base
 
 RUN npm install -g pnpm@9.7.1
+
+# For apprise
 RUN apk add --update --no-cache python3 py3-pip g++ make
+
+# For puppeteer
+RUN apk upgrade --no-cache --available \
+    && apk add --no-cache \
+      chromium-swiftshader \
+      ttf-freefont \
+      font-noto-emoji \
+    && apk add --no-cache \
+      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+      font-wqy-zenhei
+
+# For zeromq
+RUN apk add --update --no-cache curl cmake
 
 # Tianji frontend ------------------------------
 FROM base AS static
@@ -37,15 +52,6 @@ WORKDIR /app/tianji
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-RUN apk upgrade --no-cache --available \
-    && apk add --no-cache \
-      chromium-swiftshader \
-      ttf-freefont \
-      font-noto-emoji \
-    && apk add --no-cache \
-      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
-      font-wqy-zenhei
 
 COPY . .
 
