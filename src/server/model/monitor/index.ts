@@ -67,3 +67,31 @@ export function getMonitorRecentData(
     })
     .then((arr) => arr.reverse());
 }
+
+export function getMonitorSummaryWithDay(
+  monitorId: string,
+  beforeDay: number = 30
+) {
+  interface MonitorSummaryItem {
+    day: string;
+    total_count: number;
+    up_count: number;
+    up_rate: number;
+  }
+
+  return prisma.$queryRaw<MonitorSummaryItem[]>`
+    SELECT
+      DATE("createdAt") AS day,
+      COUNT(1) AS total_count,
+      SUM(CASE WHEN "value" >= 0 THEN 1 ELSE 0 END) AS up_count,
+      (SUM(CASE WHEN "value" >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(1)) AS up_rate
+    FROM
+      "MonitorData"
+    WHERE
+      "monitorId" = ${monitorId} AND
+      "createdAt" >= CURRENT_DATE - INTERVAL '${beforeDay} days'
+    GROUP BY
+      DATE("createdAt")
+    ORDER BY
+      day;`;
+}
