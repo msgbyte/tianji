@@ -1,5 +1,14 @@
 
 
+## [1.15.6](https://github.com/msgbyte/tianji/compare/v1.15.5...v1.15.6) (2024-10-02)
+
+
+### Others
+
+* add build dependency for build zeromq ([79b75f5](https://github.com/msgbyte/tianji/commit/79b75f55e39c057c330bc1fb0b3b15dc10e28a78))
+* improve install package time in docker build static stage ([1be03cc](https://github.com/msgbyte/tianji/commit/1be03ccf532a7dd6d23334a5666dec34e2e68d77))
+* update NODE_OPTIONS in static layer to make sure build can pass ([5eb7696](https://github.com/msgbyte/tianji/commit/5eb7696ead2da961d6ac5223a2badb48502142ba))
+
 ## [1.15.5](https://github.com/msgbyte/tianji/compare/v1.15.4...v1.15.5) (2024-10-01)
 
 
