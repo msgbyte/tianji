@@ -333,7 +333,7 @@ export async function getWebsitePageviewMetrics(
   }
 
   return prisma.$queryRaw`
-    select ${Prisma.sql([`"${column}"`])}  x, count(*) y
+    select ${Prisma.sql([`"${column}"`])} x, count(*) y
     from "WebsiteEvent"
     ${joinSession}
     where "WebsiteEvent"."websiteId" = ${websiteId}
