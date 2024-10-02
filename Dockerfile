@@ -38,7 +38,7 @@ ARG VERSION
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --filter @tianji/client... --config.dedupe-peer-dependents=false --frozen-lockfile
 
 ENV VITE_VERSION=$VERSION
 ENV NODE_OPTIONS="--max-old-space-size=4096"
