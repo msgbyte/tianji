@@ -128,6 +128,31 @@ model WorkspacesOnUsers {
   @@index([workspaceId])
 }
 
+model LemonSqueezySubscription {
+  subscriptionId String   @id @unique
+  workspaceId    String   @unique @db.VarChar(30)
+  storeId        String
+  productId      String
+  variantId      String
+  status         String
+  cardBrand      String
+  cardLastFour   String
+  renewsAt       DateTime @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model LemonSqueezyWebhookEvent {
+  id        String @id @unique @default(cuid()) @db.VarChar(30)
+  eventName String
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  payload   Json   @db.Json // Other payload info get from query params, should be a object
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+}
+
 model Website {
   id          String    @id @unique @default(cuid()) @db.VarChar(30)
   workspaceId String    @db.VarChar(30)

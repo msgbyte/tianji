@@ -441,6 +441,9 @@ importers:
       '@auth/express':
         specifier: ^0.5.5
         version: 0.5.6(express@4.18.2)(nodemailer@6.9.8)
+      '@lemonsqueezy/lemonsqueezy.js':
+        specifier: ^3.3.1
+        version: 3.3.1
       '@paralleldrive/cuid2':
         specifier: ^2.2.2
         version: 2.2.2
@@ -2333,6 +2336,14 @@ packages:
 
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
+
+  '@lemonsqueezy/lemonsqueezy.js@3.3.1':
+    resolution: {integrity: sha512-gM/FdNsK3BlrD6JRrhmiyqBXQsCpzSUdKSoZwJMQfXqfqcK321og+uMssc6HYcygUMrGvPnNJyJ1RqZPFDrgtg==}
+    engines: {node: '>=20'}
+
+  '@ljharb/resumer@0.0.1':
+    resolution: {integrity: sha512-skQiAOrCfO7vRTq53cxznMpks7wS1va95UCidALlOVWqvBAzwPVErwizDwoMqNVMEn1mDq0utxZd02eIrvF1lw==}
+    engines: {node: '>= 0.4'}
 
   '@ljharb/through@2.3.11':
     resolution: {integrity: sha512-ccfcIDlogiXNq5KcbAwbaO7lMh3Tm1i3khMPYpxlK8hH/W53zN81KM9coerRLOnTGu3nfXIniAmQbRI9OxbC0w==}
@@ -15284,6 +15295,12 @@ snapshots:
       - encoding
 
   '@leichtgewicht/ip-codec@2.0.5': {}
+
+  '@lemonsqueezy/lemonsqueezy.js@3.3.1': {}
+
+  '@ljharb/resumer@0.0.1':
+    dependencies:
+      '@ljharb/through': 2.3.11
 
   '@ljharb/through@2.3.11':
     dependencies:

@@ -46,6 +46,18 @@ export const env = {
       clientSecret: process.env.AUTH_CUSTOM_SECRET,
     },
   },
+  billing: {
+    lemonSqueezy: {
+      signatureSecret: process.env.LEMON_SQUEEZY_SIGNATURE_SECRET ?? '',
+      apiKey: process.env.LEMON_SQUEEZY_API_KEY ?? '',
+      storeId: process.env.LEMON_SQUEEZY_STORE_ID ?? '',
+      tierVariantId: {
+        free: process.env.LEMON_SQUEEZY_SUBSCRIPTION_FREE_ID ?? '',
+        pro: process.env.LEMON_SQUEEZY_SUBSCRIPTION_PRO_ID ?? '',
+        team: process.env.LEMON_SQUEEZY_SUBSCRIPTION_TEAM_ID ?? '',
+      },
+    },
+  },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
   websiteId: process.env.WEBSITE_ID,
