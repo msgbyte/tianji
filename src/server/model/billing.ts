@@ -7,10 +7,12 @@ import {
 import { env } from '../utils/env.js';
 import { prisma } from './_client.js';
 
-lemonSqueezySetup({
-  apiKey: env.billing.lemonSqueezy.apiKey,
-  onError: (error) => console.error('Error!', error),
-});
+if (env.billing.lemonSqueezy.apiKey) {
+  lemonSqueezySetup({
+    apiKey: env.billing.lemonSqueezy.apiKey,
+    onError: (error) => console.error('Error!', error),
+  });
+}
 
 export type SubscriptionTierType =
   keyof typeof env.billing.lemonSqueezy.tierVariantId;
