@@ -95,13 +95,14 @@ export const feedIntegrationRouter = router({
         await createFeedEvent(workspaceId, {
           channelId: channelId,
           eventName: eventType,
-          eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit **${commits}** to **${ref}** in [${fullName}](${repoUrl})`,
+          eventContent: `[${pusherName}](mailto:${pusherEmail}) push commit ${commits ? `**${commits}**` : ''} to **${ref}** in [${fullName}](${repoUrl})`,
           tags: [],
           source: 'github',
           senderId,
           senderName,
           important: false,
           url,
+          payload: data,
         });
 
         return 'ok';
@@ -126,6 +127,7 @@ export const feedIntegrationRouter = router({
             senderName,
             important: false,
             url,
+            payload: data,
           });
         } else if (action === 'deleted') {
           await createFeedEvent(workspaceId, {
@@ -138,6 +140,7 @@ export const feedIntegrationRouter = router({
             senderName,
             important: false,
             url,
+            payload: data,
           });
         }
 
@@ -172,6 +175,7 @@ export const feedIntegrationRouter = router({
             senderName,
             important: false,
             url,
+            payload: data,
           });
 
           return 'ok';
@@ -244,6 +248,7 @@ export const feedIntegrationRouter = router({
           senderId: alarm.alarmObjInfo.appId,
           senderName: alarm.alarmPolicyInfo.policyName,
           important: alarm.alarmStatus === '1',
+          payload: data,
         });
 
         return 'ok';
@@ -265,6 +270,7 @@ export const feedIntegrationRouter = router({
           senderId: alarm.alarmObjInfo.appId,
           senderName: alarm.alarmPolicyInfo.policyName,
           important: alarm.alarmStatus === '1',
+          payload: data,
         });
 
         return 'ok';

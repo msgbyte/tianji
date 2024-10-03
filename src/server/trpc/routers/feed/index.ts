@@ -194,6 +194,21 @@ export const feedRouter = router({
           channelId,
           archived,
         },
+        select: {
+          id: true,
+          channelId: true,
+          createdAt: true,
+          updatedAt: true,
+          eventName: true,
+          eventContent: true,
+          tags: true,
+          source: true,
+          senderId: true,
+          senderName: true,
+          url: true,
+          important: true,
+          archived: true,
+        },
         limit,
         cursor,
       });
@@ -294,6 +309,7 @@ export const feedRouter = router({
         senderId: true,
         senderName: true,
         important: true,
+        payload: true,
       }).merge(
         z.object({
           channelId: z.string(),
@@ -311,7 +327,7 @@ export const feedRouter = router({
         },
       });
 
-      return event;
+      return event as z.infer<typeof FeedEventModelSchema>;
     }),
   archiveEvent: workspaceAdminProcedure
     .meta(

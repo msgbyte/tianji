@@ -567,6 +567,9 @@ model FeedEvent {
   url          String? // url link
   important    Boolean
   archived     Boolean  @default(false) @db.Boolean
+  /// [Nullable<PrismaJson.CommonPayload>]
+  /// @zod.custom(imports.CommonPayloadSchema.nullish())
+  payload      Json?    @db.Json
 
   channel FeedChannel @relation(fields: [channelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
