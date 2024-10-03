@@ -1,5 +1,23 @@
 
 
+## [1.15.7](https://github.com/msgbyte/tianji/compare/v1.15.6...v1.15.7) (2024-10-03)
+
+
+### Bug Fixes
+
+* fix a problem which will make request list incorrect ([2d5a09c](https://github.com/msgbyte/tianji/commit/2d5a09c79cae48f62029b8767bae552376e68639))
+
+
+### Document
+
+* fix update code to new version ([1fe5009](https://github.com/msgbyte/tianji/commit/1fe50092bab5e0824c1b96b70d40d33f751f4135))
+
+
+### Others
+
+* split website from monorepo ([e09d7ee](https://github.com/msgbyte/tianji/commit/e09d7eef8788e27ac651f18dcf4d04de895a35ee))
+* update workspace config and remove unused lock file ([7301eeb](https://github.com/msgbyte/tianji/commit/7301eeb82a4fdc4ae6853dbe98c1f1d7b9b79bca))
+
 ## [1.15.6](https://github.com/msgbyte/tianji/compare/v1.15.5...v1.15.6) (2024-10-02)
 
 
