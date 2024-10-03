@@ -1,8 +1,21 @@
 import { z } from 'zod';
-import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc.js';
+import {
+  OpenApiMetaInfo,
+  router,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} from '../trpc.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
 import { OpenApiMeta } from 'trpc-openapi';
+import {
+  cancelSubscription,
+  changeSubscription,
+  createCheckoutBilling,
+  getTierNameByvariantId,
+  SubscriptionTierType,
+} from '../../model/billing.js';
+import { LemonSqueezySubscriptionModelSchema } from '../../prisma/zod/lemonsqueezysubscription.js';
 
 export const billingRouter = router({
   usage: workspaceProcedure
@@ -55,6 +68,87 @@ export const billingRouter = router({
         surveyCount: res._sum.surveyCount ?? 0,
         feedEventCount: res._sum.feedEventCount ?? 0,
       };
+    }),
+  currentSubscription: workspaceProcedure
+    .meta(
+      buildBillingOpenapi({
+        method: 'GET',
+        path: '/currentSubscription',
+        description: 'get workspace current subscription',
+      })
+    )
+    .output(
+      LemonSqueezySubscriptionModelSchema.merge(
+        z.object({
+          tier: z.string(),
+        })
+      ).nullable()
+    )
+    .query(async ({ input }) => {
+      const { workspaceId } = input;
+
+      const res = await prisma.lemonSqueezySubscription.findUnique({
+        where: {
+          workspaceId,
+        },
+      });
+
+      if (!res) {
+        return null;
+      }
+
+      return { ...res, tier: getTierNameByvariantId(res.variantId) };
+    }),
+  checkout: workspaceOwnerProcedure
+    .input(
+      z.object({
+        tier: z.string(),
+        redirectUrl: z.string().optional(),
+      })
+    )
+    .output(
+      z.object({
+        url: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { workspaceId, redirectUrl } = input;
+      const userId = ctx.user.id;
+      const checkout = await createCheckoutBilling(
+        workspaceId,
+        userId,
+        input.tier as SubscriptionTierType,
+        redirectUrl
+      );
+
+      const url = checkout.attributes.url;
+
+      return { url };
+    }),
+  changePlan: workspaceOwnerProcedure
+    .input(
+      z.object({
+        tier: z.string(),
+      })
+    )
+    .output(z.string())
+    .mutation(async ({ input }) => {
+      const { workspaceId } = input;
+
+      const subscription = await changeSubscription(
+        workspaceId,
+        input.tier as SubscriptionTierType
+      );
+
+      return subscription.id;
+    }),
+  cancelSubscription: workspaceOwnerProcedure
+    .output(z.string())
+    .mutation(async ({ input }) => {
+      const { workspaceId } = input;
+      const subscription = await cancelSubscription(workspaceId);
+
+      return subscription.id;
     }),
 });
 
