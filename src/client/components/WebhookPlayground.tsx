@@ -82,7 +82,7 @@ export const WebhookPlayground: React.FC = React.memo(() => {
           </div>
         )}
 
-        {reverse(requestList).map((item) => {
+        {reverse([...requestList]).map((item) => {
           return (
             <button
               key={item.id}
