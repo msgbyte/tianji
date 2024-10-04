@@ -261,16 +261,20 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+type Payload = NonNullable<RechartsPrimitive.LegendProps['payload']>[number]
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
     Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean
       nameKey?: string
+    } & {
+      selectedItem?: string[]
+      onItemClick?: (item: Payload) => void
     }
 >(
   (
-    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
+    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey, selectedItem, onItemClick },
     ref
   ) => {
     const { config } = useChart()
@@ -296,8 +300,11 @@ const ChartLegendContent = React.forwardRef<
             <div
               key={item.value}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground",
+                typeof onItemClick === 'function' && 'cursor-pointer',
+                selectedItem?.includes(item.value) && 'font-bold',
               )}
+              onClick={() => onItemClick?.(item)}
             >
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />

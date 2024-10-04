@@ -1,6 +1,6 @@
 import { useTheme } from '../hooks/useTheme';
 import { DateUnit } from '@tianji/shared';
-import React from 'react';
+import React, { useState } from 'react';
 import { formatDateWithUnit } from '../utils/date';
 import {
   Area,
@@ -42,6 +42,7 @@ export const TimeEventChart: React.FC<{
     const lineDasharray = strokeDasharray.find((s) => s.name === name);
     return lineDasharray ? lineDasharray.strokeDasharray : undefined;
   };
+  const [selectedItem, setSelectedItem] = useState<string[]>(['pv', 'uv']);
 
   return (
     <ChartContainer config={chartConfig}>
@@ -65,10 +66,27 @@ export const TimeEventChart: React.FC<{
           tickFormatter={(text) => formatDateWithUnit(text, props.unit)}
         />
         <YAxis mirror />
-        <ChartLegend content={<ChartLegendContent />} />
+        <ChartLegend
+          content={
+            <ChartLegendContent
+              selectedItem={selectedItem}
+              onItemClick={(item) => {
+                setSelectedItem((selected) => {
+                  if (selected.includes(item.value)) {
+                    return selected.filter((s) => s !== item.value);
+                  } else {
+                    return [...selected, item.value];
+                  }
+                });
+              }}
+            />
+          }
+        />
         <CartesianGrid vertical={false} />
         <ChartTooltip content={<ChartTooltipContent />} />
+
         <Area
+          hide={!selectedItem.includes('pv')}
           type="monotone"
           dataKey="pv"
           stroke={colors.chart.pv}
@@ -78,7 +96,9 @@ export const TimeEventChart: React.FC<{
           strokeDasharray={getStrokeDasharray('pv')}
           onAnimationEnd={handleAnimationEnd}
         />
+
         <Area
+          hide={!selectedItem.includes('uv')}
           type="monotone"
           dataKey="uv"
           stroke={colors.chart.uv}
