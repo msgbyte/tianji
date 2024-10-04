@@ -1,5 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs';
-import { useMemo, useReducer } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import { getMinimumUnit } from '@tianji/shared';
 import { DateRange, useGlobalStateStore } from '../store/global';
 import { DateUnit } from '../utils/date';
@@ -42,6 +42,15 @@ export function useGlobalRangeDate(): {
         startDate: _startDate,
         endDate: _endDate,
         unit: getMinimumUnit(_startDate, _endDate),
+      };
+    }
+
+    if (dateRange === DateRange.Realtime) {
+      return {
+        label: t('Realtime'),
+        startDate: dayjs().subtract(1, 'hour').startOf('minute'),
+        endDate: dayjs().endOf('minute'),
+        unit: 'minute' as const,
       };
     }
 
@@ -125,6 +134,31 @@ export function useGlobalRangeDate(): {
       unit: 'hour' as const,
     };
   }, [dateRange, globalStartDate, globalEndDate, updateInc]);
+
+  /**
+   * Auto refresh if is realtime
+   * NOTICE: Not cool yet
+   */
+  useEffect(() => {
+    let timer: number | null = null;
+
+    if (dateRange === DateRange.Realtime) {
+      if (timer) {
+        window.clearInterval(timer);
+      }
+
+      timer = window.setInterval(() => {
+        refresh();
+      }, 60 * 1000);
+    }
+
+    return () => {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    };
+  }, [dateRange]);
 
   return { label, startDate, endDate, unit, refresh };
 }

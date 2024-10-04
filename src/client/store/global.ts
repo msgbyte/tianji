@@ -2,6 +2,7 @@ import { Dayjs } from 'dayjs';
 import { create } from 'zustand';
 
 export enum DateRange {
+  Realtime,
   Last24Hours,
   Today,
   Yesterday,

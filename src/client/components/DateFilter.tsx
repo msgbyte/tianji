@@ -28,6 +28,15 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
       },
       items: compact([
         {
+          label: t('Realtime'),
+          onClick: () => {
+            useGlobalStateStore.setState({ dateRange: DateRange.Realtime });
+          },
+        },
+        {
+          type: 'divider',
+        },
+        {
           label: t('Today'),
           onClick: () => {
             useGlobalStateStore.setState({ dateRange: DateRange.Today });
