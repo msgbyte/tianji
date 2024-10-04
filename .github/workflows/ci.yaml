@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - "src/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
   workflow_dispatch:
 
 jobs:
