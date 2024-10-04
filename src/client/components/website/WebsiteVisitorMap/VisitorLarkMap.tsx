@@ -5,7 +5,7 @@ import {
   PointLayer,
   PointLayerProps,
 } from '@antv/larkmap';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AppRouterOutput } from '../../../api/trpc';
 import { useGlobalConfig } from '../../../hooks/useConfig';
 import { useSettingsStore } from '../../../store/settings';
@@ -76,10 +76,18 @@ export const VisitorLarkMap: React.FC<{
     parser: { type: 'json', x: 'longitude', y: 'latitude' },
   };
 
+  const size = useMemo(() => {
+    if (props.data.length > 5000) {
+      return 3;
+    }
+
+    return 5;
+  }, [props.data.length]);
+
   return (
     <LarkMap {...config} style={{ height: '60vh' }}>
       <FullscreenControl />
-      <PointLayer {...layerOptions} source={source} />
+      <PointLayer {...layerOptions} size={size} source={source} />
     </LarkMap>
   );
 });
