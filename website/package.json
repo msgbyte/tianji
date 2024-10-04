@@ -15,8 +15,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "3.3.2",
-    "@docusaurus/preset-classic": "3.3.2",
+    "@docusaurus/core": "3.5.2",
+    "@docusaurus/preset-classic": "3.5.2",
     "@mdx-js/react": "^3.0.0",
     "antd": "^5.12.5",
     "clsx": "^1.2.1",
@@ -31,9 +31,9 @@
     "tianji-client-sdk": "workspace:^"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.3.2",
-    "@docusaurus/types": "3.3.2",
-    "@docusaurus/tsconfig": "3.3.2",
+    "@docusaurus/module-type-aliases": "3.5.2",
+    "@docusaurus/types": "3.5.2",
+    "@docusaurus/tsconfig": "3.5.2",
     "@types/react": "^18.2.22",
     "@types/react-slick": "^0.23.11",
     "@types/react-vertical-timeline-component": "^3.3.6",
