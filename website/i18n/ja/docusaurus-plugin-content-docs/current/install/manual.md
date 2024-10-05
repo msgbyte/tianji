@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-_i18n_hash: 3cd3648cd037fe21e115e135f0c9fa5b
+_i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
 ---
 # 非Docker環境でのインストール
 
@@ -13,7 +13,7 @@ Dockerを使用して`Tianji`をインストールするのが最善の方法で
 以下が必要です：
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 9.x（9.7.1が推奨）
+- [pnpm](https://pnpm.io/) 9.x（9.7.1が望ましい）
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - Tianjiをバックグラウンドで実行するため
@@ -38,11 +38,11 @@ DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
 JWT_SECRET="replace-me-with-a-random-string"
 ```
 
-データベースのURLが正しいことを確認し、データベースを事前に作成しておくことを忘れないでください。
+データベースのURLが正しいことを確認し、データベースを事前に作成することを忘れないでください。
 
 詳細な環境設定については、このドキュメントを参照してください [environment](../environment.md)
 
-> 可能であれば、エンコーディングがen_US.utf8であることを確認することをお勧めします。例：`createdb -E UTF8 -l en_US.utf8 tianji`
+> 可能であれば、エンコーディングがen_US.utf8であることを確認してください。例：`createdb -E UTF8 -l en_US.utf8 tianji`
 
 ## サーバーの実行
 
@@ -57,7 +57,7 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-デフォルトで、`Tianji`はhttp://localhost:12345で実行されます。
+デフォルトでは、`Tianji`は`http://localhost:12345`で実行されます。
 
 ## 新しいバージョンへのコードの更新
 
@@ -91,11 +91,11 @@ Python 3.12を使用している場合、以下のようなエラーが発生す
 ModuleNotFoundError: No module named 'distutils'
 ```
 
-これは、Python 3.12が`distutils`を組み込みモジュールから削除したためです。現在、これに対する良い解決策があります。
+これは、Python 3.12が`distutils`を組み込みモジュールから削除したためです。現在、この問題に対する良い解決策があります。
 
 Pythonのバージョンを3.12から3.9に切り替えることで解決できます。
 
-### brewで制御されたPythonでの解決方法
+### brewで管理されているPythonでの解決方法
 
 ```bash
 brew install python@3.9

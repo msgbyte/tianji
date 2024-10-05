@@ -1,11 +1,11 @@
 ---
 sidebar_position: 1
-_i18n_hash: 50d9b12be939f0ba179beb1cd468e4f4
+_i18n_hash: c24c34a1a9df2ee5bd25253195dcba08
 ---
 # 与 Sentry 集成
 
 :::info
-在 [sentry.io](https://sentry.io/) 了解更多关于 Sentry 的信息
+了解更多关于 Sentry 的信息，请访问 [sentry.io](https://sentry.io/)
 :::
 
 点击 `设置` => `集成` => `创建新集成`

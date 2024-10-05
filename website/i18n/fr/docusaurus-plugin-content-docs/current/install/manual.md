@@ -1,10 +1,10 @@
 ---
 sidebar_position: 1
-_i18n_hash: 3cd3648cd037fe21e115e135f0c9fa5b
+_i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
 ---
 # Installation sans Docker
 
-L'utilisation de Docker pour installer `Tianji` est la meilleure méthode car vous n'avez pas à vous soucier des problèmes d'environnement.
+L'utilisation de Docker pour installer `Tianji` est la meilleure méthode, car vous n'avez pas à vous soucier des problèmes d'environnement.
 
 Cependant, si votre serveur ne prend pas en charge Docker, vous pouvez essayer d'installer manuellement.
 
@@ -13,11 +13,11 @@ Cependant, si votre serveur ne prend pas en charge Docker, vous pouvez essayer d
 Vous avez besoin de :
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 9.x (9.7.1 recommandé)
+- [pnpm](https://pnpm.io/) 9.x (9.7.1 est préférable)
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - Pour exécuter Tianji en arrière-plan
-- [apprise](https://github.com/caronc/apprise) - optionnel, si vous en avez besoin pour les notifications
+- [apprise](https://github.com/caronc/apprise) - optionnel, si vous en avez besoin pour notifier
 
 ## Cloner le code et construire
 
@@ -38,9 +38,9 @@ DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
 JWT_SECRET="remplacez-moi-par-une-chaîne-aléatoire"
 ```
 
-Assurez-vous que votre URL de base de données est correcte et n'oubliez pas de créer la base de données avant.
+Assurez-vous que votre URL de base de données est correcte. Et n'oubliez pas de créer la base de données avant.
 
-Pour plus d'environnements, consultez ce document [environment](../environment.md)
+Pour plus d'environnements, consultez ce document [environnement](../environment.md)
 
 > Si possible, assurez-vous que votre encodage est en_US.utf8, par exemple : `createdb -E UTF8 -l en_US.utf8 tianji`
 
@@ -57,7 +57,7 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-Par défaut, `Tianji` fonctionnera sur http://localhost:12345
+Par défaut, `Tianji` fonctionnera sur `http://localhost:12345`
 
 ## Mettre à jour le code vers une nouvelle version
 
@@ -85,7 +85,7 @@ pm2 restart tianji
 
 ## Échec de l'installation de `isolated-vm`
 
-Si vous utilisez Python 3.12, cela signalera une erreur comme celle-ci :
+Si vous utilisez Python 3.12, vous obtiendrez une erreur comme celle-ci :
 
 ```
 ModuleNotFoundError: No module named 'distutils'

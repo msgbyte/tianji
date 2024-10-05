@@ -57,7 +57,7 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-Default, `Tianji` will run on http://localhost:12345
+Default, `Tianji` will run on `http://localhost:12345`
 
 ## Update Code to new Version
 

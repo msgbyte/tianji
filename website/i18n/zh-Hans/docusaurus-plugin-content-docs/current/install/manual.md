@@ -1,12 +1,12 @@
 ---
 sidebar_position: 1
-_i18n_hash: 3cd3648cd037fe21e115e135f0c9fa5b
+_i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
 ---
 # 无 Docker 安装
 
 使用 Docker 安装 `Tianji` 是最好的方式，你不需要考虑环境问题。
 
-但如果你无法在服务器上使用 Docker，可以尝试手动安装。
+但如果你所在的服务器不支持 Docker，你可以尝试手动安装。
 
 ## 要求
 
@@ -38,9 +38,9 @@ DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
 JWT_SECRET="replace-me-with-a-random-string"
 ```
 
-确保你的数据库 URL 是正确的，并且记得在之前创建数据库。
+确保你的数据库 URL 是正确的，并且在之前创建了数据库。
 
-更多环境配置可以查看此文档 [environment](../environment.md)
+更多环境变量可以查看此文档 [environment](../environment.md)
 
 > 如果可以，最好确保你的编码是 en_US.utf8，例如：`createdb -E UTF8 -l en_US.utf8 tianji`
 
@@ -57,7 +57,7 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-默认情况下，`Tianji` 将在 http://localhost:12345 上运行
+默认情况下，`Tianji` 将在 `http://localhost:12345` 上运行
 
 ## 更新代码到新版本
 
@@ -85,17 +85,17 @@ pm2 restart tianji
 
 ## 安装 `isolated-vm` 失败
 
-如果你使用的是 Python 3.12，会报告如下错误：
+如果你使用的是 python 3.12，它会报告如下错误：
 
 ```
 ModuleNotFoundError: No module named 'distutils'
 ```
 
-这是因为 Python 3.12 从内置模块中移除了 `distutils`。现在我们有了解决方案。
+这是因为 python 3.12 从内置模块中移除了 `distutils`。现在我们有一个好的解决方案。
 
-你可以将 Python 版本从 3.12 切换到 3.9 来解决这个问题。
+你可以将你的 python 版本从 3.12 切换到 3.9 来解决这个问题。
 
-### 如何在 brew 控制的 Python 中解决这个问题
+### 如何在 brew 控制的 python 中解决这个问题
 
 ```bash
 brew install python@3.9

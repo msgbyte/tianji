@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-_i18n_hash: 3cd3648cd037fe21e115e135f0c9fa5b
+_i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
 ---
 # Installation ohne Docker
 
@@ -16,7 +16,7 @@ Sie benötigen:
 - [pnpm](https://pnpm.io/) 9.x (9.7.1 besser)
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
-- [pm2](https://pm2.keymetrics.io/) - Zur Ausführung von Tianji im Hintergrund
+- [pm2](https://pm2.keymetrics.io/) - Zum Ausführen von Tianji im Hintergrund
 - [apprise](https://github.com/caronc/apprise) - optional, falls Sie es für Benachrichtigungen benötigen
 
 ## Code klonen und bauen
@@ -42,7 +42,7 @@ Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist, und denken Sie daran, d
 
 Weitere Umgebungsvariablen finden Sie in diesem Dokument [environment](../environment.md)
 
-> Wenn möglich, stellen Sie sicher, dass Ihre Kodierung en_US.utf8 ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
+> Falls möglich, stellen Sie sicher, dass Ihre Kodierung en_US.utf8 ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
 
 ## Server starten
 
@@ -57,12 +57,12 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-Standardmäßig wird `Tianji` auf http://localhost:12345 ausgeführt.
+Standardmäßig wird `Tianji` auf `http://localhost:12345` ausgeführt.
 
 ## Code auf eine neue Version aktualisieren
 
 ```bash
-# Neue Version/Tags auschecken
+# Neue Release/Tags auschecken
 cd tianji
 git fetch --tags
 git checkout -q <version>
@@ -91,7 +91,7 @@ Wenn Sie Python 3.12 verwenden, wird möglicherweise ein Fehler wie dieser gemel
 ModuleNotFoundError: No module named 'distutils'
 ```
 
-Dies liegt daran, dass Python 3.12 `distutils` aus dem integrierten Modul entfernt hat. Jetzt gibt es eine gute Lösung dafür.
+Dies liegt daran, dass Python 3.12 `distutils` aus den integrierten Modulen entfernt hat. Jetzt gibt es eine gute Lösung dafür.
 
 Sie können das Problem beheben, indem Sie Ihre Python-Version von 3.12 auf 3.9 wechseln.
 
