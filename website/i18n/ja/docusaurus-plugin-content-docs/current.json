@@ -1,0 +1,46 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Install": {
+    "message": "インストール",
+    "description": "The label for category Install in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Kubernetes": {
+    "message": "Kubernetes",
+    "description": "The label for category Kubernetes in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Website": {
+    "message": "ウェブサイト",
+    "description": "The label for category Website in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Framework": {
+    "message": "フレームワーク",
+    "description": "The label for category Framework in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Monitor": {
+    "message": "モニター",
+    "description": "The label for category Monitor in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Notification": {
+    "message": "通知",
+    "description": "The label for category Notification in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Server Status": {
+    "message": "サーバーステータス",
+    "description": "The label for category Server Status in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Telemetry": {
+    "message": "テレメトリ",
+    "description": "The label for category Telemetry in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Feed": {
+    "message": "フィード",
+    "description": "The label for category Feed in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Develop": {
+    "message": "開発",
+    "description": "The label for category Develop in sidebar tutorialSidebar"
+  }
+}

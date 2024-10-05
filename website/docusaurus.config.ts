@@ -34,7 +34,7 @@ const config: Config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'fr', 'de', 'ja', 'zh-Hans'],
   },
 
   presets: [
@@ -108,6 +108,10 @@ const config: Config = {
         {
           href: 'https://github.com/msgbyte/tianji',
           label: 'GitHub',
+          position: 'right',
+        },
+        {
+          type: 'localeDropdown',
           position: 'right',
         },
       ],

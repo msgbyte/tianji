@@ -1,0 +1,38 @@
+{
+  "title": {
+    "message": "Tianji",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Tianji Logo",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Docs": {
+    "message": "ドキュメント",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Pricing": {
+    "message": "価格設定",
+    "description": "Navbar item with label Pricing"
+  },
+  "item.label.Changelog": {
+    "message": "変更履歴",
+    "description": "Navbar item with label Changelog"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Demo": {
+    "message": "デモ",
+    "description": "Navbar item with label Demo"
+  },
+  "item.label.Discord": {
+    "message": "Discord",
+    "description": "Navbar item with label Discord"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

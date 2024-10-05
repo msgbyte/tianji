@@ -1,0 +1,46 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Install": {
+    "message": "Installieren",
+    "description": "The label for category Install in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Kubernetes": {
+    "message": "Kubernetes",
+    "description": "The label for category Kubernetes in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Website": {
+    "message": "Webseite",
+    "description": "The label for category Website in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Framework": {
+    "message": "Rahmen",
+    "description": "The label for category Framework in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Monitor": {
+    "message": "Monitor",
+    "description": "The label for category Monitor in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Notification": {
+    "message": "Benachrichtigung",
+    "description": "The label for category Notification in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Server Status": {
+    "message": "Serverstatus",
+    "description": "The label for category Server Status in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Telemetry": {
+    "message": "Telemetrie",
+    "description": "The label for category Telemetry in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Feed": {
+    "message": "Futter",
+    "description": "The label for category Feed in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Develop": {
+    "message": "Entwickeln",
+    "description": "The label for category Develop in sidebar tutorialSidebar"
+  }
+}
