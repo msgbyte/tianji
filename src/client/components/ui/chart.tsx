@@ -261,7 +261,7 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
-type Payload = NonNullable<RechartsPrimitive.LegendProps['payload']>[number]
+type ChartLegendContentItem = NonNullable<RechartsPrimitive.LegendProps['payload']>[number]
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
@@ -270,7 +270,7 @@ const ChartLegendContent = React.forwardRef<
       nameKey?: string
     } & {
       selectedItem?: string[]
-      onItemClick?: (item: Payload) => void
+      onItemClick?: (item: ChartLegendContentItem) => void
     }
 >(
   (
