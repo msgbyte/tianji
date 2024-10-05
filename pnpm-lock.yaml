@@ -8,6 +8,7 @@ overrides:
   '@auth/core': 0.34.1
   dayjs: 1.11.10
   esbuild: 0.24.0
+  postman-code-generators: 1.8.0
   typescript: 5.5.4
 
 patchedDependencies:
@@ -6345,10 +6346,6 @@ packages:
   detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
 
-  detect-package-manager@3.0.2:
-    resolution: {integrity: sha512-8JFjJHutStYrfWwzfretQoyNGoZVW1Fsrp4JO9spa7h/fBfwgTMEIy4/LBzRDGsxwVPHU0q+T9YvwLDJoOApLQ==}
-    engines: {node: '>=12'}
-
   detect-port-alt@1.1.6:
     resolution: {integrity: sha512-5tQykt+LqfJFBEYaDITx7S7cR7mJ/zQmLXZ2qt5w04ainYZw6tBf9dBunMjVeVOdYVRUzUOE4HkY5J7+uttb5Q==}
     engines: {node: '>= 4.2.1'}
@@ -6824,6 +6821,9 @@ packages:
 
   faker@5.1.0:
     resolution: {integrity: sha512-RrWKFSSA/aNLP0g3o2WW1Zez7/MnMr7xkiZmoCfAGZmdkDQZ6l2KtuXHN5XjdvpRjDl8+3vf+Rrtl06Z352+Mw==}
+
+  faker@5.5.3:
+    resolution: {integrity: sha512-wLTv2a28wjUyWkbnX7u/ABZBkUkIF2fCd73V6P2oFqEGEktDfzWx4UxrSqtPRw0xPRAcjeAOIiJWqZm3pP4u3g==}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -8947,6 +8947,10 @@ packages:
     resolution: {integrity: sha512-/NOTfLrsPBVeH7YtFPgsVWveuL+4SjjYxaQ1xtM1KMFj7HdxlBlxeyNLzhyJVx7r4rZGJAZ/6lkKCitSc/Nmpg==}
     engines: {node: '>= 0.6'}
 
+  mime-db@1.48.0:
+    resolution: {integrity: sha512-FM3QwxV+TnZYQ2aRqhlKBMHxk10lTbMt3bBkMAp54ddrNeVSfcQYOOKuGuy3Ddrm38I04If834fOUSq1yzslJQ==}
+    engines: {node: '>= 0.6'}
+
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
     engines: {node: '>= 0.6'}
@@ -8963,6 +8967,10 @@ packages:
 
   mime-types@2.1.27:
     resolution: {integrity: sha512-JIhqnCasI9yD+SsmkquHBxTSEuZdQX5BuQnS2Vc7puQQQ+8yiP5AY5uWhpdv4YL4VM5c6iliiYWPgJ/nJQLp7w==}
+    engines: {node: '>= 0.6'}
+
+  mime-types@2.1.31:
+    resolution: {integrity: sha512-XGZnNzm3QvgKxa8dpzyhFTHmpP3l5YNusmne07VUOXxou9CqUqYa/HBy124RqtVh/O2pECas/MOcsDgpilPOPg==}
     engines: {node: '>= 0.6'}
 
   mime-types@2.1.35:
@@ -10156,12 +10164,16 @@ packages:
     resolution: {integrity: sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postman-code-generators@1.13.0:
-    resolution: {integrity: sha512-rbKtX+PWp+4McQpAncnRCUKqDiynt4fDB1I7AzrsvBAQc74ab6k6K3IP8qvf0icqiPuf9nYHCSdy/LB922dQLQ==}
+  postman-code-generators@1.8.0:
+    resolution: {integrity: sha512-o+5dBxHdoMrL6tO6EV1APvF60HpA8+NmTua6sKciP61Op0drbIuBNScdGc1/jdbiSn8StCpJQtMg21dkJHHC7w==}
     engines: {node: '>=12'}
 
   postman-collection@3.6.6:
     resolution: {integrity: sha512-fm9AGKHbL2coSzD5nw+F07JrX7jzqu2doGIXevPPrwlpTZyTM6yagEdENeO/Na8rSUrI1+tKPj+TgAFiLvtF4w==}
+
+  postman-collection@4.0.0:
+    resolution: {integrity: sha512-vDrXG/dclSu6RMqPqBz4ZqoQBwcj/a80sJYsQZmzWJ6dWgXiudPhwu6Vm3C1Hy7zX5W8A6am1Z6vb/TB4eyURA==}
+    engines: {node: '>=10'}
 
   postman-collection@4.5.0:
     resolution: {integrity: sha512-152JSW9pdbaoJihwjc7Q8lc3nPg/PC9lPTHdMk7SHnHhu/GBJB7b2yb9zG7Qua578+3PxkQ/HYBuXpDSvsf7GQ==}
@@ -10169,6 +10181,10 @@ packages:
 
   postman-url-encoder@2.1.3:
     resolution: {integrity: sha512-CwQjnoxaugCGeOyzVeZ4k1cNQ6iS8OBCzuWzcf4kLStKeRp0MwmLKYv25frynmDpugUUimq/d+FZCq6GtIX9Ag==}
+
+  postman-url-encoder@3.0.1:
+    resolution: {integrity: sha512-dMPqXnkDlstM2Eya+Gw4MIGWEan8TzldDcUKZIhZUsJ/G5JjubfQPhFhVWKzuATDMvwvrWbSjF+8VmAvbu6giw==}
+    engines: {node: '>=10'}
 
   postman-url-encoder@3.0.5:
     resolution: {integrity: sha512-jOrdVvzUXBC7C+9gkIkpDJ3HIxOHTIqjpQ4C1EMt1ZGeMvSEpbFCKq23DEfgsj46vMnDgyQf+1ZLp2Wm+bKSsA==}
@@ -11489,6 +11505,11 @@ packages:
 
   semver@7.3.2:
     resolution: {integrity: sha512-OrOb32TeeambH6UrhtShmF7CRDqhL6/5XpPNp2DuRH6+9QLw/orhp72j87v8Qa1ScDkvrrBNpZcDejAirJmfXQ==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.3.5:
+    resolution: {integrity: sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -21174,10 +21195,6 @@ snapshots:
 
   detect-node@2.1.0: {}
 
-  detect-package-manager@3.0.2:
-    dependencies:
-      execa: 5.1.1
-
   detect-port-alt@1.1.6:
     dependencies:
       address: 1.2.2
@@ -21319,7 +21336,7 @@ snapshots:
       lodash: 4.17.21
       marked: 11.2.0
       monaco-editor: 0.31.1
-      postman-code-generators: 1.13.0
+      postman-code-generators: 1.8.0
       postman-collection: 4.5.0
       prism-react-renderer: 2.4.0(react@18.3.1)
       process: 0.11.10
@@ -21876,6 +21893,8 @@ snapshots:
       polyline-miter-util: 1.0.1
 
   faker@5.1.0: {}
+
+  faker@5.5.3: {}
 
   fast-deep-equal@3.1.3: {}
 
@@ -24727,6 +24746,8 @@ snapshots:
 
   mime-db@1.44.0: {}
 
+  mime-db@1.48.0: {}
+
   mime-db@1.52.0: {}
 
   mime-format@2.0.0:
@@ -24744,6 +24765,10 @@ snapshots:
   mime-types@2.1.27:
     dependencies:
       mime-db: 1.44.0
+
+  mime-types@2.1.31:
+    dependencies:
+      mime-db: 1.48.0
 
   mime-types@2.1.35:
     dependencies:
@@ -25983,13 +26008,12 @@ snapshots:
       picocolors: 1.0.1
       source-map-js: 1.2.0
 
-  postman-code-generators@1.13.0:
+  postman-code-generators@1.8.0:
     dependencies:
       async: 3.2.2
-      detect-package-manager: 3.0.2
       lodash: 4.17.21
       path: 0.12.7
-      postman-collection: 4.5.0
+      postman-collection: 4.0.0
       shelljs: 0.8.5
 
   postman-collection@3.6.6:
@@ -26009,6 +26033,20 @@ snapshots:
       semver: 7.3.2
       uuid: 3.4.0
 
+  postman-collection@4.0.0:
+    dependencies:
+      faker: 5.5.3
+      file-type: 3.9.0
+      http-reasons: 0.1.0
+      iconv-lite: 0.6.3
+      liquid-json: 0.3.1
+      lodash: 4.17.21
+      mime-format: 2.0.1
+      mime-types: 2.1.31
+      postman-url-encoder: 3.0.1
+      semver: 7.3.5
+      uuid: 8.3.2
+
   postman-collection@4.5.0:
     dependencies:
       '@faker-js/faker': 5.5.3
@@ -26026,6 +26064,10 @@ snapshots:
   postman-url-encoder@2.1.3:
     dependencies:
       postman-collection: 3.6.6
+      punycode: 2.3.0
+
+  postman-url-encoder@3.0.1:
+    dependencies:
       punycode: 2.3.0
 
   postman-url-encoder@3.0.5:
@@ -28041,6 +28083,10 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.3.2: {}
+
+  semver@7.3.5:
+    dependencies:
+      lru-cache: 6.0.0
 
   semver@7.5.4:
     dependencies:
