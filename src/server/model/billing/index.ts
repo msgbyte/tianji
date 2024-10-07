@@ -4,8 +4,8 @@ import {
   updateSubscription,
   cancelSubscription as lsCancelSubscription,
 } from '@lemonsqueezy/lemonsqueezy.js';
-import { env } from '../utils/env.js';
-import { prisma } from './_client.js';
+import { env } from '../../utils/env.js';
+import { prisma } from '../_client.js';
 
 if (env.billing.lemonSqueezy.apiKey) {
   lemonSqueezySetup({
