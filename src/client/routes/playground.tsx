@@ -86,7 +86,6 @@ function PageComponent() {
 
 export const BillingPlayground: React.FC = React.memo(() => {
   const checkoutMutation = trpc.billing.checkout.useMutation({
-    onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
   const changePlanMutation = trpc.billing.changePlan.useMutation({

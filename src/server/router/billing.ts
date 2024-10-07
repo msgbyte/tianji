@@ -2,7 +2,11 @@ import { Router, raw } from 'express';
 import crypto from 'crypto';
 import { env } from '../utils/env.js';
 import { get } from 'lodash-es';
-import { checkIsValidProduct } from '../model/billing/index.js';
+import {
+  checkIsValidProduct,
+  getTierEnumByVariantId,
+  updateWorkspaceSubscription,
+} from '../model/billing/index.js';
 import { prisma } from '../model/_client.js';
 import dayjs from 'dayjs';
 
@@ -75,6 +79,10 @@ billingRouter.post(
           subscriptionId,
         },
       });
+      await updateWorkspaceSubscription(
+        workspaceId,
+        getTierEnumByVariantId(variantId)
+      );
     }
 
     res.status(200).send('OK');

@@ -6,8 +6,11 @@ import {
 } from '@lemonsqueezy/lemonsqueezy.js';
 import { env } from '../../utils/env.js';
 import { prisma } from '../_client.js';
+import { WorkspaceSubscriptionTier } from '@prisma/client';
 
-if (env.billing.lemonSqueezy.apiKey) {
+export const billingAvailable = Boolean(env.billing.lemonSqueezy.apiKey);
+
+if (billingAvailable) {
   lemonSqueezySetup({
     apiKey: env.billing.lemonSqueezy.apiKey,
     onError: (error) => console.error('Error!', error),
@@ -25,10 +28,26 @@ export function getTierNameByvariantId(variantId: string) {
   );
 
   if (!tierName) {
-    throw 'Unknown';
+    throw new Error('Unknown Tier Name');
   }
 
   return tierName;
+}
+
+export function getTierEnumByVariantId(
+  variantId: string
+): WorkspaceSubscriptionTier {
+  const name = getTierNameByvariantId(variantId);
+
+  if (name === 'free') {
+    return WorkspaceSubscriptionTier.FREE;
+  } else if (name === 'pro') {
+    return WorkspaceSubscriptionTier.PRO;
+  } else if (name === 'team') {
+    return WorkspaceSubscriptionTier.TEAM;
+  }
+
+  return WorkspaceSubscriptionTier.FREE; // not cool, fallback to free
 }
 
 export function checkIsValidProduct(storeId: string, variantId: string) {
@@ -102,6 +121,26 @@ export async function createCheckoutBilling(
   const checkoutData = checkout.data.data;
 
   return checkoutData;
+}
+
+export async function updateWorkspaceSubscription(
+  workspaceId: string,
+  subscriptionTier: WorkspaceSubscriptionTier
+) {
+  const res = await prisma.workspaceSubscription.upsert({
+    where: {
+      workspaceId,
+    },
+    create: {
+      workspaceId,
+      tier: subscriptionTier,
+    },
+    update: {
+      tier: subscriptionTier,
+    },
+  });
+
+  return res;
 }
 
 export async function changeSubscription(
