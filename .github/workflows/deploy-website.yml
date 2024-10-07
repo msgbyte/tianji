@@ -19,6 +19,16 @@ jobs:
         working-directory: website
     steps:
     - uses: actions/checkout@v4
+    - name: Pre build
+      uses: amondnet/vercel-action@v25.1.1
+      env:
+        VERSION: ${{ env.GITHUB_SHA }}
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: prj_V3iY3AcH0wIXxMHW4oDy3W3XzfnN
+        working-directory: ./
+        vercel-args: 'build'
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25.1.1
       env:
@@ -28,4 +38,4 @@ jobs:
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
         vercel-project-id: prj_V3iY3AcH0wIXxMHW4oDy3W3XzfnN
         working-directory: ./
-        vercel-args: '--prod'
+        vercel-args: 'deploy --prebuilt --prod'
