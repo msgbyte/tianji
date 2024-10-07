@@ -51,6 +51,21 @@ export class UserService {
         });
     }
     
+    /**
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static userRegister(data: $OpenApiTs['/register']['post']['req']): CancelablePromise<$OpenApiTs['/register']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/register',
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
 }
 
 export class WorkspaceService {
@@ -79,6 +94,21 @@ export class WorkspaceService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/workspace//switch',
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceRename(data: $OpenApiTs['/workspace//rename']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace//rename']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/workspace//rename',
             body: data.requestBody,
             mediaType: 'application/json'
         });
@@ -432,6 +462,24 @@ export class WebsiteService {
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static websiteDelete(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace/{workspaceId}/website/{websiteId}',
+            path: {
+                workspaceId: data.workspaceId,
+                websiteId: data.websiteId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.websiteId
      * @param data.requestBody
      * @returns unknown Successful response
      * @throws ApiError
@@ -446,6 +494,68 @@ export class WebsiteService {
             },
             body: data.requestBody,
             mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.websiteId
+     * @param data.requestBody
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static websiteGenerateLighthouseReport(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport',
+            path: {
+                workspaceId: data.workspaceId,
+                websiteId: data.websiteId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.websiteId
+     * @param data.limit
+     * @param data.cursor
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static websiteGetLighthouseReport(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/getLighthouseReport']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/getLighthouseReport']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/website/{websiteId}/getLighthouseReport',
+            path: {
+                workspaceId: data.workspaceId,
+                websiteId: data.websiteId
+            },
+            query: {
+                limit: data.limit,
+                cursor: data.cursor
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.lighthouseId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static websiteGetLighthouseJson(data: $OpenApiTs['/lighthouse/{lighthouseId}']['get']['req']): CancelablePromise<$OpenApiTs['/lighthouse/{lighthouseId}']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/lighthouse/{lighthouseId}',
+            path: {
+                lighthouseId: data.lighthouseId
+            }
         });
     }
     
@@ -1316,6 +1426,7 @@ export class FeedService {
      * @param data.channelId
      * @param data.limit
      * @param data.cursor
+     * @param data.archived
      * @returns unknown Successful response
      * @throws ApiError
      */
@@ -1329,7 +1440,8 @@ export class FeedService {
             },
             query: {
                 limit: data.limit,
-                cursor: data.cursor
+                cursor: data.cursor,
+                archived: data.archived
             }
         });
     }
@@ -1391,6 +1503,86 @@ export class FeedService {
     }
     
     /**
+     * @param data The data for the request.
+     * @param data.channelId
+     * @param data.eventId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedArchiveEvent(data: $OpenApiTs['/feed/{channelId}/{eventId}/archive']['patch']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/{eventId}/archive']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/feed/{channelId}/{eventId}/archive',
+            path: {
+                channelId: data.channelId,
+                eventId: data.eventId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.channelId
+     * @param data.eventId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedUnarchiveEvent(data: $OpenApiTs['/feed/{channelId}/{eventId}/unarchive']['patch']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/{eventId}/unarchive']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/feed/{channelId}/{eventId}/unarchive',
+            path: {
+                channelId: data.channelId,
+                eventId: data.eventId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.channelId
+     * @param data.requestBody
+     * @returns number Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static feedClearAllArchivedEvents(data: $OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['res'][200] | $OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/feed/{channelId}/clearAllArchivedEvents',
+            path: {
+                channelId: data.channelId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * webhook playground
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static feedIntegrationPlayground(data: $OpenApiTs['/feed/playground/{workspaceId}']['post']['req']): CancelablePromise<$OpenApiTs['/feed/playground/{workspaceId}']['post']['res'][200] | $OpenApiTs['/feed/playground/{workspaceId}']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/playground/{workspaceId}',
+            path: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
      * integrate with github webhook
      * @param data The data for the request.
      * @param data.channelId
@@ -1420,6 +1612,24 @@ export class FeedService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/tencent-cloud/alarm',
+            path: {
+                channelId: data.channelId
+            }
+        });
+    }
+    
+    /**
+     * integrate with sentry webhook
+     * @param data The data for the request.
+     * @param data.channelId
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static feedIntegrationSentry(data: $OpenApiTs['/feed/{channelId}/sentry']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/sentry']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/sentry']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/{channelId}/sentry',
             path: {
                 channelId: data.channelId
             }

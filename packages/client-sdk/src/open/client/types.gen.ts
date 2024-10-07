@@ -43,10 +43,7 @@ export type $OpenApiTs = {
                         createdAt: string;
                         updatedAt: string;
                         deletedAt: string | null;
-                        currentWorkspace: {
-                            id: string;
-                            name: string;
-                        };
+                        currentWorkspaceId: string | null;
                         workspaces: Array<{
                             role: string;
                             workspace: {
@@ -82,10 +79,44 @@ export type $OpenApiTs = {
                         createdAt: string;
                         updatedAt: string;
                         deletedAt: string | null;
-                        currentWorkspace: {
-                            id: string;
-                            name: string;
-                        };
+                        currentWorkspaceId: string | null;
+                        workspaces: Array<{
+                            role: string;
+                            workspace: {
+                                id: string;
+                                name: string;
+                            };
+                        }>;
+                    };
+                    token: string;
+                };
+            };
+        };
+    };
+    '/register': {
+        post: {
+            req: {
+                requestBody: {
+                    username: string;
+                    password: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    info: {
+                        id: string;
+                        role: string;
+                        username: string;
+                        nickname: string | null;
+                        avatar: string | null;
+                        email: string | null;
+                        createdAt: string;
+                        updatedAt: string;
+                        deletedAt: string | null;
+                        currentWorkspaceId: string | null;
                         workspaces: Array<{
                             role: string;
                             workspace: {
@@ -120,10 +151,7 @@ export type $OpenApiTs = {
                     createdAt: string;
                     updatedAt: string;
                     deletedAt: string | null;
-                    currentWorkspace: {
-                        id: string;
-                        name: string;
-                    };
+                    currentWorkspaceId: string | null;
                     workspaces: Array<{
                         role: string;
                         workspace: {
@@ -156,10 +184,7 @@ export type $OpenApiTs = {
                     createdAt: string;
                     updatedAt: string;
                     deletedAt: string | null;
-                    currentWorkspace: {
-                        id: string;
-                        name: string;
-                    };
+                    currentWorkspaceId: string | null;
                     workspaces: Array<{
                         role: string;
                         workspace: {
@@ -167,6 +192,25 @@ export type $OpenApiTs = {
                             name: string;
                         };
                     }>;
+                };
+            };
+        };
+    };
+    '/workspace//rename': {
+        patch: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    name: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    name: string;
                 };
             };
         };
@@ -213,7 +257,7 @@ export type $OpenApiTs = {
         post: {
             req: {
                 requestBody: {
-                    targetUserEmail: string;
+                    emailOrId: string;
                 };
                 workspaceId: string;
             };
@@ -501,6 +545,31 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/workspace/{workspaceId}/website/{websiteId}': {
+        delete: {
+            req: {
+                websiteId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    domain: string | null;
+                    shareId: string | null;
+                    resetAt: string | null;
+                    monitorId: string | null;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt: string | null;
+                };
+            };
+        };
+    };
     '/workspace/{workspaceId}/website/{websiteId}/update': {
         put: {
             req: {
@@ -527,6 +596,68 @@ export type $OpenApiTs = {
                     createdAt: string;
                     updatedAt: string;
                     deletedAt: string | null;
+                };
+            };
+        };
+    };
+    '/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport': {
+        post: {
+            req: {
+                requestBody: {
+                    url: string;
+                };
+                websiteId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
+            };
+        };
+    };
+    '/workspace/{workspaceId}/website/{websiteId}/getLighthouseReport': {
+        get: {
+            req: {
+                cursor?: string;
+                limit?: number;
+                websiteId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    items: Array<{
+                        id: string;
+                        status: 'Pending' | 'Success' | 'Failed';
+                        url: string;
+                        createdAt: string;
+                    }>;
+                    nextCursor?: string;
+                };
+            };
+        };
+    };
+    '/lighthouse/{lighthouseId}': {
+        get: {
+            req: {
+                lighthouseId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    [key: string]: unknown;
                 };
             };
         };
@@ -864,6 +995,9 @@ export type $OpenApiTs = {
                     slug: string;
                     title: string;
                     description: string;
+                    body: {
+                        [key: string]: unknown;
+                    };
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -890,6 +1024,9 @@ export type $OpenApiTs = {
                     slug: string;
                     title: string;
                     description: string;
+                    body: {
+                        [key: string]: unknown;
+                    };
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -908,6 +1045,9 @@ export type $OpenApiTs = {
                     slug: string;
                     title: string;
                     description?: string;
+                    body?: {
+                        [key: string]: unknown;
+                    };
                     monitorList?: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -926,6 +1066,9 @@ export type $OpenApiTs = {
                     slug: string;
                     title: string;
                     description: string;
+                    body: {
+                        [key: string]: unknown;
+                    };
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -945,6 +1088,9 @@ export type $OpenApiTs = {
                     slug?: string;
                     title?: string;
                     description?: string;
+                    body?: {
+                        [key: string]: unknown;
+                    };
                     monitorList?: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -963,6 +1109,9 @@ export type $OpenApiTs = {
                     slug: string;
                     title: string;
                     description: string;
+                    body: {
+                        [key: string]: unknown;
+                    };
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -990,6 +1139,9 @@ export type $OpenApiTs = {
                     slug: string;
                     title: string;
                     description: string;
+                    body: {
+                        [key: string]: unknown;
+                    };
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
@@ -1608,6 +1760,7 @@ export type $OpenApiTs = {
     '/workspace/{workspaceId}/feed/{channelId}/fetchEventsByCursor': {
         get: {
             req: {
+                archived?: boolean;
                 channelId: string;
                 cursor?: string;
                 limit?: number;
@@ -1631,6 +1784,10 @@ export type $OpenApiTs = {
                         senderName?: string | null;
                         url?: string | null;
                         important: boolean;
+                        archived: boolean;
+                        payload?: {
+                            [key: string]: unknown;
+                        } | null;
                     }>;
                     nextCursor?: string;
                 };
@@ -1696,6 +1853,9 @@ export type $OpenApiTs = {
                     senderId?: string | null;
                     senderName?: string | null;
                     important: boolean;
+                    payload?: {
+                        [key: string]: unknown;
+                    } | null;
                 };
             };
             res: {
@@ -1715,6 +1875,85 @@ export type $OpenApiTs = {
                     senderName?: string | null;
                     url?: string | null;
                     important: boolean;
+                    archived: boolean;
+                    payload?: {
+                        [key: string]: unknown;
+                    } | null;
+                };
+            };
+        };
+    };
+    '/feed/{channelId}/{eventId}/archive': {
+        patch: {
+            req: {
+                channelId: string;
+                eventId: string;
+                requestBody: {
+                    workspaceId: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+            };
+        };
+    };
+    '/feed/{channelId}/{eventId}/unarchive': {
+        patch: {
+            req: {
+                channelId: string;
+                eventId: string;
+                requestBody: {
+                    workspaceId: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+            };
+        };
+    };
+    '/feed/{channelId}/clearAllArchivedEvents': {
+        patch: {
+            req: {
+                channelId: string;
+                requestBody: {
+                    workspaceId: string;
+                };
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
+            };
+        };
+    };
+    '/feed/playground/{workspaceId}': {
+        post: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
                 };
             };
         };
@@ -1739,6 +1978,25 @@ export type $OpenApiTs = {
         };
     };
     '/feed/{channelId}/tencent-cloud/alarm': {
+        post: {
+            req: {
+                channelId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
+            };
+        };
+    };
+    '/feed/{channelId}/sentry': {
         post: {
             req: {
                 channelId: string;

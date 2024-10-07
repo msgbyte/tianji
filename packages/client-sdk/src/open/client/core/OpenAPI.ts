@@ -47,7 +47,7 @@ export const OpenAPI: OpenAPIConfig = {
 	PASSWORD: undefined,
 	TOKEN: undefined,
 	USERNAME: undefined,
-	VERSION: '1.13.1',
+	VERSION: '1.15.7',
 	WITH_CREDENTIALS: false,
 	interceptors: {
 		request: new Interceptors(),
