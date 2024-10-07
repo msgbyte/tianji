@@ -2,7 +2,7 @@ import { Router, raw } from 'express';
 import crypto from 'crypto';
 import { env } from '../utils/env.js';
 import { get } from 'lodash-es';
-import { checkIsValidProduct } from '../model/billing.js';
+import { checkIsValidProduct } from '../model/billing/index.js';
 import { prisma } from '../model/_client.js';
 import dayjs from 'dayjs';
 

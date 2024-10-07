@@ -14,7 +14,7 @@ import {
   createCheckoutBilling,
   getTierNameByvariantId,
   SubscriptionTierType,
-} from '../../model/billing.js';
+} from '../../model/billing/index.js';
 import { LemonSqueezySubscriptionModelSchema } from '../../prisma/zod/lemonsqueezysubscription.js';
 
 export const billingRouter = router({
