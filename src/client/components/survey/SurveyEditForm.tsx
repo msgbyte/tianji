@@ -1,12 +1,7 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
-import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
-import { useCurrentWorkspaceId } from '@/store/user';
-import { defaultErrorHandler, trpc } from '@/api/trpc';
+import { useEventWithLoading } from '@/hooks/useEvent';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { CommonWrapper } from '@/components/CommonWrapper';
-import { routeAuthBeforeLoad } from '@/utils/route';
 import { z } from 'zod';
 import {
   Form,
@@ -18,7 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useForm, useFieldArray, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { generateRandomString } from '@/utils/common';
 import { LuArrowDown, LuArrowUp, LuMinus, LuPlus } from 'react-icons/lu';
@@ -49,6 +44,7 @@ const addFormSchema = z.object({
   }),
   feedChannelIds: z.array(z.string()),
   feedTemplate: z.string(),
+  webhookUrl: z.string().url(),
 });
 
 export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
@@ -80,6 +76,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
         },
         feedChannelIds: [],
         feedTemplate: '',
+        webhookUrl: '',
       },
     });
 
@@ -87,7 +84,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
 
     const [handleSubmit, isLoading] = useEventWithLoading(
       async (values: SurveyEditFormValues) => {
-        await props.onSubmit(values);
+        await props.onSubmit({ ...values });
         form.reset();
       }
     );
@@ -297,6 +294,23 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="webhookUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Webhook Url')}</FormLabel>
+                    <FormControl className="w-full">
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      {t('Optional, webhook url to send survey payload')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
 
             <CardFooter>
