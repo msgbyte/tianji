@@ -22,6 +22,7 @@ import { Prisma } from '@prisma/client';
 import { createFeedEvent } from '../../model/feed/event.js';
 import { formatString } from '../../utils/template.js';
 import { logger } from '../../utils/logger.js';
+import axios from 'axios';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -154,7 +155,7 @@ export const surveyRouter = router({
 
       const sessionId = hashUuid(workspaceId, surveyId, ip, userAgent!);
 
-      await prisma.surveyResult.create({
+      const result = await prisma.surveyResult.create({
         data: {
           surveyId,
           sessionId,
@@ -195,7 +196,7 @@ export const surveyRouter = router({
               try {
                 const surveyPayload = SurveyPayloadSchema.parse(survey.payload);
 
-                createFeedEvent(workspaceId, {
+                await createFeedEvent(workspaceId, {
                   channelId: channelId,
                   eventName: 'receive',
                   eventContent: formatString(templateStr, {
@@ -216,6 +217,17 @@ export const surveyRouter = router({
               }
             });
           }
+
+          if (survey && survey.webhookUrl) {
+            axios
+              .post(survey.webhookUrl)
+              .then(() => {
+                return axios.post(survey.webhookUrl, {
+                  ...result,
+                });
+              })
+              .catch((err) => logger.error('[surveySubmitWebhook]', err));
+          }
         });
 
       return 'success';
@@ -233,12 +245,19 @@ export const surveyRouter = router({
         payload: SurveyPayloadSchema,
         feedChannelIds: z.array(z.string()),
         feedTemplate: z.string(),
+        webhookUrl: z.string(),
       })
     )
     .output(SurveyModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, name, payload, feedChannelIds, feedTemplate } =
-        input;
+      const {
+        workspaceId,
+        name,
+        payload,
+        feedChannelIds,
+        feedTemplate,
+        webhookUrl,
+      } = input;
 
       const res = await prisma.survey.create({
         data: {
@@ -247,6 +266,7 @@ export const surveyRouter = router({
           payload,
           feedChannelIds,
           feedTemplate,
+          webhookUrl,
         },
       });
 
@@ -266,6 +286,7 @@ export const surveyRouter = router({
         payload: SurveyPayloadSchema.optional(),
         feedChannelIds: z.array(z.string()).optional(),
         feedTemplate: z.string().optional(),
+        webhookUrl: z.string().optional(),
       })
     )
     .output(SurveyModelSchema)
@@ -277,6 +298,7 @@ export const surveyRouter = router({
         payload,
         feedChannelIds,
         feedTemplate,
+        webhookUrl,
       } = input;
 
       const res = await prisma.survey.update({
@@ -289,6 +311,7 @@ export const surveyRouter = router({
           payload,
           feedChannelIds,
           feedTemplate,
+          webhookUrl,
         },
       });
 
