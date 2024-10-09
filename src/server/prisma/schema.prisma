@@ -87,6 +87,8 @@ model Workspace {
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
+  subscription WorkspaceSubscription?
+
   users              WorkspacesOnUsers[]
   websites           Website[]
   notifications      Notification[]
@@ -114,6 +116,49 @@ model WorkspacesOnUsers {
   @@id([userId, workspaceId])
   @@index([userId])
   @@index([workspaceId])
+}
+
+enum WorkspaceSubscriptionTier {
+  FREE
+  PRO
+  TEAM
+
+  UNLIMITED // This type should only use for special people or admin workspace
+}
+
+model WorkspaceSubscription {
+  id          String                    @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String                    @unique @db.VarChar(30)
+  tier        WorkspaceSubscriptionTier @default(FREE) // free, pro, team
+  createdAt   DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime                  @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model LemonSqueezySubscription {
+  subscriptionId String   @id @unique
+  workspaceId    String   @unique @db.VarChar(30)
+  storeId        String
+  productId      String
+  variantId      String
+  status         String
+  cardBrand      String
+  cardLastFour   String
+  renewsAt       DateTime @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model LemonSqueezyWebhookEvent {
+  id        String @id @unique @default(cuid()) @db.VarChar(30)
+  eventName String
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  payload   Json   @db.Json // Other payload info get from query params, should be a object
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 }
 
 model Website {

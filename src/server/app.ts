@@ -22,6 +22,7 @@ import path from 'path';
 import { monitorPageManager } from './model/monitor/page/manager.js';
 import { ExpressAuth } from '@auth/express';
 import { authConfig } from './model/auth.js';
+import { billingRouter } from './router/billing.js';
 
 const app = express();
 
@@ -30,6 +31,9 @@ app.use(compression());
 app.use(
   express.json({
     limit: '10mb',
+    verify: (req, res, buf) => {
+      (req as any).rawBody = buf;
+    },
   })
 );
 app.use(passport.initialize());
@@ -49,6 +53,7 @@ app.use(
 app.use('/health', healthRouter);
 app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
+app.use('/api/billing', billingRouter);
 app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);
 app.use('/serverStatus', serverStatusRouter);

@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
+import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -25,6 +25,7 @@ export const WorkspaceModelSchema = z.object({
 })
 
 export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> {
+  subscription?: CompleteWorkspaceSubscription | null
   users: CompleteWorkspacesOnUsers[]
   websites: CompleteWebsite[]
   notifications: CompleteNotification[]
@@ -43,6 +44,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
 export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.lazy(() => WorkspaceModelSchema.extend({
+  subscription: RelatedWorkspaceSubscriptionModelSchema.nullish(),
   users: RelatedWorkspacesOnUsersModelSchema.array(),
   websites: RelatedWebsiteModelSchema.array(),
   notifications: RelatedNotificationModelSchema.array(),

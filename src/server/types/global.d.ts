@@ -8,6 +8,10 @@ import type {
 declare global {
   namespace Express {
     interface User extends JWTPayload {}
+
+    interface Request {
+      rawBody: unknown;
+    }
   }
 
   namespace PrismaJson {
