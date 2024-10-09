@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import React from 'react';
-import { CodeBlock } from '../CodeBlock';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { CodeExample } from '../CodeExample';
 
 export const FeedApiGuide: React.FC<{ channelId: string }> = React.memo(
   (props) => {
@@ -11,21 +10,21 @@ export const FeedApiGuide: React.FC<{ channelId: string }> = React.memo(
     return (
       <Card className="w-full overflow-hidden">
         <CardHeader>
-          <div>{t('You can send any message into this channel with:')}</div>
+          <div>{t('You can send a message to this channel with:')}</div>
         </CardHeader>
         <CardContent className="flex w-full flex-col gap-5 overflow-hidden">
-          <Tabs defaultValue="curl">
-            <TabsList>
-              <TabsTrigger value="curl">curl</TabsTrigger>
-              <TabsTrigger value="fetch">fetch</TabsTrigger>
-            </TabsList>
-            <TabsContent value="curl">
-              <CodeBlock code={generateCurlCode(props.channelId)} />
-            </TabsContent>
-            <TabsContent value="fetch">
-              <CodeBlock code={generateFetchCode(props.channelId)} />
-            </TabsContent>
-          </Tabs>
+          <CodeExample
+            example={{
+              curl: {
+                label: 'curl',
+                code: generateCurlCode(props.channelId),
+              },
+              fetch: {
+                label: 'fetch',
+                code: generateFetchCode(props.channelId),
+              },
+            }}
+          />
 
           <div className="pl-2 font-bold">{t('OR')}</div>
 
