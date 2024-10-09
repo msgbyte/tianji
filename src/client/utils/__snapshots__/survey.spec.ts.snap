@@ -1,6 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`survey > example code 1`] = `
+exports[`survey > example curl code 1`] = `
+"curl -X POST https://example.com/open/workspace/<workspaceId>/survey/<surveyId>/submit \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "payload": {
+      "textField": "Text"
+    }
+  }'"
+`;
+
+exports[`survey > example sdk code 1`] = `
 "import { submitSurvey, initOpenapiSDK } from 'tianji-client-sdk';
 
 initOpenapiSDK('https://example.com');

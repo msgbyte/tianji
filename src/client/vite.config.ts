@@ -24,7 +24,7 @@ export default defineConfig({
   },
   clearScreen: false,
   server: {
-    // host: '0.0.0.0',
+    host: '127.0.0.1',
     proxy: {
       '/socket.io': {
         target: 'ws://localhost:12345',
@@ -32,6 +32,9 @@ export default defineConfig({
         ws: true,
       },
       '/trpc': {
+        target: 'http://localhost:12345',
+      },
+      '/open': {
         target: 'http://localhost:12345',
       },
       '/lh': {

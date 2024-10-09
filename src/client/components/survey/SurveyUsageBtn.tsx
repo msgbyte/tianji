@@ -13,7 +13,11 @@ import { LuCode2 } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { CodeBlock } from '../CodeBlock';
-import { generateSurveyExampleCode } from '@/utils/survey';
+import {
+  generateSurveyExampleCurlCode,
+  generateSurveyExampleSDKCode,
+} from '@/utils/survey';
+import { CodeExample } from '../CodeExample';
 
 interface SurveyUsageBtnProps {
   surveyId: string;
@@ -28,8 +32,6 @@ export const SurveyUsageBtn: React.FC<SurveyUsageBtnProps> = React.memo(
       workspaceId,
       surveyId,
     });
-
-    const exampleCode = generateSurveyExampleCode(window.location.origin, info);
 
     return (
       <Dialog>
@@ -46,9 +48,33 @@ export const SurveyUsageBtn: React.FC<SurveyUsageBtnProps> = React.memo(
             </DialogDescription>
           </DialogHeader>
 
-          <CodeBlock code="npm install tianji-client-sdk" />
+          <CodeExample
+            className="overflow-hidden"
+            example={{
+              curl: {
+                label: 'curl',
+                code: generateSurveyExampleCurlCode(
+                  window.location.origin,
+                  info
+                ),
+              },
+              sdk: {
+                label: 'sdk',
+                element: (
+                  <div className="flex flex-col gap-1">
+                    <CodeBlock code="npm install tianji-client-sdk" />
 
-          <CodeBlock code={exampleCode} />
+                    <CodeBlock
+                      code={generateSurveyExampleSDKCode(
+                        window.location.origin,
+                        info
+                      )}
+                    />
+                  </div>
+                ),
+              },
+            }}
+          />
         </DialogContent>
       </Dialog>
     );

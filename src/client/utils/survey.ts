@@ -1,9 +1,9 @@
 import { AppRouterOutput } from '@/api/trpc';
 
 /**
- * Generate survey example code
+ * Generate survey example sdk code
  */
-export function generateSurveyExampleCode(
+export function generateSurveyExampleSDKCode(
   host: string,
   info:
     | Pick<
@@ -39,6 +39,32 @@ async function submitForm(${fields.map((field) => field.name).join(', ')}) {
     throw new Error(err);
   }
 };`;
+
+  return exampleCode;
+}
+
+/**
+ * Generate survey example curl code
+ */
+export function generateSurveyExampleCurlCode(
+  host: string,
+  info:
+    | Pick<
+        NonNullable<AppRouterOutput['survey']['get']>,
+        'id' | 'name' | 'workspaceId' | 'payload'
+      >
+    | null
+    | undefined
+): string {
+  const fields = info?.payload.items ?? [];
+
+  const exampleCode = `curl -X POST ${host}/open/workspace/${info?.workspaceId}/survey/${info?.id}/submit \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "payload": {
+      ${fields.map((field) => `"${field.name}": "${field.label}"`).join(',\n      ')}
+    }
+  }'`;
 
   return exampleCode;
 }
