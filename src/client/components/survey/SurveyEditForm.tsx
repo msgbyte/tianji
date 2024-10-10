@@ -44,7 +44,7 @@ const addFormSchema = z.object({
   }),
   feedChannelIds: z.array(z.string()),
   feedTemplate: z.string(),
-  webhookUrl: z.string().url(),
+  webhookUrl: z.string().url().or(z.literal('')),
 });
 
 export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
@@ -300,7 +300,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                 name="webhookUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Webhook Url')}</FormLabel>
+                    <FormLabel optional={true}>{t('Webhook Url')}</FormLabel>
                     <FormControl className="w-full">
                       <Input {...field} />
                     </FormControl>
