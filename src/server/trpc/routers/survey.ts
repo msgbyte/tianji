@@ -192,7 +192,7 @@ export const surveyRouter = router({
               survey.feedTemplate ||
               'survey {{_surveyName}} receive a new record.';
 
-            survey.feedChannelIds.forEach((channelId) => {
+            survey.feedChannelIds.forEach(async (channelId) => {
               try {
                 const surveyPayload = SurveyPayloadSchema.parse(survey.payload);
 
@@ -220,11 +220,13 @@ export const surveyRouter = router({
 
           if (survey && survey.webhookUrl) {
             axios
-              .post(survey.webhookUrl)
+              .post(survey.webhookUrl, {
+                ...result,
+              })
               .then(() => {
-                return axios.post(survey.webhookUrl, {
-                  ...result,
-                });
+                logger.info(
+                  `[surveySubmitWebhook] send webhooks to ${survey.webhookUrl} success!`
+                );
               })
               .catch((err) => logger.error('[surveySubmitWebhook]', err));
           }

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { trpc } from '@/api/trpc';
+import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { Card, CardContent } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -25,7 +25,9 @@ function PageComponent() {
   const { surveyId } = Route.useParams<{ surveyId: string }>();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
-  const mutation = trpc.survey.update.useMutation();
+  const mutation = trpc.survey.update.useMutation({
+    onError: defaultErrorHandler,
+  });
   const { data: survey, isLoading } = trpc.survey.get.useQuery({
     workspaceId,
     surveyId,
