@@ -2,6 +2,7 @@ import { useColorSchema } from '@/store/settings';
 import { theme, ThemeConfig } from 'antd';
 import { useEffect, useMemo } from 'react';
 import { colord } from 'colord';
+import twColors from 'tailwindcss/colors';
 
 const THEME_CONFIG = 'tianji.theme';
 
@@ -19,6 +20,9 @@ const THEME_COLORS = {
     gray700: '#6e6e6e',
     gray800: '#4b4b4b',
     gray900: '#2c2c2c',
+    green400: twColors.green['400'],
+    green500: twColors.green['500'],
+    green600: twColors.green['600'],
   },
   dark: {
     primary: '#2680eb',
@@ -33,6 +37,9 @@ const THEME_COLORS = {
     gray700: '#b9b9b9',
     gray800: '#e3e3e3',
     gray900: '#ffffff',
+    green400: twColors.green['600'],
+    green500: twColors.green['500'],
+    green600: twColors.green['400'],
   },
 };
 
@@ -55,7 +62,14 @@ export function useTheme() {
   const customTheme = window.localStorage.getItem(THEME_CONFIG);
   const theme = isValidTheme(customTheme) ? customTheme : defaultTheme;
 
-  const primaryColor = useMemo(() => colord(THEME_COLORS[theme].primary), []);
+  const primaryColor = useMemo(
+    () => colord(THEME_COLORS[theme].primary),
+    [theme]
+  );
+  const healthColor = useMemo(
+    () => colord(THEME_COLORS[theme].green400),
+    [theme]
+  );
 
   const colors = useMemo(
     () => ({
@@ -63,10 +77,12 @@ export function useTheme() {
         ...THEME_COLORS[theme],
       },
       chart: {
+        error: twColors.red[500],
         text: THEME_COLORS[theme].gray700,
         line: THEME_COLORS[theme].gray200,
         pv: primaryColor.alpha(0.4).toRgbString(),
         uv: primaryColor.alpha(0.6).toRgbString(),
+        monitor: healthColor.alpha(0.8).toRgbString(),
       },
       map: {
         baseColor: THEME_COLORS[theme].primary,

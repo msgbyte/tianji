@@ -1,13 +1,34 @@
-import { AreaConfig, Area } from '@ant-design/charts';
 import { Select } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { max, min, uniqBy } from 'lodash-es';
+import { get, takeRight, uniqBy } from 'lodash-es';
 import React, { useState, useMemo } from 'react';
 import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { getMonitorProvider, getProviderDisplay } from './provider';
 import { useTranslation } from '@i18next-toolkit/react';
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../ui/chart';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Customized,
+  Rectangle,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { useTheme } from '@/hooks/useTheme';
+
+const chartConfig = {
+  value: {
+    label: <span className="text-sm font-bold">Result</span>,
+  },
+} satisfies ChartConfig;
 
 export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
   (props) => {
@@ -15,6 +36,7 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
     const workspaceId = useCurrentWorkspaceId();
     const { monitorId } = props;
     const [rangeType, setRangeType] = useState('recent');
+    const { colors } = useTheme();
     const subscribedDataList = useSocketSubscribeList(
       'onMonitorReceiveNewData',
       {
@@ -61,31 +83,14 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
 
     const providerInfo = getMonitorProvider(monitorInfo?.type ?? '');
 
-    const { data, annotations } = useMemo(() => {
-      const annotations: AreaConfig['annotations'] = [];
-      let start: number | null = null;
+    const { data } = useMemo(() => {
       let fetchedData = rangeType === 'recent' ? _recentData : _data;
-      const data = uniqBy(
-        [...fetchedData, ...subscribedDataList],
-        'createdAt'
+      const data = takeRight(
+        uniqBy([...fetchedData, ...subscribedDataList], 'createdAt'),
+        fetchedData.length
       ).map((d, i, arr) => {
         const value = d.value > 0 ? d.value : null;
         const time = dayjs(d.createdAt).valueOf();
-
-        if (!value && !start && arr[i - 1]) {
-          start = dayjs(arr[i - 1]['createdAt']).valueOf();
-        } else if (value && start) {
-          annotations.push({
-            type: 'region',
-            start: [start, 'min'],
-            end: [time, 'max'],
-            style: {
-              fill: 'red',
-              fillOpacity: 0.25,
-            },
-          });
-          start = null;
-        }
 
         return {
           value,
@@ -93,67 +98,10 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
         };
       });
 
-      return { data, annotations };
+      return { data };
     }, [_recentData, _data, subscribedDataList]);
 
-    const config = useMemo<AreaConfig>(() => {
-      const values = data.map((d) => d.value);
-      const maxValue = max(values) ?? 0;
-      const minValue = min(values) ?? 0;
-
-      const isTrendingMode = monitorInfo?.trendingMode ?? false; // if true, y axis not start from 0
-
-      const yMin = isTrendingMode
-        ? Math.max(minValue - (maxValue - minValue) / 10, 0)
-        : 0;
-
-      return {
-        data,
-        height: 200,
-        xField: 'time',
-        yField: 'value',
-        smooth: true,
-        meta: {
-          value: {
-            min: yMin,
-          },
-          time: {
-            formatter(value) {
-              return dayjs(value).format(
-                rangeType === '1w' ? 'MM-DD HH:mm' : 'HH:mm'
-              );
-            },
-          },
-        },
-        // need explore how to display null data
-        // xAxis: {
-        //   type: 'time',
-        // },
-        color: 'rgb(34 197 94 / 0.8)',
-        areaStyle: () => {
-          return {
-            fill: 'l(270) 0:rgb(34 197 94 / 0.2) 0.5:rgb(34 197 94 / 0.5) 1:rgb(34 197 94 / 0.8)',
-          };
-        },
-        annotations,
-        tooltip: {
-          title: (title, datum) => {
-            return dayjs(datum.time).format('YYYY-MM-DD HH:mm');
-          },
-          formatter(datum) {
-            const { name, text } = getProviderDisplay(
-              datum.value,
-              providerInfo
-            );
-
-            return {
-              name,
-              value: datum.value ? text : 'null',
-            };
-          },
-        },
-      };
-    }, [data, rangeType]);
+    const isTrendingMode = monitorInfo?.trendingMode ?? false; // if true, y axis not start from 0
 
     return (
       <div>
@@ -172,9 +120,122 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
           </Select>
         </div>
 
-        <Area {...config} />
+        <ChartContainer className="h-[200px] w-full" config={chartConfig}>
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="color" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor={colors.chart.monitor}
+                  stopOpacity={0.3}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={colors.chart.monitor}
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="time"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              tickFormatter={(date) =>
+                dayjs(date).format(rangeType === '1w' ? 'MM-DD HH:mm' : 'HH:mm')
+              }
+            />
+            <YAxis
+              mirror
+              domain={[isTrendingMode ? 'dataMin' : 0, 'dataMax']}
+            />
+            <CartesianGrid vertical={false} />
+            <ChartTooltip
+              labelFormatter={(label, payload) =>
+                dayjs(get(payload, [0, 'payload', 'time'])).format(
+                  'YYYY-MM-DD HH:mm:ss'
+                )
+              }
+              formatter={(value, defaultText, item, index, payload) => {
+                if (typeof value !== 'number') {
+                  return defaultText;
+                }
+                const { name, text } = getProviderDisplay(
+                  Number(value),
+                  providerInfo
+                );
+
+                return (
+                  <div>
+                    <span className="mr-2">{name}:</span>
+                    <span>{text}</span>
+                  </div>
+                );
+              }}
+              content={<ChartTooltipContent />}
+            />
+
+            <Customized component={CustomizedErrorArea} />
+
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={colors.chart.monitor}
+              fillOpacity={1}
+              fill="url(#color)"
+              strokeWidth={2}
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        </ChartContainer>
       </div>
     );
   }
 );
 MonitorDataChart.displayName = 'MonitorDataChart';
+
+const CustomizedErrorArea: React.FC = (props) => {
+  const { colors } = useTheme();
+  const y = get(props, 'offset.top', 10);
+  const height = get(props, 'offset.height', 160);
+  const points = get(props, 'formattedGraphicalItems.0.props.points', []) as {
+    x: number;
+    y: number | null;
+  }[];
+
+  const errorArea = useMemo(() => {
+    const _errorArea: { x: number; width: number }[] = [];
+    let prevX: number | null = null;
+    points.forEach((item, i, arr) => {
+      if (i === 0 && !item.y) {
+        prevX = 0;
+      } else if (!item.y && prevX === null && arr[i - 1].y) {
+        prevX = arr[i - 1].x;
+      } else if (item.y && prevX !== null) {
+        _errorArea.push({
+          x: prevX,
+          width: item.x - prevX,
+        });
+        prevX = null;
+      }
+    });
+
+    return _errorArea;
+  }, [points]);
+
+  return errorArea.map((area, i) => {
+    return (
+      <Rectangle
+        key={i}
+        width={area.width}
+        height={height}
+        x={area.x}
+        y={y}
+        fill={colors.chart.error}
+      />
+    );
+  });
+};
+CustomizedErrorArea.displayName = 'CustomizedErrorArea';

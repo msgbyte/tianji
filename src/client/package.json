@@ -17,7 +17,6 @@
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "dependencies": {
-    "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^5.3.6",
     "@antv/l7": "^2.20.14",
     "@antv/larkmap": "^1.4.13",
