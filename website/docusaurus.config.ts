@@ -4,6 +4,7 @@
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import { themes } from 'prism-react-renderer';
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 
 const lightTheme = themes.github;
 const darkTheme = themes.dracula;
@@ -74,7 +75,7 @@ const config: Config = {
     ],
   ],
 
-  plugins: [require.resolve('docusaurus-plugin-image-zoom')],
+  plugins: [require.resolve('docusaurus-plugin-image-zoom'), MyAliasPlugin],
 
   themeConfig: {
     // Replace with your project's social card
@@ -210,3 +211,17 @@ const config: Config = {
 };
 
 module.exports = config;
+
+function MyAliasPlugin(context, options) {
+  console.log('MyAliasPlugin', context, options);
+  return {
+    name: 'my-alias-plugin',
+    configureWebpack() {
+      return {
+        resolve: {
+          plugins: [new TsconfigPathsPlugin()],
+        },
+      };
+    },
+  };
+}

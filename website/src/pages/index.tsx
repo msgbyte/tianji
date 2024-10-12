@@ -11,6 +11,7 @@ import { HomepageHeaderLight } from '../components/homepage/HeaderLight';
 import { HomepageFeatures } from '../components/homepage/Features';
 import { HomepageSimpleLight } from '../components/homepage/SimpleLight';
 import { LuGithub } from 'react-icons/lu';
+import ShineBorder from '@/components/ui/shine-border';
 
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
@@ -49,18 +50,26 @@ function HomepageHeader() {
         </Link> */}
 
         <div
-          className="m-auto w-min max-w-full overflow-auto rounded-lg bg-neutral-100 p-2 text-left dark:bg-neutral-800"
+          className="m-auto w-min max-w-full overflow-auto rounded-lg bg-neutral-100 text-left dark:bg-neutral-800"
           style={{ boxShadow: '0px 0px 100px 0px rgba(0, 119, 230, 0.40)' }}
         >
-          <div className="whitespace-nowrap">
-            <span className="mr-1 select-none opacity-50">$</span>wget
-            https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
-          </div>
-          <div>
-            <span className="mr-1 select-none opacity-50">$</span>docker compose
-            up -d
-          </div>
+          <ShineBorder
+            className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border p-2 md:shadow-xl"
+            color={['#A07CFE', '#FE8FB5', '#FFBE7B']}
+          >
+            <div>
+              <div className="whitespace-nowrap">
+                <span className="mr-1 select-none opacity-50">$</span>wget
+                https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
+              </div>
+              <div>
+                <span className="mr-1 select-none opacity-50">$</span>docker
+                compose up -d
+              </div>
+            </div>
+          </ShineBorder>
         </div>
+
         <small className="opacity-50">
           Default account is <b>admin</b>/<b>admin</b>, please change password
           ASAP.

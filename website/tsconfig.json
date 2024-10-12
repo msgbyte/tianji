@@ -5,8 +5,7 @@
     "baseUrl": ".",
     "strict": false,
     "paths": {
-      "@/*": ["./*"],
-      "@/utils/style": ["../src/client/utils/style"]
+      "@/*": ["./src/*"]
     }
   }
 }
