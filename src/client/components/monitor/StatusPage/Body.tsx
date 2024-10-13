@@ -3,11 +3,18 @@ import React, { useMemo } from 'react';
 import { bodySchema } from './schema';
 import { Empty } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
-import { MonitorListItem } from '../MonitorListItem';
 import { cn } from '@/utils/style';
-import { Tooltip } from '@/components/ui/tooltip';
-import { MonitorHealthBar } from '../MonitorHealthBar';
-import { HealthBar, HealthStatus } from '@/components/HealthBar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { HealthBar } from '@/components/HealthBar';
+import { getMonitorProvider, getProviderDisplay } from '../provider';
+import {
+  getStatusBgColorClassName,
+  parseHealthStatusByPercent,
+} from '@/utils/health';
 
 interface StatusPageBodyProps {
   workspaceId: string;
@@ -66,7 +73,6 @@ export const StatusItemMonitor: React.FC<{
   showCurrent: boolean;
   workspaceId: string;
 }> = React.memo((props) => {
-  const { t } = useTranslation();
   const { data: info } = trpc.monitor.getPublicInfo.useQuery(
     {
       monitorIds: [props.id],
@@ -81,6 +87,22 @@ export const StatusItemMonitor: React.FC<{
     monitorId: props.id,
   });
 
+  const { summaryStatus, summaryPercent } = useMemo(() => {
+    let upCount = 0;
+    let totalCount = 0;
+    list.forEach((item) => {
+      upCount += item.upCount;
+      totalCount += item.totalCount;
+    });
+
+    const percent = Number(((upCount / totalCount) * 100).toFixed(1));
+
+    return {
+      summaryPercent: percent,
+      summaryStatus: parseHealthStatusByPercent(percent, totalCount),
+    };
+  }, [list]);
+
   if (isLoading) {
     return null;
   }
@@ -91,45 +113,38 @@ export const StatusItemMonitor: React.FC<{
         'mb-1 flex items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10'
       )}
     >
-      {/* <div>
+      <div>
         <span
           className={cn(
             'inline-block min-w-[62px] rounded-full p-0.5 text-center text-white',
-            upPercent === 100 ? 'bg-green-400' : 'bg-amber-400'
+            getStatusBgColorClassName(summaryStatus)
           )}
         >
-          {upPercent}%
+          {summaryPercent}%
         </span>
-      </div> */}
+      </div>
 
       <div className="flex-1 pl-2">
         <div className="text-nowrap text-base">{info?.name}</div>
       </div>
 
-      {/* {props.showCurrent && latestResponse && (
-        <Tooltip title={t('Current')}>
-          <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
-            {latestResponse}
-          </div>
-        </Tooltip>
-      )} */}
+      {props.showCurrent && info && (
+        <MonitorLatestResponse
+          workspaceId={props.workspaceId}
+          monitorId={info.id}
+          monitorType={info.type}
+        />
+      )}
 
-      <div className="flex-shrink basis-[260px] items-center overflow-hidden px-1">
+      <div className="flex-shrink basis-[250px] items-center overflow-hidden px-1">
         <HealthBar
           className="justify-end"
           size="small"
           beats={[...list].reverse().map((item) => {
-            let status: HealthStatus = 'none';
-
-            if (item.upRate === 1) {
-              status = 'health';
-            } else if (item.upRate === 0 && item.totalCount === 0) {
-              status = 'none';
-            } else if (item.upCount === 0 && item.totalCount !== 0) {
-              status = 'error';
-            } else {
-              status = 'warning';
-            }
+            const status = parseHealthStatusByPercent(
+              item.upRate,
+              item.totalCount
+            );
 
             return {
               status,
@@ -140,16 +155,47 @@ export const StatusItemMonitor: React.FC<{
       </div>
     </div>
   );
-
-  // return (
-  //   <MonitorListItem
-  //     key={item.id}
-  //     workspaceId={props.workspaceId}
-  //     monitorId={item.id}
-  //     monitorName={item.name}
-  //     monitorType={item.type}
-  //     showCurrentResponse={props.showCurrent}
-  //   />
-  // );
 });
 StatusItemMonitor.displayName = 'StatusItemMonitor';
+
+const MonitorLatestResponse: React.FC<{
+  workspaceId: string;
+  monitorId: string;
+  monitorType: string;
+}> = React.memo((props) => {
+  const { t } = useTranslation();
+  const { data: recentText } = trpc.monitor.recentData.useQuery(
+    {
+      workspaceId: props.workspaceId,
+      monitorId: props.monitorId,
+      take: 1,
+    },
+    {
+      select: (data) => {
+        const provider = getMonitorProvider(props.monitorType);
+
+        const value = data[0].value;
+
+        if (!value) {
+          return '';
+        }
+
+        const { text } = getProviderDisplay(value, provider);
+
+        return text;
+      },
+    }
+  );
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild={true}>
+        <div className="px-2 text-sm text-gray-800 dark:text-gray-400">
+          {recentText}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>{t('Current')}</TooltipContent>
+    </Tooltip>
+  );
+});
+MonitorLatestResponse.displayName = 'MonitorLatestResponse';
