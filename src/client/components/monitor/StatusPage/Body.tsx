@@ -1,5 +1,5 @@
 import { AppRouterOutput, trpc } from '@/api/trpc';
-import React, { useMemo } from 'react';
+import React, { useMemo, useReducer } from 'react';
 import { bodySchema } from './schema';
 import { Empty } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -88,6 +88,8 @@ export const StatusItemMonitor: React.FC<{
     monitorId: props.monitorId,
   });
 
+  const [showChart, toggleShowChart] = useReducer((state) => !state, false);
+
   const { summaryStatus, summaryPercent } = useMemo(() => {
     let upCount = 0;
     let totalCount = 0;
@@ -112,8 +114,9 @@ export const StatusItemMonitor: React.FC<{
     <div>
       <div
         className={cn(
-          'mb-1 flex items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10'
+          'mb-1 flex cursor-pointer items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10'
         )}
+        onClick={toggleShowChart}
       >
         <div>
           <span
@@ -157,10 +160,12 @@ export const StatusItemMonitor: React.FC<{
         </div>
       </div>
 
-      <MonitorRecentChart
-        workspaceId={props.workspaceId}
-        monitorId={props.monitorId}
-      />
+      {showChart && (
+        <MonitorPublicDataChart
+          workspaceId={props.workspaceId}
+          monitorId={props.monitorId}
+        />
+      )}
     </div>
   );
 });
@@ -207,16 +212,3 @@ const MonitorLatestResponse: React.FC<{
   );
 });
 MonitorLatestResponse.displayName = 'MonitorLatestResponse';
-
-export const MonitorRecentChart: React.FC<{
-  workspaceId: string;
-  monitorId: string;
-}> = React.memo((props) => {
-  return (
-    <MonitorPublicDataChart
-      workspaceId={props.workspaceId}
-      monitorId={props.monitorId}
-    />
-  );
-});
-MonitorRecentChart.displayName = 'MonitorRecentChart';

@@ -100,10 +100,7 @@ export const MonitorPublicDataChart: React.FC<MonitorPublicDataChartProps> =
               domain={['dataMin', 'dataMax']}
               tickFormatter={(date) => dayjs(date).format('HH:mm')}
             />
-            <YAxis
-              mirror
-              domain={[isTrendingMode ? 'dataMin' : 0, 'dataMax']}
-            />
+            <YAxis domain={[isTrendingMode ? 'dataMin' : 0, 'dataMax']} />
             <CartesianGrid vertical={false} />
             <ChartTooltip
               labelFormatter={(label, payload) =>
