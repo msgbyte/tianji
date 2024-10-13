@@ -9,4 +9,5 @@ export const monitorPublicInfoSchema = MonitorModelSchema.pick({
   id: true,
   name: true,
   type: true,
+  trendingMode: true,
 });

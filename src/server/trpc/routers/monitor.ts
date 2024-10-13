@@ -361,6 +361,38 @@ export const monitorRouter = router({
 
       return summary;
     }),
+  publicData: publicProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        protect: false,
+        path: '/{monitorId}/publicData',
+      })
+    )
+    .input(
+      z.object({
+        workspaceId: z.string().cuid2(),
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          value: z.number(),
+          createdAt: z.date(),
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const { workspaceId, monitorId } = input;
+
+      return getMonitorData(
+        workspaceId,
+        monitorId,
+        dayjs().subtract(1, 'days').toDate(),
+        dayjs().toDate()
+      );
+    }),
   dataMetrics: workspaceProcedure
     .meta(
       buildMonitorOpenapi({

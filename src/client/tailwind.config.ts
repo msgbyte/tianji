@@ -13,6 +13,7 @@ module.exports = {
       './components/**/*.{js,jsx,ts,tsx}',
       './pages/**/*.{js,jsx,ts,tsx}',
       './routes/**/*.{js,jsx,ts,tsx}',
+      './utils/health.ts',
     ],
   },
   theme: {
