@@ -1,5 +1,49 @@
 
 
+## [1.15.8](https://github.com/msgbyte/tianji/compare/v1.15.7...v1.15.8) (2024-10-13)
+
+
+### Features
+
+* add payload for feed event integration and send function ([572d96b](https://github.com/msgbyte/tianji/commit/572d96babb348858911105659bfe304e869915e4))
+* add ping animation in website realtime visitor ([6da0e6f](https://github.com/msgbyte/tianji/commit/6da0e6f415e863448cd36246eb16e1f09dcd8a79))
+* add plausible tracking(for testing) ([6474cef](https://github.com/msgbyte/tianji/commit/6474cefd896b36b872460786b11005b8deaf4436))
+* add realtime datarange which can visit data more easy ([f3d8f55](https://github.com/msgbyte/tianji/commit/f3d8f5543d4e277fe34940ce98cd552dee45f2a8))
+* add survey curl example code ([5d54ca1](https://github.com/msgbyte/tianji/commit/5d54ca1cbc01b69b9bd03d167edd0db242df350e))
+* add survey webhook ([de57242](https://github.com/msgbyte/tianji/commit/de572426ebf99e99ff97ce49caf0b8ac13b68154))
+* sdk add send feed function export ([f5933ec](https://github.com/msgbyte/tianji/commit/f5933ec0548fb4ac327152b6d7afe7ca2978bade))
+* survey add webhook url field which can send webhook when receive any survey ([f00163b](https://github.com/msgbyte/tianji/commit/f00163b2f107bcf08d4ff398fa5dbd92ac36fda8))
+* time event chart legend add some interaction ([4b78771](https://github.com/msgbyte/tianji/commit/4b7877155fd54416fb9231a02aca0e868aec97d2))
+
+
+### Document
+
+* add shacdn to website ([763810e](https://github.com/msgbyte/tianji/commit/763810e8b7e6cd41fdc0d83d28262dc7d747e4bf))
+* add sitemap to improve SEO ([384224c](https://github.com/msgbyte/tianji/commit/384224cb624030522057df22527312957665d8e9))
+* add website more language: de, fr, ja, zh-Hans ([7bda542](https://github.com/msgbyte/tianji/commit/7bda5420c5f22f6205d2dbd5086dd0bdbbc7f558))
+* change code command line style ([8c5c417](https://github.com/msgbyte/tianji/commit/8c5c417a197531c187452fc4937d034d3bdc05a7))
+* remove used blog directory ([3d9d032](https://github.com/msgbyte/tianji/commit/3d9d03296e9fb26eb363b2dba2f830f2eb9d58f3))
+* resolve build problem with update source document content ([9e6e031](https://github.com/msgbyte/tianji/commit/9e6e03117cc3bd37058563e31817034876d35450))
+* update depenpendency to resolve issue of docusaurus build ([de38363](https://github.com/msgbyte/tianji/commit/de38363315275ecbc7384c935c313940fca1d4fc))
+* upgrade openapi ([1e57905](https://github.com/msgbyte/tianji/commit/1e57905f3239cc4fb3a949b469161dc9c8d2b40c))
+
+
+### Others
+
+* add CodeExample component ([29f184c](https://github.com/msgbyte/tianji/commit/29f184c15d36e42af750261f81ad67b49fe58c0b))
+* comment sitemap to make sure its can build safe ([9b9799e](https://github.com/msgbyte/tianji/commit/9b9799ec6f846eb40762f5ca8cc0aa6c27fb7e02))
+* fix ci problem ([a32f3d9](https://github.com/msgbyte/tianji/commit/a32f3d9824a09a2d8c9e97ba211ee5d44c8e2763))
+* fix isolated-vm version ([43b4c9f](https://github.com/msgbyte/tianji/commit/43b4c9fe3763673dc54b61b01e50bc5b3d24a371))
+* fix version of postman-code-generators ([eaffe3a](https://github.com/msgbyte/tianji/commit/eaffe3ab21022215a76c3441ef0b9b2c37386227))
+* improve display of visitor map if data is too much ([9bc8c63](https://github.com/msgbyte/tianji/commit/9bc8c63fe2ea2ab080e7db3cf7d0c7636fabf8d1))
+* migrate monitor data chart to recharts and remove @ant-design/charts ([c0e2ef0](https://github.com/msgbyte/tianji/commit/c0e2ef0fe8f5520a7b935eeeb44f6be9224e56a4))
+* update ci run trigger path ([7322ad7](https://github.com/msgbyte/tianji/commit/7322ad741dcfc5c033b5057e1862e91d27244f7f))
+* update pnpm lock file to resolve some magic problem ([064dbe9](https://github.com/msgbyte/tianji/commit/064dbe9985767b32492de4264d08c26206318cd4))
+* update survey edit form ([a218c22](https://github.com/msgbyte/tianji/commit/a218c2239725deb5bcdee2e8d2de377e04dec941))
+* upgrade @radix-ui/react-scroll-area version ([9d559b9](https://github.com/msgbyte/tianji/commit/9d559b93d16c130cf58649e0f12edf9e795ba8a5))
+* upgrade @tianji/website docusaurus version ([e46f970](https://github.com/msgbyte/tianji/commit/e46f97097a593fe4bd5a8946237fd2f46fea69f6))
+* use prebuilt rather than deploy build ([e51a880](https://github.com/msgbyte/tianji/commit/e51a88044fcef7727b2e7f17c5dd9eff08329cdc))
+
 ## [1.15.7](https://github.com/msgbyte/tianji/compare/v1.15.6...v1.15.7) (2024-10-03)
 
 
