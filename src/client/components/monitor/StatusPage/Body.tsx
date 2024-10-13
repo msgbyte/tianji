@@ -15,6 +15,7 @@ import {
   getStatusBgColorClassName,
   parseHealthStatusByPercent,
 } from '@/utils/health';
+import { MonitorPublicDataChart } from '../MonitorPublicDataChart';
 
 interface StatusPageBodyProps {
   workspaceId: string;
@@ -51,7 +52,7 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
                     <StatusItemMonitor
                       key={item.key}
                       workspaceId={props.workspaceId}
-                      id={item.id}
+                      monitorId={item.id}
                       showCurrent={item.showCurrent ?? false}
                     />
                   );
@@ -69,13 +70,13 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
 StatusPageBody.displayName = 'StatusPageBody';
 
 export const StatusItemMonitor: React.FC<{
-  id: string;
+  monitorId: string;
   showCurrent: boolean;
   workspaceId: string;
 }> = React.memo((props) => {
   const { data: info } = trpc.monitor.getPublicInfo.useQuery(
     {
-      monitorIds: [props.id],
+      monitorIds: [props.monitorId],
     },
     {
       select: (data) => data[0],
@@ -84,7 +85,7 @@ export const StatusItemMonitor: React.FC<{
 
   const { data: list = [], isLoading } = trpc.monitor.publicSummary.useQuery({
     workspaceId: props.workspaceId,
-    monitorId: props.id,
+    monitorId: props.monitorId,
   });
 
   const { summaryStatus, summaryPercent } = useMemo(() => {
@@ -108,51 +109,58 @@ export const StatusItemMonitor: React.FC<{
   }
 
   return (
-    <div
-      className={cn(
-        'mb-1 flex items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10'
-      )}
-    >
-      <div>
-        <span
-          className={cn(
-            'inline-block min-w-[62px] rounded-full p-0.5 text-center text-white',
-            getStatusBgColorClassName(summaryStatus)
-          )}
-        >
-          {summaryPercent}%
-        </span>
+    <div>
+      <div
+        className={cn(
+          'mb-1 flex items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10'
+        )}
+      >
+        <div>
+          <span
+            className={cn(
+              'inline-block min-w-[62px] rounded-full p-0.5 text-center text-white',
+              getStatusBgColorClassName(summaryStatus)
+            )}
+          >
+            {summaryPercent}%
+          </span>
+        </div>
+
+        <div className="flex-1 pl-2">
+          <div className="text-nowrap text-base">{info?.name}</div>
+        </div>
+
+        {props.showCurrent && info && (
+          <MonitorLatestResponse
+            workspaceId={props.workspaceId}
+            monitorId={info.id}
+            monitorType={info.type}
+          />
+        )}
+
+        <div className="flex-shrink basis-[250px] items-center overflow-hidden px-1">
+          <HealthBar
+            className="justify-end"
+            size="small"
+            beats={[...list].reverse().map((item) => {
+              const status = parseHealthStatusByPercent(
+                item.upRate,
+                item.totalCount
+              );
+
+              return {
+                status,
+                title: `${item.day} | (${item.upCount}/${item.totalCount}) ${item.upRate}%`,
+              };
+            })}
+          />
+        </div>
       </div>
 
-      <div className="flex-1 pl-2">
-        <div className="text-nowrap text-base">{info?.name}</div>
-      </div>
-
-      {props.showCurrent && info && (
-        <MonitorLatestResponse
-          workspaceId={props.workspaceId}
-          monitorId={info.id}
-          monitorType={info.type}
-        />
-      )}
-
-      <div className="flex-shrink basis-[250px] items-center overflow-hidden px-1">
-        <HealthBar
-          className="justify-end"
-          size="small"
-          beats={[...list].reverse().map((item) => {
-            const status = parseHealthStatusByPercent(
-              item.upRate,
-              item.totalCount
-            );
-
-            return {
-              status,
-              title: `${item.day} | (${item.upCount}/${item.totalCount}) ${item.upRate}%`,
-            };
-          })}
-        />
-      </div>
+      <MonitorRecentChart
+        workspaceId={props.workspaceId}
+        monitorId={props.monitorId}
+      />
     </div>
   );
 });
@@ -199,3 +207,16 @@ const MonitorLatestResponse: React.FC<{
   );
 });
 MonitorLatestResponse.displayName = 'MonitorLatestResponse';
+
+export const MonitorRecentChart: React.FC<{
+  workspaceId: string;
+  monitorId: string;
+}> = React.memo((props) => {
+  return (
+    <MonitorPublicDataChart
+      workspaceId={props.workspaceId}
+      monitorId={props.monitorId}
+    />
+  );
+});
+MonitorRecentChart.displayName = 'MonitorRecentChart';

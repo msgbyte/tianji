@@ -1,10 +1,7 @@
-import { Select } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
-import { get, takeRight, uniqBy } from 'lodash-es';
-import React, { useState, useMemo } from 'react';
-import { useSocketSubscribeList } from '../../api/socketio';
+import dayjs from 'dayjs';
+import { get } from 'lodash-es';
+import React, { useMemo } from 'react';
 import { trpc } from '../../api/trpc';
-import { useCurrentWorkspaceId } from '../../store/user';
 import { getMonitorProvider, getProviderDisplay } from './provider';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
@@ -18,11 +15,11 @@ import {
   AreaChart,
   CartesianGrid,
   Customized,
-  Rectangle,
   XAxis,
   YAxis,
 } from 'recharts';
 import { useTheme } from '@/hooks/useTheme';
+import { CustomizedErrorArea } from './CustomizedErrorArea';
 
 const chartConfig = {
   value: {
@@ -30,65 +27,38 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
-  (props) => {
+interface MonitorPublicDataChartProps {
+  workspaceId: string;
+  monitorId: string;
+  className?: string;
+}
+
+export const MonitorPublicDataChart: React.FC<MonitorPublicDataChartProps> =
+  React.memo((props) => {
     const { t } = useTranslation();
-    const workspaceId = useCurrentWorkspaceId();
-    const { monitorId } = props;
-    const [rangeType, setRangeType] = useState('recent');
+    const { workspaceId, monitorId } = props;
     const { colors } = useTheme();
-    const subscribedDataList = useSocketSubscribeList(
-      'onMonitorReceiveNewData',
+
+    const { data: monitorInfo } = trpc.monitor.getPublicInfo.useQuery(
       {
-        filter: (data) => {
-          return data.monitorId === props.monitorId;
+        monitorIds: [monitorId],
+      },
+      {
+        select(data) {
+          return data[0];
         },
       }
     );
 
-    const range = useMemo((): [Dayjs, Dayjs] => {
-      if (rangeType === '3h') {
-        return [dayjs().subtract(3, 'hour'), dayjs()];
-      }
-      if (rangeType === '6h') {
-        return [dayjs().subtract(6, 'hour'), dayjs()];
-      }
-      if (rangeType === '24h') {
-        return [dayjs().subtract(24, 'hour'), dayjs()];
-      }
-      if (rangeType === '1w') {
-        return [dayjs().subtract(1, 'week'), dayjs()];
-      }
-
-      return [dayjs().subtract(0.5, 'hour'), dayjs()];
-    }, [rangeType]);
-
-    const { data: monitorInfo } = trpc.monitor.get.useQuery({
+    const { data: _data = [] } = trpc.monitor.publicData.useQuery({
       workspaceId,
       monitorId,
-    });
-
-    const { data: _recentData = [] } = trpc.monitor.recentData.useQuery({
-      workspaceId,
-      monitorId,
-      take: 40,
-    });
-
-    const { data: _data = [] } = trpc.monitor.data.useQuery({
-      workspaceId,
-      monitorId,
-      startAt: range[0].valueOf(),
-      endAt: range[1].valueOf(),
     });
 
     const providerInfo = getMonitorProvider(monitorInfo?.type ?? '');
 
     const { data } = useMemo(() => {
-      let fetchedData = rangeType === 'recent' ? _recentData : _data;
-      const data = takeRight(
-        uniqBy([...fetchedData, ...subscribedDataList], 'createdAt'),
-        fetchedData.length
-      ).map((d, i, arr) => {
+      const data = _data.map((d, i, arr) => {
         const value = d.value > 0 ? d.value : null;
         const time = dayjs(d.createdAt).valueOf();
 
@@ -99,28 +69,13 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
       });
 
       return { data };
-    }, [_recentData, _data, subscribedDataList]);
+    }, [_data]);
 
     const isTrendingMode = monitorInfo?.trendingMode ?? false; // if true, y axis not start from 0
 
     return (
       <div>
-        <div className="mb-4 text-right">
-          <Select
-            className="w-20 text-center"
-            size="small"
-            value={rangeType}
-            onChange={(val) => setRangeType(val)}
-          >
-            <Select.Option value="recent">{t('Recent')}</Select.Option>
-            <Select.Option value="3h">{t('3h')}</Select.Option>
-            <Select.Option value="6h">{t('6h')}</Select.Option>
-            <Select.Option value="24h">{t('24h')}</Select.Option>
-            <Select.Option value="1w">{t('1w')}</Select.Option>
-          </Select>
-        </div>
-
-        <ChartContainer className="h-[200px] w-full" config={chartConfig}>
+        <ChartContainer className="h-[120px] w-full" config={chartConfig}>
           <AreaChart
             data={data}
             margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
@@ -143,9 +98,7 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
               dataKey="time"
               type="number"
               domain={['dataMin', 'dataMax']}
-              tickFormatter={(date) =>
-                dayjs(date).format(rangeType === '1w' ? 'MM-DD HH:mm' : 'HH:mm')
-              }
+              tickFormatter={(date) => dayjs(date).format('HH:mm')}
             />
             <YAxis
               mirror
@@ -192,6 +145,5 @@ export const MonitorDataChart: React.FC<{ monitorId: string }> = React.memo(
         </ChartContainer>
       </div>
     );
-  }
-);
-MonitorDataChart.displayName = 'MonitorDataChart';
+  });
+MonitorPublicDataChart.displayName = 'MonitorPublicDataChart';
