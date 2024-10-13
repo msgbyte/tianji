@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { prisma } from '../_client.js';
 import { monitorPublicInfoSchema } from '../_schema/monitor.js';
 import { MonitorManager } from './manager.js';
@@ -68,7 +69,7 @@ export function getMonitorRecentData(
     .then((arr) => arr.reverse());
 }
 
-export function getMonitorSummaryWithDay(
+export async function getMonitorSummaryWithDay(
   monitorId: string,
   beforeDay: number = 30
 ) {
@@ -79,7 +80,7 @@ export function getMonitorSummaryWithDay(
     up_rate: number;
   }
 
-  return prisma.$queryRaw<MonitorSummaryItem[]>`
+  const list = await prisma.$queryRaw<MonitorSummaryItem[]>`
     SELECT
       DATE("createdAt") AS day,
       COUNT(1) AS total_count,
@@ -94,4 +95,30 @@ export function getMonitorSummaryWithDay(
       DATE("createdAt")
     ORDER BY
       day;`;
+
+  const map: Record<string, MonitorSummaryItem> = {};
+  for (const item of list) {
+    const date = dayjs(item.day).format('YYYY-MM-DD');
+    map[date] = item;
+  }
+
+  return Array.from({ length: beforeDay }).map((_, i) => {
+    const target = dayjs().subtract(i, 'days').format('YYYY-MM-DD');
+
+    if (map[target]) {
+      return {
+        day: target,
+        totalCount: Number(map[target].total_count),
+        upCount: Number(map[target].up_count),
+        upRate: Number(Number(map[target].up_rate).toFixed(1)),
+      };
+    } else {
+      return {
+        day: target,
+        totalCount: 0,
+        upCount: 0,
+        upRate: 0,
+      };
+    }
+  });
 }

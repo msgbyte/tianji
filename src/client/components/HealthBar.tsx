@@ -3,7 +3,7 @@ import { cn } from '@/utils/style';
 import clsx from 'clsx';
 import React from 'react';
 
-type HealthStatus = 'health' | 'error' | 'warning' | 'none';
+export type HealthStatus = 'health' | 'error' | 'warning' | 'none';
 
 export interface HealthBarBeat {
   title?: string;

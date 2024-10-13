@@ -11,6 +11,7 @@ import {
   getMonitorData,
   getMonitorPublicInfos,
   getMonitorRecentData,
+  getMonitorSummaryWithDay,
   monitorManager,
 } from '../../model/monitor/index.js';
 import dayjs from 'dayjs';
@@ -329,6 +330,36 @@ export const monitorRouter = router({
       const { workspaceId, monitorId, take } = input;
 
       return getMonitorRecentData(workspaceId, monitorId, take);
+    }),
+  publicSummary: publicProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'GET',
+        protect: false,
+        path: '/{monitorId}/publicSummary',
+      })
+    )
+    .input(
+      z.object({
+        workspaceId: z.string().cuid2(),
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          day: z.string(),
+          totalCount: z.number(),
+          upCount: z.number(),
+          upRate: z.number(),
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const { monitorId } = input;
+      const summary = await getMonitorSummaryWithDay(monitorId, 30);
+
+      return summary;
     }),
   dataMetrics: workspaceProcedure
     .meta(
