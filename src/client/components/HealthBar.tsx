@@ -1,9 +1,8 @@
 import { useResizeObserver } from '@/hooks/useResizeObserver';
+import { getStatusBgColorClassName, HealthStatus } from '@/utils/health';
 import { cn } from '@/utils/style';
 import clsx from 'clsx';
 import React from 'react';
-
-export type HealthStatus = 'health' | 'error' | 'warning' | 'none';
 
 export interface HealthBarBeat {
   title?: string;
@@ -52,12 +51,7 @@ export const HealthBar: React.FC<HealthBarProps> = React.memo((props) => {
                 'h-4 w-[5px]': size === 'small',
                 'h-8 w-2': size === 'large',
               },
-              {
-                'bg-green-500': beat.status === 'health',
-                'bg-red-600': beat.status === 'error',
-                'bg-yellow-400': beat.status === 'warning',
-                'bg-gray-400': beat.status === 'none',
-              }
+              getStatusBgColorClassName(beat.status)
             )}
           />
         ))}
