@@ -23,6 +23,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useTheme } from '@/hooks/useTheme';
+import { CustomizedErrorArea } from './CustomizedErrorArea';
 
 const chartConfig = {
   value: {
