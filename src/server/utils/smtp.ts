@@ -16,7 +16,7 @@ export function generateSMTPHTML(body: string) {
       <header style="margin-bottom: 10px; padding-top: 10px; text-align: center;">
         <img src="https://tianji.msgbyte.com/img/logo@128.png" width="50" height="50" />
       </header>
-      <div style="background-color: #fff; border: 1px solid #dddddd; padding: 36px; margin-bottom: 10px;">
+      <div style="background-color: #fff; border: 1px solid #dddddd; padding: 36px; margin-bottom: 10px; border-radius: 5px;">
         ${body}
       </div>
       <footer style="text-align: center;">
