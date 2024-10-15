@@ -346,7 +346,8 @@ export const feedIntegrationRouter = router({
         return 'ok';
       }
 
-      logUnknownIntegration('sentry', input);
+      // sentry payload is toooo large, its not good to print it at all
+      // logUnknownIntegration('sentry', input);
 
       return 'Not supported yet';
     }),
