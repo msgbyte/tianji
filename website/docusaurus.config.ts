@@ -75,7 +75,10 @@ const config: Config = {
     ],
   ],
 
-  plugins: [require.resolve('docusaurus-plugin-image-zoom'), MyAliasPlugin],
+  plugins: [
+    require.resolve('docusaurus-plugin-image-zoom'),
+    TsConfigPathsPlugin,
+  ],
 
   themeConfig: {
     // Replace with your project's social card
@@ -212,10 +215,9 @@ const config: Config = {
 
 module.exports = config;
 
-function MyAliasPlugin(context, options) {
-  console.log('MyAliasPlugin', context, options);
+function TsConfigPathsPlugin(context, options) {
   return {
-    name: 'my-alias-plugin',
+    name: 'tsconfig-paths-plugin',
     configureWebpack() {
       return {
         resolve: {
