@@ -59,7 +59,10 @@ func main() {
 
 	interval := *Interval
 
-	ticker := time.Tick(time.Duration(interval) * time.Second)
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	defer ticker.Stop()
+
+	httpClient := &http.Client{}
 
 	log.Println("Start reporting...")
 	log.Println("Mode:", *Mode)
@@ -78,10 +81,10 @@ func main() {
 		if *Mode == "udp" {
 			sendUDPPack(*parsedURL, payload)
 		} else {
-			sendHTTPRequest(*parsedURL, payload)
+			sendHTTPRequest(*parsedURL, payload, httpClient)
 		}
 
-		<-ticker
+		<-ticker.C
 	}
 }
 
@@ -125,7 +128,7 @@ func sendUDPPack(url url.URL, payload ReportData) {
 /**
  * Send HTTP Request to report server data
  */
-func sendHTTPRequest(_url url.URL, payload ReportData) {
+func sendHTTPRequest(_url url.URL, payload ReportData, client *http.Client) {
 	jsonData, err := jsoniter.Marshal(payload)
 	if err != nil {
 		log.Println("Error encoding JSON:", err)
@@ -148,7 +151,6 @@ func sendHTTPRequest(_url url.URL, payload ReportData) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-tianji-report-version", version)
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Send request error:", err)
