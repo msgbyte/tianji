@@ -1,5 +1,30 @@
 
 
+## [1.16.0](https://github.com/msgbyte/tianji/compare/v1.15.8...v1.16.0) (2024-10-19)
+
+
+### Features
+
+* add click event for status page item which allow hide/show chart ([279e616](https://github.com/msgbyte/tianji/commit/279e616bee510ee5b0c5a3c9a3705a79efd5d3cb))
+* add daily monitor data display for public ([dcff57f](https://github.com/msgbyte/tianji/commit/dcff57fe69273c7f9b3dd9c28e8acc9cb6e430a9))
+* add monitor summary function ([bbb8d88](https://github.com/msgbyte/tianji/commit/bbb8d881168df695ccc70743f46320b39c1d7718))
+* add MonitorLatestResponse and up status summary ([316b954](https://github.com/msgbyte/tianji/commit/316b95467d49b3ebe93d03006d4b90f9ca482262))
+
+
+### Bug Fixes
+
+* fix reporter memory leak problem [#103](https://github.com/msgbyte/tianji/issues/103) ([7f70557](https://github.com/msgbyte/tianji/commit/7f70557c776c35e4e01a5533d2c05cecc711e113))
+
+
+### Others
+
+* add border radius in smtp template ([f553f15](https://github.com/msgbyte/tianji/commit/f553f157dd9708d553c9d6cfca4d119a62d849c3))
+* change public summary display logic ([e5e77db](https://github.com/msgbyte/tianji/commit/e5e77dbdeeeecb773237b84e3c671dd16e61d458))
+* fix ci problem ([820b25b](https://github.com/msgbyte/tianji/commit/820b25baedc6fec02010ca19b43e4da99bf4b820))
+* ignore unknown sentry log ([527f734](https://github.com/msgbyte/tianji/commit/527f734bc442458018d86df9a7e750a8e8de4495))
+* let version text more prominent ([61980b3](https://github.com/msgbyte/tianji/commit/61980b37d3cecce32fa87b2b9810f4c715990a71))
+* rename old tsconfig paths ([2a503ca](https://github.com/msgbyte/tianji/commit/2a503ca2501e705430c0c35cb7c8279927c1d4d5))
+
 ## [1.15.8](https://github.com/msgbyte/tianji/compare/v1.15.7...v1.15.8) (2024-10-13)
 
 
