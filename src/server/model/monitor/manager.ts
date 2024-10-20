@@ -1,7 +1,8 @@
-import { Monitor, Notification } from '@prisma/client';
+import { Monitor } from '@prisma/client';
 import { prisma } from '../_client.js';
 import { MonitorRunner } from './runner.js';
 import { logger } from '../../utils/logger.js';
+import { MonitorWithNotification } from './types.js';
 
 export type MonitorUpsertData = Pick<
   Monitor,
@@ -12,8 +13,6 @@ export type MonitorUpsertData = Pick<
   notificationIds?: string[];
   payload: Record<string, any>;
 };
-
-type MonitorWithNotification = Monitor & { notifications: Notification[] };
 
 export class MonitorManager {
   private monitorRunner: Record<string, MonitorRunner> = {};
@@ -64,9 +63,7 @@ export class MonitorManager {
       delete this.monitorRunner[monitor.id];
     }
 
-    const runner = (this.monitorRunner[monitor.id] = new MonitorRunner(
-      monitor
-    ));
+    const runner = await this.createRunner(monitor);
     runner.startMonitor();
 
     return monitor;
@@ -112,7 +109,7 @@ export class MonitorManager {
     Promise.all(
       monitors.map(async (m) => {
         try {
-          const runner = new MonitorRunner(m);
+          const runner = await this.createRunner(m);
           this.monitorRunner[m.id] = runner;
           await runner.startMonitor();
         } catch (err) {
@@ -128,8 +125,32 @@ export class MonitorManager {
     return this.monitorRunner[monitorId];
   }
 
-  createRunner(monitor: MonitorWithNotification) {
+  /**
+   * Restart all runner basic on workspace id
+   */
+  restartWithWorkspaceId(workspaceId: string) {
+    Object.values(this.monitorRunner).map((runner) => {
+      if (runner.workspace.id === workspaceId) {
+        this.createRunner(runner.monitor);
+      }
+    });
+  }
+
+  /**
+   * create runner
+   */
+  async createRunner(monitor: MonitorWithNotification) {
+    if (this.monitorRunner[monitor.id]) {
+      this.monitorRunner[monitor.id].stopMonitor();
+    }
+
+    const workspace = await prisma.workspace.findUniqueOrThrow({
+      where: {
+        id: monitor.workspaceId,
+      },
+    });
     const runner = (this.monitorRunner[monitor.id] = new MonitorRunner(
+      workspace,
       monitor
     ));
 

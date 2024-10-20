@@ -1,4 +1,4 @@
-import { Monitor, Notification } from '@prisma/client';
+import { Notification, Workspace } from '@prisma/client';
 import { subscribeEventBus } from '../../ws/shared.js';
 import { prisma } from '../_client.js';
 import { monitorProviders } from './provider/index.js';
@@ -8,6 +8,8 @@ import { logger } from '../../utils/logger.js';
 import { token } from '../notification/token/index.js';
 import { ContentToken } from '../notification/token/type.js';
 import { createAuditLog } from '../auditLog.js';
+import { MonitorWithNotification } from './types.js';
+import { get } from 'lodash-es';
 
 /**
  * Class which actually run monitor data collect
@@ -17,7 +19,14 @@ export class MonitorRunner {
   timer: NodeJS.Timeout | null = null;
   retriedNum = 0;
 
-  constructor(public monitor: Monitor & { notifications: Notification[] }) {}
+  constructor(
+    public workspace: Workspace,
+    public monitor: MonitorWithNotification
+  ) {}
+
+  getTimezone(): string {
+    return get(this.workspace, ['settings', 'timezone']) || 'utc';
+  }
 
   /**
    * Start single monitor
@@ -74,9 +83,9 @@ export class MonitorRunner {
             );
             await this.notify(`[${monitor.name}] 🔴 Down`, [
               token.text(
-                `[${monitor.name}] 🔴 Down\nTime: ${dayjs().format(
-                  'YYYY-MM-DD HH:mm:ss (z)'
-                )}`
+                `[${monitor.name}] 🔴 Down\nTime: ${dayjs()
+                  .tz(this.getTimezone())
+                  .format('YYYY-MM-DD HH:mm:ss (z)')}`
               ),
             ]);
             currentStatus = 'DOWN';
@@ -88,9 +97,9 @@ export class MonitorRunner {
             );
             await this.notify(`[${monitor.name}] ✅ Up`, [
               token.text(
-                `[${monitor.name}] ✅ Up\nTime: ${dayjs().format(
-                  'YYYY-MM-DD HH:mm:ss (z)'
-                )}`
+                `[${monitor.name}] ✅ Up\nTime: ${dayjs()
+                  .tz(this.getTimezone())
+                  .format('YYYY-MM-DD HH:mm:ss (z)')}`
               ),
             ]);
             currentStatus = 'UP';

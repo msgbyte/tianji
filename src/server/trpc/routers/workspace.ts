@@ -270,6 +270,15 @@ export const workspaceRouter = router({
           settings: merge({}, prev.settings, settings),
         },
       });
+
+      if (
+        'timezone' in settings &&
+        get(prev, ['settings', 'timezone']) !== settings.timezone
+      ) {
+        // should be restart all monitor
+        monitorManager.restartWithWorkspaceId(workspaceId);
+      }
+
       return res;
     }),
   invite: workspaceAdminProcedure

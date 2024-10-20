@@ -68,3 +68,25 @@ export function formatDateWithUnit(val: dayjs.ConfigType, unit: DateUnit) {
 
   return formatDate(val);
 }
+
+function formatOffset(offset: number) {
+  const sign = offset >= 0 ? '+' : '-';
+  const absOffset = Math.abs(offset);
+  const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+  const minutes = String(absOffset % 60).padStart(2, '0');
+
+  return `${sign}${hours}:${minutes}`;
+}
+
+export function getTimezoneList() {
+  const timezones = Intl.supportedValuesOf('timeZone');
+
+  return timezones.map((timezone) => {
+    const offset = dayjs().tz(timezone).utcOffset();
+
+    return {
+      label: `${timezone} (${formatOffset(offset)})`,
+      value: timezone,
+    };
+  });
+}

@@ -38,13 +38,22 @@ import {
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { useEventWithLoading } from '@/hooks/useEvent';
+import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { ROLES } from '@tianji/shared';
 import { cn } from '@/utils/style';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import dayjs from 'dayjs';
+import { getTimezoneList } from '@/utils/date';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -62,7 +71,7 @@ const columnHelper = createColumnHelper<MemberInfo>();
 
 function PageComponent() {
   const { t } = useTranslation();
-  const { id: workspaceId, name, role } = useCurrentWorkspace();
+  const { id: workspaceId, name, role, settings } = useCurrentWorkspace();
   const hasAdminPermission = useHasAdminPermission();
   const { data: members = [], refetch: refetchMembers } =
     trpc.workspace.members.useQuery({
@@ -70,6 +79,9 @@ function PageComponent() {
     });
   const updateCurrentWorkspaceName = useUserStore(
     (state) => state.updateCurrentWorkspaceName
+  );
+  const updateCurrentWorkspaceSettings = useUserStore(
+    (state) => state.updateCurrentWorkspaceSettings
   );
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
@@ -86,6 +98,10 @@ function PageComponent() {
     onError: defaultErrorHandler,
   });
   const deleteWorkspaceMutation = trpc.workspace.delete.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
+  const updateSettings = trpc.workspace.updateSettings.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
@@ -111,6 +127,19 @@ function PageComponent() {
       refetchMembers();
     }
   );
+
+  const handleUpdateSettings = useEvent(async (key: string, value: string) => {
+    const { settings } = await updateSettings.mutateAsync({
+      workspaceId,
+      settings: {
+        [key]: value,
+      },
+    });
+
+    updateCurrentWorkspaceSettings(settings);
+  });
+
+  const timezoneList = useMemo(() => getTimezoneList(), []);
 
   const columns = useMemo(() => {
     return [
@@ -163,6 +192,36 @@ function PageComponent() {
                     {workspaceId}
                   </Typography.Text>
                 </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="text-lg font-bold">
+              {t('General')}
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="flex-1">{t('Timezone')}</div>
+                <div>
+                  <Select
+                    value={settings['timezone'] ?? dayjs.tz.guess()}
+                    onValueChange={(value) =>
+                      handleUpdateSettings('timezone', value)
+                    }
+                  >
+                    <SelectTrigger className="w-[240px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timezoneList.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>

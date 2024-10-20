@@ -292,7 +292,7 @@ export const monitorRouter = router({
       });
       let runner = monitorManager.getRunner(monitorId);
       if (!runner) {
-        runner = monitorManager.createRunner(monitor);
+        runner = await monitorManager.createRunner(monitor);
       }
 
       if (active === true) {
