@@ -1,5 +1,19 @@
 
 
+## [1.16.1](https://github.com/msgbyte/tianji/compare/v1.16.0...v1.16.1) (2024-10-20)
+
+
+### Features
+
+* add test notify ([4e3fd9d](https://github.com/msgbyte/tianji/commit/4e3fd9db64629f7721e6092b86b06144c47f521d))
+* add timezone support [#114](https://github.com/msgbyte/tianji/issues/114) ([c7e20df](https://github.com/msgbyte/tianji/commit/c7e20df516bf3a991ce46c937223948bcdb6b8f0))
+* add workspace settings manage ([3dca8fc](https://github.com/msgbyte/tianji/commit/3dca8fc27c82bd96dbab423b111e4de57f3b4bd8))
+
+
+### Others
+
+* update cronjob clear time ([83850f2](https://github.com/msgbyte/tianji/commit/83850f2981ded0b6624556ee3430f684752b8ea3))
+
 ## [1.16.0](https://github.com/msgbyte/tianji/compare/v1.15.8...v1.16.0) (2024-10-19)
 
 
