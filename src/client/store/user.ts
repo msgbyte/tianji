@@ -10,6 +10,7 @@ export type UserLoginInfo = NonNullable<AppRouterOutput['user']['info']>;
 interface UserState {
   info: UserLoginInfo | null;
   updateCurrentWorkspaceName: (name: string) => void;
+  updateCurrentWorkspaceSettings: (settings: Record<string, any>) => void;
 }
 
 export const useUserStore = createWithEqualityFn<UserState>()(
@@ -24,6 +25,21 @@ export const useUserStore = createWithEqualityFn<UserState>()(
       set((state) => {
         for (const workspace of state.info?.workspaces ?? []) {
           workspace.workspace.name = name;
+        }
+      });
+    },
+    updateCurrentWorkspaceSettings: (settings) => {
+      set((state) => {
+        const currentUserInfo = useUserStore.getState().info;
+        if (!currentUserInfo) {
+          return;
+        }
+
+        for (const workspace of state.info?.workspaces ?? []) {
+          workspace.workspace.settings = {
+            ...workspace.workspace.settings,
+            ...settings,
+          };
         }
       });
     },
@@ -88,6 +104,7 @@ export function useCurrentWorkspaceSafe() {
       id: currentWorkspace.workspace.id,
       name: currentWorkspace.workspace.name,
       role: currentWorkspace.role,
+      settings: currentWorkspace.workspace.settings,
     };
   });
 

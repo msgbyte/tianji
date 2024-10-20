@@ -26,6 +26,7 @@ import {
 } from '../../model/user.js';
 import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers.js';
 import { monitorManager } from '../../model/monitor/index.js';
+import { get, merge } from 'lodash-es';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -235,6 +236,41 @@ export const workspaceRouter = router({
       });
 
       return list;
+    }),
+  updateSettings: workspaceAdminProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'POST',
+        path: '/{workspaceId}/updateSettings',
+      })
+    )
+    .input(
+      z.object({
+        settings: z.object({}).passthrough(),
+      })
+    )
+    .output(workspaceSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, settings } = input;
+
+      const prev = await prisma.workspace.findUniqueOrThrow({
+        where: {
+          id: workspaceId,
+        },
+        select: {
+          settings: true,
+        },
+      });
+
+      const res = await prisma.workspace.update({
+        where: {
+          id: workspaceId,
+        },
+        data: {
+          settings: merge({}, prev.settings, settings),
+        },
+      });
+      return res;
     }),
   invite: workspaceAdminProcedure
     .meta(

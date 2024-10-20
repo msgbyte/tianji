@@ -41,6 +41,7 @@ export const createUserSelect = {
         select: {
           id: true,
           name: true,
+          settings: true,
         },
       },
     },
