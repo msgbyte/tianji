@@ -61,6 +61,10 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
+  const testNotifyScriptMutation = trpc.monitor.testNotifyScript.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
 
   const trpcUtils = trpc.useContext();
 
@@ -228,6 +232,15 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                           key: 'badge',
                           label: t('Show Badge'),
                           onClick: () => setShowBadge(true),
+                        },
+                        {
+                          key: 'testNotify',
+                          label: t('Test Notify'),
+                          onClick: () =>
+                            testNotifyScriptMutation.mutateAsync({
+                              workspaceId,
+                              monitorId,
+                            }),
                         },
                         {
                           type: 'divider',

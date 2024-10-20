@@ -33,6 +33,7 @@ import {
   monitorPublicInfoSchema,
 } from '../../model/_schema/monitor.js';
 import { monitorPageManager } from '../../model/monitor/page/manager.js';
+import { token } from '../../model/notification/token/index.js';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -203,6 +204,29 @@ export const monitorRouter = router({
         result: res.result ?? -1,
         usage: res.usage,
       };
+    }),
+  testNotifyScript: workspaceAdminProcedure
+    .input(
+      z.object({
+        monitorId: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { monitorId } = input;
+      const runner = monitorManager.getRunner(monitorId);
+      if (!runner) {
+        throw new Error('This monitor is not running or not existed.');
+      }
+
+      if (runner.monitor.notifications.length === 0) {
+        throw new Error('This monitor not has any notifications.');
+      }
+
+      await runner.notify('Test title', [
+        token.paragraph('Test content'),
+        token.paragraph(`Send from monitor: ${runner.monitor.name}`),
+      ]);
     }),
   data: workspaceProcedure
     .meta(
