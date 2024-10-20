@@ -242,14 +242,14 @@ async function statDailyUsage() {
 }
 
 /**
- * Clear over 2 week data
+ * Clear over 1 month data
  */
 async function clearMonitorDataDaily() {
   if (env.disableAutoClear) {
     return;
   }
 
-  const date = dayjs().subtract(2, 'weeks').toDate();
+  const date = dayjs().subtract(1, 'months').toDate();
   logger.info(
     '[clearMonitorDataDaily] Start clear monitor data before:',
     date.toISOString()
@@ -269,14 +269,14 @@ async function clearMonitorDataDaily() {
 }
 
 /**
- * Clear over 2 week data
+ * Clear over 1 month data
  */
 async function clearMonitorEventDaily() {
   if (env.disableAutoClear) {
     return;
   }
 
-  const date = dayjs().subtract(2, 'weeks').toDate();
+  const date = dayjs().subtract(1, 'month').toDate();
   logger.info(
     '[clearMonitorEventDaily] Start clear monitor data before:',
     date.toISOString()
