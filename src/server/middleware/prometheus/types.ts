@@ -1,11 +1,5 @@
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import Prometheus from 'prom-client';
-
-export class HttpMetricsCollector {
-  constructor(options?: CollectorOpts);
-  static init(options?: CollectorOpts): void;
-  static collect(res: Response | any): void;
-}
 
 export interface ApiMetricsOpts {
   metricsPath?: string;
