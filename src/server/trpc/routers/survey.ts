@@ -51,7 +51,7 @@ export const surveyRouter = router({
     .meta(
       buildSurveyOpenapi({
         method: 'GET',
-        path: '/{surveyId}',
+        path: '/{surveyId}/get',
       })
     )
     .input(

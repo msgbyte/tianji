@@ -272,7 +272,7 @@ export const feedRouter = router({
     .meta(
       buildFeedOpenapi({
         method: 'DELETE',
-        path: '/{channelId}',
+        path: '/{channelId}/del',
       })
     )
     .input(

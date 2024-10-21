@@ -160,7 +160,7 @@ export const workspaceRouter = router({
     .meta(
       buildWorkspaceOpenapi({
         method: 'DELETE',
-        path: '/{workspaceId}',
+        path: '/{workspaceId}/del',
       })
     )
     .input(

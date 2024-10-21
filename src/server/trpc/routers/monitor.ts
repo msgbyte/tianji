@@ -68,7 +68,7 @@ export const monitorRouter = router({
     .meta(
       buildMonitorOpenapi({
         method: 'GET',
-        path: '/{monitorId}',
+        path: '/{monitorId}/get',
       })
     )
     .input(
@@ -169,7 +169,7 @@ export const monitorRouter = router({
     .meta(
       buildMonitorOpenapi({
         method: 'DELETE',
-        path: '/{monitorId}',
+        path: '/{monitorId}/del',
       })
     )
     .input(
