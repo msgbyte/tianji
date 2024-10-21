@@ -22,10 +22,12 @@ import path from 'path';
 import { monitorPageManager } from './model/monitor/page/manager.js';
 import { ExpressAuth } from '@auth/express';
 import { authConfig } from './model/auth.js';
+import { prometheusApiVersion } from './middleware/prometheus/index.js';
 
 const app = express();
 
 app.set('trust proxy', true);
+app.use(prometheusApiVersion());
 app.use(compression());
 app.use(
   express.json({

@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { AdapterUser } from '@auth/core/adapters';
 import { md5 } from '../utils/common.js';
 import { logger } from '../utils/logger.js';
+import { promUserCounter } from '../utils/prometheus/client.js';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -88,6 +89,8 @@ export async function createAdminUser(username: string, password: string) {
     return user;
   });
 
+  promUserCounter.inc();
+
   return user;
 }
 
@@ -129,6 +132,8 @@ export async function createUser(username: string, password: string) {
 
     return user;
   });
+
+  promUserCounter.inc();
 
   return user;
 }

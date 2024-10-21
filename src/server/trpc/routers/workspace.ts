@@ -27,6 +27,7 @@ import {
 import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers.js';
 import { monitorManager } from '../../model/monitor/index.js';
 import { get, merge } from 'lodash-es';
+import { promWorkspaceCounter } from '../../utils/prometheus/client.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -62,6 +63,8 @@ export const workspaceRouter = router({
             name,
           },
         });
+
+        promWorkspaceCounter.inc();
 
         return await p.user.update({
           data: {

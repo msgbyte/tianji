@@ -1,4 +1,5 @@
 import { ServerStatusInfo } from '../../types/index.js';
+import { promServerCounter } from '../utils/prometheus/client.js';
 import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared.js';
 import { isServerOnline } from '@tianji/shared';
 
@@ -41,6 +42,13 @@ export function recordServerStatus(info: ServerStatusInfo) {
     updatedAt: Date.now(),
     payload,
   };
+
+  promServerCounter.set(
+    {
+      workspaceId,
+    },
+    Object.keys(serverMap[workspaceId]).length
+  );
 
   subscribeEventBus.emit(
     'onServerStatusUpdate',

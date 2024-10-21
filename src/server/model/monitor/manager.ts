@@ -3,6 +3,7 @@ import { prisma } from '../_client.js';
 import { MonitorRunner } from './runner.js';
 import { logger } from '../../utils/logger.js';
 import { MonitorWithNotification } from './types.js';
+import { promMonitorRunnerCounter } from '../../utils/prometheus/client.js';
 
 export type MonitorUpsertData = Pick<
   Monitor,
@@ -153,6 +154,8 @@ export class MonitorManager {
       workspace,
       monitor
     ));
+
+    promMonitorRunnerCounter.set(Object.keys(this.monitorRunner).length);
 
     return runner;
   }

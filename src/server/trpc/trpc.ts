@@ -8,6 +8,7 @@ import { OpenApiMeta } from 'trpc-openapi';
 import { getSession } from '@auth/express';
 import { authConfig } from '../model/auth.js';
 import { get } from 'lodash-es';
+import { promTrpcRequest } from '../utils/prometheus/client.js';
 
 export async function createContext({ req }: { req: Request }) {
   const authorization = req.headers['authorization'] ?? '';
@@ -23,7 +24,33 @@ export type OpenApiMetaInfo = NonNullable<OpenApiMeta['openapi']>;
 
 export const middleware = t.middleware;
 export const router = t.router;
-export const publicProcedure = t.procedure;
+
+const prom = middleware(async (opts) => {
+  const path = opts.path;
+  const type = opts.type;
+
+  const endRequest = promTrpcRequest.startTimer({
+    route: path,
+    type,
+  });
+
+  try {
+    const res = await opts.next();
+
+    endRequest({
+      status: 'success',
+    });
+    return res;
+  } catch (err) {
+    endRequest({
+      status: 'error',
+    });
+
+    throw err;
+  }
+});
+
+export const publicProcedure = t.procedure.use(prom);
 
 const isUser = middleware(async (opts) => {
   // auth with token
@@ -62,7 +89,7 @@ const isUser = middleware(async (opts) => {
   throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No Token or Session' });
 });
 
-export const protectProedure = t.procedure.use(isUser);
+export const protectProedure = t.procedure.use(prom).use(isUser);
 
 const isSystemAdmin = isUser.unstable_pipe(async (opts) => {
   const { ctx, input } = opts;
@@ -74,7 +101,7 @@ const isSystemAdmin = isUser.unstable_pipe(async (opts) => {
   return opts.next();
 });
 
-export const systemAdminProcedure = t.procedure.use(isSystemAdmin);
+export const systemAdminProcedure = t.procedure.use(prom).use(isSystemAdmin);
 export const workspaceProcedure = protectProedure
   .input(
     z.object({

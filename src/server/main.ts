@@ -9,6 +9,7 @@ import { initCronjob } from './cronjob/index.js';
 import { logger } from './utils/logger.js';
 import { app } from './app.js';
 import { runMQWorker } from './mq/worker.js';
+import { initCounter } from './utils/prometheus/index.js';
 
 const port = env.port;
 
@@ -19,6 +20,8 @@ initUdpServer(port);
 initSocketio(httpServer);
 
 initCronjob();
+
+initCounter();
 
 runMQWorker();
 
