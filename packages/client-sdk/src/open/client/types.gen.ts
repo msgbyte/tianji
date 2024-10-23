@@ -49,6 +49,9 @@ export type $OpenApiTs = {
                             workspace: {
                                 id: string;
                                 name: string;
+                                settings: {
+                                    [key: string]: unknown;
+                                };
                             };
                         }>;
                     };
@@ -85,6 +88,9 @@ export type $OpenApiTs = {
                             workspace: {
                                 id: string;
                                 name: string;
+                                settings: {
+                                    [key: string]: unknown;
+                                };
                             };
                         }>;
                     };
@@ -122,6 +128,9 @@ export type $OpenApiTs = {
                             workspace: {
                                 id: string;
                                 name: string;
+                                settings: {
+                                    [key: string]: unknown;
+                                };
                             };
                         }>;
                     };
@@ -157,6 +166,9 @@ export type $OpenApiTs = {
                         workspace: {
                             id: string;
                             name: string;
+                            settings: {
+                                [key: string]: unknown;
+                            };
                         };
                     }>;
                 };
@@ -190,6 +202,9 @@ export type $OpenApiTs = {
                         workspace: {
                             id: string;
                             name: string;
+                            settings: {
+                                [key: string]: unknown;
+                            };
                         };
                     }>;
                 };
@@ -211,11 +226,14 @@ export type $OpenApiTs = {
                 200: {
                     id: string;
                     name: string;
+                    settings: {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
     };
-    '/workspace//{workspaceId}': {
+    '/workspace//{workspaceId}/del': {
         delete: {
             req: {
                 workspaceId: string;
@@ -250,6 +268,30 @@ export type $OpenApiTs = {
                         emailVerified: string | null;
                     };
                 }>;
+            };
+        };
+    };
+    '/workspace//{workspaceId}/updateSettings': {
+        post: {
+            req: {
+                requestBody: {
+                    settings: {
+                        [key: string]: unknown;
+                    };
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    name: string;
+                    settings: {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -692,7 +734,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/monitor/{monitorId}': {
+    '/workspace/{workspaceId}/monitor/{monitorId}/get': {
         get: {
             req: {
                 monitorId: string;
@@ -722,9 +764,43 @@ export type $OpenApiTs = {
                 } | null;
             };
         };
-        delete: {
+    };
+    '/monitor/getPublicInfo': {
+        post: {
             req: {
-                monitorId: string;
+                requestBody: {
+                    monitorIds: Array<(string)>;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    name: string;
+                    type: string;
+                    trendingMode: boolean;
+                }>;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/monitor/upsert': {
+        post: {
+            req: {
+                requestBody: {
+                    id?: string;
+                    name: string;
+                    type: string;
+                    active?: boolean;
+                    interval?: number;
+                    maxRetries?: number;
+                    trendingMode?: boolean;
+                    notificationIds?: Array<(string)>;
+                    payload: {
+                        [key: string]: unknown;
+                    };
+                };
                 workspaceId: string;
             };
             res: {
@@ -749,41 +825,10 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/monitor/getPublicInfo': {
-        post: {
+    '/workspace/{workspaceId}/monitor/{monitorId}/del': {
+        delete: {
             req: {
-                requestBody: {
-                    monitorIds: Array<(string)>;
-                };
-            };
-            res: {
-                /**
-                 * Successful response
-                 */
-                200: Array<{
-                    id: string;
-                    name: string;
-                    type: string;
-                }>;
-            };
-        };
-    };
-    '/workspace/{workspaceId}/monitor/upsert': {
-        post: {
-            req: {
-                requestBody: {
-                    id?: string;
-                    name: string;
-                    type: string;
-                    active?: boolean;
-                    interval?: number;
-                    maxRetries?: number;
-                    trendingMode?: boolean;
-                    notificationIds?: Array<(string)>;
-                    payload: {
-                        [key: string]: unknown;
-                    };
-                };
+                monitorId: string;
                 workspaceId: string;
             };
             res: {
@@ -863,6 +908,42 @@ export type $OpenApiTs = {
             req: {
                 monitorId: string;
                 take: number;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    value: number;
+                    createdAt: string;
+                }>;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/monitor/{monitorId}/publicSummary': {
+        get: {
+            req: {
+                monitorId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    day: string;
+                    totalCount: number;
+                    upCount: number;
+                    upRate: number;
+                }>;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/monitor/{monitorId}/publicData': {
+        get: {
+            req: {
+                monitorId: string;
                 workspaceId: string;
             };
             res: {
@@ -1384,13 +1465,14 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
+                    webhookUrl: string;
                     createdAt: string;
                     updatedAt: string;
                 }>;
             };
         };
     };
-    '/workspace/{workspaceId}/survey/{surveyId}': {
+    '/workspace/{workspaceId}/survey/{surveyId}/get': {
         get: {
             req: {
                 surveyId: string;
@@ -1414,6 +1496,7 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
+                    webhookUrl: string;
                     createdAt: string;
                     updatedAt: string;
                 } | null;
@@ -1499,6 +1582,7 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
+                    webhookUrl: string;
                 };
                 workspaceId: string;
             };
@@ -1520,6 +1604,7 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
+                    webhookUrl: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1541,6 +1626,7 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds?: Array<(string)>;
                     feedTemplate?: string;
+                    webhookUrl?: string;
                 };
                 surveyId: string;
                 workspaceId: string;
@@ -1563,6 +1649,7 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
+                    webhookUrl: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1593,6 +1680,7 @@ export type $OpenApiTs = {
                     };
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
+                    webhookUrl: string;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1820,7 +1908,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace/{workspaceId}/feed/{channelId}': {
+    '/workspace/{workspaceId}/feed/{channelId}/del': {
         delete: {
             req: {
                 channelId: string;

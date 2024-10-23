@@ -120,10 +120,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceDelete(data: $OpenApiTs['/workspace//{workspaceId}']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}']['delete']['res'][200]> {
+    public static workspaceDelete(data: $OpenApiTs['/workspace//{workspaceId}/del']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/del']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/workspace//{workspaceId}',
+            url: '/workspace//{workspaceId}/del',
             path: {
                 workspaceId: data.workspaceId
             }
@@ -143,6 +143,25 @@ export class WorkspaceService {
             path: {
                 workspaceId: data.workspaceId
             }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceUpdateSettings(data: $OpenApiTs['/workspace//{workspaceId}/updateSettings']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/updateSettings']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace//{workspaceId}/updateSettings',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json'
         });
     }
     
@@ -585,28 +604,10 @@ export class MonitorService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static monitorGet(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}']['get']['res'][200]> {
+    public static monitorGet(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/get']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/get']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/monitor/{monitorId}',
-            path: {
-                workspaceId: data.workspaceId,
-                monitorId: data.monitorId
-            }
-        });
-    }
-    
-    /**
-     * @param data The data for the request.
-     * @param data.workspaceId
-     * @param data.monitorId
-     * @returns unknown Successful response
-     * @throws ApiError
-     */
-    public static monitorDelete(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}']['delete']['res'][200]> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/workspace/{workspaceId}/monitor/{monitorId}',
+            url: '/workspace/{workspaceId}/monitor/{monitorId}/get',
             path: {
                 workspaceId: data.workspaceId,
                 monitorId: data.monitorId
@@ -645,6 +646,24 @@ export class MonitorService {
             },
             body: data.requestBody,
             mediaType: 'application/json'
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.monitorId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static monitorDelete(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/del']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/del']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace/{workspaceId}/monitor/{monitorId}/del',
+            path: {
+                workspaceId: data.workspaceId,
+                monitorId: data.monitorId
+            }
         });
     }
     
@@ -711,6 +730,42 @@ export class MonitorService {
             },
             query: {
                 take: data.take
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.monitorId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static monitorPublicSummary(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/publicSummary']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/publicSummary']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/monitor/{monitorId}/publicSummary',
+            path: {
+                workspaceId: data.workspaceId,
+                monitorId: data.monitorId
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.monitorId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static monitorPublicData(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/publicData']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/publicData']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/monitor/{monitorId}/publicData',
+            path: {
+                workspaceId: data.workspaceId,
+                monitorId: data.monitorId
             }
         });
     }
@@ -1158,10 +1213,10 @@ export class SurveyService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static surveyGet(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}']['get']['res'][200]> {
+    public static surveyGet(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/get']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/get']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace/{workspaceId}/survey/{surveyId}',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/get',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
@@ -1472,10 +1527,10 @@ export class FeedService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static feedDeleteChannel(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}']['delete']['res'][200]> {
+    public static feedDeleteChannel(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/del']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/del']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/workspace/{workspaceId}/feed/{channelId}',
+            url: '/workspace/{workspaceId}/feed/{channelId}/del',
             path: {
                 workspaceId: data.workspaceId,
                 channelId: data.channelId
