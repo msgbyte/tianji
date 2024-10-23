@@ -1,5 +1,28 @@
 
 
+## [1.16.2](https://github.com/msgbyte/tianji/compare/v1.16.1...v1.16.2) (2024-10-23)
+
+
+### Features
+
+* add prometheus report support ([fcb8f22](https://github.com/msgbyte/tianji/commit/fcb8f221168281ab710d3d3f12064a99d17b39e7))
+
+
+### Bug Fixes
+
+* fix a bug which will match incorrect path [#115](https://github.com/msgbyte/tianji/issues/115) ([79667a9](https://github.com/msgbyte/tianji/commit/79667a9644b78451400acb6a6bbf07b6ca61e6e0))
+
+
+### Document
+
+* update README ([1df32dc](https://github.com/msgbyte/tianji/commit/1df32dc2579f32649afd6c008512c1190a45fd9e))
+
+
+### Others
+
+* fix ci problem ([554f902](https://github.com/msgbyte/tianji/commit/554f9025847defe0b05492cf07a5dc8acc6c3685))
+* update openapi document ([e402ee1](https://github.com/msgbyte/tianji/commit/e402ee1688bb77d83463ce70c5e730c97f68a695))
+
 ## [1.16.1](https://github.com/msgbyte/tianji/compare/v1.16.0...v1.16.1) (2024-10-20)
 
 
