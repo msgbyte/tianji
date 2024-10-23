@@ -6,7 +6,7 @@ import {
 } from 'tianji-client-sdk';
 
 type SurveyInfo =
-  openApiClient.$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}']['get']['res']['200'];
+  openApiClient.$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/get']['get']['res']['200'];
 
 interface UseTianjiSurveyOptions {
   baseUrl?: string;
