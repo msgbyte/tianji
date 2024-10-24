@@ -1,5 +1,12 @@
 
 
+## [1.16.3](https://github.com/msgbyte/tianji/compare/v1.16.2...v1.16.3) (2024-10-24)
+
+
+### Others
+
+* fix ci problem and upgrade version ([1c5737e](https://github.com/msgbyte/tianji/commit/1c5737e588d19e0657be6437792cf4484b6fdddb))
+
 ## [1.16.2](https://github.com/msgbyte/tianji/compare/v1.16.1...v1.16.2) (2024-10-23)
 
 
