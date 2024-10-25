@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CodeBlock } from '../CodeBlock';
 import { useTranslation } from '@i18next-toolkit/react';
 import { SiSentry } from 'react-icons/si';
+import { FaStripe } from 'react-icons/fa6';
 
 export const FeedIntegration: React.FC<{
   feedId: string;
@@ -53,6 +54,22 @@ export const FeedIntegration: React.FC<{
                 {t('Document')}
               </a>
             </div>
+          </div>
+        }
+      />
+
+      <FeedIntegrationItem
+        icon={<FaStripe size={32} />}
+        label="Stripe"
+        content={
+          <div>
+            <div className="text-lg font-bold">{t('Receive Webhooks')}</div>
+
+            <div>{t('Add sentry webhook with url')}:</div>
+
+            <CodeBlock
+              code={`${window.location.origin}/open/feed/${props.feedId}/stripe`}
+            />
           </div>
         }
       />

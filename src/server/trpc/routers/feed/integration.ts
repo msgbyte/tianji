@@ -186,6 +186,121 @@ export const feedIntegrationRouter = router({
 
       return 'Not supported yet';
     }),
+  stripe: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'POST',
+        path: '/{channelId}/stripe',
+        summary: 'integrate with stripe webhook',
+      })
+    )
+    .input(
+      z
+        .object({
+          channelId: z.string(),
+        })
+        .passthrough()
+    )
+    .output(z.string())
+    .mutation(async ({ input, ctx }) => {
+      console.log(input);
+      const { channelId, ...data } = input;
+      const type = data.type;
+
+      const workspaceId = await prisma.feedChannel
+        .findFirst({
+          where: {
+            id: channelId,
+          },
+          select: {
+            workspaceId: true,
+          },
+        })
+        .then((res) => res?.workspaceId);
+
+      if (!workspaceId) {
+        throw new Error('Not found Workspace');
+      }
+
+      if (type === 'payment_intent.succeeded') {
+        const amount = get(data, 'data.object.amount_received');
+        const currency = String(
+          get(data, 'data.object.currency')
+        ).toUpperCase();
+        const eventId = String(get(data, 'data.id')).toUpperCase();
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: type,
+          eventContent: `You receive a payment of ${currency} **${amount}**`,
+          tags: [],
+          source: 'stripe',
+          senderId: eventId,
+          important: true,
+          payload: data,
+        });
+        return 'ok';
+      }
+
+      if (type === 'payment_intent.canceled') {
+        const amount = get(data, 'data.object.amount');
+        const currency = String(
+          get(data, 'data.object.currency')
+        ).toUpperCase();
+        const eventId = String(get(data, 'data.id')).toUpperCase();
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: type,
+          eventContent: `A payment has been canceled of ${currency} **${amount}**`,
+          tags: [],
+          source: 'stripe',
+          senderId: eventId,
+          important: false,
+          payload: data,
+        });
+        return 'ok';
+      }
+
+      if (type === 'customer.subscription.created') {
+        const eventId = String(get(data, 'data.id')).toUpperCase();
+        const planName = get(data, 'data.object.plan.nickname');
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: type,
+          eventContent: `A customer has been subscribed service: **${planName}**`,
+          tags: [],
+          source: 'stripe',
+          senderId: eventId,
+          important: true,
+          payload: data,
+        });
+        return 'ok';
+      }
+
+      if (type === 'customer.subscription.deleted') {
+        const eventId = String(get(data, 'data.id')).toUpperCase();
+        const planName = get(data, 'data.object.plan.nickname');
+
+        await createFeedEvent(workspaceId, {
+          channelId: channelId,
+          eventName: type,
+          eventContent: `A customer cancel subscription service: ${planName}`,
+          tags: [],
+          source: 'stripe',
+          senderId: eventId,
+          important: true,
+          payload: data,
+        });
+
+        return 'ok';
+      }
+
+      logUnknownIntegration('stripe', input);
+
+      return 'Not supported yet';
+    }),
   tencentCloudAlarm: publicProcedure
     .meta(
       buildFeedPublicOpenapi({
