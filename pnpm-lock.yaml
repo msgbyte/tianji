@@ -486,6 +486,9 @@ importers:
       dotenv:
         specifier: ^16.3.1
         version: 16.3.1
+      easy-currency-symbol:
+        specifier: ^1.0.1
+        version: 1.0.1
       express:
         specifier: ^4.18.2
         version: 4.18.2
@@ -6204,6 +6207,9 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
+  easy-currency-symbol@1.0.1:
+    resolution: {integrity: sha512-M8ugWXSnV5utVTJd4uLOsXqg/sv8Ca7yrDvbSy01mQ52u2XxNnoJ0+tenh3gYCvcceRRLkG/AzIVP/rdjKGuAg==}
+
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
 
@@ -10321,6 +10327,7 @@ packages:
 
   react-beautiful-dnd@13.1.1:
     resolution: {integrity: sha512-0Lvs4tq2VcrEjEgDXHjT98r+63drkKEgqyxdA7qD3mvKwga6a5SscbdLPO2IExotU1jW8L0Ksdl0Cj2AF67nPQ==}
+    deprecated: 'react-beautiful-dnd is now deprecated. Context and options: https://github.com/atlassian/react-beautiful-dnd/issues/2672'
     peerDependencies:
       react: ^16.8.5 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.5 || ^17.0.0 || ^18.0.0
@@ -20324,6 +20331,8 @@ snapshots:
   earcut@2.2.4: {}
 
   eastasianwidth@0.2.0: {}
+
+  easy-currency-symbol@1.0.1: {}
 
   ecdsa-sig-formatter@1.0.11:
     dependencies:

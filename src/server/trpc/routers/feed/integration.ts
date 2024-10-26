@@ -8,6 +8,7 @@ import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';
 import { logger } from '../../../utils/logger.js';
 import { compact, fromPairs, get, map, uniqueId } from 'lodash-es';
 import { subscribeEventBus } from '../../../ws/shared.js';
+import { currencyToSymbol } from 'easy-currency-symbol';
 
 export const feedIntegrationRouter = router({
   playground: publicProcedure
@@ -232,7 +233,7 @@ export const feedIntegrationRouter = router({
         await createFeedEvent(workspaceId, {
           channelId: channelId,
           eventName: type,
-          eventContent: `You receive a payment of ${currency} **${amount}**`,
+          eventContent: `You receive a payment of ${currencyToSymbol(currency)}**${amount}**`,
           tags: [],
           source: 'stripe',
           senderId: eventId,
@@ -252,7 +253,7 @@ export const feedIntegrationRouter = router({
         await createFeedEvent(workspaceId, {
           channelId: channelId,
           eventName: type,
-          eventContent: `A payment has been canceled of ${currency} **${amount}**`,
+          eventContent: `A payment has been canceled of ${currencyToSymbol(currency)}**${amount}**`,
           tags: [],
           source: 'stripe',
           senderId: eventId,
