@@ -1,5 +1,17 @@
 
 
+## [1.16.4](https://github.com/msgbyte/tianji/compare/v1.16.3...v1.16.4) (2024-10-27)
+
+
+### Features
+
+* add stripe feed integration ([09d0f02](https://github.com/msgbyte/tianji/commit/09d0f02d844159565e97bb64f076e0bbe218ce98))
+
+
+### Others
+
+* update currency symbols in feed ([98298c4](https://github.com/msgbyte/tianji/commit/98298c43670326b4e2300a6bbdeee3daa53f0eb3))
+
 ## [1.16.3](https://github.com/msgbyte/tianji/compare/v1.16.2...v1.16.3) (2024-10-24)
 
 
