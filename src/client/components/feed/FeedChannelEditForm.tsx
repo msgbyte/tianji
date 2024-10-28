@@ -24,9 +24,13 @@ import {
   SelectValue,
 } from '../ui/select';
 import { NotificationPicker } from '../notification/NotificationPicker';
+import { LuRefreshCcw } from 'react-icons/lu';
+import md5 from 'md5';
+import dayjs from 'dayjs';
 
 const addFormSchema = z.object({
   name: z.string(),
+  webhookSignature: z.string().optional(),
   notificationIds: z.array(z.string()).default([]),
   notifyFrequency: z.enum(['none', 'event', 'day', 'week', 'month']),
 });
@@ -73,6 +77,38 @@ export const FeedChannelEditForm: React.FC<FeedChannelEditFormProps> =
                     </FormControl>
                     <FormDescription>
                       {t('Channel Name to Display')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="webhookSignature"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel optional={true}>
+                      {t('Webhook Signature')}
+                    </FormLabel>
+                    <FormControl>
+                      <div className="flex">
+                        <Input className="rounded-r-none" {...field} />
+                        <Button
+                          className="rounded-l-none"
+                          type="button"
+                          Icon={LuRefreshCcw}
+                          onClick={() => {
+                            form.setValue(
+                              'webhookSignature',
+                              md5(dayjs().valueOf().toString())
+                            );
+                          }}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      {t('Optional, Webhook Signature for Incoming Webhook')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

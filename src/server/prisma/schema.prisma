@@ -540,12 +540,13 @@ enum FeedChannelNotifyFrequency {
 }
 
 model FeedChannel {
-  id              String                     @id @default(cuid()) @db.VarChar(30)
-  workspaceId     String                     @db.VarChar(30)
-  name            String
-  notifyFrequency FeedChannelNotifyFrequency @default(day)
-  createdAt       DateTime                   @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime                   @updatedAt @db.Timestamptz(6)
+  id               String                     @id @default(cuid()) @db.VarChar(30)
+  workspaceId      String                     @db.VarChar(30)
+  name             String
+  webhookSignature String                     @default("") @db.VarChar(100)
+  notifyFrequency  FeedChannelNotifyFrequency @default(day)
+  createdAt        DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                   @updatedAt @db.Timestamptz(6)
 
   workspace     Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   events        FeedEvent[]

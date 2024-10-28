@@ -124,6 +124,7 @@ export const feedRouter = router({
         .merge(
           FeedChannelModelSchema.pick({
             name: true,
+            webhookSignature: true,
             notifyFrequency: true,
           })
         )
@@ -137,8 +138,14 @@ export const feedRouter = router({
         .nullable()
     )
     .mutation(async ({ input }) => {
-      const { channelId, workspaceId, name, notifyFrequency, notificationIds } =
-        input;
+      const {
+        channelId,
+        workspaceId,
+        name,
+        webhookSignature,
+        notifyFrequency,
+        notificationIds,
+      } = input;
 
       const channel = await prisma.feedChannel.update({
         where: {
@@ -147,6 +154,7 @@ export const feedRouter = router({
         },
         data: {
           name,
+          webhookSignature,
           notifyFrequency,
           notifications: {
             set: notificationIds.map((id) => ({
