@@ -233,7 +233,7 @@ export const feedIntegrationRouter = router({
         await createFeedEvent(workspaceId, {
           channelId: channelId,
           eventName: type,
-          eventContent: `You receive a payment of ${currencyToSymbol(currency)}**${amount}**`,
+          eventContent: `You **receive** a payment of ${currencyToSymbol(currency)}**${Number(amount) / 100}**`,
           tags: [],
           source: 'stripe',
           senderId: eventId,
@@ -253,7 +253,7 @@ export const feedIntegrationRouter = router({
         await createFeedEvent(workspaceId, {
           channelId: channelId,
           eventName: type,
-          eventContent: `A payment has been canceled of ${currencyToSymbol(currency)}**${amount}**`,
+          eventContent: `A payment has been **canceled** of ${currencyToSymbol(currency)}**${Number(amount) / 100}**`,
           tags: [],
           source: 'stripe',
           senderId: eventId,
