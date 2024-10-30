@@ -2,6 +2,7 @@ import { AppRouterOutput, trpc } from '@/api/trpc';
 import React, { useMemo, useReducer } from 'react';
 import { bodySchema } from './schema';
 import { Empty } from 'antd';
+import { Separator } from '@/components/ui/separator';
 import { useTranslation } from '@i18next-toolkit/react';
 import { cn } from '@/utils/style';
 import {
@@ -36,12 +37,13 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
     }, [info.body]);
 
     return (
-      <div>
+      <div className="rounded-lg border border-gray-200/80 dark:border-gray-700/25">
         {body.groups.map((group) => (
-          <div key={group.key} className="mb-6">
-            <div className="mb-2 text-lg font-semibold">{group.title}</div>
-
-            <div className="flex flex-col gap-4 rounded-md border border-gray-200 p-2.5 dark:border-gray-700">
+          <div key={group.key} className="m-4 rounded-lg bg-neutral-500/15">
+            <div className="ml-4 pl-2.5 pt-2.5 text-lg font-semibold">
+              {group.title}
+            </div>
+            <div className="flex flex-col gap-2 rounded-md p-2.5">
               {group.children.length === 0 && (
                 <Empty description={t('No any monitor has been set')} />
               )}
@@ -49,12 +51,15 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
               {group.children.map((item) => {
                 if (item.type === 'monitor') {
                   return (
-                    <StatusItemMonitor
-                      key={item.key}
-                      workspaceId={props.workspaceId}
-                      monitorId={item.id}
-                      showCurrent={item.showCurrent ?? false}
-                    />
+                    <>
+                      <Separator />
+                      <StatusItemMonitor
+                        key={item.key}
+                        workspaceId={props.workspaceId}
+                        monitorId={item.id}
+                        showCurrent={item.showCurrent ?? false}
+                      />
+                    </>
                   );
                 }
 
@@ -121,7 +126,7 @@ export const StatusItemMonitor: React.FC<{
         <div>
           <span
             className={cn(
-              'inline-block min-w-[62px] rounded-full p-0.5 text-center text-white',
+              'text-bold text-bold inline-block min-w-[62px] rounded-lg p-0.5 text-center font-semibold',
               getStatusBgColorClassName(summaryStatus)
             )}
           >
