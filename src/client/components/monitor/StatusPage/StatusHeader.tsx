@@ -143,16 +143,16 @@ export const StatusPageHeader = ({ info, workspaceId }) => {
 
   const formatDate = (date) => {
     const options = {
-      month: 'short',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'UTC',
       hour12: true,
     };
     const formatted = new Date(date).toLocaleString('en-US', options);
-    const [monthDay, time] = formatted.split(',');
-    return `Last updated on ${monthDay} at${time} UTC`;
+    return `Last updated ${formatted}`;
   };
 
   return (
