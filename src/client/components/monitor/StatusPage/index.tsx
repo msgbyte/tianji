@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import { useRequest } from '../../../hooks/useRequest';
 import { ColorSchemeSwitcher } from '../../ColorSchemeSwitcher';
 import { StatusPageServices } from './Services';
+import { StatusPageHeader } from './StatusHeader';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Helmet } from 'react-helmet';
@@ -146,8 +147,14 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
             </div>
           )}
 
+          {info && (
+            <div className="my-6">
+              <StatusPageHeader info={info} workspaceId={info.workspaceId} />
+            </div>
+          )}
+
           {/* Desc */}
-          <div className="mb-4">
+          <div className="mb-6 text-center">
             <MarkdownViewer value={info?.description ?? ''} />
           </div>
 
