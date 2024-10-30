@@ -82,7 +82,7 @@ export async function getMonitorSummaryWithDay(
 
   const list = await prisma.$queryRaw<MonitorSummaryItem[]>`
     SELECT
-      DATE("createdAt") AS day,
+      TO_CHAR(DATE("createdAt"), 'YYYY-MM-DD') AS day,
       COUNT(1) AS total_count,
       SUM(CASE WHEN "value" >= 0 THEN 1 ELSE 0 END) AS up_count,
       (SUM(CASE WHEN "value" >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(1)) AS up_rate
