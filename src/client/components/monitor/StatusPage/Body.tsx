@@ -51,15 +51,14 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
               {group.children.map((item) => {
                 if (item.type === 'monitor') {
                   return (
-                    <>
+                    <React.Fragment key={item.key}>
                       <Separator />
                       <StatusItemMonitor
-                        key={item.key}
                         workspaceId={props.workspaceId}
                         monitorId={item.id}
                         showCurrent={item.showCurrent ?? false}
                       />
-                    </>
+                    </React.Fragment>
                   );
                 }
 
