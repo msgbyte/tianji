@@ -10,7 +10,7 @@ export function parseHealthStatusByPercent(
   percent: number,
   count: number
 ): HealthStatus {
-  if (percent > 95) {
+  if (percent >= 95) {
     return 'health';
   } else if (percent === 0 && count === 0) {
     return 'none';
