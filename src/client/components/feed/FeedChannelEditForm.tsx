@@ -30,7 +30,7 @@ import dayjs from 'dayjs';
 
 const addFormSchema = z.object({
   name: z.string(),
-  webhookSignature: z.string().optional(),
+  webhookSignature: z.string().default(''),
   notificationIds: z.array(z.string()).default([]),
   notifyFrequency: z.enum(['none', 'event', 'day', 'week', 'month']),
 });
@@ -49,6 +49,7 @@ export const FeedChannelEditForm: React.FC<FeedChannelEditFormProps> =
       resolver: zodResolver(addFormSchema),
       defaultValues: props.defaultValues ?? {
         name: 'New Channel',
+        webhookSignature: '',
         notificationIds: [],
         notifyFrequency: 'none',
       },
