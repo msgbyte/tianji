@@ -125,7 +125,7 @@ export const StatusItemMonitor: React.FC<{
         <div>
           <span
             className={cn(
-              'text-bold text-bold inline-block min-w-[62px] rounded-lg p-0.5 text-center font-semibold',
+              'text-white inline-block min-w-[62px] rounded-lg p-0.5 text-center font-semibold',
               getStatusBgColorClassName(summaryStatus)
             )}
           >
