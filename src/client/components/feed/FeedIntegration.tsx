@@ -8,6 +8,7 @@ import { FaStripe } from 'react-icons/fa6';
 
 export const FeedIntegration: React.FC<{
   feedId: string;
+  webhookSignature: string;
 }> = React.memo((props) => {
   const { t } = useTranslation();
 
@@ -92,7 +93,7 @@ export const FeedIntegration: React.FC<{
 
             <CodeBlock
               code={`POST ${window.location.origin}/open/feed/${props.feedId}/send
-
+${props.webhookSignature ? `\nHeader:\nX-Webhook-Signature: ${props.webhookSignature}\n` : ''}
 Body
 {
   eventName: "",

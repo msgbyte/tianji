@@ -114,7 +114,12 @@ function PageComponent() {
               {info?.id && (
                 <DialogWrapper
                   title={t('Integration')}
-                  content={<FeedIntegration feedId={info.id} />}
+                  content={
+                    <FeedIntegration
+                      feedId={info.id}
+                      webhookSignature={info.webhookSignature}
+                    />
+                  }
                 >
                   <Button variant="default" size="icon" Icon={LuWebhook} />
                 </DialogWrapper>
@@ -194,7 +199,12 @@ function PageComponent() {
           )}
           renderEmpty={() => (
             <div className="w-full overflow-hidden p-4">
-              {!isInitialLoading && <FeedApiGuide channelId={channelId} />}
+              {!isInitialLoading && (
+                <FeedApiGuide
+                  channelId={channelId}
+                  webhookSignature={info?.webhookSignature}
+                />
+              )}
             </div>
           )}
         />

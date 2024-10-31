@@ -325,8 +325,26 @@ export const feedRouter = router({
       )
     )
     .output(FeedEventModelSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { channelId, ...data } = input;
+
+      const channel = await prisma.feedChannel.findUnique({
+        where: {
+          id: channelId,
+        },
+      });
+      if (channel?.webhookSignature) {
+        const signature = ctx.req.headers['x-webhook-signature'];
+        if (!signature) {
+          throw new Error(
+            'This channel configured with webhook signature, but no signature found'
+          );
+        }
+
+        if (channel.webhookSignature !== signature) {
+          throw new Error('Invalid webhook signature');
+        }
+      }
 
       const event = await prisma.feedEvent.create({
         data: {
