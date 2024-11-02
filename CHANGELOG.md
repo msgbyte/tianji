@@ -1,5 +1,26 @@
 
 
+## [1.16.5](https://github.com/msgbyte/tianji/compare/v1.16.4...v1.16.5) (2024-11-02)
+
+
+### Features
+
+* add webhookSignature in feed channel ([6b3631e](https://github.com/msgbyte/tianji/commit/6b3631eae186b9cacf64d0ddcfbb66378e041281))
+
+
+### Bug Fixes
+
+* add key to Fragment in map for monitor items ([9949b97](https://github.com/msgbyte/tianji/commit/9949b973bd63b4ad6b5e71f7b819442f505c09a6))
+* retrieve date as string ([a8a47ed](https://github.com/msgbyte/tianji/commit/a8a47ed94dda87c3fe4cdecc0acb9a31f53f00a5))
+
+
+### Others
+
+* fix ci problem ([59b8746](https://github.com/msgbyte/tianji/commit/59b874644fd3427bc86cd2a7e948054e827de080))
+* refactor status header and add typescript and translation support ([f637ade](https://github.com/msgbyte/tianji/commit/f637ade70f230fbf472bdee84105c9b284d6b8d4))
+* update amount in stripe ([2725056](https://github.com/msgbyte/tianji/commit/272505669e450d882930cbf594dac39a879b2072))
+* update webhooks signature api guide ([266b08f](https://github.com/msgbyte/tianji/commit/266b08f2da16d0457a5a44b4a7a251d28502abc9))
+
 ## [1.16.4](https://github.com/msgbyte/tianji/compare/v1.16.3...v1.16.4) (2024-10-27)
 
 
