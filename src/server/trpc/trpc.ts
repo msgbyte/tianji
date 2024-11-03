@@ -119,7 +119,7 @@ const isSystemAdmin = isUser.unstable_pipe(async (opts) => {
 });
 
 export const systemAdminProcedure = t.procedure.use(prom).use(isSystemAdmin);
-export const workspaceProcedure = protectProedure
+export const workspaceProcedure = publicProcedure
   .input(
     z.object({
       workspaceId: z.string().cuid2(),
@@ -127,7 +127,7 @@ export const workspaceProcedure = protectProedure
   )
   .use(createWorkspacePermissionMiddleware());
 
-export const workspaceAdminProcedure = protectProedure
+export const workspaceAdminProcedure = publicProcedure
   .input(
     z.object({
       workspaceId: z.string().cuid2(),
@@ -135,7 +135,7 @@ export const workspaceAdminProcedure = protectProedure
   )
   .use(createWorkspacePermissionMiddleware([ROLES.owner, ROLES.admin]));
 
-export const workspaceOwnerProcedure = protectProedure
+export const workspaceOwnerProcedure = publicProcedure
   .input(
     z.object({
       workspaceId: z.string().cuid2(),
@@ -145,6 +145,7 @@ export const workspaceOwnerProcedure = protectProedure
 
 /**
  * Create a trpc middleware which help user check workspace permission
+ * NOTE: this middleware already include user auth, so we dont need use it under protectProedure which will trigger user auth twice.
  */
 function createWorkspacePermissionMiddleware(roles: ROLES[] = []) {
   return isUser.unstable_pipe(async (opts) => {

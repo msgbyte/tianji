@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "tsx watch --env-file=.env ./main.ts",
+    "dev:debug": "tsx --inspect-brk --env-file=.env ./main.ts",
     "build": "tsc",
     "postinstall": "pnpm db:generate",
     "check:type": "tsc --noEmit --skipLibCheck",
