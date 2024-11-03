@@ -64,9 +64,11 @@ const isUser = middleware(async (opts) => {
 
       return opts.next({
         ctx: {
-          id: user.id,
-          username: user.username,
-          role: user.role,
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+          },
         },
       });
     } else {

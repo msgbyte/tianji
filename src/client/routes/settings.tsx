@@ -40,6 +40,11 @@ function PageComponent() {
       href: '/settings/workspace',
     },
     {
+      id: 'apiKey',
+      title: t('Api Key'),
+      href: '/settings/apiKey',
+    },
+    {
       id: 'auditLog',
       title: t('Audit Log'),
       href: '/settings/auditLog',

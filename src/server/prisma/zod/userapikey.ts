@@ -5,6 +5,7 @@ import { CompleteUser, RelatedUserModelSchema } from "./index.js"
 export const UserApiKeyModelSchema = z.object({
   apiKey: z.string(),
   userId: z.string(),
+  usage: z.number().int(),
   createdAt: z.date(),
   updatedAt: z.date(),
   expiredAt: z.date().nullish(),

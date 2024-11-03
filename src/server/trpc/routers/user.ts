@@ -6,6 +6,7 @@ import {
   changeUserPassword,
   createAdminUser,
   createUser,
+  generateUserApiKey,
   getUserCount,
   getUserInfo,
 } from '../../model/user.js';
@@ -14,6 +15,8 @@ import { TRPCError } from '@trpc/server';
 import { env } from '../../utils/env.js';
 import { userInfoSchema } from '../../model/_schema/index.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
+import { prisma } from '../../model/_client.js';
+import { UserApiKeyModelSchema } from '../../prisma/zod/userapikey.js';
 
 export const userRouter = router({
   login: publicProcedure
@@ -140,5 +143,39 @@ export const userRouter = router({
     .output(userInfoSchema.nullable())
     .query(async ({ ctx }) => {
       return getUserInfo(ctx.user.id);
+    }),
+  allApiKeys: protectProedure
+    .input(z.void())
+    .output(UserApiKeyModelSchema.array())
+    .query(async ({ ctx }) => {
+      return prisma.userApiKey.findMany({
+        where: {
+          userId: ctx.user.id,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    }),
+  generateApiKey: protectProedure
+    .input(z.void())
+    .output(z.string())
+    .mutation(async ({ ctx }) => {
+      return generateUserApiKey(ctx.user.id);
+    }),
+  deleteApiKey: protectProedure
+    .input(
+      z.object({
+        apiKey: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input, ctx }) => {
+      await prisma.userApiKey.delete({
+        where: {
+          userId: ctx.user.id,
+          apiKey: input.apiKey,
+        },
+      });
     }),
 });

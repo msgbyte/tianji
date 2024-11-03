@@ -35,6 +35,7 @@ import { Route as SettingsUsageImport } from './routes/settings/usage'
 import { Route as SettingsProfileImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsImport } from './routes/settings/notifications'
 import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
+import { Route as SettingsApiKeyImport } from './routes/settings/apiKey'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
@@ -168,6 +169,11 @@ const SettingsNotificationsRoute = SettingsNotificationsImport.update({
 
 const SettingsAuditLogRoute = SettingsAuditLogImport.update({
   path: '/auditLog',
+  getParentRoute: () => SettingsRoute,
+} as any)
+
+const SettingsApiKeyRoute = SettingsApiKeyImport.update({
+  path: '/apiKey',
   getParentRoute: () => SettingsRoute,
 } as any)
 
@@ -312,6 +318,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageAddImport
       parentRoute: typeof PageImport
     }
+    '/settings/apiKey': {
+      preLoaderRoute: typeof SettingsApiKeyImport
+      parentRoute: typeof SettingsImport
+    }
     '/settings/auditLog': {
       preLoaderRoute: typeof SettingsAuditLogImport
       parentRoute: typeof SettingsImport
@@ -411,6 +421,7 @@ export const routeTree = rootRoute.addChildren([
   RegisterRoute,
   ServerRoute,
   SettingsRoute.addChildren([
+    SettingsApiKeyRoute,
     SettingsAuditLogRoute,
     SettingsNotificationsRoute,
     SettingsProfileRoute,
