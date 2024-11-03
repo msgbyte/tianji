@@ -34,6 +34,17 @@ model User {
   accounts   Account[]
   sessions   Session[]
   workspaces WorkspacesOnUsers[]
+  apiKeys    UserApiKey[]
+}
+
+model UserApiKey {
+  apiKey    String    @id @unique @db.VarChar(128)
+  userId    String
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
+  expiredAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {

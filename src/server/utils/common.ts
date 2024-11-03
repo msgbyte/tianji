@@ -48,6 +48,13 @@ export function hashUuid(...args: string[]) {
   return v5(hash(...args), v5.DNS);
 }
 
+export function sha512(input: string) {
+  return hash(input);
+}
+
+export function sha256(input: string) {
+  return crypto.createHash('sha256').update(input).digest('hex');
+}
 /**
  * generate hash with md5
  * which use in unimportant scene

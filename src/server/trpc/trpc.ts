@@ -9,6 +9,7 @@ import { getSession } from '@auth/express';
 import { authConfig } from '../model/auth.js';
 import { get } from 'lodash-es';
 import { promTrpcRequest } from '../utils/prometheus/client.js';
+import { verifyUserApiKey } from '../model/user.js';
 
 export async function createContext({ req }: { req: Request }) {
   const authorization = req.headers['authorization'] ?? '';
@@ -57,16 +58,30 @@ const isUser = middleware(async (opts) => {
   const token = opts.ctx.token;
 
   if (token) {
-    try {
-      const user = jwtVerify(token);
+    if (token.startsWith('sk_')) {
+      // auth with api key
+      const user = await verifyUserApiKey(token);
 
       return opts.next({
         ctx: {
-          user,
+          id: user.id,
+          username: user.username,
+          role: user.role,
         },
       });
-    } catch (err) {
-      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'TokenInvalid' });
+    } else {
+      // auth with jwt
+      try {
+        const user = jwtVerify(token);
+
+        return opts.next({
+          ctx: {
+            user,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'TokenInvalid' });
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { md5 } from '../common.js';
+import { md5, sha256 } from '../common.js';
 
 describe('md5', () => {
   test('should return the correct md5 hash', () => {
@@ -19,5 +19,17 @@ describe('md5', () => {
     const result2 = md5(input2);
 
     expect(result1).not.toEqual(result2);
+  });
+});
+
+describe('sha256', () => {
+  test('should return the correct sha256 hash', () => {
+    const input = 'test';
+    const expectedHash =
+      '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08';
+
+    const result = sha256(input);
+
+    expect(result).toEqual(expectedHash);
   });
 });

@@ -5,7 +5,7 @@ import { jwtVerify } from '../middleware/auth.js';
 import { TRPCError } from '@trpc/server';
 import { Prisma } from '@prisma/client';
 import { AdapterUser } from '@auth/core/adapters';
-import { md5 } from '../utils/common.js';
+import { md5, sha256 } from '../utils/common.js';
 import { logger } from '../utils/logger.js';
 import { promUserCounter } from '../utils/prometheus/client.js';
 
@@ -340,4 +340,46 @@ export async function leaveWorkspace(userId: string, workspaceId: string) {
     logger.error(err);
     throw new Error('Leave Workspace Failed.');
   }
+}
+
+/**
+ * Generate User Api Key, for user to call api
+ */
+export async function generateUserApiKey(userId: string, expiredAt?: Date) {
+  const apiKey = `sk_${sha256(`${userId}.${Date.now()}`)}`;
+
+  const result = await prisma.userApiKey.create({
+    data: {
+      apiKey,
+      userId,
+      expiredAt,
+    },
+  });
+
+  return result.apiKey;
+}
+
+/**
+ * Verify User Api Key
+ */
+export async function verifyUserApiKey(apiKey: string) {
+  const result = await prisma.userApiKey.findUnique({
+    where: {
+      apiKey,
+    },
+    select: {
+      user: true,
+      expiredAt: true,
+    },
+  });
+
+  if (result?.expiredAt && result.expiredAt.valueOf() < Date.now()) {
+    throw new Error('Api Key has been expired.');
+  }
+
+  if (!result) {
+    throw new Error('Api Key not found');
+  }
+
+  return result.user;
 }

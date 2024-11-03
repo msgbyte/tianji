@@ -5,6 +5,7 @@ import { socketEventBus } from './shared.js';
 import { isCuid } from '../utils/common.js';
 import { logger } from '../utils/logger.js';
 import { getAuthSession, UserAuthPayload } from '../model/auth.js';
+import { verifyUserApiKey } from '../model/user.js';
 
 export function initSocketio(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
@@ -28,12 +29,23 @@ export function initSocketio(httpServer: HTTPServer) {
         let user: UserAuthPayload;
 
         if (token) {
-          user = jwtVerify(token);
-          logger.info(
-            '[WebSocket] Authenticated via JWT:',
-            user.id,
-            user.username
-          );
+          if (token.startsWith('sk_')) {
+            // auth with api key
+            const _user = await verifyUserApiKey(token);
+
+            user = {
+              id: _user.id,
+              username: _user.username,
+              role: _user.role,
+            };
+          } else {
+            user = jwtVerify(token);
+            logger.info(
+              '[WebSocket] Authenticated via JWT:',
+              user.id,
+              user.username
+            );
+          }
         } else {
           const session = await getAuthSession(
             socket.request,

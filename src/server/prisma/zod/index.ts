@@ -1,4 +1,5 @@
 export * from "./user.js"
+export * from "./userapikey.js"
 export * from "./account.js"
 export * from "./session.js"
 export * from "./verificationtoken.js"
