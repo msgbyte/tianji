@@ -90,7 +90,7 @@ export async function getMonitorSummaryWithDay(
       "MonitorData"
     WHERE
       "monitorId" = ${monitorId} AND
-      "createdAt" >= CURRENT_DATE - INTERVAL '${beforeDay} days'
+      "createdAt" >= CURRENT_DATE - INTERVAL '1 day' * ${beforeDay}
     GROUP BY
       DATE("createdAt")
     ORDER BY
