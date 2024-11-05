@@ -24,7 +24,11 @@ function PageComponent() {
     []
   );
 
-  const { data } = trpc.billing.usage.useQuery({
+  const { data: serviceCountData } = trpc.workspace.getServiceCount.useQuery({
+    workspaceId,
+  });
+
+  const { data: billingUsageData } = trpc.billing.usage.useQuery({
     workspaceId,
     startAt: startDate.valueOf(),
     endAt: endDate.valueOf(),
@@ -47,10 +51,45 @@ function PageComponent() {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <Card className="flex-1">
                 <CardHeader className="text-muted-foreground">
+                  {t('Website Count')}
+                </CardHeader>
+                <CardContent>{serviceCountData?.website ?? 0}</CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
+                  {t('Monitor Count')}
+                </CardHeader>
+                <CardContent>{serviceCountData?.monitor ?? 0}</CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
+                  {t('Survey Count')}
+                </CardHeader>
+                <CardContent>{serviceCountData?.survey ?? 0}</CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
+                  {t('Page Count')}
+                </CardHeader>
+                <CardContent>{serviceCountData?.page ?? 0}</CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
+                  {t('Feed Channel Count')}
+                </CardHeader>
+                <CardContent>{serviceCountData?.feed ?? 0}</CardContent>
+              </Card>
+
+              <Card className="flex-1">
+                <CardHeader className="text-muted-foreground">
                   {t('Website Accepted Count')}
                 </CardHeader>
                 <CardContent>
-                  {formatNumber(data?.websiteAcceptedCount ?? 0)}
+                  {formatNumber(billingUsageData?.websiteAcceptedCount ?? 0)}
                 </CardContent>
               </Card>
 
@@ -59,7 +98,7 @@ function PageComponent() {
                   {t('Website Event Count')}
                 </CardHeader>
                 <CardContent>
-                  {formatNumber(data?.websiteEventCount ?? 0)}
+                  {formatNumber(billingUsageData?.websiteEventCount ?? 0)}
                 </CardContent>
               </Card>
 
@@ -68,7 +107,7 @@ function PageComponent() {
                   {t('Monitor Execution Count')}
                 </CardHeader>
                 <CardContent>
-                  {formatNumber(data?.monitorExecutionCount ?? 0)}
+                  {formatNumber(billingUsageData?.monitorExecutionCount ?? 0)}
                 </CardContent>
               </Card>
 
@@ -77,7 +116,7 @@ function PageComponent() {
                   {t('Survey Count')}
                 </CardHeader>
                 <CardContent>
-                  {formatNumber(data?.surveyCount ?? 0)}
+                  {formatNumber(billingUsageData?.surveyCount ?? 0)}
                 </CardContent>
               </Card>
 
@@ -86,7 +125,7 @@ function PageComponent() {
                   {t('Feed Event Count')}
                 </CardHeader>
                 <CardContent>
-                  {formatNumber(data?.feedEventCount ?? 0)}
+                  {formatNumber(billingUsageData?.feedEventCount ?? 0)}
                 </CardContent>
               </Card>
             </div>
