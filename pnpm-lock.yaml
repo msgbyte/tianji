@@ -543,6 +543,9 @@ importers:
       nodemailer:
         specifier: ^6.9.8
         version: 6.9.8
+      p-map:
+        specifier: 4.0.0
+        version: 4.0.0
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -661,9 +664,6 @@ importers:
       execa:
         specifier: ^5.1.1
         version: 5.1.1
-      p-map:
-        specifier: 4.0.0
-        version: 4.0.0
       prisma:
         specifier: 5.14.0
         version: 5.14.0
@@ -2340,10 +2340,6 @@ packages:
   '@lemonsqueezy/lemonsqueezy.js@3.3.1':
     resolution: {integrity: sha512-gM/FdNsK3BlrD6JRrhmiyqBXQsCpzSUdKSoZwJMQfXqfqcK321og+uMssc6HYcygUMrGvPnNJyJ1RqZPFDrgtg==}
     engines: {node: '>=20'}
-
-  '@ljharb/resumer@0.0.1':
-    resolution: {integrity: sha512-skQiAOrCfO7vRTq53cxznMpks7wS1va95UCidALlOVWqvBAzwPVErwizDwoMqNVMEn1mDq0utxZd02eIrvF1lw==}
-    engines: {node: '>= 0.4'}
 
   '@ljharb/through@2.3.11':
     resolution: {integrity: sha512-ccfcIDlogiXNq5KcbAwbaO7lMh3Tm1i3khMPYpxlK8hH/W53zN81KM9coerRLOnTGu3nfXIniAmQbRI9OxbC0w==}
@@ -15297,10 +15293,6 @@ snapshots:
   '@leichtgewicht/ip-codec@2.0.5': {}
 
   '@lemonsqueezy/lemonsqueezy.js@3.3.1': {}
-
-  '@ljharb/resumer@0.0.1':
-    dependencies:
-      '@ljharb/through': 2.3.11
 
   '@ljharb/through@2.3.11':
     dependencies:

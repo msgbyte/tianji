@@ -9,6 +9,7 @@ import { token } from '../model/notification/token/index.js';
 import pMap from 'p-map';
 import { sendFeedEventsNotify } from '../model/feed/event.js';
 import { get } from 'lodash-es';
+import { checkWorkspaceUsage } from '../model/billing/cronjob.js';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -28,6 +29,10 @@ export function initCronjob() {
         dailyHTTPCertCheckNotify().catch(logger.error),
         checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
       ]);
+
+      if (env.billing.enable) {
+        await checkWorkspaceUsage();
+      }
 
       logger.info('Daily cronjob completed');
     } catch (err) {
@@ -386,6 +391,9 @@ async function dailyHTTPCertCheckNotify() {
   );
 }
 
+/**
+ * Check feed events notify
+ */
 async function checkFeedEventsNotify(
   notifyFrequency: FeedChannelNotifyFrequency
 ) {

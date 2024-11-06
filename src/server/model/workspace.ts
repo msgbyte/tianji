@@ -72,3 +72,47 @@ export async function getWorkspaceWebsiteDateRange(websiteId: string) {
     min: res._min.createdAt,
   };
 }
+
+export async function getWorkspaceServiceCount(workspaceId: string) {
+  const [website, monitor, telemetry, page, survey, feed] = await Promise.all([
+    prisma.website.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.monitor.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.telemetry.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.monitorStatusPage.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.survey.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.feedChannel.count({
+      where: {
+        workspaceId,
+      },
+    }),
+  ]);
+
+  return {
+    website,
+    monitor,
+    telemetry,
+    page,
+    survey,
+    feed,
+  };
+}

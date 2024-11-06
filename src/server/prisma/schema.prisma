@@ -96,6 +96,7 @@ model Workspace {
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
   settings        Json     @default("{}")
+  paused          Boolean  @default(false) // if workspace over billing, its will marked as pause and not receive and input.
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 

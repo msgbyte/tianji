@@ -16,6 +16,7 @@ import {
   SubscriptionTierType,
 } from '../../model/billing/index.js';
 import { LemonSqueezySubscriptionModelSchema } from '../../prisma/zod/lemonsqueezysubscription.js';
+import { getWorkspaceUsage } from '../../model/billing/workspace.js';
 
 export const billingRouter = router({
   usage: workspaceProcedure
@@ -44,30 +45,7 @@ export const billingRouter = router({
     .query(async ({ input }) => {
       const { workspaceId, startAt, endAt } = input;
 
-      const res = await prisma.workspaceDailyUsage.aggregate({
-        where: {
-          workspaceId,
-          date: {
-            gte: new Date(startAt),
-            lte: new Date(endAt),
-          },
-        },
-        _sum: {
-          websiteAcceptedCount: true,
-          websiteEventCount: true,
-          monitorExecutionCount: true,
-          surveyCount: true,
-          feedEventCount: true,
-        },
-      });
-
-      return {
-        websiteAcceptedCount: res._sum.websiteAcceptedCount ?? 0,
-        websiteEventCount: res._sum.websiteEventCount ?? 0,
-        monitorExecutionCount: res._sum.monitorExecutionCount ?? 0,
-        surveyCount: res._sum.surveyCount ?? 0,
-        feedEventCount: res._sum.feedEventCount ?? 0,
-      };
+      return getWorkspaceUsage(workspaceId, startAt, endAt);
     }),
   currentSubscription: workspaceProcedure
     .meta(

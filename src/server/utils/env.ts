@@ -47,6 +47,7 @@ export const env = {
     },
   },
   billing: {
+    enable: process.env.ENABLE_BILLING,
     lemonSqueezy: {
       signatureSecret: process.env.LEMON_SQUEEZY_SIGNATURE_SECRET ?? '',
       apiKey: process.env.LEMON_SQUEEZY_API_KEY ?? '',

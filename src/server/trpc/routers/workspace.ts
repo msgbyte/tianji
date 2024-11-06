@@ -28,6 +28,7 @@ import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers
 import { monitorManager } from '../../model/monitor/index.js';
 import { get, merge } from 'lodash-es';
 import { promWorkspaceCounter } from '../../utils/prometheus/client.js';
+import { getWorkspaceServiceCount } from '../../model/workspace.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -382,39 +383,8 @@ export const workspaceRouter = router({
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
-      const [website, monitor, telemetry, page, survey, feed] =
-        await Promise.all([
-          prisma.website.count({
-            where: {
-              workspaceId,
-            },
-          }),
-          prisma.monitor.count({
-            where: {
-              workspaceId,
-            },
-          }),
-          prisma.telemetry.count({
-            where: {
-              workspaceId,
-            },
-          }),
-          prisma.monitorStatusPage.count({
-            where: {
-              workspaceId,
-            },
-          }),
-          prisma.survey.count({
-            where: {
-              workspaceId,
-            },
-          }),
-          prisma.feedChannel.count({
-            where: {
-              workspaceId,
-            },
-          }),
-        ]);
+      const { website, monitor, telemetry, page, survey, feed } =
+        await getWorkspaceServiceCount(workspaceId);
 
       const server = getServerCount(workspaceId);
 

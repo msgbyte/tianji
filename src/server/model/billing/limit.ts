@@ -1,4 +1,4 @@
-import { TierType } from './types.js';
+import { WorkspaceSubscriptionTier } from '@prisma/client';
 
 interface TierLimit {
   maxWebsiteCount: number;
@@ -12,8 +12,8 @@ interface TierLimit {
 /**
  * Limit, Every month
  */
-export function getTierLimit(tier: TierType): TierLimit {
-  if (tier === 'free') {
+export function getTierLimit(tier: WorkspaceSubscriptionTier): TierLimit {
+  if (tier === WorkspaceSubscriptionTier.FREE) {
     return {
       maxWebsiteCount: 3,
       maxWebsiteEventCount: 100_000,
@@ -24,7 +24,7 @@ export function getTierLimit(tier: TierType): TierLimit {
     };
   }
 
-  if (tier === 'pro') {
+  if (tier === WorkspaceSubscriptionTier.PRO) {
     return {
       maxWebsiteCount: 10,
       maxWebsiteEventCount: 1_000_000,
@@ -35,7 +35,7 @@ export function getTierLimit(tier: TierType): TierLimit {
     };
   }
 
-  if (tier === 'team') {
+  if (tier === WorkspaceSubscriptionTier.TEAM) {
     return {
       maxWebsiteCount: -1,
       maxWebsiteEventCount: 20_000_000,
@@ -46,6 +46,7 @@ export function getTierLimit(tier: TierType): TierLimit {
     };
   }
 
+  // Unlimited
   return {
     maxWebsiteCount: -1,
     maxWebsiteEventCount: -1,
