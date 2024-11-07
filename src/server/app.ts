@@ -2,7 +2,6 @@ import express from 'express';
 import 'express-async-errors';
 import compression from 'compression';
 import swaggerUI from 'swagger-ui-express';
-import passport from 'passport';
 import morgan from 'morgan';
 import { websiteRouter } from './router/website.js';
 import { telemetryRouter } from './router/telemetry.js';
@@ -38,7 +37,6 @@ app.use(
     },
   })
 );
-app.use(passport.initialize());
 app.use(morgan('tiny'));
 app.use(cors());
 

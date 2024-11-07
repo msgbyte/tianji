@@ -1,7 +1,3 @@
-import { findUser } from '../model/user.js';
-import passport from 'passport';
-import { Handler } from 'express';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 import { jwtSecret } from '../utils/common.js';
 
@@ -13,38 +9,6 @@ export interface JWTPayload {
   username: string;
   role: string;
 }
-
-passport.use(
-  new JwtStrategy(
-    {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: jwtSecret,
-      issuer: jwtIssuer,
-      audience: jwtAudience,
-    },
-    function (jwt_payload, done) {
-      findUser(jwt_payload.id)
-        .then((user) => {
-          if (user) {
-            done(null, user);
-          } else {
-            done(null, false);
-          }
-        })
-        .catch((err) => {
-          done(err);
-        });
-    }
-  )
-);
-
-passport.serializeUser(function (user: any, cb) {
-  cb(null, { id: user.id, username: user.username });
-});
-
-passport.deserializeUser(function (user: any, cb) {
-  cb(null, user);
-});
 
 export function jwtSign(payload: JWTPayload): string {
   const token = jwt.sign(
@@ -71,10 +35,4 @@ export function jwtVerify(token: string): JWTPayload {
   });
 
   return payload as JWTPayload;
-}
-
-export function auth(): Handler {
-  return passport.authenticate('jwt', {
-    session: false,
-  });
 }
