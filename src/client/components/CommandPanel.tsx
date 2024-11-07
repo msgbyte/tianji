@@ -14,6 +14,8 @@ import {
   LuAreaChart,
   LuBellDot,
   LuFilePieChart,
+  LuKanbanSquare,
+  LuKeyRound,
   LuMonitorDot,
   LuSearch,
   LuServer,
@@ -170,6 +172,22 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
               >
                 <LuBellDot className="mr-2 h-4 w-4" />
                 <span>{t('Notifications')}</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={handleJump({
+                  to: '/settings/apiKey',
+                })}
+              >
+                <LuKeyRound className="mr-2 h-4 w-4" />
+                <span>{t('Api Key')}</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={handleJump({
+                  to: '/settings/usage',
+                })}
+              >
+                <LuKanbanSquare className="mr-2 h-4 w-4" />
+                <span>{t('Usage')}</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>
