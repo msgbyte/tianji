@@ -10,6 +10,7 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import dayjs from 'dayjs';
 import { formatNumber } from '@/utils/common';
+import { UsageCard } from '@/components/UsageCard';
 
 export const Route = createFileRoute('/settings/usage')({
   beforeLoad: routeAuthBeforeLoad,
@@ -34,6 +35,10 @@ function PageComponent() {
     endAt: endDate.valueOf(),
   });
 
+  const { data: limit } = trpc.billing.limit.useQuery({
+    workspaceId,
+  });
+
   return (
     <CommonWrapper header={<CommonHeader title={t('Usage')} />}>
       <ScrollArea className="h-full overflow-hidden p-4">
@@ -49,85 +54,61 @@ function PageComponent() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Website Count')}
-                </CardHeader>
-                <CardContent>{serviceCountData?.website ?? 0}</CardContent>
-              </Card>
+              <UsageCard
+                title={t('Website Count')}
+                current={serviceCountData?.website ?? 0}
+                limit={limit?.maxWebsiteCount}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Monitor Count')}
-                </CardHeader>
-                <CardContent>{serviceCountData?.monitor ?? 0}</CardContent>
-              </Card>
+              <UsageCard
+                title={t('Monitor Count')}
+                current={serviceCountData?.monitor ?? 0}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Survey Count')}
-                </CardHeader>
-                <CardContent>{serviceCountData?.survey ?? 0}</CardContent>
-              </Card>
+              <UsageCard
+                title={t('Survey Count')}
+                current={serviceCountData?.survey ?? 0}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Page Count')}
-                </CardHeader>
-                <CardContent>{serviceCountData?.page ?? 0}</CardContent>
-              </Card>
+              <UsageCard
+                title={t('Page Count')}
+                current={serviceCountData?.page ?? 0}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Feed Channel Count')}
-                </CardHeader>
-                <CardContent>{serviceCountData?.feed ?? 0}</CardContent>
-              </Card>
+              <UsageCard
+                title={t('Feed Channel Count')}
+                current={serviceCountData?.feed ?? 0}
+                limit={limit?.maxFeedChannelCount}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Website Accepted Count')}
-                </CardHeader>
-                <CardContent>
-                  {formatNumber(billingUsageData?.websiteAcceptedCount ?? 0)}
-                </CardContent>
-              </Card>
+              <UsageCard
+                title={t('Website Accepted Count')}
+                current={billingUsageData?.websiteAcceptedCount ?? 0}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Website Event Count')}
-                </CardHeader>
-                <CardContent>
-                  {formatNumber(billingUsageData?.websiteEventCount ?? 0)}
-                </CardContent>
-              </Card>
+              <UsageCard
+                title={t('Website Event Count')}
+                current={billingUsageData?.websiteEventCount ?? 0}
+                limit={limit?.maxWebsiteEventCount}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Monitor Execution Count')}
-                </CardHeader>
-                <CardContent>
-                  {formatNumber(billingUsageData?.monitorExecutionCount ?? 0)}
-                </CardContent>
-              </Card>
+              <UsageCard
+                title={t('Monitor Execution Count')}
+                current={billingUsageData?.monitorExecutionCount ?? 0}
+                limit={limit?.maxMonitorExecutionCount}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Survey Count')}
-                </CardHeader>
-                <CardContent>
-                  {formatNumber(billingUsageData?.surveyCount ?? 0)}
-                </CardContent>
-              </Card>
+              <UsageCard
+                title={t('Survey Count')}
+                current={billingUsageData?.surveyCount ?? 0}
+                limit={limit?.maxSurveyCount}
+              />
 
-              <Card className="flex-1">
-                <CardHeader className="text-muted-foreground">
-                  {t('Feed Event Count')}
-                </CardHeader>
-                <CardContent>
-                  {formatNumber(billingUsageData?.feedEventCount ?? 0)}
-                </CardContent>
-              </Card>
+              <UsageCard
+                title={t('Feed Event Count')}
+                current={billingUsageData?.feedEventCount ?? 0}
+                limit={limit?.maxFeedEventCount}
+              />
             </div>
           </CardContent>
         </Card>

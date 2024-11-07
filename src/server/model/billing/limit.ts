@@ -1,13 +1,16 @@
 import { WorkspaceSubscriptionTier } from '@prisma/client';
+import { z } from 'zod';
 
-interface TierLimit {
-  maxWebsiteCount: number;
-  maxWebsiteEventCount: number;
-  maxMonitorExecutionCount: number;
-  maxSurveyCount: number;
-  maxFeedChannelCount: number;
-  maxFeedEventCount: number;
-}
+export const TierLimitSchema = z.object({
+  maxWebsiteCount: z.number(),
+  maxWebsiteEventCount: z.number(),
+  maxMonitorExecutionCount: z.number(),
+  maxSurveyCount: z.number(),
+  maxFeedChannelCount: z.number(),
+  maxFeedEventCount: z.number(),
+});
+
+type TierLimit = z.infer<typeof TierLimitSchema>;
 
 /**
  * Limit, Every month
