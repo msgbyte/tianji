@@ -21,6 +21,7 @@ import {
   getWorkspaceUsage,
 } from '../../model/billing/workspace.js';
 import { getTierLimit, TierLimitSchema } from '../../model/billing/limit.js';
+import { WorkspaceSubscriptionTier } from '@prisma/client';
 
 export const billingRouter = router({
   usage: workspaceProcedure
@@ -66,6 +67,20 @@ export const billingRouter = router({
 
       return getTierLimit(tier);
     }),
+  currentTier: workspaceProcedure
+    .meta(
+      buildBillingOpenapi({
+        method: 'GET',
+        path: '/currentTier',
+        description: 'get workspace current tier',
+      })
+    )
+    .output(z.nativeEnum(WorkspaceSubscriptionTier))
+    .query(({ input }) => {
+      const { workspaceId } = input;
+
+      return getWorkspaceSubscription(workspaceId);
+    }),
   currentSubscription: workspaceProcedure
     .meta(
       buildBillingOpenapi({
@@ -99,7 +114,7 @@ export const billingRouter = router({
   checkout: workspaceOwnerProcedure
     .input(
       z.object({
-        tier: z.string(),
+        tier: z.enum(['free', 'pro', 'team']),
         redirectUrl: z.string().optional(),
       })
     )
@@ -114,7 +129,7 @@ export const billingRouter = router({
       const checkout = await createCheckoutBilling(
         workspaceId,
         userId,
-        input.tier as SubscriptionTierType,
+        input.tier,
         redirectUrl
       );
 

@@ -24,9 +24,10 @@ export const globalRouter = router({
         disableAnonymousTelemetry: z.boolean(),
         customTrackerScriptName: z.string().optional(),
         authProvider: z.array(z.string()),
+        enableBilling: z.boolean(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async () => {
       return {
         allowRegister: env.allowRegister,
         websiteId: env.websiteId,
@@ -36,6 +37,7 @@ export const globalRouter = router({
         disableAnonymousTelemetry: env.disableAnonymousTelemetry,
         customTrackerScriptName: env.customTrackerScriptName,
         authProvider: env.auth.provider,
+        enableBilling: env.billing.enable,
       };
     }),
 });

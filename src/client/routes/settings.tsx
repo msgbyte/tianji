@@ -2,6 +2,7 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { CommonList } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Layout } from '@/components/layout';
+import { useGlobalConfig } from '@/hooks/useConfig';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
@@ -9,6 +10,7 @@ import {
   useNavigate,
   useRouterState,
 } from '@tanstack/react-router';
+import { compact } from 'lodash-es';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/settings')({
@@ -22,8 +24,9 @@ function PageComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const { enableBilling } = useGlobalConfig();
 
-  const items = [
+  const items = compact([
     {
       id: 'profile',
       title: t('Profile'),
@@ -54,7 +57,12 @@ function PageComponent() {
       title: t('Usage'),
       href: '/settings/usage',
     },
-  ];
+    enableBilling && {
+      id: 'billing',
+      title: t('Billing'),
+      href: '/settings/billing',
+    },
+  ]);
 
   useEffect(() => {
     if (pathname === Route.fullPath) {

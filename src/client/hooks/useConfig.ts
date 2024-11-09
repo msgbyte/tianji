@@ -22,6 +22,9 @@ export function useGlobalConfig(): AppRouterOutput['global']['config'] {
     {
       staleTime: 1000 * 60 * 60 * 1, // 1 hour
       onSuccess(data) {
+        /**
+         * Call anonymous telemetry if not disabled
+         */
         if (data.disableAnonymousTelemetry !== true) {
           callAnonymousTelemetry();
         }
