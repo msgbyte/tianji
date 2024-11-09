@@ -205,11 +205,6 @@ const config: Config = {
       defer: true,
       'data-website-id': 'clopxgjr6050tqn5dzxo7pjac',
     },
-    {
-      src: 'https://plausible.io/js/script.outbound-links.js',
-      defer: true,
-      'data-domain': 'msgbyte.com',
-    },
   ],
 };
 
