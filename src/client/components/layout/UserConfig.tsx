@@ -23,7 +23,7 @@ import {
   useUserInfo,
   useUserStore,
 } from '@/store/user';
-import { languages } from '@/utils/constants';
+import { languages } from '@/utils/i18n';
 import { useTranslation, setLanguage } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { version } from '@/utils/env';

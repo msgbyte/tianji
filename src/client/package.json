@@ -23,7 +23,7 @@
     "@bytemd/plugin-gfm": "^1.21.0",
     "@bytemd/react": "^1.21.0",
     "@hookform/resolvers": "^3.3.4",
-    "@i18next-toolkit/react": "^1.1.0",
+    "@i18next-toolkit/react": "2.0.0-rc.5",
     "@loadable/component": "^5.16.3",
     "@monaco-editor/react": "^4.6.0",
     "@radix-ui/react-alert-dialog": "^1.0.5",

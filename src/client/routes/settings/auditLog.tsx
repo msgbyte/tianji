@@ -2,8 +2,6 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Empty, List } from 'antd';
 import { useMemo, useRef } from 'react';
 import {
   defaultErrorHandler,

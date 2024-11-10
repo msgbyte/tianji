@@ -1,3 +1,5 @@
+import { setupI18nInstance } from '@i18next-toolkit/react';
+
 export const languages = [
   {
     label: 'English',
@@ -5,31 +7,36 @@ export const languages = [
   },
   {
     label: 'Deutsch',
-    key: 'de',
+    key: 'de-DE',
   },
   {
     label: 'Français',
-    key: 'fr',
+    key: 'fr-FR',
   },
   {
     label: '日本語',
-    key: 'jp',
+    key: 'ja-JP',
   },
   {
     label: 'Polski',
-    key: 'pl',
+    key: 'pl-PL',
   },
   {
     label: 'Português',
-    key: 'pt',
+    key: 'pt-PT',
   },
   {
     label: 'Русский',
-    key: 'ru',
+    key: 'ru-RU',
   },
-
   {
     label: '简体中文',
-    key: 'zh',
+    key: 'zh-CN',
   },
 ];
+
+export function initI18N() {
+  setupI18nInstance({
+    supportedLngs: languages.map((l) => l.key),
+  });
+}
