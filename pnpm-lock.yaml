@@ -135,8 +135,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4(react-hook-form@7.51.1(react@18.2.0))
       '@i18next-toolkit/react':
-        specifier: 2.0.0-rc.5
-        version: 2.0.0-rc.5(@types/react@18.2.78)(buffer@6.0.3)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: 2.0.0
+        version: 2.0.0(@types/react@18.2.78)(buffer@6.0.3)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@loadable/component':
         specifier: ^5.16.3
         version: 5.16.3(react@18.2.0)
@@ -2257,8 +2257,8 @@ packages:
       '@types/react': ^18.2.55
       react: ^18.2.0
 
-  '@i18next-toolkit/react@2.0.0-rc.5':
-    resolution: {integrity: sha512-ZiQaLwS3jnYgFrotDTPbcF74Wbs0JNw0DDouuY+qNegUt5QxLBf/sCymQsglt9C9u2KOU+2CjS3ZP5NWlRknOg==}
+  '@i18next-toolkit/react@2.0.0':
+    resolution: {integrity: sha512-0D5ZOqANJDDP0JPM9nrRme0TM8VXtM6Mhd1TH56kj4PbDTQiMikxqg4Gw90mTPWaBlNha6gXrcduvbN74jwjHg==}
     peerDependencies:
       '@types/react': ^18.2.55
       react: ^18.2.0
@@ -15155,7 +15155,7 @@ snapshots:
       - react-dom
       - react-native
 
-  '@i18next-toolkit/react@2.0.0-rc.5(@types/react@18.2.78)(buffer@6.0.3)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@i18next-toolkit/react@2.0.0(@types/react@18.2.78)(buffer@6.0.3)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@i18next-toolkit/react-core': 1.1.0(@types/react@18.2.78)(buffer@6.0.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@types/react': 18.2.78
