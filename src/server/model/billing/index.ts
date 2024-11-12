@@ -91,7 +91,7 @@ export async function createCheckoutBilling(
     },
   });
 
-  if (subscription) {
+  if (subscription && subscription.status !== 'cancelled') {
     throw new Error('This workspace already has a subscription');
   }
 

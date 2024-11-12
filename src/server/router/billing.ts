@@ -9,6 +9,7 @@ import {
 } from '../model/billing/index.js';
 import { prisma } from '../model/_client.js';
 import dayjs from 'dayjs';
+import { WorkspaceSubscriptionTier } from '@prisma/client';
 
 export const billingRouter = Router();
 
@@ -66,6 +67,7 @@ billingRouter.post(
           renewsAt,
         },
         update: {
+          subscriptionId,
           storeId,
           productId,
           variantId,
@@ -76,12 +78,13 @@ billingRouter.post(
         },
         where: {
           workspaceId,
-          subscriptionId,
         },
       });
       await updateWorkspaceSubscription(
         workspaceId,
-        getTierEnumByVariantId(variantId)
+        status === 'cancelled'
+          ? WorkspaceSubscriptionTier.FREE
+          : getTierEnumByVariantId(variantId)
       );
     }
 
