@@ -88,7 +88,9 @@ export const SortableContext = <T extends SortableItem>(
   });
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>{children}</DragDropContext>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <>{children}</>
+    </DragDropContext>
   );
 };
 SortableContext.displayName = 'SortableGroup';

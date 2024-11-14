@@ -1,6 +1,7 @@
 import { Handler } from 'express';
 import { getWorkspaceUser } from '../model/workspace.js';
 import { ROLES } from '@tianji/shared';
+import { get } from 'lodash-es';
 
 export function workspacePermission(roles: ROLES[] = []): Handler {
   return async (req, res, next) => {
@@ -11,8 +12,7 @@ export function workspacePermission(roles: ROLES[] = []): Handler {
       throw new Error('Cannot find workspace id');
     }
 
-    const userId = (req.user as any).id;
-
+    const userId = get(req, 'user.id');
     if (!userId) {
       throw new Error('This middleware should be use after auth()');
     }
