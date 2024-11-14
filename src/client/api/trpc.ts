@@ -44,6 +44,7 @@ export const trpcClient = trpc.createClient({
       false: httpBatchLink({
         url,
         headers,
+        maxURLLength: 2083,
       }),
     }),
   ],
