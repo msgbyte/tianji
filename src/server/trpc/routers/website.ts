@@ -37,6 +37,7 @@ import { WebsiteLighthouseReportStatus } from '@prisma/client';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { sendBuildLighthouseMessageQueue } from '../../mq/producer.js';
+import { getWorkspaceTierLimit } from '../../model/billing/limit.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -511,6 +512,21 @@ export const websiteRouter = router({
     .output(websiteInfoSchema)
     .mutation(async ({ input }) => {
       const { workspaceId, name, domain } = input;
+
+      const [limit, websiteCount] = await Promise.all([
+        getWorkspaceTierLimit(workspaceId),
+        prisma.website.count({
+          where: {
+            workspaceId,
+          },
+        }),
+      ]);
+      if (
+        limit.maxWebsiteCount !== -1 &&
+        websiteCount >= limit.maxWebsiteCount
+      ) {
+        throw new Error('You have reached your website limit');
+      }
 
       const website = await prisma.website.create({
         data: {

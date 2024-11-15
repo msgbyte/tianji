@@ -1,5 +1,7 @@
 import { WorkspaceSubscriptionTier } from '@prisma/client';
 import { z } from 'zod';
+import { prisma } from '../_client.js';
+import { env } from '../../utils/env.js';
 
 export const TierLimitSchema = z.object({
   maxWebsiteCount: z.number(),
@@ -58,4 +60,33 @@ export function getTierLimit(tier: WorkspaceSubscriptionTier): TierLimit {
     maxFeedChannelCount: -1,
     maxFeedEventCount: -1,
   };
+}
+
+export async function getWorkspaceTierLimit(
+  workspaceId: string
+): Promise<TierLimit> {
+  if (!env.billing.enable) {
+    return getTierLimit(WorkspaceSubscriptionTier.UNLIMITED);
+  }
+
+  const workspace = await prisma.workspace.findUnique({
+    where: {
+      id: workspaceId,
+    },
+    select: {
+      subscription: {
+        select: {
+          tier: true,
+        },
+      },
+    },
+  });
+
+  if (!workspace) {
+    return getTierLimit(WorkspaceSubscriptionTier.FREE);
+  }
+
+  return getTierLimit(
+    workspace.subscription?.tier ?? WorkspaceSubscriptionTier.FREE
+  );
 }

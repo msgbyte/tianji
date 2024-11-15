@@ -19,6 +19,7 @@ import {
 } from './integration.js';
 import { fetchDataByCursor } from '../../../utils/prisma.js';
 import { delFeedEventNotifyCache } from '../../../model/feed/event.js';
+import { getWorkspaceTierLimit } from '../../../model/billing/limit.js';
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -252,6 +253,21 @@ export const feedRouter = router({
     )
     .mutation(async ({ input }) => {
       const { name, workspaceId, notifyFrequency, notificationIds } = input;
+
+      const [limit, feedChannelCount] = await Promise.all([
+        getWorkspaceTierLimit(workspaceId),
+        prisma.feedChannel.count({
+          where: {
+            workspaceId,
+          },
+        }),
+      ]);
+      if (
+        limit.maxFeedChannelCount !== -1 &&
+        feedChannelCount >= limit.maxFeedChannelCount
+      ) {
+        throw new Error('You have reached your website limit');
+      }
 
       const channel = await prisma.feedChannel.create({
         data: {
