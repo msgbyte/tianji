@@ -1,11 +1,7 @@
-import { Button, Card, Dropdown, Popconfirm, Space, Spin, Modal } from 'antd';
+import { Button, Card, Dropdown, Space, Spin, Modal } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
-import {
-  defaultErrorHandler,
-  defaultSuccessHandler,
-  trpc,
-} from '../../api/trpc';
+import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
 import { Loading } from '../Loading';
 import { getMonitorLink } from './provider';
@@ -15,7 +11,6 @@ import { MonitorHealthBar } from './MonitorHealthBar';
 import { last } from 'lodash-es';
 import { ColorTag } from '../ColorTag';
 import { MonitorEventList } from './MonitorEventList';
-import { useEvent } from '../../hooks/useEvent';
 import { MonitorDataMetrics } from './MonitorDataMetrics';
 import { MonitorDataChart } from './MonitorDataChart';
 import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
@@ -25,6 +20,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { LuAlertTriangle } from 'react-icons/lu';
+import { useMonitorAction } from './useMonitorAction';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -48,130 +44,16 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     workspaceId,
     monitorId,
   });
-  const changeActiveMutation = trpc.monitor.changeActive.useMutation({
-    onSuccess: defaultSuccessHandler,
-    onError: defaultErrorHandler,
-  });
-  const deleteMutation = trpc.monitor.delete.useMutation({
-    onSuccess: defaultSuccessHandler,
-    onError: defaultErrorHandler,
-  });
-  const clearEventsMutation = trpc.monitor.clearEvents.useMutation({
-    onSuccess: defaultSuccessHandler,
-    onError: defaultErrorHandler,
-  });
-  const clearDataMutation = trpc.monitor.clearData.useMutation({
-    onSuccess: defaultSuccessHandler,
-    onError: defaultErrorHandler,
-  });
-  const testNotifyScriptMutation = trpc.monitor.testNotifyScript.useMutation({
-    onSuccess: defaultSuccessHandler,
-    onError: defaultErrorHandler,
-  });
 
-  const trpcUtils = trpc.useContext();
-
-  const handleStart = useEvent(async () => {
-    await changeActiveMutation.mutateAsync({
-      workspaceId,
-      monitorId,
-      active: true,
-    });
-
-    trpcUtils.monitor.all.refetch({
-      workspaceId,
-    });
-    trpcUtils.monitor.get.refetch({
-      workspaceId,
-      monitorId,
-    });
-    trpcUtils.monitor.events.refetch({
-      workspaceId,
-      monitorId,
-    });
-  });
-
-  const handleStop = useEvent(async () => {
-    await changeActiveMutation.mutateAsync({
-      workspaceId,
-      monitorId,
-      active: false,
-    });
-
-    trpcUtils.monitor.all.refetch({
-      workspaceId,
-    });
-    trpcUtils.monitor.get.refetch({
-      workspaceId,
-      monitorId,
-    });
-    trpcUtils.monitor.events.refetch({
-      workspaceId,
-      monitorId,
-    });
-  });
-
-  const handleDelete = useEvent(async () => {
-    Modal.confirm({
-      title: t('Warning'),
-      content: t('Did you sure delete this monitor?'),
-      okButtonProps: {
-        danger: true,
-      },
-      onOk: async () => {
-        await deleteMutation.mutateAsync({
-          workspaceId,
-          monitorId,
-        });
-        await trpcUtils.monitor.all.refetch();
-
-        navigate({
-          to: '/monitor',
-          replace: true,
-        });
-      },
-    });
-  });
-
-  const handleClearEvents = useEvent(() => {
-    Modal.confirm({
-      title: t('Warning'),
-      content: t('Are you sure want to delete all events for this monitor?'),
-      okButtonProps: {
-        danger: true,
-      },
-      onOk: async () => {
-        await clearEventsMutation.mutateAsync({
-          workspaceId,
-          monitorId,
-        });
-        trpcUtils.monitor.events.refetch({
-          workspaceId,
-          monitorId,
-        });
-      },
-    });
-  });
-
-  const handleClearData = useEvent(() => {
-    Modal.confirm({
-      title: t('Warning'),
-      content: t(
-        'Are you sure want to delete all heartbeats for this monitor?'
-      ),
-      okButtonProps: {
-        danger: true,
-      },
-      onOk: async () => {
-        await clearDataMutation.mutateAsync({
-          workspaceId,
-          monitorId,
-        });
-        trpcUtils.monitor.data.reset();
-        trpcUtils.monitor.recentData.reset();
-      },
-    });
-  });
+  const {
+    changeActiveMutation,
+    testNotifyScriptMutation,
+    handleStart,
+    handleStop,
+    handleDelete,
+    handleClearEvents,
+    handleClearData,
+  } = useMonitorAction(workspaceId, monitorId);
 
   if (isInitialLoading) {
     return <Loading />;
