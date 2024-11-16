@@ -122,3 +122,26 @@ export async function getMonitorSummaryWithDay(
     }
   });
 }
+
+/**
+ * create audit log which can query by log
+ */
+export async function updateMonitorErrorMessage(
+  monitorId: string,
+  errorMessage: string
+) {
+  try {
+    const log = await prisma.monitor.update({
+      where: {
+        id: monitorId,
+      },
+      data: {
+        recentError: String(errorMessage),
+      },
+    });
+
+    return log;
+  } catch (err) {
+    console.error('[Monitor] update monitor error message error:', String(err));
+  }
+}

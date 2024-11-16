@@ -23,6 +23,8 @@ import { MonitorBadgeView } from './MonitorBadgeView';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { LuAlertTriangle } from 'react-icons/lu';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -36,6 +38,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const [showBadge, setShowBadge] = useState(false);
   const isMobile = useIsMobile();
   const hasAdminPermission = useHasAdminPermission();
+  const isMonitorDown = currectResponse === -1;
 
   const {
     data: monitorInfo,
@@ -313,6 +316,14 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
           <Card>
             <MonitorDataChart monitorId={monitorId} />
           </Card>
+
+          {isMonitorDown && monitorInfo.recentError && (
+            <Alert variant="destructive">
+              <LuAlertTriangle className="h-4 w-4" />
+              <AlertTitle>{t('Monitor Detect Error')}</AlertTitle>
+              <AlertDescription>{monitorInfo.recentError}</AlertDescription>
+            </Alert>
+          )}
 
           {hasAdminPermission && (
             <div className="text-right">

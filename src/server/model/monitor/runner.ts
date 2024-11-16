@@ -10,6 +10,7 @@ import { ContentToken } from '../notification/token/type.js';
 import { createAuditLog } from '../auditLog.js';
 import { MonitorWithNotification } from './types.js';
 import { get } from 'lodash-es';
+import { updateMonitorErrorMessage } from './index.js';
 
 /**
  * Class which actually run monitor data collect
@@ -58,13 +59,18 @@ export class MonitorRunner {
         try {
           value = await provider.run(monitor);
         } catch (err) {
-          logger.error(`[Monitor] (id: ${monitor.id}) run error:`, String(err));
+          const errorMessage = get(err, 'message', String(err));
+          logger.error(
+            `[Monitor] (id: ${monitor.id}) run error:`,
+            errorMessage
+          );
           createAuditLog({
             workspaceId: this.monitor.workspaceId,
             relatedId: this.monitor.id,
             relatedType: 'Monitor',
-            content: `Monitor(id: ${monitor.id}) exec error: ${String(err)}`,
+            content: `Monitor(id: ${monitor.id}) exec error: ${errorMessage}`,
           });
+          updateMonitorErrorMessage(this.monitor.id, errorMessage);
           value = -1;
         }
 

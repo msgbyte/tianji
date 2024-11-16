@@ -424,6 +424,7 @@ model Monitor {
   /// @zod.custom(imports.CommonPayloadSchema)
   payload      Json     @db.Json
   trendingMode Boolean  @default(false) @db.Boolean
+  recentError  String?
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
