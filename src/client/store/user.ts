@@ -105,6 +105,7 @@ export function useCurrentWorkspaceSafe() {
       name: currentWorkspace.workspace.name,
       role: currentWorkspace.role,
       settings: currentWorkspace.workspace.settings,
+      paused: currentWorkspace.workspace.paused,
     };
   });
 
@@ -172,4 +173,10 @@ export function useHasAdminPermission(): boolean {
   const hasAdminPermission = useHasPermission(ROLES.admin);
 
   return hasAdminPermission;
+}
+
+export function useWorkspacePaused(): boolean {
+  const currentWorkspace = useCurrentWorkspace();
+
+  return currentWorkspace.paused || false;
 }

@@ -25,6 +25,7 @@ import { LayoutProps } from './types';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommandPanel } from '@/components/CommandPanel';
 import { RiSurveyLine } from 'react-icons/ri';
+import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -123,57 +124,62 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
   );
 
   return (
-    <ResizablePanelGroup
-      direction="horizontal"
-      onLayout={(sizes: number[]) => {
-        if (sizes.length === 3) {
-          setLayout(sizes as typeof defaultLayout);
-        } else if (sizes.length === 2) {
-          const listSize = layout[1];
-          const rest = 100 - sizes[0] - listSize;
-          setLayout([sizes[0], listSize, rest]);
-        }
-      }}
-      className="h-full items-stretch"
-    >
-      <ResizablePanel
-        defaultSize={layout[0]}
-        collapsedSize={1}
-        collapsible={true}
-        minSize={10}
-        maxSize={20}
-        onCollapse={() => {
-          setIsCollapsed(true);
+    <div className="flex h-full w-full flex-col">
+      <WorkspacePauseTip />
+
+      <ResizablePanelGroup
+        className="flex-1 items-stretch"
+        direction="horizontal"
+        onLayout={(sizes: number[]) => {
+          if (sizes.length === 3) {
+            setLayout(sizes as typeof defaultLayout);
+          } else if (sizes.length === 2) {
+            const listSize = layout[1];
+            const rest = 100 - sizes[0] - listSize;
+            setLayout([sizes[0], listSize, rest]);
+          }
         }}
-        onExpand={() => {
-          setIsCollapsed(false);
-        }}
-        className={cn(
-          'flex flex-col',
-          isCollapsed && 'min-w-[50px] transition-all duration-300 ease-in-out'
+      >
+        <ResizablePanel
+          defaultSize={layout[0]}
+          collapsedSize={1}
+          collapsible={true}
+          minSize={10}
+          maxSize={20}
+          onCollapse={() => {
+            setIsCollapsed(true);
+          }}
+          onExpand={() => {
+            setIsCollapsed(false);
+          }}
+          className={cn(
+            'flex flex-col',
+            isCollapsed &&
+              'min-w-[50px] transition-all duration-300 ease-in-out'
+          )}
+        >
+          {navbar}
+        </ResizablePanel>
+
+        {props.list && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={layout[1]} minSize={25}>
+              <div className="h-full overflow-hidden">{props.list}</div>
+            </ResizablePanel>
+          </>
         )}
-      >
-        {navbar}
-      </ResizablePanel>
 
-      {props.list && (
-        <>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={layout[1]} minSize={25}>
-            <div className="h-full overflow-hidden">{props.list}</div>
-          </ResizablePanel>
-        </>
-      )}
-
-      <ResizableHandle withHandle />
-      <ResizablePanel
-        defaultSize={props.list ? layout[2] : layout[1] + layout[2]}
-      >
-        <div className="h-full overflow-hidden">
-          {props.children ?? <Outlet />}
-        </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+        <ResizableHandle withHandle />
+        <ResizablePanel
+          defaultSize={props.list ? layout[2] : layout[1] + layout[2]}
+        >
+          <div className="h-full overflow-hidden">
+            {props.children ?? <Outlet />}
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 });
 DesktopLayout.displayName = 'DesktopLayout';

@@ -18,6 +18,7 @@ import { UserConfig } from './UserConfig';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { MobileLayoutMenu } from './Menu';
 import { RiSurveyLine } from 'react-icons/ri';
+import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
 
 export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
   const { t } = useTranslation();
@@ -37,6 +38,8 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
       </div>
 
       <Separator />
+
+      <WorkspacePauseTip />
 
       <div className="flex-1 overflow-hidden">
         {props.children ?? <Outlet />}

@@ -43,6 +43,7 @@ export const createUserSelect = {
           id: true,
           name: true,
           settings: true,
+          paused: true,
         },
       },
     },

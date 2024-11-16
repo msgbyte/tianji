@@ -20,6 +20,7 @@ export const workspaceSchema = z.object({
   id: z.string(),
   name: z.string(),
   settings: z.record(z.string(), z.any()),
+  paused: z.boolean(),
 });
 
 export const userInfoSchema = z.object({
