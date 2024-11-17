@@ -1,5 +1,9 @@
 import { WorkspaceSubscriptionTier } from '@prisma/client';
 import { prisma } from '../_client.js';
+import { buildQueryWithCache } from '../../cache/index.js';
+import dayjs from 'dayjs';
+import { getWorkspaceServiceCount } from '../workspace.js';
+import { getTierLimit } from './limit.js';
 
 export async function getWorkspaceUsage(
   workspaceId: string,
@@ -32,7 +36,7 @@ export async function getWorkspaceUsage(
   };
 }
 
-export async function getWorkspaceSubscription(
+export async function getWorkspaceTier(
   workspaceId: string
 ): Promise<WorkspaceSubscriptionTier> {
   const subscription = await prisma.workspaceSubscription.findFirst({
@@ -44,6 +48,19 @@ export async function getWorkspaceSubscription(
   return subscription?.tier ?? WorkspaceSubscriptionTier.FREE;
 }
 
+const { get: isWorkspacePaused, del: clearWorkspacePausedStatus } =
+  buildQueryWithCache(async (workspaceId: string) => {
+    const workspace = await prisma.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+    });
+
+    return workspace?.paused ?? false;
+  });
+
+export { isWorkspacePaused };
+
 export async function pauseWorkspace(workspaceId: string) {
   await prisma.workspace.update({
     where: {
@@ -53,4 +70,58 @@ export async function pauseWorkspace(workspaceId: string) {
       paused: true,
     },
   });
+
+  await clearWorkspacePausedStatus(workspaceId);
+}
+
+export async function recoverWorkspace(workspaceId: string) {
+  await prisma.workspace.update({
+    where: {
+      id: workspaceId,
+    },
+    data: {
+      paused: false,
+    },
+  });
+
+  await clearWorkspacePausedStatus(workspaceId);
+}
+
+/**
+ * Check workspace usage and update status, if over limit, pause workspace, else recover workspace status
+ */
+export async function checkWorkspaceUsageAndUpdateStatus(workspaceId: string) {
+  const subscription = await getWorkspaceTier(workspaceId);
+
+  if (subscription === WorkspaceSubscriptionTier.UNLIMITED) {
+    return;
+  }
+
+  const [usage, serviceCount] = await Promise.all([
+    getWorkspaceUsage(
+      workspaceId,
+      dayjs().startOf('month').valueOf(),
+      dayjs().valueOf()
+    ),
+    getWorkspaceServiceCount(workspaceId),
+  ]);
+
+  const limit = getTierLimit(subscription);
+
+  const overUsage =
+    serviceCount.website > limit.maxWebsiteCount ||
+    usage.websiteEventCount > limit.maxWebsiteEventCount ||
+    usage.monitorExecutionCount > limit.maxMonitorExecutionCount ||
+    usage.websiteEventCount > limit.maxWebsiteEventCount ||
+    usage.surveyCount > limit.maxSurveyCount ||
+    serviceCount.feed > limit.maxFeedChannelCount ||
+    usage.feedEventCount > limit.maxFeedEventCount;
+
+  if (overUsage) {
+    // pause workspace
+    await pauseWorkspace(workspaceId);
+  } else {
+    // recover workspace
+    await recoverWorkspace(workspaceId);
+  }
 }

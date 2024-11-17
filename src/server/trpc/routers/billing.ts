@@ -17,7 +17,7 @@ import {
 } from '../../model/billing/index.js';
 import { LemonSqueezySubscriptionModelSchema } from '../../prisma/zod/lemonsqueezysubscription.js';
 import {
-  getWorkspaceSubscription,
+  getWorkspaceTier,
   getWorkspaceUsage,
 } from '../../model/billing/workspace.js';
 import { getTierLimit, TierLimitSchema } from '../../model/billing/limit.js';
@@ -63,7 +63,7 @@ export const billingRouter = router({
     .output(TierLimitSchema)
     .query(async ({ input }) => {
       const { workspaceId } = input;
-      const tier = await getWorkspaceSubscription(workspaceId);
+      const tier = await getWorkspaceTier(workspaceId);
 
       return getTierLimit(tier);
     }),
@@ -79,7 +79,7 @@ export const billingRouter = router({
     .query(({ input }) => {
       const { workspaceId } = input;
 
-      return getWorkspaceSubscription(workspaceId);
+      return getWorkspaceTier(workspaceId);
     }),
   currentSubscription: workspaceProcedure
     .meta(
