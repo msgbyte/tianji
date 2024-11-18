@@ -20,6 +20,7 @@ import {
 import { fetchDataByCursor } from '../../../utils/prisma.js';
 import { delFeedEventNotifyCache } from '../../../model/feed/event.js';
 import { getWorkspaceTierLimit } from '../../../model/billing/limit.js';
+import { isWorkspacePaused } from '../../../model/billing/workspace.js';
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -349,7 +350,16 @@ export const feedRouter = router({
           id: channelId,
         },
       });
-      if (channel?.webhookSignature) {
+
+      if (!channel) {
+        throw new Error('Channel not found');
+      }
+
+      if (await isWorkspacePaused(channel.workspaceId)) {
+        throw new Error('Workspace is paused.');
+      }
+
+      if (channel.webhookSignature) {
         const signature = ctx.req.headers['x-webhook-signature'];
         if (!signature) {
           throw new Error(

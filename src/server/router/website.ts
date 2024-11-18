@@ -9,6 +9,7 @@ import {
 } from '../model/website.js';
 import { createToken } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
+import { isWorkspacePaused } from '../model/billing/workspace.js';
 
 export const websiteRouter = Router();
 
@@ -56,6 +57,11 @@ websiteRouter.post(
     } = payload;
 
     const session = await findSession(req);
+
+    if (await isWorkspacePaused(session.workspaceId)) {
+      res.status(403).send('Workspace is paused.');
+      return;
+    }
 
     if (type === COLLECTION_TYPE.event) {
       let [urlPath, urlQuery] = url?.split('?') || [];
