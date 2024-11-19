@@ -40,7 +40,7 @@ Es wird automatisch den Reporter herunterladen und einen Linux-Dienst auf Ihrem 
 
 Wenn Sie den Reporter-Dienst deinstallieren möchten, können Sie diesen Befehl verwenden:
 ```bash
-curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | bash -s uninstall
+curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ```
 
 Der Hauptunterschied besteht darin, `-s uninstall` nach Ihrem Installationsbefehl anzuhängen.

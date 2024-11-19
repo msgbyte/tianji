@@ -40,7 +40,7 @@ tianji-reporter の使用方法:
 
 レポーターサービスをアンインストールしたい場合は、次のコマンドを使用できます:
 ```bash
-curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | bash -s uninstall
+curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ```
 
 主な変更点は、インストールコマンドの後に `-s uninstall` を追加することです。

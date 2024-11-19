@@ -15,9 +15,9 @@ export const InstallScript: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
   const [commandType, setCommandType] = useState('install');
   const commandMap: Record<string, string> = {
-    install: `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | bash`,
-    uninstall: `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | bash -s -- uninstall`,
-    restart: `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | bash -s -- reset_conf`,
+    install: `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | sudo bash`,
+    uninstall: `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | sudo bash -s -- uninstall`,
+    restart: `curl -o- ${window.location.origin}/serverStatus/${workspaceId}/install.sh?url=${window.location.origin} | sudo bash -s -- reset_conf`,
   };
   const command = commandMap[commandType] ?? commandMap['install'];
 

@@ -40,7 +40,7 @@ tianji-reporter 使用方法：
 
 如果您想卸载报告器服务，可以使用以下命令：
 ```bash
-curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | bash -s uninstall
+curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ```
 
 主要变化是在安装命令后添加 `-s uninstall`。

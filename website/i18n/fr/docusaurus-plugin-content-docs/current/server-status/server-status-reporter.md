@@ -40,7 +40,7 @@ il téléchargera automatiquement le rapporteur et créera un service Linux sur 
 
 si vous souhaitez désinstaller le service de rapporteur, vous pouvez utiliser cette commande comme :
 ```bash
-curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | bash -s uninstall
+curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ``` 
 
 le changement principal consiste à ajouter `-s uninstall` après votre commande d'installation.
