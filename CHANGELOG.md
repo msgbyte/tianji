@@ -1,5 +1,48 @@
 
 
+## [1.17.0](https://github.com/msgbyte/tianji/compare/v1.16.5...v1.17.0) (2024-11-19)
+
+
+### Features
+
+* add <UsageCard /> component which can render usage data and progress ([a12fa3e](https://github.com/msgbyte/tianji/commit/a12fa3e6feedb3c7d83a097e187aa9945ff9bb10))
+* add api key and usage to command panel ([71f75c2](https://github.com/msgbyte/tianji/commit/71f75c27ddf83ec3ac3855a07b03db5d4182c514))
+* add api key fe and usage counter ([6a4bdd3](https://github.com/msgbyte/tianji/commit/6a4bdd324c2a2fd64219edf637dcfe2fa0959067))
+* add audit log clear feature ([3bf86b3](https://github.com/msgbyte/tianji/commit/3bf86b3e6e6c5e86cbeb3cd9b7aaa41a53dd5439))
+* add auto language detect for browser ([1629546](https://github.com/msgbyte/tianji/commit/162954606a36219c58cd5a36c4a32a325b9a80cb))
+* add create feed and website limit which in max tier limit ([c8d4063](https://github.com/msgbyte/tianji/commit/c8d4063dafe24c8bec0501459bc77af71a848cd1))
+* add cronjob to check workspace limit which will pause workspace ([31ad64c](https://github.com/msgbyte/tianji/commit/31ad64cd955e5dd31167ae5fca6c0e49b7475977))
+* add lemonsqueezy  subscription ([74d391a](https://github.com/msgbyte/tianji/commit/74d391afc15a251a7098e4a5c8716bad3b756bd0))
+* add monitor error message ([e23258a](https://github.com/msgbyte/tianji/commit/e23258ac484de777a3c4a952df7b7307153a0b4a))
+* add more usage stats ([b71bf65](https://github.com/msgbyte/tianji/commit/b71bf6542e7312ec6ae0fdcc5008a197c1dc23d2))
+* add subscription selection page ([843a581](https://github.com/msgbyte/tianji/commit/843a581d429b11cb6959e6aee2d50eb9e144f3e5))
+* add user api key backend support ([f7b1d33](https://github.com/msgbyte/tianji/commit/f7b1d33c5d5bcd6d3ff8215412a4635495b35b7c))
+* add workspace pause tips ([b4bee32](https://github.com/msgbyte/tianji/commit/b4bee321ae512d49768522419996b430d569a3f3))
+* add workspace paused check ([77e14d3](https://github.com/msgbyte/tianji/commit/77e14d315f731204f1a38c2294d26d7cbe204ab8))
+* add workspace subscription ([e4b98b1](https://github.com/msgbyte/tianji/commit/e4b98b1c36f5362b88b73ff759378cc02185a836))
+* subscription switch and cancel handler() ([f2f8267](https://github.com/msgbyte/tianji/commit/f2f8267fef98accfd145f56c1c3a6ebab91d45cb))
+
+
+### Bug Fixes
+
+* fix ci probelm ([c7ef57b](https://github.com/msgbyte/tianji/commit/c7ef57b4c6bdcd79f95c499a02127d16916b3370))
+* fix isUser middleware will call twice problem ([c70e698](https://github.com/msgbyte/tianji/commit/c70e69879fe5ddc7f0dffcd546c79e79b50f034b))
+* fix url too long problem [#125](https://github.com/msgbyte/tianji/issues/125) ([c33d5bb](https://github.com/msgbyte/tianji/commit/c33d5bbedeb7890c06fbada71892c22639766a91))
+
+
+### Others
+
+* add alert ([ea75ed7](https://github.com/msgbyte/tianji/commit/ea75ed7f88f8ffc2290c85096c332b25f98305d9))
+* add apikey check before setup ([f0ddf6c](https://github.com/msgbyte/tianji/commit/f0ddf6c5ddbba871496eb77a02bf515e732809fa))
+* add usage limit and update card style ([34f9fe6](https://github.com/msgbyte/tianji/commit/34f9fe6957a53b46397f47210ec27dabcfc5f482))
+* change check workspace pause logic ([aed707a](https://github.com/msgbyte/tianji/commit/aed707a76146126a89e2edcf3a84e8307ba52806))
+* move billing mode inside folder ([fa1ff3b](https://github.com/msgbyte/tianji/commit/fa1ff3b5f6d93cce615b64bfeac0006f57291820))
+* move monitor action to hooks, reduce file size. ([ae33b52](https://github.com/msgbyte/tianji/commit/ae33b52d45f60d3abfc912b8c8d789a67c06e073))
+* remove passport package ([ae5f5a9](https://github.com/msgbyte/tianji/commit/ae5f5a97d99406df68ef92b2c5b958ec5ac2099c))
+* remove unused script ([fffc989](https://github.com/msgbyte/tianji/commit/fffc989336e8733d2f166d6e620fa379e2eb1d59))
+* update translation ([33b2ea5](https://github.com/msgbyte/tianji/commit/33b2ea581b2cbd52541ac983f8d22c5fa81239e6))
+* upgrade package version ([a03c182](https://github.com/msgbyte/tianji/commit/a03c1824f80f7807d8a3fb59cc47b8ebc4ed5ef3))
+
 ## [1.16.5](https://github.com/msgbyte/tianji/compare/v1.16.4...v1.16.5) (2024-11-02)
 
 

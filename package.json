@@ -1,7 +1,7 @@
 {
   "name": "tianji",
   "private": true,
-  "version": "1.16.5",
+  "version": "1.17.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently --kill-others npm:dev:server npm:dev:web",
