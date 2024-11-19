@@ -12,6 +12,7 @@ describe('dns', () => {
       interval: 0,
       maxRetries: 0,
       trendingMode: false,
+      recentError: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       payload: {

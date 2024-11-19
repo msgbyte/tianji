@@ -23,6 +23,7 @@ const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
   interval: 60,
   maxRetries: 0,
   trendingMode: false,
+  recentError: null,
 };
 
 interface MonitorInfoEditorProps {
