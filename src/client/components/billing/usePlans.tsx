@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
 import { cn } from '@/utils/style';
+import { appendUrlQueryParams } from '@/utils/url';
 
 export interface UsePlanOptions {
   currentTier: 'FREE' | 'PRO' | 'TEAM' | 'UNLIMITED' | undefined;
@@ -22,7 +23,7 @@ export interface UsePlanOptions {
 export function usePlans(options: UsePlanOptions) {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { currentTier, alreadySubscribed, onRefresh } = options;
+  const { currentTier = 'FREE', alreadySubscribed, onRefresh } = options;
   const changePlanMutation = trpc.billing.changePlan.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
@@ -44,7 +45,9 @@ export function usePlans(options: UsePlanOptions) {
         const { url } = await checkoutMutation.mutateAsync({
           workspaceId,
           tier,
-          redirectUrl: location.href,
+          redirectUrl: appendUrlQueryParams(location.href, {
+            status: 'success',
+          }),
         });
 
         location.href = url;

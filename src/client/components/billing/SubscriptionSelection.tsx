@@ -18,7 +18,7 @@ export const SubscriptionSelection: React.FC<SubscriptionSelectionProps> =
     const el = usePlans(props);
 
     return (
-      <div className="container mx-auto px-4 py-2">
+      <div className="w-full py-2">
         <h1 className="mb-8 text-center text-3xl font-bold">
           {t('Subscription Plan')}
         </h1>
