@@ -15,16 +15,18 @@ export const UsageCard: React.FC<UsageCardProps> = React.memo((props) => {
   const { title, current, limit } = props;
   const { t } = useTranslation();
 
+  const isLimitValid = typeof limit === 'number' && limit >= 0;
+
   return (
     <Card className="relative h-full w-full overflow-hidden">
-      {limit && (
+      {isLimitValid && (
         <div
           className="absolute h-full bg-black bg-opacity-5 dark:bg-white dark:bg-opacity-10"
           style={{ width: `${(current / limit) * 100}%` }}
         />
       )}
 
-      {limit && current > limit && (
+      {isLimitValid && current > limit && (
         <div className="absolute right-2 top-2">
           <Tooltip>
             <TooltipTrigger>
@@ -43,7 +45,7 @@ export const UsageCard: React.FC<UsageCardProps> = React.memo((props) => {
 
       <CardHeader className="text-muted-foreground">{title}</CardHeader>
       <CardContent>
-        {limit && limit >= 0 ? (
+        {isLimitValid ? (
           <div>
             <span className="text-2xl font-bold">{formatNumber(current)}</span>{' '}
             / <span>{formatNumber(limit)}</span>
