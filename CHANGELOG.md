@@ -1,5 +1,14 @@
 
 
+## [1.17.1](https://github.com/msgbyte/tianji/compare/v1.17.0...v1.17.1) (2024-11-21)
+
+
+### Others
+
+* improve install script which make easy to install in non-root user ([53777b3](https://github.com/msgbyte/tianji/commit/53777b36c6387f7cd06833a28bf479d38ab00162))
+* update limit check logic ([927eac1](https://github.com/msgbyte/tianji/commit/927eac1da3c56be9bfabc1513b74ae26b3c6e01c))
+* update subscription redirect tip ([21ac087](https://github.com/msgbyte/tianji/commit/21ac0878f90194ca140044b69c07fc085c72cac3))
+
 ## [1.17.0](https://github.com/msgbyte/tianji/compare/v1.16.5...v1.17.0) (2024-11-19)
 
 
