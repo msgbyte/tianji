@@ -20,12 +20,13 @@ import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher';
 import { UserConfig } from './UserConfig';
 import { Outlet } from '@tanstack/react-router';
 import { trpc } from '@/api/trpc';
-import { useUserStore } from '@/store/user';
+import { useCurrentWorkspaceId } from '@/store/user';
 import { LayoutProps } from './types';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommandPanel } from '@/components/CommandPanel';
 import { RiSurveyLine } from 'react-icons/ri';
 import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
+import { FreeTierTip } from '../FreeTierTip';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -40,7 +41,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
       defaultValue: false,
     }
   );
-  const workspaceId = useUserStore((state) => state.info?.currentWorkspaceId);
+  const workspaceId = useCurrentWorkspaceId();
   const { data: serviceCount } = trpc.workspace.getServiceCount.useQuery(
     {
       workspaceId: workspaceId!,
@@ -113,8 +114,15 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           },
         ]}
       />
+
       <Separator />
+
       <div className="flex-1" />
+
+      <div className="p-2">
+        <FreeTierTip />
+      </div>
+
       <Separator />
 
       <div className={cn(isCollapsed && 'm-auto')}>
