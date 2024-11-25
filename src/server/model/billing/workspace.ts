@@ -108,14 +108,25 @@ export async function checkWorkspaceUsageAndUpdateStatus(workspaceId: string) {
 
   const limit = getTierLimit(subscription);
 
+  function checkValueOver(value: number, limit: number) {
+    if (limit === -1) {
+      return false;
+    }
+
+    return value > limit;
+  }
+
   const overUsage =
-    serviceCount.website > limit.maxWebsiteCount ||
-    usage.websiteEventCount > limit.maxWebsiteEventCount ||
-    usage.monitorExecutionCount > limit.maxMonitorExecutionCount ||
-    usage.websiteEventCount > limit.maxWebsiteEventCount ||
-    usage.surveyCount > limit.maxSurveyCount ||
-    serviceCount.feed > limit.maxFeedChannelCount ||
-    usage.feedEventCount > limit.maxFeedEventCount;
+    checkValueOver(serviceCount.website, limit.maxWebsiteCount) ||
+    checkValueOver(usage.websiteEventCount, limit.maxWebsiteEventCount) ||
+    checkValueOver(
+      usage.monitorExecutionCount,
+      limit.maxMonitorExecutionCount
+    ) ||
+    checkValueOver(usage.websiteEventCount, limit.maxWebsiteEventCount) ||
+    checkValueOver(usage.surveyCount, limit.maxSurveyCount) ||
+    checkValueOver(serviceCount.feed, limit.maxFeedChannelCount) ||
+    checkValueOver(usage.feedEventCount, limit.maxFeedEventCount);
 
   if (overUsage) {
     // pause workspace
