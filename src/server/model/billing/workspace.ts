@@ -61,7 +61,7 @@ const { get: isWorkspacePaused, del: clearWorkspacePausedStatus } =
 
 export { isWorkspacePaused };
 
-export async function pauseWorkspace(workspaceId: string) {
+async function pauseWorkspace(workspaceId: string) {
   await prisma.workspace.update({
     where: {
       id: workspaceId,
@@ -74,7 +74,7 @@ export async function pauseWorkspace(workspaceId: string) {
   await clearWorkspacePausedStatus(workspaceId);
 }
 
-export async function recoverWorkspace(workspaceId: string) {
+async function recoverWorkspace(workspaceId: string) {
   await prisma.workspace.update({
     where: {
       id: workspaceId,

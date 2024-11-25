@@ -7,6 +7,7 @@ import {
 import { env } from '../../utils/env.js';
 import { prisma } from '../_client.js';
 import { WorkspaceSubscriptionTier } from '@prisma/client';
+import { checkWorkspaceUsageAndUpdateStatus } from './workspace.js';
 
 export const billingAvailable = Boolean(env.billing.lemonSqueezy.apiKey);
 
@@ -139,6 +140,8 @@ export async function updateWorkspaceSubscription(
       tier: subscriptionTier,
     },
   });
+
+  await checkWorkspaceUsageAndUpdateStatus(workspaceId);
 
   return res;
 }
