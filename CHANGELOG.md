@@ -1,5 +1,23 @@
 
 
+## [1.17.2](https://github.com/msgbyte/tianji/compare/v1.17.1...v1.17.2) (2024-11-25)
+
+
+### Features
+
+* add free tier tip component ([1fc4d15](https://github.com/msgbyte/tianji/commit/1fc4d15c35e1c7b161aab968c4c8e595ef6c80b7))
+* add workspace usage check which can update when tier has updated ([bf0598d](https://github.com/msgbyte/tianji/commit/bf0598dd25b8e1b868a5f3ea3fad53a58d8c9dd4))
+
+
+### Bug Fixes
+
+* fix a bug that would accidentally pause the workspace ([420860f](https://github.com/msgbyte/tianji/commit/420860f1b6e25928d9444c9b64f7308dde83a472))
+
+
+### Others
+
+* update translation ([df12949](https://github.com/msgbyte/tianji/commit/df1294977fcfd1e1005919d8d5cf8b9c926b0473))
+
 ## [1.17.1](https://github.com/msgbyte/tianji/compare/v1.17.0...v1.17.1) (2024-11-21)
 
 
