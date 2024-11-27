@@ -53,6 +53,14 @@ function PageComponent() {
       refetchCurrendSubscription(),
       refetchCurrendTier(),
     ]);
+
+    setTimeout(() => {
+      Promise.all([
+        // refresh all info
+        refetchCurrendSubscription(),
+        refetchCurrendTier(),
+      ]);
+    }, 5000);
   });
 
   return (
