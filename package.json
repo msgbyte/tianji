@@ -25,7 +25,7 @@
     "release:packages": "pnpm -r --filter \"./packages/*\" publish --registry=https://registry.npmjs.com/"
   },
   "devDependencies": {
-    "@release-it/conventional-changelog": "^8.0.1",
+    "@release-it/conventional-changelog": "9.0.3",
     "@types/fs-extra": "^11.0.3",
     "@types/node": "^18.17.12",
     "@types/tar": "^6.1.10",
@@ -34,7 +34,7 @@
     "dotenv": "^16.3.1",
     "fs-extra": "^11.2.0",
     "prettier-plugin-tailwindcss": "^0.5.12",
-    "release-it": "^17.0.1",
+    "release-it": "17.10.0",
     "tar": "^6.1.15",
     "ts-node": "^10.9.1",
     "tsx": "^4.16.2",
