@@ -39,6 +39,26 @@ export function useAuth() {
     }
   );
 
+  const loginWithEmail = useEvent(async (email: string) => {
+    let res: SignInResponse | undefined;
+    try {
+      res = await signIn('email', {
+        email,
+        redirect: false,
+      });
+    } catch (err) {
+      toast.error(t('Login failed'));
+      throw err;
+    }
+
+    if (res?.error) {
+      toast.error(t('Login failed, please check your email'));
+      throw new Error('Login failed');
+    }
+
+    return res?.url;
+  });
+
   const loginWithOAuth = useEvent(
     async (provider: BuiltInProviderType | 'custom') => {
       let res: SignInResponse | undefined;
@@ -78,6 +98,7 @@ export function useAuth() {
 
   return {
     loginWithPassword,
+    loginWithEmail,
     loginWithOAuth,
     logout,
   };
