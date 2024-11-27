@@ -1,5 +1,18 @@
 
 
+## [1.17.3](https://github.com/msgbyte/tianji/compare/v1.17.2...v1.17.3) (2024-11-27)
+
+### Features
+
+* add email login ([cc1cc95](https://github.com/msgbyte/tianji/commit/cc1cc9536e6626a232cdab4d31a5c6b7b8717061))
+
+### Others
+
+* a not cool solution, refresh state again after 5s. ([5ed182b](https://github.com/msgbyte/tianji/commit/5ed182b7f8d7169d4336fd957f14a4f74ab77455))
+* update translations ([26d555f](https://github.com/msgbyte/tianji/commit/26d555f9fae8dc6f72cdaafb9c16b891025a17be))
+* upgrade package version to reduce vulnerabilities ([72458fe](https://github.com/msgbyte/tianji/commit/72458fe301267d5e9bcfd2b3903907439bd4d143))
+* upgrade release-it version ([947f364](https://github.com/msgbyte/tianji/commit/947f364a36ca035f797f210ae72a75ceff6d775e))
+
 ## [1.17.2](https://github.com/msgbyte/tianji/compare/v1.17.1...v1.17.2) (2024-11-25)
 
 
