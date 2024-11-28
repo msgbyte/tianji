@@ -16,6 +16,7 @@ export type $OpenApiTs = {
                     disableAnonymousTelemetry: boolean;
                     customTrackerScriptName?: string;
                     authProvider: Array<(string)>;
+                    enableBilling: boolean;
                 };
             };
         };
@@ -52,6 +53,7 @@ export type $OpenApiTs = {
                                 settings: {
                                     [key: string]: unknown;
                                 };
+                                paused: boolean;
                             };
                         }>;
                     };
@@ -91,46 +93,7 @@ export type $OpenApiTs = {
                                 settings: {
                                     [key: string]: unknown;
                                 };
-                            };
-                        }>;
-                    };
-                    token: string;
-                };
-            };
-        };
-    };
-    '/register': {
-        post: {
-            req: {
-                requestBody: {
-                    username: string;
-                    password: string;
-                };
-            };
-            res: {
-                /**
-                 * Successful response
-                 */
-                200: {
-                    info: {
-                        id: string;
-                        role: string;
-                        username: string;
-                        nickname: string | null;
-                        avatar: string | null;
-                        email: string | null;
-                        createdAt: string;
-                        updatedAt: string;
-                        deletedAt: string | null;
-                        currentWorkspaceId: string | null;
-                        workspaces: Array<{
-                            role: string;
-                            workspace: {
-                                id: string;
-                                name: string;
-                                settings: {
-                                    [key: string]: unknown;
-                                };
+                                paused: boolean;
                             };
                         }>;
                     };
@@ -169,6 +132,7 @@ export type $OpenApiTs = {
                             settings: {
                                 [key: string]: unknown;
                             };
+                            paused: boolean;
                         };
                     }>;
                 };
@@ -205,6 +169,7 @@ export type $OpenApiTs = {
                             settings: {
                                 [key: string]: unknown;
                             };
+                            paused: boolean;
                         };
                     }>;
                 };
@@ -229,6 +194,7 @@ export type $OpenApiTs = {
                     settings: {
                         [key: string]: unknown;
                     };
+                    paused: boolean;
                 };
             };
         };
@@ -291,6 +257,7 @@ export type $OpenApiTs = {
                     settings: {
                         [key: string]: unknown;
                     };
+                    paused: boolean;
                 };
             };
         };
@@ -725,6 +692,7 @@ export type $OpenApiTs = {
                         [key: string]: unknown;
                     };
                     trendingMode: boolean;
+                    recentError?: string | null;
                     createdAt: string;
                     updatedAt: string;
                     notifications: Array<{
@@ -756,6 +724,7 @@ export type $OpenApiTs = {
                         [key: string]: unknown;
                     };
                     trendingMode: boolean;
+                    recentError?: string | null;
                     createdAt: string;
                     updatedAt: string;
                     notifications: Array<{
@@ -819,6 +788,7 @@ export type $OpenApiTs = {
                         [key: string]: unknown;
                     };
                     trendingMode: boolean;
+                    recentError?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -847,6 +817,7 @@ export type $OpenApiTs = {
                         [key: string]: unknown;
                     };
                     trendingMode: boolean;
+                    recentError?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -897,6 +868,7 @@ export type $OpenApiTs = {
                         [key: string]: unknown;
                     };
                     trendingMode: boolean;
+                    recentError?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -1752,6 +1724,19 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/audit/clear': {
+        delete: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+            };
+        };
+    };
     '/billing/usage': {
         get: {
             req: {
@@ -1773,6 +1758,71 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/billing/limit': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    maxWebsiteCount: number;
+                    maxWebsiteEventCount: number;
+                    maxMonitorExecutionCount: number;
+                    maxSurveyCount: number;
+                    maxFeedChannelCount: number;
+                    maxFeedEventCount: number;
+                };
+            };
+        };
+    };
+    '/billing/currentTier': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
+            };
+        };
+    };
+    '/billing/currentSubscription': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    subscriptionId: string;
+                    workspaceId: string;
+                    storeId: string;
+                    productId: string;
+                    variantId: string;
+                    status: string;
+                    cardBrand: string;
+                    cardLastFour: string;
+                    renewsAt: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    tier: string;
+                } | null;
+            };
+        };
+    };
     '/workspace/{workspaceId}/feed/channels': {
         get: {
             req: {
@@ -1786,6 +1836,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
@@ -1811,6 +1862,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
@@ -1825,6 +1877,7 @@ export type $OpenApiTs = {
                 requestBody: {
                     notificationIds?: Array<(string)>;
                     name: string;
+                    webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                 };
                 workspaceId: string;
@@ -1838,6 +1891,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
@@ -1901,6 +1955,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
@@ -1922,6 +1977,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
+                    webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
                     createdAt: string;
                     updatedAt: string;
@@ -2047,6 +2103,25 @@ export type $OpenApiTs = {
         };
     };
     '/feed/{channelId}/github': {
+        post: {
+            req: {
+                channelId: string;
+            };
+            res: {
+                /**
+                 * Error response
+                 */
+                200: {
+                    message: string;
+                    code: string;
+                    issues?: Array<{
+                        message: string;
+                    }>;
+                };
+            };
+        };
+    };
+    '/feed/{channelId}/stripe': {
         post: {
             req: {
                 channelId: string;

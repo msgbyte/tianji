@@ -51,21 +51,6 @@ export class UserService {
         });
     }
     
-    /**
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns unknown Successful response
-     * @throws ApiError
-     */
-    public static userRegister(data: $OpenApiTs['/register']['post']['req']): CancelablePromise<$OpenApiTs['/register']['post']['res'][200]> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/register',
-            body: data.requestBody,
-            mediaType: 'application/json'
-        });
-    }
-    
 }
 
 export class WorkspaceService {
@@ -1392,6 +1377,23 @@ export class AuditLogService {
         });
     }
     
+    /**
+     * clear all workspace audit log
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static auditLogClear(data: $OpenApiTs['/audit/clear']['delete']['req']): CancelablePromise<$OpenApiTs['/audit/clear']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/audit/clear',
+            query: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
 }
 
 export class BillingService {
@@ -1412,6 +1414,58 @@ export class BillingService {
                 workspaceId: data.workspaceId,
                 startAt: data.startAt,
                 endAt: data.endAt
+            }
+        });
+    }
+    
+    /**
+     * get workspace subscription limit
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static billingLimit(data: $OpenApiTs['/billing/limit']['get']['req']): CancelablePromise<$OpenApiTs['/billing/limit']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/billing/limit',
+            query: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
+     * get workspace current tier
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static billingCurrentTier(data: $OpenApiTs['/billing/currentTier']['get']['req']): CancelablePromise<$OpenApiTs['/billing/currentTier']['get']['res'][200] | $OpenApiTs['/billing/currentTier']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/billing/currentTier',
+            query: {
+                workspaceId: data.workspaceId
+            }
+        });
+    }
+    
+    /**
+     * get workspace current subscription
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static billingCurrentSubscription(data: $OpenApiTs['/billing/currentSubscription']['get']['req']): CancelablePromise<$OpenApiTs['/billing/currentSubscription']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/billing/currentSubscription',
+            query: {
+                workspaceId: data.workspaceId
             }
         });
     }
@@ -1649,6 +1703,24 @@ export class FeedService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/github',
+            path: {
+                channelId: data.channelId
+            }
+        });
+    }
+    
+    /**
+     * integrate with stripe webhook
+     * @param data The data for the request.
+     * @param data.channelId
+     * @returns string Successful response
+     * @returns unknown Error response
+     * @throws ApiError
+     */
+    public static feedIntegrationStripe(data: $OpenApiTs['/feed/{channelId}/stripe']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/stripe']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/stripe']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/{channelId}/stripe',
             path: {
                 channelId: data.channelId
             }
