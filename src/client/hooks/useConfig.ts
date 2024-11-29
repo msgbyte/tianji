@@ -6,7 +6,7 @@ const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   allowRegister: false,
   alphaMode: false,
   disableAnonymousTelemetry: false,
-  authProvider: [],
+  authProvider: ['email'], // default has email auth to improve login display in saas
   enableBilling: false,
 };
 
