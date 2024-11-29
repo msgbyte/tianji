@@ -1,5 +1,18 @@
 
 
+## [1.17.4](https://github.com/msgbyte/tianji/compare/v1.17.3...v1.17.4) (2024-11-29)
+
+### Document
+
+* update npm config ([ed591e2](https://github.com/msgbyte/tianji/commit/ed591e207d00d86b08989407d22ace1400bd0fd3))
+* update openapi document [#130](https://github.com/msgbyte/tianji/issues/130) ([0f3168e](https://github.com/msgbyte/tianji/commit/0f3168e340ab292cbf905b9d89dc666da809b96f))
+* update roadmap ([c7bd2e6](https://github.com/msgbyte/tianji/commit/c7bd2e6fb960996111cca091fa8dac1307457980))
+
+### Others
+
+* change init state of global config ([e0da48f](https://github.com/msgbyte/tianji/commit/e0da48f4d438676ea094b39ea87e0d04248d83ca))
+* update code style ([99db3d0](https://github.com/msgbyte/tianji/commit/99db3d02e370b9d252919d216ad0e1b36540d199))
+
 ## [1.17.3](https://github.com/msgbyte/tianji/compare/v1.17.2...v1.17.3) (2024-11-27)
 
 ### Features
