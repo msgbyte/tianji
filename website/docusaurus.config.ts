@@ -113,8 +113,8 @@ const config: Config = {
         { to: '/changelog', label: 'Changelog', position: 'left' },
         { to: '/api', label: 'API', position: 'left' },
         {
-          href: 'https://demo.tianji.msgbyte.com/',
-          label: 'Demo',
+          href: 'https://app-tianji.msgbyte.com/',
+          label: 'Cloud',
           position: 'right',
         },
         {
