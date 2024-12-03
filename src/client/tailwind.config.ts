@@ -25,6 +25,9 @@ module.exports = {
       },
     },
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
       colors: {
         gray: colors.neutral,
         border: 'hsl(var(--border))',

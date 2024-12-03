@@ -41,3 +41,19 @@ export function useColorSchema() {
 
   return colorScheme;
 }
+
+export function useTheme(): 'light' | 'dark' {
+  const theme = useSettingsStore((state) => {
+    if (state.colorScheme === 'system') {
+      return typeof window !== 'undefined'
+        ? window?.matchMedia('(prefers-color-scheme: dark)')?.matches
+          ? 'dark'
+          : 'light'
+        : 'light';
+    } else {
+      return state.colorScheme;
+    }
+  });
+
+  return theme;
+}

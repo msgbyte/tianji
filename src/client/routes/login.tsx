@@ -11,6 +11,8 @@ import { useEventWithLoading } from '@/hooks/useEvent';
 import { LuGithub, LuLayers } from 'react-icons/lu';
 import { compact } from 'lodash-es';
 import { toast } from 'sonner';
+import { DotPatternBackground } from '@/components/DotPatternBackground';
+import { useTheme } from '@/store/settings';
 
 export const Route = createFileRoute('/login')({
   validateSearch: z.object({
@@ -31,6 +33,7 @@ function LoginComponent() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const search = Route.useSearch();
+  const theme = useTheme();
 
   const { loginWithPassword, loginWithEmail, loginWithOAuth } = useAuth();
 
@@ -155,7 +158,9 @@ function LoginComponent() {
   ]);
 
   return (
-    <div className="flex h-full w-full items-center justify-center dark:bg-gray-900">
+    <div className="flex h-full w-full items-center justify-center">
+      {theme === 'dark' && <DotPatternBackground />}
+
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
           <img className="m-auto h-24 w-24" src="/icon.svg" />
