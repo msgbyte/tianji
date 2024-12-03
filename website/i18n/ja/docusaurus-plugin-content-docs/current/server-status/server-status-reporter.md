@@ -1,68 +1,68 @@
 ---
 sidebar_position: 1
-_i18n_hash: 848acc7fae249b1c435a363e4693a5c7
+_i18n_hash: 1de8a86599061f446dd0699137a4e68c
 ---
 # サーバーステータスレポーター
 
-tianjiレポーターを使用して、サーバーのステータスを簡単に報告できます。
+Tianjiレポーターを使えば、簡単にサーバーステータスを報告できます。
 
-[https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases) からダウンロードできます。
+[こちらからダウンロード可能です。](https://github.com/msgbyte/tianji/releases)
 
-## 使用方法
+## 使い方
 
 ```
-tianji-reporter の使用方法:
+tianji-reporterの使用法:
   --interval int
-        間隔を秒単位で入力します (デフォルト 5)
+        INTERVALを入力してください（秒、デフォルトは5）
   --mode http
-        レポートデータの送信モードを選択します: `http` または `udp`、デフォルトは `http` (デフォルト "http")
+        レポートデータの送信モード。`http`または`udp`を選択できます。デフォルトは`http`です（デフォルトは「http」）
   --name string
         このマシンの識別名
   --url string
-        tianjiのhttp URL、例: https://tianji.msgbyte.com
+        Tianjiのhttp URL（例： https://tianji.msgbyte.com）
   --vnstat
-        トラフィック統計にvnstatを使用します、Linuxのみ
+        トラフィック統計にvnstatを使用（Linuxのみ）
   --workspace string
-        tianjiのワークスペースID、これはUUIDである必要があります
+        TianjiのワークスペースID、UUIDである必要があります
 ```
 
-**url** と **workspace** は必須です。これは、サービスをどのホストとワークスペースに報告するかを意味します。
+**url**と**workspace**は必須です。これは、どのホストとどのワークスペースにサービスを報告するかを意味します。
 
-デフォルトでは、サーバーノード名はホスト名と同じになります。したがって、`--name` を使用してサーバーを識別できるようにカスタマイズできます。
+デフォルトで、サーバーノード名はホスト名と同じになります。`--name`を使用して名前をカスタマイズすることで、サーバーを識別するのに役立ちます。
 
 ## 自動インストールスクリプト
 
-`Tianji` -> `Servers` -> `Add` -> `Auto` タブで自動インストールスクリプトを取得できます。
+自動インストールスクリプトは `Tianji` -> `Servers` -> `Add` -> `Auto` タブで取得できます。
 
-レポーターを自動的にダウンロードし、Linuxサービスをマシンに作成します。したがって、root権限が必要です。
+これにより、レポーターが自動的にダウンロードされ、マシンにLinuxサービスが作成されます。ルート権限が必要です。
 
 ### アンインストール
 
-レポーターサービスをアンインストールしたい場合は、次のコマンドを使用できます:
+レポータサービスをアンインストールしたい場合は、次のコマンドを使用できます：
 ```bash
 curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
-```
+``` 
 
-主な変更点は、インストールコマンドの後に `-s uninstall` を追加することです。
+主要な変更点は、インストールコマンドの後に `-s uninstall` を追加することです。
 
 ## Q&A
 
-### tianjiレポーターサービスのログを確認するにはどうすればいいですか？
+### Tianjiレポータサービスのログを確認するには？
 
-自動インストールスクリプトでインストールした場合、tianjiは `tianji-reporter` という名前のサービスをLinuxマシンにインストールします。
+自動インストールスクリプトを使用してインストールした場合、TianjiはLinuxマシンに `tianji-reporter` という名前のサービスをインストールします。
 
-次のコマンドを使用してtianjiレポーターのログを確認できます:
+次のコマンドを使用してTianjiレポータのログを確認できます：
 
 ```bash
 journalctl -fu tianji-reporter.service
 ```
 
-### レポートが成功しているのにサーバータブにマシンが表示されない
+### サーバータブにマシンが見つからないが、報告は成功表示される
 
-tianjiが `nginx` などのリバースプロキシの背後にある可能性があります。
+おそらく、あなたのTianjiはリバースプロキシ（例えば、`nginx`）の背後にいるためです。
 
-リバースプロキシがWebSocketをサポートしていることを確認してください。
+リバースプロキシがWebSocketサポートを追加していることを確認してください。
 
-## なぜマシンが常にオフラインなのですか？
+## どうして私のマシンは常にオフラインなの？
 
-サーバーの日時を確認してください。
+サーバーの日付と時刻を確認してください。

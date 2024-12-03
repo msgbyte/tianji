@@ -10,6 +10,7 @@
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
+    "translation": "docusaurus-i18n --apiKey",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc"
@@ -43,6 +44,7 @@
     "@types/react-slick": "^0.23.11",
     "@types/react-vertical-timeline-component": "^3.3.6",
     "autoprefixer": "^10.4.16",
+    "docusaurus-i18n": "^1.1.4",
     "docusaurus-plugin-image-zoom": "^1.0.1",
     "postcss": "^8.4.31",
     "slick-carousel": "^1.8.1",

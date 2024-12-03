@@ -8,7 +8,7 @@
     "description": "The alt text of navbar logo"
   },
   "item.label.Docs": {
-    "message": "Docs",
+    "message": "Documents",
     "description": "Navbar item with label Docs"
   },
   "item.label.Pricing": {
