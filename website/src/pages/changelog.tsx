@@ -48,6 +48,38 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/11/19">
+          <h3 className="vertical-timeline-element-title">Release v1.17.0</h3>
+          <p>add subscription system</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/10/19">
+          <h3 className="vertical-timeline-element-title">Release v1.16.0</h3>
+          <p>add monitor summary</p>
+          <p>improve monitor page display</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/09/18">
+          <h3 className="vertical-timeline-element-title">Release v1.15.0</h3>
+          <p>add lighthouse feature</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/08/29">
+          <h3 className="vertical-timeline-element-title">Release v1.14.0</h3>
+          <p>add workspace switch and create</p>
+          <p>add workspace invite</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/08/11">
+          <h3 className="vertical-timeline-element-title">Release v1.13.0</h3>
+          <p>add authjs backend and new auth framework</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2023/07/22">
+          <h3 className="vertical-timeline-element-title">Release v1.12.0</h3>
+          <p>add channel feed feature</p>
+        </VerticalTimelineElement>
+
         <VerticalTimelineElement {...timelineStyle.normal} date="2023/05/20">
           <h3 className="vertical-timeline-element-title">Release v1.11.0</h3>
           <p>add server docker view</p>
