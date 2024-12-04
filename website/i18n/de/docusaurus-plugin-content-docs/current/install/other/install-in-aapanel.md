@@ -1,18 +1,18 @@
 ---
 sidebar_position: 1
-_i18n_hash: 43997bbd0580f9369f24a22f31d3ff82
+_i18n_hash: 91f69b34ae7ad8545b73c643b3ac0f1c
 ---
 # Installation in aaPanel
 
 ## Einführung
 
-`aaPanel` ist ein leistungsstarkes und benutzerfreundliches Webhosting-Control-Panel für Linux-Server. Mit einer Ein-Klick-Installation von LNMP/LAMP/OpenLiteSpeed-Entwicklungsumgebungen und Software.
+`aaPanel` ist ein leistungsstarkes und benutzerfreundliches Webhosting-Kontrollpanel für Linux-Server. Es ermöglicht die Ein-Klick-Installation von LNMP/LAMP/OpenLiteSpeed-Entwicklungsumgebungen und Software.
 
-[Klicken Sie hier, um aaPanel auf Ihrem Server bereitzustellen](https://www.aapanel.com/new/download.html?r=dk_tianji)
+[Klicken Sie hier, um aaPanel auf Ihrem Server zu installieren](https://www.aapanel.com/new/download.html?r=dk_tianji)
 
-> Gilt nur für BT Panel Version 9.2.0 und höher.
+> Gilt nur für aaPanel-Version 7.0.11 und höher.
 
-## Aktualisierungsliste und Suche
+## Aktualisierungs- und Suchliste
 
 Navbar `docker` -> `Ein-Klick-Installation` -> `suche tianji`
 
@@ -26,8 +26,8 @@ Navbar `docker` -> `Ein-Klick-Installation` -> `suche tianji`
 
 Sie können das Formular schnell ausfüllen, um die Installation abzuschließen.
 
-Und Sie müssen nur einen Moment warten. Dann können Sie Ihr eigenes Tianji in Ihrem Browser öffnen.
+Sie müssen nur einen Moment warten. Dann können Sie Ihr eigenes Tianji in Ihrem Browser öffnen.
 
-> URL: `http://<your-ip>:12345`  
+> Url: `http://<Ihre-IP>:12345`  
 > Standardbenutzername: `admin`  
 > Standardpasswort: `admin`  

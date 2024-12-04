@@ -10,7 +10,7 @@ sidebar_position: 1
 
 [Click here to deploy aaPanel in your server](https://www.aapanel.com/new/download.html?r=dk_tianji)
 
-> Applicable only for BT Panel version 9.2.0 and above.
+> Applicable only for aaPanel version 7.0.11 and above.
 
 ## Update List and Search
 
