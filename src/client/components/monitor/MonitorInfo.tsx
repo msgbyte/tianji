@@ -1,4 +1,4 @@
-import { Button, Card, Dropdown, Space, Spin, Modal } from 'antd';
+import { Card, Dropdown, Space, Spin, Modal } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { trpc } from '../../api/trpc';
@@ -19,8 +19,15 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { LuAlertTriangle } from 'react-icons/lu';
+import {
+  LuAlertTriangle,
+  LuDelete,
+  LuMoreVertical,
+  LuTrash2,
+} from 'react-icons/lu';
 import { useMonitorAction } from './useMonitorAction';
+import { Button } from '../ui/button';
+import { RiMoreLine } from 'react-icons/ri';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -79,7 +86,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               {hasAdminPermission && (
                 <div className="flex gap-2">
                   <Button
-                    type="primary"
+                    variant="secondary"
                     onClick={() => {
                       navigate({
                         to: '/monitor/$monitorId/edit',
@@ -139,7 +146,11 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                       ],
                     }}
                   >
-                    <Button icon={<MoreOutlined />} />
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      Icon={LuMoreVertical}
+                    />
                   </Dropdown>
 
                   <Modal
@@ -226,7 +237,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                   ],
                 }}
               >
-                <Button icon={<DeleteOutlined />} danger={true}>
+                <Button variant="destructive" Icon={LuTrash2}>
                   {t('Clear Data')}
                 </Button>
               </Dropdown>
