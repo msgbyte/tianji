@@ -1,4 +1,12 @@
-import { Form, Input, InputNumber, Select, Switch, Typography } from 'antd';
+import {
+  Dropdown,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Switch,
+  Typography,
+} from 'antd';
 import React from 'react';
 import { MonitorOverviewComponent, MonitorProvider } from './types';
 import { trpc } from '../../../api/trpc';
@@ -8,9 +16,17 @@ import { isEmpty } from 'lodash-es';
 import { useCurrentWorkspaceId } from '../../../store/user';
 import { z } from 'zod';
 import { useTranslation } from '@i18next-toolkit/react';
+import { Button } from '@/components/ui/button';
+import { useEvent } from '@/hooks/useEvent';
+import { LuArrowDown, LuChevronDown } from 'react-icons/lu';
 
 const MonitorHttp: React.FC = React.memo(() => {
   const { t } = useTranslation();
+  const form = Form.useFormInstance();
+
+  const handleSetHeaderValue = useEvent((json: Record<string, string>) => {
+    form.setFieldValue(['payload', 'headers'], JSON.stringify(json, null, 2));
+  });
 
   return (
     <>
@@ -38,7 +54,7 @@ const MonitorHttp: React.FC = React.memo(() => {
       </Form.Item>
 
       <Form.Item
-        label="Method"
+        label={t('Method')}
         name={['payload', 'method']}
         initialValue={'get'}
       >
@@ -102,6 +118,47 @@ const MonitorHttp: React.FC = React.memo(() => {
             },
           },
         ]}
+        extra={
+          <Dropdown
+            trigger={['click']}
+            placement="bottomRight"
+            menu={{
+              items: [
+                {
+                  key: 'default',
+                  label: t('Default Fetch Headers'),
+                  onClick: () =>
+                    handleSetHeaderValue({
+                      'Accept-Encoding': 'gzip, deflate, br, zstd',
+                      'Accept-Language': 'en-US,en;q=0.9',
+                      'Cache-Control': 'max-age=0',
+                      Priority: 'u=0, i',
+                      'Sec-Ch-Ua-Mobile': '?0',
+                      'Sec-Ch-Ua-Platform': 'macOS',
+                      'Sec-Fetch-Dest': 'document',
+                      'Sec-Fetch-Mode': 'navigate',
+                      'Sec-Fetch-Site': 'same-site',
+                      'Sec-Fetch-User': '?1',
+                      'Upgrade-Insecure-Requests': '1',
+                      'User-Agent':
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+                    }),
+                },
+              ],
+            }}
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
+              className="absolute -top-9 right-0"
+              Icon={LuChevronDown}
+              iconType="right"
+            >
+              {t('Preset')}
+            </Button>
+          </Dropdown>
+        }
       >
         <Input.TextArea
           rows={4}
