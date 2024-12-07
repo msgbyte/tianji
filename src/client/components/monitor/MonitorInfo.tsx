@@ -36,12 +36,12 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { monitorId } = props;
-  const [currectResponse, setCurrentResponse] = useState(0);
+  const [currentResponse, setCurrentResponse] = useState(0);
   const navigate = useNavigate();
   const [showBadge, setShowBadge] = useState(false);
   const isMobile = useIsMobile();
   const hasAdminPermission = useHasAdminPermission();
-  const isMonitorDown = currectResponse === -1;
+  const isMonitorDown = currentResponse === -1;
 
   const {
     data: monitorInfo,
@@ -202,7 +202,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
             <MonitorDataMetrics
               monitorId={monitorId}
               monitorType={monitorInfo.type}
-              currectResponse={currectResponse}
+              currentResponse={currentResponse}
             />
           </Card>
 

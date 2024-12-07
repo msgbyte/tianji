@@ -10,11 +10,11 @@ import { useTranslation } from '@i18next-toolkit/react';
 export const MonitorDataMetrics: React.FC<{
   monitorId: string;
   monitorType: string;
-  currectResponse?: number;
+  currentResponse?: number;
 }> = React.memo((props) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const { monitorId, monitorType, currectResponse } = props;
+  const { monitorId, monitorType, currentResponse } = props;
   const { data, isLoading } = trpc.monitor.dataMetrics.useQuery(
     {
       workspaceId,
@@ -62,11 +62,11 @@ export const MonitorDataMetrics: React.FC<{
 
   return (
     <div className="flex justify-between text-center">
-      {typeof currectResponse === 'number' && (
+      {typeof currentResponse === 'number' && (
         <MonitorStatsBlock
           title={t('Response')}
           desc={t('(Current)')}
-          text={formatterFn(currectResponse)}
+          text={formatterFn(currentResponse)}
         />
       )}
 
