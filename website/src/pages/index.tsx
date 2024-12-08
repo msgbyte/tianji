@@ -35,7 +35,34 @@ function HomepageHeader() {
         </div>
       </div>
 
-      <div className="my-6 text-center">
+      <div className="mb-4 mt-8 flex justify-center">
+        <div className="flex flex-col gap-2">
+          <Link
+            // to="/docs/intro"
+            to="https://app-tianji.msgbyte.com/"
+            className="cursor-pointer rounded-full bg-blue-500 px-8 py-3 text-lg font-bold text-white hover:bg-blue-800 hover:text-white hover:no-underline"
+            data-tianji-event="homepage-getstart"
+          >
+            Get Start in Cloud
+          </Link>
+
+          {/* <Link
+            to={'https://github.com/msgbyte/tianji'}
+            className="flex cursor-pointer items-center gap-2 rounded-full bg-zinc-800 px-8 py-3 text-lg font-bold text-white hover:bg-zinc-600 hover:text-white hover:no-underline"
+            data-tianji-event="homepage-star"
+          >
+            <LuGithub />
+            <span>Deploy in Local</span>
+          </Link> */}
+        </div>
+      </div>
+
+      <div className="text-center font-bold">Or</div>
+
+      <div className="my-3 mt-2 text-center">
+        <div className="mb-2 text-center text-sm opacity-60">
+          Deploy by your self with Docker Compose
+        </div>
         {/* <Link
           className="button button--primary button--lg"
           to="mailto:moonrailgun@gmail.com?subject=I want to apply for Tianji early access account&body=Here is my account: <Here place your username>"
@@ -75,31 +102,13 @@ function HomepageHeader() {
           ASAP.
         </small>
       </div>
-
-      <div className="mb-16 flex justify-center gap-4">
-        <Link
-          to="/docs/intro"
-          className="cursor-pointer rounded-full bg-blue-500 px-8 py-3 text-lg font-bold text-white hover:bg-blue-800 hover:text-white hover:no-underline"
-          data-tianji-event="homepage-getstart"
-        >
-          Get Start
-        </Link>
-        <Link
-          to={'https://github.com/msgbyte/tianji'}
-          className="flex cursor-pointer items-center gap-2 rounded-full bg-zinc-800 px-8 py-3 text-lg font-bold text-white hover:bg-zinc-600 hover:text-white hover:no-underline"
-          data-tianji-event="homepage-star"
-        >
-          <LuGithub />
-          <span>Star</span>
-        </Link>
-      </div>
     </header>
   );
 }
 
 function HomepageMain() {
   return (
-    <main className="container pb-8">
+    <main className="container overflow-hidden pb-8">
       {/* <div className="mb-8 mt-4 flex flex-wrap justify-around gap-2">
         <div className="checked-item rounded border border-solid border-gray-300 px-4 py-2">
           ✔ No cookies
