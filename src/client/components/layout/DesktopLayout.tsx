@@ -2,6 +2,7 @@ import * as React from 'react';
 import {
   LuActivitySquare,
   LuAreaChart,
+  LuCompass,
   LuFilePieChart,
   LuMonitorDot,
   LuServer,
@@ -66,6 +67,17 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
       <div className="p-2">
         <CommandPanel isCollapsed={isCollapsed} />
       </div>
+      <Separator />
+      <Nav
+        isCollapsed={isCollapsed}
+        links={[
+          {
+            title: t('Insights'),
+            icon: LuCompass,
+            to: '/insights',
+          },
+        ]}
+      />
       <Separator />
       <Nav
         isCollapsed={isCollapsed}

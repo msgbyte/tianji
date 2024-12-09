@@ -22,6 +22,7 @@ import { Route as PlaygroundImport } from './routes/playground'
 import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
+import { Route as InsightsImport } from './routes/insights'
 import { Route as FeedImport } from './routes/feed'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
@@ -105,6 +106,11 @@ const MonitorRoute = MonitorImport.update({
 
 const LoginRoute = LoginImport.update({
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InsightsRoute = InsightsImport.update({
+  path: '/insights',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -258,6 +264,10 @@ declare module '@tanstack/react-router' {
     }
     '/feed': {
       preLoaderRoute: typeof FeedImport
+      parentRoute: typeof rootRoute
+    }
+    '/insights': {
+      preLoaderRoute: typeof InsightsImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -420,6 +430,7 @@ export const routeTree = rootRoute.addChildren([
     FeedChannelIdEditRoute,
     FeedChannelIdIndexRoute,
   ]),
+  InsightsRoute,
   LoginRoute,
   MonitorRoute.addChildren([
     MonitorAddRoute,
