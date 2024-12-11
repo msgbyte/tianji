@@ -28,6 +28,7 @@ import { CommandPanel } from '@/components/CommandPanel';
 import { RiSurveyLine } from 'react-icons/ri';
 import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
 import { FreeTierTip } from '../FreeTierTip';
+import { DevContainer } from '../DevContainer';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -68,17 +69,21 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
         <CommandPanel isCollapsed={isCollapsed} />
       </div>
       <Separator />
-      <Nav
-        isCollapsed={isCollapsed}
-        links={[
-          {
-            title: t('Insights'),
-            icon: LuCompass,
-            to: '/insights',
-          },
-        ]}
-      />
-      <Separator />
+
+      <DevContainer>
+        <Nav
+          isCollapsed={isCollapsed}
+          links={[
+            {
+              title: t('Insights'),
+              icon: LuCompass,
+              to: '/insights',
+            },
+          ]}
+        />
+        <Separator />
+      </DevContainer>
+
       <Nav
         isCollapsed={isCollapsed}
         links={[
