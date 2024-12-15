@@ -64,7 +64,7 @@ COPY --from=static /app/tianji/src/server/public /app/tianji/src/server/public
 
 RUN pnpm build:server
 
-RUN pip install apprise --break-system-packages
+RUN pip install apprise cryptography --break-system-packages
 
 RUN rm -rf ./src/client
 RUN rm -rf ./website
