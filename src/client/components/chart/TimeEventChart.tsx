@@ -1,7 +1,7 @@
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
 import { DateUnit } from '@tianji/shared';
 import React, { useState } from 'react';
-import { formatDateWithUnit } from '../utils/date';
+import { formatDateWithUnit } from '../../utils/date';
 import {
   Area,
   AreaChart,
@@ -17,7 +17,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from './ui/chart';
+} from '../ui/chart';
 import { useStrokeDasharray } from '@/hooks/useStrokeDasharray';
 
 const chartConfig = {

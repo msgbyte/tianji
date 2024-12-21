@@ -14,7 +14,7 @@ import { AppRouterOutput, trpc } from '../../api/trpc';
 import { getUserTimezone } from '../../api/model/user';
 import { useGlobalStateStore } from '../../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
-import { TimeEventChart } from '../TimeEventChart';
+import { TimeEventChart } from '../chart/TimeEventChart';
 import { Link } from '@tanstack/react-router';
 
 export const WebsiteOverview: React.FC<{
