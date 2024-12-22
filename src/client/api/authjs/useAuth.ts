@@ -66,7 +66,7 @@ export function useAuth() {
         res = await signIn(provider, {
           redirect: false,
         });
-        console.log('res', res);
+        console.log('loginWithOAuth', res);
       } catch (err) {
         toast.error(t('Login failed'));
         throw err;

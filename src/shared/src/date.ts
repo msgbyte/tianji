@@ -18,3 +18,63 @@ export function getMinimumUnit(
 
   return 'year';
 }
+
+function createDateUnitFn(unit: DateUnit) {
+  return {
+    diff: (end: ConfigType, start: ConfigType) => dayjs(end).diff(start, unit),
+    add: (date: ConfigType, n: number) => dayjs(date).add(n, unit),
+    normalize: (date: ConfigType) => dayjs(date).startOf(unit),
+  };
+}
+
+export function formatDate(val: ConfigType) {
+  return dayjs(val).format('YYYY-MM-DD HH:mm:ss');
+}
+
+/**
+ * generate a date array from start to end date
+ */
+export function getDateArray<T extends { date: string }>(
+  data: T[],
+  startDate: ConfigType,
+  endDate: ConfigType,
+  unit: DateUnit
+): T[] {
+  if (data.length === 0) {
+    return [];
+  }
+
+  const defaultItem: Omit<T, 'date'> = Object.keys(data[0]).reduce(
+    (acc: any, key) => {
+      if (key === 'date') {
+        return acc;
+      }
+
+      acc[key] = 0;
+
+      return acc;
+    },
+    {}
+  );
+
+  const arr: T[] = [];
+  const { diff, add, normalize } = createDateUnitFn(unit);
+  const n = diff(endDate, startDate) + 1;
+
+  function findData(date: dayjs.Dayjs) {
+    const target = data.find((item) => {
+      return normalize(dayjs(item.date)).unix() === date.unix();
+    });
+
+    return { ...defaultItem, ...target };
+  }
+
+  for (let i = 0; i < n; i++) {
+    const t = normalize(add(startDate, i));
+    const item = findData(t);
+
+    arr.push({ ...item, date: formatDate(t) } as T);
+  }
+
+  return arr;
+}

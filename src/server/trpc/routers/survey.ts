@@ -23,6 +23,8 @@ import { createFeedEvent } from '../../model/feed/event.js';
 import { formatString } from '../../utils/template.js';
 import { logger } from '../../utils/logger.js';
 import axios from 'axios';
+import { getSurveyStats } from '../../model/survey.js';
+import dayjs from 'dayjs';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -174,7 +176,7 @@ export const surveyRouter = router({
         },
       });
 
-      // async to push into survey
+      // async to push into feed channel
       prisma.survey
         .findFirst({
           where: {
@@ -388,6 +390,42 @@ export const surveyRouter = router({
         items,
         nextCursor,
       };
+    }),
+  stats: workspaceProcedure
+    .meta(
+      buildSurveyOpenapi({
+        method: 'GET',
+        path: '/{surveyId}/stats',
+      })
+    )
+    .input(
+      z.object({
+        surveyId: z.string(),
+        startAt: z.number().optional(),
+        endAt: z.number().optional(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          date: z.string(),
+          count: z.number(),
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const {
+        surveyId,
+        startAt = dayjs().subtract(7, 'week').startOf('day').toDate(),
+        endAt = dayjs().endOf('day').toDate(),
+      } = input;
+
+      const res = await getSurveyStats(surveyId, {
+        startDate: new Date(startAt),
+        endDate: new Date(endAt),
+      });
+
+      return res;
     }),
 });
 

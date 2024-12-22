@@ -20,20 +20,22 @@ import {
 } from '../ui/chart';
 import { useStrokeDasharray } from '@/hooks/useStrokeDasharray';
 
-const chartConfig = {
+const defaultChartConfig: ChartConfig = {
   pv: {
     label: 'PV',
   },
   uv: {
     label: 'UV',
   },
-} satisfies ChartConfig;
+};
 
 export const TimeEventChart: React.FC<{
-  labelMapping?: Record<string, string>;
+  className?: string;
   data: { date: string; [key: string]: number | string }[];
   unit: DateUnit;
+  chartConfig?: ChartConfig;
 }> = React.memo((props) => {
+  const { className, chartConfig = defaultChartConfig } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
   const [strokeDasharray, setStrokeDasharray] = React.useState([...strokes]);
@@ -42,23 +44,30 @@ export const TimeEventChart: React.FC<{
     const lineDasharray = strokeDasharray.find((s) => s.name === name);
     return lineDasharray ? lineDasharray.strokeDasharray : undefined;
   };
-  const [selectedItem, setSelectedItem] = useState<string[]>(['pv', 'uv']);
+  const [selectedItem, setSelectedItem] = useState<string[]>(() =>
+    Object.keys(chartConfig)
+  );
 
   return (
-    <ChartContainer config={chartConfig}>
+    <ChartContainer className={className} config={chartConfig}>
       <AreaChart
         data={props.data}
         margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
       >
         <defs>
-          <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.chart.pv} stopOpacity={0.8} />
-            <stop offset="95%" stopColor={colors.chart.pv} stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={colors.chart.uv} stopOpacity={0.8} />
-            <stop offset="95%" stopColor={colors.chart.uv} stopOpacity={0} />
-          </linearGradient>
+          {Object.keys(chartConfig).map((key, i) => {
+            const color =
+              chartConfig[key].color ??
+              (colors.chart as any)[key] ??
+              colors.chart.default;
+
+            return (
+              <linearGradient id={`color-${key}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            );
+          })}
         </defs>
         <Customized component={calcStrokeDasharray} />
         <XAxis
@@ -83,31 +92,29 @@ export const TimeEventChart: React.FC<{
           }
         />
         <CartesianGrid vertical={false} />
+
         <ChartTooltip content={<ChartTooltipContent />} />
 
-        <Area
-          hide={!selectedItem.includes('pv')}
-          type="monotone"
-          dataKey="pv"
-          stroke={colors.chart.pv}
-          fillOpacity={1}
-          fill="url(#colorUv)"
-          strokeWidth={2}
-          strokeDasharray={getStrokeDasharray('pv')}
-          onAnimationEnd={handleAnimationEnd}
-        />
-
-        <Area
-          hide={!selectedItem.includes('uv')}
-          type="monotone"
-          dataKey="uv"
-          stroke={colors.chart.uv}
-          fillOpacity={1}
-          fill="url(#colorPv)"
-          strokeWidth={2}
-          strokeDasharray={getStrokeDasharray('uv')}
-          onAnimationEnd={handleAnimationEnd}
-        />
+        {Object.keys(chartConfig).map((key, i) => {
+          return (
+            <Area
+              key={key}
+              hide={!selectedItem.includes(key)}
+              type="monotone"
+              dataKey={key}
+              stroke={
+                chartConfig[key].color ??
+                (colors.chart as any)[key] ??
+                colors.chart.default
+              }
+              fillOpacity={1}
+              fill={`url(#color-${key})`}
+              strokeWidth={2}
+              strokeDasharray={getStrokeDasharray(key)}
+              onAnimationEnd={handleAnimationEnd}
+            />
+          );
+        })}
       </AreaChart>
     </ChartContainer>
   );

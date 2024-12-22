@@ -83,6 +83,7 @@ export function useTheme() {
         pv: primaryColor.alpha(0.4).toRgbString(),
         uv: primaryColor.alpha(0.6).toRgbString(),
         monitor: healthColor.alpha(0.8).toRgbString(),
+        default: primaryColor.alpha(0.8).toRgbString(),
       },
       map: {
         baseColor: THEME_COLORS[theme].primary,

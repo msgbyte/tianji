@@ -22,6 +22,7 @@ import dayjs from 'dayjs';
 import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
 import { VirtualizedInfiniteDataTable } from '@/components/VirtualizedInfiniteDataTable';
 import { Loading } from '@/components/Loading';
+import { TimeEventChart } from '@/components/chart/TimeEventChart';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -62,6 +63,12 @@ function PageComponent() {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
+  const { data: surveyStats = [] } = trpc.survey.stats.useQuery({
+    workspaceId,
+    surveyId,
+    startAt: dayjs().subtract(1, 'week').startOf('days').valueOf(),
+    endAt: dayjs().endOf('days').valueOf(),
+  });
   const deleteMutation = trpc.survey.delete.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
@@ -147,11 +154,26 @@ function PageComponent() {
             <CardHeader>
               <CardTitle>{t('Count')}</CardTitle>
             </CardHeader>
-            <CardContent className="flex justify-between">
-              <div>{count}</div>
-              <div className="flex gap-2">
-                <SurveyUsageBtn surveyId={surveyId} />
-                <SurveyDownloadBtn surveyId={surveyId} />
+            <CardContent>
+              <div className="flex justify-between">
+                <div>{count}</div>
+                <div className="flex gap-2">
+                  <SurveyUsageBtn surveyId={surveyId} />
+                  <SurveyDownloadBtn surveyId={surveyId} />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <TimeEventChart
+                  className="h-[240px] w-full"
+                  data={surveyStats}
+                  unit="day"
+                  chartConfig={{
+                    count: {
+                      label: t('Count'),
+                    },
+                  }}
+                />
               </div>
             </CardContent>
           </Card>

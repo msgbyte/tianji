@@ -14,11 +14,14 @@ const POSTGRESQL_DATE_FORMATS = {
   year: 'YYYY-01-01',
 };
 
-export interface BaseQueryFilters {
-  startDate?: Date;
-  endDate?: Date;
+export interface QueryOptions {
   timezone?: string;
   unit?: keyof typeof POSTGRESQL_DATE_FORMATS;
+}
+
+export interface BaseQueryFilters extends QueryOptions {
+  startDate?: Date;
+  endDate?: Date;
   url?: string;
   country?: string;
   region?: string;

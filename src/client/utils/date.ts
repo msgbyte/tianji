@@ -21,6 +21,10 @@ function createDateUnitFn(unit: DateUnit) {
   };
 }
 
+/**
+ * @deprecated
+ * replace with `@tianji/shared`
+ */
 export function getDateArray(
   data: { x: string; y: number }[],
   startDate: dayjs.ConfigType,
