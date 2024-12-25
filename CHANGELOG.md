@@ -1,5 +1,32 @@
 
 
+## [1.17.5](https://github.com/msgbyte/tianji/compare/v1.17.4...v1.17.5) (2024-12-25)
+
+### Features
+
+* add default header preset in http monitor ([60a1d84](https://github.com/msgbyte/tianji/commit/60a1d847497604be32a7f89e2e274c997cdaaa5f))
+* add insight route in dev ([04e93bf](https://github.com/msgbyte/tianji/commit/04e93bf542594e4bbfa85d0cd44dac0617f8faa3))
+* add new login background ([6f367c2](https://github.com/msgbyte/tianji/commit/6f367c2c48c9621e3070055bea42229f136093a6))
+* add paused tip ([d688a78](https://github.com/msgbyte/tianji/commit/d688a787427d1fd6d349a7576468021c8a795d13))
+* add survey stats chart ([536e3b1](https://github.com/msgbyte/tianji/commit/536e3b1c6212d59b438f75ed6795e8b9e3c7f5e2))
+
+### Document
+
+* add aapanel install guide ([ba39fab](https://github.com/msgbyte/tianji/commit/ba39fab4dfa3ea95f114f2961a9eeae3dfda24cf))
+* add cloud link ([0ac3f41](https://github.com/msgbyte/tianji/commit/0ac3f414f9212eccfdaec0699eb3e5c7d7eab390))
+* update aapanel version and name of china ([1cf43cc](https://github.com/msgbyte/tianji/commit/1cf43cc2a5fe83a9f6b2a3aa0c76674cc06c87fd))
+* update changelog ([a0c54ba](https://github.com/msgbyte/tianji/commit/a0c54ba01bac691823c45f00781b73b7d72ded09))
+* update website and make cloud entry more strong ([4df9a5f](https://github.com/msgbyte/tianji/commit/4df9a5f6867e33a61ceacba074179f38d6aa6431))
+
+### Others
+
+* add clickhouse config ([8daabe3](https://github.com/msgbyte/tianji/commit/8daabe322e761aea1257c39e9947a7c7d7196a7e))
+* add dev container for insights feature ([f8ba1dc](https://github.com/msgbyte/tianji/commit/f8ba1dc4d00db347e59d50612d9530643834555c))
+* fix typo ([6b34f10](https://github.com/msgbyte/tianji/commit/6b34f10bfd3d00a5bf8b0a5706422a8ee75455df))
+* move k8s folder to docker/k8s folder. ([08b37ce](https://github.com/msgbyte/tianji/commit/08b37ce16b1494731bf5140465a09659d2c186a4))
+* move TimeEventChart component ([e5cc2ee](https://github.com/msgbyte/tianji/commit/e5cc2eebf84eb7aaba6747939d0a14d42f337de0))
+* update monitor page style ([691bc4b](https://github.com/msgbyte/tianji/commit/691bc4bdb3fc4cc5d030616cb272ce2153b88e5f))
+
 ## [1.17.4](https://github.com/msgbyte/tianji/compare/v1.17.3...v1.17.4) (2024-11-29)
 
 ### Document
