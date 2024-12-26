@@ -25,7 +25,7 @@ import {
   getWebsitePageviewMetrics,
 } from '../../model/website.js';
 import { websiteInfoSchema } from '../../model/_schema/index.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import { hostnameRegex } from '@tianji/shared';
 import {
   websiteFilterSchema,

@@ -7,7 +7,7 @@ import {
   workspaceProcedure,
 } from '../../trpc.js';
 import { OPENAPI_TAG } from '../../../utils/const.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import {
   FeedChannelModelSchema,
   FeedEventModelSchema,

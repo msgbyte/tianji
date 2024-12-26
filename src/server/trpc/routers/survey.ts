@@ -12,7 +12,7 @@ import {
   SurveyModelSchema,
   SurveyResultModelSchema,
 } from '../../prisma/zod/index.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import { hashUuid } from '../../utils/common.js';
 import { getRequestInfo } from '../../utils/detect.js';
 import { SurveyPayloadSchema } from '../../prisma/zod/schemas/index.js';

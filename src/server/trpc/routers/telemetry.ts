@@ -13,7 +13,7 @@ import {
 } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
 import { TelemetryModelSchema } from '../../prisma/zod/index.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import {
   baseFilterSchema,
   baseStatsSchema,

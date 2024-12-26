@@ -38,7 +38,7 @@
     "tar": "^6.1.15",
     "ts-node": "^10.9.1",
     "tsx": "^4.16.2",
-    "typescript": "^5.3.3",
+    "typescript": "5.7.2",
     "vite": "^5.0.12"
   },
   "dependencies": {
@@ -53,7 +53,7 @@
       "dayjs": "1.11.10",
       "esbuild": "0.24.0",
       "postman-code-generators": "1.8.0",
-      "typescript": "5.5.4"
+      "typescript": "5.7.2"
     },
     "patchedDependencies": {
       "zod-prisma@0.5.4": "patches/zod-prisma@0.5.4.patch"

@@ -4,7 +4,7 @@ import { jwtVerify } from '../middleware/auth.js';
 import { getWorkspaceUser } from '../model/workspace.js';
 import { ROLES, SYSTEM_ROLES } from '@tianji/shared';
 import type { Request } from 'express';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import { getSession } from '@auth/express';
 import { authConfig } from '../model/auth.js';
 import { get } from 'lodash-es';

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { OpenApiMetaInfo, publicProcedure, router } from '../../trpc.js';
 import { prisma } from '../../../model/_client.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../../utils/const.js';
 import { createFeedEvent } from '../../../model/feed/event.js';
 import { tencentCloudAlarmSchema } from '../../../model/_schema/feed.js';

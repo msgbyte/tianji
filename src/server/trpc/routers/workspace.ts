@@ -16,7 +16,7 @@ import {
 } from '../../model/_schema/index.js';
 import { Prisma } from '@prisma/client';
 import { OPENAPI_TAG } from '../../utils/const.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import { getServerCount } from '../../model/serverStatus.js';
 import { ROLES, slugRegex } from '@tianji/shared';
 import {

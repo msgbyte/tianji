@@ -4,7 +4,7 @@ import { appRouter } from './routers/index.js';
 import {
   createOpenApiHttpHandler,
   generateOpenApiDocument,
-} from 'trpc-openapi';
+} from 'trpc-to-openapi';
 const packageJson = await import('../../../package.json', {
   assert: { type: 'json' },
 });

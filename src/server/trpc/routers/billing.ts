@@ -7,7 +7,7 @@ import {
 } from '../trpc.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
-import { OpenApiMeta } from 'trpc-openapi';
+import { OpenApiMeta } from 'trpc-to-openapi';
 import {
   cancelSubscription,
   changeSubscription,
