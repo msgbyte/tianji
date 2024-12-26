@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Command,
   CommandDialog,
@@ -30,8 +30,9 @@ import { useCommandState } from 'cmdk';
 import { useTranslation } from '@i18next-toolkit/react';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { CommandType, useCommandPanel } from './store';
 
 interface CommandPanelProps {
   isCollapsed: boolean;
@@ -40,6 +41,11 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const commands = useCommandPanel((state) => state.commands);
+  const currentPageCommands = useMemo(
+    () => Object.entries(commands),
+    [commands]
+  );
 
   const handleJump = useEvent((options: NavigateOptions) => {
     return () => {
@@ -95,8 +101,22 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
         <Command loop={true}>
           <CommandInput placeholder={t('Type a command or search...')} />
           <CommandList>
-            <CommandEmpty>{t('No results found.')}</CommandEmpty>
+            {currentPageCommands.length === 0 && (
+              <CommandEmpty>{t('No results found.')}</CommandEmpty>
+            )}
+
             <CommandPanelSearchGroup handleJump={handleJump} />
+            {currentPageCommands.length > 0 && (
+              <CommandGroup heading={t('Current Page')} forceMount={true}>
+                {currentPageCommands.map(([key, command]) => (
+                  <CurrentPageCommandItem
+                    key={key}
+                    command={command}
+                    onSelect={() => setOpen(false)}
+                  />
+                ))}
+              </CommandGroup>
+            )}
             <CommandGroup heading={t('Suggestions')}>
               <CommandItem
                 onSelect={handleJump({
@@ -197,6 +217,28 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
   );
 });
 CommandPanel.displayName = 'CommandPanel';
+
+export const CurrentPageCommandItem: React.FC<{
+  command: CommandType;
+  onSelect: () => void;
+}> = React.memo(({ command, onSelect }) => {
+  const text = useCommandState((state) => state.search);
+  const label =
+    typeof command.label === 'function' ? command.label(text) : command.label;
+
+  return (
+    <CommandItem
+      forceMount={true}
+      value={label}
+      onSelect={() => {
+        command.handler(text);
+        onSelect();
+      }}
+    >
+      {label}
+    </CommandItem>
+  );
+});
 
 interface CommandPanelSearchGroupProps {
   handleJump: (options: NavigateOptions) => () => void;

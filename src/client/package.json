@@ -58,7 +58,7 @@
     "bytemd": "^1.21.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "cmdk": "^1.0.0",
+    "cmdk": "^1.0.4",
     "colord": "^2.9.3",
     "copy-to-clipboard": "^3.3.3",
     "date-fns": "^3.6.0",
