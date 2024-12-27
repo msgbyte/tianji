@@ -23,6 +23,8 @@ import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
 import { VirtualizedInfiniteDataTable } from '@/components/VirtualizedInfiniteDataTable';
 import { Loading } from '@/components/Loading';
 import { TimeEventChart } from '@/components/chart/TimeEventChart';
+import { useRegisterCommand } from '@/components/CommandPanel/store';
+import { useAIAction } from '@/components/ai/useAIAction';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -75,6 +77,14 @@ function PageComponent() {
   });
   const trpcUtils = trpc.useUtils();
   const navigate = useNavigate();
+  const { askAIQuestion } = useAIAction();
+
+  useRegisterCommand('survey-ai', {
+    label: (text) => t('Ask AI about this survey with: {{text}}', { text }),
+    handler: async (input) => {
+      askAIQuestion(input);
+    },
+  });
 
   const handleDelete = useEvent(async () => {
     await deleteMutation.mutateAsync({ workspaceId, surveyId });

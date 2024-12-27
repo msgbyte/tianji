@@ -11,8 +11,10 @@ import { billingRouter } from './billing.js';
 import { telemetryRouter } from './telemetry.js';
 import { surveyRouter } from './survey.js';
 import { feedRouter } from './feed/index.js';
+import { aiRouter } from './ai.js';
 
 export const appRouter = router({
+  ai: aiRouter,
   global: globalRouter,
   user: userRouter,
   workspace: workspaceRouter,

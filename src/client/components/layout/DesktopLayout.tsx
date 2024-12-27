@@ -29,6 +29,7 @@ import { RiSurveyLine } from 'react-icons/ri';
 import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
 import { FreeTierTip } from '../FreeTierTip';
 import { DevContainer } from '../DevContainer';
+import { AIPanel } from '../ai/AIPanel';
 
 const defaultLayout: [number, number, number] = [265, 440, 655];
 
@@ -151,6 +152,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
   return (
     <div className="flex h-full w-full flex-col">
       <WorkspacePauseTip />
+      <AIPanel />
 
       <ResizablePanelGroup
         className="flex-1 items-stretch"

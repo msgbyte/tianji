@@ -12,7 +12,7 @@ interface CommandPanelState {
   commands: Record<string, CommandType>;
 }
 
-export const useCommandPanel = create<CommandPanelState>((set) => ({
+export const useCommandPanelStore = create<CommandPanelState>((set) => ({
   commands: {},
 }));
 
@@ -26,9 +26,9 @@ export function useRegisterCommand(
   const fn = useEvent(options.handler);
 
   useEffect(() => {
-    useCommandPanel.setState({
+    useCommandPanelStore.setState({
       commands: {
-        ...useCommandPanel.getState().commands,
+        ...useCommandPanelStore.getState().commands,
         [key]: {
           key,
           label: options.label,
@@ -39,11 +39,11 @@ export function useRegisterCommand(
 
     return () => {
       const commands = {
-        ...useCommandPanel.getState().commands,
+        ...useCommandPanelStore.getState().commands,
       };
       delete commands[key];
 
-      useCommandPanel.setState({
+      useCommandPanelStore.setState({
         commands: {
           ...commands,
         },

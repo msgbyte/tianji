@@ -32,7 +32,7 @@ import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-import { CommandType, useCommandPanel } from './store';
+import { CommandType, useCommandPanelStore } from './store';
 
 interface CommandPanelProps {
   isCollapsed: boolean;
@@ -41,7 +41,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const commands = useCommandPanel((state) => state.commands);
+  const commands = useCommandPanelStore((state) => state.commands);
   const currentPageCommands = useMemo(
     () => Object.entries(commands),
     [commands]

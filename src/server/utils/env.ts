@@ -10,6 +10,7 @@ const jwtSecret =
 
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
+  isDev: process.env.NODE_ENV === 'development',
   isTest: process.env.NODE_ENV === 'test',
   jwtSecret,
   port: Number(process.env.PORT || 12345),
@@ -58,6 +59,10 @@ export const env = {
         team: process.env.LEMON_SQUEEZY_SUBSCRIPTION_TEAM_ID ?? '',
       },
     },
+  },
+  openai: {
+    enable: Boolean(process.env.OPENAI_API_KEY),
+    apiKey: process.env.OPENAI_API_KEY,
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),

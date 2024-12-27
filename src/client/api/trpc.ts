@@ -7,6 +7,8 @@ import {
   loggerLink,
   splitLink,
   TRPCClientErrorLike,
+  unstable_httpBatchStreamLink,
+  createTRPCClientProxy,
 } from '@trpc/client';
 import { message } from 'antd';
 import { isDev } from '../utils/env';
@@ -33,22 +35,33 @@ export const trpcClient = trpc.createClient({
     }),
     splitLink({
       condition(op) {
-        // check for context property `skipBatch`
-        return op.context.skipBatch === true;
+        return op.context.stream === true;
       },
-      true: httpLink({
-        url,
+      true: unstable_httpBatchStreamLink({
+        url: url,
         headers,
       }),
-      // when condition is false, use batching
-      false: httpBatchLink({
-        url,
-        headers,
-        maxURLLength: 2083,
+      false: splitLink({
+        condition(op) {
+          // check for context property `skipBatch`
+          return op.context.skipBatch === true;
+        },
+        true: httpLink({
+          url,
+          headers,
+        }),
+        // when condition is false, use batching
+        false: httpBatchLink({
+          url,
+          headers,
+          maxURLLength: 2083,
+        }),
       }),
     }),
   ],
 });
+
+export const trpcClientProxy = createTRPCClientProxy<AppRouter>(trpcClient);
 
 /**
  * @usage
