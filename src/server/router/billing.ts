@@ -98,7 +98,9 @@ function signatureIsValid(rawBody: string, requestSignature: string) {
   const digest = Buffer.from(hmac.update(rawBody).digest('hex'), 'utf8');
   const signature = Buffer.from(requestSignature, 'utf8');
 
-  if (!crypto.timingSafeEqual(digest, signature)) {
+  if (
+    !crypto.timingSafeEqual(new Uint8Array(digest), new Uint8Array(signature))
+  ) {
     throw new Error('Invalid signature.');
   }
 }

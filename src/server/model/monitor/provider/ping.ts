@@ -55,7 +55,7 @@ function pingAction(hostname: string, packetSize = 56) {
 
 function convertToUTF8(body: string) {
   const buffer = Buffer.from(body);
-  const guessEncoding = chardet.detect(buffer) ?? 'UTF-8';
+  const guessEncoding = chardet.detect(new Uint8Array(buffer)) ?? 'UTF-8';
   const str = iconv.decode(buffer, guessEncoding);
   return str.toString();
 }
