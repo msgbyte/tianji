@@ -176,7 +176,7 @@ export const TelemetryList: React.FC = React.memo(() => {
         title={t('Add Telemetry')}
         open={isEditModalOpen}
         okButtonProps={{
-          loading: upsertTelemetryMutation.isLoading,
+          loading: upsertTelemetryMutation.isPending,
         }}
         onOk={() => handleAddTelemetry()}
         onCancel={() => setIsEditModalOpen(false)}
@@ -245,7 +245,7 @@ const TelemetryListTable: React.FC<{
                 title={t('Confirm to delete this telemetry: [{{name}}]', {
                   name: record.name,
                 })}
-                disabled={deleteMutation.isLoading}
+                disabled={deleteMutation.isPending}
                 onConfirm={async () => {
                   await deleteMutation.mutateAsync({
                     telemetryId: record.id,
@@ -256,7 +256,7 @@ const TelemetryListTable: React.FC<{
               >
                 <Button
                   danger={true}
-                  disabled={deleteMutation.isLoading}
+                  disabled={deleteMutation.isPending}
                   icon={<DeleteOutlined />}
                 />
               </Popconfirm>

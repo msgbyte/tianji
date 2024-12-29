@@ -328,7 +328,7 @@ function PageComponent() {
                   >
                     <Button
                       type="button"
-                      loading={deleteWorkspaceMutation.isLoading}
+                      loading={deleteWorkspaceMutation.isPending}
                       variant="destructive"
                     >
                       {t('Delete Workspace')}

@@ -90,7 +90,7 @@ function TelemetryAddComponent() {
                 />
               </CardContent>
               <CardFooter>
-                <Button type="submit" loading={addTelemetryMutation.isLoading}>
+                <Button type="submit" loading={addTelemetryMutation.isPending}>
                   {t('Create')}
                 </Button>
               </CardFooter>

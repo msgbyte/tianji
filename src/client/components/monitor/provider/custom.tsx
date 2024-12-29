@@ -69,7 +69,7 @@ export const MonitorCustom: React.FC = React.memo(() => {
         <CodeEditor height={320} />
       </Form.Item>
       <Button
-        loading={testScriptMutation.isLoading}
+        loading={testScriptMutation.isPending}
         icon={<PlayCircleOutlined />}
         onClick={handleTestCode}
       >

@@ -141,7 +141,7 @@ export function usePlans(options: UsePlanOptions) {
               ) : (
                 <Button
                   className="w-full"
-                  disabled={checkoutMutation.isLoading}
+                  disabled={checkoutMutation.isPending}
                   onClick={plan.onClick}
                 >
                   {t('{{action}} to {{plan}}', {

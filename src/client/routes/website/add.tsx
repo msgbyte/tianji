@@ -107,7 +107,7 @@ function WebsiteAddComponent() {
                 />
               </CardContent>
               <CardFooter>
-                <Button type="submit" loading={addWebsiteMutation.isLoading}>
+                <Button type="submit" loading={addWebsiteMutation.isPending}>
                   {t('Create')}
                 </Button>
               </CardFooter>

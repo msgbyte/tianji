@@ -114,7 +114,7 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
                   <DialogTrigger>
                     <Button
                       variant="outline"
-                      loading={createMutation.isLoading}
+                      loading={createMutation.isPending}
                       Icon={LuPlus}
                     >
                       {t('Create Report')}
@@ -140,7 +140,7 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
 
                     <DialogFooter>
                       <Button
-                        loading={createMutation.isLoading}
+                        loading={createMutation.isPending}
                         onClick={handleGenerateReport}
                       >
                         {t('Create')}

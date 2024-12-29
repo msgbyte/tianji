@@ -1,6 +1,7 @@
 import { once } from 'lodash-es';
 import { AppRouterOutput, trpc } from '../api/trpc';
 import { anonymousTelemetryUrl } from '../utils/env';
+import { useWatch } from './useWatch';
 
 const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   allowRegister: false,
@@ -18,20 +19,15 @@ const callAnonymousTelemetry = once(() => {
  * Fetch settings from server
  */
 export function useGlobalConfig(): AppRouterOutput['global']['config'] {
-  const { data = defaultGlobalConfig } = trpc.global.config.useQuery(
-    undefined,
-    {
-      staleTime: 1000 * 60 * 60 * 1, // 1 hour
-      onSuccess(data) {
-        /**
-         * Call anonymous telemetry if not disabled
-         */
-        if (data.disableAnonymousTelemetry !== true) {
-          callAnonymousTelemetry();
-        }
-      },
-    }
-  );
+  const { data } = trpc.global.config.useQuery(undefined, {
+    staleTime: 1000 * 60 * 60 * 1, // 1 hour
+  });
 
-  return data;
+  useWatch([data], () => {
+    if (!!data && data.disableAnonymousTelemetry !== true) {
+      callAnonymousTelemetry();
+    }
+  });
+
+  return data ?? defaultGlobalConfig;
 }

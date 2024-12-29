@@ -54,7 +54,7 @@ function PageAddComponent() {
             <CardContent className="pt-4">
               <MonitorStatusPageEditForm
                 saveButtonLabel="Next"
-                isLoading={createPageMutation.isLoading}
+                isLoading={createPageMutation.isPending}
                 onFinish={handleSubmit}
               />
             </CardContent>

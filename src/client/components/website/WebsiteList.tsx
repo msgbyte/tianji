@@ -67,7 +67,7 @@ export const WebsiteList: React.FC = React.memo(() => {
         title={t('Add Website')}
         open={isModalOpen}
         okButtonProps={{
-          loading: addWebsiteMutation.isLoading,
+          loading: addWebsiteMutation.isPending,
         }}
         onOk={() => handleAddWebsite()}
         onCancel={() => setIsModalOpen(false)}

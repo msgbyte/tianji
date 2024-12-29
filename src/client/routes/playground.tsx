@@ -128,19 +128,19 @@ export const BillingPlayground: React.FC = React.memo(() => {
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
         <Button
-          loading={changePlanMutation.isLoading}
+          loading={changePlanMutation.isPending}
           onClick={() => handleChangeSubscribe('free')}
         >
           Change plan to Free
         </Button>
         <Button
-          loading={changePlanMutation.isLoading}
+          loading={changePlanMutation.isPending}
           onClick={() => handleChangeSubscribe('pro')}
         >
           Change plan to Pro
         </Button>
         <Button
-          loading={changePlanMutation.isLoading}
+          loading={changePlanMutation.isPending}
           onClick={() => handleChangeSubscribe('team')}
         >
           Change plan to Team
@@ -149,7 +149,7 @@ export const BillingPlayground: React.FC = React.memo(() => {
 
       <div>
         <Button
-          loading={cancelSubscriptionMutation.isLoading}
+          loading={cancelSubscriptionMutation.isPending}
           onClick={() =>
             cancelSubscriptionMutation.mutateAsync({
               workspaceId,
@@ -163,13 +163,13 @@ export const BillingPlayground: React.FC = React.memo(() => {
   ) : (
     <div className="flex gap-2">
       <Button
-        loading={checkoutMutation.isLoading}
+        loading={checkoutMutation.isPending}
         onClick={() => handleCheckoutSubscribe('pro')}
       >
         Upgrade to Pro
       </Button>
       <Button
-        loading={checkoutMutation.isLoading}
+        loading={checkoutMutation.isPending}
         onClick={() => handleCheckoutSubscribe('team')}
       >
         Upgrade to Team

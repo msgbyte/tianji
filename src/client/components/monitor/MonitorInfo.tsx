@@ -101,14 +101,14 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
                   {monitorInfo.active ? (
                     <Button
-                      loading={changeActiveMutation.isLoading}
+                      loading={changeActiveMutation.isPending}
                       onClick={handleStop}
                     >
                       {t('Stop')}
                     </Button>
                   ) : (
                     <Button
-                      loading={changeActiveMutation.isLoading}
+                      loading={changeActiveMutation.isPending}
                       onClick={handleStart}
                     >
                       {t('Start')}

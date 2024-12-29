@@ -35,7 +35,9 @@ export const WebsiteInfo: React.FC = React.memo(() => {
 
   const updateMutation = trpc.website.updateInfo.useMutation({
     onSuccess: () => {
-      queryClient.resetQueries(getQueryKey(trpc.website.info));
+      queryClient.resetQueries({
+        queryKey: getQueryKey(trpc.website.info),
+      });
       defaultSuccessHandler();
     },
     onError: defaultErrorHandler,

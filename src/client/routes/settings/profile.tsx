@@ -124,7 +124,7 @@ function PageComponent() {
               <Form.Item className="text-right">
                 <Button
                   type="submit"
-                  loading={changePasswordMutation.isLoading}
+                  loading={changePasswordMutation.isPending}
                 >
                   {t('Submit')}
                 </Button>
