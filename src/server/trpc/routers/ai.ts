@@ -11,7 +11,7 @@ export const aiRouter = router({
       })
     )
     .query(async function* ({ input }) {
-      const { workspaceId, question } = input;
+      const { question } = input;
 
       if (env.isProd) {
         return '';
