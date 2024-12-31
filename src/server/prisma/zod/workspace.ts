@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
+import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspaceBill, RelatedWorkspaceBillModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -20,6 +20,7 @@ export const WorkspaceModelSchema = z.object({
    * [CommonPayload]
    */
   settings: imports.CommonPayloadSchema,
+  credit: z.number().int(),
   paused: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -27,6 +28,7 @@ export const WorkspaceModelSchema = z.object({
 
 export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> {
   subscription?: CompleteWorkspaceSubscription | null
+  WorkspaceBill?: CompleteWorkspaceBill | null
   users: CompleteWorkspacesOnUsers[]
   websites: CompleteWebsite[]
   notifications: CompleteNotification[]
@@ -46,6 +48,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
  */
 export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.lazy(() => WorkspaceModelSchema.extend({
   subscription: RelatedWorkspaceSubscriptionModelSchema.nullish(),
+  WorkspaceBill: RelatedWorkspaceBillModelSchema.nullish(),
   users: RelatedWorkspacesOnUsersModelSchema.array(),
   websites: RelatedWebsiteModelSchema.array(),
   notifications: RelatedNotificationModelSchema.array(),

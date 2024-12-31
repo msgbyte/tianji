@@ -96,11 +96,13 @@ model Workspace {
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
   settings        Json     @default("{}")
+  credit          Int      @default(0) // workspace creadit
   paused          Boolean  @default(false) // if workspace over billing, its will marked as pause and not receive and input.
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
-  subscription WorkspaceSubscription?
+  subscription  WorkspaceSubscription?
+  WorkspaceBill WorkspaceBill?
 
   users              WorkspacesOnUsers[]
   websites           Website[]
@@ -147,6 +149,23 @@ model WorkspaceSubscription {
   updatedAt   DateTime                  @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model WorkspaceBill {
+  id          String @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String @unique @db.VarChar(30)
+  type        String
+  amount      Int
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  meta        Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([type])
 }
 
 model LemonSqueezySubscription {
