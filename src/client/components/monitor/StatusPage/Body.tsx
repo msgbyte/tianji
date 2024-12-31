@@ -17,6 +17,9 @@ import {
   parseHealthStatusByPercent,
 } from '@/utils/health';
 import { MonitorPublicDataChart } from '../MonitorPublicDataChart';
+import { refetchInterval } from './const';
+import { useWatch } from '@/hooks/useWatch';
+import { useStatusPageStore } from './store';
 
 interface StatusPageBodyProps {
   workspaceId: string;
@@ -39,7 +42,10 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
     return (
       <div className="rounded-lg border border-gray-200/80 dark:border-gray-700/25">
         {body.groups.map((group) => (
-          <div key={group.key} className="m-4 rounded-lg bg-neutral-500/15">
+          <div
+            key={group.key}
+            className="m-4 rounded-lg bg-neutral-200/15 dark:bg-neutral-500/15"
+          >
             <div className="ml-4 pl-2.5 pt-2.5 text-lg font-semibold">
               {group.title}
             </div>
@@ -78,6 +84,10 @@ export const StatusItemMonitor: React.FC<{
   showCurrent: boolean;
   workspaceId: string;
 }> = React.memo((props) => {
+  const updateLastUpdatedAt = useStatusPageStore(
+    (state) => state.updateLastUpdatedAt
+  );
+  const setMonitorState = useStatusPageStore((state) => state.setMonitorState);
   const { data: info } = trpc.monitor.getPublicInfo.useQuery(
     {
       monitorIds: [props.monitorId],
@@ -87,9 +97,21 @@ export const StatusItemMonitor: React.FC<{
     }
   );
 
-  const { data: list = [], isLoading } = trpc.monitor.publicSummary.useQuery({
-    workspaceId: props.workspaceId,
-    monitorId: props.monitorId,
+  const {
+    data: list = [],
+    isLoading,
+    dataUpdatedAt,
+  } = trpc.monitor.publicSummary.useQuery(
+    {
+      workspaceId: props.workspaceId,
+      monitorId: props.monitorId,
+    },
+    {
+      refetchInterval,
+    }
+  );
+  useWatch([dataUpdatedAt], () => {
+    updateLastUpdatedAt(dataUpdatedAt);
   });
 
   const [showChart, toggleShowChart] = useReducer((state) => !state, false);
@@ -125,7 +147,7 @@ export const StatusItemMonitor: React.FC<{
         <div>
           <span
             className={cn(
-              'text-white inline-block min-w-[62px] rounded-lg p-0.5 text-center font-semibold',
+              'inline-block min-w-[62px] rounded-lg p-0.5 text-center font-semibold text-white',
               getStatusBgColorClassName(summaryStatus)
             )}
           >

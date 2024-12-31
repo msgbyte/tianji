@@ -125,7 +125,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
 
         <div
           className={cn(
-            'mx-auto overflow-auto px-4 py-8',
+            'mx-auto px-4 py-8',
             fullWidth ? 'w-full' : 'w-full md:w-4/5 xl:w-3/5'
           )}
         >

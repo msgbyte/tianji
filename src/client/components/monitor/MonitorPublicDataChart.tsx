@@ -20,6 +20,9 @@ import {
 } from 'recharts';
 import { useTheme } from '@/hooks/useTheme';
 import { CustomizedErrorArea } from './CustomizedErrorArea';
+import { refetchInterval } from './StatusPage/const';
+import { useWatch } from '@/hooks/useWatch';
+import { useStatusPageStore } from './StatusPage/store';
 
 const chartConfig = {
   value: {
@@ -35,9 +38,11 @@ interface MonitorPublicDataChartProps {
 
 export const MonitorPublicDataChart: React.FC<MonitorPublicDataChartProps> =
   React.memo((props) => {
-    const { t } = useTranslation();
     const { workspaceId, monitorId } = props;
     const { colors } = useTheme();
+    const updateLastUpdatedAt = useStatusPageStore(
+      (state) => state.updateLastUpdatedAt
+    );
 
     const { data: monitorInfo } = trpc.monitor.getPublicInfo.useQuery(
       {
@@ -50,9 +55,19 @@ export const MonitorPublicDataChart: React.FC<MonitorPublicDataChartProps> =
       }
     );
 
-    const { data: _data = [] } = trpc.monitor.publicData.useQuery({
-      workspaceId,
-      monitorId,
+    const { data: _data = [], dataUpdatedAt } =
+      trpc.monitor.publicData.useQuery(
+        {
+          workspaceId,
+          monitorId,
+        },
+        {
+          refetchInterval,
+        }
+      );
+
+    useWatch([dataUpdatedAt], () => {
+      updateLastUpdatedAt(dataUpdatedAt);
     });
 
     const providerInfo = getMonitorProvider(monitorInfo?.type ?? '');

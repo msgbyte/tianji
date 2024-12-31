@@ -1,13 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { cn } from '@/utils/style';
 import { bodySchema } from './schema';
 import { LuCheckCircle2, LuCircleSlash, LuAlertCircle } from 'react-icons/lu';
 import { AppRouterOutput, trpc } from '../../../api/trpc';
-import { getMonitorProvider, getProviderDisplay } from '../provider';
 import { takeRight, last } from 'lodash-es';
 import dayjs from 'dayjs';
 import { IconType } from 'react-icons';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useStatusPageStore } from './store';
+import { useEvent } from '@/hooks/useEvent';
+import { useInterval } from 'ahooks';
+import { refetchInterval } from './const';
 
 interface StatusPageHeaderProps {
   info: NonNullable<AppRouterOutput['monitor']['getPageInfo']>;
@@ -29,6 +32,11 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
       const res = bodySchema.safeParse(info.body);
       return res.success ? res.data : { groups: [] };
     }, [info.body]);
+    const lastUpdatedAt = useStatusPageStore((state) => state.lastUpdatedAt);
+    const updateLastUpdatedAt = useStatusPageStore(
+      (state) => state.updateLastUpdatedAt
+    );
+    const trpcUtils = trpc.useUtils();
 
     const monitorContexts = useMemo(() => {
       const contexts: ContextItem[] = [];
@@ -56,65 +64,64 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
       return contexts;
     }, [body, info.monitorList]);
 
-    const recentDataQueries = monitorContexts.map((context) => {
-      const { data: recentData = [] } = trpc.monitor.recentData.useQuery({
-        workspaceId,
-        monitorId: context.id,
-        take: 1,
-      });
+    const [recentDataQueries, setRecentDataQueries] = useState<
+      {
+        id: string;
+        status: string | undefined;
+        timestamp: number;
+      }[]
+    >([]);
+    const fetchDataQueries = useEvent(async () => {
+      const recentDataQueries = await Promise.all(
+        monitorContexts.map(async (context) => {
+          const recentData = await trpcUtils.monitor.recentData.fetch({
+            workspaceId,
+            monitorId: context.id,
+            take: 1,
+          });
 
-      const items = useMemo(() => {
-        return takeRight(
-          [...Array.from({ length: 1 }).map(() => null), ...recentData],
-          1
-        );
-      }, [recentData]);
+          const items = takeRight(
+            [...Array.from({ length: 1 }).map(() => null), ...recentData],
+            1
+          );
 
-      const provider = useMemo(
-        () => getMonitorProvider(context.id),
-        [context.id]
+          const latestItem = last(items);
+          if (!latestItem) {
+            return {
+              id: context.id,
+              status: undefined,
+              timestamp: dayjs(last(items)?.createdAt).valueOf(),
+            };
+          }
+
+          return {
+            id: context.id,
+            status: latestItem.value < 0 ? 'error' : 'health',
+            timestamp: dayjs(last(items)?.createdAt).valueOf(),
+          };
+        })
       );
 
-      const latestStatus = useMemo(() => {
-        const latestItem = last(items);
-        if (!latestItem) {
-          return 'none';
-        }
+      updateLastUpdatedAt(dayjs().valueOf());
 
-        const { value, createdAt } = latestItem;
-        const { text } = getProviderDisplay(value, provider);
-        const title = `${dayjs(createdAt).format('YYYY-MM-DD HH:mm')} | ${text}`;
-        return value < 0
-          ? { status: 'error', title }
-          : { status: 'health', title };
-      }, [items, provider]);
-
-      return {
-        id: context.id,
-        status: latestStatus === 'none' ? undefined : latestStatus.status,
-        timestamp: dayjs(last(items)?.createdAt).valueOf(),
-      };
+      setRecentDataQueries(recentDataQueries);
     });
 
-    const { overallStatus, lastChecked } = useMemo(() => {
+    useInterval(fetchDataQueries, refetchInterval);
+
+    const { overallStatus } = useMemo(() => {
       let totalCount = 0;
       let errorCount = 0;
-      let latestTimestamp = 0;
 
       recentDataQueries.forEach((query) => {
-        if (!query) return;
+        if (!query) {
+          return;
+        }
 
         totalCount += 1;
 
         if (query.status != 'health') {
           errorCount += 1;
-        }
-
-        if (
-          !latestTimestamp ||
-          (query.timestamp && query.timestamp > latestTimestamp)
-        ) {
-          latestTimestamp = query.timestamp;
         }
       });
 
@@ -132,7 +139,6 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
       return {
         overallStatus: status as StatusType,
         servicesCount: totalCount,
-        lastChecked: latestTimestamp,
       };
     }, [recentDataQueries]);
 
@@ -186,14 +192,13 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
           aria-hidden="true"
         />
         <h1 className="pb-2 pt-4 text-4xl font-bold">{config.text}</h1>
-        {lastChecked && (
+        {lastUpdatedAt && (
           <p className="text-md text-gray-600 dark:text-gray-400">
-            {formatDate(lastChecked)}
+            {formatDate(lastUpdatedAt)}
           </p>
         )}
       </div>
     );
   }
 );
-
-export default StatusPageHeader;
+StatusPageHeader.displayName = 'StatusPageHeader';
