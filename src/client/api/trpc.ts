@@ -12,6 +12,7 @@ import {
 } from '@trpc/client';
 import { message } from 'antd';
 import { isDev } from '../utils/env';
+import { getUserTimezone } from './model/user';
 
 export { getQueryKey };
 
@@ -23,7 +24,9 @@ export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 const url = '/trpc';
 
 function headers() {
-  return {};
+  return {
+    timezone: getUserTimezone(),
+  };
 }
 
 export const trpcClient = trpc.createClient({

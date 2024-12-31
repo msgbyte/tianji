@@ -14,8 +14,11 @@ import { verifyUserApiKey } from '../model/user.js';
 export async function createContext({ req }: { req: Request }) {
   const authorization = req.headers['authorization'] ?? '';
   const token = authorization.replace('Bearer ', '');
+  const timezone = req.headers['timezone']
+    ? String(req.headers['timezone'])
+    : 'utc';
 
-  return { token, req };
+  return { token, timezone, req };
 }
 
 type Context = inferAsyncReturnType<typeof createContext>;

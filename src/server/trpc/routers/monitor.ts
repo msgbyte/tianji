@@ -379,9 +379,10 @@ export const monitorRouter = router({
         })
       )
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { monitorId } = input;
-      const summary = await getMonitorSummaryWithDay(monitorId, 30);
+      const { timezone } = ctx;
+      const summary = await getMonitorSummaryWithDay(monitorId, 30, timezone);
 
       return summary;
     }),

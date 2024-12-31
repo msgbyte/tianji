@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { prisma } from '../_client.js';
 import { monitorPublicInfoSchema } from '../_schema/monitor.js';
 import { MonitorManager } from './manager.js';
+import { getDateQuery } from '../../utils/prisma.js';
 
 export const monitorManager = new MonitorManager();
 
@@ -71,7 +72,8 @@ export function getMonitorRecentData(
 
 export async function getMonitorSummaryWithDay(
   monitorId: string,
-  beforeDay: number = 30
+  beforeDay: number = 30,
+  timezone = 'utc'
 ) {
   interface MonitorSummaryItem {
     day: string;
@@ -82,7 +84,7 @@ export async function getMonitorSummaryWithDay(
 
   const list = await prisma.$queryRaw<MonitorSummaryItem[]>`
     SELECT
-      TO_CHAR(DATE("createdAt"), 'YYYY-MM-DD') AS day,
+      ${getDateQuery('"createdAt"', 'day', timezone)} AS day,
       COUNT(1) AS total_count,
       SUM(CASE WHEN "value" >= 0 THEN 1 ELSE 0 END) AS up_count,
       (SUM(CASE WHEN "value" >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(1)) AS up_rate
@@ -90,9 +92,9 @@ export async function getMonitorSummaryWithDay(
       "MonitorData"
     WHERE
       "monitorId" = ${monitorId} AND
-      "createdAt" >= CURRENT_DATE - INTERVAL '1 day' * ${beforeDay}
+      "createdAt" AT TIME ZONE ${timezone} >= CURRENT_DATE - INTERVAL '1 day' * ${beforeDay}
     GROUP BY
-      DATE("createdAt")
+      1
     ORDER BY
       day;`;
 

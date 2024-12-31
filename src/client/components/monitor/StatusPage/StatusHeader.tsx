@@ -107,7 +107,9 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
       setRecentDataQueries(recentDataQueries);
     });
 
-    useInterval(fetchDataQueries, refetchInterval);
+    useInterval(fetchDataQueries, refetchInterval, {
+      immediate: true,
+    });
 
     const { overallStatus } = useMemo(() => {
       let totalCount = 0;
