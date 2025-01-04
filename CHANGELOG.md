@@ -1,5 +1,22 @@
 
 
+## [1.17.6](https://github.com/msgbyte/tianji/compare/v1.17.5...v1.17.6) (2025-01-04)
+
+### Features
+
+* add auto refetch logic in status page and refactor status page header ([9ccae18](https://github.com/msgbyte/tianji/commit/9ccae18b2b00882a5634237078443e008dc607f4))
+* add openai endpoint ([cc41483](https://github.com/msgbyte/tianji/commit/cc41483d93294bde2dd0c81657c028b849ff0364))
+* add openai sse api ([4b1f6c2](https://github.com/msgbyte/tianji/commit/4b1f6c218219f6b83fb87b784d2ed5bc0d18ec70))
+* add timezone support in trpc ctx and monitor.publicSummary ([890bf18](https://github.com/msgbyte/tianji/commit/890bf182d71023b2ba4fa050e2fb49f34099e5a4))
+* add workspace bill model ([58a04aa](https://github.com/msgbyte/tianji/commit/58a04aa0eaff4391733cf77b7bb43e1d6e447d8a))
+* allow register command in page ([e7297b1](https://github.com/msgbyte/tianji/commit/e7297b1a5781349ed87d6cb8ea0a84975e978e50))
+
+### Others
+
+* fix ci problem ([67c4fa3](https://github.com/msgbyte/tianji/commit/67c4fa305af8ffc60d31c6f598aad2434811de81))
+* migrate react query to v5 ([45c91f8](https://github.com/msgbyte/tianji/commit/45c91f805314d787e8d888c15720200c7afa7fef))
+* upgrade trpc version to next ([dfec38c](https://github.com/msgbyte/tianji/commit/dfec38cce440b77c7bc281cad8fdefb614c0cf09))
+
 ## [1.17.5](https://github.com/msgbyte/tianji/compare/v1.17.4...v1.17.5) (2024-12-25)
 
 ### Features
