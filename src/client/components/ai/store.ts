@@ -1,4 +1,4 @@
-import { trpcClientProxy } from '@/api/trpc';
+import { AppRouterInput, AppRouterOutput, trpcClientProxy } from '@/api/trpc';
 import { last } from 'lodash-es';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -9,10 +9,12 @@ interface ConversationMessage {
   content: string;
 }
 
+type AIStoreContextType = NonNullable<AppRouterInput['ai']['ask']['context']>;
+
 interface AIStoreState {
   open: boolean;
   conversation: ConversationMessage[];
-  context: any;
+  context: AIStoreContextType;
   askAIQuestion: (workspaceId: string, question: string) => Promise<void>;
   appendUserResponse: (question: string) => void;
   appendAssistantResponse: (responseText: string) => void;
