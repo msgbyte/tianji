@@ -87,7 +87,6 @@ export const StatusItemMonitor: React.FC<{
   const updateLastUpdatedAt = useStatusPageStore(
     (state) => state.updateLastUpdatedAt
   );
-  const setMonitorState = useStatusPageStore((state) => state.setMonitorState);
   const { data: info } = trpc.monitor.getPublicInfo.useQuery(
     {
       monitorIds: [props.monitorId],
