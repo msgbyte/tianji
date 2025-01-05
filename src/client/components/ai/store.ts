@@ -12,6 +12,7 @@ interface ConversationMessage {
 interface AIStoreState {
   open: boolean;
   conversation: ConversationMessage[];
+  context: any;
   askAIQuestion: (workspaceId: string, question: string) => Promise<void>;
   appendUserResponse: (question: string) => void;
   appendAssistantResponse: (responseText: string) => void;
@@ -21,13 +22,17 @@ export const useAIStore = create<AIStoreState>()(
   immer((set, get) => ({
     open: false,
     conversation: [],
+    context: {
+      type: 'unknown',
+    },
     askAIQuestion: async (workspaceId: string, question: string) => {
-      const { appendUserResponse, appendAssistantResponse } = get();
+      const { appendUserResponse, appendAssistantResponse, context } = get();
       appendUserResponse(question);
       const iterable = (await trpcClientProxy.ai.ask.query(
         {
           workspaceId,
           question,
+          context,
         },
         {
           context: {

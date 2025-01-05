@@ -69,6 +69,7 @@
     "socket.io": "^4.7.4",
     "swagger-ui-express": "^5.0.0",
     "tcp-ping": "^0.1.1",
+    "tiktoken": "^1.0.18",
     "trpc-to-openapi": "^2.1.0",
     "uuid": "^9.0.1",
     "vite-express": "^0.13.0",

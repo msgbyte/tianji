@@ -16,6 +16,7 @@ import { cn } from '@/utils/style';
 import { ScrollArea } from '../ui/scroll-area';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId, useUserStore } from '@/store/user';
+import { MarkdownViewer } from '../MarkdownEditor';
 
 export const AIPanel: React.FC = React.memo(() => {
   const { open, conversation } = useAIStore();
@@ -50,11 +51,15 @@ export const AIPanel: React.FC = React.memo(() => {
                   'items-end': item.role === 'user',
                 })}
               >
-                <div>
+                <div className="px-2 text-xs opacity-60">
                   {item.role === 'assistant' ? t('AI Assistant') : nickname}
                 </div>
                 <div className="w-3/4 rounded-lg border border-gray-400 border-opacity-60 px-2 py-1">
-                  {item.content}
+                  {item.role === 'assistant' ? (
+                    <MarkdownViewer value={item.content} />
+                  ) : (
+                    <div>{item.content}</div>
+                  )}
                 </div>
               </div>
             );
