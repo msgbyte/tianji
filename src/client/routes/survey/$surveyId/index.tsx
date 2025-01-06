@@ -25,6 +25,7 @@ import { Loading } from '@/components/Loading';
 import { TimeEventChart } from '@/components/chart/TimeEventChart';
 import { useRegisterCommand } from '@/components/CommandPanel/store';
 import { useAIAction } from '@/components/ai/useAIAction';
+import { useAIStoreContext } from '@/components/ai/useAIStoreContext';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -41,6 +42,10 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
   const hasAdminPermission = useHasAdminPermission();
+  useAIStoreContext({
+    type: 'survey',
+    surveyId,
+  });
   const { data: info } = trpc.survey.get.useQuery({
     workspaceId,
     surveyId,

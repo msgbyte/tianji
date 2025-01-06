@@ -9,7 +9,9 @@ interface ConversationMessage {
   content: string;
 }
 
-type AIStoreContextType = NonNullable<AppRouterInput['ai']['ask']['context']>;
+export type AIStoreContextType = NonNullable<
+  AppRouterInput['ai']['ask']['context']
+>;
 
 interface AIStoreState {
   open: boolean;
