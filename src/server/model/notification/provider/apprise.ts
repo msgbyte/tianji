@@ -1,6 +1,6 @@
 import { NotificationProvider } from './type.js';
 import { baseContentTokenizer } from '../token/index.js';
-import execa from 'execa';
+import { execa } from 'execa';
 
 interface ApprisePayload {
   appriseUrl: string;
