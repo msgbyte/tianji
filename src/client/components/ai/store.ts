@@ -15,6 +15,7 @@ export type AIStoreContextType = NonNullable<
 
 interface AIStoreState {
   open: boolean;
+  isBusy: boolean;
   conversation: ConversationMessage[];
   context: AIStoreContextType;
   askAIQuestion: (workspaceId: string, question: string) => Promise<void>;
@@ -25,6 +26,7 @@ interface AIStoreState {
 export const useAIStore = create<AIStoreState>()(
   immer((set, get) => ({
     open: false,
+    isBusy: false,
     conversation: [],
     context: {
       type: 'unknown',
@@ -32,6 +34,9 @@ export const useAIStore = create<AIStoreState>()(
     askAIQuestion: async (workspaceId: string, question: string) => {
       const { appendUserResponse, appendAssistantResponse, context } = get();
       appendUserResponse(question);
+      set({
+        isBusy: true,
+      });
       const iterable = (await trpcClientProxy.ai.ask.query(
         {
           workspaceId,
@@ -48,6 +53,10 @@ export const useAIStore = create<AIStoreState>()(
       for await (const value of iterable) {
         appendAssistantResponse(_get(value, 'content', ''));
       }
+
+      set({
+        isBusy: false,
+      });
     },
     appendUserResponse: (question: string) => {
       set((state) => {

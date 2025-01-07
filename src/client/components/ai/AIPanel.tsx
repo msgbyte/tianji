@@ -37,7 +37,7 @@ export const AIPanel: React.FC = React.memo(() => {
 
   return (
     <Sheet open={open} onOpenChange={(open) => useAIStore.setState({ open })}>
-      <SheetContent className="flex flex-1 flex-col">
+      <SheetContent className="flex flex-1 flex-col sm:max-w-[80vw]">
         <SheetHeader>
           <SheetTitle>{t('AI Assistant')}</SheetTitle>
         </SheetHeader>

@@ -24,7 +24,6 @@ export async function getSurveyPrompt(
       sessionId: true,
       payload: true,
       createdAt: true,
-      country: true,
     },
     orderBy: {
       createdAt: 'desc',
