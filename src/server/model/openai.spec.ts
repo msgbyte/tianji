@@ -19,7 +19,6 @@ const functions = {
   },
 };
 
-// 模拟调用外部函数的逻辑
 async function executeFunction(name: string, args: any) {
   if (name === 'getCurrentDate') {
     const { format } = args;
