@@ -11,10 +11,10 @@ import { HomepageHeaderLight } from '../components/homepage/HeaderLight';
 import { HomepageFeatures } from '../components/homepage/Features';
 import { HomepageSimpleLight } from '../components/homepage/SimpleLight';
 import ShineBorder from '@/components/ui/shine-border';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { ClientTweetCard } from '../components/ui/client-tweet-card';
 
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
-import { TweetCard } from '../components/ui/tweet-card';
-import { ClientTweetCard } from '../components/ui/client-tweet-card';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -41,10 +41,13 @@ function HomepageHeader() {
           <Link
             // to="/docs/intro"
             to="https://app-tianji.msgbyte.com/"
-            className="cursor-pointer rounded-full bg-blue-500 px-8 py-3 text-lg font-bold text-white hover:bg-blue-800 hover:text-white hover:no-underline"
+            // className="cursor-pointer rounded-full bg-blue-500 px-8 py-3 text-lg font-bold text-white hover:bg-blue-800 hover:text-white hover:no-underline"
             data-tianji-event="homepage-getstart"
           >
-            Get Start in Cloud
+            <InteractiveHoverButton
+              text="Get Start in Cloud"
+              className="text-md h-10 w-60"
+            />
           </Link>
 
           {/* <Link
