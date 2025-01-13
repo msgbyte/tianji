@@ -10,10 +10,11 @@ import { BlockCard } from '../components/BlockCard';
 import { HomepageHeaderLight } from '../components/homepage/HeaderLight';
 import { HomepageFeatures } from '../components/homepage/Features';
 import { HomepageSimpleLight } from '../components/homepage/SimpleLight';
-import { LuGithub } from 'react-icons/lu';
 import ShineBorder from '@/components/ui/shine-border';
 
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { TweetCard } from '../components/ui/tweet-card';
+import { ClientTweetCard } from '../components/ui/client-tweet-card';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -204,6 +205,53 @@ function HomepageFooter() {
           title="Twitter"
           data-tianji-event="community-twitter"
           onClick={() => window.open('https://twitter.com/moonrailgun')}
+        />
+      </div>
+
+      <div className="mb-8 mt-12 text-4xl font-bold">
+        And connect with Tianji's real user from all over the world
+      </div>
+
+      <div className="mt-8 flex flex-wrap justify-center gap-2">
+        <ClientTweetCard
+          id="1876982441312751667"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1877547135442329726"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1788136586380771781"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1877744903255462173"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1876346601326649665"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1844763816619294808"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1842367065375617205"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1843381313933656116"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1743323947377041806"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
+        />
+        <ClientTweetCard
+          id="1852357169175318932"
+          className="border border-solid border-white border-opacity-20 bg-white bg-opacity-10"
         />
       </div>
     </div>

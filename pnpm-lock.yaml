@@ -752,6 +752,9 @@ importers:
       react-slick:
         specifier: ^0.29.0
         version: 0.29.0(react-dom@18.2.0(react@18.3.1))(react@18.3.1)
+      react-tweet:
+        specifier: ^3.2.1
+        version: 3.2.1(react-dom@18.2.0(react@18.3.1))(react@18.3.1)
       react-vertical-timeline-component:
         specifier: ^3.6.0
         version: 3.6.0(react@18.3.1)
@@ -3776,6 +3779,9 @@ packages:
   '@svgr/webpack@8.1.0':
     resolution: {integrity: sha512-LnhVjMWyMQV9ZmeEy26maJk+8HTIbd59cH4F2MJ439k9DqejRisfFNGAPvRYlKETuh9LrImlS8aKsBgKjMA8WA==}
     engines: {node: '>=14'}
+
+  '@swc/helpers@0.5.15':
+    resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
   '@swc/helpers@0.5.2':
     resolution: {integrity: sha512-E4KcWTpoLHqwPHLxidpOqQbcrZVgi0rsmmZXUle1jXmJfuIf/UWpczUJ7MZZ5tlxytgJXyp0w4PGkkeLiuIdZw==}
@@ -10746,6 +10752,12 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
+  react-tweet@3.2.1:
+    resolution: {integrity: sha512-dktP3RMuwRB4pnSDocKpSsW5Hq1IXRW6fONkHhxT5EBIXsKZzdQuI70qtub1XN2dtZdkJWWxfBm/Q+kN+vRYFA==}
+    peerDependencies:
+      react: '>= 18.0.0'
+      react-dom: '>= 18.0.0'
+
   react-vertical-timeline-component@3.6.0:
     resolution: {integrity: sha512-l9zulqjIGlRuaQeplGzV4r/tG2RYBpYt84Il8w4IxnJze2cDIGI04MKo3F7f1sHT0Sih1ohEFts8UV23AJS15Q==}
 
@@ -11705,6 +11717,11 @@ packages:
     peerDependencies:
       express: '>=4.0.0 || >=5.0.0-beta'
 
+  swr@2.3.0:
+    resolution: {integrity: sha512-NyZ76wA4yElZWBHzSgEJc28a0u6QZvhb6w0azeL2k7+Q1gAzVK+IqQYXhVOC/mzi+HZIozrZvBVeSeOZNR2bqA==}
+    peerDependencies:
+      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   tailwind-merge@2.2.1:
     resolution: {integrity: sha512-o+2GTLkthfa5YUt4JxPfzMIpQzZ3adD1vLVkvKE1Twl9UAhGsEbIZhHHZVRttyW177S8PDJI3bTQNaebyofK3Q==}
 
@@ -12001,6 +12018,9 @@ packages:
 
   tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   tsup@8.2.3:
     resolution: {integrity: sha512-6YNT44oUfXRbZuSMNmN36GzwPPIlD2wBccY7looM2fkTcxkf2NEmwr3OZuDZoySklnrIG4hoEtzy8yUXYOqNcg==}
@@ -17034,6 +17054,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
       - typescript
+
+  '@swc/helpers@0.5.15':
+    dependencies:
+      tslib: 2.8.1
 
   '@swc/helpers@0.5.2':
     dependencies:
@@ -26315,6 +26339,14 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
+  react-tweet@3.2.1(react-dom@18.2.0(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@swc/helpers': 0.5.15
+      clsx: 2.1.0
+      react: 18.3.1
+      react-dom: 18.2.0(react@18.3.1)
+      swr: 2.3.0(react@18.3.1)
+
   react-vertical-timeline-component@3.6.0(react@18.3.1):
     dependencies:
       classnames: 2.5.1
@@ -27541,6 +27573,12 @@ snapshots:
       express: 4.18.2
       swagger-ui-dist: 5.9.0
 
+  swr@2.3.0(react@18.3.1):
+    dependencies:
+      dequal: 2.0.3
+      react: 18.3.1
+      use-sync-external-store: 1.4.0(react@18.3.1)
+
   tailwind-merge@2.2.1:
     dependencies:
       '@babel/runtime': 7.24.0
@@ -27913,6 +27951,8 @@ snapshots:
 
   tslib@2.6.2: {}
 
+  tslib@2.8.1: {}
+
   tsup@8.2.3(jiti@2.4.1)(postcss@8.4.38)(tsx@4.16.2)(typescript@5.7.2)(yaml@2.6.1):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.24.0)
@@ -28244,6 +28284,10 @@ snapshots:
   use-sync-external-store@1.4.0(react@18.2.0):
     dependencies:
       react: 18.2.0
+
+  use-sync-external-store@1.4.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   util-deprecate@1.0.2: {}
 
