@@ -50,7 +50,7 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
     attrs['data-do-not-track'] = 'true';
   }
 
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<HTMLScriptElement>((resolve, reject) => {
     loadScript(
       `${options.url}/${trackerName}`,
       {
@@ -63,19 +63,19 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
           return;
         }
 
-        resolve();
+        resolve(script);
       }
     );
   });
 }
 
-export function reportEvent(eventName: string, data: Record<string, any>) {
+export function reportEvent(eventName: string, data: Record<string, any> = {}) {
   const tianji = (window as any).tianji;
   if (!tianji) {
     return;
   }
 
-  tianji.report(eventName, data);
+  tianji.track(eventName, data);
 }
 
 interface IdentifyPayload {
