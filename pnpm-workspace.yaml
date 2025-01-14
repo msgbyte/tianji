@@ -4,3 +4,4 @@ packages:
   - 'src/shared'
   - 'website'
   - 'packages/*'
+  - 'example'
