@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import type { WebsiteEventPayload } from '../model/website.js';
+import type { WebsiteEventPayload } from '../model/index.js';
 import { getClientIp } from 'request-ip';
 import isLocalhost from 'is-localhost-ip';
 import { browserName, detectOS, OperatingSystem } from 'detect-browser';

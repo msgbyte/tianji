@@ -11,7 +11,7 @@ import {
   getWorkspaceWebsitePageview,
   getWorkspaceWebsiteSession,
   getWorkspaceWebsiteStats,
-} from '../../model/website.js';
+} from '../../model/website/index.js';
 import { prisma } from '../../model/_client.js';
 import {
   EVENT_COLUMNS,
@@ -23,7 +23,7 @@ import { parseDateRange } from '../../utils/common.js';
 import {
   getWebsiteSessionMetrics,
   getWebsitePageviewMetrics,
-} from '../../model/website.js';
+} from '../../model/website/index.js';
 import { websiteInfoSchema } from '../../model/_schema/index.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { hostnameRegex } from '@tianji/shared';
@@ -35,9 +35,13 @@ import dayjs from 'dayjs';
 import { fetchDataByCursor, WebsiteQueryFilters } from '../../utils/prisma.js';
 import { WebsiteLighthouseReportStatus } from '@prisma/client';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
-import { buildCursorResponseSchema } from '../../utils/schema.js';
+import {
+  buildCursorResponseSchema,
+  insightsQuerySchema,
+} from '../../utils/schema.js';
 import { sendBuildLighthouseMessageQueue } from '../../mq/producer.js';
 import { getWorkspaceTierLimit } from '../../model/billing/limit.js';
+import { insightsWebsite } from '../../model/website/insights.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
@@ -493,6 +497,13 @@ export const websiteRouter = router({
       }
 
       return [];
+    }),
+  insights: workspaceProcedure
+    .input(insightsQuerySchema)
+    .query(async ({ input, ctx }) => {
+      return insightsWebsite(input, {
+        timezone: ctx.timezone,
+      });
     }),
   add: workspaceAdminProcedure
     .meta({

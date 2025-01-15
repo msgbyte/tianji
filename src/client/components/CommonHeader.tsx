@@ -2,7 +2,7 @@ import React from 'react';
 import { TipIcon } from './TipIcon';
 
 interface CommonHeaderProps {
-  title: string;
+  title: React.ReactNode;
   desc?: string;
   tip?: React.ReactNode;
   actions?: React.ReactNode;

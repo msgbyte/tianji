@@ -6,7 +6,7 @@ import {
   findSession,
   saveWebsiteEvent,
   saveWebsiteSessionData,
-} from '../model/website.js';
+} from '../model/website/index.js';
 import { createToken } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
 import { isWorkspacePaused } from '../model/billing/workspace.js';

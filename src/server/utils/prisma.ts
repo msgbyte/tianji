@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
-import { loadWebsite } from '../model/website.js';
+import { loadWebsite } from '../model/website/index.js';
 import { maxDate } from './common.js';
 import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
 import { loadTelemetry } from '../model/telemetry.js';

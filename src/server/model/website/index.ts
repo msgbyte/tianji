@@ -1,23 +1,28 @@
 import { Prisma, Website, WebsiteSession } from '@prisma/client';
-import { flattenJSON, hashUuid, isCuid, parseToken } from '../utils/common.js';
-import { prisma } from './_client.js';
+import {
+  flattenJSON,
+  hashUuid,
+  isCuid,
+  parseToken,
+} from '../../utils/common.js';
+import { prisma } from '../_client.js';
 import { Request } from 'express';
-import { getClientInfo } from '../utils/detect.js';
+import { getClientInfo } from '../../utils/detect.js';
 import {
   DATA_TYPE,
   EVENT_NAME_LENGTH,
   EVENT_TYPE,
   SESSION_COLUMNS,
   URL_LENGTH,
-} from '../utils/const.js';
-import type { DynamicData } from '../utils/types.js';
+} from '../../utils/const.js';
+import type { DynamicData } from '../../utils/types.js';
 import dayjs from 'dayjs';
 import {
   WebsiteQueryFilters,
   getDateQuery,
   getTimestampIntervalQuery,
   parseWebsiteFilters,
-} from '../utils/prisma.js';
+} from '../../utils/prisma.js';
 
 export interface WebsiteEventPayload {
   data?: object;
