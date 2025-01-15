@@ -23,7 +23,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     },
   ];
 
-  const { data } = trpc.website.insights.useQuery({
+  const { data } = trpc.insights.query.useQuery({
     workspaceId,
     websiteId: props.websiteId,
     metrics,
