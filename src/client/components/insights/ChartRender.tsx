@@ -3,6 +3,8 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
 import React, { useMemo } from 'react';
 import { TimeEventChart } from '../chart/TimeEventChart';
+import { MetricsInfo, useInsightsStore } from '@/store/insights';
+import { pickColorWithNum } from '@/utils/color';
 
 interface ChartRenderProps {
   websiteId: string;
@@ -17,11 +19,9 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     }),
     []
   );
-  const metrics = [
-    {
-      name: '$all_event',
-    },
-  ];
+  const metrics = useInsightsStore((state) =>
+    state.currentMetrics.filter((item): item is MetricsInfo => Boolean(item))
+  );
 
   const { data } = trpc.insights.query.useQuery({
     workspaceId,
@@ -32,22 +32,28 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
 
   const chartConfig = useMemo(
     () =>
-      metrics.reduce((prev, curr) => {
+      metrics.reduce((prev, curr, i) => {
         return {
           ...prev,
           [curr.name]: {
             label: curr.name,
+            color: pickColorWithNum(i),
           },
         };
       }, {}),
-    []
+    [metrics]
   );
 
   return (
     <div>
       {data && (
         <div>
-          <TimeEventChart data={data} unit={'day'} chartConfig={chartConfig} />
+          <TimeEventChart
+            data={data}
+            unit={'day'}
+            chartConfig={chartConfig}
+            drawGradientArea={false}
+          />
         </div>
       )}
     </div>

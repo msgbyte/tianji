@@ -49,3 +49,18 @@ export function generateRandomString(length: number): string {
   }
   return result;
 }
+
+export function numberToLetter(number: number) {
+  if (number < 1) {
+    number = 1;
+  }
+
+  let result = [];
+  while (number > 0) {
+    number -= 1;
+    result.push(String.fromCharCode(65 + (number % 26)));
+    number = Math.floor(number / 26);
+  }
+
+  return result.reverse().join('');
+}

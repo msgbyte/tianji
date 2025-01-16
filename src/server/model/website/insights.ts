@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import { getDateArray } from '@tianji/shared';
 import { mapValues } from 'lodash-es';
+import { EVENT_TYPE } from '../../utils/const.js';
 
 export async function insightsWebsite(
   query: z.infer<typeof insightsQuerySchema>,
@@ -18,14 +19,16 @@ export async function insightsWebsite(
   const { websiteId, time, metrics } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
-  let column = metrics[0].name; // todo: support mulit
-
   const selectQueryArr = metrics.map((item) => {
     if (item.name === '$all_event') {
       return Prisma.sql`count(1) as "$all_event"`;
     }
 
-    return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN event_id ELSE null END) as ${item.name}`;
+    if (item.name === '$page_view') {
+      return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
+    }
+
+    return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
   });
 
   const filterQueryArr = [
@@ -36,6 +39,10 @@ export async function insightsWebsite(
       metrics.map((item) => {
         if (item.name === '$all_event') {
           return Prisma.sql`1 = 1`;
+        }
+
+        if (item.name === '$page_view') {
+          return Prisma.sql`"WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}`;
         }
 
         return Prisma.sql`"WebsiteEvent"."eventName" = ${item.name}`;

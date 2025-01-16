@@ -101,8 +101,8 @@ function PageComponent() {
             <ScrollArea className="h-full overflow-hidden p-4">
               <div className="flex flex-col space-y-8">
                 <MetricsSection title="Metrics" />
-                <MetricsSection title="Filters" />
-                <MetricsSection title="Breakdown" />
+                {/* <MetricsSection title="Filters" />
+                <MetricsSection title="Breakdown" /> */}
               </div>
             </ScrollArea>
           </ResizablePanel>

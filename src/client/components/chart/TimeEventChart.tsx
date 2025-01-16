@@ -34,8 +34,13 @@ export const TimeEventChart: React.FC<{
   data: { date: string; [key: string]: number | string }[];
   unit: DateUnit;
   chartConfig?: ChartConfig;
+  drawGradientArea?: boolean;
 }> = React.memo((props) => {
-  const { className, chartConfig = defaultChartConfig } = props;
+  const {
+    className,
+    drawGradientArea = true,
+    chartConfig = defaultChartConfig,
+  } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
   const [strokeDasharray, setStrokeDasharray] = React.useState([...strokes]);
@@ -54,28 +59,31 @@ export const TimeEventChart: React.FC<{
         data={props.data}
         margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
       >
-        <defs>
-          {Object.keys(chartConfig).map((key, i) => {
-            const color =
-              chartConfig[key].color ??
-              (colors.chart as any)[key] ??
-              colors.chart.default;
+        {drawGradientArea && (
+          <defs>
+            {Object.keys(chartConfig).map((key, i) => {
+              const color =
+                chartConfig[key].color ??
+                (colors.chart as any)[key] ??
+                colors.chart.default;
 
-            return (
-              <linearGradient
-                key={key}
-                id={`color-${key}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-                <stop offset="95%" stopColor={color} stopOpacity={0} />
-              </linearGradient>
-            );
-          })}
-        </defs>
+              return (
+                <linearGradient
+                  key={key}
+                  id={`color-${key}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={color} stopOpacity={0} />
+                </linearGradient>
+              );
+            })}
+          </defs>
+        )}
+
         <Customized component={calcStrokeDasharray} />
         <XAxis
           dataKey="date"
