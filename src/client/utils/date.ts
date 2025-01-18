@@ -94,3 +94,27 @@ export function getTimezoneList() {
     };
   });
 }
+
+export function getShortTextByUnit(date: dayjs.ConfigType, dateUnit: DateUnit) {
+  if (dateUnit === 'minute') {
+    return dayjs(date).format('HH:mm');
+  }
+
+  if (dateUnit === 'hour') {
+    return dayjs(date).format('MMM D, ha');
+  }
+
+  if (dateUnit === 'day') {
+    return dayjs(date).format('MMM D');
+  }
+
+  if (dateUnit === 'month') {
+    return dayjs(date).format('MMM YYYY');
+  }
+
+  if (dateUnit === 'year') {
+    return dayjs(date).format('YYYY');
+  }
+
+  return dayjs(date, 'YYYY-MM-DD HH:mm:ss');
+}

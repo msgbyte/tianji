@@ -8,6 +8,7 @@ import { pickColorWithNum } from '@/utils/color';
 import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
 import { DateUnit } from '@tianji/shared';
+import { TableView } from './TableView';
 
 interface ChartRenderProps {
   websiteId: string;
@@ -79,6 +80,8 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
           />
         </div>
       )}
+
+      {data && <TableView metrics={metrics} data={data} dateUnit={dateUnit} />}
     </div>
   );
 });
