@@ -4,6 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 
 export interface MetricsInfo {
   name: string;
+  math: 'events' | 'sessions';
 }
 
 interface InsightsState {

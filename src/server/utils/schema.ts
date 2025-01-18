@@ -13,6 +13,7 @@ export const insightsQuerySchema = z.object({
   metrics: z.array(
     z.object({
       name: z.string(),
+      math: z.enum(['events', 'sessions']).default('events'),
     })
   ),
   time: z.object({

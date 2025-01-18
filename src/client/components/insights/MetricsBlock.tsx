@@ -7,7 +7,7 @@ import {
 import { Input } from '../ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
 import { formatNumber, numberToLetter } from '@/utils/common';
-import { LuMousePointerClick } from 'react-icons/lu';
+import { LuChevronDown, LuMousePointerClick } from 'react-icons/lu';
 import { MetricsInfo } from '@/store/insights';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -19,13 +19,33 @@ interface MetricsBlockProps {
 }
 export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [isMetricOpen, setIsMetricOpen] = useState(false);
+  const [isMathOpen, setIsMathOpen] = useState(false);
+
+  const mathMethod = [
+    {
+      label: t('Total Events'),
+      name: 'events',
+    },
+    {
+      label: t('Total Session'),
+      name: 'sessions',
+    },
+  ] satisfies {
+    label: string;
+    name: MetricsInfo['math'];
+  }[];
+
+  const selectedMathMethodLabel =
+    mathMethod.find((m) => m.name === props.info?.math)?.label ??
+    mathMethod[0].label;
 
   return (
-    <div className="w-full">
-      <Popover open={open} onOpenChange={setOpen}>
+    <div className="border-muted flex w-full cursor-pointer flex-col gap-1 rounded-lg border px-2 py-1">
+      {/* Event */}
+      <Popover open={isMetricOpen} onOpenChange={setIsMetricOpen}>
         <PopoverTrigger asChild>
-          <div className="border-muted hover:bg-muted flex w-full cursor-pointer items-center gap-2 rounded-lg border px-2 py-1">
+          <div className="hover:bg-muted flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1">
             <div className="h-4 w-4 rounded bg-white bg-opacity-20 text-center text-xs">
               {numberToLetter(props.index + 1)}
             </div>
@@ -41,13 +61,14 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
             {props.list.map((item, i) => {
               return (
                 <div
-                  key={i}
                   className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1"
                   onClick={() => {
                     props.onSelect({
+                      math: 'events',
+                      ...props.info,
                       name: item.name,
                     });
-                    setOpen(false);
+                    setIsMetricOpen(false);
                   }}
                 >
                   <LuMousePointerClick />
@@ -61,6 +82,41 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
           </ScrollArea>
         </PopoverContent>
       </Popover>
+
+      {/* Math */}
+      {props.info && props.info.name && (
+        <Popover open={isMathOpen} onOpenChange={setIsMathOpen}>
+          <PopoverTrigger asChild>
+            <div className="hover:bg-muted flex items-center gap-1 rounded-lg px-2 py-1 text-xs opacity-60">
+              <span>{selectedMathMethodLabel}</span>
+              <LuChevronDown />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="h-[280px] w-[310px]">
+            <div className="mb-2 px-1 text-xs opacity-40">{t('Measuring')}</div>
+            <ScrollArea>
+              {mathMethod.map((item, i) => {
+                return (
+                  <div
+                    key={i}
+                    className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm"
+                    onClick={() => {
+                      props.onSelect({
+                        name: '$all_event',
+                        ...props.info,
+                        math: item.name,
+                      });
+                      setIsMathOpen(false);
+                    }}
+                  >
+                    <span>{item.label}</span>
+                  </div>
+                );
+              })}
+            </ScrollArea>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 });

@@ -40,7 +40,6 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
       .map((item) => {
         return columnHelper.accessor(item, {
           header(props) {
-            console.log(props);
             const id = props.column.id;
 
             return dayjs(id).format('MMM D');

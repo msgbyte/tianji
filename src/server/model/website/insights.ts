@@ -20,15 +20,27 @@ export async function insightsWebsite(
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
   const selectQueryArr = metrics.map((item) => {
-    if (item.name === '$all_event') {
-      return Prisma.sql`count(1) as "$all_event"`;
-    }
+    if (item.math === 'events') {
+      if (item.name === '$all_event') {
+        return Prisma.sql`count(1) as "$all_event"`;
+      }
 
-    if (item.name === '$page_view') {
-      return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
-    }
+      if (item.name === '$page_view') {
+        return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
+      }
 
-    return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+      return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+    } else if (item.math === 'sessions') {
+      if (item.name === '$all_event') {
+        return Prisma.sql`count(distinct "sessionId") as "$all_event"`;
+      }
+
+      if (item.name === '$page_view') {
+        return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
+      }
+
+      return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+    }
   });
 
   const filterQueryArr = [
