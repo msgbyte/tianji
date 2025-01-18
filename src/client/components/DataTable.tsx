@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Empty } from 'antd';
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Button } from './ui/button';
 import { LuChevronRight } from 'react-icons/lu';
 import { cn } from '@/utils/style';
@@ -92,10 +92,7 @@ export function DataTable<TData>({
           {table.getRowModel().rows?.length > 0 ? (
             table.getRowModel().rows.map((row) => {
               const renderedRow = (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
+                <TableRow data-state={row.getIsSelected() && 'selected'}>
                   {row.getCanExpand() && (
                     <TableCell className="w-9">
                       <Button
@@ -123,7 +120,7 @@ export function DataTable<TData>({
               );
 
               return (
-                <>
+                <Fragment key={row.id}>
                   {renderedRow}
 
                   {row.getIsExpanded() && ExpandComponent && (
@@ -133,7 +130,7 @@ export function DataTable<TData>({
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               );
             })
           ) : (
