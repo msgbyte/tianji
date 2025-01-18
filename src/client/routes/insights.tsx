@@ -86,13 +86,11 @@ function PageComponent() {
           direction="horizontal"
         >
           <ResizablePanel collapsedSize={1} className={cn('flex flex-col')}>
-            <ScrollArea className="h-full overflow-hidden p-4">
-              {selectedWebsiteId ? (
-                <ChartRender websiteId={selectedWebsiteId} />
-              ) : (
-                <div>{t('Please select website first')}</div>
-              )}
-            </ScrollArea>
+            {selectedWebsiteId ? (
+              <ChartRender websiteId={selectedWebsiteId} />
+            ) : (
+              <div>{t('Please select website first')}</div>
+            )}
           </ResizablePanel>
 
           <ResizableHandle withHandle />

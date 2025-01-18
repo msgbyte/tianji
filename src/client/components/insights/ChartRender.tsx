@@ -9,6 +9,12 @@ import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
 import { DateUnit } from '@tianji/shared';
 import { TableView } from './TableView';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '../ui/resizable';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface ChartRenderProps {
   websiteId: string;
@@ -57,8 +63,8 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   );
 
   return (
-    <div>
-      <div className="mb-2 flex justify-between">
+    <div className="flex h-full flex-col">
+      <div className="mb-2 flex justify-between p-4">
         <DateRangeSelection
           value={dateKey}
           onChange={(key, range) => {
@@ -71,17 +77,28 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
       </div>
 
       {data && (
-        <div>
-          <TimeEventChart
-            data={data}
-            unit={'day'}
-            chartConfig={chartConfig}
-            drawGradientArea={false}
-          />
-        </div>
-      )}
+        <ResizablePanelGroup className="flex-1" direction="vertical">
+          <ResizablePanel collapsedSize={1} className="flex flex-col">
+            <div className="h-full p-4">
+              <TimeEventChart
+                className="h-full w-full"
+                data={data}
+                unit={'day'}
+                chartConfig={chartConfig}
+                drawGradientArea={false}
+              />
+            </div>
+          </ResizablePanel>
 
-      {data && <TableView metrics={metrics} data={data} dateUnit={dateUnit} />}
+          <ResizableHandle withHandle />
+
+          <ResizablePanel>
+            <ScrollArea className="h-full overflow-hidden p-4">
+              <TableView metrics={metrics} data={data} dateUnit={dateUnit} />
+            </ScrollArea>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
     </div>
   );
 });
