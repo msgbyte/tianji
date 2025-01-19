@@ -7,6 +7,7 @@ import {
 } from '../../model/openai.js';
 import { env } from '../../utils/env.js';
 import { getSurveyPrompt } from '../../model/prompt/survey.js';
+// @ts-ignore
 import type { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { sum } from 'lodash-es';
 import { createAuditLog } from '../../model/auditLog.js';

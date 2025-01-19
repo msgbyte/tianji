@@ -1,3 +1,4 @@
+// @ts-ignore
 import { FunctionDefinition } from 'openai/resources/shared.mjs';
 
 export type PromptToolDefinition = FunctionDefinition;

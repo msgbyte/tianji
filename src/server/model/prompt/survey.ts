@@ -1,3 +1,4 @@
+// @ts-ignore
 import type { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { prisma } from '../_client.js';
 import { SurveyPayloadSchema } from '../../prisma/zod/schemas/index.js';
