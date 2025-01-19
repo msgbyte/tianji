@@ -22,13 +22,13 @@ export const WebsiteVisitorMapBtn: React.FC<WebsiteVisitorMapBtnProps> =
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" Icon={LuMap}>
-            {t('Vistor Map')}
+            {t('Visitor Map')}
           </Button>
         </SheetTrigger>
 
         <SheetContent side="top">
           <SheetHeader>
-            <SheetTitle>{t('Vistor Map')}</SheetTitle>
+            <SheetTitle>{t('Visitor Map')}</SheetTitle>
           </SheetHeader>
 
           <WebsiteVisitorMap websiteId={props.websiteId} />
