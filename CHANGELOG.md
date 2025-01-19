@@ -1,5 +1,11 @@
 
 
+## [1.17.7](https://github.com/msgbyte/tianji/compare/v1.17.6...v1.17.7) (2025-01-19)
+
+### Bug Fixes
+
+* fix a issue which will make openai key is required(original should be optional) [#139](https://github.com/msgbyte/tianji/issues/139) ([1ed859b](https://github.com/msgbyte/tianji/commit/1ed859b56c0fb68b536ad83ad2c9b649cc0a853b))
+
 ## [1.17.6](https://github.com/msgbyte/tianji/compare/v1.17.5...v1.17.6) (2025-01-04)
 
 ### Features
