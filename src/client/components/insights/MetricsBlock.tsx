@@ -10,6 +10,7 @@ import { formatNumber, numberToLetter } from '@/utils/common';
 import { LuChevronDown, LuMousePointerClick } from 'react-icons/lu';
 import { MetricsInfo } from '@/store/insights';
 import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '@/utils/style';
 
 interface MetricsBlockProps {
   index: number;
@@ -21,6 +22,7 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   const { t } = useTranslation();
   const [isMetricOpen, setIsMetricOpen] = useState(false);
   const [isMathOpen, setIsMathOpen] = useState(false);
+  const [filterText, setFilterText] = useState('');
 
   const mathMethod = [
     {
@@ -54,31 +56,40 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
         </PopoverTrigger>
         <PopoverContent className="h-[320px] w-[380px]">
           <div className="mb-2">
-            <Input placeholder={t('Search Metrics')} />
+            <Input
+              placeholder={t('Search Metrics')}
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
           </div>
 
           <ScrollArea>
-            {props.list.map((item, i) => {
-              return (
-                <div
-                  className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1"
-                  onClick={() => {
-                    props.onSelect({
-                      math: 'events',
-                      ...props.info,
-                      name: item.name,
-                    });
-                    setIsMetricOpen(false);
-                  }}
-                >
-                  <LuMousePointerClick />
-                  <span>{item.name}</span>
-                  <span className="text-xs opacity-40">
-                    ({formatNumber(item.count)})
-                  </span>
-                </div>
-              );
-            })}
+            {props.list
+              .filter((item) => item.name.includes(filterText))
+              .map((item, i) => {
+                return (
+                  <div
+                    className={cn(
+                      'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1',
+                      props.info?.name === item.name && 'bg-muted'
+                    )}
+                    onClick={() => {
+                      props.onSelect({
+                        math: 'events',
+                        ...props.info,
+                        name: item.name,
+                      });
+                      setIsMetricOpen(false);
+                    }}
+                  >
+                    <LuMousePointerClick />
+                    <span>{item.name}</span>
+                    <span className="text-xs opacity-40">
+                      ({formatNumber(item.count)})
+                    </span>
+                  </div>
+                );
+              })}
           </ScrollArea>
         </PopoverContent>
       </Popover>
@@ -99,7 +110,10 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
                 return (
                   <div
                     key={i}
-                    className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm"
+                    className={cn(
+                      'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm',
+                      props.info?.math === item.name && 'bg-muted'
+                    )}
                     onClick={() => {
                       props.onSelect({
                         name: '$all_event',
