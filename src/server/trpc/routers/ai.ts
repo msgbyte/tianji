@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, workspaceProcedure } from '../trpc.js';
-import { openaiClient } from '../../model/openai.js';
+import { getOpenAIClient } from '../../model/openai.js';
 import { env } from '../../utils/env.js';
 
 export const aiRouter = router({
@@ -21,7 +21,7 @@ export const aiRouter = router({
         return '';
       }
 
-      const stream = await openaiClient.chat.completions.create({
+      const stream = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4o',
         messages: [{ role: 'user', content: question }],
         stream: true,
