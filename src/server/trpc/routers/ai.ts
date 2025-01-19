@@ -3,7 +3,7 @@ import { router, workspaceProcedure } from '../trpc.js';
 import {
   calcOpenAIToken,
   modelName,
-  openaiClient,
+  getOpenAIClient,
 } from '../../model/openai.js';
 import { env } from '../../utils/env.js';
 import { getSurveyPrompt } from '../../model/prompt/survey.js';
@@ -55,7 +55,7 @@ export const aiRouter = router({
         messages.map((m) => calcOpenAIToken(String(m.content)))
       );
 
-      const stream = await openaiClient.chat.completions.create({
+      const stream = await getOpenAIClient().chat.completions.create({
         model: modelName,
         messages,
         stream: true,

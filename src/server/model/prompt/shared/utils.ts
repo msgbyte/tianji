@@ -1,4 +1,4 @@
-import { openaiClient } from '../../openai.js';
+import { getOpenAIClient } from '../../openai.js';
 import { PromptToolDefinition } from './tools.js';
 
 interface AIToolsSelectionOptions {
@@ -7,7 +7,7 @@ interface AIToolsSelectionOptions {
   functions: PromptToolDefinition[];
 }
 export async function aiToolsSelection(options: AIToolsSelectionOptions) {
-  const chatCompletion = await openaiClient.chat.completions.create({
+  const chatCompletion = await getOpenAIClient().chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {

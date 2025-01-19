@@ -1,6 +1,6 @@
 import { describe, test } from 'vitest';
 import { env } from '../utils/env.js';
-import { openaiClient } from './openai.js';
+import { getOpenAIClient } from './openai.js';
 
 const functions = {
   getCurrentDate: {
@@ -35,6 +35,8 @@ async function executeFunction(name: string, args: any) {
 }
 
 describe.runIf(env.openai.apiKey)('openai', () => {
+  const openaiClient = getOpenAIClient();
+
   test('test openai tool choose', async () => {
     try {
       const chatCompletion = await openaiClient.chat.completions.create({

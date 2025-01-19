@@ -4,9 +4,23 @@ import { encoding_for_model } from 'tiktoken';
 
 export const modelName = 'gpt-4o-mini';
 
-export const openaiClient = new OpenAI({
-  apiKey: env.openai.apiKey,
-});
+let openaiClient: OpenAI;
+
+export function getOpenAIClient() {
+  if (openaiClient) {
+    return openaiClient;
+  } else {
+    if (!env.openai.apiKey) {
+      throw new Error('AI feature not enabled');
+    }
+
+    openaiClient = new OpenAI({
+      apiKey: env.openai.apiKey,
+    });
+
+    return openaiClient;
+  }
+}
 
 export function calcOpenAIToken(message: string) {
   const encoder = encoding_for_model(modelName);
