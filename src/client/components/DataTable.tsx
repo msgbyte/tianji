@@ -4,8 +4,10 @@ import {
   getCoreRowModel,
   useReactTable,
   createColumnHelper,
-  getExpandedRowModel,
   ExpandedState,
+  RowData,
+  Column,
+  ColumnPinningState,
 } from '@tanstack/react-table';
 
 import {
@@ -25,15 +27,23 @@ import { cn } from '@/utils/style';
 export type { ColumnDef };
 export { createColumnHelper };
 
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    className?: string;
+  }
+}
+
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
   data: TData[];
+  columnPinning?: ColumnPinningState;
   ExpandComponent?: React.ComponentType<{ row: TData }>;
 }
 
 export function DataTable<TData>({
   columns,
   data,
+  columnPinning = { left: [], right: [] },
   ExpandComponent,
 }: DataTableProps<TData>) {
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
@@ -44,6 +54,7 @@ export function DataTable<TData>({
     columns,
     state: {
       expanded,
+      columnPinning,
     },
     onExpandedChange: setExpanded,
     getCoreRowModel: getCoreRowModel(),
@@ -54,7 +65,7 @@ export function DataTable<TData>({
 
   return (
     <div className="rounded-md border">
-      <Table>
+      <Table style={{ width: table.getCenterTotalSize() }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -75,7 +86,18 @@ export function DataTable<TData>({
 
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="text-nowrap">
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      'text-nowrap',
+                      header.column.columnDef.meta?.className
+                    )}
+                    style={{
+                      ...getCommonPinningStyles(header.column),
+                      width: header.getSize(),
+                      minWidth: header.getSize(),
+                    }}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -109,7 +131,14 @@ export function DataTable<TData>({
                   )}
 
                   {row.getVisibleCells().map((cell, i) => (
-                    <TableCell key={cell.id} className="text-nowrap">
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        'text-nowrap',
+                        cell.column.columnDef.meta?.className
+                      )}
+                      style={{ ...getCommonPinningStyles(cell.column) }}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -146,3 +175,26 @@ export function DataTable<TData>({
   );
 }
 DataTable.displayName = 'DataTable';
+
+function getCommonPinningStyles<TData>(
+  column: Column<TData>
+): React.CSSProperties {
+  const isPinned = column.getIsPinned();
+  const isLastLeftPinnedColumn =
+    isPinned === 'left' && column.getIsLastColumn('left');
+  const isFirstRightPinnedColumn =
+    isPinned === 'right' && column.getIsFirstColumn('right');
+
+  return {
+    boxShadow: isLastLeftPinnedColumn
+      ? '-4px 0 4px -4px gray inset'
+      : isFirstRightPinnedColumn
+        ? '4px 0 4px -4px gray inset'
+        : undefined,
+    left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
+    right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
+    position: isPinned ? 'sticky' : 'relative',
+    width: column.getSize(),
+    zIndex: isPinned ? 1 : 0,
+  };
+}

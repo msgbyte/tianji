@@ -27,8 +27,12 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
       size: 150,
     }),
     columnHelper.display({
+      id: 'average',
       header: t('Average'),
-      size: 150,
+      size: 110,
+      meta: {
+        className: 'text-right',
+      },
       cell(props) {
         const values = dates.map((d) => Number(props.row.getValue(d)) || 0);
 
@@ -44,7 +48,10 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
 
             return dayjs(id).format('MMM D');
           },
-          minSize: 110,
+          size: 110,
+          meta: {
+            className: 'text-right',
+          },
           cell(props) {
             return formatNumber(props.cell.getValue());
           },
@@ -62,6 +69,12 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
     };
   });
 
-  return <DataTable columns={columns} data={data} />;
+  return (
+    <DataTable
+      columnPinning={{ left: ['name', 'average'] }}
+      columns={columns}
+      data={data}
+    />
+  );
 });
 TableView.displayName = 'TableView';
