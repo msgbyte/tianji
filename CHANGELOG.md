@@ -1,5 +1,11 @@
 
 
+## [1.17.9](https://github.com/msgbyte/tianji/compare/v1.17.8...v1.17.9) (2025-01-21)
+
+### Others
+
+* fix trpc-to-openapi use incorrect middleware problem ([707d6fa](https://github.com/msgbyte/tianji/commit/707d6fa800dc917a8673927b973565995fdb398a))
+
 ## [1.17.8](https://github.com/msgbyte/tianji/compare/v1.17.7...v1.17.8) (2025-01-21)
 
 ### Others
