@@ -80,6 +80,11 @@ export function getIpAddress(req: IncomingMessage): string {
 
 let lookup: Reader<CityResponse>;
 export async function getLocation(ip: string) {
+  // Ignore null
+  if (!ip) {
+    return;
+  }
+
   // Ignore local ips
   if (await isLocalhost(ip)) {
     return;
