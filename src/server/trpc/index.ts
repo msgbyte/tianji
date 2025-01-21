@@ -2,8 +2,8 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import { createContext } from './trpc.js';
 import { appRouter } from './routers/index.js';
 import {
-  createOpenApiHttpHandler,
   generateOpenApiDocument,
+  createOpenApiExpressMiddleware,
 } from 'trpc-to-openapi';
 const packageJson = await import('../../../package.json', {
   assert: { type: 'json' },
@@ -19,10 +19,10 @@ export const trpcExpressMiddleware = trpcExpress.createExpressMiddleware({
   },
 });
 
-export const trpcOpenapiHttpHandler = createOpenApiHttpHandler({
+export const trpcOpenapiHttpHandler = createOpenApiExpressMiddleware({
   router: appRouter,
   createContext,
-} as any);
+});
 
 const title = 'Tianji OpenAPI';
 

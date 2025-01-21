@@ -1,17 +1,17 @@
-import { initTRPC, inferAsyncReturnType, TRPCError } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { jwtVerify } from '../middleware/auth.js';
 import { getWorkspaceUser } from '../model/workspace.js';
 import { ROLES, SYSTEM_ROLES } from '@tianji/shared';
-import type { Request } from 'express';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { getSession } from '@auth/express';
 import { authConfig } from '../model/auth.js';
 import { get } from 'lodash-es';
 import { promTrpcRequest } from '../utils/prometheus/client.js';
 import { verifyUserApiKey } from '../model/user.js';
+import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 
-export async function createContext({ req }: { req: Request }) {
+export async function createContext({ req }: CreateExpressContextOptions) {
   const authorization = req.headers['authorization'] ?? '';
   const token = authorization.replace('Bearer ', '');
   const timezone = req.headers['timezone']
@@ -21,7 +21,7 @@ export async function createContext({ req }: { req: Request }) {
   return { token, timezone, req };
 }
 
-type Context = inferAsyncReturnType<typeof createContext>;
+type Context = Awaited<ReturnType<typeof createContext>>;
 const t = initTRPC.context<Context>().meta<OpenApiMeta>().create();
 
 export type OpenApiMetaInfo = NonNullable<OpenApiMeta['openapi']>;
