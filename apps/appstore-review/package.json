@@ -1,0 +1,20 @@
+{
+  "name": "appstore-review",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "moonrailgun <moonrailgun@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "app-store-scraper": "^0.18.0",
+    "axios": "1.7.7",
+    "google-play-scraper": "^10.0.1",
+    "googleapis": "^144.0.0",
+    "tianji-client-sdk": "workspace:*"
+  }
+}
