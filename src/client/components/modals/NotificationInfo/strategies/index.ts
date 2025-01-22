@@ -4,6 +4,7 @@ import { NotificationTelegram } from './telegram';
 import { NotificationApprise } from './apprise';
 import { NotificationFeishu } from './feishu';
 import { NotificationWebhook } from './webhook';
+import { NotificationTeams } from './teams';
 
 interface NotificationStrategy {
   label: string;
@@ -36,5 +37,10 @@ export const notificationStrategies: NotificationStrategy[] = [
     label: 'Webhook',
     name: 'webhook',
     form: NotificationWebhook,
+  },
+  {
+    label: 'Teams',
+    name: 'teams',
+    form: NotificationTeams,
   },
 ];
