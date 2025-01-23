@@ -249,7 +249,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                 name="feedChannelIds"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Feed Channels')}</FormLabel>
+                    <FormLabel optional={true}>{t('Feed Channels')}</FormLabel>
                     <FormControl className="w-full">
                       <FeedChannelPicker
                         allowClear={true}
