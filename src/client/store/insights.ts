@@ -1,3 +1,4 @@
+import { pullAt } from 'lodash-es';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
@@ -12,6 +13,7 @@ interface InsightsState {
   currentMetrics: (MetricsInfo | null)[];
   setMetrics: (index: number, info: MetricsInfo) => void;
   addMetrics: () => void;
+  removeMetrics: (index: number) => void;
 }
 
 export const useInsightsStore = create<InsightsState>()(
@@ -28,6 +30,12 @@ export const useInsightsStore = create<InsightsState>()(
         addMetrics: () => {
           set((state) => {
             state.currentMetrics[state.currentMetrics.length] = null;
+          });
+        },
+        removeMetrics: (index: number) => {
+          set((state) => {
+            // delete state.currentMetrics[index];
+            pullAt(state.currentMetrics, index);
           });
         },
       }),

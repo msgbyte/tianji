@@ -7,16 +7,32 @@ import {
 import { Input } from '../ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
 import { formatNumber, numberToLetter } from '@/utils/common';
-import { LuChevronDown, LuMousePointerClick } from 'react-icons/lu';
+import {
+  LuChevronDown,
+  LuDelete,
+  LuMoreVertical,
+  LuMousePointerClick,
+  LuTrain,
+  LuTrash,
+  LuTrash2,
+} from 'react-icons/lu';
 import { MetricsInfo } from '@/store/insights';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '@/utils/style';
+import { Button } from '../ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 interface MetricsBlockProps {
   index: number;
   list: { name: string; count: number }[];
   info: MetricsInfo | null;
   onSelect: (info: MetricsInfo) => void;
+  onDelete: () => void;
 }
 export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   const { t } = useTranslation();
@@ -50,14 +66,41 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
     <div className="border-muted flex w-full cursor-pointer flex-col gap-1 rounded-lg border px-2 py-1">
       {/* Event */}
       <Popover open={isMetricOpen} onOpenChange={setIsMetricOpen}>
-        <PopoverTrigger asChild>
-          <div className="hover:bg-muted flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1">
-            <div className="h-4 w-4 rounded bg-white bg-opacity-20 text-center text-xs">
-              {numberToLetter(props.index + 1)}
+        <div className="flex items-center justify-between">
+          <PopoverTrigger asChild>
+            <div className="hover:bg-muted flex w-full flex-1 cursor-pointer items-center gap-2 rounded-lg px-2 py-1">
+              <div className="h-4 w-4 rounded bg-white bg-opacity-20 text-center text-xs">
+                {numberToLetter(props.index + 1)}
+              </div>
+              <span>{props.info?.name ?? <>&nbsp;</>}</span>
             </div>
-            <span>{props.info?.name ?? <>&nbsp;</>}</span>
+          </PopoverTrigger>
+
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button
+                  className="h-8 w-8 rounded-lg text-sm hover:bg-white"
+                  variant="ghost"
+                  size="icon"
+                >
+                  <LuMoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={() => {
+                    props.onDelete();
+                  }}
+                >
+                  <LuTrash2 className="mr-2" />
+                  {t('Delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </PopoverTrigger>
+        </div>
+
         <PopoverContent className="h-[320px] w-[380px]">
           <div className="mb-2">
             <Input

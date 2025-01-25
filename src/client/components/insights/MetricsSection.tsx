@@ -18,6 +18,7 @@ export const MetricsSection: React.FC<MetricsSectionProps> = React.memo(
     const currentMetrics = useInsightsStore((state) => state.currentMetrics);
     const setMetrics = useInsightsStore((state) => state.setMetrics);
     const addMetrics = useInsightsStore((state) => state.addMetrics);
+    const removeMetrics = useInsightsStore((state) => state.removeMetrics);
 
     const { data: allEvents = [] } = trpc.insights.events.useQuery(
       {
@@ -54,6 +55,7 @@ export const MetricsSection: React.FC<MetricsSectionProps> = React.memo(
               list={allEvents}
               info={metric}
               onSelect={(info) => setMetrics(i, info)}
+              onDelete={() => removeMetrics(i)}
             />
           ))}
         </div>
