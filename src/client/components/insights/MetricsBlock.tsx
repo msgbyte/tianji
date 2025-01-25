@@ -42,6 +42,10 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
     mathMethod.find((m) => m.name === props.info?.math)?.label ??
     mathMethod[0].label;
 
+  const filteredMetrics = props.list.filter((item) =>
+    item.name.includes(filterText)
+  );
+
   return (
     <div className="border-muted flex w-full cursor-pointer flex-col gap-1 rounded-lg border px-2 py-1">
       {/* Event */}
@@ -64,32 +68,36 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
           </div>
 
           <ScrollArea>
-            {props.list
-              .filter((item) => item.name.includes(filterText))
-              .map((item, i) => {
-                return (
-                  <div
-                    className={cn(
-                      'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1',
-                      props.info?.name === item.name && 'bg-muted'
-                    )}
-                    onClick={() => {
-                      props.onSelect({
-                        math: 'events',
-                        ...props.info,
-                        name: item.name,
-                      });
-                      setIsMetricOpen(false);
-                    }}
-                  >
-                    <LuMousePointerClick />
-                    <span>{item.name}</span>
-                    <span className="text-xs opacity-40">
-                      ({formatNumber(item.count)})
-                    </span>
-                  </div>
-                );
-              })}
+            {filteredMetrics.length === 0 && (
+              <div className="mt-4 text-center opacity-80">
+                {t('No any metrics availabled.')}
+              </div>
+            )}
+
+            {filteredMetrics.map((item, i) => {
+              return (
+                <div
+                  className={cn(
+                    'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1',
+                    props.info?.name === item.name && 'bg-muted'
+                  )}
+                  onClick={() => {
+                    props.onSelect({
+                      math: 'events',
+                      ...props.info,
+                      name: item.name,
+                    });
+                    setIsMetricOpen(false);
+                  }}
+                >
+                  <LuMousePointerClick />
+                  <span>{item.name}</span>
+                  <span className="text-xs opacity-40">
+                    ({formatNumber(item.count)})
+                  </span>
+                </div>
+              );
+            })}
           </ScrollArea>
         </PopoverContent>
       </Popover>

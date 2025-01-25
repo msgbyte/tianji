@@ -89,7 +89,9 @@ function PageComponent() {
             {selectedWebsiteId ? (
               <ChartRender websiteId={selectedWebsiteId} />
             ) : (
-              <div>{t('Please select website first')}</div>
+              <div className="mt-4 text-center opacity-80">
+                {t('Please select website first')}
+              </div>
             )}
           </ResizablePanel>
 
