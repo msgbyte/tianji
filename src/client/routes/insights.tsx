@@ -98,13 +98,19 @@ function PageComponent() {
           <ResizableHandle withHandle />
 
           <ResizablePanel defaultSize={30}>
-            <ScrollArea className="h-full overflow-hidden p-4">
-              <div className="flex flex-col space-y-8">
-                <MetricsSection title="Metrics" />
-                {/* <MetricsSection title="Filters" />
+            {selectedWebsiteId ? (
+              <ScrollArea className="h-full overflow-hidden p-4">
+                <div className="flex flex-col space-y-8">
+                  <MetricsSection title="Metrics" />
+                  {/* <MetricsSection title="Filters" />
                 <MetricsSection title="Breakdown" /> */}
+                </div>
+              </ScrollArea>
+            ) : (
+              <div className="mt-4 text-center opacity-80">
+                {t('Please select website first')}
               </div>
-            </ScrollArea>
+            )}
           </ResizablePanel>
         </ResizablePanelGroup>
       </CommonWrapper>

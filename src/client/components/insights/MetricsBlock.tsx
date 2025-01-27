@@ -36,7 +36,7 @@ interface MetricsBlockProps {
 }
 export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   const { t } = useTranslation();
-  const [isMetricOpen, setIsMetricOpen] = useState(false);
+  const [isMetricOpen, setIsMetricOpen] = useState(props.info === null);
   const [isMathOpen, setIsMathOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
 
@@ -65,7 +65,16 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   return (
     <div className="border-muted flex w-full cursor-pointer flex-col gap-1 rounded-lg border px-2 py-1">
       {/* Event */}
-      <Popover open={isMetricOpen} onOpenChange={setIsMetricOpen}>
+      <Popover
+        open={isMetricOpen}
+        onOpenChange={(open) => {
+          if (props.info) {
+            setIsMetricOpen(open);
+          } else {
+            props.onDelete();
+          }
+        }}
+      >
         <div className="flex items-center justify-between">
           <PopoverTrigger asChild>
             <div className="hover:bg-muted flex w-full flex-1 cursor-pointer items-center gap-2 rounded-lg px-2 py-1">
@@ -101,7 +110,7 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
           </div>
         </div>
 
-        <PopoverContent className="h-[320px] w-[380px]">
+        <PopoverContent className="h-[320px] w-[380px]" align="start">
           <div className="mb-2">
             <Input
               placeholder={t('Search Metrics')}
@@ -154,7 +163,7 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
               <LuChevronDown />
             </div>
           </PopoverTrigger>
-          <PopoverContent className="h-[280px] w-[310px]">
+          <PopoverContent align="start" className="h-[280px] w-[310px]">
             <div className="mb-2 px-1 text-xs opacity-40">{t('Measuring')}</div>
             <ScrollArea>
               {mathMethod.map((item, i) => {
