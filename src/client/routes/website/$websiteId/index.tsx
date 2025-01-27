@@ -12,12 +12,13 @@ import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
+import { useInsightsStore } from '@/store/insights';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Card } from 'antd';
-import { LuSettings } from 'react-icons/lu';
+import { LuCompass, LuSettings } from 'react-icons/lu';
 
 export const Route = createFileRoute('/website/$websiteId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -189,6 +190,24 @@ function PageComponent() {
               startAt={startAt}
               endAt={endAt}
             />
+
+            <div className="mt-2 text-center">
+              <Button
+                variant="outline"
+                Icon={LuCompass}
+                onClick={() => {
+                  useInsightsStore.getState().reset();
+                  useInsightsStore.setState({
+                    selectedWebsiteId: websiteId,
+                  });
+                  navigate({
+                    to: '/insights',
+                  });
+                }}
+              >
+                {t('Insights')}
+              </Button>
+            </div>
           </Card.Grid>
         </Card>
       </ScrollArea>

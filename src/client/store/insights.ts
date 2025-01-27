@@ -11,6 +11,7 @@ export interface MetricsInfo {
 interface InsightsState {
   selectedWebsiteId: string;
   currentMetrics: (MetricsInfo | null)[];
+  reset: () => void;
   setMetrics: (index: number, info: MetricsInfo) => void;
   addMetrics: () => void;
   removeMetrics: (index: number) => void;
@@ -22,6 +23,12 @@ export const useInsightsStore = create<InsightsState>()(
       (set) => ({
         selectedWebsiteId: '',
         currentMetrics: [null],
+        reset: () => {
+          set(() => ({
+            selectedWebsiteId: '',
+            currentMetrics: [null],
+          }));
+        },
         setMetrics: (index, info) => {
           set((state) => {
             state.currentMetrics[index] = info;
