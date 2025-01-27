@@ -12,8 +12,17 @@ export const NotificationTeams: React.FC = React.memo(() => {
         name={['payload', 'teamsWebhookUrl']}
         rules={[{ required: true }]}
       >
-        <Input placeholder={t('For example: https://example.com/callback')} />
+        <Input placeholder={t('For example: https://yourorg.webhook.office.com/webhookb2/guid')} />
       </Form.Item>
+      <div className="text-sm opacity-80">
+        {t('Read more')}:{' '}
+        <a
+          href="https://learn.microsoft.com/pt-br/azure/data-factory/how-to-send-notifications-to-teams?tabs=data-factory"
+          target="_blank"
+        >
+          https://learn.microsoft.com/pt-br/azure/data-factory/how-to-send-notifications-to-teams?tabs=data-factory
+        </a>
+      </div>
     </>
   );
 });

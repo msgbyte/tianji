@@ -7,7 +7,6 @@ interface TeamsWebhookPayload {
   teamsWebhookUrl: string;
 }
 
-// Fork from https://github.com/louislam/uptime-kuma/blob/HEAD/server/notification-providers/smtp.js
 export const teams: NotificationProvider = {
   send: async (notification, title, message) => {
     const payload = notification.payload as unknown as TeamsWebhookPayload;
