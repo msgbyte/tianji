@@ -6,6 +6,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import dayjs from 'dayjs';
 import { DateUnit } from '@tianji/shared';
 import { formatNumber } from '@/utils/common';
+import { getShortTextByUnit } from '@/utils/date';
 
 const columnHelper = createColumnHelper<any>();
 
@@ -19,6 +20,7 @@ interface TableViewProps {
 export const TableView: React.FC<TableViewProps> = React.memo((props) => {
   const { t } = useTranslation();
 
+  const dateUnit = props.dateUnit;
   const dates = props.data.map((d) => d.date);
 
   const columns = [
@@ -46,7 +48,7 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
           header(props) {
             const id = props.column.id;
 
-            return dayjs(id).format('MMM D');
+            return getShortTextByUnit(id, dateUnit);
           },
           size: 110,
           meta: {

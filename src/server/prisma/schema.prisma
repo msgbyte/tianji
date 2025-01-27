@@ -292,7 +292,7 @@ model WebsiteEventData {
   stringValue    String?   @db.VarChar(500)
   numberValue    Decimal?  @db.Decimal(19, 4)
   dateValue      DateTime? @db.Timestamptz(6)
-  dataType       Int       @db.Integer
+  dataType       Int       @db.Integer // string: 1, number: 2, boolean: 3, date: 4, array: 5,
   createdAt      DateTime  @default(now()) @db.Timestamptz(6)
 
   website      Website      @relation(fields: [websiteId], references: [id], onUpdate: Cascade, onDelete: Cascade)

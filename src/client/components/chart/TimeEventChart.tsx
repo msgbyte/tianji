@@ -108,7 +108,13 @@ export const TimeEventChart: React.FC<{
         />
         <CartesianGrid vertical={false} />
 
-        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              labelFormatter={(label) => formatDateWithUnit(label, props.unit)}
+            />
+          }
+        />
 
         {Object.keys(chartConfig).map((key, i) => {
           return (

@@ -89,7 +89,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
                 <TimeEventChart
                   className="h-full w-full"
                   data={data}
-                  unit={'day'}
+                  unit={dateUnit}
                   chartConfig={chartConfig}
                   drawGradientArea={false}
                 />
