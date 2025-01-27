@@ -15,13 +15,15 @@ import {
   ResizablePanelGroup,
 } from '../ui/resizable';
 import { ScrollArea } from '../ui/scroll-area';
+import { Empty } from 'antd';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface ChartRenderProps {
   websiteId: string;
 }
 export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
-
+  const { t } = useTranslation();
   const metrics = useInsightsStore((state) =>
     state.currentMetrics.filter((item): item is MetricsInfo => Boolean(item))
   );
@@ -76,29 +78,33 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
         <DateUnitSelection value={dateUnit} onChange={setDateUnit} />
       </div>
 
-      {data && (
-        <ResizablePanelGroup className="flex-1" direction="vertical">
-          <ResizablePanel collapsedSize={1} className="flex flex-col">
-            <div className="h-full p-4">
-              <TimeEventChart
-                className="h-full w-full"
-                data={data}
-                unit={'day'}
-                chartConfig={chartConfig}
-                drawGradientArea={false}
-              />
-            </div>
-          </ResizablePanel>
+      {data &&
+        Array.isArray(data) &&
+        (data.length === 0 ? (
+          <Empty description={t("We couldn't find any data for your query.")} />
+        ) : (
+          <ResizablePanelGroup className="flex-1" direction="vertical">
+            <ResizablePanel collapsedSize={1} className="flex flex-col">
+              <div className="h-full p-4">
+                <TimeEventChart
+                  className="h-full w-full"
+                  data={data}
+                  unit={'day'}
+                  chartConfig={chartConfig}
+                  drawGradientArea={false}
+                />
+              </div>
+            </ResizablePanel>
 
-          <ResizableHandle withHandle />
+            <ResizableHandle withHandle />
 
-          <ResizablePanel>
-            <ScrollArea className="h-full overflow-hidden p-4">
-              <TableView metrics={metrics} data={data} dateUnit={dateUnit} />
-            </ScrollArea>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      )}
+            <ResizablePanel>
+              <ScrollArea className="h-full overflow-hidden p-4">
+                <TableView metrics={metrics} data={data} dateUnit={dateUnit} />
+              </ScrollArea>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ))}
     </div>
   );
 });
