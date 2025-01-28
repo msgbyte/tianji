@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {
-  LuActivitySquare,
-  LuAreaChart,
+  LuSquareActivity,
+  LuChartArea,
   LuCompass,
-  LuFilePieChart,
+  LuFileChartPie,
   LuMonitorDot,
   LuServer,
   LuWifi,
@@ -91,7 +91,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           {
             title: t('Website'),
             label: String(serviceCount?.website ?? ''),
-            icon: LuAreaChart,
+            icon: LuChartArea,
             to: '/website',
           },
           {
@@ -115,7 +115,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           {
             title: t('Pages'),
             label: String(serviceCount?.page ?? ''),
-            icon: LuFilePieChart,
+            icon: LuFileChartPie,
             to: '/page',
           },
           {
@@ -127,7 +127,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
           {
             title: t('Feed'),
             label: String(serviceCount?.feed ?? ''),
-            icon: LuActivitySquare,
+            icon: LuSquareActivity,
             to: '/feed',
           },
         ]}

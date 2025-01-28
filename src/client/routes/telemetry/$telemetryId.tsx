@@ -20,7 +20,7 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Card, Typography } from 'antd';
-import { LuCode2, LuTrash } from 'react-icons/lu';
+import { LuCodeXml, LuTrash } from 'react-icons/lu';
 import {
   Collapsible,
   CollapsibleContent,
@@ -90,7 +90,7 @@ function TelemetryDetailComponent() {
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" Icon={LuCode2}>
+                  <Button variant="outline" Icon={LuCodeXml}>
                     {t('Usage')}
                   </Button>
                 </AlertDialogTrigger>

@@ -10,16 +10,16 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import {
-  LuActivitySquare,
-  LuAreaChart,
+  LuSquareActivity,
+  LuChartArea,
   LuBellDot,
-  LuFilePieChart,
-  LuKanbanSquare,
+  LuFileChartPie,
+  LuSquareKanban,
   LuKeyRound,
   LuMonitorDot,
   LuSearch,
   LuServer,
-  LuUserCircle2,
+  LuCircleUserRound,
   LuWifi,
 } from 'react-icons/lu';
 import { RiSurveyLine } from 'react-icons/ri';
@@ -123,7 +123,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                   to: '/website',
                 })}
               >
-                <LuAreaChart className="mr-2 h-4 w-4" />
+                <LuChartArea className="mr-2 h-4 w-4" />
                 {t('Website')}
               </CommandItem>
               <CommandItem
@@ -155,7 +155,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                   to: '/page',
                 })}
               >
-                <LuFilePieChart className="mr-2 h-4 w-4" />
+                <LuFileChartPie className="mr-2 h-4 w-4" />
                 {t('Pages')}
               </CommandItem>
               <CommandItem
@@ -171,7 +171,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                   to: '/feed',
                 })}
               >
-                <LuActivitySquare className="mr-2 h-4 w-4" />
+                <LuSquareActivity className="mr-2 h-4 w-4" />
                 {t('Feed')}
               </CommandItem>
             </CommandGroup>
@@ -182,7 +182,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                   to: '/settings/profile',
                 })}
               >
-                <LuUserCircle2 className="mr-2 h-4 w-4" />
+                <LuCircleUserRound className="mr-2 h-4 w-4" />
                 <span>{t('Profile')}</span>
               </CommandItem>
               <CommandItem
@@ -206,7 +206,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
                   to: '/settings/usage',
                 })}
               >
-                <LuKanbanSquare className="mr-2 h-4 w-4" />
+                <LuSquareKanban className="mr-2 h-4 w-4" />
                 <span>{t('Usage')}</span>
               </CommandItem>
             </CommandGroup>
@@ -286,7 +286,7 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
               },
             })}
           >
-            <LuFilePieChart className="mr-2 h-4 w-4" />
+            <LuFileChartPie className="mr-2 h-4 w-4" />
             {w.name}
           </CommandItem>
         ))}
@@ -334,7 +334,7 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
               },
             })}
           >
-            <LuFilePieChart className="mr-2 h-4 w-4" />
+            <LuFileChartPie className="mr-2 h-4 w-4" />
             {p.title}
           </CommandItem>
         ))}
@@ -366,7 +366,7 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
               },
             })}
           >
-            <LuActivitySquare className="mr-2 h-4 w-4" />
+            <LuSquareActivity className="mr-2 h-4 w-4" />
             {channel.name}
           </CommandItem>
         ))}

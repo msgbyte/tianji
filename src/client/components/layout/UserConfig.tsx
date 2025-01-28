@@ -28,7 +28,7 @@ import { useTranslation, setLanguage } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { version } from '@/utils/env';
 import React from 'react';
-import { LuMoreVertical } from 'react-icons/lu';
+import { LuEllipsisVertical } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { useSocketConnected } from '@/api/socketio';
 import { cn } from '@/utils/style';
@@ -97,7 +97,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
 
   const more = (
     <Button variant="outline" size="icon" className="shrink-0">
-      <LuMoreVertical />
+      <LuEllipsisVertical />
     </Button>
   );
 

@@ -1,18 +1,18 @@
 import Link from '@docusaurus/Link';
 import React from 'react';
 import {
-  LuAreaChart,
-  LuCode2,
+  LuChartArea,
+  LuCodeXml,
   LuCookie,
   LuFileArchive,
-  LuFilePieChart,
+  LuFileChartPie,
   LuGithub,
   LuMonitor,
   LuServer,
   LuSiren,
   LuUsers2,
   LuWifi,
-  LuActivitySquare,
+  LuSquareActivity,
 } from 'react-icons/lu';
 import { FaDocker } from 'react-icons/fa';
 import { RiSurveyLine } from 'react-icons/ri';
@@ -32,7 +32,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
         >
           <div className="mb-3 flex items-start gap-2">
             <div className="rounded-lg bg-white bg-opacity-20 p-1">
-              <LuCode2 className="block" size={24} />
+              <LuCodeXml className="block" size={24} />
             </div>
             <div className="text-2xl font-bold text-white">OpenAPI</div>
           </div>
@@ -115,7 +115,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
           <div className="mt-4 flex flex-col gap-2 pl-2">
             <div className="flex items-start gap-2">
               <div className="rounded-lg bg-white bg-opacity-20 p-1">
-                <LuAreaChart className="block" size={18} />
+                <LuChartArea className="block" size={18} />
               </div>
               <div className="text-md font-bold text-white">
                 Website Analytics
@@ -145,7 +145,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
 
             <div className="flex items-start gap-2">
               <div className="rounded-lg bg-white bg-opacity-20 p-1">
-                <LuFilePieChart className="block" size={18} />
+                <LuFileChartPie className="block" size={18} />
               </div>
               <div className="text-md font-bold text-white">Status Page</div>
             </div>
@@ -166,7 +166,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
 
             <div className="flex items-start gap-2">
               <div className="rounded-lg bg-white bg-opacity-20 p-1">
-                <LuActivitySquare className="block" size={18} />
+                <LuSquareActivity className="block" size={18} />
               </div>
               <div className="text-md font-bold text-white">Feeds</div>
             </div>

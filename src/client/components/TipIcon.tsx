@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { LuHelpCircle } from 'react-icons/lu';
+import { LuCircleHelp } from 'react-icons/lu';
 
 interface TipIconProps {
   className?: string;
@@ -12,7 +12,7 @@ export const TipIcon: React.FC<TipIconProps> = React.memo((props) => {
   return (
     <Tooltip>
       <TooltipTrigger type="button">
-        <LuHelpCircle className={className} />
+        <LuCircleHelp className={className} />
       </TooltipTrigger>
 
       <TooltipContent className="max-w-xl">{content}</TooltipContent>

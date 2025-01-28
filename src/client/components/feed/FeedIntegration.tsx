@@ -1,5 +1,5 @@
 import React from 'react';
-import { LuGithub, LuPlug, LuTestTube2 } from 'react-icons/lu';
+import { LuGithub, LuPlug, LuTestTubeDiagonal } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { CodeBlock } from '../CodeBlock';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -77,7 +77,7 @@ export const FeedIntegration: React.FC<{
 
       <div onClick={() => window.open('/feed/playground', '_blank')}>
         <FeedIntegrationItemTrigger
-          icon={<LuTestTube2 size={32} />}
+          icon={<LuTestTubeDiagonal size={32} />}
           label={t('Playground')}
         />
       </div>

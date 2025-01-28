@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../ui/button';
-import { LuCode2 } from 'react-icons/lu';
+import { LuCodeXml } from 'react-icons/lu';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ export const WebsiteCodeBtn: React.FC<WebsiteCodeBtnProps> = React.memo(
     return (
       <Dialog>
         <DialogTrigger>
-          <Button variant="outline" Icon={LuCode2}>
+          <Button variant="outline" Icon={LuCodeXml}>
             {t('Code')}
           </Button>
         </DialogTrigger>

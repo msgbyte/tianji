@@ -391,8 +391,8 @@ importers:
         specifier: ^7.51.1
         version: 7.51.1(react@18.2.0)
       react-icons:
-        specifier: ^4.12.0
-        version: 4.12.0(react@18.2.0)
+        specifier: ^5.4.0
+        version: 5.4.0(react@18.2.0)
       react-leaflet:
         specifier: ^4.2.1
         version: 4.2.1(leaflet@1.9.4)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -12069,6 +12069,11 @@ packages:
 
   react-icons@4.12.0:
     resolution: {integrity: sha512-IBaDuHiShdZqmfc/TwHu6+d6k2ltNCf3AszxNmjJc1KUfXdEeRJOKyNvLmAHaarhzGmTSVygNdyu8/opXv2gaw==}
+    peerDependencies:
+      react: '*'
+
+  react-icons@5.4.0:
+    resolution: {integrity: sha512-7eltJxgVt7X64oHh6wSWNwwbKTCtMfK35hcjvJS0yxEAhPM8oUKdS3+kqaW1vicIltw+kR2unHaa12S9pPALoQ==}
     peerDependencies:
       react: '*'
 
@@ -29819,13 +29824,13 @@ snapshots:
     optionalDependencies:
       react-dom: 18.2.0(react@18.2.0)
 
-  react-icons@4.12.0(react@18.2.0):
-    dependencies:
-      react: 18.2.0
-
   react-icons@4.12.0(react@18.3.1):
     dependencies:
       react: 18.3.1
+
+  react-icons@5.4.0(react@18.2.0):
+    dependencies:
+      react: 18.2.0
 
   react-intersection-observer@8.34.0(react@18.3.1):
     dependencies:

@@ -3,11 +3,10 @@ import { cn } from '@/utils/style';
 import {
   changeUserCurrentWorkspace,
   setUserInfo,
-  useCurrentWorkspace,
   useCurrentWorkspaceSafe,
   useUserInfo,
 } from '@/store/user';
-import { LuPlusCircle } from 'react-icons/lu';
+import { LuCirclePlus } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Button } from './ui/button';
@@ -214,7 +213,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = React.memo(
                         setShowNewWorkspaceDialog(true);
                       }}
                     >
-                      <LuPlusCircle className="mr-2" size={20} />
+                      <LuCirclePlus className="mr-2" size={20} />
                       {t('Create Workspace')}
                     </CommandItem>
                   </DialogTrigger>

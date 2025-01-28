@@ -14,7 +14,7 @@ import { useEvent } from '../../hooks/useEvent';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
 import { Button } from '@/components/ui/button';
-import { LuFileEdit, LuPlus, LuTrash2 } from 'react-icons/lu';
+import { LuFilePen, LuPlus, LuTrash2 } from 'react-icons/lu';
 import { compact } from 'lodash-es';
 
 export const Route = createFileRoute('/settings/notifications')({
@@ -96,7 +96,7 @@ function PageComponent() {
                   hasAdminPermission && (
                     <Button
                       variant="default"
-                      Icon={LuFileEdit}
+                      Icon={LuFilePen}
                       onClick={() => {
                         handleOpenModal({
                           id: item.id,

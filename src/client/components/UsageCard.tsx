@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { formatNumber } from '@/utils/common';
-import { LuAlertCircle } from 'react-icons/lu';
+import { LuCircleAlert } from 'react-icons/lu';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useTranslation } from '@i18next-toolkit/react';
 import colors from 'tailwindcss/colors';
@@ -30,7 +30,7 @@ export const UsageCard: React.FC<UsageCardProps> = React.memo((props) => {
         <div className="absolute right-2 top-2">
           <Tooltip>
             <TooltipTrigger>
-              <LuAlertCircle stroke={colors.red['500']} />
+              <LuCircleAlert stroke={colors.red['500']} />
             </TooltipTrigger>
             <TooltipContent>
               <div>

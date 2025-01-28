@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuCode2 } from 'react-icons/lu';
+import { LuCodeXml } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { CodeBlock } from '../CodeBlock';
@@ -36,7 +36,7 @@ export const SurveyUsageBtn: React.FC<SurveyUsageBtnProps> = React.memo(
     return (
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" Icon={LuCode2}>
+          <Button variant="outline" Icon={LuCodeXml}>
             {t('Usage')}
           </Button>
         </DialogTrigger>

@@ -6,7 +6,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { v1 as uuid } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuMinusCircle, LuPlusCircle, LuTrash } from 'react-icons/lu';
+import { LuCircleMinus, LuCirclePlus, LuTrash } from 'react-icons/lu';
 import { cn } from '@/utils/style';
 import { Separator } from '@/components/ui/separator';
 import { MonitorPicker } from '../MonitorPicker';
@@ -165,7 +165,7 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
                     variant="outline"
                     size="icon"
                     type="button"
-                    Icon={LuPlusCircle}
+                    Icon={LuCirclePlus}
                     onClick={() => handleAddItem(group.key)}
                   />
 
@@ -221,7 +221,7 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
                         {t('Show Latest Value')}
                       </span>
 
-                      <LuMinusCircle
+                      <LuCircleMinus
                         className="cursor-pointer text-lg"
                         onClick={() => handleDeleteItem(group.key, item.key)}
                       />

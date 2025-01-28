@@ -2,7 +2,7 @@ import React from 'react';
 import { MonitorPicker } from '../MonitorPicker';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
-import { LuMinusCircle, LuPlus } from 'react-icons/lu';
+import { LuCircleMinus, LuPlus } from 'react-icons/lu';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -264,7 +264,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                             {t('Show Latest Value')}
                           </span>
 
-                          <LuMinusCircle
+                          <LuCircleMinus
                             className="cursor-pointer text-lg"
                             onClick={() => remove(i)}
                           />

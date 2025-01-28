@@ -20,9 +20,9 @@ import { useNavigate } from '@tanstack/react-router';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import {
-  LuAlertTriangle,
+  LuTriangleAlert,
   LuDelete,
-  LuMoreVertical,
+  LuEllipsisVertical,
   LuTrash2,
 } from 'react-icons/lu';
 import { useMonitorAction } from './useMonitorAction';
@@ -149,7 +149,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                     <Button
                       variant="secondary"
                       size="icon"
-                      Icon={LuMoreVertical}
+                      Icon={LuEllipsisVertical}
                     />
                   </Dropdown>
 
@@ -212,7 +212,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
           {isMonitorDown && monitorInfo.recentError && (
             <Alert variant="destructive">
-              <LuAlertTriangle className="h-4 w-4" />
+              <LuTriangleAlert className="h-4 w-4" />
               <AlertTitle>{t('Monitor Detect Error')}</AlertTitle>
               <AlertDescription>{monitorInfo.recentError}</AlertDescription>
             </Alert>

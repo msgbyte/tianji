@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuCalendar, LuDownloadCloud } from 'react-icons/lu';
+import { LuCalendar, LuCloudDownload } from 'react-icons/lu';
 import { cn } from '@/utils/style';
 import dayjs from 'dayjs';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
@@ -132,7 +132,7 @@ export const SurveyDownloadBtn: React.FC<SurveyDownloadBtnProps> = React.memo(
     return (
       <Dialog>
         <DialogTrigger asChild>
-          <Button Icon={LuDownloadCloud}>{t('Download')}</Button>
+          <Button Icon={LuCloudDownload}>{t('Download')}</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

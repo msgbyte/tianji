@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  LuActivitySquare,
-  LuAreaChart,
-  LuFilePieChart,
+  LuSquareActivity,
+  LuChartArea,
+  LuFileChartPie,
   LuMonitorDot,
-  LuMoreVertical,
+  LuEllipsisVertical,
   LuServer,
   LuWifi,
 } from 'react-icons/lu';
@@ -51,7 +51,7 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
         <div className="flex justify-between">
           <MobileNavItem
             title={t('Website')}
-            icon={LuAreaChart}
+            icon={LuChartArea}
             to="/website"
           />
           <MobileNavItem
@@ -60,12 +60,12 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
             to="/monitor"
           />
           <MobileNavItem title={t('Servers')} icon={LuServer} to="/server" />
-          <MobileNavItem title={t('Pages')} icon={LuFilePieChart} to="/page" />
+          <MobileNavItem title={t('Pages')} icon={LuFileChartPie} to="/page" />
 
           <Drawer>
             <DrawerTrigger asChild>
               <div className="text-muted-foreground flex-1 rounded-lg p-1 text-center">
-                <LuMoreVertical size={24} className="m-auto mb-1" />
+                <LuEllipsisVertical size={24} className="m-auto mb-1" />
                 <div className={cn('text-sm font-semibold')}>{t('More')}</div>
               </div>
             </DrawerTrigger>
@@ -85,7 +85,7 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
                 />
                 <MobileNavItem
                   title={t('Feed')}
-                  icon={LuActivitySquare}
+                  icon={LuSquareActivity}
                   to="/feed"
                   extraModal={true}
                 />

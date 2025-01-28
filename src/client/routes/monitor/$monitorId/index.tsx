@@ -18,7 +18,7 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { pick } from 'lodash-es';
-import { LuCopy, LuMoreVertical } from 'react-icons/lu';
+import { LuCopy, LuEllipsisVertical } from 'react-icons/lu';
 
 export const Route = createFileRoute('/monitor/$monitorId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -62,7 +62,7 @@ function MonitorDetailComponent() {
                     className="cursor-pointer"
                   >
                     <Button variant="outline" size="icon" className="shrink-0">
-                      <LuMoreVertical />
+                      <LuEllipsisVertical />
                     </Button>
                   </DropdownMenuTrigger>
 

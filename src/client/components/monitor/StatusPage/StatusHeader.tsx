@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '@/utils/style';
 import { bodySchema } from './schema';
-import { LuCheckCircle2, LuCircleSlash, LuAlertCircle } from 'react-icons/lu';
+import { LuCircleCheckBig, LuCircleSlash, LuCircleAlert } from 'react-icons/lu';
 import { AppRouterOutput, trpc } from '../../../api/trpc';
 import { takeRight, last } from 'lodash-es';
 import dayjs from 'dayjs';
@@ -150,12 +150,12 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
     > = {
       operational: {
         text: t('All Systems Operational'),
-        icon: LuCheckCircle2,
+        icon: LuCircleCheckBig,
         iconColor: 'text-green-500',
       },
       degraded: {
         text: t('Partial System Outage'),
-        icon: LuAlertCircle,
+        icon: LuCircleAlert,
         iconColor: 'text-yellow-500',
       },
       offline: {
@@ -165,7 +165,7 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
       },
       unknown: {
         text: t('Status Unknown'),
-        icon: LuAlertCircle,
+        icon: LuCircleAlert,
         iconColor: 'text-gray-500',
       },
     };
