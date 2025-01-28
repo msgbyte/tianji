@@ -26,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { DropdownSelect } from './DropdownSelect';
 
 interface MetricsBlockProps {
   index: number;
@@ -65,15 +66,35 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   return (
     <div className="border-muted flex w-full cursor-pointer flex-col gap-1 rounded-lg border px-2 py-1">
       {/* Event */}
-      <Popover
-        open={isMetricOpen}
-        onOpenChange={(open) => {
-          if (props.info) {
-            setIsMetricOpen(open);
-          } else {
-            props.onDelete();
-          }
+      <DropdownSelect
+        dropdownSize="lg"
+        list={filteredMetrics}
+        value={props.info?.name ?? ''}
+        onSelect={(name: string) => {
+          props.onSelect({
+            math: 'events',
+            ...props.info,
+            name: name,
+          });
         }}
+        dropdownHeader={
+          <div className="mb-2">
+            <Input
+              placeholder={t('Search Metrics')}
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
+          </div>
+        }
+        renderItem={(item) => (
+          <>
+            <LuMousePointerClick />
+            <span>{item.name}</span>
+            <span className="text-xs opacity-40">
+              ({formatNumber((item as any).count)})
+            </span>
+          </>
+        )}
       >
         <div className="flex items-center justify-between">
           <PopoverTrigger asChild>
@@ -109,87 +130,25 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
             </DropdownMenu>
           </div>
         </div>
-
-        <PopoverContent className="h-[320px] w-[380px]" align="start">
-          <div className="mb-2">
-            <Input
-              placeholder={t('Search Metrics')}
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-            />
-          </div>
-
-          <ScrollArea>
-            {filteredMetrics.length === 0 && (
-              <div className="mt-4 text-center opacity-80">
-                {t('No any metrics availabled.')}
-              </div>
-            )}
-
-            {filteredMetrics.map((item, i) => {
-              return (
-                <div
-                  className={cn(
-                    'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1',
-                    props.info?.name === item.name && 'bg-muted'
-                  )}
-                  onClick={() => {
-                    props.onSelect({
-                      math: 'events',
-                      ...props.info,
-                      name: item.name,
-                    });
-                    setIsMetricOpen(false);
-                  }}
-                >
-                  <LuMousePointerClick />
-                  <span>{item.name}</span>
-                  <span className="text-xs opacity-40">
-                    ({formatNumber(item.count)})
-                  </span>
-                </div>
-              );
-            })}
-          </ScrollArea>
-        </PopoverContent>
-      </Popover>
+      </DropdownSelect>
 
       {/* Math */}
       {props.info && props.info.name && (
-        <Popover open={isMathOpen} onOpenChange={setIsMathOpen}>
-          <PopoverTrigger asChild>
-            <div className="hover:bg-muted flex items-center gap-1 rounded-lg px-2 py-1 text-xs opacity-60">
-              <span>{selectedMathMethodLabel}</span>
-              <LuChevronDown />
-            </div>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="h-[280px] w-[310px]">
+        <DropdownSelect
+          label={selectedMathMethodLabel}
+          dropdownHeader={
             <div className="mb-2 px-1 text-xs opacity-40">{t('Measuring')}</div>
-            <ScrollArea>
-              {mathMethod.map((item, i) => {
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm',
-                      props.info?.math === item.name && 'bg-muted'
-                    )}
-                    onClick={() => {
-                      props.onSelect({
-                        name: '$all_event',
-                        ...props.info,
-                        math: item.name,
-                      });
-                      setIsMathOpen(false);
-                    }}
-                  >
-                    <span>{item.label}</span>
-                  </div>
-                );
-              })}
-            </ScrollArea>
-          </PopoverContent>
-        </Popover>
+          }
+          list={mathMethod}
+          value={props.info?.math}
+          onSelect={(name) => {
+            props.onSelect({
+              name: '$all_event',
+              ...props.info,
+              math: name as any,
+            });
+          }}
+        />
       )}
     </div>
   );
