@@ -10,7 +10,7 @@ import {
   LuMonitor,
   LuServer,
   LuSiren,
-  LuUsers2,
+  LuUserRound,
   LuWifi,
   LuSquareActivity,
 } from 'react-icons/lu';
@@ -235,7 +235,7 @@ export const HomepageFeatures: React.FC = React.memo(() => {
         >
           <div className="mb-3 flex items-start gap-2">
             <div className="rounded-lg bg-white bg-opacity-20 p-1">
-              <LuUsers2 className="block" size={24} />
+              <LuUserRound className="block" size={24} />
             </div>
             <div className="text-2xl font-bold text-white">
               Community Driven
