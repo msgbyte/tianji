@@ -1,9 +1,10 @@
 'use client';
 import { useLocalStorageState } from 'ahooks';
-import { initTianjiTracker, reportEvent } from 'tianji-client-react';
+import { initTianjiTracker, reportEvent, identify } from 'tianji-client-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button, Code, TextField } from '@radix-ui/themes';
+import { faker } from '@faker-js/faker';
 
 export default function Home() {
   const [backendUrl, setBackendUrl] = useLocalStorageState(
@@ -98,6 +99,22 @@ export default function Home() {
                 }}
               >
                 Send Tianji Event
+              </Button>
+              <Button
+                className="!cursor-pointer"
+                variant="soft"
+                onClick={() => {
+                  const info = {
+                    username: faker.person.fullName(),
+                    email: faker.internet.email(),
+                    avatar: faker.image.avatar(),
+                  };
+                  identify(info);
+
+                  toast('identify session with: ' + JSON.stringify(info));
+                }}
+              >
+                Identify Session
               </Button>
               <Button
                 className="!cursor-pointer"
