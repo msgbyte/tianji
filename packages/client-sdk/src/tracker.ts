@@ -79,6 +79,7 @@ export function reportEvent(eventName: string, data: Record<string, any> = {}) {
 }
 
 interface IdentifyPayload {
+  id?: string;
   email?: string;
   username?: string;
   avatar?: string;

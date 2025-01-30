@@ -64,7 +64,7 @@ export function DataTable<TData>({
   const columnLen = canExpand ? columns.length + 1 : columns.length;
 
   return (
-    <div className="rounded-md border">
+    <div className="overflow-hidden rounded-md border">
       <Table style={{ width: table.getCenterTotalSize() }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
