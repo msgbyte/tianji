@@ -187,7 +187,9 @@
   };
 
   const send = (payload, type = 'event') => {
-    if (trackingDisabled()) return;
+    if (trackingDisabled()) {
+      return;
+    }
     const headers = {
       'Content-Type': 'application/json',
     };

@@ -309,6 +309,7 @@ model WebsiteSessionData {
   id          String    @id() @default(cuid()) @db.VarChar(30)
   websiteId   String    @db.VarChar(30)
   sessionId   String    @db.Uuid
+  key         String    @db.VarChar(500)
   stringValue String?   @db.VarChar(500)
   numberValue Decimal?  @db.Decimal(19, 4)
   dateValue   DateTime? @db.Timestamptz(6)

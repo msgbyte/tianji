@@ -6,6 +6,7 @@ export const WebsiteSessionDataModelSchema = z.object({
   id: z.string(),
   websiteId: z.string(),
   sessionId: z.string(),
+  key: z.string(),
   stringValue: z.string().nullish(),
   numberValue: z.number().nullish(),
   dateValue: z.date().nullish(),

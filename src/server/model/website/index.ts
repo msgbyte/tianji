@@ -239,20 +239,24 @@ export async function saveWebsiteSessionData(data: {
 
   const jsonKeys = flattenJSON(sessionData);
 
-  const flattendData = jsonKeys.map((a) => ({
-    websiteId,
-    sessionId,
-    key: a.key,
-    stringValue:
-      a.dynamicDataType === DATA_TYPE.number
-        ? String(Number(parseFloat(a.value).toFixed(4)))
-        : a.dynamicDataType === DATA_TYPE.date
-          ? a.value.split('.')[0] + 'Z'
-          : a.value.toString(),
-    numberValue: a.dynamicDataType === DATA_TYPE.number ? a.value : null,
-    dateValue: a.dynamicDataType === DATA_TYPE.date ? new Date(a.value) : null,
-    dataType: a.dynamicDataType,
-  }));
+  const flattendData = jsonKeys.map(
+    (a) =>
+      ({
+        websiteId,
+        sessionId,
+        key: a.key,
+        stringValue:
+          a.dynamicDataType === DATA_TYPE.number
+            ? String(Number(parseFloat(a.value).toFixed(4)))
+            : a.dynamicDataType === DATA_TYPE.date
+              ? a.value.split('.')[0] + 'Z'
+              : a.value.toString(),
+        numberValue: a.dynamicDataType === DATA_TYPE.number ? a.value : null,
+        dateValue:
+          a.dynamicDataType === DATA_TYPE.date ? new Date(a.value) : null,
+        dataType: a.dynamicDataType,
+      }) satisfies Prisma.WebsiteSessionDataCreateManyInput
+  );
 
   return prisma.$transaction([
     prisma.websiteSessionData.deleteMany({
