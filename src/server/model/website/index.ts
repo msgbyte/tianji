@@ -212,7 +212,7 @@ export async function saveWebsiteEvent(data: {
       eventKey: a.key,
       stringValue:
         a.dynamicDataType === DATA_TYPE.number
-          ? parseFloat(a.value).toFixed(4)
+          ? String(Number(parseFloat(a.value).toFixed(4)))
           : a.dynamicDataType === DATA_TYPE.date
             ? a.value.split('.')[0] + 'Z'
             : a.value.toString(),
@@ -245,7 +245,7 @@ export async function saveWebsiteSessionData(data: {
     key: a.key,
     stringValue:
       a.dynamicDataType === DATA_TYPE.number
-        ? parseFloat(a.value).toFixed(4)
+        ? String(Number(parseFloat(a.value).toFixed(4)))
         : a.dynamicDataType === DATA_TYPE.date
           ? a.value.split('.')[0] + 'Z'
           : a.value.toString(),

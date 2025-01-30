@@ -1,24 +1,14 @@
 import React, { useState } from 'react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '../ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
 import { formatNumber, numberToLetter } from '@/utils/common';
 import {
-  LuChevronDown,
-  LuDelete,
-  LuMoreVertical,
+  LuEllipsisVertical,
   LuMousePointerClick,
-  LuTrain,
-  LuTrash,
   LuTrash2,
 } from 'react-icons/lu';
 import { MetricsInfo } from '@/store/insights';
-import { ScrollArea } from '../ui/scroll-area';
-import { cn } from '@/utils/style';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -37,8 +27,6 @@ interface MetricsBlockProps {
 }
 export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
   const { t } = useTranslation();
-  const [isMetricOpen, setIsMetricOpen] = useState(props.info === null);
-  const [isMathOpen, setIsMathOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
 
   const mathMethod = [
@@ -68,6 +56,7 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
       {/* Event */}
       <DropdownSelect
         dropdownSize="lg"
+        defaultIsOpen={props.info === null}
         list={filteredMetrics}
         value={props.info?.name ?? ''}
         onSelect={(name: string) => {
@@ -77,6 +66,7 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
             name: name,
           });
         }}
+        onSelectEmpty={props.onDelete}
         dropdownHeader={
           <div className="mb-2">
             <Input
@@ -114,10 +104,10 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
                   variant="ghost"
                   size="icon"
                 >
-                  <LuMoreVertical />
+                  <LuEllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => {
                     props.onDelete();

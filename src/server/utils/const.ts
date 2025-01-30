@@ -41,6 +41,9 @@ export const MOBILE_SCREEN_WIDTH = 479;
 export const URL_LENGTH = 500;
 export const EVENT_NAME_LENGTH = 50;
 
+export const DATETIME_REGEX =
+  /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{3}(Z|\+[0-9]{2}:[0-9]{2})?)?$/;
+
 export const EVENT_TYPE = {
   pageView: 1,
   customEvent: 2,

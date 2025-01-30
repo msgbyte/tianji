@@ -20,11 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { useInsightsStore } from '@/store/insights';
 import { ChartRender } from '@/components/insights/ChartRender';
+import { FilterSection } from '@/components/insights/FilterSection';
 
 export const Route = createFileRoute('/insights')({
   beforeLoad: (opts) => {
@@ -101,7 +101,8 @@ function PageComponent() {
             {selectedWebsiteId ? (
               <ScrollArea className="h-full overflow-hidden p-4">
                 <div className="flex flex-col space-y-8">
-                  <MetricsSection title="Metrics" />
+                  <MetricsSection />
+                  <FilterSection />
                   {/* <MetricsSection title="Filters" />
                 <MetricsSection title="Breakdown" /> */}
                 </div>

@@ -1,6 +1,7 @@
 import { trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { DevContainer } from '@/components/DevContainer';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
@@ -191,23 +192,25 @@ function PageComponent() {
               endAt={endAt}
             />
 
-            <div className="mt-2 text-center">
-              <Button
-                variant="outline"
-                Icon={LuCompass}
-                onClick={() => {
-                  useInsightsStore.getState().reset();
-                  useInsightsStore.setState({
-                    selectedWebsiteId: websiteId,
-                  });
-                  navigate({
-                    to: '/insights',
-                  });
-                }}
-              >
-                {t('Insights')}
-              </Button>
-            </div>
+            <DevContainer>
+              <div className="mt-2 text-center">
+                <Button
+                  variant="outline"
+                  Icon={LuCompass}
+                  onClick={() => {
+                    useInsightsStore.getState().reset();
+                    useInsightsStore.setState({
+                      selectedWebsiteId: websiteId,
+                    });
+                    navigate({
+                      to: '/insights',
+                    });
+                  }}
+                >
+                  {t('Insights')}
+                </Button>
+              </div>
+            </DevContainer>
           </Card.Grid>
         </Card>
       </ScrollArea>

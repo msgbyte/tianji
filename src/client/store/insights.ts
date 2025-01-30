@@ -1,20 +1,20 @@
+import { MetricsInfo, FilterInfo } from '@tianji/shared';
 import { pullAt } from 'lodash-es';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
-export interface MetricsInfo {
-  name: string;
-  math: 'events' | 'sessions';
-}
-
 interface InsightsState {
   selectedWebsiteId: string;
   currentMetrics: (MetricsInfo | null)[];
+  currentFilters: (FilterInfo | null)[];
   reset: () => void;
   setMetrics: (index: number, info: MetricsInfo) => void;
   addMetrics: () => void;
   removeMetrics: (index: number) => void;
+  setFilter: (index: number, info: FilterInfo) => void;
+  addFilter: () => void;
+  removeFilter: (index: number) => void;
 }
 
 export const useInsightsStore = create<InsightsState>()(
@@ -23,10 +23,12 @@ export const useInsightsStore = create<InsightsState>()(
       (set) => ({
         selectedWebsiteId: '',
         currentMetrics: [null],
+        currentFilters: [null],
         reset: () => {
           set(() => ({
             selectedWebsiteId: '',
             currentMetrics: [null],
+            currentFilters: [null],
           }));
         },
         setMetrics: (index, info) => {
@@ -41,8 +43,22 @@ export const useInsightsStore = create<InsightsState>()(
         },
         removeMetrics: (index: number) => {
           set((state) => {
-            // delete state.currentMetrics[index];
             pullAt(state.currentMetrics, index);
+          });
+        },
+        setFilter: (index, info) => {
+          set((state) => {
+            state.currentFilters[index] = info;
+          });
+        },
+        addFilter: () => {
+          set((state) => {
+            state.currentFilters[state.currentFilters.length] = null;
+          });
+        },
+        removeFilter: (index: number) => {
+          set((state) => {
+            pullAt(state.currentFilters, index);
           });
         },
       }),

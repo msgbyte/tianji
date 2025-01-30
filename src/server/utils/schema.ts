@@ -8,6 +8,20 @@ export const dateUnitSchema = z.enum([
   'year',
 ]);
 
+const FilterInfoValue = z.union([
+  z.string(),
+  z.number(),
+  z.string().array(),
+  z.number().array(),
+]);
+
+const FilterInfoSchema = z.object({
+  name: z.string(),
+  operator: z.string(),
+  type: z.enum(['string', 'number', 'boolean', 'date', 'array']),
+  value: FilterInfoValue.nullable(),
+});
+
 export const insightsQuerySchema = z.object({
   websiteId: z.string(),
   metrics: z.array(
@@ -16,6 +30,7 @@ export const insightsQuerySchema = z.object({
       math: z.enum(['events', 'sessions']).default('events'),
     })
   ),
+  filters: z.array(FilterInfoSchema),
   time: z.object({
     startAt: z.number(),
     endAt: z.number(),

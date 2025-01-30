@@ -1,6 +1,6 @@
 import { v4, v5, validate } from 'uuid';
 import crypto from 'crypto';
-import { DATA_TYPE } from './const.js';
+import { DATA_TYPE, DATETIME_REGEX } from './const.js';
 import { DynamicDataType } from './types.js';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax.js';
@@ -145,14 +145,15 @@ function createKey(
 function getDataType(value: any): string {
   let type: string = typeof value;
 
-  if (
-    (type === 'string' && isValidDate(value)) ||
-    isValidDate(dayjs(value).toISOString())
-  ) {
+  if (type === 'string' && isValidDateValue(value)) {
     type = 'date';
   }
 
   return type;
+}
+
+function isValidDateValue(value: string) {
+  return typeof value === 'string' && DATETIME_REGEX.test(value);
 }
 
 /**
@@ -257,4 +258,24 @@ export function numify(num: number): string {
 
 export function generateETag(data: string) {
   return `"${md5(data)}"`;
+}
+
+export function stringifyDateType(dataType: number) {
+  if (dataType === DATA_TYPE.string) {
+    return 'string' as const;
+  }
+  if (dataType === DATA_TYPE.number) {
+    return 'number' as const;
+  }
+  if (dataType === DATA_TYPE.boolean) {
+    return 'boolean' as const;
+  }
+  if (dataType === DATA_TYPE.date) {
+    return 'date' as const;
+  }
+  if (dataType === DATA_TYPE.array) {
+    return 'array' as const;
+  }
+
+  return 'string' as const;
 }

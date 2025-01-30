@@ -10,7 +10,7 @@ const jwtSecret =
 
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
-  isDev: process.env.NODE_ENV === 'development',
+  isDev: process.env.NODE_ENV === 'development' || !process.env.NODE_ENV,
   isTest: process.env.NODE_ENV === 'test',
   jwtSecret,
   port: Number(process.env.PORT || 12345),

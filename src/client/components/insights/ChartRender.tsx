@@ -3,11 +3,11 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import { TimeEventChart } from '../chart/TimeEventChart';
-import { MetricsInfo, useInsightsStore } from '@/store/insights';
+import { useInsightsStore } from '@/store/insights';
 import { pickColorWithNum } from '@/utils/color';
 import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
-import { DateUnit } from '@tianji/shared';
+import { DateUnit, FilterInfo, MetricsInfo } from '@tianji/shared';
 import { TableView } from './TableView';
 import {
   ResizableHandle,
@@ -26,6 +26,9 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const { t } = useTranslation();
   const metrics = useInsightsStore((state) =>
     state.currentMetrics.filter((item): item is MetricsInfo => Boolean(item))
+  );
+  const filters = useInsightsStore((state) =>
+    state.currentFilters.filter((item): item is FilterInfo => Boolean(item))
   );
   const [dateKey, setDateKey] = useState('30D');
   const [dateRange, setDateRange] = useState(() => [
@@ -47,6 +50,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     workspaceId,
     websiteId: props.websiteId,
     metrics,
+    filters,
     time,
   });
 
