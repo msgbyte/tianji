@@ -1,10 +1,10 @@
 ---
 sidebar_position: 1
-_i18n_hash: 3e7ad33b9d88240c2ee01504fb17ed2d
+_i18n_hash: dbe4f3d388e41faf5b22d03df590fec6
 ---
 # Docusaurusでの使用
 
-`docusaurus.config.js` で:
+`docusaurus.config.js`内で：
 
 ```js
 /** @type {import('@docusaurus/types').Config} */

@@ -1,14 +1,14 @@
 ---
 sidebar_position: 99
-_i18n_hash: 6bc67c1ed8a9a26ff57ad81aa4fa0b16
+_i18n_hash: c46b537016a415c25d7bb7d82021aacd
 ---
 # 特別な感謝
 
 ## オープンソースプロジェクト
 
-Tianjiはこれらのプロジェクトから大きなインスピレーションを受けています。オープンソースコミュニティへの貢献に感謝します。
+Tianjiはこれらのプロジェクトに非常に感銘を受けています。オープンソースコミュニティへの貢献に感謝します。
 
-私もこれらのプロジェクトが大好きです。これらの優れたプロジェクトに敬礼！
+私もこれらのプロジェクトが大好きです。これらの素晴らしいプロジェクトに敬意を表します！
 
 - [umami](https://github.com/umami-software/umami)
 - [uptime kuma](https://github.com/louislam/uptime-kuma)

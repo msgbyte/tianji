@@ -46,7 +46,7 @@
     "@types/react-slick": "^0.23.11",
     "@types/react-vertical-timeline-component": "^3.3.6",
     "autoprefixer": "^10.4.16",
-    "docusaurus-i18n": "^1.1.4",
+    "docusaurus-i18n": "^1.2.2",
     "docusaurus-plugin-image-zoom": "^1.0.1",
     "postcss": "^8.4.31",
     "slick-carousel": "^1.8.1",

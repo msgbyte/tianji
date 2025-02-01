@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-_i18n_hash: 3e7ad33b9d88240c2ee01504fb17ed2d
+_i18n_hash: dbe4f3d388e41faf5b22d03df590fec6
 ---
 # 在 Docusaurus 中使用
 
@@ -13,10 +13,10 @@ const config = {
 
   scripts: [
     {
-      src: 'https://<your domain>/tracker.js',
+      src: 'https://<你的域名>/tracker.js',
       async: true,
       defer: true,
-      'data-website-id': '<your-website-id>',
+      'data-website-id': '<你的网站ID>',
     },
   ],
 };

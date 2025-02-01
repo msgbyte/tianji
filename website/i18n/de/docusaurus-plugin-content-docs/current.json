@@ -20,7 +20,7 @@
     "description": "The label for category Framework in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Monitor": {
-    "message": "Monitor",
+    "message": "Überwachen",
     "description": "The label for category Monitor in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Notification": {
