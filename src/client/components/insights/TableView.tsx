@@ -1,10 +1,8 @@
 import React from 'react';
 import { createColumnHelper, DataTable } from '../DataTable';
-import { MetricsInfo } from '@/store/insights';
 import { get, groupBy, mapValues, reverse, sum } from 'lodash-es';
 import { useTranslation } from '@i18next-toolkit/react';
-import dayjs from 'dayjs';
-import { DateUnit } from '@tianji/shared';
+import { DateUnit, MetricsInfo } from '@tianji/shared';
 import { formatNumber } from '@/utils/common';
 import { getShortTextByUnit } from '@/utils/date';
 

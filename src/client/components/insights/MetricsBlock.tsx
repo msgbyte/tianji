@@ -8,7 +8,6 @@ import {
   LuMousePointerClick,
   LuTrash2,
 } from 'react-icons/lu';
-import { MetricsInfo } from '@/store/insights';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -17,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { DropdownSelect } from './DropdownSelect';
+import { MetricsInfo } from '@tianji/shared';
 
 interface MetricsBlockProps {
   index: number;
