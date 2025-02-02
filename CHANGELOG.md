@@ -1,5 +1,77 @@
 
 
+## [1.18.0](https://github.com/msgbyte/tianji/compare/v1.17.6...v1.18.0) (2025-02-02)
+
+### Features
+
+* add ai tool getSurveyByDateRange ([a27ef8f](https://github.com/msgbyte/tianji/commit/a27ef8f38c3518748569befe655a4d88eadca775))
+* add aiToolsSelection which can easy to pick tools ([eec23ec](https://github.com/msgbyte/tianji/commit/eec23ec506dc5cb1498a91c81090f4ebcc2dfb18))
+* add busy check ([fea436a](https://github.com/msgbyte/tianji/commit/fea436ac07e61e92c3369af04a8d499e4c7ddd2d))
+* add date picker ([c83c43d](https://github.com/msgbyte/tianji/commit/c83c43d73fd316cf1002324eb0e35561be31ab4d))
+* add date unit support ([453c8f2](https://github.com/msgbyte/tianji/commit/453c8f25e2e907b312d7818a15ed45e120c16314))
+* add event calc math method: by session ([8c6bb24](https://github.com/msgbyte/tianji/commit/8c6bb24143566fcc7c2ea222831fdeac8cd7813f))
+* add hover state of metrics block ([4d5b098](https://github.com/msgbyte/tianji/commit/4d5b098f9f41a5af5c14f9143f732a937e6814de))
+* add insights chart render and backend fetch ([343e2b3](https://github.com/msgbyte/tianji/commit/343e2b353e855843b58e70d1097c13b146f608ec))
+* add insights in chart ([1c777b7](https://github.com/msgbyte/tianji/commit/1c777b754bf4ef6b946ee1e30137d7b2389e6806))
+* add new entry for website insights ([82972f5](https://github.com/msgbyte/tianji/commit/82972f51c5472ccfd1092e7c8727eca991c7983a))
+* add resizable panel ([61af19b](https://github.com/msgbyte/tianji/commit/61af19bba5fbed4313e859598d73f3a99c95f051))
+* add survey detail sheet panel ([5752762](https://github.com/msgbyte/tianji/commit/57527625cbbfa2089648f0748327e6716813b1f1))
+* add survey prompt, credit calc logic and context ([a651f5d](https://github.com/msgbyte/tianji/commit/a651f5d977a7a87ecd642b8435f9aa2462cb0c32))
+* add table pinning ([572e551](https://github.com/msgbyte/tianji/commit/572e5512b55ab75f3391233a62fb2ecaab1b2234))
+* add table view for insights ([05a7def](https://github.com/msgbyte/tianji/commit/05a7def550b587b831235a2e95ca07a52dc8983e))
+* add tianji app reviewer ([5da38b4](https://github.com/msgbyte/tianji/commit/5da38b4c0f49f7619495f4cd12c917e232717f49))
+* add useAIStoreContext which allow change current page ai store context ([f70dde0](https://github.com/msgbyte/tianji/commit/f70dde03bcc3d12468c19ae3913c9b867a9b4980))
+* insights add filter logic ([c1b0812](https://github.com/msgbyte/tianji/commit/c1b081282cce8da41942089099e2941523042eb1))
+* metrics add delete item support ([9779885](https://github.com/msgbyte/tianji/commit/9779885720e479d0a077b95c00ef4bc8739d6315))
+
+### Bug Fixes
+
+* [#146](https://github.com/msgbyte/tianji/issues/146) fix typo ([e1ed6e3](https://github.com/msgbyte/tianji/commit/e1ed6e35633cd5aef1705a11f0d6aeb918c316ef))
+* fix a issue which will make openai key is required(original should be optional) [#139](https://github.com/msgbyte/tianji/issues/139) ([f0fba13](https://github.com/msgbyte/tianji/commit/f0fba13179115aa68741ab8b66f7375f1cab2aac))
+* fix session data can not save problem ([9405884](https://github.com/msgbyte/tianji/commit/94058840df5626e94cf7a53a793c060ad664b160))
+
+### Document
+
+* add event track documents ([d815adf](https://github.com/msgbyte/tianji/commit/d815adfa720c30d3340a5e790519b55c2ed80ac1))
+* add interactive hover button in get start button ([a40fe6e](https://github.com/msgbyte/tianji/commit/a40fe6e646d009506ae5674e09cd2393e0c1b88d))
+* add tweet card in website ([f6e443f](https://github.com/msgbyte/tianji/commit/f6e443fae504d1c34befffdc12648a59e374a300))
+* upgrade docusaurus-i18n and update website translation ([892e650](https://github.com/msgbyte/tianji/commit/892e650d3ce0bba2ac5f365e474d39b8176b3e80))
+
+### Others
+
+* add empty state for chart render component ([208daf0](https://github.com/msgbyte/tianji/commit/208daf0259afcd1296adec23e19f32a43ebda5c1))
+* add identify in example repo ([a61d28f](https://github.com/msgbyte/tianji/commit/a61d28fda55941f6e178548d209dcd10e6128eb3))
+* add metrics block no content tip ([0d91bad](https://github.com/msgbyte/tianji/commit/0d91badc41830c7921d8314c5bbcbe1cece01ea5))
+* add more example playground events ([ce70092](https://github.com/msgbyte/tianji/commit/ce7009248a97287d8b567f15465607ae68dc5cae))
+* add null ip process ([59eac90](https://github.com/msgbyte/tianji/commit/59eac903c3e09f4b09d807f21bab471055d16f6c))
+* add openai tool choose support ([a0d170d](https://github.com/msgbyte/tianji/commit/a0d170de36eae12fec32faa4db444e575de9f737))
+* add openapi sdk options ([ea4b04c](https://github.com/msgbyte/tianji/commit/ea4b04cd6eab399a7ba4fe4264b94e8ef7338b5f))
+* add optional in channel ([ae4c2bb](https://github.com/msgbyte/tianji/commit/ae4c2bb89bae03389441fa07cfddb4943be3c16e))
+* add type support for ai store context ([b548341](https://github.com/msgbyte/tianji/commit/b548341dccf9c8ba431f0b7a4eea73d56729032b))
+* disable ai feature if not enable ai feature in server ([6a5753e](https://github.com/msgbyte/tianji/commit/6a5753e487547efc637e5e47ddaac4c0088b2756))
+* example repo add send tianji report support ([d8e642b](https://github.com/msgbyte/tianji/commit/d8e642be953d8cd02199d91d73d76308e49a5b9d))
+* fix ci problem ([2f70afd](https://github.com/msgbyte/tianji/commit/2f70afdeaa20b2ad9ea1be4ed9ce9774bf61f49e))
+* fix ci problem ([2e47cc4](https://github.com/msgbyte/tianji/commit/2e47cc44d3e94970d082613c3d5699d25c71daa5))
+* fix ci problem ([f9bda19](https://github.com/msgbyte/tianji/commit/f9bda19d828e517ca4be7503c686f1ac27745019))
+* fix datatable component array keys problem ([be90c3d](https://github.com/msgbyte/tianji/commit/be90c3d5e2f21e61674a8bacff2b3e7df11e580a))
+* fix trpc-to-openapi use incorrect middleware problem ([b91cb44](https://github.com/msgbyte/tianji/commit/b91cb4458f3e4ddccdb05ba981f8e263c7221071))
+* improve insights style ([ff5b777](https://github.com/msgbyte/tianji/commit/ff5b7773921d6382cc751cb5195629cc323e331e))
+* improve metric block display and create logic, improve user experience ([dae37b5](https://github.com/msgbyte/tianji/commit/dae37b5bb4c578913c19e10da288dfc1d146479d))
+* improve sdk package ([ebb69a4](https://github.com/msgbyte/tianji/commit/ebb69a421998376559d6fbec692972e62851ca8a))
+* improve some detail ([c131078](https://github.com/msgbyte/tianji/commit/c1310784dad5abf907fbc64c25b74f8229252e9e))
+* improve tip and style ([13ee7f5](https://github.com/msgbyte/tianji/commit/13ee7f5a0644d6d0effaef3d03e1a2a5bd08656a))
+* init example repo ([55fc93d](https://github.com/msgbyte/tianji/commit/55fc93da7ed6a20d01b1d7b5ae7548d6e26c45ee))
+* move insights to other router ([074aa56](https://github.com/msgbyte/tianji/commit/074aa56898b232d6c7e730e143f4ef3cc6107998))
+* refactor metric block and add reused part of dropdown ([e855fb6](https://github.com/msgbyte/tianji/commit/e855fb68d644200fe0be7f981426e4323d7dd696))
+* release v1.17.7 ([081f102](https://github.com/msgbyte/tianji/commit/081f1025ba1fa3a70421838cb086de41ccdb057e))
+* release v1.17.8 ([7dbfb6f](https://github.com/msgbyte/tianji/commit/7dbfb6f7db1738b4078a01eee81baaddfce20e15))
+* release v1.17.9 ([6cceb40](https://github.com/msgbyte/tianji/commit/6cceb407a8907acbb626bef84e9184f2ca40d4b7))
+* update react version in example repo ([313f909](https://github.com/msgbyte/tianji/commit/313f9093d8f4eb459ee6d941580a34f9d6379d47))
+* update translation ([7a714b5](https://github.com/msgbyte/tianji/commit/7a714b56abcb8b91d7336e9ecd8079f269f9bae2))
+* update translation ([74f62e2](https://github.com/msgbyte/tianji/commit/74f62e20b732620b03af498c67cccc83112e598c))
+* upgrade execa version ([1321986](https://github.com/msgbyte/tianji/commit/1321986930cda06b60e9c6c9a8b1ac6d48963f72))
+* upgrade react-icons version v4 -> v5 ([bc1a9d2](https://github.com/msgbyte/tianji/commit/bc1a9d28728daac4d315c80171d9f77a52fd4bab))
+
 ## [1.17.9](https://github.com/msgbyte/tianji/compare/v1.17.8...v1.17.9) (2025-01-21)
 
 ### Others
