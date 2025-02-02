@@ -18,6 +18,7 @@ import {
   TableRow,
 } from './ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { useTranslation } from '@i18next-toolkit/react';
 
 interface VirtualizedInfiniteDataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
@@ -33,6 +34,7 @@ export function VirtualizedInfiniteDataTable<TData>(
 ) {
   const { columns, data, onFetchNextPage, isFetching, isLoading, hasNextPage } =
     props;
+  const { t } = useTranslation();
 
   //we need a reference to the scrolling element for logic down below
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -220,7 +222,12 @@ export function VirtualizedInfiniteDataTable<TData>(
           })}
         </TableBody>
       </table>
-      {isFetching && <div>Fetching More...</div>}
+
+      {isFetching && (
+        <div className="w-full text-center text-sm">
+          {t('Fetching More...')}
+        </div>
+      )}
     </div>
   );
 }
