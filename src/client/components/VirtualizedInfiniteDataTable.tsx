@@ -19,10 +19,12 @@ import {
 } from './ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useTranslation } from '@i18next-toolkit/react';
+import { cn } from '@/utils/style';
 
 interface VirtualizedInfiniteDataTableProps<TData> {
+  selectedIndex?: number;
   columns: ColumnDef<TData, any>[];
-  data: InfiniteData<{ items: TData[] }> | undefined;
+  data: TData[];
   onFetchNextPage: () => void;
   isFetching: boolean;
   isLoading: boolean;
@@ -32,18 +34,19 @@ interface VirtualizedInfiniteDataTableProps<TData> {
 export function VirtualizedInfiniteDataTable<TData>(
   props: VirtualizedInfiniteDataTableProps<TData>
 ) {
-  const { columns, data, onFetchNextPage, isFetching, isLoading, hasNextPage } =
-    props;
+  const {
+    selectedIndex,
+    columns,
+    data,
+    onFetchNextPage,
+    isFetching,
+    isLoading,
+    hasNextPage,
+  } = props;
   const { t } = useTranslation();
 
   //we need a reference to the scrolling element for logic down below
   const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  //flatten the array of arrays from the useInfiniteQuery hook
-  const flatData = useMemo(
-    () => data?.pages?.flatMap((page) => page.items) ?? [],
-    [data]
-  );
 
   //called on scroll and possibly on mount to fetch more data as the user scrolls and reaches bottom of table
   const fetchMoreOnBottomReached = useCallback(
@@ -69,7 +72,7 @@ export function VirtualizedInfiniteDataTable<TData>(
   }, [fetchMoreOnBottomReached]);
 
   const table = useReactTable({
-    data: flatData,
+    data,
     columns,
     columnResizeMode: 'onChange',
     getCoreRowModel: getCoreRowModel(),
@@ -192,7 +195,11 @@ export function VirtualizedInfiniteDataTable<TData>(
                   return (
                     <TableCell
                       key={cell.id}
-                      className="flex"
+                      className={cn(
+                        'flex transition-all',
+                        selectedIndex === virtualRow.index &&
+                          'bg-zinc-200 dark:bg-zinc-700'
+                      )}
                       style={{
                         width: cell.column.getSize(),
                       }}

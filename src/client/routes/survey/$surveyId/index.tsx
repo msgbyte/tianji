@@ -16,7 +16,7 @@ import { LuPencil, LuTrash } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createColumnHelper } from '@/components/DataTable';
-import { useMemo } from 'react';
+import { PropsWithChildren, useMemo, useState } from 'react';
 import { SurveyDownloadBtn } from '@/components/survey/SurveyDownloadBtn';
 import dayjs from 'dayjs';
 import { SurveyUsageBtn } from '@/components/survey/SurveyUsageBtn';
@@ -26,6 +26,16 @@ import { TimeEventChart } from '@/components/chart/TimeEventChart';
 import { useRegisterCommand } from '@/components/CommandPanel/store';
 import { useAIAction } from '@/components/ai/useAIAction';
 import { useAIStoreContext } from '@/components/ai/useAIStoreContext';
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Empty } from 'antd';
+import React from 'react';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -83,6 +93,15 @@ function PageComponent() {
   const trpcUtils = trpc.useUtils();
   const navigate = useNavigate();
   const { askAIQuestion } = useAIAction();
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  //flatten the array of arrays from the useInfiniteQuery hook
+  const flatData = useMemo(
+    () => resultList?.pages?.flatMap((page) => page.items) ?? [],
+    [resultList]
+  );
+
+  const selectedItem = flatData[selectedIndex];
 
   useRegisterCommand('survey-ai', {
     label: (text) => t('Ask AI about this survey with: {{text}}', { text }),
@@ -103,8 +122,20 @@ function PageComponent() {
   const columns = useMemo(() => {
     return [
       columnHelper.accessor('id', {
-        header: t('ID'),
+        header: 'ID',
         size: 230,
+        cell: (props) => {
+          return (
+            <div
+              className="cursor-pointer hover:underline hover:decoration-dotted"
+              onClick={() => {
+                setSelectedIndex(props.row.index);
+              }}
+            >
+              {props.getValue()}
+            </div>
+          );
+        },
       }),
       ...(info?.payload.items.map((item) =>
         columnHelper.accessor(`payload.${item.name}`, {
@@ -201,8 +232,9 @@ function PageComponent() {
             <Loading />
           ) : (
             <VirtualizedInfiniteDataTable
+              selectedIndex={selectedIndex}
               columns={columns}
-              data={resultList}
+              data={flatData}
               onFetchNextPage={fetchNextPage}
               isFetching={isFetching}
               isLoading={isLoading}
@@ -210,7 +242,92 @@ function PageComponent() {
             />
           )}
         </div>
+
+        <Sheet
+          open={Boolean(selectedItem)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedIndex(-1);
+            }
+          }}
+        >
+          <SheetContent className="flex flex-col">
+            <SheetHeader>
+              <SheetTitle>
+                {t('Detail')} {selectedIndex >= 0 && `#${selectedIndex + 1}`}
+              </SheetTitle>
+            </SheetHeader>
+
+            <ScrollArea className="flex-1 py-4">
+              {selectedItem ? (
+                <div>
+                  <SheetDataSection label="ID">
+                    {selectedItem.id}
+                  </SheetDataSection>
+
+                  <SheetDataSection label={t('Created At')}>
+                    {dayjs(selectedItem.createdAt).format(
+                      'YYYY-MM-DD HH:mm:ss'
+                    )}
+                  </SheetDataSection>
+
+                  {info?.payload.items.map((item) => {
+                    return (
+                      <SheetDataSection
+                        key={item.name}
+                        label={item.label ?? item.name}
+                      >
+                        {selectedItem.payload[item.name]}
+                      </SheetDataSection>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Empty />
+              )}
+            </ScrollArea>
+
+            <SheetFooter>
+              <Button
+                variant="outline"
+                disabled={selectedIndex === 0}
+                onClick={() => {
+                  setSelectedIndex((prev) => prev - 1);
+                }}
+              >
+                {t('Prev')}
+              </Button>
+              <Button
+                disabled={selectedIndex === flatData.length - 1 && !hasNextPage}
+                loading={isFetching || isLoading}
+                onClick={() => {
+                  if (selectedIndex < flatData.length - 1) {
+                    setSelectedIndex((prev) => prev + 1);
+                  } else {
+                    // fetch next page
+                    fetchNextPage().then(() => {
+                      setSelectedIndex((prev) => prev + 1);
+                    });
+                  }
+                }}
+              >
+                {t('Next')}
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     </CommonWrapper>
   );
 }
+
+const SheetDataSection: React.FC<PropsWithChildren<{ label: string }>> =
+  React.memo((props) => {
+    return (
+      <div className="mb-2">
+        <div className="opacity-60">{props.label}</div>
+        <div>{props.children}</div>
+      </div>
+    );
+  });
+SheetDataSection.displayName = 'SheetDataSection';

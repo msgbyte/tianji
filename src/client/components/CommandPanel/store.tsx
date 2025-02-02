@@ -20,12 +20,18 @@ export function useRegisterCommand(
   key: string,
   options: {
     label: CommandType['label'];
+    enabled?: boolean;
     handler: CommandType['handler'];
   }
 ) {
   const fn = useEvent(options.handler);
 
   useEffect(() => {
+    const enabled = options.enabled ?? true;
+    if (!enabled) {
+      return;
+    }
+
     useCommandPanelStore.setState({
       commands: {
         ...useCommandPanelStore.getState().commands,
