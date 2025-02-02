@@ -1,5 +1,12 @@
 
 
+## [1.18.1](https://github.com/msgbyte/tianji/compare/v1.18.0...v1.18.1) (2025-02-02)
+
+### Others
+
+* upgrade isolated-vm version ([ec3e9a3](https://github.com/msgbyte/tianji/commit/ec3e9a3daeae4d7ed30742110b5424dce26d593a))
+* upgrade zeromq version from 6.0.4 -> 6.3.0 ([f5e5e5c](https://github.com/msgbyte/tianji/commit/f5e5e5c46b46a3bc219ef72db4ef8ef2d318cd75))
+
 ## [1.18.0](https://github.com/msgbyte/tianji/compare/v1.17.6...v1.18.0) (2025-02-02)
 
 ### Features
