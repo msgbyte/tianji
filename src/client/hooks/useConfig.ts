@@ -9,6 +9,7 @@ const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   disableAnonymousTelemetry: false,
   authProvider: ['email'], // default has email auth to improve login display in saas
   enableBilling: false,
+  enableAI: false,
 };
 
 const callAnonymousTelemetry = once(() => {

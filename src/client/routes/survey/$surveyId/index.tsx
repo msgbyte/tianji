@@ -36,6 +36,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Empty } from 'antd';
 import React from 'react';
+import { useGlobalConfig } from '@/hooks/useConfig';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -56,6 +57,7 @@ function PageComponent() {
     type: 'survey',
     surveyId,
   });
+  const config = useGlobalConfig();
   const { data: info } = trpc.survey.get.useQuery({
     workspaceId,
     surveyId,
@@ -105,6 +107,7 @@ function PageComponent() {
 
   useRegisterCommand('survey-ai', {
     label: (text) => t('Ask AI about this survey with: {{text}}', { text }),
+    enabled: config.enableAI,
     handler: async (input) => {
       askAIQuestion(input);
     },

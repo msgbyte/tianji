@@ -25,6 +25,7 @@ export const globalRouter = router({
         customTrackerScriptName: z.string().optional(),
         authProvider: z.array(z.string()),
         enableBilling: z.boolean(),
+        enableAI: z.boolean(),
       })
     )
     .query(async () => {
@@ -38,6 +39,7 @@ export const globalRouter = router({
         customTrackerScriptName: env.customTrackerScriptName,
         authProvider: env.auth.provider,
         enableBilling: env.billing.enable,
+        enableAI: env.openai.enable,
       };
     }),
 });
