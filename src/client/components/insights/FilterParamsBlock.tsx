@@ -33,7 +33,7 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
       .filter((item) => item.name.includes(filterText));
 
     return (
-      <div className="border-muted flex w-full cursor-pointer flex-col gap-1 rounded-lg border px-2 py-1">
+      <div className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-zinc-300 px-2 py-1 dark:border-zinc-700">
         {/* Params */}
         <DropdownSelect
           dropdownSize="default"

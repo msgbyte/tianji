@@ -192,25 +192,23 @@ function PageComponent() {
               endAt={endAt}
             />
 
-            <DevContainer>
-              <div className="mt-2 text-center">
-                <Button
-                  variant="outline"
-                  Icon={LuCompass}
-                  onClick={() => {
-                    useInsightsStore.getState().reset();
-                    useInsightsStore.setState({
-                      selectedWebsiteId: websiteId,
-                    });
-                    navigate({
-                      to: '/insights',
-                    });
-                  }}
-                >
-                  {t('Insights')}
-                </Button>
-              </div>
-            </DevContainer>
+            <div className="mt-2 text-center">
+              <Button
+                variant="outline"
+                Icon={LuCompass}
+                onClick={() => {
+                  useInsightsStore.getState().reset();
+                  useInsightsStore.setState({
+                    selectedWebsiteId: websiteId,
+                  });
+                  navigate({
+                    to: '/insights',
+                  });
+                }}
+              >
+                {t('Insights')}
+              </Button>
+            </div>
           </Card.Grid>
         </Card>
       </ScrollArea>
