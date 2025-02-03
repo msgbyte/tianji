@@ -11,7 +11,11 @@ import { getSurveyPrompt } from '../../model/prompt/survey.js';
 import type { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { sum } from 'lodash-es';
 import { createAuditLog } from '../../model/auditLog.js';
-import { tokenCreditFactor } from '../../model/billing/credit.js';
+import {
+  checkCredit,
+  costCredit,
+  tokenCreditFactor,
+} from '../../model/billing/credit.js';
 
 export const aiRouter = router({
   ask: workspaceProcedure
@@ -31,8 +35,9 @@ export const aiRouter = router({
           .optional(),
       })
     )
-    .query(async function* ({ input }) {
+    .query(async function* ({ input, ctx }) {
       const { workspaceId, question, context } = input;
+      const userId = ctx.user.id;
 
       if (env.isProd) {
         return '';
@@ -41,6 +46,8 @@ export const aiRouter = router({
       if (!env.openai.enable) {
         return '';
       }
+
+      await checkCredit(workspaceId);
 
       let promptMessages: ChatCompletionMessageParam[] = [];
       if (context?.type === 'survey') {
@@ -73,8 +80,14 @@ export const aiRouter = router({
 
       const outputToken = calcOpenAIToken(result);
 
-      const credit = tokenCreditFactor * (inputToken + outputToken); // TODO
+      const credit = tokenCreditFactor * (inputToken + outputToken);
 
+      costCredit(workspaceId, credit, 'ai', {
+        inputToken,
+        outputToken,
+        context,
+        userId,
+      });
       createAuditLog({
         workspaceId,
         content: JSON.stringify({
