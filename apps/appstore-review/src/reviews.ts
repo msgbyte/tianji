@@ -7,7 +7,7 @@ interface Review {
   id: string;
 }
 
-const REVIEWS_LIMIT = 100;
+const REVIEWS_LIMIT = 5000;
 
 let publishedReviews: Record<string, string[]>;
 
@@ -22,10 +22,10 @@ try {
 export const start = (config: AppstoreConfig | GooglePlayConfig): void => {
   if (config.store === 'app-store') {
     appstore.startReview(config, !publishedReviews[config.appId]);
-    console.log('Start Review:', config.appId);
+    console.log('Start Review:', config.store, config.appId);
   } else {
     googlePlay.startReview(config, !publishedReviews[config.appId]);
-    console.log('Start Review:', config.appId);
+    console.log('Start Review:', config.store, config.appId);
   }
 };
 
@@ -71,7 +71,10 @@ export const reviewPublished = (
   config: AppstoreConfig | GooglePlayConfig,
   review: Review
 ): boolean => {
-  if (!review || !review.id || !publishedReviews[config.appId]) return false;
+  if (!review || !review.id || !publishedReviews[config.appId]) {
+    return false;
+  }
+
   return publishedReviews[config.appId].includes(review.id);
 };
 

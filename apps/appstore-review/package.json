@@ -1,14 +1,19 @@
 {
-  "name": "appstore-review",
-  "version": "1.0.0",
+  "name": "tianji-appstore-review",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "bin": {
     "appreview": "bin/appreview.js"
   },
+  "files": [
+    "bin",
+    "lib"
+  ],
   "scripts": {
-    "dev": "tsx ./src/index.ts",
+    "dev": "tsx ./src/dev.ts",
     "build": "tsc",
+    "prepare": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

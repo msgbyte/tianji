@@ -22,6 +22,7 @@
     "check:type": "pnpm -r check:type",
     "release": "release-it",
     "release:patch": "release-it -i patch",
+    "release:apps": "pnpm -r --filter \"./apps/*\" publish --registry=https://registry.npmjs.com/",
     "release:packages": "pnpm -r --filter \"./packages/*\" publish --registry=https://registry.npmjs.com/"
   },
   "devDependencies": {
