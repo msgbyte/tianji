@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   DialogHeader,
   DialogFooter,
@@ -10,11 +10,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuCalendar, LuCloudDownload } from 'react-icons/lu';
-import { cn } from '@/utils/style';
+import { LuCloudDownload } from 'react-icons/lu';
 import dayjs from 'dayjs';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { Calendar } from '../ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { AppRouterOutput, trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -24,6 +21,7 @@ import { Progress } from '../ui/progress';
 import jsonExport from 'jsonexport/dist';
 import { downloadCSV } from '@/utils/dom';
 import { message } from 'antd';
+import { DatePicker } from '../DatePicker';
 
 interface SurveyDownloadBtnProps {
   surveyId: string;
@@ -142,42 +140,7 @@ export const SurveyDownloadBtn: React.FC<SurveyDownloadBtnProps> = React.memo(
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="date"
-                  variant={'outline'}
-                  className={cn(
-                    'w-[300px] justify-start text-left font-normal',
-                    !date && 'text-muted-foreground'
-                  )}
-                >
-                  <LuCalendar className="mr-2 h-4 w-4" />
-                  {date?.from ? (
-                    date.to ? (
-                      <>
-                        {dayjs(date.from).format('MMM DD, YYYY')} -{' '}
-                        {dayjs(date.to).format('MMM DD, YYYY')}
-                      </>
-                    ) : (
-                      dayjs(date.from).format('MMM DD, YYYY')
-                    )
-                  ) : (
-                    <span>{t('Pick a date')}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={date?.from}
-                  selected={date}
-                  onSelect={setDate}
-                  numberOfMonths={2}
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker value={date} onChange={setDate} />
           </div>
           <DialogFooter className="sm:items-center sm:justify-between">
             <div className="w-full sm:w-[120px]">
