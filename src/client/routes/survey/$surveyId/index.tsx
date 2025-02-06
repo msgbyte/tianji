@@ -37,6 +37,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Empty } from 'antd';
 import React from 'react';
 import { useGlobalConfig } from '@/hooks/useConfig';
+import { DataRender } from '@/components/DataRender';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -280,7 +281,10 @@ function PageComponent() {
                         key={item.name}
                         label={item.label ?? item.name}
                       >
-                        {selectedItem.payload[item.name]}
+                        <DataRender
+                          type={item.type}
+                          value={selectedItem.payload[item.name]}
+                        />
                       </SheetDataSection>
                     );
                   })}

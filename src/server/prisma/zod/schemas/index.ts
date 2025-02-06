@@ -14,7 +14,7 @@ export const SurveyPayloadSchema = z.object({
     z.object({
       label: z.string(),
       name: z.string(),
-      type: z.enum(['text', 'select', 'email']),
+      type: z.enum(['text', 'select', 'email', 'imageUrl']),
       options: z.array(z.string()).optional(),
     })
   ),
