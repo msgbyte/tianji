@@ -427,6 +427,42 @@ export const surveyRouter = router({
 
       return res;
     }),
+  aiCategoryList: workspaceProcedure
+    .meta(
+      buildSurveyOpenapi({
+        method: 'GET',
+        path: '/{surveyId}/aiCategoryList',
+      })
+    )
+    .input(
+      z.object({
+        surveyId: z.string(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          name: z.string().nullable(),
+          count: z.number(),
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const { surveyId } = input;
+
+      const res = await prisma.surveyResult.groupBy({
+        by: ['aiCategory'],
+        where: {
+          surveyId,
+        },
+        _count: true,
+      });
+
+      return res.map((item) => ({
+        name: item.aiCategory,
+        count: item._count,
+      }));
+    }),
 });
 
 function buildSurveyOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {

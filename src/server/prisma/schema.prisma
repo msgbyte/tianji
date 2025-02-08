@@ -102,7 +102,6 @@ model Workspace {
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
   subscription  WorkspaceSubscription?
-  WorkspaceBill WorkspaceBill?
 
   users              WorkspacesOnUsers[]
   websites           Website[]
@@ -153,7 +152,7 @@ model WorkspaceSubscription {
 
 model WorkspaceBill {
   id          String @id() @default(cuid()) @db.VarChar(30)
-  workspaceId String @unique @db.VarChar(30)
+  workspaceId String @db.VarChar(30)
   type        String
   amount      Int
   /// [CommonPayload]
@@ -162,8 +161,6 @@ model WorkspaceBill {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([type])
 }
@@ -603,6 +600,9 @@ model SurveyResult {
   longitude      Float?
   latitude       Float?
   accuracyRadius Int?
+
+  // ai
+  aiCategory String?
 
   survey Survey @relation(fields: [surveyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 

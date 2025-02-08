@@ -38,6 +38,7 @@ import { Empty } from 'antd';
 import React from 'react';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { DataRender } from '@/components/DataRender';
+import { SurveyAIBtn } from '@/components/survey/SurveyAIBtn';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -208,6 +209,7 @@ function PageComponent() {
               <div className="flex justify-between">
                 <div>{count}</div>
                 <div className="flex gap-2">
+                  {config.enableAI && <SurveyAIBtn surveyId={surveyId} />}
                   <SurveyUsageBtn surveyId={surveyId} />
                   <SurveyDownloadBtn surveyId={surveyId} />
                 </div>
@@ -267,6 +269,12 @@ function PageComponent() {
                 <div>
                   <SheetDataSection label="ID">
                     {selectedItem.id}
+                  </SheetDataSection>
+
+                  <SheetDataSection label={t('Category')}>
+                    {selectedItem.aiCategory ?? (
+                      <span className="opacity-40">(null)</span>
+                    )}
                   </SheetDataSection>
 
                   <SheetDataSection label={t('Created At')}>

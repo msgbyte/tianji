@@ -1,5 +1,6 @@
 import retry from 'async-retry';
 import { prisma } from '../_client.js';
+import { getWorkspaceTier } from './workspace.js';
 
 export const tokenCreditFactor = 1.5;
 
@@ -17,6 +18,11 @@ export async function checkCredit(workspaceId: string) {
 
   const credit = res?.credit ?? 0;
   if (credit <= 0) {
+    const workspaceTier = await getWorkspaceTier(workspaceId);
+    if (workspaceTier === 'UNLIMITED') {
+      return;
+    }
+
     throw new Error('Workspace not have enough credit');
   }
 }

@@ -1,6 +1,13 @@
 import OpenAI from 'openai';
 import { env } from '../utils/env.js';
 import { encoding_for_model } from 'tiktoken';
+import {
+  checkCredit,
+  costCredit,
+  tokenCreditFactor,
+} from './billing/credit.js';
+import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions.mjs';
+import { createAuditLog } from './auditLog.js';
 
 export const modelName = 'gpt-4o-mini';
 
@@ -20,6 +27,59 @@ export function getOpenAIClient() {
 
     return openaiClient;
   }
+}
+
+export async function requestOpenAI(
+  workspaceId: string,
+  prompt: string,
+  question: string,
+  options: Omit<
+    ChatCompletionCreateParamsBase,
+    'model' | 'messages' | 'stream'
+  > = {},
+  context?: Record<string, string>
+): Promise<string> {
+  if (!env.openai.enable) {
+    return '';
+  }
+
+  await checkCredit(workspaceId);
+
+  const res = await getOpenAIClient().chat.completions.create({
+    ...options,
+    model: modelName,
+    messages: [
+      {
+        role: 'system',
+        content: prompt,
+      },
+      {
+        role: 'user',
+        content: question,
+      },
+    ],
+  });
+
+  const content = res.choices[0].message.content;
+  const usage = res.usage;
+
+  const credit = tokenCreditFactor * (usage?.total_tokens ?? 0);
+
+  await costCredit(workspaceId, credit, 'ai', {
+    ...usage,
+    ...context,
+  });
+  createAuditLog({
+    workspaceId,
+    content: JSON.stringify({
+      type: 'ai',
+      usage,
+      context,
+      credit,
+    }),
+  });
+
+  return content ?? '';
 }
 
 export function calcOpenAIToken(message: string) {
