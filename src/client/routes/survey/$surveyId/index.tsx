@@ -39,6 +39,9 @@ import React from 'react';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { DataRender } from '@/components/DataRender';
 import { SurveyAIBtn } from '@/components/survey/SurveyAIBtn';
+import { compact } from 'lodash-es';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SurveyCategoryChart } from '@/components/survey/SurveyCategoryChart';
 
 type SurveyResultItem =
   AppRouterOutput['survey']['resultList']['items'][number];
@@ -125,7 +128,7 @@ function PageComponent() {
   });
 
   const columns = useMemo(() => {
-    return [
+    return compact([
       columnHelper.accessor('id', {
         header: 'ID',
         size: 230,
@@ -147,12 +150,17 @@ function PageComponent() {
           header: item.label,
         })
       ) ?? []),
+      config.enableAI &&
+        columnHelper.accessor('aiCategory', {
+          header: t('AI Category'),
+          size: 200,
+        }),
       columnHelper.accessor('createdAt', {
         header: t('Created At'),
         size: 200,
         cell: (props) => dayjs(props.getValue()).format('YYYY-MM-DD HH:mm:ss'),
       }),
-    ];
+    ]);
   }, [t, info]);
 
   return (
@@ -216,16 +224,37 @@ function PageComponent() {
               </div>
 
               <div className="mt-4">
-                <TimeEventChart
-                  className="h-[240px] w-full"
-                  data={surveyStats}
-                  unit="day"
-                  chartConfig={{
-                    count: {
-                      label: t('Count'),
-                    },
-                  }}
-                />
+                <Tabs defaultValue="recent" className="w-full">
+                  <TabsList>
+                    <TabsTrigger value="recent">
+                      {t('Recent Survey Count')}
+                    </TabsTrigger>
+
+                    {config.enableAI && (
+                      <TabsTrigger value="category">
+                        {t('Survey Category')}
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                  <TabsContent value="recent">
+                    <TimeEventChart
+                      className="h-[240px] w-full"
+                      data={surveyStats}
+                      unit="day"
+                      chartConfig={{
+                        count: {
+                          label: t('Count'),
+                        },
+                      }}
+                    />
+                  </TabsContent>
+
+                  {config.enableAI && (
+                    <TabsContent value="category">
+                      <SurveyCategoryChart surveyId={surveyId} />
+                    </TabsContent>
+                  )}
+                </Tabs>
               </div>
             </CardContent>
           </Card>
