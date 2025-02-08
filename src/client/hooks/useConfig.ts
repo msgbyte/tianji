@@ -2,6 +2,7 @@ import { once } from 'lodash-es';
 import { AppRouterOutput, trpc } from '../api/trpc';
 import { anonymousTelemetryUrl } from '../utils/env';
 import { useWatch } from './useWatch';
+import { useLocalStorageState } from 'ahooks';
 
 const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   allowRegister: false,
@@ -16,6 +17,7 @@ const callAnonymousTelemetry = once(() => {
   fetch(anonymousTelemetryUrl);
 });
 
+let inited = false;
 /**
  * Fetch settings from server
  */
@@ -24,11 +26,23 @@ export function useGlobalConfig(): AppRouterOutput['global']['config'] {
     staleTime: 1000 * 60 * 60 * 1, // 1 hour
   });
 
+  const [config, setConfig] = useLocalStorageState<
+    AppRouterOutput['global']['config']
+  >('tianji-global-config');
+
   useWatch([data], () => {
-    if (!!data && data.disableAnonymousTelemetry !== true) {
-      callAnonymousTelemetry();
+    if (data) {
+      setConfig(data);
+    }
+
+    if (!inited) {
+      if (!!data && data.disableAnonymousTelemetry !== true) {
+        callAnonymousTelemetry();
+      }
+
+      inited = true;
     }
   });
 
-  return data ?? defaultGlobalConfig;
+  return config ?? data ?? defaultGlobalConfig;
 }
