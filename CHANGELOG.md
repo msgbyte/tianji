@@ -1,5 +1,27 @@
 
 
+## [1.18.2](https://github.com/msgbyte/tianji/compare/v1.18.1...v1.18.2) (2025-02-09)
+
+### Features
+
+* add checkbox ui ([9068935](https://github.com/msgbyte/tianji/commit/9068935e3bfab5fc375d8c75a1c66fa8ec3babf4))
+* add classify survey feature ([4c37eab](https://github.com/msgbyte/tianji/commit/4c37eab57ab43086c0c12ca5454469202b484cbd))
+* add credit cost and check in ai ask route ([6c8e49b](https://github.com/msgbyte/tianji/commit/6c8e49b43011991f6318ff2d979bfc13da0646ab))
+* add image url render ([b84b840](https://github.com/msgbyte/tianji/commit/b84b840a38fa331a4b86fb05883a6fe097aa9977))
+* add SurveyCategoryChart ([ba281ac](https://github.com/msgbyte/tianji/commit/ba281ac0f66ff756ad72c0f8d8e9c211f85cf2f5))
+
+### Bug Fixes
+
+* fix app review pool not enough problem ([cd29f86](https://github.com/msgbyte/tianji/commit/cd29f8631878023f7f363ff85e07bf65a6594a14))
+* fix survey stat timezone not correct problem ([a5c7998](https://github.com/msgbyte/tianji/commit/a5c7998cf1431086336d231b6aa2b5d9b40544d7))
+
+### Others
+
+* add global config local storage cache ([cc532bb](https://github.com/msgbyte/tianji/commit/cc532bb381f5cc766616f2a12165f01a56d69f1b))
+* add translation ([170b406](https://github.com/msgbyte/tianji/commit/170b40647c0f53216ebea85f18d891eca9b6b9a3))
+* extract DatePicker component ([ead62eb](https://github.com/msgbyte/tianji/commit/ead62eb77f985bcf5f7fe90bfe2aee3783246d2b))
+* survey download btn should export all necessary field ([b936421](https://github.com/msgbyte/tianji/commit/b936421fa7138b437efa9cc5a835cf3a59ba6be5))
+
 ## [1.18.1](https://github.com/msgbyte/tianji/compare/v1.18.0...v1.18.1) (2025-02-02)
 
 ### Others
