@@ -16,7 +16,7 @@ import { DateRange } from 'react-day-picker';
 import { AppRouterOutput, trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { useEvent } from '@/hooks/useEvent';
-import { clamp, pick } from 'lodash-es';
+import { clamp, omit } from 'lodash-es';
 import { Progress } from '../ui/progress';
 import jsonExport from 'jsonexport/dist';
 import { downloadCSV } from '@/utils/dom';
@@ -102,16 +102,7 @@ export const SurveyDownloadBtn: React.FC<SurveyDownloadBtnProps> = React.memo(
               id: item.id,
               sessionId: item.sessionId,
               ...map,
-              ...pick(item, [
-                'language',
-                'browser',
-                'os',
-                'country',
-                'subdivision1',
-                'subdivision2',
-                'city',
-                'createdAt',
-              ]),
+              ...omit(item, ['id', 'sessionId', 'payload']),
             };
           })
         );
