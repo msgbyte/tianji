@@ -413,17 +413,25 @@ export const surveyRouter = router({
         })
       )
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const {
         surveyId,
         startAt = dayjs().subtract(7, 'week').startOf('day').toDate(),
         endAt = dayjs().endOf('day').toDate(),
       } = input;
+      const timezone = ctx.timezone;
 
-      const res = await getSurveyStats(surveyId, {
-        startDate: new Date(startAt),
-        endDate: new Date(endAt),
-      });
+      const res = await getSurveyStats(
+        surveyId,
+        {
+          startDate: new Date(startAt),
+          endDate: new Date(endAt),
+        },
+        {
+          timezone,
+          unit: 'day',
+        }
+      );
 
       return res;
     }),
