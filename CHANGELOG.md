@@ -1,5 +1,11 @@
 
 
+## [1.18.4](https://github.com/msgbyte/tianji/compare/v1.18.3...v1.18.4) (2025-02-10)
+
+### Bug Fixes
+
+* fxi import problem in server side in 1.18.3 ([d59fe7b](https://github.com/msgbyte/tianji/commit/d59fe7b03a41924f823418508f0385b6323c9338))
+
 ## [1.18.3](https://github.com/msgbyte/tianji/compare/v1.18.2...v1.18.3) (2025-02-10)
 
 ### Bug Fixes
