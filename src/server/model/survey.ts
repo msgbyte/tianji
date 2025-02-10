@@ -33,6 +33,7 @@ export async function getSurveyStats(
     })),
     startDate,
     endDate,
-    unit
+    unit,
+    timezone
   );
 }

@@ -111,7 +111,8 @@ export async function insightsWebsite(
     }),
     startAt,
     endAt,
-    unit
+    unit,
+    timezone
   );
 }
 

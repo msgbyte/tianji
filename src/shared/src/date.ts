@@ -1,4 +1,9 @@
 import dayjs, { ConfigType } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export type DateUnit = 'minute' | 'hour' | 'day' | 'month' | 'year';
 
@@ -27,8 +32,8 @@ function createDateUnitFn(unit: DateUnit) {
   };
 }
 
-export function formatDate(val: ConfigType) {
-  return dayjs(val).format('YYYY-MM-DD HH:mm:ss');
+export function formatDate(val: ConfigType, timezone = 'utc') {
+  return dayjs(val).tz(timezone).format('YYYY-MM-DD HH:mm:ss');
 }
 
 /**
@@ -38,7 +43,8 @@ export function getDateArray<T extends { date: string }>(
   data: T[],
   startDate: ConfigType,
   endDate: ConfigType,
-  unit: DateUnit
+  unit: DateUnit,
+  timezone = 'utc'
 ): T[] {
   if (data.length === 0) {
     return [];
@@ -73,7 +79,7 @@ export function getDateArray<T extends { date: string }>(
     const t = normalize(add(startDate, i));
     const item = findData(t);
 
-    arr.push({ ...item, date: formatDate(t) } as T);
+    arr.push({ ...item, date: formatDate(t, timezone) } as T);
   }
 
   return arr;
