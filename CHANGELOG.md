@@ -1,5 +1,15 @@
 
 
+## [1.18.3](https://github.com/msgbyte/tianji/compare/v1.18.2...v1.18.3) (2025-02-10)
+
+### Bug Fixes
+
+* fix timezone issue in server side which in different server ([e3d6828](https://github.com/msgbyte/tianji/commit/e3d682889cb9011970687e6b6649eee33bee9bf8))
+
+### Others
+
+* fix ci problem ([73687a6](https://github.com/msgbyte/tianji/commit/73687a6163a178f1249963ca3da88b4572b3e997))
+
 ## [1.18.2](https://github.com/msgbyte/tianji/compare/v1.18.1...v1.18.2) (2025-02-09)
 
 ### Features
