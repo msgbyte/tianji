@@ -6,7 +6,8 @@ import {
   costCredit,
   tokenCreditFactor,
 } from './billing/credit.js';
-import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions.mjs';
+// @ts-ignore
+import type { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions.mjs';
 import { createAuditLog } from './auditLog.js';
 
 export const modelName = 'gpt-4o-mini';
