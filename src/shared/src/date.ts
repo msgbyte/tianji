@@ -24,11 +24,12 @@ export function getMinimumUnit(
   return 'year';
 }
 
-function createDateUnitFn(unit: DateUnit) {
+function createDateUnitFn(unit: DateUnit, timezone = 'utc') {
   return {
-    diff: (end: ConfigType, start: ConfigType) => dayjs(end).diff(start, unit),
-    add: (date: ConfigType, n: number) => dayjs(date).add(n, unit),
-    normalize: (date: ConfigType) => dayjs(date).startOf(unit),
+    diff: (end: ConfigType, start: ConfigType) =>
+      dayjs(end).tz(timezone).diff(start, unit),
+    add: (date: ConfigType, n: number) => dayjs(date).tz(timezone).add(n, unit),
+    normalize: (date: ConfigType) => dayjs(date).tz(timezone).startOf(unit),
   };
 }
 
@@ -64,7 +65,7 @@ export function getDateArray<T extends { date: string }>(
   );
 
   const arr: T[] = [];
-  const { diff, add, normalize } = createDateUnitFn(unit);
+  const { diff, add, normalize } = createDateUnitFn(unit, timezone);
   const n = diff(endDate, startDate) + 1;
 
   function findData(date: dayjs.Dayjs) {
