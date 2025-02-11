@@ -78,6 +78,8 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
       return;
     }
 
+    setResultText([]);
+
     try {
       const { analysisCount, processedCount, categorys, effectCount } =
         await classifySurveyMutation.mutateAsync({
@@ -120,7 +122,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
 
           <Select value={contentField} onValueChange={setContentField}>
             <SelectTrigger>
-              <SelectValue placeholder="Please Select Content Field" />
+              <SelectValue placeholder={t('Please Select Content Field')} />
             </SelectTrigger>
             <SelectContent>
               {info?.payload.items.map((item) => (
