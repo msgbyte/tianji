@@ -28,6 +28,7 @@ import {
 import { Checkbox } from '../ui/checkbox';
 import { useWatch } from '@/hooks/useWatch';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { uniq } from 'lodash-es';
 
 interface SurveyAIBtnProps {
   surveyId: string;
@@ -92,7 +93,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
           suggestionCategory: category,
         });
 
-      setCategory(categorys);
+      setCategory((state) => uniq([...state, ...categorys]));
 
       setResultText([
         t('Analysis Count: {{num}}', { num: analysisCount }),
