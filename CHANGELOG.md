@@ -1,5 +1,13 @@
 
 
+## [1.18.5](https://github.com/msgbyte/tianji/compare/v1.18.4...v1.18.5) (2025-02-11)
+
+### Others
+
+* add more timezone related things ([ca37ea1](https://github.com/msgbyte/tianji/commit/ca37ea16eaa5e98e29e3727859e9409fcbaacca6))
+* clear result text after re-run ([a63240a](https://github.com/msgbyte/tianji/commit/a63240accf6c5094bc6fd2f3e9f94697c4595c23))
+* merge category result after parsed ([8d6ab5c](https://github.com/msgbyte/tianji/commit/8d6ab5c44870ccf3aa19bfcd9989bb66e62d9275))
+
 ## [1.18.4](https://github.com/msgbyte/tianji/compare/v1.18.3...v1.18.4) (2025-02-10)
 
 ### Bug Fixes
