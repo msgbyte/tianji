@@ -25,6 +25,7 @@ import { logger } from '../../utils/logger.js';
 import axios from 'axios';
 import { getSurveyStats } from '../../model/survey.js';
 import dayjs from 'dayjs';
+import qs from 'qs';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -360,13 +361,15 @@ export const surveyRouter = router({
         cursor: z.string().optional(),
         startAt: z.number().optional(),
         endAt: z.number().optional(),
+        filter: z.string().optional(),
       })
     )
     .output(buildCursorResponseSchema(SurveyResultModelSchema))
     .query(async ({ input }) => {
       const { cursor, surveyId, limit } = input;
+      const filter = input.filter ? qs.parse(input.filter) : {};
 
-      const where: Prisma.SurveyResultWhereInput = {
+      let where: Prisma.SurveyResultWhereInput = {
         surveyId,
       };
 
@@ -374,6 +377,13 @@ export const surveyRouter = router({
         where.createdAt = {
           gte: new Date(input.startAt),
           lte: new Date(input.endAt),
+        };
+      }
+
+      if (filter) {
+        where = {
+          ...where,
+          ...filter,
         };
       }
 
