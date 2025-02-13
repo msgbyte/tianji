@@ -39,14 +39,9 @@ import React from 'react';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { DataRender } from '@/components/DataRender';
 import { SurveyAIBtn } from '@/components/survey/SurveyAIBtn';
-import { compact } from 'lodash-es';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SurveyCategoryChart } from '@/components/survey/SurveyCategoryChart';
-
-type SurveyResultItem =
-  AppRouterOutput['survey']['resultList']['items'][number];
-
-const columnHelper = createColumnHelper<SurveyResultItem>();
+import { useSurveyListColumns } from '@/components/survey/useSurveyListColumns';
 
 export const Route = createFileRoute('/survey/$surveyId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -100,7 +95,9 @@ function PageComponent() {
   const trpcUtils = trpc.useUtils();
   const navigate = useNavigate();
   const { askAIQuestion } = useAIAction();
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  const { selectedIndex, setSelectedIndex, columns } =
+    useSurveyListColumns(surveyId);
 
   //flatten the array of arrays from the useInfiniteQuery hook
   const flatData = useMemo(
@@ -126,42 +123,6 @@ function PageComponent() {
       replace: true,
     });
   });
-
-  const columns = useMemo(() => {
-    return compact([
-      columnHelper.accessor('id', {
-        header: 'ID',
-        size: 230,
-        cell: (props) => {
-          return (
-            <div
-              className="cursor-pointer hover:underline hover:decoration-dotted"
-              onClick={() => {
-                setSelectedIndex(props.row.index);
-              }}
-            >
-              {props.getValue()}
-            </div>
-          );
-        },
-      }),
-      ...(info?.payload.items.map((item) =>
-        columnHelper.accessor(`payload.${item.name}`, {
-          header: item.label,
-        })
-      ) ?? []),
-      config.enableAI &&
-        columnHelper.accessor('aiCategory', {
-          header: t('AI Category'),
-          size: 200,
-        }),
-      columnHelper.accessor('createdAt', {
-        header: t('Created At'),
-        size: 200,
-        cell: (props) => dayjs(props.getValue()).format('YYYY-MM-DD HH:mm:ss'),
-      }),
-    ]);
-  }, [t, info]);
 
   return (
     <CommonWrapper
