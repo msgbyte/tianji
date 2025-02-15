@@ -99,7 +99,7 @@ function PageComponent() {
                 <Input.Password />
               </Form.Item>
               <Form.Item
-                label={t('New Password Repeat')}
+                label={t('Repeat New Password')}
                 name="newPasswordRepeat"
                 rules={[
                   { required: true },
