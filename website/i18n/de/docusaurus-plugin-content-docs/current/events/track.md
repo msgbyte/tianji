@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
-_i18n_hash: a3862480440a66a996f471d85570603d
+_i18n_hash: f0ed5671d5832e683b6ba533651a0eb7
 ---
 # Ereignisverfolgung
 
 Sie können Benutzeraktionen auf Ihrer Website verfolgen. Tianji bietet eine einfache Möglichkeit, dies zu tun.
 
-## Verwendung des Skript-Tags
+## Verwendung des Script-Tags
 
-Wenn Sie das Skript-Tag verwenden, müssen Sie einfach die `track`-Funktion an beliebiger Stelle nach dem Einfügen des Skripts aufrufen.
+Wenn Sie das Script-Tag verwenden, müssen Sie einfach die `track`-Funktion an irgendeiner Stelle aufrufen, nachdem Sie das Skript eingefügt haben.
 
 ```ts
 tianji.track(eventName, data);
@@ -16,7 +16,7 @@ tianji.track(eventName, data);
 
 ## Verwendung des SDK
 
-Wenn Sie das SDK verwenden, müssen Sie einfach die Funktion `reportEvent()` aufrufen, nachdem Sie `initTianjiTracker()` aufgerufen haben.
+Wenn Sie das SDK verwenden, müssen Sie einfach die `reportEvent()`-Funktion aufrufen, nachdem Sie `initTianjiTracker()` ausgeführt haben.
 
 ```ts
 import { initTianjiTracker, reportEvent } from 'tianji-sdk-client';
@@ -26,7 +26,7 @@ initTianjiTracker({
   websiteId,
 });
     
-reportEvent('Demo-Event', {
+reportEvent('Demo-Ereignis', {
   foo: 'bar',
 });
 ```

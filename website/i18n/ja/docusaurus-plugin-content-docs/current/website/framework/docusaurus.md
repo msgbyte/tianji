@@ -1,10 +1,10 @@
 ---
 sidebar_position: 1
-_i18n_hash: dbe4f3d388e41faf5b22d03df590fec6
+_i18n_hash: 3e7ad33b9d88240c2ee01504fb17ed2d
 ---
-# Docusaurusでの使用
+# Docusaurusでの使用方法
 
-`docusaurus.config.js`内で：
+`docusaurus.config.js`にて：
 
 ```js
 /** @type {import('@docusaurus/types').Config} */
@@ -13,10 +13,10 @@ const config = {
 
   scripts: [
     {
-      src: 'https://<your domain>/tracker.js',
+      src: 'https://<あなたのドメイン>/tracker.js',
       async: true,
       defer: true,
-      'data-website-id': '<your-website-id>',
+      'data-website-id': '<あなたのウェブサイトID>',
     },
   ],
 };

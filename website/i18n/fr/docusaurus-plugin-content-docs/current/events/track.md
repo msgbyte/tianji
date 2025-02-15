@@ -1,28 +1,28 @@
 ---
 sidebar_position: 1
-_i18n_hash: a3862480440a66a996f471d85570603d
+_i18n_hash: f0ed5671d5832e683b6ba533651a0eb7
 ---
-# Suivi des Événements
+# Suivi d'Événements
 
-Vous pouvez suivre les actions des utilisateurs sur votre site Web. Tianji fournit un moyen simple de le faire.
+Vous pouvez suivre les actions des utilisateurs sur votre site web. Tianji fournit un moyen simple de le faire.
 
-## Utilisation de la balise Script
+## Utilisation de la Balise Script
 
-Si vous utilisez une balise de script, il vous suffit d'appeler la fonction `track` à n'importe quel endroit après avoir injecté le script.
+Si vous utilisez une balise script, vous devez simplement appeler la fonction `track` n'importe où après avoir injecté le script.
 
 ```ts
-tianji.track(nomÉvénement, données);
+tianji.track(eventName, data);
 ```
 
 ## Utilisation du SDK
 
-Si vous utilisez le SDK, il vous suffit d'appeler la fonction `reportEvent()` après avoir `initTianjiTracker()`.
+Si vous utilisez le SDK, vous devez simplement appeler la fonction `reportEvent()` après avoir exécuté `initTianjiTracker()`.
 
 ```ts
 import { initTianjiTracker, reportEvent } from 'tianji-sdk-client';
 
 initTianjiTracker({
-  url: urlBackend,
+  url: backendUrl,
   websiteId,
 });
     

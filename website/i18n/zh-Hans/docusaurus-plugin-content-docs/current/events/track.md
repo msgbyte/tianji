@@ -1,22 +1,22 @@
 ---
 sidebar_position: 1
-_i18n_hash: a3862480440a66a996f471d85570603d
+_i18n_hash: f0ed5671d5832e683b6ba533651a0eb7
 ---
-# 事件跟踪
+# 事件追踪
 
-您可以跟踪网站上的用户行为。天池提供了一种简单的方法来实现这一点。
+您可以在网站上追踪用户行为。天际提供了一种简单的方法来实现这一点。
 
 ## 使用脚本标签
 
-如果您使用的是脚本标签，只需在注入脚本后任何地方调用 `track` 函数即可。
+如果您使用脚本标签，您只需在注入脚本后调用 `track` 函数即可
 
 ```ts
 tianji.track(eventName, data);
 ```
 
-## 使用 SDK
+## 使用SDK
 
-如果您使用的是 SDK，只需在调用 `initTianjiTracker()` 后调用 `reportEvent()` 函数即可。
+如果您使用SDK，您只需在调用 `initTianjiTracker()` 后调用 `reportEvent()` 函数
 
 ```ts
 import { initTianjiTracker, reportEvent } from 'tianji-sdk-client';
