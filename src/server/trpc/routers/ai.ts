@@ -20,6 +20,7 @@ import {
 import { prisma } from '../../model/_client.js';
 import dayjs from 'dayjs';
 import pMap from 'p-map';
+import { Prisma } from '@prisma/client';
 
 export const aiRouter = router({
   ask: workspaceProcedure
@@ -109,7 +110,7 @@ export const aiRouter = router({
         surveyId: z.string(),
         startAt: z.number(),
         endAt: z.number(),
-        skipExised: z.boolean(),
+        runStrategy: z.enum(['skipExist', 'skipInSuggest', 'rebuildAll']),
         payloadContentField: z.string(),
         suggestionCategory: z.array(z.string()),
       })
@@ -120,20 +121,29 @@ export const aiRouter = router({
         surveyId,
         startAt,
         endAt,
-        skipExised,
+        runStrategy,
         payloadContentField,
         suggestionCategory,
       } = input;
 
-      const data = await prisma.surveyResult.findMany({
-        where: {
-          surveyId,
-          createdAt: {
-            gt: dayjs(startAt).toDate(),
-            lt: dayjs(endAt).toDate(),
-          },
-          aiCategory: skipExised ? null : undefined,
+      const where: Prisma.SurveyResultWhereInput = {
+        surveyId,
+        createdAt: {
+          gt: dayjs(startAt).toDate(),
+          lt: dayjs(endAt).toDate(),
         },
+      };
+
+      if (runStrategy === 'skipExist') {
+        where.aiCategory = null;
+      } else if (runStrategy === 'skipInSuggest') {
+        where.aiCategory = {
+          notIn: suggestionCategory,
+        };
+      }
+
+      const data = await prisma.surveyResult.findMany({
+        where,
         select: {
           id: true,
           payload: true,

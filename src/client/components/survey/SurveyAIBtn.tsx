@@ -25,10 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { Checkbox } from '../ui/checkbox';
 import { useWatch } from '@/hooks/useWatch';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { uniq } from 'lodash-es';
+
+type RunStrategy = 'skipExist' | 'skipInSuggest' | 'rebuildAll';
 
 interface SurveyAIBtnProps {
   surveyId: string;
@@ -44,7 +45,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
   const [category, setCategory] = useState<string[]>([]);
   const [resultText, setResultText] = useState<string[]>([]);
   const [contentField, setContentField] = useState<string>();
-  const [skipExised, setSkipExised] = useState(true);
+  const [runStrategy, setRunStrategy] = useState<RunStrategy>('skipExist');
 
   const { data: info } = trpc.survey.get.useQuery({
     workspaceId,
@@ -88,7 +89,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
           surveyId,
           startAt,
           endAt,
-          skipExised,
+          runStrategy,
           payloadContentField: contentField,
           suggestionCategory: category,
         });
@@ -134,12 +135,12 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
             </SelectContent>
           </Select>
 
-          <div className="text-xs  opacity-50">
+          <div className="text-xs opacity-50">
             {t('Step 2: Please select analysis range')}
           </div>
-          <DatePicker value={date} onChange={setDate} />
+          <DatePicker className="w-full" value={date} onChange={setDate} />
 
-          <div className="text-xs  opacity-50">
+          <div className="text-xs opacity-50">
             {t('Step 3: Please provide some suggestion category')}
           </div>
           <AntdSelect
@@ -151,17 +152,32 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
             maxTagCount={2}
           />
 
-          <div className="text-xs  opacity-50">{t('Step 4: Run!')}</div>
+          <div className="text-xs opacity-50">
+            {t('Step 4: Select run strategy')}
+          </div>
           <div className="flex items-center space-x-2">
-            <Checkbox
-              checked={skipExised}
-              onCheckedChange={(checked) => setSkipExised(Boolean(checked))}
-            />
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              {t('Skip already parse record.')}
-            </label>
+            <Select
+              value={runStrategy}
+              onValueChange={(val) => setRunStrategy(val as RunStrategy)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('please select some strategy')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="skipExist">
+                  {t('Skip Exist Record')}
+                </SelectItem>
+                <SelectItem value="skipInSuggest">
+                  {t('Skip Already in Suggestion Record')}
+                </SelectItem>
+                <SelectItem value="rebuildAll">
+                  {t('Recategory All')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
+          <div className="text-xs opacity-50">{t('Step 5: Run!')}</div>
           <Button loading={loading} onClick={handleStart}>
             {t('Run')}
           </Button>

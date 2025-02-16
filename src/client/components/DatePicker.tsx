@@ -9,6 +9,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { Calendar } from './ui/calendar';
 
 interface DatePickerProps {
+  className?: string;
   value: DateRange | undefined;
   onChange: (value: DateRange | undefined) => void;
 }
@@ -23,7 +24,8 @@ export const DatePicker: React.FC<DatePickerProps> = React.memo((props) => {
           variant={'outline'}
           className={cn(
             'w-[300px] justify-start text-left font-normal',
-            !props.value && 'text-muted-foreground'
+            !props.value && 'text-muted-foreground',
+            props.className
           )}
         >
           <LuCalendar className="mr-2 h-4 w-4" />
