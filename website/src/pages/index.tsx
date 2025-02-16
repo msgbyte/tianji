@@ -159,12 +159,12 @@ function HomepageMain() {
             emulateTouch={true}
             infiniteLoop={true}
           >
-            <img src="/img/preview/1.png" />
-            <img src="/img/preview/2.png" />
-            <img src="/img/preview/3.png" />
-            <img src="/img/preview/4.png" />
-            <img src="/img/preview/5.png" />
-            <img src="/img/preview/6.png" />
+            <img className="select-none" src="/img/preview/1.png" />
+            <img className="select-none" src="/img/preview/2.png" />
+            <img className="select-none" src="/img/preview/3.png" />
+            <img className="select-none" src="/img/preview/4.png" />
+            <img className="select-none" src="/img/preview/5.png" />
+            <img className="select-none" src="/img/preview/6.png" />
           </Carousel>
         </div>
 
