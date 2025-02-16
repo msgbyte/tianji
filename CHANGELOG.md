@@ -1,5 +1,29 @@
 
 
+## [1.18.6](https://github.com/msgbyte/tianji/compare/v1.18.5...v1.18.6) (2025-02-16)
+
+### Features
+
+* add click to view ai category feature ([b72643a](https://github.com/msgbyte/tianji/commit/b72643a5372f29ba8aa0c9964efc6d54379c7c10))
+* add env DISABLE_ACCESS_LOGS and DEBUG_AI_FEATURE ([4795b3d](https://github.com/msgbyte/tianji/commit/4795b3dc3583b671ddf0e24f9ca7afb76ac04c5b))
+* add more run strategy and improve ui style ([fd1e5cb](https://github.com/msgbyte/tianji/commit/fd1e5cb46e39c114fb66db410f403ec15c36d79d))
+
+### Bug Fixes
+
+* [#158](https://github.com/msgbyte/tianji/issues/158) fix typo ([8819af4](https://github.com/msgbyte/tianji/commit/8819af4db1cc01727ddfe4cf41a48390b1634889))
+
+### Document
+
+* add telemetry report claim ([fc67dba](https://github.com/msgbyte/tianji/commit/fc67dbaef82121a58a02c14f1787cc7f3f1b9cd5))
+* improve display for website carousel, which will let image can be selected ([99b4140](https://github.com/msgbyte/tianji/commit/99b41408ce1b41f4229ee689def60d99189aa8e9))
+
+### Others
+
+* add filter query in survey result ([fff7346](https://github.com/msgbyte/tianji/commit/fff7346d3cd5da284691e89cc145863ec4d8d482))
+* update columns logic ([d6af45e](https://github.com/msgbyte/tianji/commit/d6af45e2b200a9cb2b188bb92843a8751a2ff626))
+* update translation ([dc41557](https://github.com/msgbyte/tianji/commit/dc415578ebdc363a7825a4262bf93ae2479b4d31))
+* update translation ([f627b31](https://github.com/msgbyte/tianji/commit/f627b31a71149eae27f8fda17d608a86fe3f1709))
+
 ## [1.18.5](https://github.com/msgbyte/tianji/compare/v1.18.4...v1.18.5) (2025-02-11)
 
 ### Others
