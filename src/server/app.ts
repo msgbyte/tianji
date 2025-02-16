@@ -37,7 +37,9 @@ app.use(
     },
   })
 );
-app.use(morgan('tiny'));
+if (!env.disableAccessLogs) {
+  app.use(morgan('tiny'));
+}
 app.use(cors());
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header

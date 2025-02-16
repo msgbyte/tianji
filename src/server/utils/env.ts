@@ -80,6 +80,8 @@ export const env = {
   ),
   customTrackerScriptName: process.env.CUSTOM_TRACKER_SCRIPT_NAME,
   disableAutoClear: checkEnvTrusty(process.env.DISABLE_AUTO_CLEAR), // disable auto clear old data cronjob
+  disableAccessLogs: checkEnvTrusty(process.env.DISABLE_ACCESS_LOGS), // disable show access logs
+  debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
