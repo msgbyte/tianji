@@ -117,7 +117,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
           <DialogDescription>{t('Summary Content with AI')}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-2 py-3">
-          <div className="opacity-50">
+          <div className="text-xs opacity-50">
             {t('Step 1: Please select content field')}
           </div>
 
@@ -134,12 +134,12 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
             </SelectContent>
           </Select>
 
-          <div className="opacity-50">
+          <div className="text-xs  opacity-50">
             {t('Step 2: Please select analysis range')}
           </div>
           <DatePicker value={date} onChange={setDate} />
 
-          <div className="opacity-50">
+          <div className="text-xs  opacity-50">
             {t('Step 3: Please provide some suggestion category')}
           </div>
           <AntdSelect
@@ -151,7 +151,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
             maxTagCount={2}
           />
 
-          <div className="opacity-50">{t('Step 4: Run!')}</div>
+          <div className="text-xs  opacity-50">{t('Step 4: Run!')}</div>
           <div className="flex items-center space-x-2">
             <Checkbox
               checked={skipExised}

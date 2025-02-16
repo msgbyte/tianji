@@ -6,6 +6,11 @@ import { reverse, sortBy, sumBy, take } from 'lodash-es';
 import { ChartConfig } from '../ui/chart';
 import { Checkbox } from '../ui/checkbox';
 import { useTranslation } from '@i18next-toolkit/react';
+import { Dialog, DialogContent, DialogHeader } from '../ui/dialog';
+import { SurveyListTable } from './SurveyListTable';
+
+const OTHER_CATEGORY_NAME = 'Other';
+const NONE_CATEGORY_NAME = 'Uncategorized';
 
 interface SurveyCategoryChartProps {
   surveyId: string;
@@ -14,7 +19,10 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
   React.memo((props) => {
     const workspaceId = useCurrentWorkspaceId();
     const { t } = useTranslation();
-    const [hideUncategorized, setHideUncategorized] = useState(false);
+    const [hideUncategorized, setHideUncategorized] = useState(true);
+    const [selectedCategoryName, setSelectedCategoryName] = useState<
+      string | null
+    >(null);
 
     const { data: allCategory = [] } = trpc.survey.aiCategoryList.useQuery({
       workspaceId,
@@ -34,14 +42,14 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
 
       if (ordered.length >= 5) {
         category[4] = {
-          name: 'Other',
+          name: OTHER_CATEGORY_NAME,
           count: sumBy(ordered, 'count') - sumBy(category, 'count'),
         };
       }
 
       const chartConfig: ChartConfig = {};
       category.forEach((c, i) => {
-        const name = c.name ? c.name : 'Uncategorized';
+        const name = c.name ? c.name : NONE_CATEGORY_NAME;
         chartConfig[`category-${i}`] = {
           label: name,
           color: `hsl(var(--chart-${i + 1}))`,
@@ -50,7 +58,7 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
 
       return {
         data: category.map((c, i) => ({
-          label: c.name ? c.name : 'Uncategorized',
+          label: c.name ? c.name : NONE_CATEGORY_NAME,
           count: c.count,
           fill: `var(--color-category-${i})`,
         })),
@@ -60,7 +68,17 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
 
     return (
       <div>
-        <SimplePieChart data={data} chartConfig={chartConfig} />
+        <SimplePieChart
+          data={data}
+          chartConfig={chartConfig}
+          onClick={(data) => {
+            const name = data.name;
+            if (name === OTHER_CATEGORY_NAME || name === NONE_CATEGORY_NAME) {
+              return;
+            }
+            setSelectedCategoryName(data.name);
+          }}
+        />
         <div className="flex items-center gap-1">
           <Checkbox
             checked={hideUncategorized}
@@ -70,6 +88,28 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
           />
           <span>{t('Hide Uncategorized')}</span>
         </div>
+
+        <Dialog
+          open={Boolean(selectedCategoryName)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedCategoryName(null);
+            }
+          }}
+        >
+          <DialogContent className="max-w-[90vw]">
+            <DialogHeader>
+              {t('Survey Result')} - {selectedCategoryName}
+            </DialogHeader>
+
+            {typeof selectedCategoryName === 'string' && (
+              <SurveyListTable
+                surveyId={props.surveyId}
+                categoryName={selectedCategoryName}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   });

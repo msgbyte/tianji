@@ -9,12 +9,75 @@ import {
 import { sumBy } from 'lodash-es';
 import { useTranslation } from '@i18next-toolkit/react';
 
+type TooltipPayloadItem = {
+  name: string;
+  value: number;
+  payload: {
+    payload: {
+      label: string;
+      count: number;
+      fill: string;
+    };
+    strokeWidth: number;
+    stroke: string;
+    fill: string;
+    cx: string;
+    cy: string;
+    label: string;
+    count: number;
+  };
+  dataKey: string;
+};
+
+type ChartPayload = {
+  payload: {
+    label: string;
+    count: number;
+    fill: string;
+  };
+  strokeWidth: number;
+  stroke: string;
+  fill: string;
+  cx: string;
+  cy: string;
+  label: string;
+  count: number;
+};
+
+export type PieChartSegment = {
+  percent: number;
+  name: string;
+  tooltipPayload: TooltipPayloadItem[];
+  midAngle: number;
+  middleRadius: number;
+  tooltipPosition: {
+    x: number;
+    y: number;
+  };
+  payload: ChartPayload;
+  strokeWidth: number;
+  stroke: string;
+  fill: string;
+  cx: number;
+  cy: number;
+  label: string;
+  count: number;
+  innerRadius: number;
+  outerRadius: number;
+  maxRadius: number;
+  value: number;
+  startAngle: number;
+  endAngle: number;
+  paddingAngle: number;
+};
+
 export const SimplePieChart: React.FC<{
   className?: string;
   data: { label: string; count: number }[];
   chartConfig: ChartConfig;
+  onClick?: (data: PieChartSegment) => void;
 }> = React.memo((props) => {
-  const { className, data, chartConfig } = props;
+  const { className, data, chartConfig, onClick } = props;
   const { t } = useTranslation();
 
   const totalCount = React.useMemo(() => {
@@ -34,6 +97,9 @@ export const SimplePieChart: React.FC<{
           nameKey="label"
           innerRadius={'50%'}
           strokeWidth={5}
+          onClick={(d) => {
+            onClick?.(d);
+          }}
         >
           <Label
             content={({ viewBox }) => {
