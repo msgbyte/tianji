@@ -6,15 +6,15 @@ import {
   costCredit,
   tokenCreditFactor,
 } from './billing/credit.js';
-// @ts-ignore
 import type {
   ChatCompletionCreateParamsBase,
   ChatCompletionMessageParam,
+  // @ts-ignore
 } from 'openai/resources/chat/completions.mjs';
 import { createAuditLog } from './auditLog.js';
-import { logger } from '../utils/logger.js';
 
 export const modelName = 'gpt-4o-mini';
+export const modelMaxToken = 16383;
 
 let openaiClient: OpenAI;
 
@@ -50,7 +50,7 @@ export async function requestOpenAI(
 
   await checkCredit(workspaceId);
 
-  const messages = [
+  const messages: ChatCompletionMessageParam[] = [
     {
       role: 'system',
       content: prompt,
@@ -59,12 +59,13 @@ export async function requestOpenAI(
       role: 'user',
       content: question,
     },
-  ] satisfies ChatCompletionMessageParam[];
+  ];
 
   const res = await getOpenAIClient().chat.completions.create({
     ...options,
     model: modelName,
     messages: messages,
+    max_tokens: modelMaxToken,
   });
 
   const content = res.choices[0].message.content;
@@ -73,12 +74,25 @@ export async function requestOpenAI(
   const credit = tokenCreditFactor * (usage?.total_tokens ?? 0);
 
   if (env.debugAIFeature) {
-    logger.info('[DEBUG AI]', {
-      input: messages,
-      output: content,
-      usage,
-    });
+    console.log('[DEBUG AI] Start =======================');
+    console.log('[DEBUG AI] Prompt:');
+    for (const m of messages) {
+      console.log(m.role);
+      console.log(m.content);
+    }
+    console.log('[DEBUG AI] Prompt END');
+
+    console.log('[DEBUG AI] Output:');
+    console.log(content);
+    console.log('[DEBUG AI] Output END');
+
+    console.log('[DEBUG AI] Usage:');
+    console.log(usage);
+
+    console.log('[DEBUG AI] End =======================');
   }
+
+  console.log('usage', usage);
 
   await costCredit(workspaceId, credit, 'ai', {
     ...usage,
@@ -97,11 +111,35 @@ export async function requestOpenAI(
   return content ?? '';
 }
 
-export function calcOpenAIToken(message: string) {
+export function calcOpenAIToken(message: string): number {
   const encoder = encoding_for_model(modelName);
   const count = encoder.encode(message).length;
 
   encoder.free();
 
   return count;
+}
+
+export function groupByTokenSize<T>(
+  arr: T[],
+  selector: (item: T) => string,
+  maxToken: number
+): T[][] {
+  const groups: T[][] = [[]];
+
+  let currentToken = 0;
+  for (const item of arr) {
+    const token = calcOpenAIToken(selector(item));
+
+    if (currentToken + token > maxToken) {
+      groups.push([]);
+      currentToken = 0;
+    }
+
+    currentToken += token;
+
+    groups[groups.length - 1].push(item);
+  }
+
+  return groups;
 }

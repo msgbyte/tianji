@@ -1,6 +1,7 @@
-import { describe, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { env } from '../utils/env.js';
-import { getOpenAIClient } from './openai.js';
+import { getOpenAIClient, groupByTokenSize } from './openai.js';
+import OpenAI from 'openai';
 
 const functions = {
   getCurrentDate: {
@@ -35,7 +36,11 @@ async function executeFunction(name: string, args: any) {
 }
 
 describe.runIf(env.openai.apiKey)('openai', () => {
-  const openaiClient = getOpenAIClient();
+  let openaiClient: OpenAI;
+
+  beforeAll(() => {
+    openaiClient = getOpenAIClient();
+  });
 
   test('test openai tool choose', async () => {
     try {
@@ -65,5 +70,24 @@ describe.runIf(env.openai.apiKey)('openai', () => {
     } catch (error) {
       console.error('Error:', error);
     }
+  });
+});
+
+describe('groupByTokenSize', () => {
+  test('simple', () => {
+    expect(
+      groupByTokenSize(
+        [
+          { content: 'foooooo' },
+          { content: 'foooooo' },
+          { content: 'foooooo' },
+        ],
+        (item) => item.content,
+        8
+      )
+    ).toEqual([
+      [{ content: 'foooooo' }, { content: 'foooooo' }],
+      [{ content: 'foooooo' }],
+    ]);
   });
 });

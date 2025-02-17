@@ -5,12 +5,17 @@ import {
   modelName,
   getOpenAIClient,
   requestOpenAI,
+  groupByTokenSize,
+  modelMaxToken,
 } from '../../model/openai.js';
 import { env } from '../../utils/env.js';
-import { getSurveyPrompt } from '../../model/prompt/survey.js';
+import {
+  buildSurveyClassifyPrompt,
+  getSurveyPrompt,
+} from '../../model/prompt/survey.js';
 // @ts-ignore
 import type { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
-import { get, groupBy, invertBy, sum, uniq } from 'lodash-es';
+import { get, groupBy, invertBy, sum, uniq, values } from 'lodash-es';
 import { createAuditLog } from '../../model/auditLog.js';
 import {
   checkCredit,
@@ -159,43 +164,49 @@ export const aiRouter = router({
         };
       }
 
-      const prompt = `
-You are a content data analysis and classification expert. You need to make a simple classification based on the information collected from users in multiple languages ​​around the world, and return the classified json directly to me.
-
-The data is as follows:
-${data
-  .map((item) => ({
-    id: item.id,
-    content: item.payload[payloadContentField] ?? '',
-  }))
-  .map((obj) => `- ${JSON.stringify(obj)}`)
-  .join('\n')}
-
-The classification results of the example are as follows:
-{"id1": "some category which summary", "id2": "another category which summary"}
-
-The existing categories are as follows. Please refer to the existing categories as much as possible:
-${JSON.stringify(suggestionCategory)}
-
-No explanation is required.
-      `;
-
-      const res = await requestOpenAI(
-        workspaceId,
-        prompt,
-        'Please help me generate data.',
-        {
-          response_format: { type: 'json_object' },
-        }
+      let categoryJson = {};
+      let currentSuggestionCategory = uniq([...suggestionCategory]);
+      const groups = groupByTokenSize(
+        data.map((item) => ({
+          id: item.id,
+          content: item.payload[payloadContentField] ?? '',
+        })),
+        (item) => item.content,
+        Math.ceil(modelMaxToken / 3) -
+          calcOpenAIToken(JSON.stringify(currentSuggestionCategory))
       );
+      for (const group of groups) {
+        const prompt = buildSurveyClassifyPrompt(
+          group,
+          currentSuggestionCategory
+        );
 
-      const json = JSON.parse(res);
+        const res = await requestOpenAI(
+          workspaceId,
+          prompt,
+          'Please help me generate data.',
+          {
+            response_format: { type: 'json_object' },
+          }
+        );
 
-      if (json.error) {
-        throw new Error(String(json.error));
+        const json = JSON.parse(res);
+
+        if (json.error) {
+          throw new Error(String(json.error));
+        }
+
+        currentSuggestionCategory = uniq([
+          ...currentSuggestionCategory,
+          ...values(json),
+        ]);
+        categoryJson = {
+          ...categoryJson,
+          ...json,
+        };
       }
 
-      const categorys: Record<string, string[]> = invertBy(json);
+      const categorys: Record<string, string[]> = invertBy(categoryJson);
       let effectCount = 0;
       await pMap(
         Object.keys(categorys),
@@ -223,7 +234,7 @@ No explanation is required.
 
       return {
         analysisCount: data.length,
-        processedCount: Object.keys(json).length,
+        processedCount: Object.keys(categoryJson).length,
         categorys: Object.keys(categorys),
         effectCount,
       };

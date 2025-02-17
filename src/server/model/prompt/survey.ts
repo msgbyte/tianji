@@ -48,3 +48,28 @@ ${result.map((item) => JSON.stringify(item)).join('\n')}
     },
   ];
 }
+
+export const basicSurveyClassifyPromptToken = 101;
+
+export function buildSurveyClassifyPrompt(
+  data: {
+    id: string;
+    content: any;
+  }[],
+  suggestionCategory: string[]
+): string {
+  return `
+You are a content data analysis and classification expert. You need to make a simple classification based on the information collected from users in multiple languages ​​around the world, and return the classified json directly to me.
+
+The data is as follows:
+${data.map((obj) => `- ${JSON.stringify(obj)}`).join('\n')}
+
+The classification results of the example are as follows:
+{"id1": "some category which summary", "id2": "another category which summary"}
+
+The existing categories are as follows. Please refer to the existing categories as much as possible:
+${JSON.stringify(suggestionCategory)}
+
+No explanation is required.
+`.trim();
+}
