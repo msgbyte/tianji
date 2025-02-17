@@ -1,5 +1,12 @@
 
 
+## [1.18.7](https://github.com/msgbyte/tianji/compare/v1.18.6...v1.18.7) (2025-02-17)
+
+### Features
+
+* add group analyze and ai debug ([971427f](https://github.com/msgbyte/tianji/commit/971427f22f2ee85cec8007a0f4bc3539df1aef11))
+* add user language support in ai category classify ([ab4342b](https://github.com/msgbyte/tianji/commit/ab4342b2a2af83581f0a910671df3725db0b3315))
+
 ## [1.18.6](https://github.com/msgbyte/tianji/compare/v1.18.5...v1.18.6) (2025-02-16)
 
 ### Features
