@@ -10,6 +10,7 @@ import { get } from 'lodash-es';
 import { promTrpcRequest } from '../utils/prometheus/client.js';
 import { verifyUserApiKey } from '../model/user.js';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
+import { parse as languageParse } from 'accept-language-parser';
 
 export async function createContext({ req }: CreateExpressContextOptions) {
   const authorization = req.headers['authorization'] ?? '';
@@ -17,8 +18,10 @@ export async function createContext({ req }: CreateExpressContextOptions) {
   const timezone = req.headers['timezone']
     ? String(req.headers['timezone'])
     : 'utc';
+  const language =
+    languageParse(req.headers['accept-language'])?.[0].code ?? 'en';
 
-  return { token, timezone, req };
+  return { token, timezone, language, req };
 }
 
 type Context = Awaited<ReturnType<typeof createContext>>;

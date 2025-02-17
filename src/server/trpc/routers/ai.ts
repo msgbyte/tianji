@@ -116,20 +116,23 @@ export const aiRouter = router({
         startAt: z.number(),
         endAt: z.number(),
         runStrategy: z.enum(['skipExist', 'skipInSuggest', 'rebuildAll']),
+        languageStrategy: z.enum(['default', 'user']).default('default'),
         payloadContentField: z.string(),
         suggestionCategory: z.array(z.string()),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const {
         workspaceId,
         surveyId,
         startAt,
         endAt,
         runStrategy,
+        languageStrategy,
         payloadContentField,
         suggestionCategory,
       } = input;
+      const { language } = ctx;
 
       const where: Prisma.SurveyResultWhereInput = {
         surveyId,
@@ -178,7 +181,8 @@ export const aiRouter = router({
       for (const group of groups) {
         const prompt = buildSurveyClassifyPrompt(
           group,
-          currentSuggestionCategory
+          currentSuggestionCategory,
+          languageStrategy === 'user' ? language : 'en'
         );
 
         const res = await requestOpenAI(

@@ -56,7 +56,8 @@ export function buildSurveyClassifyPrompt(
     id: string;
     content: any;
   }[],
-  suggestionCategory: string[]
+  suggestionCategory: string[],
+  language: string = 'en'
 ): string {
   return `
 You are a content data analysis and classification expert. You need to make a simple classification based on the information collected from users in multiple languages ​​around the world, and return the classified json directly to me.
@@ -71,5 +72,7 @@ The existing categories are as follows. Please refer to the existing categories 
 ${JSON.stringify(suggestionCategory)}
 
 No explanation is required.
+
+${language !== 'en' ? `And response result should use \`${language}\` as response language.` : ''}
 `.trim();
 }

@@ -69,6 +69,7 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
     return (
       <div>
         <SimplePieChart
+          className="m-auto max-h-[240px]"
           data={data}
           chartConfig={chartConfig}
           onClick={(data) => {
@@ -97,17 +98,19 @@ export const SurveyCategoryChart: React.FC<SurveyCategoryChartProps> =
             }
           }}
         >
-          <DialogContent className="max-w-[90vw]">
+          <DialogContent className="flex max-h-[90vh] max-w-[90vw] flex-col overflow-hidden">
             <DialogHeader>
               {t('Survey Result')} - {selectedCategoryName}
             </DialogHeader>
 
-            {typeof selectedCategoryName === 'string' && (
-              <SurveyListTable
-                surveyId={props.surveyId}
-                categoryName={selectedCategoryName}
-              />
-            )}
+            <div className="flex-1 overflow-hidden">
+              {typeof selectedCategoryName === 'string' && (
+                <SurveyListTable
+                  surveyId={props.surveyId}
+                  categoryName={selectedCategoryName}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

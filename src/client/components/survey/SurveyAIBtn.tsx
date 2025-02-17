@@ -16,7 +16,7 @@ import {
 import { Button } from '../ui/button';
 import { LuBot } from 'react-icons/lu';
 import { DatePicker } from '../DatePicker';
-import { Select as AntdSelect } from 'antd';
+import { Select as AntdSelect, Checkbox } from 'antd';
 import { toast } from 'sonner';
 import {
   Select,
@@ -30,6 +30,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { uniq } from 'lodash-es';
 
 type RunStrategy = 'skipExist' | 'skipInSuggest' | 'rebuildAll';
+type LanguageStrategy = 'default' | 'user';
 
 interface SurveyAIBtnProps {
   surveyId: string;
@@ -46,6 +47,8 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
   const [resultText, setResultText] = useState<string[]>([]);
   const [contentField, setContentField] = useState<string>();
   const [runStrategy, setRunStrategy] = useState<RunStrategy>('skipExist');
+  const [languageStrategy, setLanguageStrategy] =
+    useState<LanguageStrategy>('default');
 
   const { data: info } = trpc.survey.get.useQuery({
     workspaceId,
@@ -90,6 +93,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
           startAt,
           endAt,
           runStrategy,
+          languageStrategy,
           payloadContentField: contentField,
           suggestionCategory: category,
         });
@@ -155,7 +159,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
           <div className="text-xs opacity-50">
             {t('Step 4: Select run strategy')}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col items-start space-x-2">
             <Select
               value={runStrategy}
               onValueChange={(val) => setRunStrategy(val as RunStrategy)}
@@ -175,6 +179,17 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
                 </SelectItem>
               </SelectContent>
             </Select>
+
+            <div>
+              <Checkbox
+                checked={languageStrategy === 'user'}
+                onChange={(e) =>
+                  setLanguageStrategy(e.target.checked ? 'user' : 'default')
+                }
+              >
+                {t('Use User Language')}
+              </Checkbox>
+            </div>
           </div>
 
           <div className="text-xs opacity-50">{t('Step 5: Run!')}</div>
