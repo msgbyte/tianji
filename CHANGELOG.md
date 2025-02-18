@@ -1,5 +1,23 @@
 
 
+## [1.18.10](https://github.com/msgbyte/tianji/compare/v1.18.7...v1.18.10) (2025-02-18)
+
+### Features
+
+* migrate ai survey task from promise to MQ ([e79ad8f](https://github.com/msgbyte/tianji/commit/e79ad8fe4b966d69956fea01c3474fe6b347ba52))
+
+### Bug Fixes
+
+* fix a not accept language problem(some ts issue before) ([b38310e](https://github.com/msgbyte/tianji/commit/b38310eb1c2b9811c93567989aa15fcc7acb9afd))
+* hotfix some header not have language header issue ([8959ddc](https://github.com/msgbyte/tianji/commit/8959ddcc4bb70bb8d921bc27a5db3810d2daeecc))
+
+### Others
+
+* release v1.18.8 ([b838c4d](https://github.com/msgbyte/tianji/commit/b838c4dc055cd2109ee08476f1afec5bc94d38e3))
+* release v1.18.9 ([ab90204](https://github.com/msgbyte/tianji/commit/ab90204344f4336c14669e856c37267a94164bed))
+* update survey date picker logic ([a235289](https://github.com/msgbyte/tianji/commit/a2352896dc1806ce6e208b27ca150a3f3758dcf7))
+* use or to filter suggestion category ([c0995bc](https://github.com/msgbyte/tianji/commit/c0995bcb313d72429bc5fe1a7eeea6fde6ef5764))
+
 ## [1.18.9](https://github.com/msgbyte/tianji/compare/v1.18.8...v1.18.9) (2025-02-18)
 
 ### Bug Fixes
