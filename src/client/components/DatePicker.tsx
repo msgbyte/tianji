@@ -2,16 +2,20 @@ import React from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Button } from './ui/button';
 import { cn } from '@/utils/style';
-import { DateRange } from 'react-day-picker';
 import { LuCalendar } from 'react-icons/lu';
 import dayjs from 'dayjs';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Calendar } from './ui/calendar';
 
+export type DatePickerRange = {
+  from: Date | undefined;
+  to: Date | undefined;
+};
+
 interface DatePickerProps {
   className?: string;
-  value: DateRange | undefined;
-  onChange: (value: DateRange | undefined) => void;
+  value: DatePickerRange | undefined;
+  onChange: (value: DatePickerRange | undefined) => void;
 }
 export const DatePicker: React.FC<DatePickerProps> = React.memo((props) => {
   const { t } = useTranslation();
@@ -49,7 +53,18 @@ export const DatePicker: React.FC<DatePickerProps> = React.memo((props) => {
           mode="range"
           defaultMonth={props.value?.from}
           selected={props.value}
-          onSelect={props.onChange}
+          onSelect={(range) => {
+            if (range) {
+              props.onChange({
+                from: dayjs(range.from).startOf('day').toDate(),
+                to: dayjs(range.to ?? range.from)
+                  .endOf('day')
+                  .toDate(),
+              });
+            } else {
+              props.onChange(undefined);
+            }
+          }}
           numberOfMonths={2}
         />
       </PopoverContent>

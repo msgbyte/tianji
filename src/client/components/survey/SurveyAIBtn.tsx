@@ -1,4 +1,3 @@
-import { DateRange } from 'react-day-picker';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { useTranslation } from '@i18next-toolkit/react';
 import React, { useState } from 'react';
@@ -15,7 +14,7 @@ import {
 } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { LuBot } from 'react-icons/lu';
-import { DatePicker } from '../DatePicker';
+import { DatePicker, DatePickerRange } from '../DatePicker';
 import { Select as AntdSelect, Checkbox } from 'antd';
 import { toast } from 'sonner';
 import {
@@ -38,7 +37,7 @@ interface SurveyAIBtnProps {
 export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
   const { surveyId } = props;
   const workspaceId = useCurrentWorkspaceId();
-  const [date, setDate] = useState<DateRange | undefined>({
+  const [date, setDate] = useState<DatePickerRange | undefined>({
     from: dayjs().subtract(1, 'week').toDate(),
     to: dayjs().toDate(),
   });
@@ -150,7 +149,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
           <AntdSelect
             mode="tags"
             className="w-full"
-            placeholder="Input some category"
+            placeholder={t('Input some category')}
             value={category}
             onChange={setCategory}
             maxTagCount={2}
