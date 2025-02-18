@@ -16,6 +16,13 @@ export interface SubscribeEventMap {
   onReceiveFeedEvent: SubscribeEventFn<Serialize<FeedEvent>>;
   onReceivePlaygroundWebhookRequest: SubscribeEventFn<PlaygroundWebhookRequestPayload>;
   onLighthouseWorkCompleted: SubscribeEventFn<{ websiteId: string }>;
+  onSurveyClassifyWorkCompleted: SubscribeEventFn<{
+    surveyId: string;
+    analysisCount: number;
+    processedCount: number;
+    categorys: string[];
+    effectCount: number;
+  }>;
 }
 
 type SocketEventFn<T, U = unknown> = (

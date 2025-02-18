@@ -1,6 +1,8 @@
 import zmq from 'zeromq';
 import { zmqUrl } from './shared.js';
 import { logger } from '../utils/logger.js';
+import { z } from 'zod';
+import { classifySurveyMQSchema } from '../model/prompt/survey.js';
 
 const sock = new zmq.Push();
 
@@ -18,4 +20,10 @@ export async function sendBuildLighthouseMessageQueue(
     'lighthouse',
     JSON.stringify({ workspaceId, websiteId, reportId, url }),
   ]);
+}
+
+export async function sendBuildSurveyClassifyMessageQueue(
+  options: z.infer<typeof classifySurveyMQSchema>
+) {
+  await sock.send(['surveyClassify', JSON.stringify(options)]);
 }

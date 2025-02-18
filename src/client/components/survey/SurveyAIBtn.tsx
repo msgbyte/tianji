@@ -26,7 +26,6 @@ import {
 } from '../ui/select';
 import { useWatch } from '@/hooks/useWatch';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { uniq } from 'lodash-es';
 
 type RunStrategy = 'skipExist' | 'skipInSuggest' | 'rebuildAll';
 type LanguageStrategy = 'default' | 'user';
@@ -37,6 +36,7 @@ interface SurveyAIBtnProps {
 export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
   const { surveyId } = props;
   const workspaceId = useCurrentWorkspaceId();
+  const [open, setOpen] = useState(false);
   const [date, setDate] = useState<DatePickerRange | undefined>({
     from: dayjs().subtract(1, 'week').toDate(),
     to: dayjs().toDate(),
@@ -85,33 +85,26 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
     setResultText([]);
 
     try {
-      const { analysisCount, processedCount, categorys, effectCount } =
-        await classifySurveyMutation.mutateAsync({
-          workspaceId,
-          surveyId,
-          startAt,
-          endAt,
-          runStrategy,
-          languageStrategy,
-          payloadContentField: contentField,
-          suggestionCategory: category,
-        });
+      await classifySurveyMutation.mutateAsync({
+        workspaceId,
+        surveyId,
+        startAt,
+        endAt,
+        runStrategy,
+        languageStrategy,
+        payloadContentField: contentField,
+        suggestionCategory: category,
+      });
 
-      setCategory((state) => uniq([...state, ...categorys]));
-
-      setResultText([
-        t('Analysis Count: {{num}}', { num: analysisCount }),
-        t('Processed Count: {{num}}', { num: processedCount }),
-        t('Category count: {{num}}', { num: categorys.length }),
-        t('Effect Count: {{num}}', { num: effectCount }),
-      ]);
+      toast(t('Task has been queued'));
+      setOpen(false);
     } catch (err) {
       toast(String(err));
     }
   });
 
   return (
-    <Dialog modal={false}>
+    <Dialog modal={false} open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button Icon={LuBot} size="icon" variant="outline" />
       </DialogTrigger>

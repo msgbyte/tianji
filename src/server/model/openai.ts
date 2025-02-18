@@ -92,8 +92,6 @@ export async function requestOpenAI(
     console.log('[DEBUG AI] End =======================');
   }
 
-  console.log('usage', usage);
-
   await costCredit(workspaceId, credit, 'ai', {
     ...usage,
     ...context,

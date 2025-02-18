@@ -35,8 +35,7 @@ websiteRouter.post(
             name: yup.string().max(50),
           })
           .required()
-          .validate(input)
-          .catch((err) => {});
+          .validate(input);
       }),
     body('type')
       .exists()

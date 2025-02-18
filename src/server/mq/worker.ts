@@ -3,10 +3,22 @@ import { zmqUrl } from './shared.js';
 import { logger } from '../utils/logger.js';
 import { z } from 'zod';
 import { generateLighthouse } from '../utils/screenshot/lighthouse.js';
-import { get } from 'lodash-es';
+import { get, invertBy, uniq, values } from 'lodash-es';
 import { prisma } from '../model/_client.js';
-import { WebsiteLighthouseReportStatus } from '@prisma/client';
+import { Prisma, WebsiteLighthouseReportStatus } from '@prisma/client';
 import { subscribeEventBus } from '../ws/shared.js';
+import {
+  buildSurveyClassifyPrompt,
+  classifySurveyMQSchema,
+} from '../model/prompt/survey.js';
+import dayjs from 'dayjs';
+import {
+  calcOpenAIToken,
+  groupByTokenSize,
+  modelMaxToken,
+  requestOpenAI,
+} from '../model/openai.js';
+import pMap from 'p-map';
 
 export async function runMQWorker() {
   const sock = new zmq.Pull();
@@ -22,6 +34,8 @@ export async function runMQWorker() {
     try {
       if (type === 'lighthouse') {
         await runLighthouseReportWorker(msg);
+      } else if (type === 'surveyClassify') {
+        await runSurveyAIClassifyWorker(msg);
       }
     } catch (err) {
       logger.error('MQ Worker throw error', { type, msg }, err);
@@ -82,4 +96,167 @@ async function runLighthouseReportWorker(msg: string) {
       websiteId: payload.websiteId,
     });
   }
+}
+
+async function runSurveyAIClassifyWorker(msg: string) {
+  logger.info('Start run survey AI classify');
+
+  const {
+    workspaceId,
+    surveyId,
+    startAt,
+    endAt,
+    runStrategy,
+    languageStrategy,
+    payloadContentField,
+    suggestionCategory,
+    language,
+  } = classifySurveyMQSchema.parse(JSON.parse(msg));
+
+  const where: Prisma.SurveyResultWhereInput = {
+    surveyId,
+    createdAt: {
+      gt: dayjs(startAt).toDate(),
+      lt: dayjs(endAt).toDate(),
+    },
+  };
+
+  if (runStrategy === 'skipExist') {
+    where.aiCategory = null;
+  } else if (runStrategy === 'skipInSuggest') {
+    where.OR = [
+      ...(where.OR ?? []),
+      ...(suggestionCategory.length > 0
+        ? [{ aiCategory: { notIn: suggestionCategory } }]
+        : []),
+      {
+        aiCategory: null,
+      },
+    ];
+  }
+
+  logger.info('Process run survey AI classify, where:', where);
+
+  const data = await prisma.surveyResult.findMany({
+    where,
+    select: {
+      id: true,
+      payload: true,
+    },
+  });
+
+  if (data.length === 0) {
+    logger.info('Process run survey AI completed:', {
+      workspaceId,
+      surveyId,
+      analysisCount: 0,
+      processedCount: 0,
+      categorys: [],
+      effectCount: 0,
+    });
+    subscribeEventBus.emit('onSurveyClassifyWorkCompleted', workspaceId, {
+      surveyId,
+      analysisCount: 0,
+      processedCount: 0,
+      categorys: [],
+      effectCount: 0,
+    });
+    return;
+  }
+
+  logger.info(
+    'Process run survey AI classify, filtered data count:',
+    data.length
+  );
+
+  let categoryJson = {};
+  let currentSuggestionCategory = uniq([...suggestionCategory]);
+  const groups = groupByTokenSize(
+    data.map((item) => ({
+      id: item.id,
+      content: item.payload[payloadContentField] ?? '',
+    })),
+    (item) => item.content,
+    Math.ceil(modelMaxToken / 3) -
+      calcOpenAIToken(JSON.stringify(currentSuggestionCategory))
+  );
+
+  logger.info('Process run survey AI classify, groups', groups.length);
+
+  for (const group of groups) {
+    const prompt = buildSurveyClassifyPrompt(
+      group,
+      currentSuggestionCategory,
+      languageStrategy === 'user' ? language : 'en'
+    );
+
+    const res = await requestOpenAI(
+      workspaceId,
+      prompt,
+      'Please help me generate data.',
+      {
+        response_format: { type: 'json_object' },
+      }
+    );
+
+    const json = JSON.parse(res);
+
+    if (json.error) {
+      throw new Error(String(json.error));
+    }
+
+    currentSuggestionCategory = uniq([
+      ...currentSuggestionCategory,
+      ...values(json),
+    ]);
+    categoryJson = {
+      ...categoryJson,
+      ...json,
+    };
+  }
+
+  logger.info('Process run survey AI classify, AI completed.');
+
+  const categorys: Record<string, string[]> = invertBy(categoryJson);
+  let effectCount = 0;
+  await pMap(
+    Object.keys(categorys),
+    async (category) => {
+      const ids = categorys[category];
+      if (Array.isArray(ids) && ids.length > 0) {
+        const res = await prisma.surveyResult.updateMany({
+          where: {
+            id: {
+              in: ids,
+            },
+          },
+          data: {
+            aiCategory: category,
+          },
+        });
+
+        effectCount += res.count;
+      }
+    },
+    {
+      concurrency: 5,
+    }
+  );
+
+  logger.info('Process run survey AI completed:', {
+    workspaceId,
+    surveyId,
+    analysisCount: data.length,
+    processedCount: Object.keys(categoryJson).length,
+    categorys: Object.keys(categorys),
+    effectCount,
+  });
+
+  subscribeEventBus.emit('onSurveyClassifyWorkCompleted', workspaceId, {
+    surveyId,
+    analysisCount: data.length,
+    processedCount: Object.keys(categoryJson).length,
+    categorys: Object.keys(categorys),
+    effectCount,
+  });
 }

@@ -42,6 +42,8 @@ import { SurveyAIBtn } from '@/components/survey/SurveyAIBtn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SurveyCategoryChart } from '@/components/survey/SurveyCategoryChart';
 import { useSurveyListColumns } from '@/components/survey/useSurveyListColumns';
+import { useSocketSubscribe } from '@/api/socketio';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/survey/$surveyId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -70,6 +72,7 @@ function PageComponent() {
     data: resultList,
     hasNextPage,
     fetchNextPage,
+    refetch,
     isFetching,
     isLoading,
     isInitialLoading,
@@ -113,6 +116,16 @@ function PageComponent() {
     handler: async (input) => {
       askAIQuestion(input);
     },
+  });
+
+  useSocketSubscribe('onSurveyClassifyWorkCompleted', (data) => {
+    refetch();
+    toast(
+      t('AI Task has been completed. Result:') + '\n' + JSON.stringify(data),
+      {
+        duration: 8000,
+      }
+    );
   });
 
   const handleDelete = useEvent(async () => {

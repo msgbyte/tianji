@@ -2,6 +2,24 @@
 import type { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { prisma } from '../_client.js';
 import { SurveyPayloadSchema } from '../../prisma/zod/schemas/index.js';
+import { z } from 'zod';
+
+export const classifySurveyInputSchema = z.object({
+  surveyId: z.string(),
+  startAt: z.number(),
+  endAt: z.number(),
+  runStrategy: z.enum(['skipExist', 'skipInSuggest', 'rebuildAll']),
+  languageStrategy: z.enum(['default', 'user']).default('default'),
+  payloadContentField: z.string(),
+  suggestionCategory: z.array(z.string()),
+});
+
+export const classifySurveyMQSchema = classifySurveyInputSchema.merge(
+  z.object({
+    workspaceId: z.string(),
+    language: z.string(),
+  })
+);
 
 export async function getSurveyPrompt(
   surveyId: string
