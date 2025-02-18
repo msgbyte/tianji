@@ -1,5 +1,11 @@
 
 
+## [1.18.8](https://github.com/msgbyte/tianji/compare/v1.18.7...v1.18.8) (2025-02-18)
+
+### Bug Fixes
+
+* hotfix some header not have language header issue ([da24e65](https://github.com/msgbyte/tianji/commit/da24e653aeb7edef907a7dfa9b997e7b198fa83a))
+
 ## [1.18.7](https://github.com/msgbyte/tianji/compare/v1.18.6...v1.18.7) (2025-02-17)
 
 ### Features
