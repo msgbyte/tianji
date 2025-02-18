@@ -1,5 +1,11 @@
 
 
+## [1.18.9](https://github.com/msgbyte/tianji/compare/v1.18.8...v1.18.9) (2025-02-18)
+
+### Bug Fixes
+
+* fix a not accept language problem(some ts issue before) ([5f53736](https://github.com/msgbyte/tianji/commit/5f53736fa1e0716ef04e50c95900087b9da78c9a))
+
 ## [1.18.8](https://github.com/msgbyte/tianji/compare/v1.18.7...v1.18.8) (2025-02-18)
 
 ### Bug Fixes
