@@ -19,7 +19,7 @@ export async function createContext({ req }: CreateExpressContextOptions) {
     ? String(req.headers['timezone'])
     : 'utc';
   const language =
-    languageParse(req.headers['accept-language'])?.[0].code ?? 'en';
+    languageParse(get(req.headers, ['accept-language', 0, 'code'])) ?? 'en';
 
   return { token, timezone, language, req };
 }
