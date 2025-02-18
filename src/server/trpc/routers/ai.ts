@@ -145,9 +145,15 @@ export const aiRouter = router({
       if (runStrategy === 'skipExist') {
         where.aiCategory = null;
       } else if (runStrategy === 'skipInSuggest') {
-        where.aiCategory = {
-          notIn: suggestionCategory,
-        };
+        where.OR = [
+          ...(where.OR ?? []),
+          ...(suggestionCategory.length > 0
+            ? [{ aiCategory: { notIn: suggestionCategory } }]
+            : []),
+          {
+            aiCategory: null,
+          },
+        ];
       }
 
       const data = await prisma.surveyResult.findMany({
@@ -178,6 +184,7 @@ export const aiRouter = router({
         Math.ceil(modelMaxToken / 3) -
           calcOpenAIToken(JSON.stringify(currentSuggestionCategory))
       );
+
       for (const group of groups) {
         const prompt = buildSurveyClassifyPrompt(
           group,
