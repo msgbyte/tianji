@@ -3,7 +3,7 @@ import { zmqUrl } from './shared.js';
 import { logger } from '../utils/logger.js';
 import { z } from 'zod';
 import { generateLighthouse } from '../utils/screenshot/lighthouse.js';
-import { get, invertBy, uniq, values } from 'lodash-es';
+import { chunk, get, invertBy, uniq, values } from 'lodash-es';
 import { prisma } from '../model/_client.js';
 import { Prisma, WebsiteLighthouseReportStatus } from '@prisma/client';
 import { subscribeEventBus } from '../ws/shared.js';
@@ -135,7 +135,7 @@ async function runSurveyAIClassifyWorker(msg: string) {
     ];
   }
 
-  logger.info('Process run survey AI classify, where:', where);
+  logger.info('Process run survey AI classify, where:', JSON.stringify(where));
 
   const data = await prisma.surveyResult.findMany({
     where,
@@ -171,14 +171,24 @@ async function runSurveyAIClassifyWorker(msg: string) {
 
   let categoryJson = {};
   let currentSuggestionCategory = uniq([...suggestionCategory]);
-  const groups = groupByTokenSize(
+
+  // --------- TOOOO heavy, use fixed number to group
+  // const groups = groupByTokenSize(
+  //   data.map((item) => ({
+  //     id: item.id,
+  //     content: item.payload[payloadContentField] ?? '',
+  //   })),
+  //   (item) => item.content,
+  //   Math.ceil(modelMaxToken / 3) -
+  //     calcOpenAIToken(JSON.stringify(currentSuggestionCategory))
+  // );
+
+  const groups = chunk(
     data.map((item) => ({
       id: item.id,
       content: item.payload[payloadContentField] ?? '',
     })),
-    (item) => item.content,
-    Math.ceil(modelMaxToken / 3) -
-      calcOpenAIToken(JSON.stringify(currentSuggestionCategory))
+    100 // use 100 as group size default
   );
 
   logger.info('Process run survey AI classify, groups', groups.length);
@@ -190,6 +200,8 @@ async function runSurveyAIClassifyWorker(msg: string) {
       languageStrategy === 'user' ? language : 'en'
     );
 
+    logger.info('Process run survey AI classify, group size:', group.length);
+
     const res = await requestOpenAI(
       workspaceId,
       prompt,
@@ -200,6 +212,11 @@ async function runSurveyAIClassifyWorker(msg: string) {
     );
 
     const json = JSON.parse(res);
+
+    logger.info(
+      'Process run survey AI classify, parsed size:',
+      values(json).length
+    );
 
     if (json.error) {
       throw new Error(String(json.error));
