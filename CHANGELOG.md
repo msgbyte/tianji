@@ -1,5 +1,11 @@
 
 
+## [1.18.11](https://github.com/msgbyte/tianji/compare/v1.18.10...v1.18.11) (2025-02-19)
+
+### Others
+
+* improve tokenizer calc, replace with number rather than calc because of high cpu usage ([3ba7ca2](https://github.com/msgbyte/tianji/commit/3ba7ca2b537a7eef5b01b9553897fc0e1410ca76))
+
 ## [1.18.10](https://github.com/msgbyte/tianji/compare/v1.18.7...v1.18.10) (2025-02-18)
 
 ### Features
