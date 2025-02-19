@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from '@i18next-toolkit/react';
 import { LuCloudDownload } from 'react-icons/lu';
 import dayjs from 'dayjs';
-import { DateRange } from 'react-day-picker';
 import { AppRouterOutput, trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { useEvent } from '@/hooks/useEvent';
@@ -21,7 +20,7 @@ import { Progress } from '../ui/progress';
 import jsonExport from 'jsonexport/dist';
 import { downloadCSV } from '@/utils/dom';
 import { message } from 'antd';
-import { DatePicker } from '../DatePicker';
+import { DatePicker, DatePickerRange } from '../DatePicker';
 
 interface SurveyDownloadBtnProps {
   surveyId: string;
@@ -30,7 +29,7 @@ export const SurveyDownloadBtn: React.FC<SurveyDownloadBtnProps> = React.memo(
   (props) => {
     const { surveyId } = props;
     const workspaceId = useCurrentWorkspaceId();
-    const [date, setDate] = useState<DateRange | undefined>({
+    const [date, setDate] = useState<DatePickerRange | undefined>({
       from: dayjs().subtract(1, 'months').toDate(),
       to: dayjs().toDate(),
     });
