@@ -165,6 +165,26 @@ model WorkspaceBill {
   @@index([type])
 }
 
+enum WorkspaceTaskEnum {
+  Pending
+  Success
+  Failed
+}
+model WorkspaceTask {
+  id          String @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String @db.VarChar(30)
+  type        String
+  status      WorkspaceTaskEnum
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  meta        Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([workspaceId, type])
+}
+
 model LemonSqueezySubscription {
   subscriptionId String   @id @unique
   workspaceId    String   @unique @db.VarChar(30)
