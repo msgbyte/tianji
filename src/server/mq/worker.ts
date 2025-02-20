@@ -193,6 +193,7 @@ async function runSurveyAIClassifyWorker(msg: string) {
 
   logger.info('Process run survey AI classify, groups', groups.length);
 
+  let inc = 0;
   for (const group of groups) {
     const prompt = buildSurveyClassifyPrompt(
       group,
@@ -200,7 +201,9 @@ async function runSurveyAIClassifyWorker(msg: string) {
       languageStrategy === 'user' ? language : 'en'
     );
 
-    logger.info('Process run survey AI classify, group size:', group.length);
+    logger.info(
+      `Process run survey AI classify, group batch ${++inc} group size: ${group.length}`
+    );
 
     const res = await requestOpenAI(
       workspaceId,
