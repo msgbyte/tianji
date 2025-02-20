@@ -47,7 +47,7 @@ export const SurveyAIBtn: React.FC<SurveyAIBtnProps> = React.memo((props) => {
   const [contentField, setContentField] = useState<string>();
   const [runStrategy, setRunStrategy] = useState<RunStrategy>('skipExist');
   const [languageStrategy, setLanguageStrategy] =
-    useState<LanguageStrategy>('default');
+    useState<LanguageStrategy>('user');
 
   const { data: info } = trpc.survey.get.useQuery({
     workspaceId,
