@@ -9,15 +9,12 @@ import { Prisma, WebsiteLighthouseReportStatus } from '@prisma/client';
 import { subscribeEventBus } from '../ws/shared.js';
 import {
   buildSurveyClassifyPrompt,
+  buildSurveyTranslationPrompt,
   classifySurveyMQSchema,
+  translateSurveyMQSchema,
 } from '../model/prompt/survey.js';
 import dayjs from 'dayjs';
-import {
-  calcOpenAIToken,
-  groupByTokenSize,
-  modelMaxToken,
-  requestOpenAI,
-} from '../model/openai.js';
+import { requestOpenAI } from '../model/openai.js';
 import pMap from 'p-map';
 
 export async function runMQWorker() {
@@ -36,6 +33,8 @@ export async function runMQWorker() {
         await runLighthouseReportWorker(msg);
       } else if (type === 'surveyClassify') {
         await runSurveyAIClassifyWorker(msg);
+      } else if (type === 'surveyTranslation') {
+        await runSurveyAITranslationWorker(msg);
       }
     } catch (err) {
       logger.error('MQ Worker throw error', { type, msg }, err);
@@ -277,6 +276,158 @@ async function runSurveyAIClassifyWorker(msg: string) {
     analysisCount: data.length,
     processedCount: Object.keys(categoryJson).length,
     categorys: Object.keys(categorys),
+    effectCount,
+  });
+}
+
+async function runSurveyAITranslationWorker(msg: string) {
+  logger.info('Start run survey AI translation');
+
+  const {
+    workspaceId,
+    surveyId,
+    startAt,
+    endAt,
+    runStrategy,
+    languageStrategy,
+    payloadContentField,
+    language,
+  } = translateSurveyMQSchema.parse(JSON.parse(msg));
+
+  const where: Prisma.SurveyResultWhereInput = {
+    surveyId,
+    createdAt: {
+      gt: dayjs(startAt).toDate(),
+      lt: dayjs(endAt).toDate(),
+    },
+  };
+
+  if (runStrategy === 'skipExist') {
+    where.aiTranslation = null;
+  }
+
+  logger.info(
+    'Process run survey AI translation, where:',
+    JSON.stringify(where)
+  );
+
+  const data = await prisma.surveyResult.findMany({
+    where,
+    select: {
+      id: true,
+      payload: true,
+    },
+  });
+
+  if (data.length === 0) {
+    logger.info('Process run survey AI completed:', {
+      workspaceId,
+      surveyId,
+      analysisCount: 0,
+      processedCount: 0,
+      effectCount: 0,
+    });
+    subscribeEventBus.emit('onSurveyTranslationWorkCompleted', workspaceId, {
+      surveyId,
+      analysisCount: 0,
+      processedCount: 0,
+      effectCount: 0,
+    });
+    return;
+  }
+
+  logger.info(
+    'Process run survey AI classify, filtered data count:',
+    data.length
+  );
+
+  const groups = chunk(
+    data.map((item) => ({
+      id: item.id,
+      content: item.payload[payloadContentField] ?? '',
+    })),
+    100 // use 100 as group size default
+  );
+
+  logger.info('Process run survey AI classify, groups', groups.length);
+
+  let inc = 0;
+
+  let resultJson: Record<string, string> = {};
+  for (const group of groups) {
+    const prompt = buildSurveyTranslationPrompt(
+      group,
+      languageStrategy === 'user' ? language : 'en'
+    );
+
+    logger.info(
+      `Process run survey AI translation, group batch ${++inc} group size: ${group.length}`
+    );
+
+    const res = await requestOpenAI(
+      workspaceId,
+      prompt,
+      'Please help me generate data.',
+      {
+        response_format: { type: 'json_object' },
+      }
+    );
+
+    const json = JSON.parse(res);
+
+    logger.info(
+      'Process run survey AI translation, parsed size:',
+      values(json).length
+    );
+
+    if (json.error) {
+      throw new Error(String(json.error));
+    }
+
+    resultJson = {
+      ...resultJson,
+      ...json,
+    };
+  }
+
+  logger.info('Process run survey AI classify, AI completed.');
+
+  let effectCount = 0;
+  await pMap(
+    Object.keys(resultJson),
+    async (id) => {
+      const prev = data.find((d) => d.id === id);
+
+      if (prev && resultJson[id]) {
+        await prisma.surveyResult.update({
+          where: {
+            id,
+          },
+          data: {
+            aiTranslation: resultJson[id],
+          },
+        });
+
+        effectCount++;
+      }
+    },
+    {
+      concurrency: 5,
+    }
+  );
+
+  logger.info('Process run survey AI translation completed:', {
+    workspaceId,
+    surveyId,
+    analysisCount: data.length,
+    processedCount: Object.keys(resultJson).length,
+    effectCount,
+  });
+
+  subscribeEventBus.emit('onSurveyTranslationWorkCompleted', workspaceId, {
+    surveyId,
+    analysisCount: data.length,
+    processedCount: Object.keys(resultJson).length,
     effectCount,
   });
 }

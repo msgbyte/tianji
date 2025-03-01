@@ -23,6 +23,12 @@ export interface SubscribeEventMap {
     categorys: string[];
     effectCount: number;
   }>;
+  onSurveyTranslationWorkCompleted: SubscribeEventFn<{
+    surveyId: string;
+    analysisCount: number;
+    processedCount: number;
+    effectCount: number;
+  }>;
 }
 
 type SocketEventFn<T, U = unknown> = (

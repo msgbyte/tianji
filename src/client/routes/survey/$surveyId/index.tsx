@@ -128,6 +128,16 @@ function PageComponent() {
     );
   });
 
+  useSocketSubscribe('onSurveyTranslationWorkCompleted', (data) => {
+    refetch();
+    toast(
+      t('AI Task has been completed. Result:') + '\n' + JSON.stringify(data),
+      {
+        duration: 8000,
+      }
+    );
+  });
+
   const handleDelete = useEvent(async () => {
     await deleteMutation.mutateAsync({ workspaceId, surveyId });
     trpcUtils.survey.all.refetch();

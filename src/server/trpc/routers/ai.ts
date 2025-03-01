@@ -9,6 +9,7 @@ import { env } from '../../utils/env.js';
 import {
   classifySurveyInputSchema,
   getSurveyPrompt,
+  translateSurveyInputSchema,
 } from '../../model/prompt/survey.js';
 // @ts-ignore
 import type { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
@@ -19,7 +20,10 @@ import {
   costCredit,
   tokenCreditFactor,
 } from '../../model/billing/credit.js';
-import { sendBuildSurveyClassifyMessageQueue } from '../../mq/producer.js';
+import {
+  sendBuildSurveyClassifyMessageQueue,
+  sendBuildSurveyTranslationMessageQueue,
+} from '../../mq/producer.js';
 
 export const aiRouter = router({
   ask: workspaceProcedure
@@ -127,6 +131,33 @@ export const aiRouter = router({
         languageStrategy,
         payloadContentField,
         suggestionCategory,
+        language,
+      });
+
+      return 'ok';
+    }),
+  translateSurvey: workspaceProcedure
+    .input(translateSurveyInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const {
+        workspaceId,
+        surveyId,
+        startAt,
+        endAt,
+        runStrategy,
+        languageStrategy,
+        payloadContentField,
+      } = input;
+      const { language } = ctx;
+
+      sendBuildSurveyTranslationMessageQueue({
+        workspaceId,
+        surveyId,
+        startAt,
+        endAt,
+        runStrategy,
+        languageStrategy,
+        payloadContentField,
         language,
       });
 

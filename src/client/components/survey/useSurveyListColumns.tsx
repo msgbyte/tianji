@@ -51,6 +51,11 @@ export function useSurveyListColumns(surveyId: string) {
           header: t('AI Category'),
           size: 200,
         }),
+      config.enableAI &&
+        columnHelper.accessor('aiTranslation', {
+          header: t('AI Translation'),
+          size: 200,
+        }),
       columnHelper.accessor('createdAt', {
         header: t('Created At'),
         size: 200,

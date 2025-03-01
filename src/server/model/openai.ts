@@ -13,8 +13,7 @@ import type {
 } from 'openai/resources/chat/completions.mjs';
 import { createAuditLog } from './auditLog.js';
 
-export const modelName = 'gpt-4o-mini';
-export const modelMaxToken = 16383;
+export const modelName = env.openai.modelName ?? 'gpt-4o-mini';
 
 let openaiClient: OpenAI;
 
@@ -28,6 +27,7 @@ export function getOpenAIClient() {
 
     openaiClient = new OpenAI({
       apiKey: env.openai.apiKey,
+      baseURL: env.openai.baseUrl,
     });
 
     return openaiClient;
@@ -65,7 +65,6 @@ export async function requestOpenAI(
     ...options,
     model: modelName,
     messages: messages,
-    max_tokens: modelMaxToken,
   });
 
   const content = res.choices[0].message.content;

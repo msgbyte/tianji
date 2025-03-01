@@ -21,6 +21,22 @@ export const classifySurveyMQSchema = classifySurveyInputSchema.merge(
   })
 );
 
+export const translateSurveyInputSchema = z.object({
+  surveyId: z.string(),
+  startAt: z.number(),
+  endAt: z.number(),
+  runStrategy: z.enum(['skipExist', 'rebuildAll']),
+  languageStrategy: z.enum(['default', 'user']).default('user'),
+  payloadContentField: z.string(),
+});
+
+export const translateSurveyMQSchema = translateSurveyInputSchema.merge(
+  z.object({
+    workspaceId: z.string(),
+    language: z.string(),
+  })
+);
+
 export async function getSurveyPrompt(
   surveyId: string
 ): Promise<ChatCompletionMessageParam[]> {
@@ -92,5 +108,28 @@ ${JSON.stringify(suggestionCategory)}
 No explanation is required.
 
 ${language !== 'en' ? `And response result should use \`${language}\` as response language.` : ''}
+`.trim();
+}
+
+export function buildSurveyTranslationPrompt(
+  data: {
+    id: string;
+    content: any;
+  }[],
+  language: string = 'en'
+): string {
+  return `
+You are a translator expert.
+
+Please help me translate those file to '${language}', direct give me json format response, don't be verbose:
+
+${JSON.stringify(
+  data.reduce((prev, curr) => {
+    return {
+      ...prev,
+      [curr.id]: curr.content,
+    };
+  }, {})
+)}
 `.trim();
 }

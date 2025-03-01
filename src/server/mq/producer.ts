@@ -2,7 +2,10 @@ import zmq from 'zeromq';
 import { zmqUrl } from './shared.js';
 import { logger } from '../utils/logger.js';
 import { z } from 'zod';
-import { classifySurveyMQSchema } from '../model/prompt/survey.js';
+import {
+  classifySurveyMQSchema,
+  translateSurveyMQSchema,
+} from '../model/prompt/survey.js';
 
 const sock = new zmq.Push();
 
@@ -26,4 +29,10 @@ export async function sendBuildSurveyClassifyMessageQueue(
   options: z.infer<typeof classifySurveyMQSchema>
 ) {
   await sock.send(['surveyClassify', JSON.stringify(options)]);
+}
+
+export async function sendBuildSurveyTranslationMessageQueue(
+  options: z.infer<typeof translateSurveyMQSchema>
+) {
+  await sock.send(['surveyTranslation', JSON.stringify(options)]);
 }

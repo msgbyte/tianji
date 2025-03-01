@@ -29,6 +29,7 @@ export const SurveyResultModelSchema = z.object({
   latitude: z.number().nullish(),
   accuracyRadius: z.number().int().nullish(),
   aiCategory: z.string().nullish(),
+  aiTranslation: z.string().nullish(),
 })
 
 export interface CompleteSurveyResult extends z.infer<typeof SurveyResultModelSchema> {

@@ -623,6 +623,7 @@ model SurveyResult {
 
   // ai
   aiCategory String?
+  aiTranslation String?
 
   survey Survey @relation(fields: [surveyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 

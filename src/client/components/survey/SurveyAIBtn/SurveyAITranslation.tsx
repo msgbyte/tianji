@@ -7,7 +7,7 @@ import { useEventWithLoading } from '@/hooks/useEvent';
 import { Button } from '../../ui/button';
 import { LuBot } from 'react-icons/lu';
 import { DatePicker, DatePickerRange } from '../../DatePicker';
-import { Select as AntdSelect, Checkbox } from 'antd';
+import { Checkbox } from 'antd';
 import { toast } from 'sonner';
 import {
   Select,
@@ -16,18 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../ui/select';
-import { useWatch } from '@/hooks/useWatch';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/alert';
 
-type RunStrategy = 'skipExist' | 'skipInSuggest' | 'rebuildAll';
+type RunStrategy = 'skipExist' | 'rebuildAll';
 type LanguageStrategy = 'default' | 'user';
 
-interface SurveyAISummaryProps {
+interface SurveyAITranslationProps {
   surveyId: string;
   onCompleted: () => void;
 }
-export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
-  (props) => {
+export const SurveyAITranslation: React.FC<SurveyAITranslationProps> =
+  React.memo((props) => {
     const { surveyId, onCompleted } = props;
     const workspaceId = useCurrentWorkspaceId();
     const [date, setDate] = useState<DatePickerRange | undefined>({
@@ -35,7 +34,6 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
       to: dayjs().toDate(),
     });
     const { t } = useTranslation();
-    const [category, setCategory] = useState<string[]>([]);
     const [resultText, setResultText] = useState<string[]>([]);
     const [contentField, setContentField] = useState<string>();
     const [runStrategy, setRunStrategy] = useState<RunStrategy>('skipExist');
@@ -46,22 +44,8 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
       workspaceId,
       surveyId,
     });
-    const { data: aiCategoryList } = trpc.survey.aiCategoryList.useQuery({
-      workspaceId,
-      surveyId,
-    });
 
-    useWatch([aiCategoryList], () => {
-      if (aiCategoryList) {
-        setCategory(
-          aiCategoryList
-            .filter((item) => item.name !== null)
-            .map((c) => c.name!)
-        );
-      }
-    });
-
-    const classifySurveyMutation = trpc.ai.classifySurvey.useMutation();
+    const translateSurveyMutation = trpc.ai.translateSurvey.useMutation();
 
     const [handleStart, loading] = useEventWithLoading(async () => {
       const startAt = date?.from?.valueOf();
@@ -80,7 +64,7 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
       setResultText([]);
 
       try {
-        await classifySurveyMutation.mutateAsync({
+        await translateSurveyMutation.mutateAsync({
           workspaceId,
           surveyId,
           startAt,
@@ -88,7 +72,6 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
           runStrategy,
           languageStrategy,
           payloadContentField: contentField,
-          suggestionCategory: category,
         });
 
         toast(t('Task has been queued'));
@@ -123,19 +106,7 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
         <DatePicker className="w-full" value={date} onChange={setDate} />
 
         <div className="text-xs opacity-50">
-          {t('Step 3: Please provide some suggestion category')}
-        </div>
-        <AntdSelect
-          mode="tags"
-          className="w-full"
-          placeholder={t('Input some category')}
-          value={category}
-          onChange={setCategory}
-          maxTagCount={2}
-        />
-
-        <div className="text-xs opacity-50">
-          {t('Step 4: Select run strategy')}
+          {t('Step 3: Select run strategy')}
         </div>
         <div className="flex flex-col items-start space-x-2">
           <Select
@@ -149,10 +120,7 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
               <SelectItem value="skipExist">
                 {t('Skip Exist Record')}
               </SelectItem>
-              <SelectItem value="skipInSuggest">
-                {t('Skip Already in Suggestion Record')}
-              </SelectItem>
-              <SelectItem value="rebuildAll">{t('Recategory All')}</SelectItem>
+              <SelectItem value="rebuildAll">{t('Retranslate All')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -186,6 +154,5 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
         )}
       </div>
     );
-  }
-);
-SurveyAISummary.displayName = 'SurveyAISummary';
+  });
+SurveyAITranslation.displayName = 'SurveyAITranslation';
