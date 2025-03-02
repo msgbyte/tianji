@@ -7,6 +7,7 @@ import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorStatusPage } from '@/components/monitor/StatusPage';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEvent } from '@/hooks/useEvent';
 import { useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -90,7 +91,9 @@ function PageComponent() {
         />
       }
     >
-      <MonitorStatusPage slug={slug} showBackBtn={false} fullWidth={true} />
+      <ScrollArea className="h-full overflow-hidden">
+        <MonitorStatusPage slug={slug} showBackBtn={false} fullWidth={true} />
+      </ScrollArea>
     </CommonWrapper>
   );
 }
