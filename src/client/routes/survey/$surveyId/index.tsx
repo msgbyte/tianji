@@ -251,6 +251,7 @@ function PageComponent() {
             <Loading />
           ) : (
             <VirtualizedInfiniteDataTable
+              key={surveyId}
               selectedIndex={selectedIndex}
               columns={columns}
               data={flatData}
