@@ -17,3 +17,18 @@ CNAME status.example.com tianji.example.com
 ```
 
 then you can visit custom `status.example.com` to your page.
+
+### Troubleshooting
+
+If you will throw 500 error, it looks like your Reverse Proxy is not configured correctly.
+
+Please make sure your reverse proxy include your new status route.
+
+for example:
+```
+server {
+  listen 80;
+  server_name tianji.example.com status.example.com;
+  listen 443 ssl;
+}
+```
