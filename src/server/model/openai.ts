@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { env } from '../utils/env.js';
-import { encoding_for_model } from 'tiktoken';
+import { encoding_for_model, type TiktokenModel } from 'tiktoken';
 import {
   checkCredit,
   costCredit,
@@ -109,7 +109,7 @@ export async function requestOpenAI(
 }
 
 export function calcOpenAIToken(message: string): number {
-  const encoder = encoding_for_model(modelName);
+  const encoder = encoding_for_model(modelName as TiktokenModel);
   const count = encoder.encode(message).length;
 
   encoder.free();
