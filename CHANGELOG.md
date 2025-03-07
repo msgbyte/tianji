@@ -1,5 +1,29 @@
 
 
+## [1.18.12](https://github.com/msgbyte/tianji/compare/v1.18.11...v1.18.12) (2025-03-07)
+
+### Features
+
+* add survey ai translation ([476259c](https://github.com/msgbyte/tianji/commit/476259ce5ce071717170ebe02ca4f9c2758703bf))
+* add workspace task model ([94a4943](https://github.com/msgbyte/tianji/commit/94a49436e3a194a29f3a073397651c4347a4ee57))
+
+### Bug Fixes
+
+* add scrollview in status page ([1f5280e](https://github.com/msgbyte/tianji/commit/1f5280e39d59f091a14ea5db1bacd8d595b53c4a))
+
+### Document
+
+* add Troubleshooting section in server status page ([9b2b881](https://github.com/msgbyte/tianji/commit/9b2b8812726f53d7cdb98dfbe5fb88b3a42a76f4))
+
+### Others
+
+* add ai classify worker batch log ([668705c](https://github.com/msgbyte/tianji/commit/668705c9de52d5803eb36887c0f1ce7b3a009c8c))
+* add key to force refresh table component ([ae095fb](https://github.com/msgbyte/tianji/commit/ae095fbf6768806f9acb018bb321e383d8a4bf01))
+* change default language strategy to user ([7b2b202](https://github.com/msgbyte/tianji/commit/7b2b2028fe6225866ac820951061752ba71a2b30))
+* fix ci problem ([3f8e17d](https://github.com/msgbyte/tianji/commit/3f8e17dcde44ce27caf145916cb90bdd739453e3))
+* move insight button into dev stage ([96faa81](https://github.com/msgbyte/tianji/commit/96faa81a3daf9d944e7d12b90c53c07c308c7678))
+* refacyor survey ai button modal ([9a24eca](https://github.com/msgbyte/tianji/commit/9a24ecacb18e70f39775f693f7e15469eed84218))
+
 ## [1.18.11](https://github.com/msgbyte/tianji/compare/v1.18.10...v1.18.11) (2025-02-19)
 
 ### Others
