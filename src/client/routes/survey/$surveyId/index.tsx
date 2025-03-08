@@ -88,7 +88,7 @@ function PageComponent() {
   const { data: surveyStats = [] } = trpc.survey.stats.useQuery({
     workspaceId,
     surveyId,
-    startAt: dayjs().subtract(1, 'week').startOf('days').valueOf(),
+    startAt: dayjs().subtract(14, 'days').startOf('days').valueOf(),
     endAt: dayjs().endOf('days').valueOf(),
   });
   const deleteMutation = trpc.survey.delete.useMutation({
