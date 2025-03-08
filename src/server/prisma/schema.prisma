@@ -580,6 +580,7 @@ model WorkspaceAuditLog {
 enum WorkspaceAuditLogType {
   Monitor
   Notification
+  Task
 }
 
 model Survey {
