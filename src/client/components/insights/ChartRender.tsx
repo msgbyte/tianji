@@ -72,6 +72,45 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     [metrics]
   );
 
+  let mainEl = null;
+  if (isFetching) {
+    mainEl = (
+      <DelayRender>
+        <SearchLoadingView className="pt-4" />
+      </DelayRender>
+    );
+  } else if (data && Array.isArray(data)) {
+    if (data.length === 0) {
+      mainEl = (
+        <Empty description={t("We couldn't find any data for your query.")} />
+      );
+    } else {
+      mainEl = (
+        <ResizablePanelGroup className="flex-1" direction="vertical">
+          <ResizablePanel collapsedSize={1} className="flex flex-col">
+            <div className="h-full p-4">
+              <TimeEventChart
+                className="h-full w-full"
+                data={data}
+                unit={dateUnit}
+                chartConfig={chartConfig}
+                drawGradientArea={false}
+              />
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel>
+            <ScrollArea className="h-full overflow-hidden p-4">
+              <TableView metrics={metrics} data={data} dateUnit={dateUnit} />
+            </ScrollArea>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      );
+    }
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="mb-2 flex justify-between p-4">
@@ -86,39 +125,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
         <DateUnitSelection value={dateUnit} onChange={setDateUnit} />
       </div>
 
-      {isFetching && (
-        <DelayRender>
-          <SearchLoadingView className="pt-4" />
-        </DelayRender>
-      )}
-
-      {data &&
-        Array.isArray(data) &&
-        (data.length === 0 ? (
-          <Empty description={t("We couldn't find any data for your query.")} />
-        ) : (
-          <ResizablePanelGroup className="flex-1" direction="vertical">
-            <ResizablePanel collapsedSize={1} className="flex flex-col">
-              <div className="h-full p-4">
-                <TimeEventChart
-                  className="h-full w-full"
-                  data={data}
-                  unit={dateUnit}
-                  chartConfig={chartConfig}
-                  drawGradientArea={false}
-                />
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle withHandle />
-
-            <ResizablePanel>
-              <ScrollArea className="h-full overflow-hidden p-4">
-                <TableView metrics={metrics} data={data} dateUnit={dateUnit} />
-              </ScrollArea>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ))}
+      {mainEl}
     </div>
   );
 });
