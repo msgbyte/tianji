@@ -14,6 +14,7 @@ export type DatePickerRange = {
 
 interface DatePickerProps {
   className?: string;
+  placeholder?: string;
   value: DatePickerRange | undefined;
   onChange: (value: DatePickerRange | undefined) => void;
 }
@@ -27,7 +28,7 @@ export const DatePicker: React.FC<DatePickerProps> = React.memo((props) => {
           id="date"
           variant={'outline'}
           className={cn(
-            'w-[300px] justify-start text-left font-normal',
+            'w-[240px] justify-start text-left font-normal',
             !props.value && 'text-muted-foreground',
             props.className
           )}
@@ -43,7 +44,7 @@ export const DatePicker: React.FC<DatePickerProps> = React.memo((props) => {
               dayjs(props.value.from).format('MMM DD, YYYY')
             )
           ) : (
-            <span>{t('Pick a date')}</span>
+            <span>{props.placeholder ?? t('Pick a date')}</span>
           )}
         </Button>
       </PopoverTrigger>

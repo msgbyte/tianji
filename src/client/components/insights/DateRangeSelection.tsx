@@ -1,7 +1,8 @@
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
 import dayjs from 'dayjs';
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useState } from 'react';
+import { DatePicker, DatePickerRange } from '../DatePicker';
 
 interface DateRangeSelectionProps {
   value: string;
@@ -11,10 +12,31 @@ export const DateRangeSelection: React.FC<DateRangeSelectionProps> = React.memo(
   (props) => {
     const { value, onChange } = props;
     const { t } = useTranslation();
+    const [customDateRange, setCustomDateRange] = useState<
+      DatePickerRange | undefined
+    >(undefined);
+
+    const handleChange = (val: string, dateRange: [Date, Date]) => {
+      onChange(val, dateRange);
+    };
 
     return (
       <div>
         <div className="border-muted flex w-fit overflow-hidden rounded-lg border">
+          <DatePicker
+            className={cn(
+              'w-[240px] rounded-none border-0 border-r',
+              value === 'custom' && '!bg-muted'
+            )}
+            placeholder={t('Custom Date')}
+            value={customDateRange}
+            onChange={(value) => {
+              setCustomDateRange(value);
+              if (value?.from && value.to) {
+                handleChange('custom', [value.from, value.to]);
+              }
+            }}
+          />
           <DateRangeSelectionItem
             selected={value === 'today'}
             onClick={() =>
@@ -105,7 +127,7 @@ const DateRangeSelectionItem: React.FC<
   return (
     <div
       className={cn(
-        'border-muted hover:bg-muted cursor-pointer border-r px-3 py-2 text-sm last:border-0',
+        'border-muted hover:bg-muted cursor-pointer text-nowrap border-r px-3 py-2 text-sm last:border-0',
         props.selected && 'bg-muted'
       )}
       onClick={props.onClick}
