@@ -1,5 +1,15 @@
 
 
+## [1.18.13](https://github.com/msgbyte/tianji/compare/v1.18.12...v1.18.13) (2025-03-09)
+
+### Features
+
+* add run task record ([48383db](https://github.com/msgbyte/tianji/commit/48383db76db4ad1b45aff6d0ddf41b1dd7677c99))
+
+### Others
+
+* change survey preview date range from 7 days to 14 days ([99a9f3b](https://github.com/msgbyte/tianji/commit/99a9f3b4765216a02e3c5406d0bba6feb53b0d4c))
+
 ## [1.18.12](https://github.com/msgbyte/tianji/compare/v1.18.11...v1.18.12) (2025-03-07)
 
 ### Features
