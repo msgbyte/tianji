@@ -271,7 +271,13 @@ const FilterDate: React.FC<FilterComponentProps> = React.memo((props) => {
   const { t } = useTranslation();
 
   return (
-    <Popover>
+    <Popover
+      onOpenChange={(open) => {
+        if (!open) {
+          props.onSubmit();
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant={'outline'}
@@ -281,8 +287,8 @@ const FilterDate: React.FC<FilterComponentProps> = React.memo((props) => {
           )}
         >
           <LuCalendar className="mr-2 h-4 w-4" />
-          {props.value ? (
-            dayjs(date).format('PPP')
+          {date ? (
+            dayjs(date).format('MMM D, YYYY')
           ) : (
             <span>{t('Pick a date')}</span>
           )}
@@ -293,11 +299,10 @@ const FilterDate: React.FC<FilterComponentProps> = React.memo((props) => {
           mode="single"
           selected={date}
           onSelect={(day) => {
-            if (day) {
-              setDate(day);
-            } else {
-              setDate(new Date());
-            }
+            const date = day ? day : new Date();
+
+            setDate(date);
+            props.onChange(date.toISOString());
           }}
           initialFocus
         />
