@@ -73,6 +73,7 @@
     "jsonexport": "^3.2.0",
     "leaflet": "^1.9.4",
     "lodash-es": "^4.17.21",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.358.0",
     "md5": "^2.3.0",
     "millify": "^6.1.0",

@@ -17,6 +17,8 @@ import {
 import { ScrollArea } from '../ui/scroll-area';
 import { Empty } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
+import { DelayRender } from '../DelayRender';
+import { SearchLoadingView } from '../loading/Searching';
 
 interface ChartRenderProps {
   insightId: string;
@@ -47,7 +49,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     [dateRange, dateUnit]
   );
 
-  const { data } = trpc.insights.query.useQuery({
+  const { data, isFetching } = trpc.insights.query.useQuery({
     workspaceId,
     insightId: props.insightId,
     insightType: props.insightType,
@@ -83,6 +85,12 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
 
         <DateUnitSelection value={dateUnit} onChange={setDateUnit} />
       </div>
+
+      {isFetching && (
+        <DelayRender>
+          <SearchLoadingView className="pt-4" />
+        </DelayRender>
+      )}
 
       {data &&
         Array.isArray(data) &&
