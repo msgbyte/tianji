@@ -26,7 +26,7 @@ export async function insightsWebsite(
     date: string;
   }[]
 > {
-  const { insightId, insightType, time, metrics, filters } = query;
+  const { insightId, time, metrics, filters } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
   const selectQueryArr = metrics.map((item) => {
