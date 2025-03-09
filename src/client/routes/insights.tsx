@@ -16,7 +16,9 @@ import { isDev } from '@/utils/env';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -25,6 +27,7 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import { useInsightsStore } from '@/store/insights';
 import { ChartRender } from '@/components/insights/ChartRender';
 import { FilterSection } from '@/components/insights/FilterSection';
+import { useEvent } from '@/hooks/useEvent';
 
 export const Route = createFileRoute('/insights')({
   beforeLoad: (opts) => {
@@ -43,10 +46,20 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
 
-  const selectedWebsiteId = useInsightsStore(
-    (state) => state.selectedWebsiteId
-  );
-  const { data = [] } = trpc.website.all.useQuery({ workspaceId });
+  const insightId = useInsightsStore((state) => state.insightId);
+  const insightType = useInsightsStore((state) => state.insightType);
+  const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
+  const { data: surveys = [] } = trpc.survey.all.useQuery({ workspaceId });
+
+  const handleValueChange = useEvent((value: string) => {
+    const type = surveys.some((item) => item.id === value)
+      ? 'survey'
+      : 'website';
+    useInsightsStore.setState({
+      insightId: value,
+      insightType: type,
+    });
+  });
 
   return (
     <Layout>
@@ -57,23 +70,27 @@ function PageComponent() {
               <div className="flex items-center gap-2">
                 <div>{t('Insights')}</div>
 
-                <Select
-                  value={selectedWebsiteId}
-                  onValueChange={(value) => {
-                    useInsightsStore.setState({
-                      selectedWebsiteId: value,
-                    });
-                  }}
-                >
+                <Select value={insightId} onValueChange={handleValueChange}>
                   <SelectTrigger className="w-[240px]">
-                    <SelectValue placeholder={t('Please select website')} />
+                    <SelectValue placeholder={t('Please select target')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {data.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
+                    <SelectGroup>
+                      <SelectLabel>{t('Websites')}</SelectLabel>
+                      {websites.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                    {/* <SelectGroup>
+                      <SelectLabel>{t('Surveys')}</SelectLabel>
+                      {surveys.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -86,11 +103,11 @@ function PageComponent() {
           direction="horizontal"
         >
           <ResizablePanel collapsedSize={1} className={cn('flex flex-col')}>
-            {selectedWebsiteId ? (
-              <ChartRender websiteId={selectedWebsiteId} />
+            {insightId ? (
+              <ChartRender insightId={insightId} insightType={insightType} />
             ) : (
               <div className="mt-4 text-center opacity-80">
-                {t('Please select website first')}
+                {t('Please select target first')}
               </div>
             )}
           </ResizablePanel>
@@ -98,7 +115,7 @@ function PageComponent() {
           <ResizableHandle withHandle />
 
           <ResizablePanel defaultSize={30}>
-            {selectedWebsiteId ? (
+            {insightId ? (
               <ScrollArea className="h-full overflow-hidden p-4">
                 <div className="flex flex-col space-y-8">
                   <MetricsSection />
@@ -109,7 +126,7 @@ function PageComponent() {
               </ScrollArea>
             ) : (
               <div className="mt-4 text-center opacity-80">
-                {t('Please select website first')}
+                {t('Please select target first')}
               </div>
             )}
           </ResizablePanel>

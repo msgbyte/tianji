@@ -19,7 +19,8 @@ import { Empty } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
 
 interface ChartRenderProps {
-  websiteId: string;
+  insightId: string;
+  insightType: 'survey' | 'website';
 }
 export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
@@ -48,7 +49,8 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
 
   const { data } = trpc.insights.query.useQuery({
     workspaceId,
-    websiteId: props.websiteId,
+    insightId: props.insightId,
+    insightType: props.insightType,
     metrics,
     filters,
     time,

@@ -8,9 +8,7 @@ import { FilterParamsBlock } from './FilterParamsBlock';
 
 export const FilterSection: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const selectedWebsiteId = useInsightsStore(
-    (state) => state.selectedWebsiteId
-  );
+  const selectedWebsiteId = useInsightsStore((state) => state.insightId);
   const currentFilters = useInsightsStore((state) => state.currentFilters);
   const setFilter = useInsightsStore((state) => state.setFilter);
   const addFilter = useInsightsStore((state) => state.addFilter);

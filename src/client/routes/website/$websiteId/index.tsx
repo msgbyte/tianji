@@ -200,7 +200,7 @@ function PageComponent() {
                   onClick={() => {
                     useInsightsStore.getState().reset();
                     useInsightsStore.setState({
-                      selectedWebsiteId: websiteId,
+                      insightId: websiteId,
                     });
                     navigate({
                       to: '/insights',

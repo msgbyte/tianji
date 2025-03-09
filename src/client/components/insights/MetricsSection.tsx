@@ -9,9 +9,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 
 export const MetricsSection: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const selectedWebsiteId = useInsightsStore(
-    (state) => state.selectedWebsiteId
-  );
+  const selectedWebsiteId = useInsightsStore((state) => state.insightId);
   const currentMetrics = useInsightsStore((state) => state.currentMetrics);
   const setMetrics = useInsightsStore((state) => state.setMetrics);
   const addMetrics = useInsightsStore((state) => state.addMetrics);

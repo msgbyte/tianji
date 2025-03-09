@@ -23,7 +23,8 @@ const FilterInfoSchema = z.object({
 });
 
 export const insightsQuerySchema = z.object({
-  websiteId: z.string(),
+  insightId: z.string(),
+  insightType: z.enum(['website', 'survey']),
   metrics: z.array(
     z.object({
       name: z.string(),

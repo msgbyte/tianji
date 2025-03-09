@@ -5,7 +5,8 @@ import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 interface InsightsState {
-  selectedWebsiteId: string;
+  insightId: string;
+  insightType: 'website' | 'survey';
   currentMetrics: (MetricsInfo | null)[];
   currentFilters: (FilterInfo | null)[];
   reset: () => void;
@@ -21,7 +22,8 @@ export const useInsightsStore = create<InsightsState>()(
   immer(
     persist(
       (set) => ({
-        selectedWebsiteId: '',
+        insightId: '',
+        insightType: 'website',
         currentMetrics: [null],
         currentFilters: [null],
         reset: () => {

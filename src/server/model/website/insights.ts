@@ -26,7 +26,7 @@ export async function insightsWebsite(
     date: string;
   }[]
 > {
-  const { websiteId, time, metrics, filters } = query;
+  const { insightId, insightType, time, metrics, filters } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
   const selectQueryArr = metrics.map((item) => {
@@ -65,7 +65,7 @@ export async function insightsWebsite(
 
   const whereQueryArr = [
     // website id
-    Prisma.sql`"WebsiteEvent"."websiteId" = ${websiteId}`,
+    Prisma.sql`"WebsiteEvent"."websiteId" = ${insightId}`,
 
     // date
     Prisma.sql`"WebsiteEvent"."createdAt" between ${dayjs(startAt).toISOString()}::timestamptz and ${dayjs(endAt).toISOString()}::timestamptz`,
