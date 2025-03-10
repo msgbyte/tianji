@@ -254,7 +254,7 @@ async function clearMonitorDataDaily() {
     return;
   }
 
-  const date = dayjs().subtract(1, 'months').toDate();
+  const date = dayjs().subtract(32, 'days').toDate();
   logger.info(
     '[clearMonitorDataDaily] Start clear monitor data before:',
     date.toISOString()
