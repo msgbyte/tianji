@@ -80,7 +80,7 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
           <>
             <LuMousePointerClick />
             <span>{item.name}</span>
-            {item.count && (
+            {typeof item.count === 'number' && item.count > 0 && (
               <span className="text-xs opacity-40">
                 ({formatNumber(item.count)})
               </span>

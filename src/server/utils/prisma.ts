@@ -45,6 +45,15 @@ export interface QueryOptions {
   columns?: { [key: string]: string };
 }
 
+export function printSQL(sql: Prisma.Sql) {
+  const unwrapSqlText = sql.text.replace(/\$(\d+)/g, (match, group1) => {
+    const index = parseInt(group1, 10) - 1;
+    return `'${sql.values[index]}'`;
+  });
+
+  console.log(unwrapSqlText);
+}
+
 export async function parseWebsiteFilters(
   websiteId: string,
   filters: WebsiteQueryFilters = {},

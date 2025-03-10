@@ -83,14 +83,14 @@ function PageComponent() {
                         </SelectItem>
                       ))}
                     </SelectGroup>
-                    {/* <SelectGroup>
+                    <SelectGroup>
                       <SelectLabel>{t('Surveys')}</SelectLabel>
                       {surveys.map((item) => (
                         <SelectItem key={item.id} value={item.id}>
                           {item.name}
                         </SelectItem>
                       ))}
-                    </SelectGroup> */}
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>

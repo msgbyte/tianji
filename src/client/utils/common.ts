@@ -17,6 +17,10 @@ export function parseTime(val: number) {
 }
 
 export function formatNumber(n: number): string {
+  if (typeof n !== 'number') {
+    n = Number(n);
+  }
+
   return millify(n, {
     lowercase: true,
   });

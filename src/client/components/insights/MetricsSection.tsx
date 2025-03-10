@@ -9,7 +9,8 @@ import { useTranslation } from '@i18next-toolkit/react';
 
 export const MetricsSection: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const selectedWebsiteId = useInsightsStore((state) => state.insightId);
+  const insightId = useInsightsStore((state) => state.insightId);
+  const insightType = useInsightsStore((state) => state.insightType);
   const currentMetrics = useInsightsStore((state) => state.currentMetrics);
   const setMetrics = useInsightsStore((state) => state.setMetrics);
   const addMetrics = useInsightsStore((state) => state.addMetrics);
@@ -19,10 +20,11 @@ export const MetricsSection: React.FC = React.memo(() => {
   const { data: allEvents = [] } = trpc.insights.events.useQuery(
     {
       workspaceId,
-      websiteId: selectedWebsiteId,
+      insightId,
+      insightType,
     },
     {
-      enabled: Boolean(selectedWebsiteId),
+      enabled: Boolean(insightId),
       select(data) {
         return [{ name: '$all_event', count: sumBy(data, 'count') }, ...data];
       },

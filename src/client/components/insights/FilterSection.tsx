@@ -8,7 +8,8 @@ import { FilterParamsBlock } from './FilterParamsBlock';
 
 export const FilterSection: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
-  const selectedWebsiteId = useInsightsStore((state) => state.insightId);
+  const insightId = useInsightsStore((state) => state.insightId);
+  const insightType = useInsightsStore((state) => state.insightType);
   const currentFilters = useInsightsStore((state) => state.currentFilters);
   const setFilter = useInsightsStore((state) => state.setFilter);
   const addFilter = useInsightsStore((state) => state.addFilter);
@@ -18,10 +19,11 @@ export const FilterSection: React.FC = React.memo(() => {
   const { data: allFilterParams = [] } = trpc.insights.filterParams.useQuery(
     {
       workspaceId,
-      websiteId: selectedWebsiteId,
+      insightId,
+      insightType,
     },
     {
-      enabled: Boolean(selectedWebsiteId),
+      enabled: Boolean(insightId),
     }
   );
 

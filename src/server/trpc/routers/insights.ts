@@ -17,63 +17,79 @@ export const insightsRouter = router({
   events: workspaceProcedure
     .input(
       z.object({
-        websiteId: z.string(),
+        insightId: z.string(),
+        insightType: z.enum(['website', 'survey']),
       })
     )
     .query(async ({ input }) => {
-      const { websiteId } = input;
+      const { insightId, insightType } = input;
 
-      const res = await prisma.websiteEvent.groupBy({
-        by: ['eventName', 'eventType'],
-        where: {
-          websiteId,
-        },
-        _count: {
-          id: true,
-        },
-        orderBy: {
-          _count: {
-            id: 'desc',
+      if (insightType === 'website') {
+        const res = await prisma.websiteEvent.groupBy({
+          by: ['eventName', 'eventType'],
+          where: {
+            websiteId: insightId,
           },
-        },
-      });
+          _count: {
+            id: true,
+          },
+          orderBy: {
+            _count: {
+              id: 'desc',
+            },
+          },
+        });
 
-      return res.map((item) => ({
-        name:
-          item.eventType === EVENT_TYPE.pageView
-            ? '$page_view'
-            : item.eventName ?? '<null>',
-        count: item._count.id,
-      }));
+        return res.map((item) => ({
+          name:
+            item.eventType === EVENT_TYPE.pageView
+              ? '$page_view'
+              : item.eventName ?? '<null>',
+          count: item._count.id,
+        }));
+      }
+
+      if (insightType === 'survey') {
+        return [];
+      }
+
+      return [];
     }),
   filterParams: workspaceProcedure
     .input(
       z.object({
-        websiteId: z.string(),
+        insightId: z.string(),
+        insightType: z.enum(['website', 'survey']),
       })
     )
     .query(async ({ input }) => {
-      const { websiteId } = input;
+      const { insightId, insightType } = input;
 
-      const res = await prisma.websiteEventData.groupBy({
-        by: ['eventKey', 'dataType'],
-        where: {
-          websiteId,
-        },
-        _count: {
-          id: true,
-        },
-        orderBy: {
-          _count: {
-            id: 'desc',
+      if (insightType === 'website') {
+        const res = await prisma.websiteEventData.groupBy({
+          by: ['eventKey', 'dataType'],
+          where: {
+            websiteId: insightId,
           },
-        },
-      });
+          _count: {
+            id: true,
+          },
+          orderBy: {
+            _count: {
+              id: 'desc',
+            },
+          },
+        });
 
-      return res.map((item) => ({
-        name: item.eventKey,
-        type: stringifyDateType(item.dataType),
-        count: item._count.id,
-      }));
+        return res.map((item) => ({
+          name: item.eventKey,
+          type: stringifyDateType(item.dataType),
+          count: item._count.id,
+        }));
+      } else if (insightType === 'survey') {
+        return [];
+      }
+
+      return [];
     }),
 });
