@@ -14,7 +14,12 @@ export class GlobalService {
     public static globalConfig(): CancelablePromise<$OpenApiTs['/global/config']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/global/config'
+            url: '/global/config',
+            errors: {
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -32,7 +37,13 @@ export class UserService {
             method: 'POST',
             url: '/login',
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -47,7 +58,13 @@ export class UserService {
             method: 'POST',
             url: '/loginWithToken',
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -65,7 +82,13 @@ export class WorkspaceService {
             method: 'POST',
             url: '/workspace//create',
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -80,7 +103,13 @@ export class WorkspaceService {
             method: 'POST',
             url: '/workspace//switch',
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -95,7 +124,14 @@ export class WorkspaceService {
             method: 'PATCH',
             url: '/workspace//rename',
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -111,6 +147,13 @@ export class WorkspaceService {
             url: '/workspace//{workspaceId}/del',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -127,6 +170,13 @@ export class WorkspaceService {
             url: '/workspace//{workspaceId}/members',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -146,7 +196,13 @@ export class WorkspaceService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -165,7 +221,13 @@ export class WorkspaceService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -186,6 +248,13 @@ export class WorkspaceService {
             },
             query: {
                 targetUserId: data.targetUserId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -202,6 +271,13 @@ export class WorkspaceService {
             url: '/workspace//{workspaceId}/getServiceCount',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -214,16 +290,22 @@ export class WebsiteService {
      * @param data.workspaceId
      * @param data.websiteId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static websiteOnlineCount(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/onlineCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/onlineCount']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/onlineCount']['get']['res'][200]> {
+    public static websiteOnlineCount(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/onlineCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/onlineCount']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/website/{websiteId}/onlineCount',
             path: {
                 workspaceId: data.workspaceId,
                 websiteId: data.websiteId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -240,6 +322,13 @@ export class WebsiteService {
             url: '/workspace/{workspaceId}/website/all',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -248,15 +337,21 @@ export class WebsiteService {
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static websiteAllOverview(data: $OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['res'][200]> {
+    public static websiteAllOverview(data: $OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/allOverview']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/website/allOverview',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -275,6 +370,13 @@ export class WebsiteService {
             path: {
                 workspaceId: data.workspaceId,
                 websiteId: data.websiteId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -321,6 +423,13 @@ export class WebsiteService {
                 os: data.os,
                 browser: data.browser,
                 device: data.device
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -345,6 +454,13 @@ export class WebsiteService {
             query: {
                 startAt: data.startAt,
                 endAt: data.endAt
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -391,6 +507,13 @@ export class WebsiteService {
                 os: data.os,
                 browser: data.browser,
                 device: data.device
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -439,6 +562,13 @@ export class WebsiteService {
                 city: data.city,
                 language: data.language,
                 event: data.event
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -458,7 +588,13 @@ export class WebsiteService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -476,6 +612,13 @@ export class WebsiteService {
             path: {
                 workspaceId: data.workspaceId,
                 websiteId: data.websiteId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -497,7 +640,14 @@ export class WebsiteService {
                 websiteId: data.websiteId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -507,10 +657,9 @@ export class WebsiteService {
      * @param data.websiteId
      * @param data.requestBody
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static websiteGenerateLighthouseReport(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['res'][200]> {
+    public static websiteGenerateLighthouseReport(data: $OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/workspace/{workspaceId}/website/{websiteId}/generateLighthouseReport',
@@ -519,7 +668,13 @@ export class WebsiteService {
                 websiteId: data.websiteId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -543,6 +698,13 @@ export class WebsiteService {
             query: {
                 limit: data.limit,
                 cursor: data.cursor
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -559,6 +721,13 @@ export class WebsiteService {
             url: '/lighthouse/{lighthouseId}',
             path: {
                 lighthouseId: data.lighthouseId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -578,6 +747,13 @@ export class MonitorService {
             url: '/workspace/{workspaceId}/monitor/all',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -596,6 +772,13 @@ export class MonitorService {
             path: {
                 workspaceId: data.workspaceId,
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -611,7 +794,11 @@ export class MonitorService {
             method: 'POST',
             url: '/monitor/getPublicInfo',
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -630,7 +817,13 @@ export class MonitorService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -648,6 +841,13 @@ export class MonitorService {
             path: {
                 workspaceId: data.workspaceId,
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -672,6 +872,13 @@ export class MonitorService {
             query: {
                 startAt: data.startAt,
                 endAt: data.endAt
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -693,7 +900,14 @@ export class MonitorService {
                 monitorId: data.monitorId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -715,6 +929,11 @@ export class MonitorService {
             },
             query: {
                 take: data.take
+            },
+            errors: {
+                400: 'Invalid input data',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -733,6 +952,11 @@ export class MonitorService {
             path: {
                 workspaceId: data.workspaceId,
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -751,6 +975,11 @@ export class MonitorService {
             path: {
                 workspaceId: data.workspaceId,
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -769,6 +998,13 @@ export class MonitorService {
             path: {
                 workspaceId: data.workspaceId,
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -791,6 +1027,13 @@ export class MonitorService {
             query: {
                 monitorId: data.monitorId,
                 limit: data.limit
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -800,10 +1043,9 @@ export class MonitorService {
      * @param data.workspaceId
      * @param data.monitorId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static monitorClearEvents(data: $OpenApiTs['/workspace/{workspaceId}/monitor/clearEvents']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/clearEvents']['delete']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/monitor/clearEvents']['delete']['res'][200]> {
+    public static monitorClearEvents(data: $OpenApiTs['/workspace/{workspaceId}/monitor/clearEvents']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/clearEvents']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/workspace/{workspaceId}/monitor/clearEvents',
@@ -812,6 +1054,13 @@ export class MonitorService {
             },
             query: {
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -821,10 +1070,9 @@ export class MonitorService {
      * @param data.workspaceId
      * @param data.monitorId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static monitorClearData(data: $OpenApiTs['/workspace/{workspaceId}/monitor/clearData']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/clearData']['delete']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/monitor/clearData']['delete']['res'][200]> {
+    public static monitorClearData(data: $OpenApiTs['/workspace/{workspaceId}/monitor/clearData']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/clearData']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/workspace/{workspaceId}/monitor/clearData',
@@ -833,6 +1081,13 @@ export class MonitorService {
             },
             query: {
                 monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -855,6 +1110,13 @@ export class MonitorService {
             },
             query: {
                 statusName: data.statusName
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -871,6 +1133,13 @@ export class MonitorService {
             url: '/workspace/{workspaceId}/monitor/getAllPages',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -887,6 +1156,13 @@ export class MonitorService {
             url: '/monitor/getPageInfo',
             query: {
                 slug: data.slug
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -906,7 +1182,13 @@ export class MonitorService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -925,7 +1207,14 @@ export class MonitorService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -945,6 +1234,13 @@ export class MonitorService {
             },
             query: {
                 id: data.id
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -964,6 +1260,13 @@ export class TelemetryService {
             url: '/workspace/{workspaceId}/telemetry/all',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -984,6 +1287,13 @@ export class TelemetryService {
             },
             query: {
                 telemetryId: data.telemetryId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -992,15 +1302,21 @@ export class TelemetryService {
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static telemetryAllEventCount(data: $OpenApiTs['/workspace/{workspaceId}/telemetry/allEventCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/telemetry/allEventCount']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/telemetry/allEventCount']['get']['res'][200]> {
+    public static telemetryAllEventCount(data: $OpenApiTs['/workspace/{workspaceId}/telemetry/allEventCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/telemetry/allEventCount']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/telemetry/allEventCount',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1010,10 +1326,9 @@ export class TelemetryService {
      * @param data.workspaceId
      * @param data.telemetryId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static telemetryEventCount(data: $OpenApiTs['/workspace/{workspaceId}/telemetry/eventCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/telemetry/eventCount']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/telemetry/eventCount']['get']['res'][200]> {
+    public static telemetryEventCount(data: $OpenApiTs['/workspace/{workspaceId}/telemetry/eventCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/telemetry/eventCount']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/telemetry/eventCount',
@@ -1022,6 +1337,13 @@ export class TelemetryService {
             },
             query: {
                 telemetryId: data.telemetryId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1041,7 +1363,13 @@ export class TelemetryService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1060,7 +1388,13 @@ export class TelemetryService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1096,6 +1430,13 @@ export class TelemetryService {
                 region: data.region,
                 city: data.city,
                 timezone: data.timezone
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1132,6 +1473,13 @@ export class TelemetryService {
                 region: data.region,
                 city: data.city,
                 timezone: data.timezone
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1168,6 +1516,13 @@ export class TelemetryService {
                 region: data.region,
                 city: data.city,
                 timezone: data.timezone
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1187,6 +1542,13 @@ export class SurveyService {
             url: '/workspace/{workspaceId}/survey/all',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1205,6 +1567,13 @@ export class SurveyService {
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1214,16 +1583,22 @@ export class SurveyService {
      * @param data.workspaceId
      * @param data.surveyId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static surveyCount(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['res'][200]> {
+    public static surveyCount(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/count']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/survey/{surveyId}/count',
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1232,15 +1607,21 @@ export class SurveyService {
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static surveyAllResultCount(data: $OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['res'][200]> {
+    public static surveyAllResultCount(data: $OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/allResultCount']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/workspace/{workspaceId}/survey/allResultCount',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1251,10 +1632,9 @@ export class SurveyService {
      * @param data.surveyId
      * @param data.requestBody
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static surveySubmit(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200] | $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200]> {
+    public static surveySubmit(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/submit']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/workspace/{workspaceId}/survey/{surveyId}/submit',
@@ -1263,7 +1643,13 @@ export class SurveyService {
                 surveyId: data.surveyId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1282,7 +1668,13 @@ export class SurveyService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1303,7 +1695,14 @@ export class SurveyService {
                 surveyId: data.surveyId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1321,6 +1720,13 @@ export class SurveyService {
             path: {
                 workspaceId: data.workspaceId,
                 surveyId: data.surveyId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1333,6 +1739,7 @@ export class SurveyService {
      * @param data.cursor
      * @param data.startAt
      * @param data.endAt
+     * @param data.filter
      * @returns unknown Successful response
      * @throws ApiError
      */
@@ -1348,7 +1755,71 @@ export class SurveyService {
                 limit: data.limit,
                 cursor: data.cursor,
                 startAt: data.startAt,
+                endAt: data.endAt,
+                filter: data.filter
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.surveyId
+     * @param data.startAt
+     * @param data.endAt
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static surveyStats(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/stats']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/stats']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/stats',
+            path: {
+                workspaceId: data.workspaceId,
+                surveyId: data.surveyId
+            },
+            query: {
+                startAt: data.startAt,
                 endAt: data.endAt
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.surveyId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static surveyAiCategoryList(data: $OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/aiCategoryList']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/survey/{surveyId}/aiCategoryList']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/survey/{surveyId}/aiCategoryList',
+            path: {
+                workspaceId: data.workspaceId,
+                surveyId: data.surveyId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1373,6 +1844,13 @@ export class AuditLogService {
                 workspaceId: data.workspaceId,
                 limit: data.limit,
                 cursor: data.cursor
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1390,6 +1868,13 @@ export class AuditLogService {
             url: '/audit/clear',
             query: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1414,6 +1899,13 @@ export class BillingService {
                 workspaceId: data.workspaceId,
                 startAt: data.startAt,
                 endAt: data.endAt
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1431,6 +1923,13 @@ export class BillingService {
             url: '/billing/limit',
             query: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1440,15 +1939,21 @@ export class BillingService {
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static billingCurrentTier(data: $OpenApiTs['/billing/currentTier']['get']['req']): CancelablePromise<$OpenApiTs['/billing/currentTier']['get']['res'][200] | $OpenApiTs['/billing/currentTier']['get']['res'][200]> {
+    public static billingCurrentTier(data: $OpenApiTs['/billing/currentTier']['get']['req']): CancelablePromise<$OpenApiTs['/billing/currentTier']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/billing/currentTier',
             query: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1466,6 +1971,13 @@ export class BillingService {
             url: '/billing/currentSubscription',
             query: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1485,6 +1997,13 @@ export class FeedService {
             url: '/workspace/{workspaceId}/feed/channels',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1503,6 +2022,13 @@ export class FeedService {
             path: {
                 workspaceId: data.workspaceId,
                 channelId: data.channelId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1524,7 +2050,13 @@ export class FeedService {
                 channelId: data.channelId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1551,6 +2083,13 @@ export class FeedService {
                 limit: data.limit,
                 cursor: data.cursor,
                 archived: data.archived
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1570,7 +2109,13 @@ export class FeedService {
                 workspaceId: data.workspaceId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1588,6 +2133,13 @@ export class FeedService {
             path: {
                 workspaceId: data.workspaceId,
                 channelId: data.channelId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
             }
         });
     }
@@ -1607,7 +2159,11 @@ export class FeedService {
                 channelId: data.channelId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1628,7 +2184,12 @@ export class FeedService {
                 eventId: data.eventId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1649,7 +2210,12 @@ export class FeedService {
                 eventId: data.eventId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1658,10 +2224,9 @@ export class FeedService {
      * @param data.channelId
      * @param data.requestBody
      * @returns number Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static feedClearAllArchivedEvents(data: $OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['res'][200] | $OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['res'][200]> {
+    public static feedClearAllArchivedEvents(data: $OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/clearAllArchivedEvents']['patch']['res'][200]> {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/feed/{channelId}/clearAllArchivedEvents',
@@ -1669,7 +2234,12 @@ export class FeedService {
                 channelId: data.channelId
             },
             body: data.requestBody,
-            mediaType: 'application/json'
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
         });
     }
     
@@ -1678,15 +2248,18 @@ export class FeedService {
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static feedIntegrationPlayground(data: $OpenApiTs['/feed/playground/{workspaceId}']['post']['req']): CancelablePromise<$OpenApiTs['/feed/playground/{workspaceId}']['post']['res'][200] | $OpenApiTs['/feed/playground/{workspaceId}']['post']['res'][200]> {
+    public static feedIntegrationPlayground(data: $OpenApiTs['/feed/playground/{workspaceId}']['post']['req']): CancelablePromise<$OpenApiTs['/feed/playground/{workspaceId}']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/playground/{workspaceId}',
             path: {
                 workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
             }
         });
     }
@@ -1696,15 +2269,18 @@ export class FeedService {
      * @param data The data for the request.
      * @param data.channelId
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static feedIntegrationGithub(data: $OpenApiTs['/feed/{channelId}/github']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/github']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/github']['post']['res'][200]> {
+    public static feedIntegrationGithub(data: $OpenApiTs['/feed/{channelId}/github']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/github']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/github',
             path: {
                 channelId: data.channelId
+            },
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
             }
         });
     }
@@ -1714,15 +2290,18 @@ export class FeedService {
      * @param data The data for the request.
      * @param data.channelId
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static feedIntegrationStripe(data: $OpenApiTs['/feed/{channelId}/stripe']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/stripe']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/stripe']['post']['res'][200]> {
+    public static feedIntegrationStripe(data: $OpenApiTs['/feed/{channelId}/stripe']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/stripe']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/stripe',
             path: {
                 channelId: data.channelId
+            },
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
             }
         });
     }
@@ -1732,15 +2311,18 @@ export class FeedService {
      * @param data The data for the request.
      * @param data.channelId
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static feedIntegrationTencentCloudAlarm(data: $OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['res'][200]> {
+    public static feedIntegrationTencentCloudAlarm(data: $OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/tencent-cloud/alarm']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/tencent-cloud/alarm',
             path: {
                 channelId: data.channelId
+            },
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
             }
         });
     }
@@ -1750,15 +2332,18 @@ export class FeedService {
      * @param data The data for the request.
      * @param data.channelId
      * @returns string Successful response
-     * @returns unknown Error response
      * @throws ApiError
      */
-    public static feedIntegrationSentry(data: $OpenApiTs['/feed/{channelId}/sentry']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/sentry']['post']['res'][200] | $OpenApiTs['/feed/{channelId}/sentry']['post']['res'][200]> {
+    public static feedIntegrationSentry(data: $OpenApiTs['/feed/{channelId}/sentry']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/sentry']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/feed/{channelId}/sentry',
             path: {
                 channelId: data.channelId
+            },
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
             }
         });
     }
