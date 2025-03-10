@@ -6,6 +6,7 @@ import { useCurrentWorkspaceId } from '../../store/user';
 import { sum } from 'lodash-es';
 import { formatNumber } from '../../utils/common';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useCountryMap } from '@/utils/country';
 
 type MetricsItemType = AppRouterOutput['website']['metrics'][number];
 
@@ -30,12 +31,13 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
     const { websiteId, title, type, startAt, endAt } = props;
     const workspaceId = useCurrentWorkspaceId();
     const { t } = useTranslation();
-
+    const countryMap = useCountryMap();
     const labelMap: Record<string, string> = {
       desktop: t('Desktop'),
       laptop: t('Laptop'),
       tablet: t('Tablet'),
       mobile: t('Mobile'),
+      ...countryMap,
     };
 
     const { isLoading, data: metrics = [] } = trpc.website.metrics.useQuery({
@@ -55,7 +57,7 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
         ellipsis: true,
         render: (val) =>
           val ? (
-            <span>{labelMap[val] ?? val}</span>
+            <span title={val}>{labelMap[val] ?? val}</span>
           ) : (
             <span className="italic opacity-60">{t('(None)')}</span>
           ),
