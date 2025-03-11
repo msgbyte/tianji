@@ -5,6 +5,7 @@
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
+		"dev:scheduled": "wrangler dev --test-scheduled",
 		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types"
@@ -15,5 +16,9 @@
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.7",
 		"wrangler": "^3.112.0"
+	},
+	"dependencies": {
+		"dayjs": "^1.11.9",
+		"tianji-client-sdk": "workspace:*"
 	}
 }

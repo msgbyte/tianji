@@ -98,6 +98,13 @@ importers:
         version: link:../../packages/client-sdk
 
   apps/daily-ai-trigger:
+    dependencies:
+      dayjs:
+        specifier: ^1.11.9
+        version: 1.11.10
+      tianji-client-sdk:
+        specifier: workspace:*
+        version: link:../../packages/client-sdk
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.7.5
