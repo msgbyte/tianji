@@ -210,6 +210,8 @@ async function runSurveyAIClassifyWorker(msg: string) {
 
       const res = await requestOpenAI(workspaceId, prompt, question, {
         response_format: { type: 'json_object' },
+        top_p: 0,
+        temperature: 0,
       });
 
       const json = JSON.parse(res);
