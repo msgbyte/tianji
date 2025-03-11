@@ -1,5 +1,33 @@
 
 
+## [1.18.14](https://github.com/msgbyte/tianji/compare/v1.18.13...v1.18.14) (2025-03-11)
+
+### Features
+
+* add country translation ([4a183a6](https://github.com/msgbyte/tianji/commit/4a183a685bdf443e07635f4f228f5d809f5f49a0))
+* add custom date picker in insight feature ([c0aa47b](https://github.com/msgbyte/tianji/commit/c0aa47b671758765456d68dad01f3cc8f83bb885))
+* add openapi for ai route and update openai schema ([da1cb8c](https://github.com/msgbyte/tianji/commit/da1cb8ce1ebfbf8de1be341582ec05205f204ca0))
+* add SearchLoadingView which improve insight display ([30fd3bf](https://github.com/msgbyte/tianji/commit/30fd3bfe4335170eb13cd71df83d2474a88dc48b))
+* add worker which can trigger ai task in survey daily ([44f8507](https://github.com/msgbyte/tianji/commit/44f8507ab42516dbcfa8732393cd1a2d7ae25dfb))
+* insight add survey support ([8542d48](https://github.com/msgbyte/tianji/commit/8542d48e8139435b0b71321f5aa147a768587bfe))
+
+### Bug Fixes
+
+* fix filter operator in date type ([13f96a8](https://github.com/msgbyte/tianji/commit/13f96a8ffb0095957ece18d7e1e4dd561eef1474))
+
+### Document
+
+* update openapi schema ([9642142](https://github.com/msgbyte/tianji/commit/96421423c564d17a967c933d1d7152360394ac13))
+
+### Others
+
+* add insight type support in code logic ([1f2af9b](https://github.com/msgbyte/tianji/commit/1f2af9b044645639dc23b3aabed180c8e0a9f14a))
+* create daily-ai-trigger project ([f20e149](https://github.com/msgbyte/tianji/commit/f20e14988912b0087aceb3e853aa29d79630b652))
+* improve display of count ([e26de44](https://github.com/msgbyte/tianji/commit/e26de446d787d2bdd4c64f74b3a71ab354d02d05))
+* improve insight chart render main block display ([62ef469](https://github.com/msgbyte/tianji/commit/62ef469812749030218a4dfd3e4e0211d3eaee5f))
+* rebuild insight related logic place folder ([4951410](https://github.com/msgbyte/tianji/commit/49514104c31ac766a91bdeb41723a1038e627356))
+* update monitor clear day, make sure its can always large than 1 month ([e048157](https://github.com/msgbyte/tianji/commit/e04815798849ddd59f547e6ab276a344105ca860))
+
 ## [1.18.13](https://github.com/msgbyte/tianji/compare/v1.18.12...v1.18.13) (2025-03-09)
 
 ### Features
