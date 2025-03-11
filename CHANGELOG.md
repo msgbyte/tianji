@@ -1,5 +1,11 @@
 
 
+## [1.18.17](https://github.com/msgbyte/tianji/compare/v1.18.16...v1.18.17) (2025-03-11)
+
+### Others
+
+* fix ci problem ([6fd40b0](https://github.com/msgbyte/tianji/commit/6fd40b0255ef727a06cc9f3fd22462892c10193c))
+
 ## [1.18.16](https://github.com/msgbyte/tianji/compare/v1.18.15...v1.18.16) (2025-03-11)
 
 ### Others
