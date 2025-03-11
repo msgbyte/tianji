@@ -46,7 +46,7 @@ export default {
 		});
 
 		switch (controller.cron) {
-			case '0 18 * * *':
+			case '0 1 * * *':
 				await handleTriggerAITask(env);
 				break;
 			case '0 2 * * *':
