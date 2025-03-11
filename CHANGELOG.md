@@ -1,5 +1,11 @@
 
 
+## [1.18.16](https://github.com/msgbyte/tianji/compare/v1.18.15...v1.18.16) (2025-03-11)
+
+### Others
+
+* update lock file ([d3b1adc](https://github.com/msgbyte/tianji/commit/d3b1adcde0eb2f9a37f61c416f4bbdc19365c408))
+
 ## [1.18.15](https://github.com/msgbyte/tianji/compare/v1.18.14...v1.18.15) (2025-03-11)
 
 ### Others
