@@ -1,5 +1,11 @@
 
 
+## [1.18.18](https://github.com/msgbyte/tianji/compare/v1.18.17...v1.18.18) (2025-03-11)
+
+### Others
+
+* update top p and temperature ([1f850b6](https://github.com/msgbyte/tianji/commit/1f850b6a5b22307ff89ba70e6f1236c241d28fa5))
+
 ## [1.18.17](https://github.com/msgbyte/tianji/compare/v1.18.16...v1.18.17) (2025-03-11)
 
 ### Others
