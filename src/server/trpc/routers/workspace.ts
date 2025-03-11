@@ -448,7 +448,7 @@ function buildWorkspaceOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       tags: [OPENAPI_TAG.WORKSPACE],
       protect: true,
       ...meta,
-      path: `/workspace/${meta.path}`,
+      path: `/workspace${meta.path}`,
     },
   };
 }

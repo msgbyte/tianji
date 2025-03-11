@@ -3,6 +3,26 @@
 /**
  * The error information
  */
+export type error_BAD_REQUEST = {
+    /**
+     * The error message
+     */
+    message: string;
+    /**
+     * The error code
+     */
+    code: string;
+    /**
+     * An array of issues that were responsible for the error
+     */
+    issues?: Array<{
+        message: string;
+    }>;
+};
+
+/**
+ * The error information
+ */
 export type error_UNAUTHORIZED = {
     /**
      * The error message
@@ -63,26 +83,6 @@ export type error_INTERNAL_SERVER_ERROR = {
 /**
  * The error information
  */
-export type error_BAD_REQUEST = {
-    /**
-     * The error message
-     */
-    message: string;
-    /**
-     * The error code
-     */
-    code: string;
-    /**
-     * An array of issues that were responsible for the error
-     */
-    issues?: Array<{
-        message: string;
-    }>;
-};
-
-/**
- * The error information
- */
 export type error_NOT_FOUND = {
     /**
      * The error message
@@ -101,6 +101,81 @@ export type error_NOT_FOUND = {
 };
 
 export type $OpenApiTs = {
+    '/ai/classifySurvey': {
+        post: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    surveyId: string;
+                    startAt: number;
+                    endAt: number;
+                    runStrategy: 'skipExist' | 'skipInSuggest' | 'rebuildAll';
+                    languageStrategy?: 'default' | 'user';
+                    payloadContentField: string;
+                    suggestionCategory: Array<(string)>;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: 'ok';
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/ai/translateSurvey': {
+        post: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    surveyId: string;
+                    startAt: number;
+                    endAt: number;
+                    runStrategy: 'skipExist' | 'rebuildAll';
+                    languageStrategy?: 'default' | 'user';
+                    payloadContentField: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: 'ok';
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
     '/global/config': {
         get: {
             res: {

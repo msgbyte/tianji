@@ -5,6 +5,53 @@ import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
 import type { $OpenApiTs } from './types.gen';
 
+export class AiService {
+    /**
+     * classify survey
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns string Successful response
+     * @throws ApiError
+     */
+    public static aiClassifySurvey(data: $OpenApiTs['/ai/classifySurvey']['post']['req']): CancelablePromise<$OpenApiTs['/ai/classifySurvey']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/ai/classifySurvey',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * translate survey
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns string Successful response
+     * @throws ApiError
+     */
+    public static aiTranslateSurvey(data: $OpenApiTs['/ai/translateSurvey']['post']['req']): CancelablePromise<$OpenApiTs['/ai/translateSurvey']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/ai/translateSurvey',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+}
+
 export class GlobalService {
     /**
      * Get Tianji system global config

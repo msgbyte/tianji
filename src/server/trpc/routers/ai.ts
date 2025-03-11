@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, workspaceProcedure } from '../trpc.js';
+import { OpenApiMetaInfo, router, workspaceProcedure } from '../trpc.js';
 import {
   calcOpenAIToken,
   modelName,
@@ -24,6 +24,8 @@ import {
   sendBuildSurveyClassifyMessageQueue,
   sendBuildSurveyTranslationMessageQueue,
 } from '../../mq/producer.js';
+import { OpenApiMeta } from 'trpc-to-openapi';
+import { OPENAPI_TAG } from '../../utils/const.js';
 
 export const aiRouter = router({
   ask: workspaceProcedure
@@ -108,7 +110,15 @@ export const aiRouter = router({
       });
     }),
   classifySurvey: workspaceProcedure
+    .meta(
+      buildAIOpenapi({
+        method: 'POST',
+        path: '/classifySurvey',
+        description: 'classify survey',
+      })
+    )
     .input(classifySurveyInputSchema)
+    .output(z.literal('ok'))
     .mutation(async ({ input, ctx }) => {
       const {
         workspaceId,
@@ -134,10 +144,18 @@ export const aiRouter = router({
         language,
       });
 
-      return 'ok';
+      return 'ok' as const;
     }),
   translateSurvey: workspaceProcedure
+    .meta(
+      buildAIOpenapi({
+        method: 'POST',
+        path: '/translateSurvey',
+        description: 'translate survey',
+      })
+    )
     .input(translateSurveyInputSchema)
+    .output(z.literal('ok'))
     .mutation(async ({ input, ctx }) => {
       const {
         workspaceId,
@@ -161,6 +179,17 @@ export const aiRouter = router({
         language,
       });
 
-      return 'ok';
+      return 'ok' as const;
     }),
 });
+
+function buildAIOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.AI],
+      protect: true,
+      ...meta,
+      path: `/ai${meta.path}`,
+    },
+  };
+}

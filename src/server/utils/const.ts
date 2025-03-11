@@ -115,4 +115,5 @@ export enum OPENAPI_TAG {
   TELEMETRY = 'Telemetry',
   SURVEY = 'Survey',
   FEED = 'Feed',
+  AI = 'AI',
 }
