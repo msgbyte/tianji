@@ -198,7 +198,7 @@ async function runSurveyAIClassifyWorker(msg: string) {
 
     let inc = 0;
     for (const group of groups) {
-      const prompt = buildSurveyClassifyPrompt(
+      const { prompt, question } = buildSurveyClassifyPrompt(
         group,
         currentSuggestionCategory,
         languageStrategy === 'user' ? language : 'en'
@@ -208,14 +208,9 @@ async function runSurveyAIClassifyWorker(msg: string) {
         `Process run survey AI classify, group batch ${++inc} group size: ${group.length}`
       );
 
-      const res = await requestOpenAI(
-        workspaceId,
-        prompt,
-        'Please help me generate data.',
-        {
-          response_format: { type: 'json_object' },
-        }
-      );
+      const res = await requestOpenAI(workspaceId, prompt, question, {
+        response_format: { type: 'json_object' },
+      });
 
       const json = JSON.parse(res);
 
