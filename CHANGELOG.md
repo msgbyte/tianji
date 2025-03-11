@@ -1,5 +1,11 @@
 
 
+## [1.18.19](https://github.com/msgbyte/tianji/compare/v1.18.18...v1.18.19) (2025-03-11)
+
+### Others
+
+* update default mode because of different performance in data analysis ([2b23ec9](https://github.com/msgbyte/tianji/commit/2b23ec95dd43b01e4d461548dc0685d797e7db20))
+
 ## [1.18.18](https://github.com/msgbyte/tianji/compare/v1.18.17...v1.18.18) (2025-03-11)
 
 ### Others
