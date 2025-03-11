@@ -1,5 +1,11 @@
 
 
+## [1.18.15](https://github.com/msgbyte/tianji/compare/v1.18.14...v1.18.15) (2025-03-11)
+
+### Others
+
+* rebuild ai classify prompt which will have more better performance ([c9f2a8e](https://github.com/msgbyte/tianji/commit/c9f2a8ebdf8d13b487a140d22bb63da5fafdcee7))
+
 ## [1.18.14](https://github.com/msgbyte/tianji/compare/v1.18.13...v1.18.14) (2025-03-11)
 
 ### Features
