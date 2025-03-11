@@ -13,7 +13,7 @@ import type {
 } from 'openai/resources/chat/completions.mjs';
 import { createAuditLog } from './auditLog.js';
 
-export const modelName = env.openai.modelName ?? 'gpt-4o-mini';
+export const modelName = env.openai.modelName ?? 'gpt-4o';
 
 let openaiClient: OpenAI;
 

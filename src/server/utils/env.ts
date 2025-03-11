@@ -64,7 +64,7 @@ export const env = {
     enable: Boolean(process.env.OPENAI_API_KEY),
     baseUrl: process.env.OPENAI_BASE_URL,
     apiKey: process.env.OPENAI_API_KEY,
-    modelName: process.env.OPENAI_MODEL_NAME ?? 'gpt-4o-mini',
+    modelName: process.env.OPENAI_MODEL_NAME ?? 'gpt-4o',
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
