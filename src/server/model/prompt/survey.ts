@@ -83,7 +83,7 @@ ${result.map((item) => JSON.stringify(item)).join('\n')}
   ];
 }
 
-export const basicSurveyClassifyPromptToken = 101;
+export const basicSurveyClassifyPromptToken = 465;
 
 export function buildSurveyClassifyPrompt(
   data: {
