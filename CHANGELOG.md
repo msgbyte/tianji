@@ -1,5 +1,13 @@
 
 
+## [1.18.20](https://github.com/msgbyte/tianji/compare/v1.18.19...v1.18.20) (2025-03-12)
+
+### Others
+
+* change daily work cronjob time ([a288245](https://github.com/msgbyte/tianji/commit/a288245cf306fb5fd523b659b611cb0b5b1499a8))
+* implement common filter query operator for insights model ([d972924](https://github.com/msgbyte/tianji/commit/d9729241e080e42e7c922ae15408ba3713b225b4))
+* update dependencies and package versions ([3762281](https://github.com/msgbyte/tianji/commit/3762281f601ab5517d3411da81b6238a98d7a4c8))
+
 ## [1.18.19](https://github.com/msgbyte/tianji/compare/v1.18.18...v1.18.19) (2025-03-11)
 
 ### Others
