@@ -4,17 +4,10 @@ import { prisma } from '../_client.js';
 import { getDateQuery, printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
-import {
-  FilterBooleanOperator,
-  FilterInfoType,
-  FilterInfoValue,
-  FilterNumberOperator,
-  FilterStringOperator,
-  getDateArray,
-} from '@tianji/shared';
+import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
 import { mapValues } from 'lodash-es';
 import { env } from '../../utils/env.js';
-import { castToNumber, castToString } from '../../utils/cast.js';
+import { buildCommonFilterQueryOperator } from './shared.js';
 
 export async function insightsSurvey(
   query: z.infer<typeof insightsQuerySchema>,
@@ -99,43 +92,9 @@ export async function insightsSurvey(
 function buildFilterQueryOperator(
   name: string,
   type: FilterInfoType,
-  _operator: string,
+  operator: string,
   value: FilterInfoValue | null
 ) {
-  if (type === 'number') {
-    const operator = _operator as FilterNumberOperator;
-
-    if (operator === 'equals') {
-      return Prisma.sql`("SurveyResult"."payload"->>'${name}')::int = ${castToNumber(value)}`;
-    }
-    if (operator === 'not equals') {
-      return Prisma.sql`("SurveyResult"."payload"->>'${name}')::int != ${castToNumber(value)}`;
-    }
-    if (operator === 'in list' && Array.isArray(value)) {
-      return Prisma.sql`("SurveyResult"."payload"->>'${name}')::int IN (${value.join(',')})`;
-    }
-    if (operator === 'not in list' && Array.isArray(value)) {
-      return Prisma.sql`("SurveyResult"."payload"->>'${name}')::int NOT IN (${value.join(',')})`;
-    }
-  } else if (type === 'string') {
-    const operator = _operator as FilterStringOperator;
-
-    if (operator === 'equals') {
-      return Prisma.sql`"SurveyResult"."payload"->>'${name}' = ${castToString(value)}`;
-    }
-    if (operator === 'not equals') {
-      return Prisma.sql`"SurveyResult"."payload"->>'${name}' != ${castToString(value)}`;
-    }
-  } else if (type === 'boolean') {
-    const operator = _operator as FilterBooleanOperator;
-
-    if (operator === 'equals') {
-      return Prisma.sql`("SurveyResult"."payload"->>'${name}')::boolean = ${value}`;
-    }
-    if (operator === 'not equals') {
-      return Prisma.sql`("SurveyResult"."payload"->>'${name}')::boolean != ${value}`;
-    }
-  }
-
-  return Prisma.sql`1 = 1`;
+  const valueField = Prisma.sql`("SurveyResult"."payload"->>'${name}')${type === 'number' ? '::int' : type === 'boolean' ? '::boolean' : ''}`;
+  return buildCommonFilterQueryOperator(type, operator, value, valueField);
 }

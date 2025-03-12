@@ -1,22 +1,14 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
-import { getDateQuery } from '../../utils/prisma.js';
+import { getDateQuery, printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
-import {
-  FilterBooleanOperator,
-  FilterDateOperator,
-  FilterInfoType,
-  FilterInfoValue,
-  FilterNumberOperator,
-  FilterStringOperator,
-  getDateArray,
-} from '@tianji/shared';
-import { get, mapValues } from 'lodash-es';
+import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
+import { mapValues } from 'lodash-es';
 import { EVENT_TYPE } from '../../utils/const.js';
 import { env } from '../../utils/env.js';
-import { castToDate, castToNumber, castToString } from '../../utils/cast.js';
+import { buildCommonFilterQueryOperator } from './shared.js';
 
 export async function insightsWebsite(
   query: z.infer<typeof insightsQuerySchema>,
@@ -49,7 +41,7 @@ export async function insightsWebsite(
         return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
       }
 
-      return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+      return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
     }
   });
 
@@ -97,7 +89,7 @@ export async function insightsWebsite(
     group by 1`;
 
   if (env.isDev) {
-    console.log('insights sql:', sql.text);
+    printSQL(sql);
   }
 
   const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
@@ -118,80 +110,17 @@ export async function insightsWebsite(
 
 function buildFilterQueryOperator(
   type: FilterInfoType,
-  _operator: string,
+  operator: string,
   value: FilterInfoValue | null
 ) {
-  if (type === 'number') {
-    const operator = _operator as FilterNumberOperator;
+  const valueField =
+    type === 'number'
+      ? Prisma.sql`"WebsiteEventData"."numberValue"`
+      : type === 'string'
+        ? Prisma.sql`"WebsiteEventData"."stringValue"`
+        : type === 'date'
+          ? Prisma.sql`"WebsiteEventData"."dateValue"`
+          : Prisma.sql`"WebsiteEventData"."numberValue"`;
 
-    if (operator === 'equals') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" = ${castToNumber(value)}`;
-    }
-    if (operator === 'not equals') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" != ${castToNumber(value)}`;
-    }
-    if (operator === 'in list' && Array.isArray(value)) {
-      return Prisma.sql`"WebsiteEventData"."numberValue" IN (${value.join(',')})`;
-    }
-    if (operator === 'not in list' && Array.isArray(value)) {
-      return Prisma.sql`"WebsiteEventData"."numberValue" NOT IN (${value.join(',')})`;
-    }
-    if (operator === 'greater than') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" > ${castToNumber(value)}`;
-    }
-    if (operator === 'greater than or equal') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" >= ${castToNumber(value)}`;
-    }
-    if (operator === 'less than') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" < ${castToNumber(value)}`;
-    }
-    if (operator === 'less than or equal') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" <= ${castToNumber(value)}`;
-    }
-
-    if (operator === 'between') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" BETWEEN ${castToNumber(get(value, '0'))} AND ${castToNumber(get(value, '1'))}`;
-    }
-  } else if (type === 'string') {
-    const operator = _operator as FilterStringOperator;
-
-    if (operator === 'equals') {
-      return Prisma.sql`"WebsiteEventData"."stringValue" = ${castToString(value)}`;
-    }
-    if (operator === 'not equals') {
-      return Prisma.sql`"WebsiteEventData"."stringValue" != ${castToString(value)}`;
-    }
-    if (operator === 'contains') {
-      return Prisma.sql`"WebsiteEventData"."stringValue" LIKE "%${castToString(value)}%"`;
-    }
-    if (operator === 'not contains') {
-      return Prisma.sql`"WebsiteEventData"."stringValue" NOT LIKE "%${castToString(value)}%"`;
-    }
-    if (operator === 'in list' && Array.isArray(value)) {
-      return Prisma.sql`"WebsiteEventData"."stringValue" IN (${value.join(',')})`;
-    }
-    if (operator === 'not in list' && Array.isArray(value)) {
-      return Prisma.sql`"WebsiteEventData"."stringValue" NOT IN (${value.join(',')})`;
-    }
-  } else if (type === 'boolean') {
-    const operator = _operator as FilterBooleanOperator;
-
-    if (operator === 'equals') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" = ${castToNumber(value)}`;
-    }
-    if (operator === 'not equals') {
-      return Prisma.sql`"WebsiteEventData"."numberValue" != ${castToNumber(value)}`;
-    }
-  } else if (type === 'date') {
-    const operator = _operator as FilterDateOperator;
-
-    if (operator === 'between') {
-      return Prisma.sql`"WebsiteEventData"."dateValue" BETWEEN ${castToDate(get(value, '0'))} AND ${castToDate(get(value, '1'))}`;
-    }
-    if (operator === 'in day') {
-      return Prisma.sql`"WebsiteEventData"."dateValue" = DATE(${castToDate(value)})`;
-    }
-  }
-
-  return Prisma.sql`1 = 1`;
+  return buildCommonFilterQueryOperator(type, operator, value, valueField);
 }
