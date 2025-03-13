@@ -51,6 +51,10 @@
   "pnpm": {
     "overrides": {
       "@auth/core": "0.34.1",
+      "react": "18.2.0",
+      "react-dom": "18.2.0",
+      "@types/react": "18.2.78",
+      "@types/react-dom": "18.2.21",
       "dayjs": "1.11.10",
       "esbuild": "0.24.0",
       "postman-code-generators": "1.8.0",
