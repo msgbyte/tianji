@@ -5,19 +5,15 @@ import { getDateQuery, printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
-import { mapValues } from 'lodash-es';
+import { get, uniq } from 'lodash-es';
 import { env } from '../../utils/env.js';
 import { buildCommonFilterQueryOperator } from './shared.js';
 
 export async function insightsSurvey(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
-): Promise<
-  {
-    date: string;
-  }[]
-> {
-  const { time } = query;
+) {
+  const { time, metrics, groups } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
   const sql = buildInsightsSurveySql(query, context);
@@ -28,18 +24,63 @@ export async function insightsSurvey(
 
   const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
 
-  return getDateArray(
-    res.map((item) => {
-      return {
-        ...mapValues(item, (val) => Number(val)),
-        date: String(item.date),
-      };
-    }),
-    startAt,
-    endAt,
-    unit,
-    timezone
-  );
+  let result: {
+    name: string;
+    [groupName: string]: any;
+    data: {
+      date: string;
+      value: number;
+    }[];
+  }[] = [];
+
+  for (const m of metrics) {
+    if (groups.length > 0) {
+      for (const g of groups) {
+        const allGroupValue = uniq(
+          res.map((item) => get(item, `%${g.value}`) as any)
+        );
+
+        result.push(
+          ...allGroupValue.map((gv) => ({
+            name: m.name,
+            [g.value]: gv,
+            data: getDateArray(
+              res
+                .filter((item) => get(item, `%${g.value}`) === gv)
+                .map((item) => {
+                  return {
+                    value: Number(get(item, m.name)),
+                    date: String(item.date),
+                  };
+                }),
+              startAt,
+              endAt,
+              unit,
+              timezone
+            ),
+          }))
+        );
+      }
+    } else {
+      result.push({
+        name: m.name,
+        data: getDateArray(
+          res.map((item) => {
+            return {
+              value: Number(get(item, m.name)),
+              date: String(item.date),
+            };
+          }),
+          startAt,
+          endAt,
+          unit,
+          timezone
+        ),
+      });
+    }
+  }
+
+  return result;
 }
 
 export function buildInsightsSurveySql(

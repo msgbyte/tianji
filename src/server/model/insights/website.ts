@@ -5,7 +5,7 @@ import { getDateQuery, printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
-import { mapValues } from 'lodash-es';
+import { get, mapValues } from 'lodash-es';
 import { EVENT_TYPE } from '../../utils/const.js';
 import { env } from '../../utils/env.js';
 import { buildCommonFilterQueryOperator } from './shared.js';
@@ -13,12 +13,8 @@ import { buildCommonFilterQueryOperator } from './shared.js';
 export async function insightsWebsite(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
-): Promise<
-  {
-    date: string;
-  }[]
-> {
-  const { time } = query;
+) {
+  const { time, metrics } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
   const sql = buildInsightsWebsiteSql(query, context);
@@ -29,18 +25,36 @@ export async function insightsWebsite(
 
   const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
 
-  return getDateArray(
-    res.map((item) => {
-      return {
-        ...mapValues(item, (val) => Number(val)),
-        date: String(item.date),
-      };
-    }),
-    startAt,
-    endAt,
-    unit,
-    timezone
-  );
+  // TODO: add group support
+
+  let result: {
+    name: string;
+    [groupName: string]: any;
+    data: {
+      date: string;
+      value: number;
+    }[];
+  }[] = [];
+
+  for (const m of metrics) {
+    result.push({
+      name: m.name,
+      data: getDateArray(
+        res.map((item) => {
+          return {
+            value: Number(get(item, m.name)),
+            date: String(item.date),
+          };
+        }),
+        startAt,
+        endAt,
+        unit,
+        timezone
+      ),
+    });
+  }
+
+  return result;
 }
 
 export function buildInsightsWebsiteSql(

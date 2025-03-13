@@ -28,6 +28,7 @@ import { useInsightsStore } from '@/store/insights';
 import { ChartRender } from '@/components/insights/ChartRender';
 import { FilterSection } from '@/components/insights/FilterSection';
 import { useEvent } from '@/hooks/useEvent';
+import { BreakdownSection } from '@/components/insights/BreakdownSection';
 
 export const Route = createFileRoute('/insights')({
   beforeLoad: (opts) => {
@@ -120,8 +121,7 @@ function PageComponent() {
                 <div className="flex flex-col space-y-8">
                   <MetricsSection />
                   <FilterSection />
-                  {/* <MetricsSection title="Filters" />
-                <MetricsSection title="Breakdown" /> */}
+                  <BreakdownSection />
                 </div>
               </ScrollArea>
             ) : (

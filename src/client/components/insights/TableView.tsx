@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { createColumnHelper, DataTable } from '../DataTable';
-import { get, groupBy, mapValues, reverse, sum } from 'lodash-es';
+import { get, mapValues, reverse, sum } from 'lodash-es';
 import { useTranslation } from '@i18next-toolkit/react';
-import { DateUnit, MetricsInfo } from '@tianji/shared';
+import { DateUnit, GroupInfo, MetricsInfo } from '@tianji/shared';
 import { formatNumber } from '@/utils/common';
 import { getShortTextByUnit } from '@/utils/date';
 
@@ -10,8 +10,14 @@ const columnHelper = createColumnHelper<any>();
 
 interface TableViewProps {
   metrics: MetricsInfo[];
+  groups: GroupInfo[];
   data: {
-    date: string;
+    [groupName: string]: any;
+    name: string;
+    data: {
+      date: string;
+      value: number;
+    }[];
   }[];
   dateUnit: DateUnit;
 }
@@ -19,12 +25,24 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
   const { t } = useTranslation();
 
   const dateUnit = props.dateUnit;
-  const dates = props.data.map((d) => d.date);
+  const dates = props.data[0].data.map((item) => item.date);
 
   const columns = [
     columnHelper.accessor('name', {
       header: t('Event'),
       size: 150,
+    }),
+    ...props.groups.map((g) => {
+      return columnHelper.accessor(g.value, {
+        header: g.value,
+        size: 110,
+        meta: {
+          className: 'text-right',
+        },
+        cell(props) {
+          return get(props.row.original, g.value);
+        },
+      });
     }),
     columnHelper.display({
       id: 'average',
@@ -39,41 +57,46 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
         return formatNumber(sum(values) / values.length);
       },
     }),
-    ...reverse([...props.data])
-      .map((item) => item.date)
-      .map((item) => {
-        return columnHelper.accessor(item, {
-          header(props) {
-            const id = props.column.id;
+    ...reverse([...dates]).map((item) => {
+      return columnHelper.accessor(item, {
+        header(props) {
+          const id = props.column.id;
 
-            return getShortTextByUnit(id, dateUnit);
-          },
-          size: 110,
-          meta: {
-            className: 'text-right',
-          },
-          cell(props) {
-            return formatNumber(props.cell.getValue());
-          },
-        });
-      }),
+          return getShortTextByUnit(id, dateUnit);
+        },
+        size: 110,
+        meta: {
+          className: 'text-right',
+        },
+        cell(props) {
+          return formatNumber(props.cell.getValue());
+        },
+      });
+    }),
   ];
 
-  const dataMap = groupBy(props.data, 'date');
-  const data = props.metrics.map((m, i) => {
+  const tableData = props.data.map((item) => {
+    const { name, data, ...others } = item;
+
     return {
-      name: m.name,
-      ...mapValues(dataMap, (item) => {
-        return get(item, [0, m.name]);
-      }),
+      name,
+      ...others,
+      ...data.reduce((prev, curr) => {
+        return {
+          ...prev,
+          [curr.date]: curr.value,
+        };
+      }, {}),
     };
   });
 
   return (
     <DataTable
-      columnPinning={{ left: ['name', 'average'] }}
+      columnPinning={{
+        left: ['name', ...props.groups.map((item) => item.value), 'average'],
+      }}
       columns={columns}
-      data={data}
+      data={tableData}
     />
   );
 });

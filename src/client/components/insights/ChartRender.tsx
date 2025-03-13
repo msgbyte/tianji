@@ -7,7 +7,7 @@ import { useInsightsStore } from '@/store/insights';
 import { pickColorWithNum } from '@/utils/color';
 import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
-import { DateUnit, FilterInfo, MetricsInfo } from '@tianji/shared';
+import { DateUnit, FilterInfo, GroupInfo, MetricsInfo } from '@tianji/shared';
 import { TableView } from './TableView';
 import {
   ResizableHandle,
@@ -19,6 +19,7 @@ import { Empty } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
 import { DelayRender } from '../DelayRender';
 import { SearchLoadingView } from '../loading/Searching';
+import { get, groupBy, merge, omit, values } from 'lodash-es';
 
 interface ChartRenderProps {
   insightId: string;
@@ -32,6 +33,9 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   );
   const filters = useInsightsStore((state) =>
     state.currentFilters.filter((item): item is FilterInfo => Boolean(item))
+  );
+  const groups = useInsightsStore((state) =>
+    state.currentGroups.filter((item): item is GroupInfo => Boolean(item))
   );
   const [dateKey, setDateKey] = useState('30D');
   const [dateRange, setDateRange] = useState(() => [
@@ -49,28 +53,64 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     [dateRange, dateUnit]
   );
 
-  const { data, isFetching } = trpc.insights.query.useQuery({
+  const { data = [], isFetching } = trpc.insights.query.useQuery({
     workspaceId,
     insightId: props.insightId,
     insightType: props.insightType,
     metrics,
     filters,
+    groups,
     time,
   });
 
-  const chartConfig = useMemo(
-    () =>
-      metrics.reduce((prev, curr, i) => {
-        return {
-          ...prev,
-          [curr.name]: {
-            label: curr.name,
-            color: pickColorWithNum(i),
-          },
-        };
-      }, {}),
-    [metrics]
-  );
+  const chartData = useMemo(() => {
+    const res: { date: string }[] = [];
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const dates = data[0].data.map((item) => item.date);
+
+    dates.map((date) => {
+      data.forEach((item) => {
+        const value = item.data.find((d) => d.date === date)?.value ?? 0;
+        let name = item.name;
+
+        if (groups.length > 0) {
+          name +=
+            '-' +
+            groups
+              .map((group) => {
+                return get(item, group.value);
+              })
+              .join('-');
+        }
+
+        res.push({
+          date,
+          [name]: value,
+        });
+      });
+    });
+
+    return values(groupBy(res, 'date')).map((list) => (merge as any)(...list));
+  }, [data]);
+
+  const chartConfig = useMemo(() => {
+    if (chartData.length === 0) {
+      return {};
+    }
+
+    return Object.keys(omit(chartData[0], 'date')).reduce((prev, curr, i) => {
+      return {
+        ...prev,
+        [curr]: {
+          label: curr,
+          color: pickColorWithNum(i),
+        },
+      };
+    }, {});
+  }, [chartData]);
 
   let mainEl = null;
   if (isFetching) {
@@ -91,7 +131,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
             <div className="h-full p-4">
               <TimeEventChart
                 className="h-full w-full"
-                data={data}
+                data={chartData}
                 unit={dateUnit}
                 chartConfig={chartConfig}
                 drawGradientArea={false}
@@ -103,7 +143,12 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
 
           <ResizablePanel>
             <ScrollArea className="h-full overflow-hidden p-4">
-              <TableView metrics={metrics} data={data} dateUnit={dateUnit} />
+              <TableView
+                metrics={metrics}
+                groups={groups}
+                data={data}
+                dateUnit={dateUnit}
+              />
             </ScrollArea>
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -58,39 +58,41 @@ export const DropdownSelect = <T extends BasicListItem>(
           'h-[320px] w-[380px]': dropdownSize === 'lg',
         })}
       >
-        {props.dropdownHeader}
+        <div className="flex h-full flex-col">
+          <div>{props.dropdownHeader}</div>
 
-        <ScrollArea>
-          {props.list.length === 0 && (
-            <div className="mt-4 text-center opacity-80">
-              {t('No any item availabled.')}
+          <ScrollArea className="flex-1">
+            {props.list.length === 0 && (
+              <div className="mt-4 text-center opacity-80">
+                {t('No any item availabled.')}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-0.5">
+              {props.list.map((item, i) => {
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all',
+                      props.value === item.name && 'bg-muted'
+                    )}
+                    onClick={() => {
+                      props.onSelect(item.name, item);
+                      setIsOpen(false);
+                    }}
+                  >
+                    {props.renderItem ? (
+                      props.renderItem(item)
+                    ) : (
+                      <span>{item.label ?? item.name}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          )}
-
-          <div className="flex flex-col gap-0.5">
-            {props.list.map((item, i) => {
-              return (
-                <div
-                  key={i}
-                  className={cn(
-                    'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all',
-                    props.value === item.name && 'bg-muted'
-                  )}
-                  onClick={() => {
-                    props.onSelect(item.name, item);
-                    setIsOpen(false);
-                  }}
-                >
-                  {props.renderItem ? (
-                    props.renderItem(item)
-                  ) : (
-                    <span>{item.label ?? item.name}</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
+          </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );
