@@ -23,6 +23,14 @@ const FilterOperator = z.enum([
   'in day',
 ]);
 
+export const FilterType = z.enum([
+  'string',
+  'number',
+  'boolean',
+  'date',
+  'array',
+]);
+
 const FilterInfoValue = z.union([
   z.string(),
   z.number(),
@@ -33,7 +41,7 @@ const FilterInfoValue = z.union([
 const FilterInfoSchema = z.object({
   name: z.string(),
   operator: FilterOperator,
-  type: z.enum(['string', 'number', 'boolean', 'date', 'array']),
+  type: FilterType,
   value: FilterInfoValue.nullable(),
 });
 
@@ -50,6 +58,7 @@ export const insightsQuerySchema = z.object({
   groups: z
     .object({
       value: z.string(),
+      type: FilterType,
       customGroups: z
         .object({
           filterOperator: FilterOperator,

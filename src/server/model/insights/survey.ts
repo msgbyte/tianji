@@ -66,18 +66,18 @@ export function buildInsightsSurveySql(
   });
 
   let groupSelectQueryArr: Prisma.Sql[] = [];
-  if (groups && groups.length > 0) {
+  if (groups.length > 0) {
     for (const g of groups) {
       if (!g.customGroups) {
         groupSelectQueryArr.push(
-          Prisma.sql`"payload" ->> ${g.value} as "%${Prisma.raw(g.value)}"`
+          Prisma.sql`"SurveyResult"."payload" ->> ${g.value} as "%${Prisma.raw(g.value)}"`
         );
       } else if (g.customGroups && g.customGroups.length > 0) {
         for (const cg of g.customGroups) {
           groupSelectQueryArr.push(
             Prisma.sql`${buildFilterQueryOperator(
               g.value,
-              'string',
+              g.type,
               cg.filterOperator,
               cg.filterValue
             )} as "%${Prisma.raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`

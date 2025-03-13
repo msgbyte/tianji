@@ -47,7 +47,7 @@ export function buildInsightsWebsiteSql(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ): Prisma.Sql {
-  const { insightId, time, metrics, filters } = query;
+  const { insightId, time, metrics, filters, groups } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
   const selectQueryArr = metrics.map((item) => {
@@ -74,14 +74,48 @@ export function buildInsightsWebsiteSql(
     }
   });
 
+  let groupSelectQueryArr: Prisma.Sql[] = [];
+  if (groups.length > 0) {
+    for (const g of groups) {
+      if (!g.customGroups) {
+        groupSelectQueryArr.push(
+          Prisma.sql`${getValueField(g.type)} as "%${Prisma.raw(g.value)}"`
+        );
+      } else if (g.customGroups && g.customGroups.length > 0) {
+        for (const cg of g.customGroups) {
+          groupSelectQueryArr.push(
+            Prisma.sql`${buildFilterQueryOperator(
+              g.type,
+              cg.filterOperator,
+              cg.filterValue
+            )} as "%${Prisma.raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+          );
+        }
+      }
+    }
+  }
+
   let innerJoinQuery = Prisma.empty;
-  if (filters.length > 0) {
-    innerJoinQuery = Prisma.sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND ${Prisma.join(
-      filters.map((filter) =>
-        buildFilterQueryOperator(filter.type, filter.operator, filter.value)
-      ),
-      ' AND '
-    )}`;
+  if (filters.length > 0 || groups.length > 0) {
+    innerJoinQuery = Prisma.sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId"`;
+
+    if (filters.length > 0) {
+      innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
+        filters.map((filter) =>
+          buildFilterQueryOperator(filter.type, filter.operator, filter.value)
+        ),
+        ' AND '
+      )}`;
+    }
+
+    if (groups.length > 0) {
+      innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
+        groups.map(
+          (g) => Prisma.sql`"WebsiteEventData"."eventKey" = ${g.value}`
+        ),
+        ' OR '
+      )}`;
+    }
   }
 
   const whereQueryArr = [
@@ -110,21 +144,21 @@ export function buildInsightsWebsiteSql(
     ),
   ];
 
+  const groupByText = Array.from({ length: groupSelectQueryArr.length + 1 })
+    .map((_, i) => `${i + 1}`)
+    .join(' , ');
+
   const sql = Prisma.sql`select
       ${getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} date,
-      ${Prisma.join(selectQueryArr, ' , ')}
+      ${Prisma.join([...groupSelectQueryArr, ...selectQueryArr], ' , ')}
     from "WebsiteEvent" ${innerJoinQuery}
     where ${Prisma.join(whereQueryArr, ' AND ')}
-    group by 1`;
+    group by ${Prisma.raw(groupByText)}`;
 
   return sql;
 }
 
-function buildFilterQueryOperator(
-  type: FilterInfoType,
-  operator: string,
-  value: FilterInfoValue | null
-) {
+function getValueField(type: FilterInfoType): Prisma.Sql {
   const valueField =
     type === 'number'
       ? Prisma.sql`"WebsiteEventData"."numberValue"`
@@ -133,6 +167,16 @@ function buildFilterQueryOperator(
         : type === 'date'
           ? Prisma.sql`"WebsiteEventData"."dateValue"`
           : Prisma.sql`"WebsiteEventData"."numberValue"`;
+
+  return valueField;
+}
+
+function buildFilterQueryOperator(
+  type: FilterInfoType,
+  operator: string,
+  value: FilterInfoValue | null
+) {
+  const valueField = getValueField(type);
 
   return buildCommonFilterQueryOperator(type, operator, value, valueField);
 }

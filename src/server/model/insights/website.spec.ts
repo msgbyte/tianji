@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest';
-import { buildInsightsSurveySql } from './survey.js';
 import { unwrapSQL } from '../../utils/prisma.js';
+import { buildInsightsWebsiteSql } from './website.js';
 
-describe('buildInsightsSurveySql', () => {
-  const insightId = 'cm658i2tqw96upkejldn8rpbs';
-  const insightType = 'survey';
+describe('buildInsightsWebsiteSql', () => {
+  const insightId = 'cly5yay7a001v5tp6xdkzmygh';
+  const insightType = 'website';
 
   test('groups', () => {
-    const sql = buildInsightsSurveySql(
+    const sql = buildInsightsWebsiteSql(
       {
         insightId,
         insightType,
@@ -25,8 +25,8 @@ describe('buildInsightsSurveySql', () => {
         },
         groups: [
           {
-            value: 'rating',
-            type: 'string',
+            value: 'number',
+            type: 'number',
           },
         ],
       },
@@ -38,8 +38,8 @@ describe('buildInsightsSurveySql', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
-  test('groups with custom bucket', () => {
-    const sql = buildInsightsSurveySql(
+  test.only('groups with custom bucket', () => {
+    const sql = buildInsightsWebsiteSql(
       {
         insightId,
         insightType,
@@ -57,12 +57,12 @@ describe('buildInsightsSurveySql', () => {
         },
         groups: [
           {
-            value: 'rating',
-            type: 'string',
+            value: 'number',
+            type: 'number',
             customGroups: [
               {
-                filterOperator: 'in list',
-                filterValue: ['1', '2', '3'],
+                filterOperator: 'not equals',
+                filterValue: 1,
               },
             ],
           },
