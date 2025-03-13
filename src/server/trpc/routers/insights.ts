@@ -87,7 +87,26 @@ export const insightsRouter = router({
           count: item._count.id,
         }));
       } else if (insightType === 'survey') {
-        return [];
+        const res = await prisma.survey.findFirst({
+          where: {
+            id: insightId,
+          },
+          select: {
+            payload: true,
+          },
+        });
+
+        if (!res) {
+          return [];
+        }
+
+        const payload: PrismaJson.SurveyPayload = res.payload;
+
+        return payload.items.map((item: any) => ({
+          name: item.name,
+          type: 'string',
+          count: 0,
+        }));
       }
 
       return [];

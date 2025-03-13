@@ -9,9 +9,20 @@ export type FilterInfoType = 'number' | 'string' | 'boolean' | 'date' | 'array';
 
 export interface FilterInfo {
   name: string;
-  operator: string;
+  operator: FilterOperator;
   type: FilterInfoType;
   value: FilterInfoValue | null;
+}
+
+export interface CustomGroupInfo {
+  filterOperator: FilterOperator;
+  filterValue: FilterInfoValue;
+}
+
+export interface GroupInfo {
+  value: string;
+  type: FilterInfoType;
+  customGroups?: CustomGroupInfo[];
 }
 
 export type FilterNumberOperator =
@@ -33,3 +44,9 @@ export type FilterStringOperator =
   | 'not in list';
 export type FilterBooleanOperator = 'equals' | 'not equals';
 export type FilterDateOperator = 'in day' | 'between';
+
+export type FilterOperator =
+  | FilterNumberOperator
+  | FilterStringOperator
+  | FilterBooleanOperator
+  | FilterDateOperator;
