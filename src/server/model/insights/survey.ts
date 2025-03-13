@@ -20,7 +20,7 @@ export async function insightsSurvey(
   const { time } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
-  const sql = buildInsightsSurvey(query, context);
+  const sql = buildInsightsSurveySql(query, context);
 
   if (env.isDev) {
     printSQL(sql);
@@ -42,10 +42,10 @@ export async function insightsSurvey(
   );
 }
 
-export function buildInsightsSurvey(
+export function buildInsightsSurveySql(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
-) {
+): Prisma.Sql {
   const { insightId, time, metrics, filters, groups } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 

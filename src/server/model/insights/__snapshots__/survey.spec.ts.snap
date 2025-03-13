@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`buildInsightsSurvey > groups > sql 1`] = `
+exports[`buildInsightsSurveySql > groups > sql 1`] = `
 "select
         to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
         "payload" ->> 'rating' as "%rating" , count(1) as "$all_event"
@@ -10,7 +10,7 @@ exports[`buildInsightsSurvey > groups > sql 1`] = `
       group by 1 , 2"
 `;
 
-exports[`buildInsightsSurvey > groups with custom bucket > sql 1`] = `
+exports[`buildInsightsSurveySql > groups with custom bucket > sql 1`] = `
 "select
         to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
         ("SurveyResult"."payload"->> 'rating') IN ('1' , '2' , '3') as "%rating|in list|1,2,3" , count(1) as "$all_event"

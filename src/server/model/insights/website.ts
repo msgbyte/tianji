@@ -18,6 +18,35 @@ export async function insightsWebsite(
     date: string;
   }[]
 > {
+  const { time } = query;
+  const { startAt, endAt, unit, timezone = context.timezone } = time;
+
+  const sql = buildInsightsWebsiteSql(query, context);
+
+  if (env.isDev) {
+    printSQL(sql);
+  }
+
+  const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+
+  return getDateArray(
+    res.map((item) => {
+      return {
+        ...mapValues(item, (val) => Number(val)),
+        date: String(item.date),
+      };
+    }),
+    startAt,
+    endAt,
+    unit,
+    timezone
+  );
+}
+
+export function buildInsightsWebsiteSql(
+  query: z.infer<typeof insightsQuerySchema>,
+  context: { timezone: string }
+): Prisma.Sql {
   const { insightId, time, metrics, filters } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
@@ -88,24 +117,7 @@ export async function insightsWebsite(
     where ${Prisma.join(whereQueryArr, ' AND ')}
     group by 1`;
 
-  if (env.isDev) {
-    printSQL(sql);
-  }
-
-  const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
-
-  return getDateArray(
-    res.map((item) => {
-      return {
-        ...mapValues(item, (val) => Number(val)),
-        date: String(item.date),
-      };
-    }),
-    startAt,
-    endAt,
-    unit,
-    timezone
-  );
+  return sql;
 }
 
 function buildFilterQueryOperator(
