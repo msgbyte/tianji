@@ -1,5 +1,12 @@
 
 
+## [1.18.21](https://github.com/msgbyte/tianji/compare/v1.18.20...v1.18.21) (2025-03-13)
+
+### Others
+
+* improve write logic, update database when openai return response ([0d31c07](https://github.com/msgbyte/tianji/commit/0d31c074fa29d42de3f63d28656dac5de7988a5c))
+* update end at time for ai task to let has more range ([2849048](https://github.com/msgbyte/tianji/commit/2849048ec4d31b94b082609f2232f91a71c55a3d))
+
 ## [1.18.20](https://github.com/msgbyte/tianji/compare/v1.18.19...v1.18.20) (2025-03-12)
 
 ### Others
