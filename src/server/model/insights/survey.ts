@@ -17,10 +17,38 @@ export async function insightsSurvey(
     date: string;
   }[]
 > {
-  const { insightId, time, metrics, filters } = query;
+  const { time } = query;
   const { startAt, endAt, unit, timezone = context.timezone } = time;
 
-  // const selectQueryArr = [Prisma.sql`count(1) as "$all_event"`];
+  const sql = buildInsightsSurvey(query, context);
+
+  if (env.isDev) {
+    printSQL(sql);
+  }
+
+  const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+
+  return getDateArray(
+    res.map((item) => {
+      return {
+        ...mapValues(item, (val) => Number(val)),
+        date: String(item.date),
+      };
+    }),
+    startAt,
+    endAt,
+    unit,
+    timezone
+  );
+}
+
+export function buildInsightsSurvey(
+  query: z.infer<typeof insightsQuerySchema>,
+  context: { timezone: string }
+) {
+  const { insightId, time, metrics, filters, groups } = query;
+  const { startAt, endAt, unit, timezone = context.timezone } = time;
+
   const selectQueryArr = metrics.map((item) => {
     if (item.math === 'events') {
       if (item.name === '$all_event') {
@@ -36,6 +64,28 @@ export async function insightsSurvey(
       return Prisma.sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
     }
   });
+
+  let groupSelectQueryArr: Prisma.Sql[] = [];
+  if (groups && groups.length > 0) {
+    for (const g of groups) {
+      if (!g.customGroups) {
+        groupSelectQueryArr.push(
+          Prisma.sql`"payload" ->> ${g.value} as "%${Prisma.raw(g.value)}"`
+        );
+      } else if (g.customGroups && g.customGroups.length > 0) {
+        for (const cg of g.customGroups) {
+          groupSelectQueryArr.push(
+            Prisma.sql`${buildFilterQueryOperator(
+              g.value,
+              'string',
+              cg.filterOperator,
+              cg.filterValue
+            )} as "%${Prisma.raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+          );
+        }
+      }
+    }
+  }
 
   let innerJoinQuery = Prisma.empty;
   if (filters.length > 0) {
@@ -60,33 +110,19 @@ export async function insightsSurvey(
     Prisma.sql`"SurveyResult"."createdAt" between ${dayjs(startAt).toISOString()}::timestamptz and ${dayjs(endAt).toISOString()}::timestamptz`,
   ];
 
+  const groupByText = Array.from({ length: groupSelectQueryArr.length + 1 })
+    .map((_, i) => `${i + 1}`)
+    .join(' , ');
+
   const sql = Prisma.sql`select
-      ${getDateQuery('"SurveyResult"."createdAt"', unit, timezone)} date,
-      ${Prisma.join(selectQueryArr, ' , ')}
-    from "SurveyResult"
-    ${innerJoinQuery}
-    where ${Prisma.join(whereQueryArr, ' AND ')}
-    group by 1`;
+        ${getDateQuery('"SurveyResult"."createdAt"', unit, timezone)} date,
+        ${Prisma.join([...groupSelectQueryArr, ...selectQueryArr], ' , ')}
+      from "SurveyResult"
+      ${innerJoinQuery}
+      where ${Prisma.join(whereQueryArr, ' AND ')}
+      group by ${Prisma.raw(groupByText)}`;
 
-  if (env.isDev) {
-    // console.log('insights sql:', sql.text, sql.values);
-    printSQL(sql);
-  }
-
-  const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
-
-  return getDateArray(
-    res.map((item) => {
-      return {
-        ...mapValues(item, (val) => Number(val)),
-        date: String(item.date),
-      };
-    }),
-    startAt,
-    endAt,
-    unit,
-    timezone
-  );
+  return sql;
 }
 
 function buildFilterQueryOperator(
@@ -94,7 +130,7 @@ function buildFilterQueryOperator(
   type: FilterInfoType,
   operator: string,
   value: FilterInfoValue | null
-) {
-  const valueField = Prisma.sql`("SurveyResult"."payload"->>'${name}')${type === 'number' ? '::int' : type === 'boolean' ? '::boolean' : ''}`;
+): Prisma.Sql {
+  const valueField = Prisma.sql`("SurveyResult"."payload"->> ${name})${type === 'number' ? '::int' : type === 'boolean' ? '::boolean' : Prisma.empty}`;
   return buildCommonFilterQueryOperator(type, operator, value, valueField);
 }

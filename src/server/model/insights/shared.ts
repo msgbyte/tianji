@@ -62,7 +62,7 @@ export function buildCommonFilterQueryOperator(
       return Prisma.sql`${valueField} NOT LIKE ${`%${castToString(value)}%`}`;
     }
     if (operator === 'in list' && Array.isArray(value)) {
-      return Prisma.sql`${valueField} IN (${value.join(',')})`;
+      return Prisma.sql`${valueField} IN (${Prisma.join(value, ' , ')})`;
     }
     if (operator === 'not in list' && Array.isArray(value)) {
       return Prisma.sql`${valueField} NOT IN (${value.join(',')})`;

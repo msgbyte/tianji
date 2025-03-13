@@ -45,11 +45,17 @@ export interface QueryOptions {
   columns?: { [key: string]: string };
 }
 
-export function printSQL(sql: Prisma.Sql) {
+export function unwrapSQL(sql: Prisma.Sql) {
   const unwrapSqlText = sql.text.replace(/\$(\d+)/g, (match, group1) => {
     const index = parseInt(group1, 10) - 1;
     return `'${sql.values[index]}'`;
   });
+
+  return unwrapSqlText;
+}
+
+export function printSQL(sql: Prisma.Sql) {
+  const unwrapSqlText = unwrapSQL(sql);
 
   console.log(unwrapSqlText);
 }

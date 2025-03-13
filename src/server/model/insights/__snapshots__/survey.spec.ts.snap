@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildInsightsSurvey > groups > sql 1`] = `
+"select
+        to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+        "payload" ->> 'rating' as "%rating" , count(1) as "$all_event"
+      from "SurveyResult"
+      
+      where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+      group by 1 , 2"
+`;
+
+exports[`buildInsightsSurvey > groups with custom bucket > sql 1`] = `
+"select
+        to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+        ("SurveyResult"."payload"->> 'rating') IN ('1' , '2' , '3') as "%rating|in list|1,2,3" , count(1) as "$all_event"
+      from "SurveyResult"
+      
+      where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+      group by 1 , 2"
+`;
