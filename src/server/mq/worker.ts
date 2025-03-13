@@ -197,6 +197,7 @@ async function runSurveyAIClassifyWorker(msg: string) {
     logger.info('Process run survey AI classify, groups', groups.length);
 
     let inc = 0;
+    let effectCount = 0;
     for (const group of groups) {
       const { prompt, question } = buildSurveyClassifyPrompt(
         group,
@@ -205,7 +206,7 @@ async function runSurveyAIClassifyWorker(msg: string) {
       );
 
       logger.info(
-        `Process run survey AI classify, group batch ${++inc} group size: ${group.length}`
+        `Process run survey AI classify, group batch ${++inc}/${groups.length}, size: ${group.length}`
       );
 
       const res = await requestOpenAI(workspaceId, prompt, question, {
@@ -225,6 +226,31 @@ async function runSurveyAIClassifyWorker(msg: string) {
         throw new Error(String(json.error));
       }
 
+      const categoryMap = invertBy(json);
+      await pMap(
+        Object.keys(categoryMap),
+        async (category) => {
+          const ids = categoryMap[category];
+          if (Array.isArray(ids) && ids.length > 0) {
+            const res = await prisma.surveyResult.updateMany({
+              where: {
+                id: {
+                  in: ids,
+                },
+              },
+              data: {
+                aiCategory: category,
+              },
+            });
+
+            effectCount += res.count;
+          }
+        },
+        {
+          concurrency: 5,
+        }
+      );
+
       currentSuggestionCategory = uniq([
         ...currentSuggestionCategory,
         ...values(json),
@@ -237,38 +263,12 @@ async function runSurveyAIClassifyWorker(msg: string) {
 
     logger.info('Process run survey AI classify, AI completed.');
 
-    const categorys: Record<string, string[]> = invertBy(categoryJson);
-    let effectCount = 0;
-    await pMap(
-      Object.keys(categorys),
-      async (category) => {
-        const ids = categorys[category];
-        if (Array.isArray(ids) && ids.length > 0) {
-          const res = await prisma.surveyResult.updateMany({
-            where: {
-              id: {
-                in: ids,
-              },
-            },
-            data: {
-              aiCategory: category,
-            },
-          });
-
-          effectCount += res.count;
-        }
-      },
-      {
-        concurrency: 5,
-      }
-    );
-
     const result = {
       workspaceId,
       surveyId,
       analysisCount: data.length,
       processedCount: Object.keys(categoryJson).length,
-      categorys: Object.keys(categorys),
+      categorys: uniq(Object.keys(categoryJson)),
       effectCount,
     };
 
@@ -366,7 +366,7 @@ async function runSurveyAITranslationWorker(msg: string) {
       );
 
       logger.info(
-        `Process run survey AI translation, group batch ${++inc} group size: ${group.length}`
+        `Process run survey AI translation, group batch ${++inc}/${groups.length}, size: ${group.length}`
       );
 
       const res = await requestOpenAI(
