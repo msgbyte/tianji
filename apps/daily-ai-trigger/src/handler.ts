@@ -14,7 +14,7 @@ export async function handleTriggerAITask(env: Env) {
 	const suggestionCategory = category.map((c) => c.name).filter((n): n is string => Boolean(n));
 
 	const startAt = dayjs().subtract(1, 'day').startOf('day').valueOf();
-	const endAt = dayjs().subtract(1, 'day').endOf('day').valueOf();
+	const endAt = dayjs().endOf('day').valueOf();
 
 	await openApiClient.AiService.aiClassifySurvey({
 		requestBody: {
