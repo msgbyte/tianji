@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { FilterInfo, FilterInfoValue } from '@tianji/shared';
+import { FilterInfo, FilterInfoValue, FilterOperator } from '@tianji/shared';
 import {
   booleanOperators,
   dateOperators,
@@ -42,7 +42,7 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
       }
     };
 
-    const operators: FilterOperatorMap<string> = useMemo(() => {
+    const operators: FilterOperatorMap<FilterOperator> = useMemo(() => {
       if (info.type === 'number') {
         return numberOperators;
       }
@@ -59,7 +59,7 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
         return dateOperators;
       }
 
-      return {};
+      return {} as any;
     }, [info.type]);
 
     return (
@@ -80,11 +80,11 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
                     onClick={() => {
                       onSelect({
                         ...info,
-                        operator: operator,
+                        operator: operator as FilterOperator,
                       });
                     }}
                   >
-                    {operators[operator]?.label}
+                    {operators[operator as FilterOperator]?.label}
                   </DropdownMenuItem>
                 );
               })}

@@ -3,9 +3,18 @@ import util from 'util';
 
 type Format = ReturnType<typeof format.cli>;
 
+interface TransformableInfo {
+  level: string;
+  message: unknown;
+  // [LEVEL]?: string;
+  // [MESSAGE]?: unknown;
+  // [SPLAT]?: unknown;
+  [key: string | symbol]: any;
+}
+
 function utilFormatter(): Format {
   return {
-    transform(info) {
+    transform(info: TransformableInfo) {
       const args = info[Symbol.for('splat')];
       if (args) {
         info.message = util.format(info.message, ...args);

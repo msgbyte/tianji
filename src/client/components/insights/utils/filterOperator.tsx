@@ -6,6 +6,7 @@ import {
   FilterInfoType,
   FilterInfoValue,
   FilterNumberOperator,
+  FilterOperator,
   FilterStringOperator,
 } from '@tianji/shared';
 import React from 'react';
@@ -193,12 +194,12 @@ export const dateOperators: FilterOperatorMap<
   },
 };
 
-export const defaultOperators: Record<FilterInfoType, string> = {
+export const defaultOperators: Record<FilterInfoType, FilterOperator> = {
   string: 'equals',
   number: 'equals',
   boolean: 'equals',
   date: 'in day',
-  array: '',
+  array: 'in list',
 };
 
 const FilterBetween: React.FC<FilterComponentProps> = React.memo((props) => {
