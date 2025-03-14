@@ -17,6 +17,20 @@ const colors = [
   '#FF5722',
   '#4CAF50',
   '#FF9800',
+  '#795548',
+  '#607D8B',
+  '#9E9E9E',
+  '#FFB6C1',
+  '#87CEEB',
+  '#DDA0DD',
+  '#F0E68C',
+  '#98FB98',
+  '#B0C4DE',
+  '#FFE4B5',
+  '#20B2AA',
+  '#FF69B4',
+  '#7B68EE',
+  '#32CD32',
 ];
 export function pickColorWithStr(str: string) {
   return colors[str2int(str) % colors.length];
