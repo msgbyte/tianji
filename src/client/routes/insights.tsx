@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/resizable';
 import { cn } from '@/utils/style';
 import { MetricsSection } from '@/components/insights/MetricsSection';
-import { isDev } from '@/utils/env';
 import {
   Select,
   SelectContent,
@@ -31,15 +30,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { BreakdownSection } from '@/components/insights/BreakdownSection';
 
 export const Route = createFileRoute('/insights')({
-  beforeLoad: (opts) => {
-    if (!isDev) {
-      throw redirect({
-        to: '/',
-      });
-    }
-
-    return routeAuthBeforeLoad?.(opts);
-  },
+  beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });
 
