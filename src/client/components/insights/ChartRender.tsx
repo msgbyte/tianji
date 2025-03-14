@@ -20,6 +20,8 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { DelayRender } from '../DelayRender';
 import { SearchLoadingView } from '../loading/Searching';
 import { get, groupBy, merge, omit, values } from 'lodash-es';
+import { ChartTypeSelection } from './ChartTypeSelection';
+import { useWatch } from '@/hooks/useWatch';
 
 interface ChartRenderProps {
   insightId: string;
@@ -135,6 +137,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
                 unit={dateUnit}
                 chartConfig={chartConfig}
                 drawGradientArea={false}
+                chartType={chartType}
               />
             </div>
           </ResizablePanel>
@@ -167,7 +170,14 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
           }}
         />
 
-        <DateUnitSelection value={dateUnit} onChange={setDateUnit} />
+        <div className="flex gap-2">
+          <DateUnitSelection
+            allowMinute={allowMinute}
+            value={dateUnit}
+            onChange={setDateUnit}
+          />
+          <ChartTypeSelection value={chartType} onChange={setChartType} />
+        </div>
       </div>
 
       {mainEl}

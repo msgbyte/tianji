@@ -20,6 +20,8 @@ import {
 } from '../ui/chart';
 import { useStrokeDasharray } from '@/hooks/useStrokeDasharray';
 
+export type TimeEventChartType = 'area' | 'stack';
+
 const defaultChartConfig: ChartConfig = {
   pv: {
     label: 'PV',
@@ -35,11 +37,13 @@ export const TimeEventChart: React.FC<{
   unit: DateUnit;
   chartConfig?: ChartConfig;
   drawGradientArea?: boolean;
+  chartType?: TimeEventChartType;
 }> = React.memo((props) => {
   const {
     className,
     drawGradientArea = true,
     chartConfig = defaultChartConfig,
+    chartType = 'area',
   } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
@@ -52,6 +56,8 @@ export const TimeEventChart: React.FC<{
   const [selectedItem, setSelectedItem] = useState<string[]>(() =>
     Object.keys(chartConfig)
   );
+
+  const stacked = chartType === 'stack';
 
   return (
     <ChartContainer className={className} config={chartConfig}>
@@ -123,6 +129,7 @@ export const TimeEventChart: React.FC<{
               hide={!selectedItem.includes(key)}
               type="monotone"
               dataKey={key}
+              stackId={stacked ? '1' : undefined}
               stroke={
                 chartConfig[key].color ??
                 (colors.chart as any)[key] ??
