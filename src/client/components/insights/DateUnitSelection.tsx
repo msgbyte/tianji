@@ -10,12 +10,13 @@ import { DateUnit } from '@tianji/shared';
 import { useTranslation } from '@i18next-toolkit/react';
 
 interface DateRangeSelectionProps {
+  allowMinute: boolean;
   value: DateUnit;
   onChange: (val: DateUnit) => void;
 }
 export const DateUnitSelection: React.FC<DateRangeSelectionProps> = React.memo(
   (props) => {
-    const { value, onChange } = props;
+    const { allowMinute, value, onChange } = props;
     const { t } = useTranslation();
 
     return (
@@ -23,8 +24,10 @@ export const DateUnitSelection: React.FC<DateRangeSelectionProps> = React.memo(
         <SelectTrigger className="w-[120px]">
           <SelectValue placeholder="Day" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="minute">{t('Minute')}</SelectItem>
+        <SelectContent align="end">
+          <SelectItem value="minute" disabled={!allowMinute}>
+            {t('Minute')}
+          </SelectItem>
           <SelectItem value="hour">{t('Hour')}</SelectItem>
           <SelectItem value="day">{t('Day')}</SelectItem>
           <SelectItem value="month">{t('Month')}</SelectItem>

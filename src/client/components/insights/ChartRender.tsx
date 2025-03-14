@@ -2,7 +2,7 @@ import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
-import { TimeEventChart } from '../chart/TimeEventChart';
+import { TimeEventChart, TimeEventChartType } from '../chart/TimeEventChart';
 import { useInsightsStore } from '@/store/insights';
 import { pickColorWithNum } from '@/utils/color';
 import { DateRangeSelection } from './DateRangeSelection';
@@ -44,7 +44,19 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     dayjs().subtract(30, 'day').startOf('day').toDate(),
     dayjs().endOf('day').toDate(),
   ]);
+  const allowMinute = useMemo(() => {
+    const start = dayjs(dateRange[0]);
+    const end = dayjs(dateRange[1]);
+    return end.diff(start, 'day') <= 1;
+  }, [dateRange]);
   const [dateUnit, setDateUnit] = useState<DateUnit>('day');
+  const [chartType, setChartType] = useState<TimeEventChartType>('area');
+
+  useWatch([allowMinute, dateUnit], () => {
+    if (!allowMinute && dateUnit === 'minute') {
+      setDateUnit('day');
+    }
+  });
 
   const time = useMemo(
     () => ({
