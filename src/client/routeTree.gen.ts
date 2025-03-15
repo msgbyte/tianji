@@ -24,6 +24,7 @@ import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
 import { Route as InsightsImport } from './routes/insights'
 import { Route as FeedImport } from './routes/feed'
+import { Route as ApplicationImport } from './routes/application'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
@@ -43,14 +44,18 @@ import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as FeedPlaygroundImport } from './routes/feed_/playground'
 import { Route as FeedAddImport } from './routes/feed/add'
+import { Route as ApplicationOverviewImport } from './routes/application/overview'
+import { Route as ApplicationAddImport } from './routes/application/add'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
+import { Route as ApplicationApplicationIdIndexImport } from './routes/application/$applicationId/index'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
+import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
 
 // Create/Update Routes
 
@@ -116,6 +121,11 @@ const InsightsRoute = InsightsImport.update({
 
 const FeedRoute = FeedImport.update({
   path: '/feed',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApplicationRoute = ApplicationImport.update({
+  path: '/application',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -214,6 +224,16 @@ const FeedAddRoute = FeedAddImport.update({
   getParentRoute: () => FeedRoute,
 } as any)
 
+const ApplicationOverviewRoute = ApplicationOverviewImport.update({
+  path: '/overview',
+  getParentRoute: () => ApplicationRoute,
+} as any)
+
+const ApplicationAddRoute = ApplicationAddImport.update({
+  path: '/add',
+  getParentRoute: () => ApplicationRoute,
+} as any)
+
 const WebsiteWebsiteIdIndexRoute = WebsiteWebsiteIdIndexImport.update({
   path: '/$websiteId/',
   getParentRoute: () => WebsiteRoute,
@@ -233,6 +253,12 @@ const FeedChannelIdIndexRoute = FeedChannelIdIndexImport.update({
   path: '/$channelId/',
   getParentRoute: () => FeedRoute,
 } as any)
+
+const ApplicationApplicationIdIndexRoute =
+  ApplicationApplicationIdIndexImport.update({
+    path: '/$applicationId/',
+    getParentRoute: () => ApplicationRoute,
+  } as any)
 
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
   path: '/$websiteId/config',
@@ -254,12 +280,22 @@ const FeedChannelIdEditRoute = FeedChannelIdEditImport.update({
   getParentRoute: () => FeedRoute,
 } as any)
 
+const ApplicationApplicationIdEditRoute =
+  ApplicationApplicationIdEditImport.update({
+    path: '/$applicationId/edit',
+    getParentRoute: () => ApplicationRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/application': {
+      preLoaderRoute: typeof ApplicationImport
       parentRoute: typeof rootRoute
     }
     '/feed': {
@@ -313,6 +349,14 @@ declare module '@tanstack/react-router' {
     '/website': {
       preLoaderRoute: typeof WebsiteImport
       parentRoute: typeof rootRoute
+    }
+    '/application/add': {
+      preLoaderRoute: typeof ApplicationAddImport
+      parentRoute: typeof ApplicationImport
+    }
+    '/application/overview': {
+      preLoaderRoute: typeof ApplicationOverviewImport
+      parentRoute: typeof ApplicationImport
     }
     '/feed/add': {
       preLoaderRoute: typeof FeedAddImport
@@ -386,6 +430,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/application/$applicationId/edit': {
+      preLoaderRoute: typeof ApplicationApplicationIdEditImport
+      parentRoute: typeof ApplicationImport
+    }
     '/feed/$channelId/edit': {
       preLoaderRoute: typeof FeedChannelIdEditImport
       parentRoute: typeof FeedImport
@@ -401,6 +449,10 @@ declare module '@tanstack/react-router' {
     '/website/$websiteId/config': {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
+    }
+    '/application/$applicationId/': {
+      preLoaderRoute: typeof ApplicationApplicationIdIndexImport
+      parentRoute: typeof ApplicationImport
     }
     '/feed/$channelId/': {
       preLoaderRoute: typeof FeedChannelIdIndexImport
@@ -425,6 +477,12 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  ApplicationRoute.addChildren([
+    ApplicationAddRoute,
+    ApplicationOverviewRoute,
+    ApplicationApplicationIdEditRoute,
+    ApplicationApplicationIdIndexRoute,
+  ]),
   FeedRoute.addChildren([
     FeedAddRoute,
     FeedChannelIdEditRoute,

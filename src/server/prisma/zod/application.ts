@@ -16,7 +16,7 @@ export interface CompleteApplication extends z.infer<typeof ApplicationModelSche
   sessions: CompleteApplicationSession[]
   eventData: CompleteApplicationEventData[]
   sessionData: CompleteApplicationSessionData[]
-  applicationStoreInfo: CompleteApplicationStoreInfo[]
+  applicationStoreInfos: CompleteApplicationStoreInfo[]
 }
 
 /**
@@ -29,5 +29,5 @@ export const RelatedApplicationModelSchema: z.ZodSchema<CompleteApplication> = z
   sessions: RelatedApplicationSessionModelSchema.array(),
   eventData: RelatedApplicationEventDataModelSchema.array(),
   sessionData: RelatedApplicationSessionDataModelSchema.array(),
-  applicationStoreInfo: RelatedApplicationStoreInfoModelSchema.array(),
+  applicationStoreInfos: RelatedApplicationStoreInfoModelSchema.array(),
 }))

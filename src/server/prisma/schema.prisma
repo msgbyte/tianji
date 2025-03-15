@@ -353,10 +353,10 @@ model Application {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  sessions             ApplicationSession[]
-  eventData            ApplicationEventData[]
-  sessionData          ApplicationSessionData[]
-  applicationStoreInfo ApplicationStoreInfo[]
+  sessions              ApplicationSession[]
+  eventData             ApplicationEventData[]
+  sessionData           ApplicationSessionData[]
+  applicationStoreInfos ApplicationStoreInfo[]
 
   @@index([workspaceId])
   @@index([createdAt])
@@ -456,8 +456,8 @@ model ApplicationStoreInfo {
   storeType     String  @db.VarChar(30) // appstore, playstore
   storeId       String  @db.VarChar(100)
   appId         String
-  title         String  @db.VarChar(100)
-  description   String  @db.VarChar(1000)
+  title         String
+  description   String
   releaseNotes  String
   url           String
   downloads     Int? // only for playstore

@@ -13,6 +13,7 @@ import { surveyRouter } from './survey.js';
 import { feedRouter } from './feed/index.js';
 import { aiRouter } from './ai.js';
 import { insightsRouter } from './insights.js';
+import { applicationRouter } from './application.js';
 
 export const appRouter = router({
   ai: aiRouter,
@@ -20,6 +21,7 @@ export const appRouter = router({
   user: userRouter,
   workspace: workspaceRouter,
   website: websiteRouter,
+  application: applicationRouter,
   insights: insightsRouter,
   notification: notificationRouter,
   monitor: monitorRouter,
