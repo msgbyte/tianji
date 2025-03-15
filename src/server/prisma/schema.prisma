@@ -101,10 +101,11 @@ model Workspace {
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
-  subscription  WorkspaceSubscription?
+  subscription WorkspaceSubscription?
 
   users              WorkspacesOnUsers[]
   websites           Website[]
+  applications       Application[]
   notifications      Notification[]
   monitors           Monitor[]
   monitorStatusPages MonitorStatusPage[]
@@ -170,14 +171,15 @@ enum WorkspaceTaskEnum {
   Success
   Failed
 }
+
 model WorkspaceTask {
-  id          String @id() @default(cuid()) @db.VarChar(30)
-  workspaceId String @db.VarChar(30)
+  id          String            @id() @default(cuid()) @db.VarChar(30)
+  workspaceId String            @db.VarChar(30)
   type        String
   status      WorkspaceTaskEnum
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
-  meta        Json   @default("{}")
+  meta        Json              @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -339,6 +341,138 @@ model WebsiteSessionData {
   @@index([createdAt])
   @@index([websiteId])
   @@index([sessionId])
+}
+
+model Application {
+  id          String    @id @unique @default(cuid()) @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
+  name        String    @db.VarChar(100)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  sessions             ApplicationSession[]
+  eventData            ApplicationEventData[]
+  sessionData          ApplicationSessionData[]
+  applicationStoreInfo ApplicationStoreInfo[]
+
+  @@index([workspaceId])
+  @@index([createdAt])
+}
+
+model ApplicationSession {
+  id             String   @id @unique @db.Uuid
+  applicationId  String   @db.VarChar(30)
+  os             String?  @db.VarChar(20) // android or ios os version
+  language       String?  @db.VarChar(35)
+  ip             String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
+  country        String?  @db.Char(2)
+  subdivision1   String?  @db.VarChar(20)
+  subdivision2   String?  @db.VarChar(50)
+  city           String?  @db.VarChar(50)
+  longitude      Float?
+  latitude       Float?
+  accuracyRadius Int?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  application Application @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  applicationEvent ApplicationEvent[]
+  sessionData      ApplicationSessionData[]
+
+  @@index([createdAt])
+  @@index([applicationId])
+  @@index([applicationId, createdAt])
+  @@index([applicationId, createdAt, os])
+  @@index([applicationId, createdAt, language])
+  @@index([applicationId, createdAt, country])
+  @@index([applicationId, createdAt, subdivision1])
+  @@index([applicationId, createdAt, city])
+}
+
+model ApplicationEvent {
+  id            String   @id() @default(cuid()) @db.VarChar(30)
+  applicationId String   @db.VarChar(30)
+  sessionId     String   @db.Uuid
+  eventType     Int      @default(1) @db.Integer // 1 is view, 2 is click event
+  eventName     String?  @db.VarChar(50)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  eventData ApplicationEventData[]
+  session   ApplicationSession     @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([applicationId])
+  @@index([applicationId, createdAt])
+  @@index([applicationId, createdAt, eventName])
+  @@index([applicationId, sessionId, createdAt])
+}
+
+model ApplicationEventData {
+  id                 String    @id() @default(cuid()) @db.VarChar(30)
+  applicationId      String    @db.VarChar(30)
+  applicationEventId String    @db.VarChar(30)
+  eventKey           String    @db.VarChar(500)
+  stringValue        String?   @db.VarChar(500)
+  numberValue        Decimal?  @db.Decimal(19, 4)
+  dateValue          DateTime? @db.Timestamptz(6)
+  dataType           Int       @db.Integer // string: 1, number: 2, boolean: 3, date: 4, array: 5,
+  createdAt          DateTime  @default(now()) @db.Timestamptz(6)
+
+  application      Application      @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  applicationEvent ApplicationEvent @relation(fields: [applicationEventId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([applicationId])
+  @@index([applicationEventId])
+  @@index([applicationId, createdAt])
+  @@index([applicationId, createdAt, eventKey])
+}
+
+model ApplicationSessionData {
+  id            String    @id() @default(cuid()) @db.VarChar(30)
+  applicationId String    @db.VarChar(30)
+  sessionId     String    @db.Uuid
+  key           String    @db.VarChar(500)
+  stringValue   String?   @db.VarChar(500)
+  numberValue   Decimal?  @db.Decimal(19, 4)
+  dateValue     DateTime? @db.Timestamptz(6)
+  dataType      Int       @db.Integer
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+
+  application Application        @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  session     ApplicationSession @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([applicationId])
+  @@index([sessionId])
+}
+
+model ApplicationStoreInfo {
+  applicationId String  @db.VarChar(30)
+  storeType     String  @db.VarChar(30) // appstore, playstore
+  storeId       String  @db.VarChar(100)
+  appId         String
+  title         String  @db.VarChar(100)
+  description   String  @db.VarChar(1000)
+  releaseNotes  String
+  url           String
+  downloads     Int? // only for playstore
+  score         Float?
+  ratingCount   Int? // rating count
+  reviews       Int?
+  version       String?
+  size          Float? // only for appstore
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  application Application @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([applicationId, storeType])
 }
 
 enum WebsiteLighthouseReportStatus {
@@ -623,7 +757,7 @@ model SurveyResult {
   accuracyRadius Int?
 
   // ai
-  aiCategory String?
+  aiCategory    String?
   aiTranslation String?
 
   survey Survey @relation(fields: [surveyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
