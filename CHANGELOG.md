@@ -1,5 +1,24 @@
 
 
+## [1.18.22](https://github.com/msgbyte/tianji/compare/v1.18.21...v1.18.22) (2025-03-15)
+
+### Features
+
+* add stack chart type ([5a5579a](https://github.com/msgbyte/tianji/commit/5a5579a036cef1733d992b542c7ae728fcf42f42))
+* add survey break down filter render chart and table view ([e13256e](https://github.com/msgbyte/tianji/commit/e13256e6cdcde455e992905011de2693483fcca9))
+* insight survey add groups support ([0288735](https://github.com/msgbyte/tianji/commit/028873523f487e21215d5d7e6388f8339f473bc8))
+* insight website add groups support ([54d2678](https://github.com/msgbyte/tianji/commit/54d267887f06993d8cefa1bfdc96f6f7eab52402))
+
+### Others
+
+* add more chart color ([ca0601d](https://github.com/msgbyte/tianji/commit/ca0601d1e49c7602a23f310be0b32c98feb8a054))
+* fix ci problem ([78a2a79](https://github.com/msgbyte/tianji/commit/78a2a793ee43fce7fbd6f45f2d8b13a0930d18a5))
+* insight add types and survey params ([446b19a](https://github.com/msgbyte/tianji/commit/446b19a8ca9d37c28c7ad97e4f20ba2956be9600))
+* refactor survey sql place ([099214c](https://github.com/msgbyte/tianji/commit/099214ca6f0b41cfe126ab89ac8ababccb1f391c))
+* release insight route for non-dev environment ([8bdff74](https://github.com/msgbyte/tianji/commit/8bdff74ba6312461c4b3b57da10e5145c0b2fcab))
+* rollback react package version ([d69b484](https://github.com/msgbyte/tianji/commit/d69b484fae322523c2183fd319aaef23cc85930c))
+* update minute logic, will auto switch date unit after switch ([965e502](https://github.com/msgbyte/tianji/commit/965e50229a58ec37860483c8ed87b7d5dbf8f9ea))
+
 ## [1.18.21](https://github.com/msgbyte/tianji/compare/v1.18.20...v1.18.21) (2025-03-13)
 
 ### Others
