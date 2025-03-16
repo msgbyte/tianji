@@ -449,6 +449,9 @@ importers:
       react-router-dom:
         specifier: ^6.30.0
         version: 6.30.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-show-more-text:
+        specifier: ^1.7.1
+        version: 1.7.1(react@18.2.0)
       recharts:
         specifier: ^2.15.1
         version: 2.15.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -522,6 +525,9 @@ importers:
       '@types/react-resizable':
         specifier: ^3.0.8
         version: 3.0.8
+      '@types/react-show-more-text':
+        specifier: ^1.4.5
+        version: 1.4.5
       '@types/uuid':
         specifier: ^9.0.8
         version: 9.0.8
@@ -5444,6 +5450,9 @@ packages:
 
   '@types/react-router@5.1.20':
     resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
+
+  '@types/react-show-more-text@1.4.5':
+    resolution: {integrity: sha512-tpo+we9AwkSBvQoeZfEGUJt6ZwkLov3vak/ZTNXLlW5K1q2drKDqlQ7K1Yo+0CuYF7aK5j9gjxJkbesgr0tP4A==}
 
   '@types/react-slick@0.23.13':
     resolution: {integrity: sha512-bNZfDhe/L8t5OQzIyhrRhBr/61pfBcWaYJoq6UDqFtv5LMwfg4NsVDD2J8N01JqdAdxLjOt66OZEp6PX+dGs/A==}
@@ -12648,6 +12657,11 @@ packages:
   react-router@6.30.0:
     resolution: {integrity: sha512-D3X8FyH9nBcTSHGdEKurK7r8OYE1kKFn3d/CF+CoxbSHkxU7o37+Uh7eAHRXr6k2tSExXYO++07PeXJtA/dEhQ==}
     engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: 18.2.0
+
+  react-show-more-text@1.7.1:
+    resolution: {integrity: sha512-k+NyTogrBgPVpE84r6AdDLgf60k9cR4F0zlhp3w8Hoquq+UStKjAOatsVYDLwfWD8wqF6smRXohi2rvQZRpQDQ==}
     peerDependencies:
       react: 18.2.0
 
@@ -21242,6 +21256,10 @@ snapshots:
   '@types/react-router@5.1.20':
     dependencies:
       '@types/history': 4.7.11
+      '@types/react': 18.2.78
+
+  '@types/react-show-more-text@1.4.5':
+    dependencies:
       '@types/react': 18.2.78
 
   '@types/react-slick@0.23.13':
@@ -30251,6 +30269,11 @@ snapshots:
   react-router@6.30.0(react@18.2.0):
     dependencies:
       '@remix-run/router': 1.23.0
+      react: 18.2.0
+
+  react-show-more-text@1.7.1(react@18.2.0):
+    dependencies:
+      prop-types: 15.8.1
       react: 18.2.0
 
   react-side-effect@2.1.2(react@18.2.0):
