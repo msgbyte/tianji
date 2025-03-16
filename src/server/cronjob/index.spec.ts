@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest';
-import { dailyUpdateApplicationStoreInfo, initCronjob } from './index.js';
+import { initCronjob } from './index.js';
 
 describe.runIf(process.env.TEST_CRONJOB)('cronjob', () => {
   const { dailyJob } = initCronjob();
@@ -14,18 +14,3 @@ describe.runIf(process.env.TEST_CRONJOB)('cronjob', () => {
     }
   );
 });
-
-describe.runIf(process.env.TEST_CRONJOB_APPLICATION)(
-  'dailyUpdateApplicationStoreInfo',
-  () => {
-    test(
-      'run dailyUpdateApplicationStoreInfo',
-      {
-        timeout: 30_000,
-      },
-      async () => {
-        await dailyUpdateApplicationStoreInfo();
-      }
-    );
-  }
-);
