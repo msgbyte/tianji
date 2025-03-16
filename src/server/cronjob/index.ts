@@ -10,6 +10,7 @@ import pMap from 'p-map';
 import { sendFeedEventsNotify } from '../model/feed/event.js';
 import { get } from 'lodash-es';
 import { checkWorkspaceUsage } from '../model/billing/cronjob.js';
+import { upsertStoreInfo } from '../model/application/storeInfo.js';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -27,6 +28,7 @@ export function initCronjob() {
         clearMonitorEventDaily().catch(logger.error),
         clearAuditLogDaily().catch(logger.error),
         dailyHTTPCertCheckNotify().catch(logger.error),
+        dailyUpdateApplicationStoreInfo().catch(logger.error),
         checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
       ]);
 
@@ -388,6 +390,31 @@ async function dailyHTTPCertCheckNotify() {
 
   logger.info(
     `[dailyHTTPCertCheckNotify] run completed, send ${sendCount} notifications, time usage: ${Date.now() - start}ms`
+  );
+}
+
+/**
+ * Update Application Store Info
+ */
+export async function dailyUpdateApplicationStoreInfo() {
+  const allStores = await prisma.applicationStoreInfo.findMany({
+    select: {
+      applicationId: true,
+      storeType: true,
+      storeId: true,
+    },
+  });
+
+  await pMap(
+    allStores,
+    async (storeInfo) => {
+      const { applicationId, storeType, storeId } = storeInfo;
+
+      await upsertStoreInfo(applicationId, storeType, storeId);
+    },
+    {
+      concurrency: 2,
+    }
   );
 }
 
