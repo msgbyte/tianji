@@ -15,6 +15,7 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { LuPlus } from 'react-icons/lu';
+import { useDataReady } from '@/hooks/useDataReady';
 
 export const Route = createFileRoute('/application')({
   beforeLoad: routeAuthBeforeLoad,
@@ -45,6 +46,20 @@ function ApplicationComponent() {
       to: '/application/add',
     });
   });
+
+  useDataReady(
+    () => data.length > 0,
+    () => {
+      if (pathname === Route.fullPath) {
+        navigate({
+          to: '/application/$applicationId',
+          params: {
+            applicationId: data[0].id,
+          },
+        });
+      }
+    }
+  );
 
   return (
     <Layout
