@@ -138,6 +138,18 @@ function PageComponent() {
                 </Card>
               ))}
             </div>
+
+            <div>
+              {application.applicationStoreInfos.length === 0 && (
+                <div>
+                  <div className="text-muted-foreground text-sm">
+                    {t(
+                      'No app store information found, please bind application store info first'
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* App Store tab content */}
