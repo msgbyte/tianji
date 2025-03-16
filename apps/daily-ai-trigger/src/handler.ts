@@ -74,7 +74,7 @@ export async function handleCreateDailyReport(env: Env) {
 
 	const sortedCategories = Object.entries(categoryCount).sort((a, b) => b[1] - a[1]);
 
-	content += `All Categories:\n`;
+	content += `All Categories(${resultList.length}):\n`;
 	sortedCategories.forEach(([category, count]) => {
 		content += `- ${category}(${count})\n`;
 	});
