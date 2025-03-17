@@ -340,6 +340,54 @@ export const workspaceRouter = router({
 
       leaveWorkspace(targetUserId, workspaceId);
     }),
+
+  updateMemberRole: workspaceOwnerProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'PATCH',
+        path: '/{workspaceId}/updateMemberRole',
+        description: 'Update workspace member role',
+      })
+    )
+    .input(
+      z.object({
+        userId: z.string(),
+        role: z.nativeEnum(ROLES),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { userId, workspaceId, role } = input;
+
+      const member = await prisma.workspacesOnUsers.findUnique({
+        where: {
+          userId_workspaceId: {
+            userId,
+            workspaceId,
+          },
+        },
+      });
+
+      if (!member) {
+        throw new Error('Member not found');
+      }
+
+      if (member.role === ROLES.owner) {
+        throw new Error("Cannot change owner's role");
+      }
+
+      await prisma.workspacesOnUsers.update({
+        where: {
+          userId_workspaceId: {
+            userId,
+            workspaceId,
+          },
+        },
+        data: {
+          role,
+        },
+      });
+    }),
   getUserWorkspaceRole: publicProcedure
     .input(
       z.object({

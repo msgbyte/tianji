@@ -16,16 +16,8 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 import { Typography } from 'antd';
-import {
-  AppRouterOutput,
-  defaultErrorHandler,
-  defaultSuccessHandler,
-  trpc,
-} from '@/api/trpc';
-import { createColumnHelper, DataTable } from '@/components/DataTable';
+import { defaultErrorHandler, defaultSuccessHandler, trpc } from '@/api/trpc';
 import { useMemo, useState } from 'react';
-import { get } from 'lodash-es';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Form,
@@ -54,6 +46,7 @@ import {
 } from '@/components/ui/select';
 import dayjs from 'dayjs';
 import { getTimezoneList } from '@/utils/date';
+import { useWorkspaceMembers } from '@/components/workspace/useWorkspaceMembers';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -66,23 +59,19 @@ const inviteFormSchema = z.object({
 
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
-type MemberInfo = AppRouterOutput['workspace']['members'][number];
-const columnHelper = createColumnHelper<MemberInfo>();
-
 function PageComponent() {
   const { t } = useTranslation();
   const { id: workspaceId, name, role, settings } = useCurrentWorkspace();
   const hasAdminPermission = useHasAdminPermission();
-  const { data: members = [], refetch: refetchMembers } =
-    trpc.workspace.members.useQuery({
-      workspaceId,
-    });
+  const trpcUtils = trpc.useUtils();
   const updateCurrentWorkspaceName = useUserStore(
     (state) => state.updateCurrentWorkspaceName
   );
   const updateCurrentWorkspaceSettings = useUserStore(
     (state) => state.updateCurrentWorkspaceSettings
   );
+
+  const { tableEl: workspaceMembersTable } = useWorkspaceMembers();
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
@@ -124,7 +113,9 @@ function PageComponent() {
       });
       form.reset();
 
-      refetchMembers();
+      trpcUtils.workspace.members.invalidate({
+        workspaceId,
+      });
     }
   );
 
@@ -140,37 +131,6 @@ function PageComponent() {
   });
 
   const timezoneList = useMemo(() => getTimezoneList(), []);
-
-  const columns = useMemo(() => {
-    return [
-      columnHelper.accessor(
-        (data) =>
-          get(data, ['user', 'nickname']) || get(data, ['user', 'username']),
-        {
-          header: t('Name'),
-          size: 300,
-        }
-      ),
-      columnHelper.accessor('user.email', {
-        header: t('Email'),
-        size: 130,
-        cell: (props) => {
-          return (
-            <span>
-              {props.getValue()}
-              {props.row.original.user.emailVerified && (
-                <Badge className="ml-1">{t('Verified')}</Badge>
-              )}
-            </span>
-          );
-        },
-      }),
-      columnHelper.accessor('role', {
-        header: t('Role'),
-        size: 130,
-      }),
-    ];
-  }, [t]);
 
   return (
     <CommonWrapper header={<CommonHeader title={t('Workspace')} />}>
@@ -272,9 +232,7 @@ function PageComponent() {
             <CardHeader className="text-lg font-bold">
               {t('Members')}
             </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={members} />
-            </CardContent>
+            <CardContent>{workspaceMembersTable}</CardContent>
           </Card>
 
           {role === ROLES.owner && (
