@@ -63,6 +63,12 @@ export function useWorkspaceMembers() {
       }
     );
 
+  const memberRoleTranslation = {
+    [ROLES.owner]: t('Owner'),
+    [ROLES.admin]: t('Admin'),
+    [ROLES.readOnly]: t('Read Only'),
+  };
+
   const updateRoleMutation = trpc.workspace.updateMemberRole.useMutation({
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
@@ -113,11 +119,11 @@ export function useWorkspaceMembers() {
         header: t('Role'),
         size: 130,
         cell: (props) => {
-          const memberRole = props.getValue();
+          const memberRole = props.getValue() as ROLES;
 
           return (
             <div className="flex items-center gap-2">
-              <span>{memberRole}</span>
+              <span>{memberRoleTranslation[memberRole]}</span>
               {role === ROLES.owner &&
                 props.row.original.role !== ROLES.owner &&
                 props.row.original.userId !== userId && (
@@ -167,9 +173,11 @@ export function useWorkspaceMembers() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ROLES.admin}>{ROLES.admin}</SelectItem>
+                  <SelectItem value={ROLES.admin}>
+                    {memberRoleTranslation[ROLES.admin]}
+                  </SelectItem>
                   <SelectItem value={ROLES.readOnly}>
-                    {ROLES.readOnly}
+                    {memberRoleTranslation[ROLES.readOnly]}
                   </SelectItem>
                 </SelectContent>
               </Select>
