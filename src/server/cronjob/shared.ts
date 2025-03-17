@@ -3,6 +3,7 @@ import { logger } from '../utils/logger.js';
 import { prisma } from '../model/_client.js';
 import dayjs from 'dayjs';
 import { sendFeedEventsNotify } from '../model/feed/event.js';
+import pMap from 'p-map';
 
 /**
  * Check feed events notify
