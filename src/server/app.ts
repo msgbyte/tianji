@@ -4,6 +4,7 @@ import compression from 'compression';
 import swaggerUI from 'swagger-ui-express';
 import morgan from 'morgan';
 import { websiteRouter } from './router/website.js';
+import { applicationRouter } from './router/application.js';
 import { telemetryRouter } from './router/telemetry.js';
 import {
   trpcExpressMiddleware,
@@ -55,6 +56,7 @@ app.use(
 app.use('/health', healthRouter);
 app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
+app.use('/api/application', applicationRouter);
 app.use('/api/billing', billingRouter);
 app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);
