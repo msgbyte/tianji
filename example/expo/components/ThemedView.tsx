@@ -6,6 +6,7 @@ export type ThemedViewProps = ViewProps & {
   lightColor?: string;
   darkColor?: string;
   variant?: 'default' | 'card';
+  className?: string;
 };
 
 export function ThemedView({
