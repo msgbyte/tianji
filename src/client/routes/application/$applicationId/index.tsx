@@ -87,7 +87,11 @@ function PageComponent() {
           </TabsList>
 
           {/* Overview tab content */}
-          <TabsContent value="overview" className="mt-4">
+          <TabsContent value="overview" className="mt-4 flex flex-col gap-4">
+            <div>
+              <ApplicationStatsChart applicationId={applicationId} />
+            </div>
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {application.applicationStoreInfos.map((storeInfo) => (
                 <ApplicationOverviewCard
@@ -96,20 +100,6 @@ function PageComponent() {
                 />
               ))}
             </div>
-
-            {application.applicationStoreInfos.length > 0 ? (
-              <div className="mt-4">
-                <ApplicationStatsChart applicationId={applicationId} />
-              </div>
-            ) : (
-              <div>
-                <div className="text-muted-foreground text-sm">
-                  {t(
-                    'No app store information found, please bind application store info first'
-                  )}
-                </div>
-              </div>
-            )}
           </TabsContent>
 
           {/* App Store tab content */}

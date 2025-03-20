@@ -130,16 +130,19 @@ export const ApplicationDetailCard: React.FC<ApplicationDetailCardProps> =
                     <span className="font-medium">{t('Version')}:</span>{' '}
                     {storeInfo.version || t('Unknown')}
                   </div>
-                  <div>
-                    <span className="font-medium">{t('Size')}:</span>{' '}
-                    {storeInfo.size
-                      ? `${(storeInfo.size / 1024 / 1024).toFixed(2)} MB`
-                      : t('Unknown')}
-                  </div>
+
+                  {storeInfo.downloads && (
+                    <div>
+                      <span className="font-medium">{t('Downloads')}:</span>{' '}
+                      {storeInfo.downloads?.toLocaleString() || t('Unknown')}
+                    </div>
+                  )}
+
                   <div>
                     <span className="font-medium">App ID:</span>{' '}
                     {storeInfo.appId}
                   </div>
+
                   <div>
                     <span className="font-medium">Store ID:</span>{' '}
                     {storeInfo.storeId}
@@ -149,16 +152,9 @@ export const ApplicationDetailCard: React.FC<ApplicationDetailCardProps> =
 
               <div>
                 <h3 className="mb-2 text-lg font-medium">
-                  {t('Downloads & Ratings')}
+                  {t('Rating Information')}
                 </h3>
                 <div className="space-y-2">
-                  {storeInfo.downloads && (
-                    <div>
-                      <span className="font-medium">{t('Downloads')}:</span>{' '}
-                      {storeInfo.downloads?.toLocaleString() || t('Unknown')}
-                    </div>
-                  )}
-
                   <div>
                     <span className="font-medium">{t('Rating')}:</span>{' '}
                     {storeInfo.score?.toFixed(1) || t('Unknown')}
