@@ -7,8 +7,8 @@ export const eventStatsQueryResultItemSchema = z.object({
   date: z.string(),
   eventCount: z.number(),
   sessionCount: z.number(),
-  uniqueEventCount: z.number(),
-  uniqueScreenCount: z.number(),
+  avgEventsPerSession: z.number(),
+  avgScreensPerSession: z.number(),
 });
 
 type EventStatsQueryResultItem = z.infer<
@@ -38,8 +38,20 @@ export async function getApplicationEventStats(
       ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
       COUNT(*) as "eventCount",
       COUNT(DISTINCT "sessionId") as "sessionCount",
-      COUNT(DISTINCT CASE WHEN "eventName" IS NOT NULL THEN "eventName" ELSE NULL END) as "uniqueEventCount",
-      COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN "screenName" ELSE NULL END) as "uniqueScreenCount"
+      ROUND(
+        CAST(
+          COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
+        ) /
+        NULLIF(COUNT(DISTINCT "sessionId"), 0),
+        2
+      ) as "avgEventsPerSession",
+      ROUND(
+        CAST(
+          COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN CONCAT("sessionId", ':', "screenName") ELSE NULL END) AS DECIMAL
+        ) /
+        NULLIF(COUNT(DISTINCT "sessionId"), 0),
+        2
+      ) as "avgScreensPerSession"
     FROM "ApplicationEvent"
     WHERE "applicationId" = ${applicationId}
       AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
@@ -58,8 +70,20 @@ export async function getApplicationEventStats(
       ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
       COUNT(*) as "eventCount",
       COUNT(DISTINCT "sessionId") as "sessionCount",
-      COUNT(DISTINCT CASE WHEN "eventName" IS NOT NULL THEN "eventName" ELSE NULL END) as "uniqueEventCount",
-      COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN "screenName" ELSE NULL END) as "uniqueScreenCount"
+      ROUND(
+        CAST(
+          COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
+        ) /
+        NULLIF(COUNT(DISTINCT "sessionId"), 0),
+        2
+      ) as "avgEventsPerSession",
+      ROUND(
+        CAST(
+          COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN CONCAT("sessionId", ':', "screenName") ELSE NULL END) AS DECIMAL
+        ) /
+        NULLIF(COUNT(DISTINCT "sessionId"), 0),
+        2
+      ) as "avgScreensPerSession"
     FROM "ApplicationEvent"
     WHERE "applicationId" = ${applicationId}
       AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
@@ -74,8 +98,8 @@ export async function getApplicationEventStats(
         date: res.date,
         eventCount: Number(res.eventCount),
         sessionCount: Number(res.sessionCount),
-        uniqueEventCount: Number(res.uniqueEventCount),
-        uniqueScreenCount: Number(res.uniqueScreenCount),
+        avgEventsPerSession: Number(res.avgEventsPerSession),
+        avgScreensPerSession: Number(res.avgScreensPerSession),
       })),
       startDate,
       endDate,
@@ -87,8 +111,8 @@ export async function getApplicationEventStats(
         date: res.date,
         eventCount: Number(res.eventCount),
         sessionCount: Number(res.sessionCount),
-        uniqueEventCount: Number(res.uniqueEventCount),
-        uniqueScreenCount: Number(res.uniqueScreenCount),
+        avgEventsPerSession: Number(res.avgEventsPerSession),
+        avgScreensPerSession: Number(res.avgScreensPerSession),
       })),
       prevStartDate,
       prevEndDate,
