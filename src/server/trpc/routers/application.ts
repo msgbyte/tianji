@@ -11,6 +11,11 @@ import { ApplicationModelSchema } from '../../prisma/zod/application.js';
 import { ApplicationStoreInfoModelSchema } from '../../prisma/zod/applicationstoreinfo.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { setupStoreInfo } from '../../model/application/storeInfo.js';
+import { parseDateRange } from '../../utils/common.js';
+import {
+  eventStatsQueryResultItemSchema,
+  getApplicationEventStats,
+} from '../../model/application/event.js';
 
 const applicationNameSchema = z.string().max(100);
 
@@ -205,6 +210,54 @@ export const applicationRouter = router({
       });
 
       return application;
+    }),
+  eventStats: workspaceProcedure
+    .meta(
+      buildApplicationOpenapi({
+        method: 'GET',
+        path: '/eventStats',
+      })
+    )
+    .input(
+      z.object({
+        applicationId: z.string(),
+        startAt: z.number(),
+        endAt: z.number(),
+        timezone: z.string().optional(),
+        unit: z.enum(['minute', 'hour', 'day', 'month', 'year']).optional(),
+      })
+    )
+    .output(
+      z.object({
+        current: eventStatsQueryResultItemSchema.array(),
+        previous: eventStatsQueryResultItemSchema.array(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const {
+        applicationId,
+        startAt,
+        endAt,
+        timezone = ctx.timezone,
+        unit,
+      } = input;
+
+      const { startDate, endDate } = await parseDateRange({
+        websiteId: applicationId, // reuse the same function
+        startAt: Number(startAt),
+        endAt: Number(endAt),
+        unit,
+      });
+
+      // Get application event stats
+      const stats = await getApplicationEventStats(applicationId, {
+        startDate,
+        endDate,
+        timezone,
+        unit,
+      });
+
+      return stats;
     }),
 });
 

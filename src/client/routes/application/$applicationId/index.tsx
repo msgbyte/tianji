@@ -14,6 +14,7 @@ import { LuPencil } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 import { ApplicationOverviewCard } from '@/components/application/ApplicationOverviewCard';
 import { ApplicationDetailCard } from '@/components/application/ApplicationDetailCard';
+import { ApplicationStatsChart } from '@/components/application/ApplicationStatsChart';
 
 export const Route = createFileRoute('/application/$applicationId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -96,17 +97,19 @@ function PageComponent() {
               ))}
             </div>
 
-            <div>
-              {application.applicationStoreInfos.length === 0 && (
-                <div>
-                  <div className="text-muted-foreground text-sm">
-                    {t(
-                      'No app store information found, please bind application store info first'
-                    )}
-                  </div>
+            {application.applicationStoreInfos.length > 0 ? (
+              <div className="mt-4">
+                <ApplicationStatsChart applicationId={applicationId} />
+              </div>
+            ) : (
+              <div>
+                <div className="text-muted-foreground text-sm">
+                  {t(
+                    'No app store information found, please bind application store info first'
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* App Store tab content */}
