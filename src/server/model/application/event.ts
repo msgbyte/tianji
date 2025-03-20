@@ -1,5 +1,9 @@
 import { prisma } from '../_client.js';
-import { BaseQueryFilters, getDateQuery } from '../../utils/prisma.js';
+import {
+  BaseQueryFilters,
+  getDateQuery,
+  getTimestampIntervalQuery,
+} from '../../utils/prisma.js';
 import { getDateArray } from '@tianji/shared';
 import { z } from 'zod';
 
@@ -7,6 +11,7 @@ export const eventStatsQueryResultItemSchema = z.object({
   date: z.string(),
   eventCount: z.number(),
   sessionCount: z.number(),
+  totalTime: z.number(),
   avgEventsPerSession: z.number(),
   avgScreensPerSession: z.number(),
 });
@@ -38,6 +43,7 @@ export async function getApplicationEventStats(
       ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
       COUNT(*) as "eventCount",
       COUNT(DISTINCT "sessionId") as "sessionCount",
+      ${getTimestampIntervalQuery('"ApplicationEvent"."createdAt"')} as "totalTime",
       ROUND(
         CAST(
           COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
@@ -70,6 +76,7 @@ export async function getApplicationEventStats(
       ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
       COUNT(*) as "eventCount",
       COUNT(DISTINCT "sessionId") as "sessionCount",
+      ${getTimestampIntervalQuery('"ApplicationEvent"."createdAt"')} as "totalTime",
       ROUND(
         CAST(
           COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
@@ -98,6 +105,7 @@ export async function getApplicationEventStats(
         date: res.date,
         eventCount: Number(res.eventCount),
         sessionCount: Number(res.sessionCount),
+        totalTime: Number(res.totalTime),
         avgEventsPerSession: Number(res.avgEventsPerSession),
         avgScreensPerSession: Number(res.avgScreensPerSession),
       })),
@@ -111,6 +119,7 @@ export async function getApplicationEventStats(
         date: res.date,
         eventCount: Number(res.eventCount),
         sessionCount: Number(res.sessionCount),
+        totalTime: Number(res.totalTime),
         avgEventsPerSession: Number(res.avgEventsPerSession),
         avgScreensPerSession: Number(res.avgScreensPerSession),
       })),

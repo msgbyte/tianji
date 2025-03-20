@@ -26,6 +26,10 @@ export function formatNumber(n: number): string {
   });
 }
 
+/**
+ * @deprecated
+ * maybe replace with package `pretty-ms`
+ */
 export function formatShortTime(val: number, formats = ['m', 's'], space = '') {
   const { days, hours, minutes, seconds, ms } = parseTime(val);
   let t = '';

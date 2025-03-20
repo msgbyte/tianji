@@ -6,9 +6,11 @@ import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { DateFilter } from '../DateFilter';
 import { Button } from '../ui/button';
-import { LuRefreshCw, LuArrowUp, LuArrowDown } from 'react-icons/lu';
+import { LuRefreshCw } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
+import { StatCard } from './StatCard';
+import prettyMilliseconds from 'pretty-ms';
 
 interface ApplicationStatsChartProps {
   applicationId: string;
@@ -40,8 +42,6 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         date: item.date,
         events: item.eventCount,
         sessions: item.sessionCount,
-        avgEventsPerSession: item.avgEventsPerSession,
-        avgScreensPerSession: item.avgScreensPerSession,
       }));
     }, [data]);
 
@@ -54,15 +54,7 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         },
         sessions: {
           label: t('Sessions'),
-          color: 'hsl(var(--chart-3))',
-        },
-        avgEventsPerSession: {
-          label: t('Unique Events'),
           color: 'hsl(var(--chart-2))',
-        },
-        avgScreensPerSession: {
-          label: t('Unique Screens'),
-          color: 'hsl(var(--chart-4))',
         },
       };
     }, [t]);
@@ -73,6 +65,7 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         return {
           events: { total: 0, diff: 0 },
           sessions: { total: 0, diff: 0 },
+          avgTime: { total: 0, diff: 0 },
           avgEventsPerSession: { total: 0, diff: 0 },
           avgScreensPerSession: { total: 0, diff: 0 },
         };
@@ -83,6 +76,8 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         (acc, item) => {
           acc.events += item.eventCount;
           acc.sessions += item.sessionCount;
+          acc.avgTime +=
+            item.sessionCount > 0 ? item.totalTime / item.sessionCount : 0;
           acc.avgEventsPerSession += item.avgEventsPerSession;
           acc.avgScreensPerSession += item.avgScreensPerSession;
           return acc;
@@ -90,6 +85,7 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         {
           events: 0,
           sessions: 0,
+          avgTime: 0,
           avgEventsPerSession: 0,
           avgScreensPerSession: 0,
         }
@@ -100,6 +96,8 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         (acc, item) => {
           acc.events += item.eventCount;
           acc.sessions += item.sessionCount;
+          acc.avgTime +=
+            item.sessionCount > 0 ? item.totalTime / item.sessionCount : 0;
           acc.avgEventsPerSession += item.avgEventsPerSession;
           acc.avgScreensPerSession += item.avgScreensPerSession;
           return acc;
@@ -107,6 +105,7 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         {
           events: 0,
           sessions: 0,
+          avgTime: 0,
           avgEventsPerSession: 0,
           avgScreensPerSession: 0,
         }
@@ -121,6 +120,10 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         sessions: {
           total: currentTotals.sessions,
           diff: currentTotals.sessions - previousTotals.sessions,
+        },
+        avgTime: {
+          total: currentTotals.avgTime,
+          diff: currentTotals.avgTime - previousTotals.avgTime,
         },
         avgEventsPerSession: {
           total: currentTotals.avgEventsPerSession,
@@ -163,118 +166,38 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
           />
         </CardContent>
 
-        <div className="grid grid-cols-2 border-t md:grid-cols-4">
-          <div className="border-border border-r p-4">
-            <div className="flex flex-col">
-              <span className="text-muted-foreground text-sm">
-                {t('Events')}
-              </span>
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-2xl font-bold">
-                  {statsData.events.total.toLocaleString()}
-                </span>
-                {statsData.events.diff !== 0 && (
-                  <div
-                    className={`flex items-center ${statsData.events.diff > 0 ? 'text-green-500' : 'text-red-500'}`}
-                  >
-                    {statsData.events.diff > 0 ? (
-                      <LuArrowUp className="mr-1" />
-                    ) : (
-                      <LuArrowDown className="mr-1" />
-                    )}
-                    <span>
-                      {Math.abs(statsData.events.diff).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="flex flex-wrap">
+          <StatCard
+            label={t('Events')}
+            curr={statsData.events.total}
+            diff={statsData.events.diff}
+          />
 
-          <div className="border-border border-r p-4">
-            <div className="flex flex-col">
-              <span className="text-muted-foreground text-sm">
-                {t('Sessions')}
-              </span>
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-2xl font-bold">
-                  {statsData.sessions.total.toLocaleString()}
-                </span>
-                {statsData.sessions.diff !== 0 && (
-                  <div
-                    className={`flex items-center ${statsData.sessions.diff > 0 ? 'text-green-500' : 'text-red-500'}`}
-                  >
-                    {statsData.sessions.diff > 0 ? (
-                      <LuArrowUp className="mr-1" />
-                    ) : (
-                      <LuArrowDown className="mr-1" />
-                    )}
-                    <span>
-                      {Math.abs(statsData.sessions.diff).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label={t('Sessions')}
+            curr={statsData.sessions.total}
+            diff={statsData.sessions.diff}
+          />
 
-          <div className="border-border border-r p-4">
-            <div className="flex flex-col">
-              <span className="text-muted-foreground text-sm">
-                {t('Avg Events / Session')}
-              </span>
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-2xl font-bold">
-                  {statsData.avgEventsPerSession.total.toLocaleString()}
-                </span>
-                {statsData.avgEventsPerSession.diff !== 0 && (
-                  <div
-                    className={`flex items-center ${statsData.avgEventsPerSession.diff > 0 ? 'text-green-500' : 'text-red-500'}`}
-                  >
-                    {statsData.avgEventsPerSession.diff > 0 ? (
-                      <LuArrowUp className="mr-1" />
-                    ) : (
-                      <LuArrowDown className="mr-1" />
-                    )}
-                    <span>
-                      {Math.abs(
-                        statsData.avgEventsPerSession.diff
-                      ).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label={t('Avg. Time')}
+            curr={statsData.avgTime.total}
+            diff={statsData.avgTime.diff}
+            formatter={(value) => prettyMilliseconds(value)}
+          />
 
-          <div className="border-border p-4">
-            <div className="flex flex-col">
-              <span className="text-muted-foreground text-sm">
-                {t('Avg Screens / Session')}
-              </span>
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-2xl font-bold">
-                  {statsData.avgScreensPerSession.total.toLocaleString()}
-                </span>
-                {statsData.avgScreensPerSession.diff !== 0 && (
-                  <div
-                    className={`flex items-center ${statsData.avgScreensPerSession.diff > 0 ? 'text-green-500' : 'text-red-500'}`}
-                  >
-                    {statsData.avgScreensPerSession.diff > 0 ? (
-                      <LuArrowUp className="mr-1" />
-                    ) : (
-                      <LuArrowDown className="mr-1" />
-                    )}
-                    <span>
-                      {Math.abs(
-                        statsData.avgScreensPerSession.diff
-                      ).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label={t('Avg. Events / Session')}
+            curr={statsData.avgEventsPerSession.total}
+            diff={statsData.avgEventsPerSession.diff}
+          />
+
+          <StatCard
+            label={t('Avg. Screens / Session')}
+            curr={statsData.avgScreensPerSession.total}
+            diff={statsData.avgScreensPerSession.diff}
+            borderRight={false}
+          />
         </div>
       </Card>
     );
