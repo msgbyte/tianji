@@ -10,11 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { LuPencil } from 'react-icons/lu';
+import { LuPencil, LuTrash } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 import { ApplicationOverviewCard } from '@/components/application/ApplicationOverviewCard';
 import { ApplicationDetailCard } from '@/components/application/ApplicationDetailCard';
 import { ApplicationStatsChart } from '@/components/application/ApplicationStatsChart';
+import { AlertConfirm } from '@/components/AlertConfirm';
+import { message } from 'antd';
 
 export const Route = createFileRoute('/application/$applicationId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -31,6 +33,25 @@ function PageComponent() {
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
   const { t } = useTranslation();
+  const trpcUtils = trpc.useUtils();
+
+  const deleteMutation = trpc.application.delete.useMutation({
+    onError: (error) => {
+      message.error(error.message);
+    },
+  });
+
+  const handleDeleteApplication = async () => {
+    await deleteMutation.mutateAsync({ workspaceId, applicationId });
+
+    message.success(t('Delete Success'));
+
+    await trpcUtils.application.all.refetch({ workspaceId });
+
+    navigate({
+      to: '/application',
+    });
+  };
 
   if (!applicationId) {
     return <ErrorTip />;
@@ -52,19 +73,30 @@ function PageComponent() {
           actions={
             <div className="space-x-2">
               {hasAdminPermission && (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  Icon={LuPencil}
-                  onClick={() =>
-                    navigate({
-                      to: '/application/$applicationId/edit',
-                      params: {
-                        applicationId,
-                      },
-                    })
-                  }
-                />
+                <>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    Icon={LuPencil}
+                    onClick={() =>
+                      navigate({
+                        to: '/application/$applicationId/edit',
+                        params: {
+                          applicationId,
+                        },
+                      })
+                    }
+                  />
+                  <AlertConfirm
+                    title={t('Delete Application') + ' ' + application.name}
+                    description={t(
+                      'Are you sure you want to delete this application? This action cannot be undone.'
+                    )}
+                    onConfirm={handleDeleteApplication}
+                  >
+                    <Button size="icon" variant="outline" Icon={LuTrash} />
+                  </AlertConfirm>
+                </>
               )}
             </div>
           }
