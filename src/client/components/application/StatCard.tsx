@@ -24,7 +24,7 @@ export const StatCard: React.FC<StatCardProps> = React.memo((props) => {
   return (
     <div
       className={cn(
-        'flex-1 border-t p-4',
+        'flex-1 border-b p-4',
         borderRight && 'border-border border-r',
         className
       )}

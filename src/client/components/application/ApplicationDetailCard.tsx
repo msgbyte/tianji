@@ -88,15 +88,9 @@ export const ApplicationDetailCard: React.FC<ApplicationDetailCardProps> =
             </div>
 
             <div>
-              <Button variant="outline" asChild>
-                <a
-                  href={storeInfo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t('View in App Store')}
-                </a>
-              </Button>
+              <a href={storeInfo.url} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline">{t('View in App Store')}</Button>
+              </a>
             </div>
           </CardContent>
         </Card>
@@ -182,15 +176,9 @@ export const ApplicationDetailCard: React.FC<ApplicationDetailCardProps> =
             </div>
 
             <div>
-              <Button variant="outline" asChild>
-                <a
-                  href={storeInfo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t('View in Google Play')}
-                </a>
-              </Button>
+              <a href={storeInfo.url} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline">{t('View in Google Play')}</Button>
+              </a>
             </div>
           </CardContent>
         </Card>

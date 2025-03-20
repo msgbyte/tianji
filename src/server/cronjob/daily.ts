@@ -349,6 +349,7 @@ export async function dailyUpdateApplicationStoreInfo() {
     },
     {
       concurrency: 3,
+      stopOnError: false,
     }
   );
 

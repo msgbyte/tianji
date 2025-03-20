@@ -142,30 +142,6 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
 
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>{t('Application Statistics')}</span>
-            <div className="flex items-center space-x-2">
-              <DateFilter />
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={refresh}
-                title={t('Refresh')}
-              >
-                <LuRefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TimeEventChart
-            data={chartData}
-            unit={unit}
-            chartConfig={chartConfig}
-          />
-        </CardContent>
-
         <div className="flex flex-wrap">
           <StatCard
             label={t('Events')}
@@ -199,6 +175,30 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
             borderRight={false}
           />
         </div>
+
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>{t('Application Statistics')}</span>
+            <div className="flex items-center space-x-2">
+              <DateFilter />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={refresh}
+                title={t('Refresh')}
+              >
+                <LuRefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TimeEventChart
+            data={chartData}
+            unit={unit}
+            chartConfig={chartConfig}
+          />
+        </CardContent>
       </Card>
     );
   });
