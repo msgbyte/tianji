@@ -1,4 +1,5 @@
 import loadScript from 'load-script';
+import { IdentifyPayload } from './types';
 
 interface InjectTrackerOptions {
   /**
@@ -78,13 +79,6 @@ export function reportEvent(eventName: string, data: Record<string, any> = {}) {
   tianji.track(eventName, data);
 }
 
-interface IdentifyPayload {
-  id?: string;
-  email?: string;
-  username?: string;
-  avatar?: string;
-  [key: string]: any;
-}
 export function identify(data: IdentifyPayload) {
   const tianji = (window as any).tianji;
   if (!tianji) {

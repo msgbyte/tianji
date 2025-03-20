@@ -29,6 +29,8 @@ applicationRouter.post(
             url: yup.string().max(500),
             application: yup.string().required(),
             name: yup.string().max(50),
+            screen: yup.string().max(500),
+            params: yup.object(),
           })
           .required()
           .validate(input);
@@ -41,7 +43,13 @@ applicationRouter.post(
   ),
   async (req, res) => {
     const { type, payload } = req.body;
-    const { url, name: eventName, data: eventData } = payload;
+    const {
+      url,
+      name: eventName,
+      data: eventData,
+      screen: screenName,
+      params: screenParams,
+    } = payload;
 
     const session = await findSession(req);
 
@@ -52,9 +60,10 @@ applicationRouter.post(
 
     if (type === COLLECTION_TYPE.event) {
       await saveApplicationEvent({
-        url,
         eventName,
         eventData,
+        screenName,
+        screenParams,
         ...session,
         sessionId: session.id,
       });

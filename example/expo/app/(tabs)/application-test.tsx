@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, Alert } from 'react-native';
 import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  reportApplicationEvent,
+  identifyApplicationUser,
+  ApplicationTrackingOptions,
+} from 'tianji-react-native';
 
 import { Collapsible } from '@/components/Collapsible';
 import { ThemedText } from '@/components/ThemedText';
@@ -11,6 +16,12 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { VStack } from '@/components/ui/vstack';
 import {
+  Toast,
+  ToastDescription,
+  ToastTitle,
+  useToast,
+} from '@/components/ui/toast';
+import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
@@ -18,6 +29,7 @@ import {
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 interface EventResult {
   success: boolean;
@@ -26,12 +38,17 @@ interface EventResult {
 }
 
 export default function ApplicationTestScreen() {
-  const [applicationId, setApplicationId] = useState('');
   const [serverUrl, setServerUrl] = useState('http://localhost:12345');
+  const [applicationId, setApplicationId] = useState(
+    'cm8aepds100qrge0xiv982zj4'
+  );
   const [eventName, setEventName] = useState('test_event');
   const [eventData, setEventData] = useState('{"value": 1, "action": "click"}');
   const [results, setResults] = useState<EventResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const insets = useSafeAreaInsets();
+  const buttonTabbarHeight = useBottomTabBarHeight();
 
   const colorScheme = useColorScheme() ?? 'light';
 
@@ -45,47 +62,50 @@ export default function ApplicationTestScreen() {
       setLoading(true);
       const timestamp = new Date().toISOString();
 
-      const payload = {
-        application: applicationId,
-        name: eventName,
-        data: JSON.parse(eventData),
-        url: 'app://tianji-expo-example',
-        os: 'iOS', // 可以根据实际平台动态获取
-        language: 'zh-CN',
+      // Parse event data from JSON string
+      let parsedEventData;
+      try {
+        parsedEventData = JSON.parse(eventData);
+      } catch (e) {
+        Alert.alert('Error', 'Invalid JSON format in event data');
+        setLoading(false);
+        return;
+      }
+
+      // Create tracking options
+      const trackingOptions: ApplicationTrackingOptions = {
+        serverUrl,
+        applicationId,
       };
 
-      const response = await fetch(`${serverUrl}/api/application/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use the client SDK to report the event
+      const result = await reportApplicationEvent(
+        trackingOptions,
+        eventName,
+        parsedEventData
+      );
+
+      toast.show({
+        placement: 'top',
+        duration: 3000,
+        render: () => {
+          return (
+            <Toast action="success" variant="solid">
+              <ToastTitle>Success!</ToastTitle>
+              <ToastDescription>Event has been sent.</ToastDescription>
+            </Toast>
+          );
         },
-        body: JSON.stringify({
-          type: 'event',
-          payload,
-        }),
       });
 
-      if (response.ok) {
-        const result = await response.text();
-        setResults((prev) => [
-          {
-            success: true,
-            message: `Event sent successfully: ${result}`,
-            timestamp,
-          },
-          ...prev,
-        ]);
-      } else {
-        const errorText = await response.text();
-        setResults((prev) => [
-          {
-            success: false,
-            message: `Error: ${response.status} - ${errorText}`,
-            timestamp,
-          },
-          ...prev,
-        ]);
-      }
+      setResults((prev) => [
+        {
+          success: true,
+          message: `Event sent successfully: ${result}`,
+          timestamp,
+        },
+        ...prev,
+      ]);
     } catch (error) {
       setResults((prev) => [
         {
@@ -118,45 +138,36 @@ export default function ApplicationTestScreen() {
         signupDate: new Date().toISOString(),
       };
 
-      const payload = {
-        application: applicationId,
-        data: userData,
-        os: 'iOS',
-        language: 'zh-CN',
+      // Create tracking options
+      const trackingOptions: ApplicationTrackingOptions = {
+        serverUrl,
+        applicationId,
       };
 
-      const response = await fetch(`${serverUrl}/api/application/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use the client SDK to identify the user
+      const result = await identifyApplicationUser(trackingOptions, userData);
+
+      toast.show({
+        placement: 'top',
+        duration: 3000,
+        render: () => {
+          return (
+            <Toast action="success" variant="solid">
+              <ToastTitle>Success!</ToastTitle>
+              <ToastDescription>Event has been sent.</ToastDescription>
+            </Toast>
+          );
         },
-        body: JSON.stringify({
-          type: 'identify',
-          payload,
-        }),
       });
 
-      if (response.ok) {
-        const result = await response.text();
-        setResults((prev) => [
-          {
-            success: true,
-            message: `User identification event sent successfully: ${result}`,
-            timestamp,
-          },
-          ...prev,
-        ]);
-      } else {
-        const errorText = await response.text();
-        setResults((prev) => [
-          {
-            success: false,
-            message: `Error: ${response.status} - ${errorText}`,
-            timestamp,
-          },
-          ...prev,
-        ]);
-      }
+      setResults((prev) => [
+        {
+          success: true,
+          message: `User identification event sent successfully: ${result}`,
+          timestamp,
+        },
+        ...prev,
+      ]);
     } catch (error) {
       setResults((prev) => [
         {
@@ -175,12 +186,12 @@ export default function ApplicationTestScreen() {
     setResults([]);
   };
 
-  const insets = useSafeAreaInsets();
-
   return (
     <ScrollView
       style={[styles.container, { paddingTop: insets.top }]}
-      contentContainerStyle={{ paddingBottom: insets.bottom }}
+      contentContainerStyle={{
+        paddingBottom: insets.bottom + buttonTabbarHeight,
+      }}
     >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Application Event Test</ThemedText>

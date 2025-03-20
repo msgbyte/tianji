@@ -23,6 +23,7 @@
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.22",
     "@gluestack-ui/toast": "^1.0.9",
+    "@legendapp/motion": "^2.4.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/elements": "^2.2.6",
     "@react-navigation/native": "^7.0.14",
@@ -51,7 +52,8 @@
     "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "tailwindcss": "3.4.17"
+    "tailwindcss": "3.4.17",
+    "tianji-react-native": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -4,6 +4,7 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
+    "dev": "tsc --watch",
     "build": "tsc",
     "prepare": "tsc",
     "generate:client": "openapi-ts -i ../../website/openapi.json -o src/open/client",

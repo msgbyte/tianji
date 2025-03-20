@@ -393,12 +393,15 @@ model ApplicationSession {
 }
 
 model ApplicationEvent {
-  id            String   @id() @default(cuid()) @db.VarChar(30)
-  applicationId String   @db.VarChar(30)
-  sessionId     String   @db.Uuid
-  eventType     Int      @default(1) @db.Integer // 1 is view, 2 is click event
-  eventName     String?  @db.VarChar(50)
-  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  id            String @id() @default(cuid()) @db.VarChar(30)
+  applicationId String @db.VarChar(30)
+  sessionId     String @db.Uuid
+
+  eventType    Int      @default(1) @db.Integer // 1 is view, 2 is click event
+  eventName    String?  @db.VarChar(50)
+  screenName   String?  @db.VarChar(500)
+  screenParams Json?    @db.Json
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
 
   eventData ApplicationEventData[]
   session   ApplicationSession     @relation(fields: [sessionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -407,6 +410,7 @@ model ApplicationEvent {
   @@index([sessionId])
   @@index([applicationId])
   @@index([applicationId, createdAt])
+  @@index([applicationId, createdAt, screenName])
   @@index([applicationId, createdAt, eventName])
   @@index([applicationId, sessionId, createdAt])
 }

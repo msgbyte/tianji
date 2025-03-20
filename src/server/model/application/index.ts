@@ -144,19 +144,28 @@ async function loadSession(
 export async function saveApplicationEvent(data: {
   sessionId: string;
   applicationId: string;
-  url?: string;
   eventName?: string;
   eventData?: any;
+  screenName?: string;
+  screenParams?: Record<string, any>;
 }) {
-  const { applicationId, sessionId, url, eventName, eventData } = data;
+  const {
+    applicationId,
+    sessionId,
+    eventName,
+    eventData,
+    screenName,
+    screenParams,
+  } = data;
 
   const applicationEvent = await prisma.applicationEvent.create({
     data: {
       applicationId,
       sessionId,
-      url: url?.substring(0, URL_LENGTH),
       eventType: eventName ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView,
       eventName: eventName ? eventName?.substring(0, EVENT_NAME_LENGTH) : null,
+      screenName,
+      screenParams,
     },
   });
 

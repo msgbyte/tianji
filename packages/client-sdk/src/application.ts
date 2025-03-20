@@ -2,6 +2,8 @@
  * Client SDK for Tianji Application API
  */
 
+import { IdentifyPayload } from './types';
+
 /**
  * Application event payload interface
  */
@@ -30,6 +32,16 @@ export interface ApplicationEventPayload {
    * Event name (max 50 chars)
    */
   name?: string;
+
+  /**
+   * Screen Name
+   */
+  screen?: string;
+
+  /**
+   * Screen Params
+   */
+  params?: Record<string, any>;
 }
 
 /**
@@ -57,6 +69,24 @@ export interface ApplicationTrackingOptions {
   applicationId: string;
 }
 
+let options: ApplicationTrackingOptions | undefined;
+export function initApplication(_options: ApplicationTrackingOptions) {
+  options = _options;
+}
+
+let currentScreenName: string | undefined = undefined;
+let currentScreenParams: Record<string, any> | undefined = undefined;
+/**
+ * Update current application screen
+ */
+export function updateCurrentApplicationScreen(
+  name: string,
+  params: Record<string, any>
+) {
+  currentScreenName = name;
+  currentScreenParams = params;
+}
+
 /**
  * Send application event to Tianji server
  *
@@ -65,17 +95,25 @@ export interface ApplicationTrackingOptions {
  * @param eventData - Event data
  */
 export async function reportApplicationEvent(
-  options: ApplicationTrackingOptions,
   eventName: string,
-  eventData: Record<string, any> = {}
-): Promise<string> {
+  eventData: Record<string, any> = {},
+  screenName?: string,
+  screenParams?: Record<string, any>
+): Promise<void> {
+  if (!options) {
+    console.warn('Application tracking is not initialized');
+    return;
+  }
+
   const payload: ApplicationEventPayload = {
     application: options.applicationId,
     name: eventName,
     data: eventData,
+    screen: screenName ?? currentScreenName,
+    params: screenParams ?? currentScreenParams,
   };
 
-  return sendApplicationRequest(options.serverUrl, 'event', payload);
+  sendApplicationRequest(options.serverUrl, 'event', payload);
 }
 
 /**
@@ -85,19 +123,24 @@ export async function reportApplicationEvent(
  * @param userData - User identification data
  */
 export async function identifyApplicationUser(
-  options: ApplicationTrackingOptions,
-  userData: Record<string, any>
-): Promise<string> {
-  if (!userData || Object.keys(userData).length === 0) {
-    throw new Error('User data is required for identification');
+  userInfo: IdentifyPayload
+): Promise<void> {
+  if (!options) {
+    console.warn('Application tracking is not initialized');
+    return;
+  }
+
+  if (!userInfo || Object.keys(userInfo).length === 0) {
+    console.warn('User data is required for identification');
+    return;
   }
 
   const payload: ApplicationIdentifyPayload = {
     application: options.applicationId,
-    data: userData,
+    data: userInfo,
   };
 
-  return sendApplicationRequest(options.serverUrl, 'identify', payload);
+  sendApplicationRequest(options.serverUrl, 'identify', payload);
 }
 
 /**
@@ -112,7 +155,7 @@ async function sendApplicationRequest(
   serverUrl: string,
   type: 'event' | 'identify',
   payload: ApplicationEventPayload | ApplicationIdentifyPayload
-): Promise<string> {
+): Promise<void> {
   try {
     const response = await fetch(`${serverUrl}/api/application/send`, {
       method: 'POST',
@@ -129,10 +172,8 @@ async function sendApplicationRequest(
       const errorText = await response.text();
       throw new Error(`Failed to send application ${type}: ${errorText}`);
     }
-
-    return await response.text();
   } catch (error) {
     console.error(`Error sending application ${type}:`, error);
-    throw error;
+    return; // As event tracking SDK, should not throw error which maybe cause crash
   }
 }
