@@ -198,14 +198,10 @@ export const applicationRouter = router({
     .mutation(async ({ input }) => {
       const { workspaceId, applicationId } = input;
 
-      const application = await prisma.application.update({
+      const application = await prisma.application.delete({
         where: {
           id: applicationId,
           workspaceId,
-          deletedAt: null,
-        },
-        data: {
-          deletedAt: new Date(),
         },
       });
 

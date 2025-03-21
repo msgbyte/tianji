@@ -7,6 +7,7 @@ import {
   LuMonitorDot,
   LuServer,
   LuWifi,
+  LuTabletSmartphone,
 } from 'react-icons/lu';
 import {
   ResizableHandle,
@@ -93,6 +94,12 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             label: String(serviceCount?.website ?? ''),
             icon: LuChartArea,
             to: '/website',
+          },
+          {
+            title: t('Application'),
+            label: String(serviceCount?.application ?? ''),
+            icon: LuTabletSmartphone,
+            to: '/application',
           },
           {
             title: t('Monitor'),

@@ -420,6 +420,7 @@ export const workspaceRouter = router({
     .output(
       z.object({
         website: z.number(),
+        application: z.number(),
         monitor: z.number(),
         server: z.number(),
         telemetry: z.number(),
@@ -431,13 +432,14 @@ export const workspaceRouter = router({
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
-      const { website, monitor, telemetry, page, survey, feed } =
+      const { website, application, monitor, telemetry, page, survey, feed } =
         await getWorkspaceServiceCount(workspaceId);
 
       const server = getServerCount(workspaceId);
 
       return {
         website,
+        application,
         monitor,
         server,
         telemetry,
