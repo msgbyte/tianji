@@ -9,10 +9,6 @@ import { IdentifyPayload } from './types';
  */
 export interface ApplicationEventPayload {
   /**
-   * Application data object
-   */
-  data?: Record<string, any>;
-  /**
    * Language information (max 35 chars)
    */
   language?: string;
@@ -32,6 +28,10 @@ export interface ApplicationEventPayload {
    * Event name (max 50 chars)
    */
   name?: string;
+  /**
+   * Application data object
+   */
+  data?: Record<string, any>;
 
   /**
    * Screen Name
@@ -85,6 +85,27 @@ export function updateCurrentApplicationScreen(
 ) {
   currentScreenName = name;
   currentScreenParams = params;
+}
+
+/**
+ * Send application screen view event to Tianji server
+ */
+export async function reportApplicationScreenView(
+  screenName?: string,
+  screenParams?: Record<string, any>
+): Promise<void> {
+  if (!options) {
+    console.warn('Application tracking is not initialized');
+    return;
+  }
+
+  const payload: ApplicationEventPayload = {
+    application: options.applicationId,
+    screen: screenName ?? currentScreenName,
+    params: screenParams ?? currentScreenParams,
+  };
+
+  sendApplicationRequest(options.serverUrl, 'event', payload);
 }
 
 /**
