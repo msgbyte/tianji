@@ -79,6 +79,13 @@ export const env = {
     apiKey: process.env.SHARED_OPENAI_API_KEY,
     modelName: process.env.SHARED_OPENAI_MODEL_NAME ?? 'gpt-4o',
   },
+  clickhouse: {
+    enable: Boolean(process.env.CLICKHOUSE_URL),
+    url: process.env.CLICKHOUSE_URL,
+    username: process.env.CLICKHOUSE_USER,
+    password: process.env.CLICKHOUSE_PASSWORD,
+    database: process.env.CLICKHOUSE_DATABASE,
+  },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
   websiteId: process.env.WEBSITE_ID,

@@ -13,6 +13,7 @@ import {
 } from './daily.js';
 import { checkFeedEventsNotify } from './shared.js';
 import { promCronCounter } from '../utils/prometheus/client.js';
+import { initClickHouseSyncCronjob } from '../clickhouse/cronjob.js';
 
 export function initCronjob() {
   const dailyJob = Cron('0 2 * * *', async () => {
@@ -78,6 +79,15 @@ export function initCronjob() {
     'Monthly job will start at:',
     monthlyJob.nextRun()?.toISOString()
   );
+
+  if (env.clickhouse.enable) {
+    const clickHouseSyncJob = initClickHouseSyncCronjob();
+
+    logger.info(
+      'Clickhouse sync job will start at:',
+      clickHouseSyncJob.nextRun()?.toISOString()
+    );
+  }
 
   return { dailyJob, weeklyJob, monthlyJob };
 }
