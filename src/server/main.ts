@@ -10,6 +10,7 @@ import { logger } from './utils/logger.js';
 import { app } from './app.js';
 import { runMQWorker } from './mq/worker.js';
 import { initCounter } from './utils/prometheus/index.js';
+import { initClickHouse } from './clickhouse/index.js';
 
 const port = env.port;
 
@@ -24,6 +25,12 @@ initCronjob();
 initCounter();
 
 runMQWorker();
+
+if (env.clickhouse.enable) {
+  initClickHouse().then(() => {
+    logger.info('ClickHouse initialized.');
+  });
+}
 
 monitorManager.startAll();
 
