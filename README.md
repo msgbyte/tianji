@@ -67,7 +67,7 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 
 modify those file:
 - `src/client/i18next-toolkit.config.cjs` in this file, edit country code
-- `src/client/utils/constants.ts` in this file, add for display
+- `src/client/utils/i18n.ts` in this file, add for display
 
 Then, run below code to auto generate
 
