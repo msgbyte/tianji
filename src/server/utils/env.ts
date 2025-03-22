@@ -69,9 +69,12 @@ export const env = {
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
   websiteId: process.env.WEBSITE_ID,
-  sandboxMemoryLimit: process.env.SANDBOX_MEMORY_LIMIT
-    ? Number(process.env.SANDBOX_MEMORY_LIMIT)
-    : 16, // unit: MB
+  sandbox: {
+    useVM2: checkEnvTrusty(process.env.USE_VM2),
+    memoryLimit: process.env.SANDBOX_MEMORY_LIMIT
+      ? Number(process.env.SANDBOX_MEMORY_LIMIT)
+      : 16, // unit: MB
+  },
   puppeteerExecutablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
   dbDebug: checkEnvTrusty(process.env.DB_DEBUG),
   amapToken: process.env.AMAP_TOKEN,

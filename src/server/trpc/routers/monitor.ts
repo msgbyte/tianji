@@ -26,7 +26,6 @@ import {
   MonitorModelSchema,
   MonitorStatusPageModelSchema,
 } from '../../prisma/zod/index.js';
-import { runCodeInVM } from '../../model/monitor/provider/custom.js';
 import { createAuditLog } from '../../model/auditLog.js';
 import {
   MonitorInfoWithNotificationIds,
@@ -34,6 +33,7 @@ import {
 } from '../../model/_schema/monitor.js';
 import { monitorPageManager } from '../../model/monitor/page/manager.js';
 import { token } from '../../model/notification/token/index.js';
+import { runCodeInVM } from '../../utils/vm/index.js';
 
 export const monitorRouter = router({
   all: workspaceProcedure

@@ -736,6 +736,9 @@ importers:
       vite-express:
         specifier: ^0.13.0
         version: 0.13.0
+      vm2:
+        specifier: ^3.9.19
+        version: 3.9.19
       winston:
         specifier: ^3.17.0
         version: 3.17.0
@@ -14653,6 +14656,12 @@ packages:
         optional: true
       jsdom:
         optional: true
+
+  vm2@3.9.19:
+    resolution: {integrity: sha512-J637XF0DHDMV57R6JyVsTak7nIL8gy5KH4r1HiwWLf/4GBbb5MKL5y7LpmF4A8E2nR6XmzpmMFQ7V7ppPTmUQg==}
+    engines: {node: '>=6.0'}
+    deprecated: The library contains critical security issues and should not be used for production! The maintenance of the project has been discontinued. Consider migrating your code to isolated-vm.
+    hasBin: true
 
   void-elements@3.1.0:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
@@ -32915,6 +32924,11 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+
+  vm2@3.9.19:
+    dependencies:
+      acorn: 8.14.1
+      acorn-walk: 8.3.4
 
   void-elements@3.1.0: {}
 
