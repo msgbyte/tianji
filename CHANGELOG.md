@@ -1,5 +1,20 @@
 
 
+## [1.19.1](https://github.com/msgbyte/tianji/compare/v1.19.0...v1.19.1) (2025-03-22)
+
+### Bug Fixes
+
+* fix a bug which will clause run custom code error ([9a132d9](https://github.com/msgbyte/tianji/commit/9a132d93a4584db2e441a2bd68b64c5b86de1b75))
+
+### Document
+
+* add more language document for application tracking ([4ed139f](https://github.com/msgbyte/tianji/commit/4ed139fb9315a47288417914aa752842eba629b3))
+* update translation modify files in README.md ([3310a1c](https://github.com/msgbyte/tianji/commit/3310a1c00264067a7e62c7c67cc177c8e41f3a0c))
+
+### Others
+
+* add more docker ignore claim to reduce docker image size ([aa29d18](https://github.com/msgbyte/tianji/commit/aa29d18d910a3a45ecfddde71838db771dd700f6))
+
 ## [1.19.0](https://github.com/msgbyte/tianji/compare/v1.18.22...v1.19.0) (2025-03-22)
 
 ### Features
