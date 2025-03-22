@@ -5,4 +5,4 @@ packages:
   - 'website'
   - 'packages/*'
   - 'apps/*'
-  - 'example/*'
+  - 'example/web'
