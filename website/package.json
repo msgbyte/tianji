@@ -10,7 +10,7 @@
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
-    "translation": "docusaurus-i18n --apiKey",
+    "translation": "docusaurus-i18n --model gpt-4o --apiKey",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc"

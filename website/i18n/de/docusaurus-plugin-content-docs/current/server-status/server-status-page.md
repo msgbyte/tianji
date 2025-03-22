@@ -1,19 +1,34 @@
 ---
 sidebar_position: 2
-_i18n_hash: 7ce5eca3bf7af802db48c3db37d996f5
+_i18n_hash: cecc3b1b7eb92c03797671e2ab259486
 ---
 # Server-Statusseite
 
-Sie können eine Server-Statusseite für Benutzer erstellen, um den Status Ihres Servers der Öffentlichkeit anzuzeigen, die es anderen zeigen möchte.
+Sie können eine Server-Statusseite erstellen, um den Benutzern den Status Ihres Servers öffentlich anzuzeigen und anderen mitzuteilen.
 
-## Konfigurieren einer benutzerdefinierten Domain
+## Benutzerdefinierte Domain konfigurieren
 
 Sie können Ihre Statusseite in Ihrer eigenen Domain konfigurieren, zum Beispiel: `status.example.com`
 
-Legen Sie dies in der Seitenkonfiguration fest und erstellen Sie einen `CNAME`-Eintrag in Ihrem DNS-Dashboard.
+Konfigurieren Sie dies in den Seiteneinstellungen und erstellen Sie einen `CNAME`-Eintrag in Ihrem DNS-Dashboard.
 
 ```
 CNAME status.example.com tianji.example.com
 ```
 
-Danach können Sie die benutzerdefinierte Domain `status.example.com` besuchen, um auf Ihre Seite zuzugreifen.
+Dann können Sie die benutzerdefinierte `status.example.com`-Seite besuchen.
+
+### Fehlerbehebung
+
+Falls ein 500-Fehler auftritt, scheint Ihr Reverse Proxy nicht korrekt konfiguriert zu sein.
+
+Bitte stellen Sie sicher, dass Ihr Reverse Proxy Ihre neue Statusroute enthält.
+
+Beispiel:
+```
+server {
+  listen 80;
+  server_name tianji.example.com status.example.com;
+  listen 443 ssl;
+}
+```
