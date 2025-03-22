@@ -118,7 +118,7 @@ async function memoryLimitsDemo() {
 
     script.release();
   } catch (error) {
-    console.log('Error caught (expected):', error.message);
+    console.log('Error caught (expected):', (error as any).message);
   } finally {
     context.release();
     isolate.dispose();
@@ -181,7 +181,10 @@ async function errorHandlingDemo() {
       'function() { invalid syntax }'
     );
   } catch (error) {
-    console.log('Caught syntax error during compilation:', error.message);
+    console.log(
+      'Caught syntax error during compilation:',
+      (error as any).message
+    );
   }
 
   // Script with a runtime error
@@ -191,7 +194,10 @@ async function errorHandlingDemo() {
     );
     await scriptWithRuntimeError.run(context);
   } catch (error) {
-    console.log('Caught runtime error during execution:', error.message);
+    console.log(
+      'Caught runtime error during execution:',
+      (error as any).message
+    );
   }
 
   // Script with an infinite loop (timeout)
@@ -200,7 +206,7 @@ async function errorHandlingDemo() {
     console.log('Running infinite loop with timeout...');
     await infiniteLoopScript.run(context, { timeout: 500 }); // 500ms timeout
   } catch (error) {
-    console.log('Caught timeout error:', error.message);
+    console.log('Caught timeout error:', (error as any).message);
   } finally {
     context.release();
     isolate.dispose();

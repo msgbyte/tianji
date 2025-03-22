@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=22.14.0"
   },
   "scripts": {
     "dev": "tsx watch --env-file=.env ./main.ts",
@@ -97,7 +97,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/md5": "^2.3.5",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^18.19.80",
+    "@types/node": "^22.13.11",
     "@types/nodemailer": "^6.4.17",
     "@types/ping": "^0.4.4",
     "@types/qs": "^6.9.18",

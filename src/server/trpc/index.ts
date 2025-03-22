@@ -6,7 +6,7 @@ import {
   createOpenApiExpressMiddleware,
 } from 'trpc-to-openapi';
 const packageJson = await import('../../../package.json', {
-  assert: { type: 'json' },
+  with: { type: 'json' },
 });
 
 export type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';

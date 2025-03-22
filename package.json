@@ -53,6 +53,7 @@
       "@auth/core": "0.34.1",
       "react": "18.2.0",
       "react-dom": "18.2.0",
+      "@types/node": "22.13.11",
       "@types/react": "18.2.78",
       "@types/react-dom": "18.2.21",
       "dayjs": "1.11.10",
