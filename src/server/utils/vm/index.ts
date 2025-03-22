@@ -2,13 +2,20 @@ import ivm from 'isolated-vm';
 import { buildSandbox, environmentScript } from './sandbox.js';
 import { env } from '../env.js';
 import { runCodeInVM2 } from './sandbox-vm2.js';
+import { logger } from '../logger.js';
+
+if (env.sandbox.useVM2) {
+  logger.warn(
+    '[Monitor] Using VM2 for code execution, which this is not recommended for production use.'
+  );
+}
 
 export async function runCodeInVM(_code: string): Promise<{
   logger: any[][];
   result: any;
   usage: number;
 }> {
-  const code = `(async () => {${_code}})();`;
+  const code = `;(async () => {${_code}})();`;
 
   try {
     // Try to use VM2 first if enabled via environment variable
@@ -46,9 +53,7 @@ async function runCodeInIVM(_code: string) {
   // avoid end comment with line break
   const code = `${environmentScript}
 
-;(async () => {
-  ${_code}
-})()`;
+${_code}`;
 
   const [context, script] = await Promise.all([
     isolate.createContext(),
