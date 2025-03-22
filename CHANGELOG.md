@@ -1,5 +1,52 @@
 
 
+## [1.19.0](https://github.com/msgbyte/tianji/compare/v1.18.22...v1.19.0) (2025-03-22)
+
+### Features
+
+* add application entry ([b9d6e4a](https://github.com/msgbyte/tianji/commit/b9d6e4a7745abcb059f9d6e9c1701d0855a86f8b))
+* add application event router ([da83fa9](https://github.com/msgbyte/tianji/commit/da83fa9d28d4d6d9c4ccd80b71568feed7b6e24b))
+* add application models ([90c72a9](https://github.com/msgbyte/tianji/commit/90c72a9d321c0df9c057b5da529bd598150df76d))
+* add application page add/edit and appinfo scraper logic ([b114aaf](https://github.com/msgbyte/tianji/commit/b114aafbf93a6fbb7531fb3391da9114e11edcbf))
+* add application screen name support ([5e7c499](https://github.com/msgbyte/tianji/commit/5e7c4990f85fe2c644f0e3fef47fd9deb7c27bc2))
+* add auto jump for application route ([01521e7](https://github.com/msgbyte/tianji/commit/01521e73097918e5a84757fc7ac9ed01bc86d0ef))
+* add avgEventsPerSession and avgScreensPerSession ([87e5e19](https://github.com/msgbyte/tianji/commit/87e5e191f7582305998b73e140e39aff8c098da9))
+* add charts for app stats ([a767aca](https://github.com/msgbyte/tianji/commit/a767acacab0d77797739020147289f444ca447e6))
+* add daily cronjob dailyUpdateApplicationStoreInfo ([0fbf456](https://github.com/msgbyte/tianji/commit/0fbf456be5de70c3b716d6afc94198db8d755527))
+* add delete feature in application page ([824dedd](https://github.com/msgbyte/tianji/commit/824deddc4102129be42d97a1efb2cf1dfe45ad3a))
+* add read more component and apply in application description ([10fb73a](https://github.com/msgbyte/tianji/commit/10fb73a304c16c1af9822633cb2a88f36f1dd766))
+* add screen view event reporting and update version ([83cb111](https://github.com/msgbyte/tianji/commit/83cb111617382ea8ad6458239c7b320f10ce2da6))
+* add StatCard component and integrate avg time metric ([f99a6e0](https://github.com/msgbyte/tianji/commit/f99a6e0dcc4287d2f5f7ea94420f0f74729a8f3c))
+* add vm2 sandbox support as vm runtime backup ([6928103](https://github.com/msgbyte/tianji/commit/69281039972301ad4c1b7f5a0916a8dab9c636b9))
+* allow change role in member table if people is workspace owner [#170](https://github.com/msgbyte/tianji/issues/170) ([d94a9bd](https://github.com/msgbyte/tianji/commit/d94a9bd5a0c120e8dc8675db98ea3c8df1622f2d))
+
+### Bug Fixes
+
+* [#172](https://github.com/msgbyte/tianji/issues/172) fix import issue ([be1e5fb](https://github.com/msgbyte/tianji/commit/be1e5fbf61a58f17859a1030a19bbf11be4645cc))
+
+### Document
+
+* add new documentation for application tracking SDK ([7374542](https://github.com/msgbyte/tianji/commit/7374542a44b0caaeff593b9a84b9a5d557674c89))
+* add yandex verify ([fa0d2da](https://github.com/msgbyte/tianji/commit/fa0d2dabf7fea18118c83d0fc54f141447e162d9))
+
+### Others
+
+* add app card component ([d34da88](https://github.com/msgbyte/tianji/commit/d34da88cb6c27714d05c09c1a64054f64809f9cc))
+* add application tracking things ([9ff4dc6](https://github.com/msgbyte/tianji/commit/9ff4dc663da112c0f13d5ce44242af9229043561))
+* add count sum in worker ([4672795](https://github.com/msgbyte/tianji/commit/4672795b9708ca4b494c425bdd720ebf4bb03661))
+* add member role translation ([512cbbf](https://github.com/msgbyte/tianji/commit/512cbbf0e8694a91d06cd8135c6c2ecf846313ee))
+* add no store info tip and update translation ([3a50ce5](https://github.com/msgbyte/tianji/commit/3a50ce56daee31dc676f69b117e9af0d74132976))
+* drop expo example support ([2bcec9e](https://github.com/msgbyte/tianji/commit/2bcec9ee2fca35fd8386bbf7127bfce690c335dc))
+* fix ci problem ([5a09aff](https://github.com/msgbyte/tianji/commit/5a09affb4752b0009ba6047f9341eccbd04e5a63))
+* improve style and make those things more better ([604d53c](https://github.com/msgbyte/tianji/commit/604d53ceb9a60177c97c4fb7da2cdfea311a0cc1))
+* init expo repo which as example for react native sdk ([0e42057](https://github.com/msgbyte/tianji/commit/0e42057aeda1cca54766ce21d9325af3494b43a0))
+* integrate nativewind for styling and update configs ([2d0a225](https://github.com/msgbyte/tianji/commit/2d0a2252b06925534dd8774a5d3c5c28e5dc7aa9))
+* move example to example/web ([45250ed](https://github.com/msgbyte/tianji/commit/45250ed748880c58478cfb28767019efc6ab951e))
+* refactor cronjob tasks and move to independent file ([9be0e28](https://github.com/msgbyte/tianji/commit/9be0e28085cea9a1dfa45e4ec83b626f6aba6ec3))
+* reorder components and update styles ([bd4e737](https://github.com/msgbyte/tianji/commit/bd4e73775d4f09ad69335e74bb4b5fce4a174272))
+* reorganize overview tab and detail card layout ([7cef811](https://github.com/msgbyte/tianji/commit/7cef81194337e8183caad633c55230917dc98d32))
+* update translation ([0d409be](https://github.com/msgbyte/tianji/commit/0d409be7b7c26656366f149bfbd5c01d177b33eb))
+
 ## [1.18.22](https://github.com/msgbyte/tianji/compare/v1.18.21...v1.18.22) (2025-03-15)
 
 ### Features
