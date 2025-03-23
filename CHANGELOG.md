@@ -1,5 +1,20 @@
 
 
+## [1.19.2](https://github.com/msgbyte/tianji/compare/v1.19.1...v1.19.2) (2025-03-23)
+
+### Features
+
+* add app store search and picker ([331153d](https://github.com/msgbyte/tianji/commit/331153df25889802975d6836f8bf67e28e10a400))
+* add application compare feature ([0f8a672](https://github.com/msgbyte/tianji/commit/0f8a6729048e2d93bb8cee076387609c929d48e2))
+* add store info history ([0473ba5](https://github.com/msgbyte/tianji/commit/0473ba5f2178af9a1c7a6752810e6dc288f869b8))
+* store detail tab add history chart ([63e9588](https://github.com/msgbyte/tianji/commit/63e9588aa5e29a2541ba45b6a3c07ba2afa2201d))
+
+### Others
+
+* improve style ([8484e25](https://github.com/msgbyte/tianji/commit/8484e25e39509ed665200305c35763467b3ebe5b))
+* update translation ([6a21965](https://github.com/msgbyte/tianji/commit/6a21965f3d5bec5e66dab0e32716ee59809d9f09))
+* upgrade node version to 22.14.0, [#132](https://github.com/msgbyte/tianji/issues/132) ([48280c5](https://github.com/msgbyte/tianji/commit/48280c596d8dc9c6b1fbb22820e9a1075a7e7830))
+
 ## [1.19.1](https://github.com/msgbyte/tianji/compare/v1.19.0...v1.19.1) (2025-03-22)
 
 ### Bug Fixes
