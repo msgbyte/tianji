@@ -7,7 +7,7 @@ const config = {
     // type: 'prompt',
     type: 'openai',
     openai: {
-      modelName: 'gpt-4o-mini',
+      modelName: 'gpt-4o',
     },
   },
   scanner: {
