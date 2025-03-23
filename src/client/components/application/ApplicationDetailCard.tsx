@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useTranslation } from '@i18next-toolkit/react';
 import { ReadMore } from '../ReadMore';
 import { Button } from '../ui/button';
+import { LuArrowUpRight } from 'react-icons/lu';
 
 interface ApplicationDetailCardProps {
   storeInfo: NonNullable<
@@ -89,7 +90,9 @@ export const ApplicationDetailCard: React.FC<ApplicationDetailCardProps> =
 
             <div>
               <a href={storeInfo.url} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline">{t('View in App Store')}</Button>
+                <Button variant="outline">
+                  {t('View in App Store')} <LuArrowUpRight size={18} />
+                </Button>
               </a>
             </div>
           </CardContent>
@@ -173,7 +176,9 @@ export const ApplicationDetailCard: React.FC<ApplicationDetailCardProps> =
 
             <div>
               <a href={storeInfo.url} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline">{t('View in Google Play')}</Button>
+                <Button variant="outline">
+                  {t('View in Google Play')} <LuArrowUpRight size={18} />
+                </Button>
               </a>
             </div>
           </CardContent>

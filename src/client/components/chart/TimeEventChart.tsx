@@ -107,7 +107,7 @@ export const TimeEventChart: React.FC<{
           dataKey="date"
           tickFormatter={(text) => formatDateWithUnit(text, props.unit)}
         />
-        <YAxis mirror domain={[isTrendingMode ? 'dataMin' : 0, 'dataMax']} />
+        <YAxis mirror domain={isTrendingMode ? ['auto', 'auto'] : undefined} />
         <ChartLegend
           content={
             <ChartLegendContent

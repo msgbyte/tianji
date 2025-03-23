@@ -10,6 +10,7 @@ import {
 import { Empty } from 'antd';
 import { t } from '@i18next-toolkit/react';
 import { DelayRender } from '../DelayRender';
+import { sortBy } from 'lodash-es';
 
 export const ApplicationCompareChart: React.FC<{
   applications: {
@@ -60,7 +61,7 @@ export const ApplicationCompareChart: React.FC<{
               score: info.score,
               size: info.size,
               date: dayjs(info.createdAt)
-                .startOf('hour')
+                .startOf('date')
                 .format('YYYY-MM-DD HH:mm:ss'),
             }));
           });
@@ -89,7 +90,7 @@ export const ApplicationCompareChart: React.FC<{
         });
       });
 
-      setChartData(Array.from(mergedData.values()));
+      setChartData(sortBy(Array.from(mergedData.values()), 'date'));
     });
   }, [props.applications]);
 
