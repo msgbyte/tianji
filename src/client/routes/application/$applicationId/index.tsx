@@ -17,6 +17,7 @@ import { ApplicationDetailCard } from '@/components/application/ApplicationDetai
 import { ApplicationStatsChart } from '@/components/application/ApplicationStatsChart';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { message } from 'antd';
+import { ApplicationCompareTab } from '@/components/application/ApplicationCompareTab';
 
 export const Route = createFileRoute('/application/$applicationId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -138,7 +139,7 @@ function PageComponent() {
           {application.applicationStoreInfos.some(
             (info) => info.storeType === 'appstore'
           ) && (
-            <TabsContent value="appstore" className="mt-4">
+            <TabsContent value="appstore" className="mt-4 space-y-4">
               {(() => {
                 const appStoreInfo = application.applicationStoreInfos.find(
                   (info) => info.storeType === 'appstore'
@@ -150,6 +151,16 @@ function PageComponent() {
 
                 return <ApplicationDetailCard storeInfo={appStoreInfo} />;
               })()}
+
+              <ApplicationCompareTab
+                storeType="appstore"
+                applications={[
+                  {
+                    applicationId: application.id,
+                    applicationName: application.name,
+                  },
+                ]}
+              />
             </TabsContent>
           )}
 
@@ -157,7 +168,7 @@ function PageComponent() {
           {application.applicationStoreInfos.some(
             (info) => info.storeType === 'googleplay'
           ) && (
-            <TabsContent value="googleplay" className="mt-4">
+            <TabsContent value="googleplay" className="mt-4 space-y-4">
               {(() => {
                 const playStoreInfo = application.applicationStoreInfos.find(
                   (info) => info.storeType === 'googleplay'
@@ -169,6 +180,16 @@ function PageComponent() {
 
                 return <ApplicationDetailCard storeInfo={playStoreInfo} />;
               })()}
+
+              <ApplicationCompareTab
+                storeType="googleplay"
+                applications={[
+                  {
+                    applicationId: application.id,
+                    applicationName: application.name,
+                  },
+                ]}
+              />
             </TabsContent>
           )}
         </Tabs>

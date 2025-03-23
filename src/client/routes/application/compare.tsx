@@ -1,5 +1,5 @@
 import { trpc } from '@/api/trpc';
-import { ApplicationCompareChart } from '@/components/application/ApplicationCompareChart';
+import { ApplicationCompareTab } from '@/components/application/ApplicationCompareTab';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -52,7 +51,6 @@ function ApplicationCompare() {
   const applications = selectedAppplicationInfo.map((info) => ({
     applicationId: info.id,
     applicationName: info.name,
-    storeType: selectedStore,
   }));
 
   return (
@@ -88,49 +86,10 @@ function ApplicationCompare() {
           />
         </div>
 
-        <Tabs defaultValue="score">
-          <TabsList>
-            <TabsTrigger value="score">{t('Score')}</TabsTrigger>
-            <TabsTrigger value="ratingCount">{t('Rating Count')}</TabsTrigger>
-            <TabsTrigger value="reviews">{t('Reviews')}</TabsTrigger>
-
-            {selectedStore === 'googleplay' && (
-              <TabsTrigger value="downloads">{t('Downloads')}</TabsTrigger>
-            )}
-
-            {selectedStore === 'appstore' && (
-              <TabsTrigger value="size">{t('Size')}</TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="score">
-            <ApplicationCompareChart
-              applications={applications}
-              field="score"
-            />
-          </TabsContent>
-          <TabsContent value="ratingCount">
-            <ApplicationCompareChart
-              applications={applications}
-              field="ratingCount"
-            />
-          </TabsContent>
-          <TabsContent value="reviews">
-            <ApplicationCompareChart
-              applications={applications}
-              field="reviews"
-            />
-          </TabsContent>
-          <TabsContent value="downloads">
-            <ApplicationCompareChart
-              applications={applications}
-              field="downloads"
-            />
-          </TabsContent>
-          <TabsContent value="size">
-            <ApplicationCompareChart applications={applications} field="size" />
-          </TabsContent>
-        </Tabs>
+        <ApplicationCompareTab
+          storeType={selectedStore}
+          applications={applications}
+        />
       </ScrollArea>
     </CommonWrapper>
   );

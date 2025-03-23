@@ -97,15 +97,17 @@ export const ApplicationCompareChart: React.FC<{
 
   if (chartData.length === 0) {
     return (
-      <DelayRender>
-        <Empty description={t('Please select any application to compare')} />
-      </DelayRender>
+      <div className="h-[400px]">
+        <DelayRender>
+          <Empty description={t('Please select any application to compare')} />
+        </DelayRender>
+      </div>
     );
   }
 
   return (
     <TimeEventChart
-      className="w-full"
+      className="h-[400px] w-full"
       data={chartData}
       unit="day"
       chartConfig={chartConfig}
