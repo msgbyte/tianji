@@ -16,6 +16,7 @@ import {
   eventStatsQueryResultItemSchema,
   getApplicationEventStats,
 } from '../../model/application/event.js';
+import { ApplicationStoreInfoHistoryModelSchema } from '../../prisma/zod/applicationstoreinfohistory.js';
 
 const applicationNameSchema = z.string().max(100);
 
@@ -207,6 +208,59 @@ export const applicationRouter = router({
 
       return application;
     }),
+  storeInfoHistory: workspaceProcedure
+    .meta(
+      buildApplicationOpenapi({
+        method: 'GET',
+        path: '/storeInfoHistory',
+      })
+    )
+    .input(
+      z.object({
+        applicationId: z.string(),
+        storeType: z.enum(['appstore', 'googleplay']),
+        storeId: z.string().optional(),
+        startAt: z.number(),
+        endAt: z.number(),
+      })
+    )
+    .output(
+      ApplicationStoreInfoHistoryModelSchema.pick({
+        downloads: true,
+        score: true,
+        ratingCount: true,
+        reviews: true,
+        size: true,
+        createdAt: true,
+      }).array()
+    )
+    .query(async ({ input }) => {
+      const { applicationId, storeType, storeId, startAt, endAt } = input;
+      const startDate = new Date(startAt);
+      const endDate = new Date(endAt);
+
+      const history = await prisma.applicationStoreInfoHistory.findMany({
+        where: {
+          applicationId,
+          storeType,
+          storeId,
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        select: {
+          downloads: true,
+          score: true,
+          ratingCount: true,
+          reviews: true,
+          size: true,
+          createdAt: true,
+        },
+      });
+
+      return history;
+    }),
   eventStats: workspaceProcedure
     .meta(
       buildApplicationOpenapi({
@@ -238,12 +292,8 @@ export const applicationRouter = router({
         unit,
       } = input;
 
-      const { startDate, endDate } = await parseDateRange({
-        websiteId: applicationId, // reuse the same function
-        startAt: Number(startAt),
-        endAt: Number(endAt),
-        unit,
-      });
+      const startDate = new Date(startAt);
+      const endDate = new Date(endAt);
 
       // Get application event stats
       const stats = await getApplicationEventStats(applicationId, {

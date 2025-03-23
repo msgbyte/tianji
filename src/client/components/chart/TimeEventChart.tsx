@@ -1,6 +1,6 @@
 import { useTheme } from '../../hooks/useTheme';
 import { DateUnit } from '@tianji/shared';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { formatDateWithUnit } from '../../utils/date';
 import {
   Area,
@@ -19,8 +19,15 @@ import {
   ChartTooltipContent,
 } from '../ui/chart';
 import { useStrokeDasharray } from '@/hooks/useStrokeDasharray';
+import { flatten, omit, union, without } from 'lodash-es';
+import { pickColorWithNum } from '@/utils/color';
 
 export type TimeEventChartType = 'area' | 'stack';
+
+export type TimeEventChartData = {
+  date: string;
+  [key: string]: number | string;
+};
 
 const defaultChartConfig: ChartConfig = {
   pv: {
@@ -33,21 +40,25 @@ const defaultChartConfig: ChartConfig = {
 
 export const TimeEventChart: React.FC<{
   className?: string;
-  data: { date: string; [key: string]: number | string }[];
+  data: TimeEventChartData[];
   unit: DateUnit;
   chartConfig?: ChartConfig;
   drawGradientArea?: boolean;
+  drawDashLine?: boolean;
   chartType?: TimeEventChartType;
+  isTrendingMode?: boolean;
 }> = React.memo((props) => {
   const {
     className,
     drawGradientArea = true,
+    drawDashLine = true,
     chartConfig = defaultChartConfig,
     chartType = 'area',
+    isTrendingMode = false,
   } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
-  const [strokeDasharray, setStrokeDasharray] = React.useState([...strokes]);
+  const [strokeDasharray, setStrokeDasharray] = useState([...strokes]);
   const handleAnimationEnd = () => setStrokeDasharray([...strokes]);
   const getStrokeDasharray = (name: string) => {
     const lineDasharray = strokeDasharray.find((s) => s.name === name);
@@ -90,12 +101,13 @@ export const TimeEventChart: React.FC<{
           </defs>
         )}
 
-        <Customized component={calcStrokeDasharray} />
+        {drawDashLine && <Customized component={calcStrokeDasharray} />}
+
         <XAxis
           dataKey="date"
           tickFormatter={(text) => formatDateWithUnit(text, props.unit)}
         />
-        <YAxis mirror />
+        <YAxis mirror domain={[isTrendingMode ? 'dataMin' : 0, 'dataMax']} />
         <ChartLegend
           content={
             <ChartLegendContent
@@ -148,3 +160,26 @@ export const TimeEventChart: React.FC<{
   );
 });
 TimeEventChart.displayName = 'TimeEventChart';
+
+export function useTimeEventChartConfig(chartData: TimeEventChartData[]) {
+  const chartConfig = useMemo(() => {
+    if (chartData.length === 0) {
+      return {};
+    }
+
+    return without(
+      union(flatten(chartData.map((c) => Object.keys(c)))),
+      'date'
+    ).reduce((prev, curr, i) => {
+      return {
+        ...prev,
+        [curr]: {
+          label: curr,
+          color: pickColorWithNum(i),
+        },
+      };
+    }, {});
+  }, [chartData]);
+
+  return chartConfig;
+}

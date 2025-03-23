@@ -45,6 +45,7 @@ import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as FeedPlaygroundImport } from './routes/feed_/playground'
 import { Route as FeedAddImport } from './routes/feed/add'
 import { Route as ApplicationOverviewImport } from './routes/application/overview'
+import { Route as ApplicationCompareImport } from './routes/application/compare'
 import { Route as ApplicationAddImport } from './routes/application/add'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
@@ -229,6 +230,11 @@ const ApplicationOverviewRoute = ApplicationOverviewImport.update({
   getParentRoute: () => ApplicationRoute,
 } as any)
 
+const ApplicationCompareRoute = ApplicationCompareImport.update({
+  path: '/compare',
+  getParentRoute: () => ApplicationRoute,
+} as any)
+
 const ApplicationAddRoute = ApplicationAddImport.update({
   path: '/add',
   getParentRoute: () => ApplicationRoute,
@@ -352,6 +358,10 @@ declare module '@tanstack/react-router' {
     }
     '/application/add': {
       preLoaderRoute: typeof ApplicationAddImport
+      parentRoute: typeof ApplicationImport
+    }
+    '/application/compare': {
+      preLoaderRoute: typeof ApplicationCompareImport
       parentRoute: typeof ApplicationImport
     }
     '/application/overview': {
@@ -479,6 +489,7 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   ApplicationRoute.addChildren([
     ApplicationAddRoute,
+    ApplicationCompareRoute,
     ApplicationOverviewRoute,
     ApplicationApplicationIdEditRoute,
     ApplicationApplicationIdIndexRoute,

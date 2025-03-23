@@ -14,7 +14,7 @@ import {
   useNavigate,
   useRouterState,
 } from '@tanstack/react-router';
-import { LuPlus } from 'react-icons/lu';
+import { LuGitCompareArrows, LuPlus } from 'react-icons/lu';
 import { useDataReady } from '@/hooks/useDataReady';
 
 export const Route = createFileRoute('/application')({
@@ -47,6 +47,12 @@ function ApplicationComponent() {
     });
   });
 
+  const handleClickCompare = useEvent(() => {
+    navigate({
+      to: '/application/compare',
+    });
+  });
+
   useDataReady(
     () => data.length > 0,
     () => {
@@ -70,6 +76,13 @@ function ApplicationComponent() {
               title={t('Application')}
               actions={
                 <div className="space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    Icon={LuGitCompareArrows}
+                    onClick={handleClickCompare}
+                  />
+
                   {hasAdminPermission && (
                     <Button
                       className={cn(
