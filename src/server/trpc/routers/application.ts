@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   OpenApiMetaInfo,
+  publicProcedure,
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
@@ -10,8 +11,10 @@ import { prisma } from '../../model/_client.js';
 import { ApplicationModelSchema } from '../../prisma/zod/application.js';
 import { ApplicationStoreInfoModelSchema } from '../../prisma/zod/applicationstoreinfo.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
-import { setupStoreInfo } from '../../model/application/storeInfo.js';
-import { parseDateRange } from '../../utils/common.js';
+import {
+  searchStoreApps,
+  setupStoreInfo,
+} from '../../model/application/storeInfo.js';
 import {
   eventStatsQueryResultItemSchema,
   getApplicationEventStats,
@@ -208,6 +211,36 @@ export const applicationRouter = router({
 
       return application;
     }),
+  storeAppSearch: workspaceProcedure
+    .meta({
+      openapi: {
+        tags: [OPENAPI_TAG.APPLICATION],
+        protect: true,
+        method: 'GET',
+        path: `/application/storeAppSearch`,
+      },
+    })
+    .input(
+      z.object({
+        keyword: z.string(),
+        storeType: z.enum(['appstore', 'googleplay']),
+      })
+    )
+    .output(
+      z
+        .object({
+          id: z.string().optional(),
+          appId: z.string(),
+          title: z.string(),
+          icon: z.string(),
+        })
+        .array()
+    )
+    .query(async ({ input }) => {
+      const { keyword, storeType } = input;
+
+      return searchStoreApps(keyword, storeType);
+    }),
   storeInfoHistory: workspaceProcedure
     .meta(
       buildApplicationOpenapi({
@@ -310,7 +343,7 @@ export const applicationRouter = router({
 function buildApplicationOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
   return {
     openapi: {
-      tags: [OPENAPI_TAG.WEBSITE],
+      tags: [OPENAPI_TAG.APPLICATION],
       protect: true,
       ...meta,
       path: `/workspace/{workspaceId}/application/{applicationId}${meta.path}`,

@@ -109,3 +109,37 @@ export async function upsertStoreInfo(
     ]);
   }
 }
+
+export async function searchStoreApps(
+  keyword: string,
+  storeType: 'appstore' | 'googleplay'
+) {
+  if (storeType === 'appstore') {
+    const res = await appstore.search({
+      term: keyword,
+      num: 20,
+    });
+
+    return res.map((app: any) => ({
+      id: String(app.id),
+      appId: app.appId,
+      title: app.title,
+      icon: app.icon,
+    }));
+  }
+
+  if (storeType === 'googleplay') {
+    const res = await gplay.search({
+      term: keyword,
+      num: 20,
+    });
+
+    return res.map((app: any) => ({
+      appId: app.appId,
+      title: app.title,
+      icon: app.icon,
+    }));
+  }
+
+  return [];
+}

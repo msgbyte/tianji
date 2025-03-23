@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
+import { AppStoreSearchInput } from './AppStoreSearchInput';
 
 const addFormSchema = z.object({
   name: z.string(),
@@ -76,7 +77,12 @@ export const ApplicationEditForm: React.FC<ApplicationEditFormProps> =
                   <FormItem>
                     <FormLabel optional={true}>{t('Appstore ID')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="id12345xxxx" {...field} />
+                      <AppStoreSearchInput
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        storeType="appstore"
+                        placeholder="id12345xxxx"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -90,7 +96,12 @@ export const ApplicationEditForm: React.FC<ApplicationEditFormProps> =
                   <FormItem>
                     <FormLabel optional={true}>{t('Playstore ID')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="com.example.xxx" {...field} />
+                      <AppStoreSearchInput
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        storeType="googleplay"
+                        placeholder="com.example.xxx"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
