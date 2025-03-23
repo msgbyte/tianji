@@ -353,10 +353,11 @@ model Application {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  sessions              ApplicationSession[]
-  eventData             ApplicationEventData[]
-  sessionData           ApplicationSessionData[]
-  applicationStoreInfos ApplicationStoreInfo[]
+  sessions                     ApplicationSession[]
+  eventData                    ApplicationEventData[]
+  sessionData                  ApplicationSessionData[]
+  applicationStoreInfos        ApplicationStoreInfo[]
+  applicationStoreInfoHistorys ApplicationStoreInfoHistory[]
 
   @@index([workspaceId])
   @@index([createdAt])
@@ -477,6 +478,31 @@ model ApplicationStoreInfo {
   application Application @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@id([applicationId, storeType])
+}
+
+model ApplicationStoreInfoHistory {
+  id            String  @id() @default(cuid()) @db.VarChar(30)
+  applicationId String  @db.VarChar(30)
+  storeType     String  @db.VarChar(30) // appstore, playstore
+  storeId       String  @db.VarChar(100)
+  appId         String
+  title         String
+  description   String
+  releaseNotes  String
+  url           String
+  downloads     Int? // only for playstore
+  score         Float?
+  ratingCount   Int? // rating count
+  reviews       Int?
+  version       String?
+  size          Float? // only for appstore
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  application Application @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([applicationId, storeType, createdAt])
 }
 
 enum WebsiteLighthouseReportStatus {

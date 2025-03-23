@@ -79,23 +79,33 @@ export async function upsertStoreInfo(
   }
 
   if (info) {
-    await prisma.applicationStoreInfo.upsert({
-      where: {
-        applicationId_storeType: {
+    await prisma.$transaction([
+      prisma.applicationStoreInfo.upsert({
+        where: {
+          applicationId_storeType: {
+            applicationId,
+            storeType,
+          },
+        },
+        create: {
+          ...info,
           applicationId,
           storeType,
+          storeId,
         },
-      },
-      create: {
-        ...info,
-        applicationId,
-        storeType,
-        storeId,
-      },
-      update: {
-        ...info,
-        storeId,
-      },
-    });
+        update: {
+          ...info,
+          storeId,
+        },
+      }),
+      prisma.applicationStoreInfoHistory.create({
+        data: {
+          ...info,
+          applicationId,
+          storeType,
+          storeId,
+        },
+      }),
+    ]);
   }
 }
