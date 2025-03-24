@@ -115,6 +115,7 @@ export const ApplicationCompareChart: React.FC<{
       drawDashLine={false}
       drawGradientArea={false}
       isTrendingMode={true}
+      showDifference={true}
     />
   );
 });

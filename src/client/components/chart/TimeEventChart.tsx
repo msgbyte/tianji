@@ -19,8 +19,9 @@ import {
   ChartTooltipContent,
 } from '../ui/chart';
 import { useStrokeDasharray } from '@/hooks/useStrokeDasharray';
-import { flatten, omit, union, without } from 'lodash-es';
+import { flatten, get, union, without } from 'lodash-es';
 import { pickColorWithNum } from '@/utils/color';
+import { cn } from '@/utils/style';
 
 export type TimeEventChartType = 'area' | 'stack';
 
@@ -47,6 +48,7 @@ export const TimeEventChart: React.FC<{
   drawDashLine?: boolean;
   chartType?: TimeEventChartType;
   isTrendingMode?: boolean;
+  showDifference?: boolean;
 }> = React.memo((props) => {
   const {
     className,
@@ -55,6 +57,7 @@ export const TimeEventChart: React.FC<{
     chartConfig = defaultChartConfig,
     chartType = 'area',
     isTrendingMode = false,
+    showDifference = false,
   } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
@@ -130,6 +133,44 @@ export const TimeEventChart: React.FC<{
           content={
             <ChartTooltipContent
               labelFormatter={(label) => formatDateWithUnit(label, props.unit)}
+              formatter={
+                showDifference
+                  ? (value, name, item, _index, payload, content) => {
+                      const index = props.data.indexOf(payload);
+                      // Calculate difference with previous data point
+                      if (index > 0 && props.data.length > 1) {
+                        const currentValue = value as number;
+                        const prevValue = Number(
+                          get(props.data, [index - 1, name])
+                        );
+                        const diff = currentValue - prevValue;
+                        const diffText =
+                          diff > 0
+                            ? `+${diff.toLocaleString()}`
+                            : diff.toLocaleString();
+                        const diffColor =
+                          diff > 0
+                            ? 'text-green-500'
+                            : diff < 0
+                              ? 'text-red-500'
+                              : 'text-gray-500';
+
+                        return (
+                          <div className="flex items-center gap-2">
+                            {content}
+                            <span
+                              className={cn('font-mono text-xs', diffColor)}
+                            >
+                              {diffText}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      return <>{content}</>;
+                    }
+                  : undefined
+              }
             />
           }
         />
