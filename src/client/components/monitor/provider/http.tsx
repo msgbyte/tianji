@@ -79,6 +79,167 @@ const MonitorHttp: React.FC = React.memo(() => {
         <Switch />
       </Form.Item>
       <Form.Item
+        label={t('Valid Status Codes')}
+        name={['payload', 'validStatusCodes']}
+        tooltip={t(
+          'HTTP status codes that are considered valid for this monitor. Default is 200-299.'
+        )}
+        initialValue={[]}
+      >
+        <Select
+          mode="multiple"
+          placeholder={t('Select valid status codes')}
+          optionFilterProp="children"
+        >
+          <Select.OptGroup label={t('1xx Informational')}>
+            <Select.Option value={100}>100 - {t('Continue')}</Select.Option>
+            <Select.Option value={101}>
+              101 - {t('Switching Protocols')}
+            </Select.Option>
+            <Select.Option value={102}>102 - {t('Processing')}</Select.Option>
+            <Select.Option value={103}>103 - {t('Early Hints')}</Select.Option>
+          </Select.OptGroup>
+          <Select.OptGroup label={t('2xx Success')}>
+            <Select.Option value={200}>200 - {t('OK')}</Select.Option>
+            <Select.Option value={201}>201 - {t('Created')}</Select.Option>
+            <Select.Option value={202}>202 - {t('Accepted')}</Select.Option>
+            <Select.Option value={203}>
+              203 - {t('Non-Authoritative Information')}
+            </Select.Option>
+            <Select.Option value={204}>204 - {t('No Content')}</Select.Option>
+            <Select.Option value={205}>
+              205 - {t('Reset Content')}
+            </Select.Option>
+            <Select.Option value={206}>
+              206 - {t('Partial Content')}
+            </Select.Option>
+            <Select.Option value={207}>207 - {t('Multi-Status')}</Select.Option>
+            <Select.Option value={208}>
+              208 - {t('Already Reported')}
+            </Select.Option>
+            <Select.Option value={226}>226 - {t('IM Used')}</Select.Option>
+          </Select.OptGroup>
+          <Select.OptGroup label={t('3xx Redirection')}>
+            <Select.Option value={300}>
+              300 - {t('Multiple Choices')}
+            </Select.Option>
+            <Select.Option value={301}>
+              301 - {t('Moved Permanently')}
+            </Select.Option>
+            <Select.Option value={302}>302 - {t('Found')}</Select.Option>
+            <Select.Option value={303}>303 - {t('See Other')}</Select.Option>
+            <Select.Option value={304}>304 - {t('Not Modified')}</Select.Option>
+            <Select.Option value={305}>305 - {t('Use Proxy')}</Select.Option>
+            <Select.Option value={307}>
+              307 - {t('Temporary Redirect')}
+            </Select.Option>
+            <Select.Option value={308}>
+              308 - {t('Permanent Redirect')}
+            </Select.Option>
+          </Select.OptGroup>
+          <Select.OptGroup label={t('4xx Client Errors')}>
+            <Select.Option value={400}>400 - {t('Bad Request')}</Select.Option>
+            <Select.Option value={401}>401 - {t('Unauthorized')}</Select.Option>
+            <Select.Option value={402}>
+              402 - {t('Payment Required')}
+            </Select.Option>
+            <Select.Option value={403}>403 - {t('Forbidden')}</Select.Option>
+            <Select.Option value={404}>404 - {t('Not Found')}</Select.Option>
+            <Select.Option value={405}>
+              405 - {t('Method Not Allowed')}
+            </Select.Option>
+            <Select.Option value={406}>
+              406 - {t('Not Acceptable')}
+            </Select.Option>
+            <Select.Option value={407}>
+              407 - {t('Proxy Authentication Required')}
+            </Select.Option>
+            <Select.Option value={408}>
+              408 - {t('Request Timeout')}
+            </Select.Option>
+            <Select.Option value={409}>409 - {t('Conflict')}</Select.Option>
+            <Select.Option value={410}>410 - {t('Gone')}</Select.Option>
+            <Select.Option value={411}>
+              411 - {t('Length Required')}
+            </Select.Option>
+            <Select.Option value={412}>
+              412 - {t('Precondition Failed')}
+            </Select.Option>
+            <Select.Option value={413}>
+              413 - {t('Payload Too Large')}
+            </Select.Option>
+            <Select.Option value={414}>414 - {t('URI Too Long')}</Select.Option>
+            <Select.Option value={415}>
+              415 - {t('Unsupported Media Type')}
+            </Select.Option>
+            <Select.Option value={416}>
+              416 - {t('Range Not Satisfiable')}
+            </Select.Option>
+            <Select.Option value={417}>
+              417 - {t('Expectation Failed')}
+            </Select.Option>
+            <Select.Option value={418}>418 - {t("I'm a teapot")}</Select.Option>
+            <Select.Option value={421}>
+              421 - {t('Misdirected Request')}
+            </Select.Option>
+            <Select.Option value={422}>
+              422 - {t('Unprocessable Entity')}
+            </Select.Option>
+            <Select.Option value={423}>423 - {t('Locked')}</Select.Option>
+            <Select.Option value={424}>
+              424 - {t('Failed Dependency')}
+            </Select.Option>
+            <Select.Option value={425}>425 - {t('Too Early')}</Select.Option>
+            <Select.Option value={426}>
+              426 - {t('Upgrade Required')}
+            </Select.Option>
+            <Select.Option value={428}>
+              428 - {t('Precondition Required')}
+            </Select.Option>
+            <Select.Option value={429}>
+              429 - {t('Too Many Requests')}
+            </Select.Option>
+            <Select.Option value={431}>
+              431 - {t('Request Header Fields Too Large')}
+            </Select.Option>
+            <Select.Option value={451}>
+              451 - {t('Unavailable For Legal Reasons')}
+            </Select.Option>
+          </Select.OptGroup>
+          <Select.OptGroup label={t('5xx Server Errors')}>
+            <Select.Option value={500}>
+              500 - {t('Internal Server Error')}
+            </Select.Option>
+            <Select.Option value={501}>
+              501 - {t('Not Implemented')}
+            </Select.Option>
+            <Select.Option value={502}>502 - {t('Bad Gateway')}</Select.Option>
+            <Select.Option value={503}>
+              503 - {t('Service Unavailable')}
+            </Select.Option>
+            <Select.Option value={504}>
+              504 - {t('Gateway Timeout')}
+            </Select.Option>
+            <Select.Option value={505}>
+              505 - {t('HTTP Version Not Supported')}
+            </Select.Option>
+            <Select.Option value={506}>
+              506 - {t('Variant Also Negotiates')}
+            </Select.Option>
+            <Select.Option value={507}>
+              507 - {t('Insufficient Storage')}
+            </Select.Option>
+            <Select.Option value={508}>
+              508 - {t('Loop Detected')}
+            </Select.Option>
+            <Select.Option value={510}>510 - {t('Not Extended')}</Select.Option>
+            <Select.Option value={511}>
+              511 - {t('Network Authentication Required')}
+            </Select.Option>
+          </Select.OptGroup>
+        </Select>
+      </Form.Item>
+      <Form.Item
         label="Content-Type"
         name={['payload', 'contentType']}
         initialValue={'application/json'}

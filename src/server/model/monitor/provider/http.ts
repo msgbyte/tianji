@@ -14,6 +14,7 @@ export const http: MonitorProvider<{
   bodyValue?: string;
   maxRedirects?: number;
   ignoreTLS?: boolean;
+  validStatusCodes?: number[];
 }> = {
   run: async (monitor) => {
     if (typeof monitor.payload !== 'object') {
@@ -29,6 +30,7 @@ export const http: MonitorProvider<{
       bodyValue,
       maxRedirects,
       ignoreTLS,
+      validStatusCodes = [],
     } = monitor.payload;
 
     const config: AxiosRequestConfig = {
@@ -89,8 +91,16 @@ export const http: MonitorProvider<{
 
       const diff = dayjs().diff(startTime, 'ms');
 
-      if (res.status >= 400) {
-        return -1;
+      if (!validStatusCodes || validStatusCodes.length === 0) {
+        // default is 200 - 299
+        if (res.status < 200 || res.status > 299) {
+          return -1;
+        }
+      } else {
+        // if config validStatusCodes, check it
+        if (!validStatusCodes.includes(res.status)) {
+          return -1;
+        }
       }
 
       return diff;
