@@ -1,5 +1,20 @@
 
 
+## [1.19.3](https://github.com/msgbyte/tianji/compare/v1.19.2...v1.19.3) (2025-03-25)
+
+### Features
+
+* add diff view in application compare chart ([c49152a](https://github.com/msgbyte/tianji/commit/c49152a1bc5bb895ccd76a4bd4db1231a75bc19e))
+* add http status code field which can treat other status code as normal. [#173](https://github.com/msgbyte/tianji/issues/173) ([1cacdeb](https://github.com/msgbyte/tianji/commit/1cacdeb7ec2b2d69f4b9f0fe69737c2a6e1451aa))
+
+### Document
+
+* add environment document ([db654d3](https://github.com/msgbyte/tianji/commit/db654d32bb5f594d4ba15caaa24e73d49d669825))
+
+### Others
+
+* update translation ([6d8b12e](https://github.com/msgbyte/tianji/commit/6d8b12e35e0426575be3f1057d9cbc403bad7028))
+
 ## [1.19.2](https://github.com/msgbyte/tianji/compare/v1.19.1...v1.19.2) (2025-03-23)
 
 ### Features
