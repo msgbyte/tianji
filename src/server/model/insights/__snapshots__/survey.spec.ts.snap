@@ -1,5 +1,45 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`SurveyInsightsSqlBuilder > combined filters and groups > sql with filters and groups 1`] = `
+"select
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      "SurveyResult"."payload" ->> 'userType' as "%userType" , count(1) as "$all_event"
+    from "SurveyResult"
+    WHERE ("SurveyResult"."payload"->> 'completed')'::boolean' = '1'
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1 , 2"
+`;
+
+exports[`SurveyInsightsSqlBuilder > date type filters > sql with date filters 1`] = `
+"select
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      count(1) as "$all_event"
+    from "SurveyResult"
+    WHERE ("SurveyResult"."payload"->> 'submittedAt') BETWEEN 'Tue Feb 11 2025 00:00:00 GMT+0800 (中国标准时间)' AND 'Thu Mar 13 2025 23:59:59 GMT+0800 (中国标准时间)'
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1"
+`;
+
+exports[`SurveyInsightsSqlBuilder > different metrics > sql with different metrics 1`] = `
+"select
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      sum(case WHEN "SurveyResult"."payload"->>''rating'' IS NOT NULL AND "SurveyResult"."payload"->>''rating'' <> '' THEN 1 ELSE 0 END) as "rating" , sum(case WHEN "SurveyResult"."payload"->>''comment'' IS NOT NULL AND "SurveyResult"."payload"->>''comment'' <> '' THEN 1 ELSE 0 END) as "comment" , count(distinct "sessionId") as "$all_event"
+    from "SurveyResult"
+    
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1"
+`;
+
+exports[`SurveyInsightsSqlBuilder > different time units > sql with month time unit 1`] = `
+"select
+      to_char(date_trunc('month', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date,
+      count(1) as "$all_event"
+    from "SurveyResult"
+    
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1"
+`;
+
 exports[`SurveyInsightsSqlBuilder > groups > sql 1`] = `
 "select
       to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
@@ -18,4 +58,34 @@ exports[`SurveyInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
     
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
     group by 1 , 2"
+`;
+
+exports[`SurveyInsightsSqlBuilder > multiple string filters > sql with multiple string filters 1`] = `
+"select
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      count(1) as "$all_event"
+    from "SurveyResult"
+    WHERE ("SurveyResult"."payload"->> 'source') LIKE '%web%' AND ("SurveyResult"."payload"->> 'feedback') NOT LIKE '%bug%'
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1"
+`;
+
+exports[`SurveyInsightsSqlBuilder > numeric filters with ranges > sql with numeric range filter 1`] = `
+"select
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      count(1) as "$all_event"
+    from "SurveyResult"
+    WHERE ("SurveyResult"."payload"->> 'score')'::int' BETWEEN '7' AND '10'
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1"
+`;
+
+exports[`SurveyInsightsSqlBuilder > with filters > sql with filters 1`] = `
+"select
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      count(1) as "$all_event"
+    from "SurveyResult"
+    WHERE ("SurveyResult"."payload"->> 'country') = 'US' AND ("SurveyResult"."payload"->> 'age')'::int' > '18'
+    where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
+    group by 1"
 `;
