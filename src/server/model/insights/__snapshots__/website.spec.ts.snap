@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`buildInsightsWebsiteSql > groups > sql 1`] = `
+exports[`WebsiteInsightsSqlBuilder > groups > sql 1`] = `
 "select
       to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
       "WebsiteEventData"."numberValue" as "%number" , count(1) as "$all_event"
@@ -9,7 +9,7 @@ exports[`buildInsightsWebsiteSql > groups > sql 1`] = `
     group by 1 , 2"
 `;
 
-exports[`buildInsightsWebsiteSql > groups with custom bucket > sql 1`] = `
+exports[`WebsiteInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
 "select
       to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
       "WebsiteEventData"."numberValue" != '1' as "%number|not equals|1" , count(1) as "$all_event"

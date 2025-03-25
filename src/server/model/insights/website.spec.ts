@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import { unwrapSQL } from '../../utils/prisma.js';
-import { buildInsightsWebsiteSql } from './website.js';
+import { WebsiteInsightsSqlBuilder } from './website.js';
 
-describe('buildInsightsWebsiteSql', () => {
+describe('WebsiteInsightsSqlBuilder', () => {
   const insightId = 'cly5yay7a001v5tp6xdkzmygh';
   const insightType = 'website';
 
   test('groups', () => {
-    const sql = buildInsightsWebsiteSql(
+    const builder = new WebsiteInsightsSqlBuilder(
       {
         insightId,
         insightType,
@@ -35,11 +35,12 @@ describe('buildInsightsWebsiteSql', () => {
       }
     );
 
+    const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
-  test.only('groups with custom bucket', () => {
-    const sql = buildInsightsWebsiteSql(
+  test('groups with custom bucket', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
       {
         insightId,
         insightType,
@@ -73,6 +74,7 @@ describe('buildInsightsWebsiteSql', () => {
       }
     );
 
+    const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 });
