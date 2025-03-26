@@ -20,10 +20,14 @@
   },
   "devDependencies": {
     "@types/react": "^18.2.22",
-    "react": "^18.3.1"
+    "react": "^18.3.1",
+    "react-native": "^0.78.1",
+    "react-native-device-info": "^14.0.4"
   },
   "peerDependencies": {
-    "@types/react": "^18.2.22",
-    "react": "^18.3.1"
+    "@types/react": "*",
+    "react": "*",
+    "react-native": "*",
+    "react-native-device-info": "*"
   }
 }

@@ -137,6 +137,11 @@ export async function reportApplicationEvent(
   sendApplicationRequest(options.serverUrl, 'event', payload);
 }
 
+export interface VersionPayload {
+  version?: string;
+  sdkVersion?: string;
+}
+
 /**
  * Identify user in application
  *
@@ -144,7 +149,7 @@ export async function reportApplicationEvent(
  * @param userData - User identification data
  */
 export async function identifyApplicationUser(
-  userInfo: IdentifyPayload
+  userInfo: IdentifyPayload | VersionPayload
 ): Promise<void> {
   if (!options) {
     console.warn('Application tracking is not initialized');

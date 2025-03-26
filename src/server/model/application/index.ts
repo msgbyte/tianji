@@ -8,13 +8,9 @@ import {
 import { prisma } from '../_client.js';
 import { Request } from 'express';
 import { getClientInfo } from '../../utils/detect.js';
-import {
-  DATA_TYPE,
-  EVENT_NAME_LENGTH,
-  EVENT_TYPE,
-  URL_LENGTH,
-} from '../../utils/const.js';
+import { DATA_TYPE, EVENT_NAME_LENGTH, EVENT_TYPE } from '../../utils/const.js';
 import type { DynamicData } from '../../utils/types.js';
+import { omit, pick } from 'lodash-es';
 
 export interface ApplicationEventPayload {
   data?: object;
@@ -196,6 +192,7 @@ export async function saveApplicationEvent(data: {
   return applicationEvent;
 }
 
+const builtinSessionDataKeys = ['os', 'version', 'sdkVersion'];
 export async function saveApplicationSessionData(data: {
   applicationId: string;
   sessionId: string;
@@ -203,7 +200,19 @@ export async function saveApplicationSessionData(data: {
 }) {
   const { applicationId, sessionId, sessionData } = data;
 
-  const jsonKeys = flattenJSON(sessionData);
+  const builtinSessionData = pick(sessionData, builtinSessionDataKeys);
+  if (Object.keys(builtinSessionData).length > 0) {
+    void prisma.applicationSession
+      .update({
+        where: {
+          id: sessionId,
+        },
+        data: builtinSessionData,
+      })
+      .catch(() => {});
+  }
+
+  const jsonKeys = flattenJSON(omit(sessionData, builtinSessionDataKeys));
 
   const flattendData = jsonKeys.map(
     (a) =>

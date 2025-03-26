@@ -368,6 +368,8 @@ model ApplicationSession {
   applicationId  String   @db.VarChar(30)
   os             String?  @db.VarChar(20) // android or ios os version
   language       String?  @db.VarChar(35)
+  version        String?  @db.VarChar(35) // application version
+  sdkVersion     String?  @db.VarChar(35) // tianji sdk version
   ip             String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
   country        String?  @db.Char(2)
   subdivision1   String?  @db.VarChar(20)
