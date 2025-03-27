@@ -1,5 +1,18 @@
 
 
+## [1.19.4](https://github.com/msgbyte/tianji/compare/v1.19.3...v1.19.4) (2025-03-27)
+
+### Features
+
+* add line chart type support and adjust fill opacity ([0724d8c](https://github.com/msgbyte/tianji/commit/0724d8c6a4ef5d3946400758e083ee4887d7ab7e))
+* add react native sdk initApplication function and handle session version ([fdf4a05](https://github.com/msgbyte/tianji/commit/fdf4a05ff6ef432a2e9988626167e1e3a057cf08))
+* refactor insights SQL builders and update related tests ([ccf93cb](https://github.com/msgbyte/tianji/commit/ccf93cb6c6ee53d5ec9e0979310bef0f479b12f8))
+
+### Others
+
+* rerun all translation with 4o ([e60136e](https://github.com/msgbyte/tianji/commit/e60136e0a0aee3f16e9d05306d178ef775e8e020))
+* update pnpm version to 10.6.5 ([176f4ed](https://github.com/msgbyte/tianji/commit/176f4edb05ae40f015d1d91db2eda9bb90a8ca24))
+
 ## [1.19.3](https://github.com/msgbyte/tianji/compare/v1.19.2...v1.19.3) (2025-03-25)
 
 ### Features
