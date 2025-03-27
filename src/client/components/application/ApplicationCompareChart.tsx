@@ -116,6 +116,7 @@ export const ApplicationCompareChart: React.FC<{
       drawGradientArea={false}
       isTrendingMode={true}
       showDifference={true}
+      chartType="line"
     />
   );
 });

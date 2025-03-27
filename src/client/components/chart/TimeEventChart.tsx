@@ -23,7 +23,7 @@ import { flatten, get, union, without } from 'lodash-es';
 import { pickColorWithNum } from '@/utils/color';
 import { cn } from '@/utils/style';
 
-export type TimeEventChartType = 'area' | 'stack';
+export type TimeEventChartType = 'area' | 'stack' | 'line';
 
 export type TimeEventChartData = {
   date: string;
@@ -176,6 +176,11 @@ export const TimeEventChart: React.FC<{
         />
 
         {Object.keys(chartConfig).map((key, i) => {
+          const color =
+            chartConfig[key].color ??
+            (colors.chart as any)[key] ??
+            colors.chart.default;
+
           return (
             <Area
               key={key}
@@ -183,13 +188,9 @@ export const TimeEventChart: React.FC<{
               type="monotone"
               dataKey={key}
               stackId={stacked ? '1' : undefined}
-              stroke={
-                chartConfig[key].color ??
-                (colors.chart as any)[key] ??
-                colors.chart.default
-              }
-              fillOpacity={1}
-              fill={`url(#color-${key})`}
+              stroke={color}
+              fillOpacity={chartType === 'line' ? 0 : 1}
+              fill={drawGradientArea ? `url(#color-${key})` : color}
               strokeWidth={2}
               strokeDasharray={getStrokeDasharray(key)}
               onAnimationEnd={handleAnimationEnd}
