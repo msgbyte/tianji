@@ -1,5 +1,11 @@
 
 
+## [1.19.5](https://github.com/msgbyte/tianji/compare/v1.19.4...v1.19.5) (2025-03-28)
+
+### Others
+
+* rollback pnpm version to 9.x because of isolated_vm [#181](https://github.com/msgbyte/tianji/issues/181) ([15d575d](https://github.com/msgbyte/tianji/commit/15d575d954627fbd4ea1b626c837cdff8962ab60))
+
 ## [1.19.4](https://github.com/msgbyte/tianji/compare/v1.19.3...v1.19.4) (2025-03-27)
 
 ### Features
