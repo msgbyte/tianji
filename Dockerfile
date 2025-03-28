@@ -11,7 +11,7 @@ RUN cd reporter && go build .
 # The current Chromium version in Alpine 3.20 is causing timeout issues with Puppeteer. Downgrading to Alpine 3.19 fixes the issue. See #11640, #12637, #12189
 FROM node:22.14.0-alpine3.20 AS base
 
-RUN npm install -g pnpm@10.6.5
+RUN npm install -g pnpm@9.7.1
 
 # For apprise
 RUN apk add --update --no-cache python3 py3-pip g++ make

@@ -13,7 +13,7 @@ But if your server not support dockerize, you can try to install by manual.
 You need:
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 10.x(10.6.5 better)
+- [pnpm](https://pnpm.io/) 9.x(9.7.1 better)
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - For running Tianji in the background
