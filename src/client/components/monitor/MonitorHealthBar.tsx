@@ -156,7 +156,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
                   }
                 )}
               >
-                {t('UP')}
+                {`UP`}
               </div>
             ) : last(beats)?.status === 'error' ? (
               <div
@@ -167,7 +167,7 @@ export const MonitorHealthBar: React.FC<MonitorHealthBarProps> = React.memo(
                   }
                 )}
               >
-                {t('DOWN')}
+                {`DOWN`}
               </div>
             ) : (
               <div
