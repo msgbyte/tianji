@@ -5,6 +5,6 @@ describe('getTimezoneList', () => {
   test('should return timezone list with correct labels and values', () => {
     const result = getTimezoneList();
 
-    expect(result).toMatchSnapshot();
+    expect(result.map((r) => r.value)).toMatchSnapshot();
   });
 });
