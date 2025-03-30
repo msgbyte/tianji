@@ -25,12 +25,9 @@ export const ChartTypeSelection: React.FC<ChartTypeSelectionProps> = React.memo(
           <LuChartArea />
         </SelectTrigger>
         <SelectContent align="end">
-          <SelectItem value="area" className="flex gap-1">
-            {t('Area')}
-          </SelectItem>
-          <SelectItem value="stack" className="flex gap-1">
-            {t('Stack')}
-          </SelectItem>
+          <SelectItem value="line">{t('Line')}</SelectItem>
+          <SelectItem value="area">{t('Area')}</SelectItem>
+          <SelectItem value="stack">{t('Stack')}</SelectItem>
         </SelectContent>
       </Select>
     );

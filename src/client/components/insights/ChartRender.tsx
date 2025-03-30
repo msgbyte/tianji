@@ -50,7 +50,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     return end.diff(start, 'day') <= 1;
   }, [dateRange]);
   const [dateUnit, setDateUnit] = useState<DateUnit>('day');
-  const [chartType, setChartType] = useState<TimeEventChartType>('area');
+  const [chartType, setChartType] = useState<TimeEventChartType>('line');
 
   useWatch([allowMinute, dateUnit], () => {
     if (!allowMinute && dateUnit === 'minute') {
