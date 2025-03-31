@@ -47,6 +47,6 @@ TIANJI_API_KEY=your_api_key_here
 TIANJI_WORKSPACE_ID=your_workspace_id_here
 ```
 
-## 许可证
+## License
 
 [MIT](LICENSE)
