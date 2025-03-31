@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug MCP Server",
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "-y",
+        "@modelcontextprotocol/inspector",
+        "node",
+        "dist/index.js"
+      ],
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: watch",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "running at (https?://\\S+)",
+        "uriFormat": "%s?timeout=60000"
+      }
+    }
+  ]
+}

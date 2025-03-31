@@ -1,0 +1,43 @@
+{
+  "name": "tianji-mcp-server",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "tianji-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/index.js",
+    "watch": "tsc --watch",
+    "start": "node ./dist/index.js",
+    "prepare": "pnpm build",
+    "inspector": "mcp-inspector node ./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "tianji",
+    "modelcontextprotocol",
+    "tianji-mcp",
+    "tianji-mcp-server",
+    "mcp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "moonrailgun <moonrailgun@gmail.com>",
+  "license": "MIT",
+  "description": "Tianji MCP Server",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "tianji-client-sdk": "workspace:^",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.7.0",
+    "@types/node": "^22.13.10",
+    "shx": "^0.3.4",
+    "typescript": "^5.8.2"
+  }
+}

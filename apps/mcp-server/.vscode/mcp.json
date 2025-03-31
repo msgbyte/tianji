@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "tianji-mcp-server": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/index.js"],
+      "env": {
+        "TIANJI_BASE_URL": "https://tianji.example.com",
+        "TIANJI_API_KEY": "<your-api-key>",
+        "TIANJI_WORKSPACE_ID": "<your-workspace-id>"
+      }
+    }
+  }
+}
