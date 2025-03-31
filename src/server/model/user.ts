@@ -382,16 +382,20 @@ export async function verifyUserApiKey(apiKey: string) {
     throw new Error('Api Key not found');
   }
 
-  prisma.userApiKey.update({
-    where: {
-      apiKey,
-    },
-    data: {
-      usage: {
-        increment: 1,
+  prisma.userApiKey
+    .update({
+      where: {
+        apiKey,
       },
-    },
-  });
+      data: {
+        usage: {
+          increment: 1,
+        },
+      },
+    })
+    .catch((err) => {
+      logger.error('Failed to update API key usage', err);
+    });
 
   return result.user;
 }
