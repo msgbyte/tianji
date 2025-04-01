@@ -1,5 +1,26 @@
 
 
+## [1.19.6](https://github.com/msgbyte/tianji/compare/v1.19.5...v1.19.6) (2025-04-01)
+
+### Features
+
+* add value formatter and filesize for application compare ([17ebf2e](https://github.com/msgbyte/tianji/commit/17ebf2e6bf402fc39d89a4ee5feb2c5975242791))
+* create tianji mcp server ([36aaabc](https://github.com/msgbyte/tianji/commit/36aaabc91e1dbfe5ee6da1cb465a2647e99d19be))
+* insight add line chart type ([bf0022d](https://github.com/msgbyte/tianji/commit/bf0022d7438646ec913c69dbdf65839df47f8f7b))
+
+### Bug Fixes
+
+* fix user api key not increment problem ([cf2b454](https://github.com/msgbyte/tianji/commit/cf2b454146651a5683306e12c50d350d923fdb78))
+
+### Document
+
+* add dark-brand ([a2c5c98](https://github.com/msgbyte/tianji/commit/a2c5c98d093f15fcf1d7a4ed606547678fc0ffa1))
+* fix typo ([34d863e](https://github.com/msgbyte/tianji/commit/34d863efa8814ee0919d0f24fa33f4cf26ba18e8))
+
+### Others
+
+* remove inappropriate translations ([0ffb3be](https://github.com/msgbyte/tianji/commit/0ffb3beb5ef3787b2a2f4a7f069d0676fb8f79cd))
+
 ## [1.19.5](https://github.com/msgbyte/tianji/compare/v1.19.4...v1.19.5) (2025-03-28)
 
 ### Others
