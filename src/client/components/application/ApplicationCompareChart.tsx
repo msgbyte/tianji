@@ -11,6 +11,7 @@ import { Empty } from 'antd';
 import { t } from '@i18next-toolkit/react';
 import { DelayRender } from '../DelayRender';
 import { sortBy } from 'lodash-es';
+import { filesize } from 'filesize';
 
 export const ApplicationCompareChart: React.FC<{
   applications: {
@@ -38,6 +39,7 @@ export const ApplicationCompareChart: React.FC<{
       date: string;
     }[]
   >([]);
+  const key = `${props.field}|${props.applications.map((app) => app.applicationId).join(',')}`;
 
   useEffect(() => {
     Promise.all(
@@ -108,8 +110,12 @@ export const ApplicationCompareChart: React.FC<{
 
   return (
     <TimeEventChart
+      key={key}
       className="h-[400px] w-full"
       data={chartData}
+      valueFormatter={
+        props.field === 'size' ? (value) => filesize(value) : undefined
+      }
       unit="day"
       chartConfig={chartConfig}
       drawDashLine={false}

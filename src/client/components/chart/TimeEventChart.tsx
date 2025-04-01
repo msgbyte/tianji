@@ -49,6 +49,7 @@ export const TimeEventChart: React.FC<{
   chartType?: TimeEventChartType;
   isTrendingMode?: boolean;
   showDifference?: boolean;
+  valueFormatter?: (value: number) => string;
 }> = React.memo((props) => {
   const {
     className,
@@ -110,7 +111,11 @@ export const TimeEventChart: React.FC<{
           dataKey="date"
           tickFormatter={(text) => formatDateWithUnit(text, props.unit)}
         />
-        <YAxis mirror domain={isTrendingMode ? ['auto', 'auto'] : undefined} />
+        <YAxis
+          mirror
+          domain={isTrendingMode ? ['auto', 'auto'] : undefined}
+          tickFormatter={props.valueFormatter}
+        />
         <ChartLegend
           content={
             <ChartLegendContent
@@ -133,6 +138,7 @@ export const TimeEventChart: React.FC<{
           content={
             <ChartTooltipContent
               labelFormatter={(label) => formatDateWithUnit(label, props.unit)}
+              valueFormatter={props.valueFormatter}
               formatter={
                 showDifference
                   ? (value, name, item, _index, payload, content) => {
@@ -144,10 +150,13 @@ export const TimeEventChart: React.FC<{
                           get(props.data, [index - 1, name])
                         );
                         const diff = currentValue - prevValue;
+                        const diffFormat = props.valueFormatter
+                          ? props.valueFormatter(diff)
+                          : diff.toLocaleString();
+
                         const diffText =
-                          diff > 0
-                            ? `+${diff.toLocaleString()}`
-                            : diff.toLocaleString();
+                          diff > 0 ? `+${diffFormat}` : diffFormat;
+
                         const diffColor =
                           diff > 0
                             ? 'text-green-500'
