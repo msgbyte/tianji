@@ -38,7 +38,7 @@ Before using, you need to set the following environment variables:
 
 ```bash
 # Tianji Platform API Base URL
-TIANJI_BASE_URL=https://api.tianji.com
+TIANJI_BASE_URL=https://tianji.example.com
 
 # Tianji Platform API Key
 TIANJI_API_KEY=your_api_key_here
