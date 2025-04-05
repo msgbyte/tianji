@@ -1,44 +1,3 @@
-import nodemailer from 'nodemailer';
-import { logger } from './logger.js';
-import { env } from './env.js';
-import dayjs from 'dayjs';
-
-export interface EmailOptions {
-  to: string | string[];
-  subject: string;
-  body: string;
-  button?: { title: string; url: string };
-}
-
-export async function sendEmail(options: EmailOptions) {
-  try {
-    const transporter = nodemailer.createTransport(env.smtp.server);
-
-    const mailOptions = {
-      from: env.smtp.from,
-      to: options.to,
-      subject: options.subject,
-      html: options.body
-        ? generateSMTPHTML(options.body, options.button)
-        : undefined,
-    };
-
-    // TODO: create a email model to store email history
-
-    const info = await transporter.sendMail(mailOptions);
-    logger.info(`Email sent: ${info.messageId}`);
-    return info;
-  } catch (error) {
-    logger.error('Failed to send email', error);
-    throw new Error('Failed to send email');
-  }
-}
-
-export function generateSMTPHTML(
-  body: string,
-  button?: { title: string; url: string }
-) {
-  return `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
@@ -48,6 +7,7 @@ export function generateSMTPHTML(
   <title>Tianji Email Notification</title>
 </head>
 <body style="margin: 0; padding: 0; -webkit-text-size-adjust: none; text-size-adjust: none; width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 16px; line-height: 1.6; color: #1a1a1a; background-color: #f3f4f6;">
+
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding: 40px 0;">
     <tr>
       <td align="center" valign="top">
@@ -79,26 +39,50 @@ export function generateSMTPHTML(
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td>
-                    ${body}
+                    <h2 style="color: #0f172a; font-size: 22px; font-weight: 600; margin: 0 0 24px 0; padding: 0; letter-spacing: -0.3px;">Hello, User!</h2>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 20px 0; padding: 0; color: #334155; line-height: 1.6;">
+                      Thank you for using Tianji service. We are sending this email to notify you about important events in the system.
+                    </p>
                   </td>
                 </tr>
 
-                ${
-                  button
-                    ? `
-                    <tr>
-                      <td align="center" style="padding: 20px 0;">
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                          <tr>
-                            <td align="center" bgcolor="#0f172a" style="border-radius: 6px;">
-                              <a href="${button.url}" target="_blank" style="display: inline-block; font-weight: 500; text-align: center; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-size: 16px;">${button.title}</a>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>`
-                    : ''
-                }
+                <tr>
+                  <td>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0f172a;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <h3 style="margin: 0 0 12px 0; padding: 0; font-size: 18px; color: #0f172a; font-weight: 600;">System Monitoring Alert</h3>
+                          <p style="margin: 0 0 12px 0; padding: 0; color: #334155;">Your application <span style="color: #0f172a; font-weight: 600;">Example Application</span> has experienced performance fluctuations in the past 5 minutes.</p>
+                          <p style="margin: 0; padding: 0; font-size: 14px; color: #64748b;">Trigger time: 2023-11-10 15:30:45</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 20px 0; padding: 0; color: #334155; line-height: 1.6;">
+                      You can click the button below to view detailed information and take appropriate actions.
+                    </p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" bgcolor="#0f172a" style="border-radius: 6px;">
+                          <a href="https://tianji.msgbyte.com/dashboard" target="_blank" style="display: inline-block; font-weight: 500; text-align: center; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-size: 16px;">View Details</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
 
                 <tr>
                   <td>
@@ -151,7 +135,7 @@ export function generateSMTPHTML(
                 <tr>
                   <td align="center">
                     <p style="font-size: 14px; color: #64748b; margin: 0; padding: 0;">
-                      © ${dayjs().year()} Tianji. All rights reserved.
+                      © 2023 Tianji. All rights reserved.
                     </p>
                   </td>
                 </tr>
@@ -163,5 +147,4 @@ export function generateSMTPHTML(
     </tr>
   </table>
 </body>
-</html>`;
-}
+</html>

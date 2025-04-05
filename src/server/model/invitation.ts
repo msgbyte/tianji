@@ -95,7 +95,6 @@ export async function sendInvitationEmail(
         <p>Hello,</p>
         <p>${inviterName} invites you to join workspace "${invitation.workspace.name}".</p>
         <p>Please click the button below to accept the invitation:</p>
-        <p><a href="${invitationLink}">${invitationLink}</a></p>
         <p>This invitation will expire on ${invitation.expiresAt.toLocaleDateString()}.</p>
       `,
       button: {

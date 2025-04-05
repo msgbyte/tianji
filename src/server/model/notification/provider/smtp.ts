@@ -1,8 +1,8 @@
 import { NotificationProvider } from './type.js';
 import nodemailer from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { htmlContentTokenizer } from '../token/index.js';
 import { generateSMTPHTML } from '../../../utils/smtp.js';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
 
 interface SMTPPayload {
   hostname: string;
