@@ -55,6 +55,7 @@ import { Route as ApplicationApplicationIdIndexImport } from './routes/applicati
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
+import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
 
@@ -281,6 +282,11 @@ const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
+const InvitationAcceptTokenRoute = InvitationAcceptTokenImport.update({
+  path: '/invitation/accept/$token',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const FeedChannelIdEditRoute = FeedChannelIdEditImport.update({
   path: '/$channelId/edit',
   getParentRoute: () => FeedRoute,
@@ -448,6 +454,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedChannelIdEditImport
       parentRoute: typeof FeedImport
     }
+    '/invitation/accept/$token': {
+      preLoaderRoute: typeof InvitationAcceptTokenImport
+      parentRoute: typeof rootRoute
+    }
     '/monitor/$monitorId/edit': {
       preLoaderRoute: typeof MonitorMonitorIdEditImport
       parentRoute: typeof MonitorImport
@@ -534,6 +544,7 @@ export const routeTree = rootRoute.addChildren([
   ]),
   FeedPlaygroundRoute,
   StatusSlugRoute,
+  InvitationAcceptTokenRoute,
 ])
 
 /* prettier-ignore-end */

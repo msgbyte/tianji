@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema } from "./index.js"
+import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -39,6 +39,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   workspaceAuditLog: CompleteWorkspaceAuditLog[]
   surveys: CompleteSurvey[]
   feedChannels: CompleteFeedChannel[]
+  workspaceInvitation: CompleteWorkspaceInvitation[]
 }
 
 /**
@@ -59,4 +60,5 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   workspaceAuditLog: RelatedWorkspaceAuditLogModelSchema.array(),
   surveys: RelatedSurveyModelSchema.array(),
   feedChannels: RelatedFeedChannelModelSchema.array(),
+  workspaceInvitation: RelatedWorkspaceInvitationModelSchema.array(),
 }))

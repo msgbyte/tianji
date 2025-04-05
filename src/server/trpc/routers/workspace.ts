@@ -29,6 +29,11 @@ import { monitorManager } from '../../model/monitor/index.js';
 import { get, merge } from 'lodash-es';
 import { promWorkspaceCounter } from '../../utils/prometheus/client.js';
 import { getWorkspaceServiceCount } from '../../model/workspace.js';
+import {
+  acceptInvitation,
+  createWorkspaceInvitation,
+  sendInvitationEmail,
+} from '../../model/invitation.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -295,11 +300,13 @@ export const workspaceRouter = router({
     .input(
       z.object({
         emailOrId: z.string(),
+        role: z.enum([ROLES.admin, ROLES.readOnly]).default(ROLES.readOnly),
       })
     )
     .output(z.void())
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { emailOrId, workspaceId } = input;
+      const userId = ctx.user.id;
       const targetUser = await prisma.user.findFirst({
         where: {
           OR: [
@@ -313,13 +320,93 @@ export const workspaceRouter = router({
         },
       });
 
+      if (input.role === ROLES.admin) {
+        // Need to check if the user is the owner of the workspace
+        const userWorkspace = await prisma.workspacesOnUsers.findUnique({
+          where: {
+            userId_workspaceId: {
+              userId: userId,
+              workspaceId: input.workspaceId,
+            },
+          },
+        });
+
+        if (userWorkspace?.role !== ROLES.owner) {
+          throw new Error(
+            'You do not have permission to invite members to this workspace'
+          );
+        }
+      }
+
       if (targetUser) {
         // if user exist
         await joinWorkspace(targetUser.id, workspaceId);
+      } else if (emailOrId.includes('@')) {
+        // user not exist, and is email invite user with send email
+        const invitation = await createWorkspaceInvitation(
+          input.workspaceId,
+          userId,
+          emailOrId,
+          input.role
+        );
+
+        const baseUrl = `${ctx.req.protocol}://${ctx.req.get('host')}`;
+        await sendInvitationEmail(invitation.id, baseUrl);
       } else {
-        // user not exist
         throw new Error('Target user not existed');
       }
+    }),
+  // Accept invitation
+  acceptInvitation: protectProedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return acceptInvitation(input.token, ctx.user.id);
+    }),
+
+  // Get invitation info (no login required)
+  getInvitationInfo: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const invitation = await prisma.workspaceInvitation.findUnique({
+        where: {
+          token: input.token,
+        },
+        select: {
+          email: true,
+          expiresAt: true,
+          status: true,
+          workspace: {
+            select: {
+              name: true,
+            },
+          },
+          inviter: {
+            select: {
+              username: true,
+              nickname: true,
+            },
+          },
+        },
+      });
+
+      if (!invitation) {
+        throw new Error('Invitation does not exist');
+      }
+
+      if (invitation.status !== 'pending') {
+        throw new Error('Invitation has been processed');
+      }
+
+      if (invitation.expiresAt < new Date()) {
+        throw new Error('Invitation has expired');
+      }
+
+      return {
+        email: invitation.email,
+        workspace: invitation.workspace.name,
+        inviter: invitation.inviter.nickname || invitation.inviter.username,
+        expiresAt: invitation.expiresAt,
+      };
     }),
   tick: workspaceOwnerProcedure
     .meta(

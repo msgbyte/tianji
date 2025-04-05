@@ -54,7 +54,7 @@ function LoginComponent() {
   );
   const [handleLoginWithEmail, isEmailLoading] = useEventWithLoading(
     async (values: any) => {
-      const url = await loginWithEmail(values.email);
+      const url = await loginWithEmail(values.email, search.redirect);
 
       if (url) {
         window.location.replace(url);
@@ -141,7 +141,7 @@ function LoginComponent() {
       <Button
         variant="secondary"
         className="h-12 w-12 p-3"
-        onClick={() => loginWithOAuth('github')}
+        onClick={() => loginWithOAuth('github', search.redirect)}
       >
         <LuGithub size={24} />
       </Button>
@@ -150,7 +150,7 @@ function LoginComponent() {
       <Button
         variant="secondary"
         className="h-12 w-12 p-3"
-        onClick={() => loginWithOAuth('custom')}
+        onClick={() => loginWithOAuth('custom', search.redirect)}
       >
         <LuLayers size={24} />
       </Button>

@@ -26,6 +26,9 @@ export const env = {
       email: process.env.AUTH_RESTRICT_EMAIL, // for example: @example.com
     },
     secret: process.env.AUTH_SECRET || md5(jwtSecret),
+    /**
+     * @deprecated use `env.smtp` instead
+     */
     email: {
       server: process.env.EMAIL_SERVER,
       from: process.env.EMAIL_FROM,
@@ -46,6 +49,10 @@ export const env = {
       clientId: process.env.AUTH_CUSTOM_ID,
       clientSecret: process.env.AUTH_CUSTOM_SECRET,
     },
+  },
+  smtp: {
+    server: process.env.EMAIL_SERVER,
+    from: process.env.EMAIL_FROM,
   },
   billing: {
     enable: checkEnvTrusty(process.env.ENABLE_BILLING),

@@ -141,7 +141,7 @@ export function useWorkspaceMembers() {
         },
       }),
     ];
-  }, [t]);
+  }, [t, role]);
 
   const tableEl = (
     <>

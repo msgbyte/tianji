@@ -31,10 +31,11 @@ model User {
   deletedAt          DateTime? @db.Timestamptz(6)
   currentWorkspaceId String?   @db.VarChar(30)
 
-  accounts   Account[]
-  sessions   Session[]
-  workspaces WorkspacesOnUsers[]
-  apiKeys    UserApiKey[]
+  accounts            Account[]
+  sessions            Session[]
+  workspaces          WorkspacesOnUsers[]
+  apiKeys             UserApiKey[]
+  workspaceInvitation WorkspaceInvitation[]
 }
 
 model UserApiKey {
@@ -116,6 +117,7 @@ model Workspace {
   workspaceAuditLog   WorkspaceAuditLog[]
   surveys             Survey[]
   feedChannels        FeedChannel[]
+  workspaceInvitation WorkspaceInvitation[]
 }
 
 model WorkspacesOnUsers {
@@ -131,6 +133,25 @@ model WorkspacesOnUsers {
   @@id([userId, workspaceId])
   @@index([userId])
   @@index([workspaceId])
+}
+
+model WorkspaceInvitation {
+  id          String    @id @default(cuid())
+  email       String
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  inviterId   String
+  inviter     User      @relation(fields: [inviterId], references: [id])
+  role        String    @default("readOnly")
+  token       String    @unique
+  status      String    @default("pending") // pending, accepted, expired
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([email])
+  @@index([workspaceId])
+  @@index([token])
 }
 
 enum WorkspaceSubscriptionTier {

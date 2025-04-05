@@ -39,31 +39,35 @@ export function useAuth() {
     }
   );
 
-  const loginWithEmail = useEvent(async (email: string) => {
-    let res: SignInResponse | undefined;
-    try {
-      res = await signIn('email', {
-        email,
-        redirect: false,
-      });
-    } catch (err) {
-      toast.error(t('Login failed'));
-      throw err;
-    }
+  const loginWithEmail = useEvent(
+    async (email: string, callbackUrl?: string) => {
+      let res: SignInResponse | undefined;
+      try {
+        res = await signIn('email', {
+          email,
+          callbackUrl,
+          redirect: false,
+        });
+      } catch (err) {
+        toast.error(t('Login failed'));
+        throw err;
+      }
 
-    if (res?.error) {
-      toast.error(t('Login failed, please check your email'));
-      throw new Error('Login failed');
-    }
+      if (res?.error) {
+        toast.error(t('Login failed, please check your email'));
+        throw new Error('Login failed');
+      }
 
-    return res?.url;
-  });
+      return res?.url;
+    }
+  );
 
   const loginWithOAuth = useEvent(
-    async (provider: BuiltInProviderType | 'custom') => {
+    async (provider: BuiltInProviderType | 'custom', callbackUrl?: string) => {
       let res: SignInResponse | undefined;
       try {
         res = await signIn(provider, {
+          callbackUrl,
           redirect: false,
         });
         console.log('loginWithOAuth', res);
