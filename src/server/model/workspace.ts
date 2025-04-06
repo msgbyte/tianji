@@ -74,44 +74,57 @@ export async function getWorkspaceWebsiteDateRange(websiteId: string) {
 }
 
 export async function getWorkspaceServiceCount(workspaceId: string) {
-  const [website, application, monitor, telemetry, page, survey, feed] =
-    await Promise.all([
-      prisma.website.count({
-        where: {
-          workspaceId,
-        },
-      }),
-      prisma.application.count({
-        where: {
-          workspaceId,
-        },
-      }),
-      prisma.monitor.count({
-        where: {
-          workspaceId,
-        },
-      }),
-      prisma.telemetry.count({
-        where: {
-          workspaceId,
-        },
-      }),
-      prisma.monitorStatusPage.count({
-        where: {
-          workspaceId,
-        },
-      }),
-      prisma.survey.count({
-        where: {
-          workspaceId,
-        },
-      }),
-      prisma.feedChannel.count({
-        where: {
-          workspaceId,
-        },
-      }),
-    ]);
+  const [
+    website,
+    application,
+    monitor,
+    telemetry,
+    page,
+    survey,
+    feed,
+    aiGateway,
+  ] = await Promise.all([
+    prisma.website.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.application.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.monitor.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.telemetry.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.monitorStatusPage.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.survey.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.feedChannel.count({
+      where: {
+        workspaceId,
+      },
+    }),
+    prisma.aIGateway.count({
+      where: {
+        workspaceId,
+      },
+    }),
+  ]);
 
   return {
     website,
@@ -121,5 +134,6 @@ export async function getWorkspaceServiceCount(workspaceId: string) {
     page,
     survey,
     feed,
+    aiGateway,
   };
 }

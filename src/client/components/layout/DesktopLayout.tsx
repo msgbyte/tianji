@@ -8,6 +8,7 @@ import {
   LuServer,
   LuWifi,
   LuTabletSmartphone,
+  LuBrainCircuit,
 } from 'react-icons/lu';
 import {
   ResizableHandle,
@@ -136,6 +137,12 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             label: String(serviceCount?.feed ?? ''),
             icon: LuSquareActivity,
             to: '/feed',
+          },
+          {
+            title: t('AI Gateway'),
+            label: String(serviceCount?.aiGateway ?? ''),
+            icon: LuBrainCircuit,
+            to: '/aiGateway',
           },
         ]}
       />

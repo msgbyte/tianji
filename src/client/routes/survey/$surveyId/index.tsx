@@ -29,6 +29,7 @@ import { useAIStoreContext } from '@/components/ai/useAIStoreContext';
 import {
   Sheet,
   SheetContent,
+  SheetDataSection,
   SheetFooter,
   SheetHeader,
   SheetTitle,
@@ -349,14 +350,3 @@ function PageComponent() {
     </CommonWrapper>
   );
 }
-
-const SheetDataSection: React.FC<PropsWithChildren<{ label: string }>> =
-  React.memo((props) => {
-    return (
-      <div className="mb-2">
-        <div className="opacity-60">{props.label}</div>
-        <div>{props.children}</div>
-      </div>
-    );
-  });
-SheetDataSection.displayName = 'SheetDataSection';

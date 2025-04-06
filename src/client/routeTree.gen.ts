@@ -25,6 +25,7 @@ import { Route as LoginImport } from './routes/login'
 import { Route as InsightsImport } from './routes/insights'
 import { Route as FeedImport } from './routes/feed'
 import { Route as ApplicationImport } from './routes/application'
+import { Route as AiGatewayImport } from './routes/aiGateway'
 import { Route as IndexImport } from './routes/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
@@ -47,17 +48,20 @@ import { Route as FeedAddImport } from './routes/feed/add'
 import { Route as ApplicationOverviewImport } from './routes/application/overview'
 import { Route as ApplicationCompareImport } from './routes/application/compare'
 import { Route as ApplicationAddImport } from './routes/application/add'
+import { Route as AiGatewayAddImport } from './routes/aiGateway/add'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
 import { Route as ApplicationApplicationIdIndexImport } from './routes/application/$applicationId/index'
+import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
+import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
 
 // Create/Update Routes
 
@@ -128,6 +132,11 @@ const FeedRoute = FeedImport.update({
 
 const ApplicationRoute = ApplicationImport.update({
   path: '/application',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AiGatewayRoute = AiGatewayImport.update({
+  path: '/aiGateway',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -241,6 +250,11 @@ const ApplicationAddRoute = ApplicationAddImport.update({
   getParentRoute: () => ApplicationRoute,
 } as any)
 
+const AiGatewayAddRoute = AiGatewayAddImport.update({
+  path: '/add',
+  getParentRoute: () => AiGatewayRoute,
+} as any)
+
 const WebsiteWebsiteIdIndexRoute = WebsiteWebsiteIdIndexImport.update({
   path: '/$websiteId/',
   getParentRoute: () => WebsiteRoute,
@@ -266,6 +280,11 @@ const ApplicationApplicationIdIndexRoute =
     path: '/$applicationId/',
     getParentRoute: () => ApplicationRoute,
   } as any)
+
+const AiGatewayGatewayIdIndexRoute = AiGatewayGatewayIdIndexImport.update({
+  path: '/$gatewayId/',
+  getParentRoute: () => AiGatewayRoute,
+} as any)
 
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
   path: '/$websiteId/config',
@@ -298,12 +317,21 @@ const ApplicationApplicationIdEditRoute =
     getParentRoute: () => ApplicationRoute,
   } as any)
 
+const AiGatewayGatewayIdEditRoute = AiGatewayGatewayIdEditImport.update({
+  path: '/$gatewayId/edit',
+  getParentRoute: () => AiGatewayRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/aiGateway': {
+      preLoaderRoute: typeof AiGatewayImport
       parentRoute: typeof rootRoute
     }
     '/application': {
@@ -361,6 +389,10 @@ declare module '@tanstack/react-router' {
     '/website': {
       preLoaderRoute: typeof WebsiteImport
       parentRoute: typeof rootRoute
+    }
+    '/aiGateway/add': {
+      preLoaderRoute: typeof AiGatewayAddImport
+      parentRoute: typeof AiGatewayImport
     }
     '/application/add': {
       preLoaderRoute: typeof ApplicationAddImport
@@ -446,6 +478,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/aiGateway/$gatewayId/edit': {
+      preLoaderRoute: typeof AiGatewayGatewayIdEditImport
+      parentRoute: typeof AiGatewayImport
+    }
     '/application/$applicationId/edit': {
       preLoaderRoute: typeof ApplicationApplicationIdEditImport
       parentRoute: typeof ApplicationImport
@@ -469,6 +505,10 @@ declare module '@tanstack/react-router' {
     '/website/$websiteId/config': {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
+    }
+    '/aiGateway/$gatewayId/': {
+      preLoaderRoute: typeof AiGatewayGatewayIdIndexImport
+      parentRoute: typeof AiGatewayImport
     }
     '/application/$applicationId/': {
       preLoaderRoute: typeof ApplicationApplicationIdIndexImport
@@ -497,6 +537,11 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  AiGatewayRoute.addChildren([
+    AiGatewayAddRoute,
+    AiGatewayGatewayIdEditRoute,
+    AiGatewayGatewayIdIndexRoute,
+  ]),
   ApplicationRoute.addChildren([
     ApplicationAddRoute,
     ApplicationCompareRoute,

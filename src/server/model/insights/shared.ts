@@ -163,7 +163,7 @@ export class InsightsSqlBuilder {
   }
 }
 
-// 为了向后兼容，保留这个函数，但内部使用 InsightsSqlBuilder 的实现
+// For backward compatibility, keep this function but use InsightsSqlBuilder implementation internally
 export function buildCommonFilterQueryOperator(
   type: FilterInfoType,
   _operator: string,

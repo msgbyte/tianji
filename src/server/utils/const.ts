@@ -117,4 +117,5 @@ export enum OPENAPI_TAG {
   SURVEY = 'Survey',
   FEED = 'Feed',
   AI = 'AI',
+  AI_GATEWAY = 'AIGateway',
 }

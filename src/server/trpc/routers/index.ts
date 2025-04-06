@@ -14,9 +14,11 @@ import { feedRouter } from './feed/index.js';
 import { aiRouter } from './ai.js';
 import { insightsRouter } from './insights.js';
 import { applicationRouter } from './application.js';
+import { aiGatewayRouter } from './aiGateway.js';
 
 export const appRouter = router({
   ai: aiRouter,
+  aiGateway: aiGatewayRouter,
   global: globalRouter,
   user: userRouter,
   workspace: workspaceRouter,

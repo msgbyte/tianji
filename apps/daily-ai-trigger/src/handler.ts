@@ -79,14 +79,14 @@ export async function handleCreateDailyReport(env: Env) {
 		content += `- ${category}(${count})\n`;
 	});
 
-	// 3. 获取记录数最多的前 3 个分类
+	// 3. Get top 3 categories with the most records
 	const top3Categories = sortedCategories.slice(0, 3);
 
 	content += `\n\nTop Issues:\n`;
 	top3Categories.forEach(([category, count]) => {
-		// 筛选出对应分类的所有记录
+		// Filter all records of the corresponding category
 		const records = resultList.filter((record) => record.aiCategory === category);
-		// 抽样获取 3 条记录（如果不足 3 条则返回全部）
+		// Sample 3 records (or return all if less than 3)
 		const sampledRecords = sampleItems(records, 3);
 
 		content += `- ${category} (${count})\n`;

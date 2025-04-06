@@ -26,7 +26,7 @@ const tencentCloudAlarmEventSchema = z.object({
   recoverTime: z.string(),
 });
 
-// 定义 metric 类型
+// Define metric type
 export const tencentCloudAlarmMetricSchema = z.object({
   sessionId: z.string(),
   alarmStatus: z.union([z.literal('0'), z.literal('1')]),
