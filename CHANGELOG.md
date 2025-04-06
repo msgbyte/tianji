@@ -1,5 +1,20 @@
 
 
+## [1.19.7](https://github.com/msgbyte/tianji/compare/v1.19.6...v1.19.7) (2025-04-06)
+
+### Features
+
+* add workspace invitation which allow user invite non-register user [#180](https://github.com/msgbyte/tianji/issues/180) ([32d52ae](https://github.com/msgbyte/tianji/commit/32d52aef5b23af3460e2e4d8f42b9b994669c02f))
+
+### Document
+
+* add MCP integration and environment variable documentation ([aefb090](https://github.com/msgbyte/tianji/commit/aefb0900703053920877fe266004425fd22fe584))
+* add social icons ([a9bee2a](https://github.com/msgbyte/tianji/commit/a9bee2a3e9399775be3f74a472c96da7ff1893e7))
+
+### Others
+
+* enhance email template and consolidate SMTP logic ([b2a384c](https://github.com/msgbyte/tianji/commit/b2a384cf0d8c23743e56c5c2ee75d56c81e4d35f))
+
 ## [1.19.6](https://github.com/msgbyte/tianji/compare/v1.19.5...v1.19.6) (2025-04-01)
 
 ### Features
