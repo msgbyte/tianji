@@ -36,7 +36,7 @@ aiGatewayRouter.post(
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
       const inputToken = messages.reduce((acc, msg) => {
-        return acc + calcOpenAIToken(String(msg.content));
+        return acc + calcOpenAIToken(String(msg.content), model);
       }, 0);
 
       const _log = await prisma.aIGatewayLogs.create({
@@ -97,7 +97,7 @@ aiGatewayRouter.post(
             },
             data: {
               status: AIGatewayLogsStatus.Success,
-              outputToken: calcOpenAIToken(outputContent),
+              outputToken: calcOpenAIToken(outputContent, model),
               duration,
               ttft,
               responsePayload: { content: outputContent },
@@ -125,7 +125,7 @@ aiGatewayRouter.post(
               outputToken:
                 response.usage?.completion_tokens ??
                 (typeof response.choices[0].message.content === 'string'
-                  ? calcOpenAIToken(response.choices[0].message.content)
+                  ? calcOpenAIToken(response.choices[0].message.content, model)
                   : 0),
               duration,
               responsePayload: { ...response },

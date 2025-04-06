@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { env } from '../utils/env.js';
-import { encoding_for_model, type TiktokenModel } from 'tiktoken';
+import { encoding_for_model, Tiktoken, type TiktokenModel } from 'tiktoken';
 import {
   checkCredit,
   costCredit,
@@ -108,8 +108,13 @@ export async function requestOpenAI(
   return content ?? '';
 }
 
-export function calcOpenAIToken(message: string): number {
-  const encoder = encoding_for_model(modelName as TiktokenModel);
+export function calcOpenAIToken(message: string, model = modelName): number {
+  let encoder: Tiktoken;
+  try {
+    encoder = encoding_for_model(model as TiktokenModel);
+  } catch {
+    encoder = encoding_for_model('gpt-4o');
+  }
   const count = encoder.encode(message).length;
 
   encoder.free();
