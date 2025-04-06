@@ -24,6 +24,7 @@ import { ExpressAuth } from '@auth/express';
 import { authConfig } from './model/auth.js';
 import { prometheusApiVersion } from './middleware/prometheus/index.js';
 import { billingRouter } from './router/billing.js';
+import { aiGatewayRouter } from './router/aiGateway.js';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/health', healthRouter);
 app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
 app.use('/api/application', applicationRouter);
+app.use('/api/ai', aiGatewayRouter);
 app.use('/api/billing', billingRouter);
 app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);

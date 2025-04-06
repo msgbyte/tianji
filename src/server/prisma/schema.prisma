@@ -865,3 +865,42 @@ model FeedEvent {
 
   @@index([channelId])
 }
+
+model AIGateway {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  aiGatewayLogs AIGatewayLogs[]
+}
+
+enum AIGatewayLogsStatus {
+  Pending
+  Success
+  Failed
+}
+
+model AIGatewayLogs {
+  id              String              @id @default(cuid()) @db.VarChar(30)
+  workspaceId     String              @db.VarChar(30)
+  gatewayId       String              @db.VarChar(30)
+  inputToken      Int                 @default(0) @db.Integer
+  outputToken     Int                 @default(0) @db.Integer
+  stream          Boolean             @default(false) @db.Boolean // stream response or not
+  modelName       String
+  status          AIGatewayLogsStatus
+  duration        Int // All response usage time, unit: ms
+  ttft            Int                 @default(-1) // Time To First Token, unit: ms
+  requestPayload  Json                @default("{}")
+  responsePayload Json                @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  gateway AIGateway @relation(fields: [gatewayId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([gatewayId])
+  @@index([createdAt])
+}
