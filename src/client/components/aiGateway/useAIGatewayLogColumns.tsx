@@ -15,7 +15,7 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
   const columns = useMemo(() => {
     return [
       columnHelper.accessor('id', {
-        header: t('ID'),
+        header: 'ID',
         size: 100,
         cell: (props) => {
           return (
