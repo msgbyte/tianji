@@ -192,7 +192,10 @@ export const aiGatewayRouter = router({
       );
 
       return {
-        items: items as z.infer<typeof AIGatewayLogsModelSchema>[],
+        items: items.map((item) => ({
+          ...item,
+          price: Number(item.price),
+        })) as z.infer<typeof AIGatewayLogsModelSchema>[],
         nextCursor,
       };
     }),

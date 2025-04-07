@@ -893,6 +893,7 @@ model AIGatewayLogs {
   status          AIGatewayLogsStatus
   duration        Int // All response usage time, unit: ms
   ttft            Int                 @default(-1) // Time To First Token, unit: ms
+  price           Decimal             @default(0.0) @db.Decimal(30, 13) // unit: usd
   requestPayload  Json                @default("{}")
   responsePayload Json                @default("{}")
 

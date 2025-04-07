@@ -52,6 +52,10 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
         header: t('Output Tokens'),
         size: 120,
       }),
+      columnHelper.accessor('price', {
+        header: t('Price ($)'),
+        size: 120,
+      }),
       columnHelper.accessor('duration', {
         header: t('Duration (ms)'),
         size: 120,

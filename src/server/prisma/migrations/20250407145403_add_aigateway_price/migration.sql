@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "AIGatewayLogs" ADD COLUMN     "price" DECIMAL(30,13) NOT NULL DEFAULT 0.0;

@@ -126,6 +126,11 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
                     )}
                   </SheetDataSection>
 
+                  <SheetDataSection label={t('Price')}>
+                    <span className="mr-1 opacity-60">$</span>
+                    {selectedItem.price}
+                  </SheetDataSection>
+
                   <SheetDataSection label={t('Duration')}>
                     {selectedItem.duration} ms
                   </SheetDataSection>
@@ -135,7 +140,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
                   </SheetDataSection>
 
                   <SheetDataSection label="Tokens">
-                    {selectedItem.inputToken} / {selectedItem.outputToken}
+                    {selectedItem.inputToken}↑ | {selectedItem.outputToken}↓
                   </SheetDataSection>
 
                   <SheetDataSection label={t('Request Payload')}>

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import { prisma } from '../model/_client.js';
 import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
+import { getLLMCostDecimal } from '../utils/llm.js';
 
 export const aiGatewayRouter = Router();
 
@@ -76,20 +77,27 @@ aiGatewayRouter.post(
 
         let outputContent = '';
         let ttft = -1;
+        let modelName = model; // real model name which returned from remote. its will be some changed because of the model alias.
         for await (const chunk of stream) {
+          modelName = chunk.model;
           if (ttft === -1) {
             ttft = Date.now() - start;
           }
           const content = chunk.choices[0]?.delta?.content || '';
           outputContent += content;
           res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+
+          if (res.flush) {
+            res.flush();
+          }
         }
 
         res.write('data: [DONE]\n\n');
         res.end();
+        const duration = Date.now() - start;
 
-        logP.then(async ({ id: logId }) => {
-          const duration = Date.now() - start;
+        logP.then(async ({ id: logId, inputToken }) => {
+          const outputToken = calcOpenAIToken(outputContent, model);
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -97,9 +105,11 @@ aiGatewayRouter.post(
             },
             data: {
               status: AIGatewayLogsStatus.Success,
-              outputToken: calcOpenAIToken(outputContent, model),
+              modelName,
+              outputToken,
               duration,
               ttft,
+              price: getLLMCostDecimal(modelName, inputToken, outputToken),
               responsePayload: { content: outputContent },
             },
           });
@@ -111,10 +121,17 @@ aiGatewayRouter.post(
           stream: false,
         });
 
-        res.json(response);
+        const modelName = response.model ?? model;
 
-        logP.then(async ({ id: logId }) => {
-          const duration = Date.now() - start;
+        res.json(response);
+        const duration = Date.now() - start;
+
+        logP.then(async ({ id: logId, inputToken }) => {
+          const outputToken =
+            response.usage?.completion_tokens ??
+            (typeof response.choices[0].message.content === 'string'
+              ? calcOpenAIToken(response.choices[0].message.content, model)
+              : 0);
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -122,12 +139,9 @@ aiGatewayRouter.post(
             },
             data: {
               status: AIGatewayLogsStatus.Success,
-              outputToken:
-                response.usage?.completion_tokens ??
-                (typeof response.choices[0].message.content === 'string'
-                  ? calcOpenAIToken(response.choices[0].message.content, model)
-                  : 0),
+              outputToken,
               duration,
+              price: getLLMCostDecimal(modelName, inputToken, outputToken),
               responsePayload: { ...response },
             },
           });
