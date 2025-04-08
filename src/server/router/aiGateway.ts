@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { type RequestHandler, Router } from 'express';
 import { calcOpenAIToken } from '../model/openai.js';
 import { z } from 'zod';
 import OpenAI from 'openai';
@@ -23,7 +23,31 @@ const openaiRequestSchema = z
 
 aiGatewayRouter.post(
   '/v1/:workspaceId/:gatewayId/openai/chat/completions',
-  async (req, res) => {
+  buildOpenAIHandler({})
+);
+
+aiGatewayRouter.post(
+  '/v1/:workspaceId/:gatewayId/deepseek/chat/completions',
+  buildOpenAIHandler({
+    baseUrl: 'https://api.deepseek.com',
+  })
+);
+
+aiGatewayRouter.post(
+  '/v1/:workspaceId/:gatewayId/openrouter/chat/completions',
+  buildOpenAIHandler({
+    baseUrl: 'https://openrouter.ai/api/v1',
+  })
+);
+
+interface OpenaiHandlerOptions {
+  baseUrl?: string;
+}
+
+export function buildOpenAIHandler(
+  options: OpenaiHandlerOptions
+): RequestHandler {
+  return async (req, res) => {
     const payload = openaiRequestSchema.parse(req.body);
     const { model, messages, stream } = payload;
     const { workspaceId, gatewayId } = z
@@ -62,6 +86,7 @@ aiGatewayRouter.post(
     try {
       const openai = new OpenAI({
         apiKey,
+        baseURL: options.baseUrl,
       });
 
       // Handle stream response
@@ -173,5 +198,5 @@ aiGatewayRouter.post(
         });
       });
     }
-  }
-);
+  };
+}
