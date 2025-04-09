@@ -1,9 +1,8 @@
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
 import { VirtualizedInfiniteDataTable } from '../VirtualizedInfiniteDataTable';
 import { useAIGatewayLogColumns } from './useAIGatewayLogColumns';
-import { AIGatewayLogDetailPanel } from './AIGatewayLogDetailPanel';
 import {
   Sheet,
   SheetContent,
