@@ -1,9 +1,8 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
-import { getDateQuery, printSQL } from '../../utils/prisma.js';
+import { printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
-import dayjs from 'dayjs';
 import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
 import { get } from 'lodash-es';
 import { EVENT_TYPE } from '../../utils/const.js';
@@ -11,20 +10,13 @@ import { env } from '../../utils/env.js';
 import { InsightsSqlBuilder } from './shared.js';
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
-  private query: z.infer<typeof insightsQuerySchema>;
-  private context: { timezone: string };
-
-  constructor(
-    query: z.infer<typeof insightsQuerySchema>,
-    context: { timezone: string }
-  ) {
-    super();
-    this.query = query;
-    this.context = context;
+  getTableName() {
+    return 'WebsiteEvent';
   }
 
-  private buildSelectQueryArr() {
+  buildSelectQueryArr() {
     const { metrics } = this.query;
+
     return metrics.map((item) => {
       if (item.math === 'events') {
         if (item.name === '$all_event') {
@@ -47,10 +39,12 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
 
         return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
       }
+
+      return Prisma.empty;
     });
   }
 
-  private buildGroupSelectQueryArr() {
+  buildGroupSelectQueryArr() {
     const { groups } = this.query;
     let groupSelectQueryArr: Prisma.Sql[] = [];
     if (groups.length > 0) {
@@ -75,7 +69,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     return groupSelectQueryArr;
   }
 
-  private buildInnerJoinQuery() {
+  buildInnerJoinQuery() {
     const { filters, groups } = this.query;
     let innerJoinQuery = Prisma.empty;
     if (filters.length > 0 || groups.length > 0) {
@@ -106,7 +100,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     return innerJoinQuery;
   }
 
-  private buildWhereQueryArr() {
+  buildWhereQueryArr() {
     const { insightId, time, metrics } = this.query;
     const { startAt, endAt } = time;
 
@@ -162,25 +156,6 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       value,
       valueField
     );
-  }
-
-  public build(): Prisma.Sql {
-    const { time, groups } = this.query;
-    const { unit, timezone = this.context.timezone } = time;
-
-    const selectQueryArr = this.buildSelectQueryArr();
-    const groupSelectQueryArr = this.buildGroupSelectQueryArr();
-    const innerJoinQuery = this.buildInnerJoinQuery();
-    const whereQueryArr = this.buildWhereQueryArr();
-
-    const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
-
-    return Prisma.sql`select
-      ${this.getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} date,
-      ${Prisma.join([...groupSelectQueryArr, ...selectQueryArr], ' , ')}
-    from "WebsiteEvent" ${innerJoinQuery}
-    where ${Prisma.join(whereQueryArr, ' AND ')}
-    group by ${Prisma.raw(groupByText)}`;
   }
 }
 

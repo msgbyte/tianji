@@ -9,19 +9,11 @@ import { env } from '../../utils/env.js';
 import { InsightsSqlBuilder } from './shared.js';
 
 export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
-  private query: z.infer<typeof insightsQuerySchema>;
-  private context: { timezone: string };
-
-  constructor(
-    query: z.infer<typeof insightsQuerySchema>,
-    context: { timezone: string }
-  ) {
-    super();
-    this.query = query;
-    this.context = context;
+  getTableName() {
+    return 'SurveyResult';
   }
 
-  private buildSelectQueryArr() {
+  buildSelectQueryArr() {
     const { metrics } = this.query;
     return metrics.map((item) => {
       if (item.math === 'events') {
@@ -37,10 +29,12 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
 
         return Prisma.sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
       }
+
+      return Prisma.empty;
     });
   }
 
-  private buildGroupSelectQueryArr() {
+  buildGroupSelectQueryArr() {
     const { groups } = this.query;
     let groupSelectQueryArr: Prisma.Sql[] = [];
     if (groups.length > 0) {
@@ -66,27 +60,8 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
     return groupSelectQueryArr;
   }
 
-  private buildInnerJoinQuery() {
-    const { filters } = this.query;
-    let innerJoinQuery = Prisma.empty;
-    if (filters.length > 0) {
-      innerJoinQuery = Prisma.sql`WHERE ${Prisma.join(
-        filters.map((filter) =>
-          this.buildFilterQueryOperator(
-            filter.name,
-            filter.type,
-            filter.operator,
-            filter.value
-          )
-        ),
-        ' AND '
-      )}`;
-    }
-    return innerJoinQuery;
-  }
-
-  private buildWhereQueryArr() {
-    const { insightId, time } = this.query;
+  buildWhereQueryArr() {
+    const { insightId, time, filters } = this.query;
     const { startAt, endAt } = time;
 
     return [
@@ -95,6 +70,15 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
 
       // date
       this.buildDateRangeQuery('"SurveyResult"."createdAt"', startAt, endAt),
+
+      ...filters.map((filter) =>
+        this.buildFilterQueryOperator(
+          filter.name,
+          filter.type,
+          filter.operator,
+          filter.value
+        )
+      ),
     ];
   }
 
@@ -104,33 +88,13 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
     operator: string,
     value: FilterInfoValue | null
   ): Prisma.Sql {
-    const valueField = Prisma.sql`("SurveyResult"."payload"->> ${name})${type === 'number' ? '::int' : type === 'boolean' ? '::boolean' : Prisma.empty}`;
+    const valueField = Prisma.sql`("SurveyResult"."payload"->> ${name})${type === 'number' ? Prisma.raw('::int') : type === 'boolean' ? Prisma.raw('::boolean') : Prisma.empty}`;
     return this.buildCommonFilterQueryOperator(
       type,
       operator,
       value,
       valueField
     );
-  }
-
-  public build(): Prisma.Sql {
-    const { time, groups } = this.query;
-    const { unit, timezone = this.context.timezone } = time;
-
-    const selectQueryArr = this.buildSelectQueryArr();
-    const groupSelectQueryArr = this.buildGroupSelectQueryArr();
-    const innerJoinQuery = this.buildInnerJoinQuery();
-    const whereQueryArr = this.buildWhereQueryArr();
-
-    const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
-
-    return Prisma.sql`select
-      ${this.getDateQuery('"SurveyResult"."createdAt"', unit, timezone)} date,
-      ${Prisma.join([...groupSelectQueryArr, ...selectQueryArr], ' , ')}
-    from "SurveyResult"
-    ${innerJoinQuery}
-    where ${Prisma.join(whereQueryArr, ' AND ')}
-    group by ${Prisma.raw(groupByText)}`;
   }
 }
 

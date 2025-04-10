@@ -10,8 +10,17 @@ import {
 import { get } from 'lodash-es';
 import { castToDate, castToNumber, castToString } from '../../utils/cast.js';
 import dayjs from 'dayjs';
+import { insightsQuerySchema } from '../../utils/schema.js';
+import { z } from 'zod';
 
-export class InsightsSqlBuilder {
+export abstract class InsightsSqlBuilder {
+  protected abstract getTableName(): string;
+
+  constructor(
+    protected query: z.infer<typeof insightsQuerySchema>,
+    protected context: { timezone: string }
+  ) {}
+
   protected getDateQuery(
     field: string,
     unit: string,
@@ -153,28 +162,48 @@ export class InsightsSqlBuilder {
     valueField: Prisma.Sql
   ): Prisma.Sql {
     if (operator === 'between') {
-      return Prisma.sql`${valueField} BETWEEN ${castToDate(get(value, '0'))} AND ${castToDate(get(value, '1'))}`;
+      return Prisma.sql`${valueField} BETWEEN ${castToDate(get(value, '0')).toISOString()} AND ${castToDate(get(value, '1')).toISOString()}`;
     }
     if (operator === 'in day') {
-      return Prisma.sql`${valueField} = DATE(${castToDate(value)})`;
+      return Prisma.sql`${valueField} = DATE(${castToDate(value).toISOString()})`;
     }
 
     return Prisma.sql`1 = 1`;
   }
-}
 
-// For backward compatibility, keep this function but use InsightsSqlBuilder implementation internally
-export function buildCommonFilterQueryOperator(
-  type: FilterInfoType,
-  _operator: string,
-  value: FilterInfoValue | null,
-  valueField: Prisma.Sql
-): Prisma.Sql {
-  const builder = new InsightsSqlBuilder();
-  return builder.buildCommonFilterQueryOperator(
-    type,
-    _operator,
-    value,
-    valueField
-  );
+  protected buildSelectQueryArr(): Prisma.Sql[] {
+    return [];
+  }
+
+  protected buildGroupSelectQueryArr(): Prisma.Sql[] {
+    return [];
+  }
+
+  protected buildInnerJoinQuery(): Prisma.Sql {
+    return Prisma.empty;
+  }
+
+  protected buildWhereQueryArr(): Prisma.Sql[] {
+    return [];
+  }
+
+  public build(): Prisma.Sql {
+    const { time, groups } = this.query;
+    const { unit, timezone = this.context.timezone } = time;
+
+    const tableName = this.getTableName();
+    const selectQueryArr = this.buildSelectQueryArr();
+    const groupSelectQueryArr = this.buildGroupSelectQueryArr();
+    const innerJoinQuery = this.buildInnerJoinQuery();
+    const whereQueryArr = this.buildWhereQueryArr();
+
+    const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
+
+    return Prisma.sql`select
+      ${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date,
+      ${Prisma.join([...groupSelectQueryArr, ...selectQueryArr], ' , ')}
+    from "${Prisma.raw(tableName)}" ${innerJoinQuery}
+    where ${Prisma.join(whereQueryArr, ' AND ')}
+    group by ${Prisma.raw(groupByText)}`;
+  }
 }
