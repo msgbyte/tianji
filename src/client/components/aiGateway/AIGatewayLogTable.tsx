@@ -53,7 +53,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
 
     const { columns } = useAIGatewayLogColumns(handleRowSelect);
 
-    // 扁平化数据用于表格展示
+    // Flatten data for table display
     const flatData = useMemo(
       () => resultList?.pages?.flatMap((page) => page.items) ?? [],
       [resultList]

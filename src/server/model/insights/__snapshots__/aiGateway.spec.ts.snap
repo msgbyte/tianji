@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AIGatewayInsightsSqlBuilder > basic query count > basic query count 1`] = `
+"select
+      to_char(date_trunc('day', "AIGatewayLogs"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      count(1) as "$all_event"
+    from "AIGatewayLogs" 
+    where "AIGatewayLogs"."gatewayId" = 'cm95r56tv001gqhzlrxeyi6jm' AND "AIGatewayLogs"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-04-10T08:16:43.917Z'::timestamptz
+    group by 1"
+`;
+
+exports[`AIGatewayInsightsSqlBuilder > basic query inputToken > basic query inputToken 1`] = `
+"select
+      to_char(date_trunc('day', "AIGatewayLogs"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date,
+      sum("AIGatewayLogs"."inputToken") as "inputToken"
+    from "AIGatewayLogs" 
+    where "AIGatewayLogs"."gatewayId" = 'cm95r56tv001gqhzlrxeyi6jm' AND "AIGatewayLogs"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-04-10T08:16:43.917Z'::timestamptz
+    group by 1"
+`;
