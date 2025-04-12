@@ -7,7 +7,7 @@ import {
   FilterNumberOperator,
   FilterStringOperator,
 } from '@tianji/shared';
-import { get } from 'lodash-es';
+import { compact, get } from 'lodash-es';
 import { castToDate, castToNumber, castToString } from '../../utils/cast.js';
 import dayjs from 'dayjs';
 import { insightsQuerySchema } from '../../utils/schema.js';
@@ -171,7 +171,7 @@ export abstract class InsightsSqlBuilder {
     return Prisma.sql`1 = 1`;
   }
 
-  protected buildSelectQueryArr(): Prisma.Sql[] {
+  protected buildSelectQueryArr(): (Prisma.Sql | null)[] {
     return [];
   }
 
@@ -200,8 +200,14 @@ export abstract class InsightsSqlBuilder {
     const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
 
     return Prisma.sql`select
-      ${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date,
-      ${Prisma.join([...groupSelectQueryArr, ...selectQueryArr], ' , ')}
+      ${Prisma.join(
+        compact([
+          Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`,
+          ...groupSelectQueryArr,
+          ...selectQueryArr,
+        ]),
+        ' , '
+      )}
     from "${Prisma.raw(tableName)}" ${innerJoinQuery}
     where ${Prisma.join(whereQueryArr, ' AND ')}
     group by ${Prisma.raw(groupByText)}`;

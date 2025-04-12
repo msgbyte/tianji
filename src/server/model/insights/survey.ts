@@ -30,7 +30,7 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
         return Prisma.sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
       }
 
-      return Prisma.empty;
+      return null;
     });
   }
 

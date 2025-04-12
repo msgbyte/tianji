@@ -17,6 +17,7 @@ import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { ScrollAreaScrollbar } from '@radix-ui/react-scroll-area';
+import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 
 export const Route = createFileRoute('/aiGateway/$gatewayId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -108,12 +109,22 @@ function PageComponent() {
     >
       <div className="h-full overflow-hidden p-4">
         <Tabs
-          defaultValue="logs"
+          defaultValue="overview"
           className="flex h-full w-full flex-col items-start"
         >
           <TabsList>
+            <TabsTrigger value="overview">{t('Overview')}</TabsTrigger>
             <TabsTrigger value="logs">{t('Logs')}</TabsTrigger>
           </TabsList>
+
+          <TabsContent
+            value="overview"
+            className="mt-4 w-full flex-1 space-y-4 overflow-hidden"
+          >
+            <div className="flex h-full w-full flex-col overflow-auto rounded-lg border p-4">
+              <AIGatewayOverview gatewayId={gatewayId} />
+            </div>
+          </TabsContent>
 
           <TabsContent
             value="logs"

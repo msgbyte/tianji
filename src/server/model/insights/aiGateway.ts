@@ -23,9 +23,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
 
         // For standard fields, directly count
         // TODO: maybe use other math functions
-        if (
-          ['inputToken', 'outputToken', 'ttft', 'price'].includes(item.name)
-        ) {
+        if (['inputToken', 'outputToken', 'price'].includes(item.name)) {
           return Prisma.sql`sum("AIGatewayLogs"."${Prisma.raw(item.name)}") as ${Prisma.raw(`"${item.name}"`)}`;
         }
       } else if (item.math === 'sessions') {
@@ -35,7 +33,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         }
       }
 
-      return Prisma.empty;
+      return null;
     });
   }
 

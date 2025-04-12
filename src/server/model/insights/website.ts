@@ -40,7 +40,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
         return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
       }
 
-      return Prisma.empty;
+      return null;
     });
   }
 
