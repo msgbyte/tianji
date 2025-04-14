@@ -1,5 +1,26 @@
 
 
+## [1.20.0](https://github.com/msgbyte/tianji/compare/v1.19.7...v1.20.0) (2025-04-14)
+
+### Features
+
+* add AI Gateway feature with CRUD operations and logs ([69d7878](https://github.com/msgbyte/tianji/commit/69d78787b237a873134a6f639a391222fa5417c7))
+* add AI Gateway models, routes, and logging ([fe68b23](https://github.com/msgbyte/tianji/commit/fe68b2399a66f3a75377f0cbcf0705512ccde705))
+* add AIGateway support to insights query schema ([e1eacea](https://github.com/msgbyte/tianji/commit/e1eaceadbf35edcd2e5cc1f09d17246de24242a3))
+* add AIGateway-related translations and update chart colors ([b90d8ac](https://github.com/msgbyte/tianji/commit/b90d8ac24c11cbf63beed76edddcb14eaff9e78f))
+* add blog section and two new blog posts ([88c689f](https://github.com/msgbyte/tianji/commit/88c689fe7ced5ee618c991202f50dd4a11bad0b9))
+* add overview tab and insights support for AI Gateway ([ccf7bc7](https://github.com/msgbyte/tianji/commit/ccf7bc74176ae08e5b01a829862e67faca032601))
+* add price tracking for AI Gateway logs ([96b8996](https://github.com/msgbyte/tianji/commit/96b89963d219f451d6ed968ac1452b209c2c945e))
+* ai gateway add deepseek and openrouter support ([3a7dbc7](https://github.com/msgbyte/tianji/commit/3a7dbc71fdee11fe977919745a77f5e6b5864f29))
+
+### Others
+
+* consolidate SQL query building logic into base class ([77f046a](https://github.com/msgbyte/tianji/commit/77f046a8e3c5c8ac59030959f2c8afdabfeabee8))
+* fix ci issue ([127f59a](https://github.com/msgbyte/tianji/commit/127f59aef7601803232af1159bf889b8e385b90f))
+* improve token calculation with model fallback ([748be17](https://github.com/msgbyte/tianji/commit/748be176f12cab08f1186eb5e06e25258f22222e))
+* replace dropdown with select component for date range ([55c303d](https://github.com/msgbyte/tianji/commit/55c303df10f4cb33306d1b1784e046bb8d6a8bc4))
+* update translation ([d1dfbbb](https://github.com/msgbyte/tianji/commit/d1dfbbb6d4db7faa337b7846bb581f99184993c9))
+
 ## [1.19.7](https://github.com/msgbyte/tianji/compare/v1.19.6...v1.19.7) (2025-04-06)
 
 ### Features
