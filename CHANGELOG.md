@@ -1,5 +1,11 @@
 
 
+## [1.20.4](https://github.com/msgbyte/tianji/compare/v1.20.3...v1.20.4) (2025-04-17)
+
+### Bug Fixes
+
+* remove timezone parameter from insights functions as return date is already in user timezone ([7cf38f3](https://github.com/msgbyte/tianji/commit/7cf38f3613bb4afc6cd9b6580b9a2d054a26bfe3))
+
 ## [1.20.3](https://github.com/msgbyte/tianji/compare/v1.20.2...v1.20.3) (2025-04-17)
 
 ### Features
