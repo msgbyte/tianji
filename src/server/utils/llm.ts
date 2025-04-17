@@ -12,9 +12,12 @@ export function getLLMCostDecimal(
   const input = new Prisma.Decimal(inputToken);
   const output = new Prisma.Decimal(outputToken);
 
-  const contextWindow =
-    contextWindows[model as keyof typeof contextWindows] ??
-    contextWindows['gpt-4o-mini'];
+  const contextWindow = contextWindows[model as keyof typeof contextWindows];
+
+  if (!contextWindow) {
+    // if can not found this model in contextWindows, return -1 to indicate this model is not supported
+    return new Prisma.Decimal(-1);
+  }
 
   if (
     'input_cost_per_token' in contextWindow &&

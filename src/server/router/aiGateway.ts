@@ -37,11 +37,18 @@ aiGatewayRouter.post(
   '/v1/:workspaceId/:gatewayId/openrouter/chat/completions',
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
+    modelPriceName: (model) => {
+      if (model.startsWith('openrouter/')) {
+        return model;
+      }
+      return `openrouter/${model}`;
+    },
   })
 );
 
 interface OpenaiHandlerOptions {
   baseUrl?: string;
+  modelPriceName?: (model: string) => string;
 }
 
 export function buildOpenAIHandler(
@@ -88,6 +95,9 @@ export function buildOpenAIHandler(
         apiKey,
         baseURL: options.baseUrl,
       });
+      const modelPriceName = options.modelPriceName
+        ? options.modelPriceName(model)
+        : model;
 
       // Handle stream response
       if (stream) {
@@ -134,7 +144,7 @@ export function buildOpenAIHandler(
               outputToken,
               duration,
               ttft,
-              price: getLLMCostDecimal(modelName, inputToken, outputToken),
+              price: getLLMCostDecimal(modelPriceName, inputToken, outputToken),
               responsePayload: { content: outputContent },
             },
           });
@@ -166,7 +176,7 @@ export function buildOpenAIHandler(
               status: AIGatewayLogsStatus.Success,
               outputToken,
               duration,
-              price: getLLMCostDecimal(modelName, inputToken, outputToken),
+              price: getLLMCostDecimal(modelPriceName, inputToken, outputToken),
               responsePayload: { ...response },
             },
           });
