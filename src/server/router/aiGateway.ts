@@ -34,6 +34,7 @@ aiGatewayRouter.post(
       if (model.startsWith('deepseek/')) {
         return model;
       }
+
       return `deepseek/${model}`;
     },
   })
@@ -47,6 +48,19 @@ aiGatewayRouter.post(
       if (model.startsWith('openrouter/')) {
         return model;
       }
+
+      if (model.includes('deepseek-chat')) {
+        return `openrouter/deepseek/deepseek-chat`;
+      }
+
+      if (model.includes('deepseek-coder')) {
+        return `openrouter/deepseek/deepseek-coder`;
+      }
+
+      if (model.includes('deepseek-r1')) {
+        return `openrouter/deepseek/deepseek-r1`;
+      }
+
       return `openrouter/${model}`;
     },
   })
