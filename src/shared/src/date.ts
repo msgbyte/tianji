@@ -24,7 +24,7 @@ export function getMinimumUnit(
   return 'year';
 }
 
-function createDateUnitFn(unit: DateUnit, timezone = 'utc') {
+function createDateUnitFn(unit: DateUnit, timezone?: string) {
   return {
     diff: (end: ConfigType, start: ConfigType) =>
       dayjs(end).tz(timezone).diff(start, unit),
@@ -33,7 +33,7 @@ function createDateUnitFn(unit: DateUnit, timezone = 'utc') {
   };
 }
 
-export function formatDate(val: ConfigType, timezone = 'utc') {
+export function formatDate(val: ConfigType, timezone?: string) {
   return dayjs(val).tz(timezone).format('YYYY-MM-DD HH:mm:ss');
 }
 
@@ -45,7 +45,7 @@ export function getDateArray<T extends { date: string }>(
   startDate: ConfigType,
   endDate: ConfigType,
   unit: DateUnit,
-  timezone = 'utc'
+  timezone?: string
 ): T[] {
   if (data.length === 0) {
     return [];
