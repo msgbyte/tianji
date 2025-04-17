@@ -1,5 +1,19 @@
 
 
+## [1.20.1](https://github.com/msgbyte/tianji/compare/v1.20.0...v1.20.1) (2025-04-17)
+
+### Features
+
+* enhance AI Gateway with model price name handling and support for new models in context window ([3771375](https://github.com/msgbyte/tianji/commit/3771375d6a8d5a80f461a17396aa957ef414bab5))
+
+### Bug Fixes
+
+* update email template and SMTP HTML to use 'Docs' instead of 'Documentation' ([041004c](https://github.com/msgbyte/tianji/commit/041004c369938483d0ed5a7be69649d2f42fb305))
+
+### Document
+
+* Add ClawCloud Run Button ([797c519](https://github.com/msgbyte/tianji/commit/797c519991cec001c8976f86183eadea5d114e38))
+
 ## [1.20.0](https://github.com/msgbyte/tianji/compare/v1.19.7...v1.20.0) (2025-04-14)
 
 ### Features
