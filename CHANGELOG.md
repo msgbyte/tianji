@@ -1,5 +1,11 @@
 
 
+## [1.20.2](https://github.com/msgbyte/tianji/compare/v1.20.1...v1.20.2) (2025-04-17)
+
+### Bug Fixes
+
+* fix some problem with user timezone handling in AIGateway overview and enhance SQL date formatting validation ([734f716](https://github.com/msgbyte/tianji/commit/734f7162a618a1ed18f3f14a3e463aa558b54fc1))
+
 ## [1.20.1](https://github.com/msgbyte/tianji/compare/v1.20.0...v1.20.1) (2025-04-17)
 
 ### Features
