@@ -145,7 +145,7 @@ export function generateSMTPHTML(
                 <tr>
                   <td align="center" style="padding-bottom: 16px;">
                     <a href="https://github.com/msgbyte/tianji" style="display: inline-block; font-size: 14px; color: #0f172a; text-decoration: none; margin: 0 8px;" target="_blank">GitHub</a>
-                    <a href="https://tianji.msgbyte.com/docs/intro" style="display: inline-block; font-size: 14px; color: #0f172a; text-decoration: none; margin: 0 8px;" target="_blank">Documentation</a>
+                    <a href="https://tianji.msgbyte.com/docs/intro" style="display: inline-block; font-size: 14px; color: #0f172a; text-decoration: none; margin: 0 8px;" target="_blank">Docs</a>
                   </td>
                 </tr>
                 <tr>
