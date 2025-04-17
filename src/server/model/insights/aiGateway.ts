@@ -159,8 +159,8 @@ export async function insightsAIGateway(
                 }),
               startAt,
               endAt,
-              unit,
-              timezone
+              unit
+              // timezone // NOTICE: because return date is already with user timezone, so we don't need to pass timezone here
             ),
           }))
         );
@@ -177,8 +177,8 @@ export async function insightsAIGateway(
           }),
           startAt,
           endAt,
-          unit,
-          timezone
+          unit
+          // timezone // NOTICE: because return date is already with user timezone, so we don't need to pass timezone here
         ),
       });
     }
