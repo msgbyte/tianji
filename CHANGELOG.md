@@ -1,5 +1,11 @@
 
 
+## [1.20.3](https://github.com/msgbyte/tianji/compare/v1.20.2...v1.20.3) (2025-04-17)
+
+### Features
+
+* enhance aiGateway to support additional model prefixes for deepseek variants ([5f2db80](https://github.com/msgbyte/tianji/commit/5f2db80c2e91f1d13994b1a364acf9d1d7152dd3))
+
 ## [1.20.2](https://github.com/msgbyte/tianji/compare/v1.20.1...v1.20.2) (2025-04-17)
 
 ### Bug Fixes
