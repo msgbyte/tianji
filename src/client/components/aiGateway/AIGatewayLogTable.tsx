@@ -103,7 +103,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
               </SheetTitle>
             </SheetHeader>
 
-            <ScrollArea className="flex-1 py-4">
+            <ScrollArea className="flex-1 py-4 pr-2">
               {selectedItem ? (
                 <div>
                   <SheetDataSection label="ID">

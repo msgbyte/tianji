@@ -30,6 +30,12 @@ aiGatewayRouter.post(
   '/v1/:workspaceId/:gatewayId/deepseek/chat/completions',
   buildOpenAIHandler({
     baseUrl: 'https://api.deepseek.com',
+    modelPriceName: (model) => {
+      if (model.startsWith('deepseek/')) {
+        return model;
+      }
+      return `deepseek/${model}`;
+    },
   })
 );
 

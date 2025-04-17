@@ -4,7 +4,6 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { Button } from '@/components/ui/button';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -16,7 +15,6 @@ import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
-import { ScrollAreaScrollbar } from '@radix-ui/react-scroll-area';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 
 export const Route = createFileRoute('/aiGateway/$gatewayId/')({

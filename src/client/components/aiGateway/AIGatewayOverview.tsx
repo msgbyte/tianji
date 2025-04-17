@@ -15,6 +15,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
 import { getDateArray } from '@tianji/shared';
 import colors from 'tailwindcss/colors';
+import { getUserTimezone } from '@/api/model/user';
 
 interface AIGatewayOverviewProps {
   gatewayId: string;
@@ -49,7 +50,6 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
             return [];
           }
 
-          // 获取日期数组并确保每一天都有数据点
           const counts = data[0]?.data || [];
           return getDateArray(
             counts.map((item) => ({
@@ -58,13 +58,13 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
             })),
             startDate,
             endDate,
-            unit
+            unit,
+            getUserTimezone()
           );
         },
       }
     );
 
-    // 为TimeEventChart组件准备chartConfig
     const chartConfig = useMemo(() => {
       let info = {
         label: t('AIGateway Count'),

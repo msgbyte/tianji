@@ -16,7 +16,7 @@ export function getLLMCostDecimal(
 
   if (!contextWindow) {
     // if can not found this model in contextWindows, return -1 to indicate this model is not supported
-    return new Prisma.Decimal(-1);
+    return new Prisma.Decimal(0);
   }
 
   if (

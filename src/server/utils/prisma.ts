@@ -6,7 +6,7 @@ import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
 import { loadTelemetry } from '../model/telemetry.js';
 import { get } from 'lodash-es';
 
-const POSTGRESQL_DATE_FORMATS = {
+export const POSTGRESQL_DATE_FORMATS = {
   minute: 'YYYY-MM-DD HH24:MI:00',
   hour: 'YYYY-MM-DD HH24:00:00',
   day: 'YYYY-MM-DD',

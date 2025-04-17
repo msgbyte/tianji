@@ -12,6 +12,7 @@ import { castToDate, castToNumber, castToString } from '../../utils/cast.js';
 import dayjs from 'dayjs';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { z } from 'zod';
+import { POSTGRESQL_DATE_FORMATS } from '../../utils/prisma.js';
 
 export abstract class InsightsSqlBuilder {
   protected abstract getTableName(): string;
@@ -26,7 +27,12 @@ export abstract class InsightsSqlBuilder {
     unit: string,
     timezone: string
   ): Prisma.Sql {
-    return Prisma.sql`to_char(date_trunc(${unit}, ${Prisma.raw(field)} at time zone ${timezone}), 'YYYY-MM-DD')`;
+    // Check if unit exists in POSTGRESQL_DATE_FORMATS before using it
+    if (!(unit in POSTGRESQL_DATE_FORMATS)) {
+      throw new Error(`Invalid date unit: ${unit}`);
+    }
+
+    return Prisma.sql`to_char(date_trunc(${unit}, ${Prisma.raw(field)} at time zone ${timezone}), '${Prisma.raw(POSTGRESQL_DATE_FORMATS[unit as keyof typeof POSTGRESQL_DATE_FORMATS])}')`;
   }
 
   protected buildGroupByText(length: number): string {
