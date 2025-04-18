@@ -39,6 +39,7 @@ export function formatDate(val: ConfigType, timezone?: string) {
 
 /**
  * generate a date array from start to end date
+ * @param timezone - If not provided, timezone will not be processed, otherwise the output date will be converted to the corresponding timezone
  */
 export function getDateArray<T extends { date: string }>(
   data: T[],
