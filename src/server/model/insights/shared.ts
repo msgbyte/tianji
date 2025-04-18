@@ -194,8 +194,10 @@ export abstract class InsightsSqlBuilder {
   }
 
   public build(): Prisma.Sql {
-    const { time, groups } = this.query;
-    const { unit, timezone = this.context.timezone } = time;
+    const { time } = this.query;
+    const { unit } = time;
+
+    const timezone = dayjs.tz.guess(); // Get host timezone which can be used in date query
 
     const tableName = this.getTableName();
     const selectQueryArr = this.buildSelectQueryArr();

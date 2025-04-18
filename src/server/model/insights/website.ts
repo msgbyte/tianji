@@ -196,8 +196,8 @@ export async function insightsWebsite(
         }),
         startAt,
         endAt,
-        unit
-        // timezone // NOTICE: because return date is already with user timezone, so we don't need to pass timezone here
+        unit,
+        timezone
       ),
     });
   }
