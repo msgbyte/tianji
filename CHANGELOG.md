@@ -1,5 +1,17 @@
 
 
+## [1.20.5](https://github.com/msgbyte/tianji/compare/v1.20.4...v1.20.5) (2025-04-18)
+
+### Bug Fixes
+
+* fix a issue which maybe cause service crash ([08f3fe5](https://github.com/msgbyte/tianji/commit/08f3fe5705f9117d2907818cd6e798d36b140a47))
+* make timezone parameter optional in date-related functions ([e05a289](https://github.com/msgbyte/tianji/commit/e05a289b37ebc86b532ebd13074ef93f7662d938))
+
+### Others
+
+* remove sitemap ([357c11c](https://github.com/msgbyte/tianji/commit/357c11c7af9ce76b909f7ac4cccdd55493324e27))
+* update docusaurus dependencies to version 3.7.0 and enable sitemap configuration ([681d50c](https://github.com/msgbyte/tianji/commit/681d50ca86a54fc2a8b6ea718745502eb0774d27))
+
 ## [1.20.4](https://github.com/msgbyte/tianji/compare/v1.20.3...v1.20.4) (2025-04-17)
 
 ### Bug Fixes
