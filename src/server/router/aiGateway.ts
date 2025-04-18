@@ -5,6 +5,7 @@ import OpenAI from 'openai';
 import { prisma } from '../model/_client.js';
 import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
 import { getLLMCostDecimal } from '../utils/llm.js';
+import { get } from 'lodash-es';
 
 export const aiGatewayRouter = Router();
 
@@ -138,7 +139,7 @@ export function buildOpenAIHandler(
           if (ttft === -1) {
             ttft = Date.now() - start;
           }
-          const content = chunk.choices[0]?.delta?.content || '';
+          const content = get(chunk, ['choices', 0, 'delta', 'content']) || '';
           outputContent += content;
           res.write(`data: ${JSON.stringify(chunk)}\n\n`);
 
@@ -182,11 +183,11 @@ export function buildOpenAIHandler(
         const duration = Date.now() - start;
 
         logP.then(async ({ id: logId, inputToken }) => {
+          const content = get(response, ['choices', 0, 'message', 'content']);
+
           const outputToken =
             response.usage?.completion_tokens ??
-            (typeof response.choices[0].message.content === 'string'
-              ? calcOpenAIToken(response.choices[0].message.content, model)
-              : 0);
+            (typeof content === 'string' ? calcOpenAIToken(content, model) : 0);
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -196,6 +197,7 @@ export function buildOpenAIHandler(
               status: AIGatewayLogsStatus.Success,
               outputToken,
               duration,
+              modelName,
               price: getLLMCostDecimal(modelPriceName, inputToken, outputToken),
               responsePayload: { ...response },
             },
