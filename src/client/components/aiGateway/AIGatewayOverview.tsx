@@ -91,7 +91,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
       return {
         value: info,
       };
-    }, [t]);
+    }, [t, type]);
 
     const valueFormatter = useMemo(() => {
       return (value: number) => {
