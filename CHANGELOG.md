@@ -1,5 +1,15 @@
 
 
+## [1.20.7](https://github.com/msgbyte/tianji/compare/v1.20.6...v1.20.7) (2025-04-19)
+
+### Features
+
+* add real-time update feature for AI Gateway logs ([080123f](https://github.com/msgbyte/tianji/commit/080123f039fb43cdcb086195b5c32acad84d04df))
+
+### Bug Fixes
+
+* fix ai gateway chart label not correct issue ([a83ee66](https://github.com/msgbyte/tianji/commit/a83ee66874e67b7780ca8ed4fcbe61edd5b4564a))
+
 ## [1.20.6](https://github.com/msgbyte/tianji/compare/v1.20.5...v1.20.6) (2025-04-18)
 
 ### Bug Fixes
