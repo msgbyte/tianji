@@ -1,21 +1,26 @@
-import { defaultErrorHandler, trpc } from '@/api/trpc';
-import { CommonHeader } from '@/components/CommonHeader';
+import { createFileRoute } from '@tanstack/react-router';
+import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
+import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
+import { useState, useRef } from 'react';
+import { useTranslation } from '@i18next-toolkit/react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { trpc, defaultErrorHandler } from '@/api/trpc';
+import { AlertConfirm } from '@/components/AlertConfirm';
+import { Button } from '@/components/ui/button';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CommonHeader } from '@/components/CommonHeader';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { LuPencil, LuTrash } from 'react-icons/lu';
-import { useTranslation } from '@i18next-toolkit/react';
-import { AlertConfirm } from '@/components/AlertConfirm';
 import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
-import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
-import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
+import { useWatch } from '@/hooks/useWatch';
 
 export const Route = createFileRoute('/aiGateway/$gatewayId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -129,12 +134,61 @@ function PageComponent() {
             className="mt-4 w-full flex-1 space-y-4 overflow-hidden"
           >
             <div className="flex h-full w-full flex-col overflow-auto rounded-lg border p-4">
-              <h3 className="mb-2 text-lg font-medium">{t('Gateway Logs')}</h3>
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-lg font-medium">{t('Gateway Logs')}</h3>
+                <RealtimeUpdateButton gatewayId={gatewayId} />
+              </div>
               <AIGatewayLogTable gatewayId={gatewayId} />
             </div>
           </TabsContent>
         </Tabs>
       </div>
     </CommonWrapper>
+  );
+}
+
+interface RealtimeUpdateButtonProps {
+  gatewayId: string;
+}
+
+function RealtimeUpdateButton({ gatewayId }: RealtimeUpdateButtonProps) {
+  const { t } = useTranslation();
+  const workspaceId = useCurrentWorkspaceId();
+  const [isRealtime, setIsRealtime] = useState(false);
+  const utils = trpc.useUtils();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useWatch([isRealtime, gatewayId], () => {
+    if (isRealtime) {
+      timerRef.current = setInterval(() => {
+        utils.aiGateway.logs.invalidate({
+          workspaceId,
+          gatewayId,
+        });
+      }, 4000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  });
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Switch
+        id="realtime-mode"
+        checked={isRealtime}
+        onCheckedChange={setIsRealtime}
+      />
+      <Label htmlFor="realtime-mode">{t('Realtime Update')}</Label>
+    </div>
   );
 }
