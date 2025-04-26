@@ -1,0 +1,20 @@
+# Tianji
+
+> A modern open-source monitoring and telemetry platform that helps you monitor server status in real-time, track user events, and gain application insights
+
+## Core Features
+- [Server Monitoring](https://tianji.msgbyte.com/docs/monitor/custom-script): Real-time monitoring of server status and performance metrics
+- [Event Tracking](https://tianji.msgbyte.com/docs/events/track): Track and analyze user behavior and application events
+- [Application Telemetry](https://tianji.msgbyte.com/docs/telemetry/intro): Collect application runtime data and performance metrics
+- [Status Page](https://tianji.msgbyte.com/docs/server-status/server-status-page): Create public service status pages
+- [Notification System](https://tianji.msgbyte.com/docs/notification/webhook): Timely notifications for abnormal situations
+
+## Common Resources
+- [Installation Guide](https://tianji.msgbyte.com/docs/install/manual): Quick deployment of Tianji platform
+- [Development Documentation](https://tianji.msgbyte.com/docs/dev/prepare): API and integration guide for developers
+- [Environment Configuration](https://tianji.msgbyte.com/docs/environment): Configure Tianji runtime environment
+- [Website Tracking](https://tianji.msgbyte.com/docs/website/track-script): Integrate website visit tracking functionality
+
+## Latest Updates
+- [Custom Domain Support](https://tianji.msgbyte.com/docs/server-status/server-status-page): Added custom domain support for status pages, updated April 2024
+- [Documentation and Website Entry](https://tianji.msgbyte.com/docs): Added documentation and website entry in application, updated September 2024

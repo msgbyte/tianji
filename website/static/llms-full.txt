@@ -1,0 +1,51 @@
+# Complete Introduction to Tianji
+
+> Tianji is a modern open-source monitoring and telemetry platform that provides comprehensive service monitoring solutions for developers and operations teams. It integrates website analytics, server monitoring, event tracking, and application telemetry features to help you monitor system status in real-time, optimize user experience, and improve application performance. Whether you're an individual developer or an enterprise team, Tianji can meet all your monitoring and analytics needs.
+
+## Background
+
+The Tianji project was born from developers' dissatisfaction with existing monitoring tools. Market tools are either too simple or too complex and expensive, with few tools covering multiple dimensions like server monitoring, user behavior analysis, and application performance tracking. Against this background, Tianji emerged to create an open-source, lightweight yet comprehensive monitoring and telemetry platform.
+
+As an open-source project, Tianji adheres to the design philosophy of "Simple to Use, Powerful Features, Privacy First" and is committed to providing developers with a one-stop monitoring solution. We believe that through Tianji, every developer can easily build their own monitoring system, detect and solve problems in time, and continuously optimize product experience.
+
+## Feature Categories
+
+### [Server Monitoring](https://tianji.msgbyte.com/docs/monitor/custom-script)
+
+Server monitoring is one of Tianji's core functions, providing comprehensive server status and performance metric monitoring capabilities. Through simple configuration, you can monitor key metrics like CPU usage, memory consumption, disk space, and network traffic in real-time. The system supports custom monitoring scripts, allowing you to monitor any metrics based on specific needs. When server anomalies occur, Tianji immediately sends alerts through preset notification channels, ensuring you can respond and resolve issues promptly, effectively improving system reliability and stability.
+
+### [Event Tracking](https://tianji.msgbyte.com/docs/events/track)
+
+The event tracking feature allows you to understand deeply how users interact with your application. By integrating Tianji's event tracking SDK, you can record user behavior data such as clicks, page visits, and feature usage. The platform provides intuitive data visualization interfaces to help you analyze user behavior patterns, identify key conversion paths, and discover potential user experience issues. These insights can guide product decisions, optimize user interfaces, improve user satisfaction and retention rates, and provide data support for business growth.
+
+### [Application Telemetry](https://tianji.msgbyte.com/docs/telemetry/intro)
+
+The application telemetry module focuses on collecting and analyzing application runtime performance data. It monitors key metrics like application response time, error rates, and resource consumption, helping developers identify performance bottlenecks and potential issues. By integrating Tianji's telemetry SDK, you can obtain detailed application runtime logs, exception reports, and performance analysis to understand how your application performs in different environments. This data is crucial for continuously optimizing application performance, improving user experience, and reducing operational costs - essential tools for developing high-quality applications.
+
+### [Status Page](https://tianji.msgbyte.com/docs/server-status/server-status-page)
+
+The status page feature allows you to create public service status pages to show your service's operational status to users. This transparent communication channel can display real-time service availability, planned maintenance times, and historical event records. When service interruptions or performance degradation occur, the status page automatically updates to inform users of the current situation and estimated recovery time. This transparency helps build user trust, reduce support requests, and demonstrate your commitment to service quality. The recently added custom domain support allows you to showcase status pages using your own brand domain.
+
+### [Notification System](https://tianji.msgbyte.com/docs/notification/webhook)
+
+The notification system is an essential component of the Tianji platform, ensuring you're promptly informed of system anomalies. When server anomalies, application errors, or performance degradation are detected, the notification system sends alerts through various channels, including email, Webhook, and Slack. You can configure different notification rules based on event types and severity levels to ensure important alerts aren't missed. The notification system supports custom message templates and escalation strategies, helping teams establish efficient problem response processes to minimize service interruption impact on users.
+
+## User Value
+
+The Tianji platform provides significant value to users, helping them address various challenges in monitoring and analytics. First, it integrates multiple monitoring functions into one, eliminating the complexity and cost of using and maintaining multiple tools. Users can monitor server status, user behavior, and application performance simultaneously on a single platform, gaining a comprehensive system view.
+
+Second, Tianji's open-source nature provides high flexibility and customizability. Users can adjust and extend platform features according to their needs and even contribute code to improve the platform. This openness ensures the platform can adapt to various use cases and business requirements.
+
+Third, Tianji emphasizes data privacy and security. As a self-hosted solution, users have complete control over their data without worrying about sensitive information leaking to third parties. This is particularly important for applications handling user data and can help enterprises comply with data protection regulations like GDPR.
+
+Finally, Tianji's real-time monitoring and alert system helps users quickly detect and resolve issues, reducing service downtime and improving system reliability. This not only enhances user experience but also reduces operational costs, creating real business value.
+
+## Latest Updates
+
+### [Custom Domain Support](https://tianji.msgbyte.com/docs/server-status/server-status-page)
+
+We recently added custom domain support for status pages, allowing you to showcase service status pages using your own brand domain. This update significantly enhances the professionalism and brand consistency of status pages, making them a natural extension of your brand image. The setup process is simple and intuitive - just add corresponding DNS records and configure the domain in the Tianji platform. Custom domain support is an important step in responding to user needs, aimed at providing more professional and customized service status display solutions for enterprise users.
+
+### [Documentation and Website Access](https://tianji.msgbyte.com/docs)
+
+To improve user experience and convenience, we've added direct access to documentation and the official website in the application. This update allows users to easily consult documentation for help or visit the official website for latest updates while using the Tianji platform. The documentation system has been comprehensively optimized, providing more detailed guides, tutorials, and API references to help users fully utilize all Tianji features. Additionally, we've added rich examples and best practices to help new users get started quickly while providing advanced tips for experienced users.
