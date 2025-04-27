@@ -1,0 +1,62 @@
+.testimonial-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.tweet-card {
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.tweet-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Small screen devices - Single column */
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: minmax(100px, auto);
+  grid-gap: 20px;
+}
+
+/* Medium screen devices - Two columns */
+@media (min-width: 768px) {
+  .testimonial-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large screen devices - Three columns (maximum) */
+@media (min-width: 1024px) {
+  .testimonial-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Staggered effect in three-column layout */
+  .testimonial-grid > div:nth-child(3n+1) {
+    grid-row: span 1;
+  }
+
+  .testimonial-grid > div:nth-child(3n+2) {
+    grid-row: span 2;
+  }
+
+  .testimonial-grid > div:nth-child(3n+3) {
+    grid-row: span 1;
+  }
+}
+
+/* Extra large screen devices - Keep three columns but increase max width */
+@media (min-width: 1280px) {
+  .testimonial-grid {
+    max-width: 1400px;
+  }
+}
