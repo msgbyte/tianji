@@ -19,7 +19,7 @@ tianji.track(eventName, data);
 Wenn Sie das SDK verwenden, müssen Sie einfach die `reportEvent()`-Funktion aufrufen, nachdem Sie `initTianjiTracker()` ausgeführt haben.
 
 ```ts
-import { initTianjiTracker, reportEvent } from 'tianji-sdk-client';
+import { initTianjiTracker, reportEvent } from 'tianji-client-sdk';
 
 initTianjiTracker({
   url: backendUrl,

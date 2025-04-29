@@ -19,7 +19,7 @@ tianji.track(eventName, data);
 如果您使用SDK，您只需在调用 `initTianjiTracker()` 后调用 `reportEvent()` 函数
 
 ```ts
-import { initTianjiTracker, reportEvent } from 'tianji-sdk-client';
+import { initTianjiTracker, reportEvent } from 'tianji-client-sdk';
 
 initTianjiTracker({
   url: backendUrl,

@@ -19,7 +19,7 @@ tianji.track(eventName, data);
 SDKを使用している場合は、`initTianjiTracker()`の後に`reportEvent()`関数を呼び出すだけです。
 
 ```ts
-import { initTianjiTracker, reportEvent } from 'tianji-sdk-client';
+import { initTianjiTracker, reportEvent } from 'tianji-client-sdk';
 
 initTianjiTracker({
   url: backendUrl,

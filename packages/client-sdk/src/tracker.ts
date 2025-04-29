@@ -76,12 +76,22 @@ export function reportEvent(eventName: string, data: Record<string, any> = {}) {
     return;
   }
 
+  if (!tianji.track) {
+    console.warn('tianji.track is not ready');
+    return;
+  }
+
   tianji.track(eventName, data);
 }
 
 export function identify(data: IdentifyPayload) {
   const tianji = (window as any).tianji;
   if (!tianji) {
+    return;
+  }
+
+  if (!tianji.identify) {
+    console.warn('tianji.identify is not ready');
     return;
   }
 
