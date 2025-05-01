@@ -1,22 +1,22 @@
 ---
 sidebar_position: 1
-_i18n_hash: f0ed5671d5832e683b6ba533651a0eb7
+_i18n_hash: ff4eb3f4ea3a3e6b1f20d9ffb0837623
 ---
 # イベントトラッキング
 
-ウェブサイト上のユーザーのアクションを追跡できます。Tianjiは、それを簡単に行う方法を提供します。
+ウェブサイト上のユーザーのアクションを追跡できます。Tianjiはそれを行う簡単な方法を提供します。
 
-## スクリプトタグを使用する場合
+## スクリプトタグの使用
 
-スクリプトタグを使用している場合は、スクリプトをインジェクトした後の任意の場所で`track`関数を呼び出すだけです。
+スクリプトタグを使用している場合、スクリプトを注入した後、どこでも`track`関数を呼び出すだけで済みます。
 
 ```ts
 tianji.track(eventName, data);
 ```
 
-## SDKを使用する場合
+## SDKの使用
 
-SDKを使用している場合は、`initTianjiTracker()`の後に`reportEvent()`関数を呼び出すだけです。
+SDKを使用している場合、`initTianjiTracker()`の後に`reportEvent()`関数を呼び出すだけで済みます。
 
 ```ts
 import { initTianjiTracker, reportEvent } from 'tianji-client-sdk';
@@ -25,8 +25,8 @@ initTianjiTracker({
   url: backendUrl,
   websiteId,
 });
-    
-reportEvent('デモイベント', {
+
+reportEvent('Demo Event', {
   foo: 'bar',
 });
 ```
