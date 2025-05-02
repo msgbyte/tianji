@@ -1,5 +1,21 @@
 
 
+## [1.20.8](https://github.com/msgbyte/tianji/compare/v1.20.7...v1.20.8) (2025-05-02)
+
+### Features
+
+* add responsive testimonial grid and tweet card styles ([80cbf2b](https://github.com/msgbyte/tianji/commit/80cbf2bb4c26a3b223502bb33a2671d6ec7ffc8f))
+
+### Document
+
+* add robots.txt and LLM documentation files ([6da44ab](https://github.com/msgbyte/tianji/commit/6da44ab29cf29ae21fa9eb758fd3a48652761c9f))
+* update documents ([4dc3d6d](https://github.com/msgbyte/tianji/commit/4dc3d6df1e5bf72bd39d11763ae5a20f89b872ba))
+
+### Others
+
+* improve insight debug logic ([31a9a33](https://github.com/msgbyte/tianji/commit/31a9a339cbb2030e44dc2d78f6fa1c8a3637a8b0))
+* update version to 1.3.1 and improve event tracking error handling ([755dc8f](https://github.com/msgbyte/tianji/commit/755dc8fd78a4116f39fd673e1ec9e12437f95ae5))
+
 ## [1.20.7](https://github.com/msgbyte/tianji/compare/v1.20.6...v1.20.7) (2025-04-19)
 
 ### Features
