@@ -169,10 +169,6 @@ export async function insightsWebsite(
   const builder = new WebsiteInsightsSqlBuilder(query, context);
   const sql = builder.build();
 
-  if (env.isDev) {
-    printSQL(sql);
-  }
-
   const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
 
   let result: {

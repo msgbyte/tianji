@@ -108,10 +108,6 @@ export async function insightsSurvey(
   const builder = new SurveyInsightsSqlBuilder(query, context);
   const sql = builder.build();
 
-  if (env.isDev) {
-    printSQL(sql);
-  }
-
   const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
 
   let result: {

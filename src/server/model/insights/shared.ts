@@ -12,7 +12,8 @@ import { castToDate, castToNumber, castToString } from '../../utils/cast.js';
 import dayjs from 'dayjs';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { z } from 'zod';
-import { POSTGRESQL_DATE_FORMATS } from '../../utils/prisma.js';
+import { POSTGRESQL_DATE_FORMATS, printSQL } from '../../utils/prisma.js';
+import { env } from '../../utils/env.js';
 
 export abstract class InsightsSqlBuilder {
   protected abstract getTableName(): string;
@@ -207,7 +208,7 @@ export abstract class InsightsSqlBuilder {
 
     const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
 
-    return Prisma.sql`select
+    const sql = Prisma.sql`select
       ${Prisma.join(
         compact([
           Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`,
@@ -219,5 +220,11 @@ export abstract class InsightsSqlBuilder {
     from "${Prisma.raw(tableName)}" ${innerJoinQuery}
     where ${Prisma.join(whereQueryArr, ' AND ')}
     group by ${Prisma.raw(groupByText)}`;
+
+    if (env.debugInsights) {
+      printSQL(sql);
+    }
+
+    return sql;
   }
 }

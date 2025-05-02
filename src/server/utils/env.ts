@@ -8,9 +8,11 @@ const jwtSecret =
     ? uuid()
     : process.env.JWT_SECRET;
 
+const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
-  isDev: process.env.NODE_ENV === 'development' || !process.env.NODE_ENV,
+  isDev,
   isTest: process.env.NODE_ENV === 'test',
   jwtSecret,
   port: Number(process.env.PORT || 12345),
@@ -94,6 +96,7 @@ export const env = {
   disableAutoClear: checkEnvTrusty(process.env.DISABLE_AUTO_CLEAR), // disable auto clear old data cronjob
   disableAccessLogs: checkEnvTrusty(process.env.DISABLE_ACCESS_LOGS), // disable show access logs
   debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
+  debugInsights: checkEnvTrusty(process.env.DEBUG_INSIGHTS) || isDev, // debug insights
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
