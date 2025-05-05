@@ -39,7 +39,7 @@ app.use(
     },
   })
 );
-if (!env.disableAccessLogs) {
+if (!env.disableAccessLogs && process.env.NODE_ENV !== 'test') {
   app.use(morgan('tiny'));
 }
 app.use(cors());
