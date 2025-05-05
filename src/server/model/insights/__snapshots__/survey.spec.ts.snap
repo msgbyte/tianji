@@ -2,7 +2,7 @@
 
 exports[`SurveyInsightsSqlBuilder > combined filters and groups > sql with filters and groups 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "SurveyResult"."payload" ->> 'userType' as "%userType" , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , "SurveyResult"."payload" ->> 'userType' as "%userType" , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("SurveyResult"."payload"->> 'completed')::boolean = '1'
     group by 1 , 2"
@@ -10,7 +10,7 @@ exports[`SurveyInsightsSqlBuilder > combined filters and groups > sql with filte
 
 exports[`SurveyInsightsSqlBuilder > date type filters > sql with date filters 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("SurveyResult"."payload"->> 'submittedAt') BETWEEN '2025-02-10T16:00:00.000Z' AND '2025-03-13T15:59:59.999Z'
     group by 1"
@@ -18,7 +18,7 @@ exports[`SurveyInsightsSqlBuilder > date type filters > sql with date filters 1`
 
 exports[`SurveyInsightsSqlBuilder > different metrics > sql with different metrics 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , sum(case WHEN "SurveyResult"."payload"->>''rating'' IS NOT NULL AND "SurveyResult"."payload"->>''rating'' <> '' THEN 1 ELSE 0 END) as "rating" , sum(case WHEN "SurveyResult"."payload"->>''comment'' IS NOT NULL AND "SurveyResult"."payload"->>''comment'' <> '' THEN 1 ELSE 0 END) as "comment" , count(distinct "sessionId") as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , sum(case WHEN "SurveyResult"."payload"->>''rating'' IS NOT NULL AND "SurveyResult"."payload"->>''rating'' <> '' THEN 1 ELSE 0 END) as "rating" , sum(case WHEN "SurveyResult"."payload"->>''comment'' IS NOT NULL AND "SurveyResult"."payload"->>''comment'' <> '' THEN 1 ELSE 0 END) as "comment" , count(distinct "sessionId") as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
     group by 1"
@@ -34,7 +34,7 @@ exports[`SurveyInsightsSqlBuilder > different time units > sql with month time u
 
 exports[`SurveyInsightsSqlBuilder > groups > sql 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "SurveyResult"."payload" ->> 'rating' as "%rating" , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , "SurveyResult"."payload" ->> 'rating' as "%rating" , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
     group by 1 , 2"
@@ -42,7 +42,7 @@ exports[`SurveyInsightsSqlBuilder > groups > sql 1`] = `
 
 exports[`SurveyInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , ("SurveyResult"."payload"->> 'rating') IN ('1' , '2' , '3') as "%rating|in list|1,2,3" , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , ("SurveyResult"."payload"->> 'rating') IN ('1' , '2' , '3') as "%rating|in list|1,2,3" , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
     group by 1 , 2"
@@ -50,7 +50,7 @@ exports[`SurveyInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
 
 exports[`SurveyInsightsSqlBuilder > multiple string filters > sql with multiple string filters 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("SurveyResult"."payload"->> 'source') LIKE '%web%' AND ("SurveyResult"."payload"->> 'feedback') NOT LIKE '%bug%'
     group by 1"
@@ -58,7 +58,7 @@ exports[`SurveyInsightsSqlBuilder > multiple string filters > sql with multiple 
 
 exports[`SurveyInsightsSqlBuilder > numeric filters with ranges > sql with numeric range filter 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("SurveyResult"."payload"->> 'score')::int BETWEEN '7' AND '10'
     group by 1"
@@ -66,7 +66,7 @@ exports[`SurveyInsightsSqlBuilder > numeric filters with ranges > sql with numer
 
 exports[`SurveyInsightsSqlBuilder > with filters > sql with filters 1`] = `
 "select
-      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+      to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , count(1) as "$all_event"
     from "SurveyResult" 
     where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("SurveyResult"."payload"->> 'country') = 'US' AND ("SurveyResult"."payload"->> 'age')::int > '18'
     group by 1"

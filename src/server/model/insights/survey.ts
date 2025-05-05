@@ -1,12 +1,10 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
-import { printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
-import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
-import { get, uniq } from 'lodash-es';
-import { env } from '../../utils/env.js';
+import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { InsightsSqlBuilder } from './shared.js';
+import { processGroupedTimeSeriesData } from './utils.js';
 
 export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
@@ -102,69 +100,12 @@ export async function insightsSurvey(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
-  const { time, metrics, groups } = query;
-  const { startAt, endAt, unit, timezone = context.timezone } = time;
-
   const builder = new SurveyInsightsSqlBuilder(query, context);
   const sql = builder.build();
 
-  const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+  const data = await prisma.$queryRaw<{ date: string | null }[]>(sql);
 
-  let result: {
-    name: string;
-    [groupName: string]: any;
-    data: {
-      date: string;
-      value: number;
-    }[];
-  }[] = [];
-
-  for (const m of metrics) {
-    if (groups.length > 0) {
-      for (const g of groups) {
-        const allGroupValue = uniq(
-          res.map((item) => get(item, `%${g.value}`) as any)
-        );
-
-        result.push(
-          ...allGroupValue.map((gv) => ({
-            name: m.name,
-            [g.value]: gv,
-            data: getDateArray(
-              res
-                .filter((item) => get(item, `%${g.value}`) === gv)
-                .map((item) => {
-                  return {
-                    value: Number(get(item, m.name)),
-                    date: String(item.date),
-                  };
-                }),
-              startAt,
-              endAt,
-              unit,
-              timezone
-            ),
-          }))
-        );
-      }
-    } else {
-      result.push({
-        name: m.name,
-        data: getDateArray(
-          res.map((item) => {
-            return {
-              value: Number(get(item, m.name)),
-              date: String(item.date),
-            };
-          }),
-          startAt,
-          endAt,
-          unit,
-          timezone
-        ),
-      });
-    }
-  }
+  const result = processGroupedTimeSeriesData(query, context, data);
 
   return result;
 }

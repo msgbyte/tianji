@@ -1,13 +1,11 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
-import { printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
-import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
-import { get } from 'lodash-es';
+import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { EVENT_TYPE } from '../../utils/const.js';
-import { env } from '../../utils/env.js';
 import { InsightsSqlBuilder } from './shared.js';
+import { processGroupedTimeSeriesData } from './utils.js';
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
@@ -163,40 +161,12 @@ export async function insightsWebsite(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
-  const { time, metrics } = query;
-  const { startAt, endAt, unit, timezone = context.timezone } = time;
-
   const builder = new WebsiteInsightsSqlBuilder(query, context);
   const sql = builder.build();
 
-  const res = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+  const data = await prisma.$queryRaw<{ date: string | null }[]>(sql);
 
-  let result: {
-    name: string;
-    [groupName: string]: any;
-    data: {
-      date: string;
-      value: number;
-    }[];
-  }[] = [];
-
-  for (const m of metrics) {
-    result.push({
-      name: m.name,
-      data: getDateArray(
-        res.map((item) => {
-          return {
-            value: Number(get(item, m.name)),
-            date: String(item.date),
-          };
-        }),
-        startAt,
-        endAt,
-        unit,
-        timezone
-      ),
-    });
-  }
+  const result = processGroupedTimeSeriesData(query, context, data);
 
   return result;
 }

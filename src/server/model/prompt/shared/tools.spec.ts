@@ -1,11 +1,16 @@
-import { describe, expect, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { env } from '../../../utils/env.js';
 import { getOpenAIClient } from '../../openai.js';
 import { openAITools } from './tools.js';
 import dayjs from 'dayjs';
 
 describe.runIf(env.openai.apiKey)('openai tools', () => {
-  const openaiClient = getOpenAIClient();
+  let openaiClient: ReturnType<typeof getOpenAIClient>;
+
+  beforeAll(() => {
+    openaiClient = getOpenAIClient();
+  });
+
   describe.skip('getSurveyByDateRange', () => {
     const currentDate = dayjs();
     const systemPrompt = `You are a helper who helps the user to perform functions. Current date is ${currentDate.toISOString()}.`;
