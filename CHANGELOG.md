@@ -1,5 +1,15 @@
 
 
+## [1.20.9](https://github.com/msgbyte/tianji/compare/v1.20.8...v1.20.9) (2025-05-05)
+
+### Bug Fixes
+
+* fix website not support group filter problem ([4cc7fd0](https://github.com/msgbyte/tianji/commit/4cc7fd01309ed1079a7d9811f7e7cc3336b871f3))
+
+### Others
+
+* prevent access logs in test environment ([5fe4205](https://github.com/msgbyte/tianji/commit/5fe4205a44bce2e6c5fb17c27c911407c00ba246))
+
 ## [1.20.8](https://github.com/msgbyte/tianji/compare/v1.20.7...v1.20.8) (2025-05-02)
 
 ### Features
