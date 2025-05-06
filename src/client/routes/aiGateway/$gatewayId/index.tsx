@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
+import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
 import { useState, useRef } from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Switch } from '@/components/ui/switch';
@@ -80,6 +81,8 @@ function PageComponent() {
             <div className="space-x-2">
               {hasAdminPermission && (
                 <>
+                  <AIGatewayCodeExampleBtn gatewayId={gatewayId} />
+
                   <Button
                     size="icon"
                     variant="outline"
