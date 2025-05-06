@@ -17,7 +17,7 @@ export const MetricsSection: React.FC = React.memo(() => {
   const removeMetrics = useInsightsStore((state) => state.removeMetrics);
   const { t } = useTranslation();
 
-  const { data: allEvents = [] } = trpc.insights.events.useQuery(
+  const { data: allEvents = [] } = trpc.insights.eventNames.useQuery(
     {
       workspaceId,
       insightId,

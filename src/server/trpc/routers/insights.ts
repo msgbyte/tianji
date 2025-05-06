@@ -14,7 +14,7 @@ export const insightsRouter = router({
         timezone: ctx.timezone,
       });
     }),
-  events: workspaceProcedure
+  eventNames: workspaceProcedure
     .input(
       z.object({
         insightId: z.string(),
@@ -44,7 +44,7 @@ export const insightsRouter = router({
           name:
             item.eventType === EVENT_TYPE.pageView
               ? '$page_view'
-              : item.eventName ?? '<null>',
+              : (item.eventName ?? '<null>'),
           count: item._count.id,
         }));
       }
