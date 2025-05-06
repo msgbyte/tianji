@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
-import { Prisma } from '@prisma/client';
+import { Prisma, WebsiteEvent } from '@prisma/client';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
-import { EVENT_TYPE } from '../../utils/const.js';
-import { InsightsSqlBuilder } from './shared.js';
+import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
+import { InsightEvent, InsightsSqlBuilder } from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
@@ -148,12 +148,64 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     value: FilterInfoValue | null
   ) {
     const valueField = this.getValueField(type);
+
     return this.buildCommonFilterQueryOperator(
       type,
       operator,
       value,
       valueField
     );
+  }
+
+  public async queryEvents(): Promise<InsightEvent[]> {
+    const allEventsSql = this.buildFetchEventsQuery();
+    const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);
+
+    const allEventProperties = await prisma.websiteEventData.findMany({
+      where: {
+        websiteEventId: {
+          in: allEvents.map((event) => event.id),
+        },
+      },
+    });
+
+    const result = allEvents.map((event) => {
+      const propertyRecords = allEventProperties.filter(
+        (property) => property.websiteEventId === event.id
+      );
+
+      const properties = propertyRecords.reduce(
+        (acc, property) => {
+          if (property.dataType === DATA_TYPE.number) {
+            acc[property.eventKey] = Number(property.numberValue);
+          } else if (property.dataType === DATA_TYPE.date) {
+            acc[property.eventKey] = property.dateValue;
+          } else {
+            acc[property.eventKey] = property.stringValue;
+          }
+
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+
+      return {
+        id: event.id,
+        name: event.eventName ?? 'Page View',
+        properties: {
+          sessionId: event.sessionId,
+          urlPath: event.urlPath,
+          urlQuery: event.urlQuery,
+          referrerPath: event.referrerPath,
+          referrerQuery: event.referrerQuery,
+          referrerDomain: event.referrerDomain,
+          pageTitle: event.pageTitle,
+          ...properties,
+        },
+      };
+    });
+
+    return result;
   }
 }
 

@@ -15,6 +15,14 @@ import { z } from 'zod';
 import { POSTGRESQL_DATE_FORMATS, printSQL } from '../../utils/prisma.js';
 import { env } from '../../utils/env.js';
 
+export interface InsightEvent<
+  T extends Record<string, any> = Record<string, any>,
+> {
+  id: string;
+  name: string;
+  properties: T;
+}
+
 export abstract class InsightsSqlBuilder {
   protected abstract getTableName(): string;
 
@@ -226,5 +234,22 @@ export abstract class InsightsSqlBuilder {
     }
 
     return sql;
+  }
+
+  public buildFetchEventsQuery(): Prisma.Sql {
+    const tableName = this.getTableName();
+    const whereQueryArr = this.buildWhereQueryArr();
+
+    return Prisma.sql`
+      select *
+      from "${Prisma.raw(tableName)}"
+      where ${Prisma.join(whereQueryArr, ' AND ')}
+      order by "createdAt" desc
+      limit 100
+    `;
+  }
+
+  public async queryEvents(): Promise<InsightEvent[]> {
+    return [];
   }
 }

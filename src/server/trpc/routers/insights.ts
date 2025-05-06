@@ -4,13 +4,20 @@ import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
 import { EVENT_TYPE } from '../../utils/const.js';
 import { stringifyDateType } from '../../utils/common.js';
-import { queryInsight } from '../../model/insights/index.js';
+import { queryEvents, queryInsight } from '../../model/insights/index.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
     .input(insightsQuerySchema)
     .query(async ({ input, ctx }) => {
       return queryInsight(input, {
+        timezone: ctx.timezone,
+      });
+    }),
+  queryEvents: workspaceProcedure
+    .input(insightsQuerySchema)
+    .query(async ({ input, ctx }) => {
+      return queryEvents(input, {
         timezone: ctx.timezone,
       });
     }),
