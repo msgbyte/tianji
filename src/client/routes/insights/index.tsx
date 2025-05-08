@@ -29,7 +29,7 @@ import { FilterSection } from '@/components/insights/FilterSection';
 import { useEvent } from '@/hooks/useEvent';
 import { BreakdownSection } from '@/components/insights/BreakdownSection';
 
-export const Route = createFileRoute('/insights')({
+export const Route = createFileRoute('/insights/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });

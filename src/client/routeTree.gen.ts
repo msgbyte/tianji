@@ -22,11 +22,11 @@ import { Route as PlaygroundImport } from './routes/playground'
 import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
-import { Route as InsightsImport } from './routes/insights'
 import { Route as FeedImport } from './routes/feed'
 import { Route as ApplicationImport } from './routes/application'
 import { Route as AiGatewayImport } from './routes/aiGateway'
 import { Route as IndexImport } from './routes/index'
+import { Route as InsightsIndexImport } from './routes/insights/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
@@ -120,11 +120,6 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const InsightsRoute = InsightsImport.update({
-  path: '/insights',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const FeedRoute = FeedImport.update({
   path: '/feed',
   getParentRoute: () => rootRoute,
@@ -142,6 +137,11 @@ const AiGatewayRoute = AiGatewayImport.update({
 
 const IndexRoute = IndexImport.update({
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InsightsIndexRoute = InsightsIndexImport.update({
+  path: '/insights/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -342,10 +342,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedImport
       parentRoute: typeof rootRoute
     }
-    '/insights': {
-      preLoaderRoute: typeof InsightsImport
-      parentRoute: typeof rootRoute
-    }
     '/login': {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
@@ -478,6 +474,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/insights/': {
+      preLoaderRoute: typeof InsightsIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/aiGateway/$gatewayId/edit': {
       preLoaderRoute: typeof AiGatewayGatewayIdEditImport
       parentRoute: typeof AiGatewayImport
@@ -554,7 +554,6 @@ export const routeTree = rootRoute.addChildren([
     FeedChannelIdEditRoute,
     FeedChannelIdIndexRoute,
   ]),
-  InsightsRoute,
   LoginRoute,
   MonitorRoute.addChildren([
     MonitorAddRoute,
@@ -589,6 +588,7 @@ export const routeTree = rootRoute.addChildren([
   ]),
   FeedPlaygroundRoute,
   StatusSlugRoute,
+  InsightsIndexRoute,
   InvitationAcceptTokenRoute,
 ])
 
