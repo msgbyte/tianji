@@ -3,6 +3,8 @@ import { insightsQuerySchema } from '../../utils/schema.js';
 import { insightsWebsite, WebsiteInsightsSqlBuilder } from './website.js';
 import { insightsSurvey } from './survey.js';
 import { insightsAIGateway } from './aiGateway.js';
+import { compact, omit } from 'lodash-es';
+import { prisma } from '../_client.js';
 
 export function queryInsight(
   query: z.infer<typeof insightsQuerySchema>,
@@ -25,7 +27,7 @@ export function queryInsight(
   throw new Error('Unknown Insight Type');
 }
 
-export function queryEvents(
+export async function queryEvents(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
@@ -34,7 +36,38 @@ export function queryEvents(
   if (insightType === 'website') {
     const builder = new WebsiteInsightsSqlBuilder(query, context);
 
-    return builder.queryEvents();
+    const events = await builder.queryEvents();
+
+    const sessionIds = compact(
+      events.map((event) => event.properties.sessionId)
+    );
+
+    const sessions = await prisma.websiteSession.findMany({
+      where: {
+        id: {
+          in: sessionIds,
+        },
+      },
+      include: {
+        sessionData: true,
+      },
+    });
+
+    return events.map((event) => {
+      const session = sessions.find(
+        (session) => session.id === event.properties.sessionId
+      );
+
+      return {
+        ...event,
+        sessions: session
+          ? {
+              ...omit(session, ['sessionData']),
+              ...session.sessionData,
+            }
+          : null,
+      };
+    });
   }
 
   throw new Error('Unknown Insight Type');

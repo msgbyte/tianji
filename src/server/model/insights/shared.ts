@@ -20,6 +20,7 @@ export interface InsightEvent<
 > {
   id: string;
   name: string;
+  createdAt: Date;
   properties: T;
 }
 

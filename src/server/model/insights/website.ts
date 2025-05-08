@@ -192,6 +192,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       return {
         id: event.id,
         name: event.eventName ?? 'Page View',
+        createdAt: event.createdAt,
         properties: {
           sessionId: event.sessionId,
           urlPath: event.urlPath,

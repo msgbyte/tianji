@@ -72,3 +72,22 @@ export function numberToLetter(number: number) {
 
   return result.reverse().join('');
 }
+
+/**
+ * Remove falsy values from an object (undefined, null, '', 0, false)
+ */
+export function cleanObject(
+  obj: Record<string, any> | null = {}
+): Record<string, any> {
+  if (!obj) return {};
+
+  return Object.entries(obj).reduce(
+    (acc, [key, value]) => {
+      if (value) {
+        acc[key] = value;
+      }
+      return acc;
+    },
+    {} as Record<string, any>
+  );
+}
