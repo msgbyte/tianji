@@ -157,8 +157,10 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     );
   }
 
-  public async queryEvents(): Promise<InsightEvent[]> {
-    const allEventsSql = this.buildFetchEventsQuery();
+  public async queryEvents(
+    cursor: string | undefined
+  ): Promise<InsightEvent[]> {
+    const allEventsSql = this.buildFetchEventsQuery(cursor);
     const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);
 
     const allEventProperties = await prisma.websiteEventData.findMany({

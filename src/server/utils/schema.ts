@@ -77,6 +77,12 @@ export const insightsQuerySchema = z.object({
   }),
 });
 
+export const insightsQueryEventsSchema = insightsQuerySchema.merge(
+  z.object({
+    cursor: z.string().optional(),
+  })
+);
+
 export function buildCursorResponseSchema<T extends z.ZodType>(
   itemSchema: T,
   cursorSchema = z.string()

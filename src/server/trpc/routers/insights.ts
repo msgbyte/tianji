@@ -1,5 +1,8 @@
 import { router, workspaceProcedure } from '../trpc.js';
-import { insightsQuerySchema } from '../../utils/schema.js';
+import {
+  insightsQueryEventsSchema,
+  insightsQuerySchema,
+} from '../../utils/schema.js';
 import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
 import { EVENT_TYPE } from '../../utils/const.js';
@@ -15,7 +18,7 @@ export const insightsRouter = router({
       });
     }),
   queryEvents: workspaceProcedure
-    .input(insightsQuerySchema)
+    .input(insightsQueryEventsSchema)
     .query(async ({ input, ctx }) => {
       return queryEvents(input, {
         timezone: ctx.timezone,

@@ -237,7 +237,7 @@ export abstract class InsightsSqlBuilder {
     return sql;
   }
 
-  public buildFetchEventsQuery(): Prisma.Sql {
+  public buildFetchEventsQuery(cursor: string | undefined): Prisma.Sql {
     const tableName = this.getTableName();
     const whereQueryArr = this.buildWhereQueryArr();
 
@@ -245,12 +245,15 @@ export abstract class InsightsSqlBuilder {
       select *
       from "${Prisma.raw(tableName)}"
       where ${Prisma.join(whereQueryArr, ' AND ')}
-      order by "createdAt" desc
+      ${cursor ? Prisma.sql`AND "id" < ${cursor}` : Prisma.empty}
+      order by "id" desc
       limit 100
     `;
   }
 
-  public async queryEvents(): Promise<InsightEvent[]> {
+  public async queryEvents(
+    cursor: string | undefined
+  ): Promise<InsightEvent[]> {
     return [];
   }
 }

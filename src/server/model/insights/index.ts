@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { insightsQuerySchema } from '../../utils/schema.js';
+import {
+  insightsQueryEventsSchema,
+  insightsQuerySchema,
+} from '../../utils/schema.js';
 import { insightsWebsite, WebsiteInsightsSqlBuilder } from './website.js';
 import { insightsSurvey } from './survey.js';
 import { insightsAIGateway } from './aiGateway.js';
@@ -28,7 +31,7 @@ export function queryInsight(
 }
 
 export async function queryEvents(
-  query: z.infer<typeof insightsQuerySchema>,
+  query: z.infer<typeof insightsQueryEventsSchema>,
   context: { timezone: string }
 ) {
   const { insightType } = query;
@@ -36,7 +39,7 @@ export async function queryEvents(
   if (insightType === 'website') {
     const builder = new WebsiteInsightsSqlBuilder(query, context);
 
-    const events = await builder.queryEvents();
+    const events = await builder.queryEvents(query.cursor);
 
     const sessionIds = compact(
       events.map((event) => event.properties.sessionId)
