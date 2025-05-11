@@ -12,7 +12,8 @@
     "translation:extract": "i18next-toolkit extract",
     "translation:scan": "i18next-toolkit scan",
     "translation:translate": "i18next-toolkit translate",
-    "test": "vitest"
+    "test": "vitest",
+    "knip": "knip"
   },
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",
@@ -115,6 +116,7 @@
     "@types/loadable__component": "^5.13.9",
     "@types/lodash-es": "^4.17.12",
     "@types/md5": "^2.3.5",
+    "@types/node": "22.13.11",
     "@types/react": "^18.2.78",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18.2.78",
@@ -125,6 +127,7 @@
     "@types/uuid": "^9.0.8",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
+    "knip": "^5.55.1",
     "less": "^4.2.2",
     "postcss": "^8.5.3",
     "shadcn": "^2.3.0",
