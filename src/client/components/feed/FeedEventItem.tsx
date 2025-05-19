@@ -7,8 +7,10 @@ import { MarkdownViewer } from '../MarkdownEditor';
 import { FeedIcon } from './FeedIcon';
 import { cn } from '@/utils/style';
 
-type FeedEventItemType =
-  AppRouterOutput['feed']['fetchEventsByCursor']['items'][number];
+type FeedEventItemType = Pick<
+  AppRouterOutput['feed']['fetchEventsByCursor']['items'][number],
+  'id' | 'source' | 'eventName' | 'eventContent' | 'createdAt' | 'url' | 'tags'
+>;
 
 export const FeedEventItem: React.FC<{
   className?: string;

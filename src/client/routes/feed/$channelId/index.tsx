@@ -30,6 +30,7 @@ import { DynamicVirtualList } from '@/components/DynamicVirtualList';
 import { get, reverse } from 'lodash-es';
 import { FeedArchivePageButton } from '@/components/feed/FeedArchivePageButton';
 import { toast } from 'sonner';
+import { FeedStateList } from '@/components/feed/FeedStateList';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -158,56 +159,60 @@ function PageComponent() {
         />
       }
     >
-      <div className="h-full w-full overflow-hidden p-4">
-        <DynamicVirtualList
-          allData={fullEvents}
-          estimateSize={100}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          onFetchNextPage={fetchNextPage}
-          getItemKey={(index) => get(fullEvents, [index, 'id'])}
-          renderItem={(item) => (
-            <FeedEventItem
-              className="animate-fade-in mb-2"
-              event={item}
-              actions={
-                <>
-                  {item.url && (
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-6 w-6 overflow-hidden"
-                      onClick={() => window.open(item.url)}
-                    >
-                      <LuLink size={12} />
-                    </Button>
-                  )}
+      <div className="flex h-full w-full flex-col p-4">
+        <FeedStateList workspaceId={workspaceId} channelId={channelId} />
 
-                  {hasAdminPermission && (
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-6 w-6 overflow-hidden"
-                      onClick={() => handleArchive(item)}
-                    >
-                      <LuArchive size={12} />
-                    </Button>
-                  )}
-                </>
-              }
-            />
-          )}
-          renderEmpty={() => (
-            <div className="w-full overflow-hidden p-4">
-              {!isInitialLoading && (
-                <FeedApiGuide
-                  channelId={channelId}
-                  webhookSignature={info?.webhookSignature}
-                />
-              )}
-            </div>
-          )}
-        />
+        <div className="flex-1 overflow-hidden">
+          <DynamicVirtualList
+            allData={fullEvents}
+            estimateSize={100}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onFetchNextPage={fetchNextPage}
+            getItemKey={(index) => get(fullEvents, [index, 'id'])}
+            renderItem={(item) => (
+              <FeedEventItem
+                className="animate-fade-in mb-2"
+                event={item}
+                actions={
+                  <>
+                    {item.url && (
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-6 w-6 overflow-hidden"
+                        onClick={() => window.open(item.url)}
+                      >
+                        <LuLink size={12} />
+                      </Button>
+                    )}
+
+                    {hasAdminPermission && (
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-6 w-6 overflow-hidden"
+                        onClick={() => handleArchive(item)}
+                      >
+                        <LuArchive size={12} />
+                      </Button>
+                    )}
+                  </>
+                }
+              />
+            )}
+            renderEmpty={() => (
+              <div className="w-full overflow-hidden p-4">
+                {!isInitialLoading && (
+                  <FeedApiGuide
+                    channelId={channelId}
+                    webhookSignature={info?.webhookSignature}
+                  />
+                )}
+              </div>
+            )}
+          />
+        </div>
       </div>
     </CommonWrapper>
   );
