@@ -18,9 +18,10 @@ import {
   feedIntegrationRouter,
 } from './integration.js';
 import { fetchDataByCursor } from '../../../utils/prisma.js';
-import { delFeedEventNotifyCache } from '../../../model/feed/event.js';
+import { delFeedEventNotifyCache } from '../../../model/feed/shared.js';
 import { getWorkspaceTierLimit } from '../../../model/billing/limit.js';
 import { isWorkspacePaused } from '../../../model/billing/workspace.js';
+import { feedStateRouter } from './state.js';
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -461,6 +462,7 @@ export const feedRouter = router({
       return res.count;
     }),
   integration: feedIntegrationRouter,
+  state: feedStateRouter,
 });
 
 function buildFeedOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {

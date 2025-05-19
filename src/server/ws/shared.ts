@@ -5,7 +5,7 @@ import {
   PlaygroundWebhookRequestPayload,
   ServerStatusInfo,
 } from '../../types/index.js';
-import { FeedEvent, MonitorData } from '@prisma/client';
+import { FeedEvent, FeedState, MonitorData } from '@prisma/client';
 import { Serialize } from '../types/utils.js';
 
 type SubscribeEventFn<T> = (workspaceId: string, eventData: T) => void;
@@ -14,6 +14,7 @@ export interface SubscribeEventMap {
   onServerStatusUpdate: SubscribeEventFn<Record<string, ServerStatusInfo>>;
   onMonitorReceiveNewData: SubscribeEventFn<MonitorData>;
   onReceiveFeedEvent: SubscribeEventFn<Serialize<FeedEvent>>;
+  onReceiveFeedState: SubscribeEventFn<Serialize<FeedState>>;
   onReceivePlaygroundWebhookRequest: SubscribeEventFn<PlaygroundWebhookRequestPayload>;
   onLighthouseWorkCompleted: SubscribeEventFn<{ websiteId: string }>;
   onSurveyClassifyWorkCompleted: SubscribeEventFn<{

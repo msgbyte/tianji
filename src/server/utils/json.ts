@@ -1,9 +1,11 @@
+import { Serialize } from '../types/utils.js';
+
 /**
  * serialize object
  * make data easy to transfer
  */
-export function serializeJSON<T extends {}>(input: T) {
-  return serializeDate(input);
+export function serializeJSON<T extends {}>(input: T): Serialize<T> {
+  return serializeDate(input) as Serialize<T>;
 }
 
 type ConvertDateToString<T> = T extends Date
@@ -26,6 +28,10 @@ function serializeDate<T extends {}>(obj: T): DateToString<T> {
   function stripDates(_obj: unknown): any {
     if (!_obj || typeof _obj !== 'object') {
       return _obj;
+    }
+
+    if (_obj === null) {
+      return null;
     }
 
     if (_obj instanceof Date) {

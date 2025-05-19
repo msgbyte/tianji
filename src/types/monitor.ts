@@ -1,6 +1,6 @@
 import type { MonitorModelSchema } from '../server/prisma/zod/index.js';
 import type { ExactType } from './utils.js';
-import z from 'zod';
+import type z from 'zod';
 
 type Monitor = z.infer<typeof MonitorModelSchema>;
 

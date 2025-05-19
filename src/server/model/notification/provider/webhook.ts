@@ -9,9 +9,10 @@ interface WebhookPayload {
 
 // Fork from https://github.com/louislam/uptime-kuma/blob/HEAD/server/notification-providers/smtp.js
 export const webhook: NotificationProvider = {
-  send: async (notification, title, message) => {
-    const payload = notification.payload as unknown as WebhookPayload;
-    const webhookUrl = payload.webhookUrl;
+  send: async (notification, title, message, payload) => {
+    const notificationPayload =
+      notification.payload as unknown as WebhookPayload;
+    const webhookUrl = notificationPayload.webhookUrl;
 
     const content = baseContentTokenizer.parse(message);
 
@@ -20,6 +21,7 @@ export const webhook: NotificationProvider = {
       title,
       content,
       raw: message,
+      payload,
       time: dayjs().toISOString(),
     });
   },

@@ -13,26 +13,7 @@ import {
 import dayjs from 'dayjs';
 import { z } from 'zod';
 import { compact } from 'lodash-es';
-
-const { get: getFeedEventNotify, del: delFeedEventNotifyCache } =
-  buildQueryWithCache(async (channelId: string) => {
-    const channel = await prisma.feedChannel.findFirst({
-      where: {
-        id: channelId,
-      },
-      include: {
-        notifications: true,
-      },
-    });
-
-    if (!channel) {
-      return null;
-    }
-
-    return channel;
-  });
-
-export { delFeedEventNotifyCache };
+import { getFeedEventNotify } from './shared.js';
 
 /**
  * create feed event

@@ -838,6 +838,7 @@ model FeedChannel {
 
   workspace     Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   events        FeedEvent[]
+  states        FeedState[]
   notifications Notification[]
 
   @@index([workspaceId])
@@ -864,6 +865,38 @@ model FeedEvent {
   channel FeedChannel @relation(fields: [channelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([channelId])
+}
+
+enum FeedStateStatus {
+  Ongoing // in progress
+  Resolved // issue fixed
+}
+
+model FeedState {
+  id           String          @id @default(cuid()) @db.VarChar(30)
+  channelId    String          @db.VarChar(30)
+  createdAt    DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime        @updatedAt @db.Timestamptz(6)
+  eventId      String // the id of an alert event, used to define which problem is being resolved
+  eventName    String
+  eventContent String
+  tags         String[]
+  source       String // custom text or third-party integrations
+  senderId     String? // maybe user id
+  senderName   String? // use for display who
+  url          String? // url link
+  important    Boolean
+  status       FeedStateStatus @default(Ongoing)
+  resolvedAt   DateTime? // issue resolution time
+  /// [Nullable<PrismaJson.CommonPayload>]
+  /// @zod.custom(imports.CommonPayloadSchema.nullish())
+  payload      Json?           @db.Json
+
+  channel FeedChannel @relation(fields: [channelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([source, eventId])
+  @@index([channelId])
+  @@index([status])
 }
 
 model AIGateway {

@@ -5,6 +5,7 @@ export interface NotificationProvider {
   send: (
     notification: Pick<Notification, 'name' | 'type' | 'payload'>,
     title: string,
-    message: ContentToken[]
+    message: ContentToken[],
+    payload?: Record<string, any>
   ) => Promise<void>;
 }

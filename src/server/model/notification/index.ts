@@ -11,7 +11,11 @@ export async function sendNotification(
     }
   >,
   title: string,
-  message: ContentToken[]
+  message: ContentToken[],
+  /**
+   * Only used for webhook provider which can provide more information to handle the notification event
+   */
+  payload?: Record<string, any>
 ) {
   const type = notification.type;
 
@@ -19,5 +23,5 @@ export async function sendNotification(
     throw new Error('Not match type:' + type);
   }
 
-  await notificationProviders[type].send(notification, title, message);
+  await notificationProviders[type].send(notification, title, message, payload);
 }
