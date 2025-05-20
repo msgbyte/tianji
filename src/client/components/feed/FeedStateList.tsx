@@ -66,6 +66,7 @@ export const FeedStateList: React.FC<FeedStateListProps> = React.memo(
                       onClick={() =>
                         resolveMutation.mutateAsync({
                           workspaceId,
+                          channelId,
                           stateId: state.id,
                         })
                       }

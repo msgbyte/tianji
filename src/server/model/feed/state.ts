@@ -57,10 +57,15 @@ export async function feedStateUpsert(
   return state;
 }
 
-export async function feedStateResolve(workspaceId: string, stateId: string) {
+export async function feedStateResolve(
+  workspaceId: string,
+  channelId: string,
+  stateId: string
+) {
   const state = await prisma.feedState.update({
     where: {
       id: stateId,
+      channelId,
     },
     data: {
       status: FeedStateStatus.Resolved,

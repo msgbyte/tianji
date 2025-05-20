@@ -114,20 +114,21 @@ export const feedStateRouter = router({
   resolve: workspaceProcedure
     .meta(
       buildFeedOpenapi({
-        method: 'GET',
-        path: '/state/resolve',
+        method: 'POST',
+        path: '/{channelId}/state/resolve',
       })
     )
     .input(
       z.object({
+        channelId: z.string(),
         stateId: z.string(),
       })
     )
     .output(FeedStateModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, stateId } = input;
+      const { workspaceId, channelId, stateId } = input;
 
-      const state = await feedStateResolve(workspaceId, stateId);
+      const state = await feedStateResolve(workspaceId, channelId, stateId);
 
       return state;
     }),
