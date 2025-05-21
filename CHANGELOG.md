@@ -1,5 +1,23 @@
 
 
+## [1.20.10](https://github.com/msgbyte/tianji/compare/v1.20.9...v1.20.10) (2025-05-21)
+
+### Features
+
+* add AIGatewayCodeExampleBtn component and update ai proxy proxy configuration ([a921e24](https://github.com/msgbyte/tianji/commit/a921e24ad7b6d95cee3a79ff0dd36aea603d227b))
+* add FeedState model and related functionality for managing feed states ([7347833](https://github.com/msgbyte/tianji/commit/734783310a61d2bc695dbd494ebe148e85575daf))
+* add FeedStateList component to display and manage feed states in the feed view ([645e3b1](https://github.com/msgbyte/tianji/commit/645e3b1c88e5d6b515302071ac7cbb153be7d2b5))
+* add insights events route ([51d949b](https://github.com/msgbyte/tianji/commit/51d949b4e31a4443fec7bfb85c3ecdabab78d4b8))
+* add queryEvents function to handle website event queries ([db27f51](https://github.com/msgbyte/tianji/commit/db27f515042117293d1edc576875600835d68367))
+* add state guide for feed api ([3050cfa](https://github.com/msgbyte/tianji/commit/3050cfa166a39b6ac9674a6949faaee0dc795622))
+* update queryEvents to support cursor pagination and refactor related functions ([e698c61](https://github.com/msgbyte/tianji/commit/e698c616d4586385d526af9ddd19a9f51af665f2))
+
+### Others
+
+* move insight route ([78b21a4](https://github.com/msgbyte/tianji/commit/78b21a4d401e31310086bf828d1112f5b3f51d2c))
+* rename insights.events => insights.eventNames ([0a5346d](https://github.com/msgbyte/tianji/commit/0a5346df3c5b083d7dcd6cb1582302c12ea0efa1))
+* update dependencies and remove deprecated API files ([afad5f0](https://github.com/msgbyte/tianji/commit/afad5f08fc9086fff728567c66f2856a1ba6abe8))
+
 ## [1.20.9](https://github.com/msgbyte/tianji/compare/v1.20.8...v1.20.9) (2025-05-05)
 
 ### Bug Fixes
