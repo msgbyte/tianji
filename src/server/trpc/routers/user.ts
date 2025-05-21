@@ -178,4 +178,23 @@ export const userRouter = router({
         },
       });
     }),
+  updateApiKeyDescription: protectProedure
+    .input(
+      z.object({
+        apiKey: z.string(),
+        description: z.string().nullable(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input, ctx }) => {
+      await prisma.userApiKey.update({
+        where: {
+          userId: ctx.user.id,
+          apiKey: input.apiKey,
+        },
+        data: {
+          description: input.description,
+        },
+      });
+    }),
 });

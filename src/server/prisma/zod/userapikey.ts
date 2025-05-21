@@ -6,6 +6,7 @@ export const UserApiKeyModelSchema = z.object({
   apiKey: z.string(),
   userId: z.string(),
   usage: z.number().int(),
+  description: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
   expiredAt: z.date().nullish(),

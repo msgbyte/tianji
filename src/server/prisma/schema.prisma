@@ -39,12 +39,13 @@ model User {
 }
 
 model UserApiKey {
-  apiKey    String    @id @unique @db.VarChar(128)
-  userId    String
-  usage     Int       @default(0)
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
-  expiredAt DateTime?
+  apiKey      String    @id @unique @db.VarChar(128)
+  userId      String
+  usage       Int       @default(0)
+  description String?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  expiredAt   DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

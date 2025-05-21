@@ -7,16 +7,24 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AppRouterOutput, defaultErrorHandler, trpc } from '@/api/trpc';
 import { createColumnHelper, DataTable } from '@/components/DataTable';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import dayjs from 'dayjs';
-import { LuPlus, LuTrash } from 'react-icons/lu';
+import { LuPlus, LuPencil, LuTrash } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
 import { toast } from 'sonner';
 import { CopyableText } from '@/components/CopyableText';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { formatNumber } from '@/utils/common';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 export const Route = createFileRoute('/settings/apiKey')({
   beforeLoad: routeAuthBeforeLoad,
@@ -35,6 +43,26 @@ function PageComponent() {
   });
   const deleteApiKeyMutation = trpc.user.deleteApiKey.useMutation({
     onError: defaultErrorHandler,
+  });
+  const updateApiKeyDescriptionMutation =
+    trpc.user.updateApiKeyDescription.useMutation({
+      onError: defaultErrorHandler,
+    });
+
+  const [editingApiKey, setEditingApiKey] = useState<ApiKeyInfo | null>(null);
+  const [description, setDescription] = useState('');
+
+  const handleSaveDescription = useEvent(async () => {
+    if (!editingApiKey) return;
+
+    await updateApiKeyDescriptionMutation.mutateAsync({
+      apiKey: editingApiKey.apiKey,
+      description: description || null,
+    });
+
+    setEditingApiKey(null);
+    refetchApiKeys();
+    toast.success(t('Description updated'));
   });
 
   const columns = useMemo(() => {
@@ -59,6 +87,13 @@ function PageComponent() {
               {formatNumber(Number(props.getValue()))}
             </div>
           );
+        },
+      }),
+      columnHelper.accessor('description', {
+        header: t('Description'),
+        size: 200,
+        cell: (props) => {
+          return props.getValue() || '-';
         },
       }),
       columnHelper.accessor('createdAt', {
@@ -103,7 +138,16 @@ function PageComponent() {
         size: 130,
         cell: (props) => {
           return (
-            <div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                Icon={LuPencil}
+                onClick={() => {
+                  setEditingApiKey(props.row.original);
+                  setDescription(props.row.original.description || '');
+                }}
+              />
               <AlertConfirm
                 onConfirm={async () => {
                   await deleteApiKeyMutation.mutateAsync({
@@ -130,28 +174,56 @@ function PageComponent() {
   });
 
   return (
-    <CommonWrapper header={<CommonHeader title={t('Api Keys')} />}>
-      <ScrollArea className="h-full overflow-hidden p-4">
-        <div className="flex flex-col gap-4">
-          <Card>
-            <CardHeader className="text-lg font-bold">
-              <div className="flex items-center justify-between gap-2">
-                <div>{t('Api Keys')}</div>
+    <>
+      <CommonWrapper header={<CommonHeader title={t('Api Keys')} />}>
+        <ScrollArea className="h-full overflow-hidden p-4">
+          <div className="flex flex-col gap-4">
+            <Card>
+              <CardHeader className="text-lg font-bold">
+                <div className="flex items-center justify-between gap-2">
+                  <div>{t('Api Keys')}</div>
 
-                <Button
-                  Icon={LuPlus}
-                  size="icon"
-                  variant="outline"
-                  onClick={handleGenerateApiKey}
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={apiKeys} />
-            </CardContent>
-          </Card>
-        </div>
-      </ScrollArea>
-    </CommonWrapper>
+                  <Button
+                    Icon={LuPlus}
+                    size="icon"
+                    variant="outline"
+                    onClick={handleGenerateApiKey}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <DataTable columns={columns} data={apiKeys} />
+              </CardContent>
+            </Card>
+          </div>
+        </ScrollArea>
+      </CommonWrapper>
+
+      <Dialog
+        open={!!editingApiKey}
+        onOpenChange={(open) => !open && setEditingApiKey(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('Edit API Key Description')}</DialogTitle>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setEditingApiKey(null)} variant="outline">
+              {t('Cancel')}
+            </Button>
+            <Button onClick={handleSaveDescription}>{t('Save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

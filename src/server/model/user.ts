@@ -346,7 +346,11 @@ export async function leaveWorkspace(userId: string, workspaceId: string) {
 /**
  * Generate User Api Key, for user to call api
  */
-export async function generateUserApiKey(userId: string, expiredAt?: Date) {
+export async function generateUserApiKey(
+  userId: string,
+  expiredAt?: Date,
+  description?: string | null
+) {
   const apiKey = `sk_${sha256(`${userId}.${Date.now()}`)}`;
 
   const result = await prisma.userApiKey.create({
@@ -354,6 +358,7 @@ export async function generateUserApiKey(userId: string, expiredAt?: Date) {
       apiKey,
       userId,
       expiredAt,
+      description,
     },
   });
 
