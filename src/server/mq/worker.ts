@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 import { requestOpenAI } from '../model/openai.js';
 import pMap from 'p-map';
 import { runTask } from '../model/task.js';
+import { promMQConsumeCounter } from '../utils/prometheus/client.js';
 
 export async function runMQWorker() {
   const sock = new zmq.Pull();
@@ -44,6 +45,9 @@ export async function runMQWorker() {
 }
 
 async function runLighthouseReportWorker(msg: string) {
+  logger.info('Start run lighthouse report');
+  promMQConsumeCounter.inc({ type: 'lighthouse' });
+
   const payload = z
     .object({
       workspaceId: z.string(),
@@ -100,6 +104,7 @@ async function runLighthouseReportWorker(msg: string) {
 
 async function runSurveyAIClassifyWorker(msg: string) {
   logger.info('Start run survey AI classify');
+  promMQConsumeCounter.inc({ type: 'surveyClassify' });
 
   const {
     workspaceId,
@@ -286,6 +291,7 @@ async function runSurveyAIClassifyWorker(msg: string) {
 
 async function runSurveyAITranslationWorker(msg: string) {
   logger.info('Start run survey AI translation');
+  promMQConsumeCounter.inc({ type: 'surveyTranslation' });
 
   const {
     workspaceId,

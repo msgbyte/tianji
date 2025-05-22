@@ -12,12 +12,14 @@ import {
   statDailyUsage,
 } from './daily.js';
 import { checkFeedEventsNotify } from './shared.js';
+import { promCronCounter } from '../utils/prometheus/client.js';
 
 export function initCronjob() {
   const dailyJob = Cron('0 2 * * *', async () => {
     logger.info('Start daily cronjob');
 
     try {
+      promCronCounter.inc({ period: 'daily' });
       await Promise.all([
         statDailyUsage().catch(logger.error),
         clearMonitorDataDaily().catch(logger.error),
@@ -42,6 +44,7 @@ export function initCronjob() {
     logger.info('Start weekly cronjob');
 
     try {
+      promCronCounter.inc({ period: 'weekly' });
       await Promise.all([
         checkFeedEventsNotify(FeedChannelNotifyFrequency.week),
       ]);
@@ -56,6 +59,7 @@ export function initCronjob() {
     logger.info('Start monthly cronjob');
 
     try {
+      promCronCounter.inc({ period: 'monthly' });
       await Promise.all([
         checkFeedEventsNotify(FeedChannelNotifyFrequency.month),
       ]);

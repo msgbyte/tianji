@@ -26,3 +26,21 @@ export const promServerCounter = new Prometheus.Gauge({
   help: 'server count',
   labelNames: ['workspaceId'],
 });
+
+export const promCronCounter = new Prometheus.Counter({
+  name: 'tianji_cron_counter',
+  help: 'cron counter',
+  labelNames: ['period'],
+});
+
+export const promMQProduceCounter = new Prometheus.Counter({
+  name: 'tianji_mq_produce_counter',
+  help: 'mq produce counter',
+  labelNames: ['type'],
+});
+
+export const promMQConsumeCounter = new Prometheus.Counter({
+  name: 'tianji_mq_consume_counter',
+  help: 'mq consume counter',
+  labelNames: ['type'],
+});

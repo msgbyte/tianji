@@ -6,6 +6,7 @@ import {
   classifySurveyMQSchema,
   translateSurveyMQSchema,
 } from '../model/prompt/survey.js';
+import { promMQProduceCounter } from '../utils/prometheus/client.js';
 
 const sock = new zmq.Push();
 
@@ -19,6 +20,7 @@ export async function sendBuildLighthouseMessageQueue(
   reportId: string,
   url: string
 ) {
+  promMQProduceCounter.inc({ type: 'lighthouse' });
   await sock.send([
     'lighthouse',
     JSON.stringify({ workspaceId, websiteId, reportId, url }),
@@ -28,11 +30,13 @@ export async function sendBuildLighthouseMessageQueue(
 export async function sendBuildSurveyClassifyMessageQueue(
   options: z.infer<typeof classifySurveyMQSchema>
 ) {
+  promMQProduceCounter.inc({ type: 'surveyClassify' });
   await sock.send(['surveyClassify', JSON.stringify(options)]);
 }
 
 export async function sendBuildSurveyTranslationMessageQueue(
   options: z.infer<typeof translateSurveyMQSchema>
 ) {
+  promMQProduceCounter.inc({ type: 'surveyTranslation' });
   await sock.send(['surveyTranslation', JSON.stringify(options)]);
 }
