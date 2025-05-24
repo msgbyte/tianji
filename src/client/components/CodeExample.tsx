@@ -16,7 +16,7 @@ export const CodeExample: React.FC<CodeExampleProps> = React.memo((props) => {
 
   return (
     <Tabs className={props.className} defaultValue={keys[0]}>
-      <TabsList>
+      <TabsList className="max-w-full justify-normal overflow-x-auto overflow-y-hidden">
         {keys.map((key) => (
           <TabsTrigger key={key} value={key}>
             {props.example[key].label}
