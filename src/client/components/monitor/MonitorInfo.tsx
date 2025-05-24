@@ -13,21 +13,14 @@ import { ColorTag } from '../ColorTag';
 import { MonitorEventList } from './MonitorEventList';
 import { MonitorDataMetrics } from './MonitorDataMetrics';
 import { MonitorDataChart } from './MonitorDataChart';
-import { DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { MonitorBadgeView } from './MonitorBadgeView';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useNavigate } from '@tanstack/react-router';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import {
-  LuTriangleAlert,
-  LuDelete,
-  LuEllipsisVertical,
-  LuTrash2,
-} from 'react-icons/lu';
+import { LuTriangleAlert, LuEllipsisVertical, LuTrash2 } from 'react-icons/lu';
 import { useMonitorAction } from './useMonitorAction';
 import { Button } from '../ui/button';
-import { RiMoreLine } from 'react-icons/ri';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -39,6 +32,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const [currentResponse, setCurrentResponse] = useState(0);
   const navigate = useNavigate();
   const [showBadge, setShowBadge] = useState(false);
+  const [showPushUsage, setShowPushUsage] = useState(false);
   const isMobile = useIsMobile();
   const hasAdminPermission = useHasAdminPermission();
   const isMonitorDown = currentResponse === -1;
@@ -134,6 +128,15 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                               monitorId,
                             }),
                         },
+                        ...(monitorInfo.type === 'push'
+                          ? [
+                              {
+                                key: 'pushUsage',
+                                label: t('How to use'),
+                                onClick: () => setShowPushUsage(true),
+                              },
+                            ]
+                          : []),
                         {
                           type: 'divider',
                         },
@@ -247,6 +250,38 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
           <MonitorEventList monitorId={monitorId} />
         </Space>
       </Spin>
+
+      <Modal
+        title={t('Push Monitoring Usage')}
+        open={showPushUsage}
+        onCancel={() => setShowPushUsage(false)}
+        onOk={() => setShowPushUsage(false)}
+        destroyOnClose={true}
+        centered={true}
+      >
+        <div className="mt-4 text-sm">
+          <p>
+            {t(
+              '1. Send HTTP requests to the following URL regularly to indicate service health:'
+            )}
+          </p>
+          <code className="mt-1 block rounded bg-gray-100 p-2 dark:bg-gray-800">
+            {`${window.location.origin}/api/push/${monitorInfo.payload.pushToken}`}
+          </code>
+          <p className="mt-2">{t('2. Push abnormal status:')}</p>
+          <code className="mt-1 block rounded bg-gray-100 p-2 dark:bg-gray-800">
+            {`${window.location.origin}/api/push/${monitorInfo.payload.pushToken}?status=down`}
+          </code>
+          <p className="mt-2">
+            {t(
+              '3. If no push is received within {{timeout}} seconds, an alarm will be triggered',
+              {
+                timeout: monitorInfo.payload.timeout || 60,
+              }
+            )}
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 });

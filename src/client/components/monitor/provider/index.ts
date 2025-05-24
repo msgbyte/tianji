@@ -7,6 +7,7 @@ import { openaiProvider } from './openai';
 import { customProvider } from './custom';
 import { tcpProvider } from './tcp';
 import { dnsProvider } from './dns';
+import { pushProvider } from './push';
 
 export const monitorProviders: MonitorProvider[] = [
   pingProvider, // ping
@@ -14,6 +15,7 @@ export const monitorProviders: MonitorProvider[] = [
   dnsProvider, // tcp
   httpProvider, // http
   openaiProvider, // openai
+  pushProvider, // push
   customProvider, // custom node script
 ];
 

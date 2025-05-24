@@ -58,6 +58,10 @@ export class MonitorRunner {
         let value = 0;
         try {
           value = await provider.run(monitor);
+
+          if (value === 0) {
+            return; // if value is 0, skip all logic
+          }
         } catch (err) {
           const errorMessage = get(err, 'message', String(err));
           logger.error(

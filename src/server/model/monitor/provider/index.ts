@@ -5,6 +5,7 @@ import type { MonitorProvider } from './type.js';
 import { custom } from './custom.js';
 import { tcp } from './tcp.js';
 import { dns } from './dns.js';
+import { push } from './push.js';
 
 export const monitorProviders: Record<string, MonitorProvider<any>> = {
   ping,
@@ -13,4 +14,5 @@ export const monitorProviders: Record<string, MonitorProvider<any>> = {
   dns,
   openai,
   custom,
+  push,
 };

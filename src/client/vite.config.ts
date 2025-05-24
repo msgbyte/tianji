@@ -52,6 +52,9 @@ export default defineConfig({
       '/api/website/send': {
         target: 'http://localhost:12345',
       },
+      '/api/push': {
+        target: 'http://localhost:12345',
+      },
     },
   },
 });
