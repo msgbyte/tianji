@@ -1,0 +1,146 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Tianji Project Cursor Rules
+
+## Project Overview
+
+**Tianji** is the project name - a proprietary monitoring and analytics platform. Always use "Tianji" (not "tianji" or other variations) when referring to the project in documentation, comments, and user-facing text.
+
+## Project Structure (Monorepo)
+
+This is a monorepo with the following structure:
+
+```
+tianji/
+├── apps/                           # Application packages
+│   ├── appstore-review/           # App store review automation
+│   ├── daily-ai-trigger/          # Daily AI trigger service
+│   └── mcp-server/                # MCP server implementation
+├── packages/                       # Shared packages
+│   ├── client-sdk/                # Client SDK for external integration
+│   ├── react/                     # React components sdk library
+│   └── react-native/              # React Native sdk library
+├── src/
+│   ├── client/                     # Frontend application (React)
+│   │   ├── components/             # React components
+│   │   │   └── ui/                 # Shadcn/ui components
+│   │   ├── routes/                 # Application routes
+│   │   ├── hooks/                  # Custom React hooks
+│   │   ├── store/                  # State management
+│   │   └── utils/                  # Client utilities
+│   ├── server/                     # Backend application (Node.js)
+│   │   ├── model/                  # Database models and business logic
+│   │   ├── router/                 # Express routes
+│   │   ├── trpc/                   # tRPC API definitions
+│   │   ├── middleware/             # Express middleware
+│   │   └── utils/                  # Server utilities
+│   ├── shared/                     # Shared code between client/server
+│   └── tracker/                    # Tracking library
+├── website/                        # Documentation website (Docusaurus)
+├── geo/                           # Geographic data
+├── docker/                        # Docker configurations
+└── example/                       # Example applications
+    ├── expo/                      # React Native example
+    └── web/                       # Web example
+```
+
+## Component Usage Rules
+
+### Priority Order for Components
+
+1. **Shadcn/ui Components (Highest Priority)**
+   - Located in `src/client/components/ui/`
+   - Import as: `import { Button } from '@/components/ui/button'`
+   - These are the preferred components for new development
+   - Modern, accessible, and customizable
+   - Built with Radix UI primitives and Tailwind CSS
+
+2. **Antd Components (Secondary)**
+   - Use only when Shadcn/ui doesn't provide equivalent functionality
+   - Import as: `import { Form, Input } from 'antd'`
+   - Good for complex form components and data display
+
+### Available Shadcn/ui Components
+
+Always check `src/client/components/ui/` directory first. Available components include:
+
+- `alert`, `alert-dialog`, `avatar`, `badge`, `button`, `calendar`, `card`, `chart`
+- `checkbox`, `collapsible`, `command`, `dialog`, `drawer`, `dropdown-menu`
+- `form`, `input`, `label`, `menubar`, `popover`, `progress`, `radio-group`
+- `resizable`, `scroll-area`, `select`, `separator`, `sheet`, `sonner`, `spinner`
+- `switch`, `table`, `tabs`, `textarea`, `tooltip`
+
+### Component Development Guidelines
+
+1. **Use existing components** - Always check if a component already exists before creating new ones
+2. **Shadcn/ui first** - Prefer Shadcn/ui components over Antd when possible
+3. **Consistent styling** - Follow Tailwind CSS patterns used in existing components
+4. **Accessibility** - Ensure all components are accessible (Shadcn/ui components include this by default)
+5. **TypeScript** - All components must be properly typed
+
+### Example Component Usage
+
+```tsx
+// ✅ Preferred - Using Shadcn/ui
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
+
+// ✅ Acceptable - When Shadcn/ui doesn't have equivalent
+import { Form, Input } from 'antd';
+
+// ❌ Avoid - Don't mix when Shadcn/ui alternative exists
+import { Button } from 'antd'; // Use Shadcn/ui Button instead
+```
+
+## Code Style Guidelines
+
+### Naming Conventions
+
+- **Project name**: Always use "Tianji" (capitalized)
+- **Components**: PascalCase (e.g., `MonitorProvider`, `PushTokenForm`)
+- **Files**: kebab-case for components (e.g., `push-monitor.tsx`)
+- **Functions**: camelCase (e.g., `handleSubmit`, `validateForm`)
+- **Constants**: SCREAMING_SNAKE_CASE (e.g., `API_BASE_URL`)
+
+### Import Order
+
+1. React and external libraries
+2. Internal utilities and hooks
+3. UI components (Shadcn/ui first, then Antd)
+4. Types and interfaces
+5. Relative imports
+
+```tsx
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { useCurrentWorkspaceId } from '@/store/user';
+import { trpc } from '@/api/trpc';
+
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
+import { Form, Input } from 'antd';
+
+import type { MonitorInfo } from './types';
+```
+
+### Language Usage
+
+- **Comments**: Always in English
+- **User-facing text**: Use i18n translation keys
+- **Documentation**: English preferred
+- **Console logs**: English for development messages
+
+## API and Backend Guidelines
+
+- Use **tRPC** for type-safe API calls
+- Follow **Prisma** patterns for database operations
+- Implement proper **error handling** and **validation**
+- Use **zod** for schema validation
+- Follow **OpenAPI** standards for public endpoints
+
+This is a sophisticated, production-grade application with high standards for code quality, type safety, and user experience.
