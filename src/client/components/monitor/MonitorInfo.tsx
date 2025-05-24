@@ -21,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { LuTriangleAlert, LuEllipsisVertical, LuTrash2 } from 'react-icons/lu';
 import { useMonitorAction } from './useMonitorAction';
 import { Button } from '../ui/button';
+import { MonitorPushStatus } from './MonitorPushStatus';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -212,6 +213,12 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
           <Card>
             <MonitorDataChart monitorId={monitorId} />
           </Card>
+
+          {monitorInfo.type === 'push' && monitorInfo.active && (
+            <Card>
+              <MonitorPushStatus monitorId={monitorId} />
+            </Card>
+          )}
 
           {isMonitorDown && monitorInfo.recentError && (
             <Alert variant="destructive">
