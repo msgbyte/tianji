@@ -55,6 +55,9 @@ export default defineConfig({
       '/api/push': {
         target: 'http://localhost:12345',
       },
+      '^/monitor/.*/badge\\.svg(\\?.*)?$': {
+        target: 'http://localhost:12345',
+      },
     },
   },
 });
