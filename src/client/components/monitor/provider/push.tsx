@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import { LuInfo, LuRefreshCw } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
-import { trpc } from '@/api/trpc';
+import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ const MonitorPush: React.FC = React.memo(() => {
       onSuccess: (newToken: string) => {
         form.setFieldValue(['payload', 'pushToken'], newToken);
       },
+      onError: defaultErrorHandler,
     });
 
   const handleCopyPushUrl = useEvent(() => {
@@ -69,16 +70,18 @@ const MonitorPush: React.FC = React.memo(() => {
             className="mr-2"
             value={pushToken}
           />
-          <Tooltip title={t('Rotate Push Token')}>
-            <Button
-              size="icon"
-              variant="outline"
-              Icon={LuRefreshCw}
-              loading={regeneratePushTokenMutation.isPending}
-              onClick={handleRegeneratePushToken}
-              type="button"
-            />
-          </Tooltip>
+          {pushToken && (
+            <Tooltip title={t('Rotate Push Token')}>
+              <Button
+                size="icon"
+                variant="outline"
+                Icon={LuRefreshCw}
+                loading={regeneratePushTokenMutation.isPending}
+                onClick={handleRegeneratePushToken}
+                type="button"
+              />
+            </Tooltip>
+          )}
         </div>
       </Form.Item>
 
