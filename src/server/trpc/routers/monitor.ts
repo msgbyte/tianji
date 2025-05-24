@@ -34,6 +34,7 @@ import {
 import { monitorPageManager } from '../../model/monitor/page/manager.js';
 import { token } from '../../model/notification/token/index.js';
 import { runCodeInVM } from '../../utils/vm/index.js';
+import { nanoid } from 'nanoid';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -182,6 +183,54 @@ export const monitorRouter = router({
       const { workspaceId, monitorId } = input;
 
       return monitorManager.delete(workspaceId, monitorId);
+    }),
+  regeneratePushToken: workspaceAdminProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'POST',
+        path: '/{monitorId}/regeneratePushToken',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string().cuid2(),
+      })
+    )
+    .output(z.string())
+    .mutation(async ({ input }) => {
+      const { workspaceId, monitorId } = input;
+
+      const monitor = await prisma.monitor.findUnique({
+        where: {
+          id: monitorId,
+          workspaceId,
+        },
+      });
+
+      if (!monitor) {
+        throw new Error('Monitor not found');
+      }
+
+      if (monitor.type !== 'push') {
+        throw new Error('This operation is only available for push monitors');
+      }
+
+      const newPushToken = nanoid(16);
+
+      await prisma.monitor.update({
+        where: {
+          id: monitorId,
+          workspaceId,
+        },
+        data: {
+          payload: {
+            ...monitor.payload,
+            pushToken: newPushToken,
+          },
+        },
+      });
+
+      return newPushToken;
     }),
   testCustomScript: workspaceAdminProcedure
     .input(

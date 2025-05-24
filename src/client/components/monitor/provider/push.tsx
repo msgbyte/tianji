@@ -1,23 +1,47 @@
 import { Form, Input, InputNumber, Typography, Switch, Tooltip } from 'antd';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { MonitorProvider } from './types';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
-import { LuInfo } from 'react-icons/lu';
+import { LuInfo, LuRefreshCw } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
+import { trpc } from '@/api/trpc';
+import { useCurrentWorkspaceId } from '@/store/user';
+import { toast } from 'sonner';
 
 const MonitorPush: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const form = Form.useFormInstance();
+  const workspaceId = useCurrentWorkspaceId();
   const pushToken = Form.useWatch(['payload', 'pushToken'], form);
   const enableCron = Form.useWatch(['payload', 'enableCron'], form);
+  const monitorId = Form.useWatch('id', form);
 
-  const pushUrl = `${window.location.origin}/api/push/${pushToken}`;
+  const pushUpUrl = `${window.location.origin}/api/push/${pushToken}`;
   const downPushUrl = `${window.location.origin}/api/push/${pushToken}?status=down`;
 
+  const regeneratePushTokenMutation =
+    trpc.monitor.regeneratePushToken.useMutation({
+      onSuccess: (newToken: string) => {
+        form.setFieldValue(['payload', 'pushToken'], newToken);
+      },
+    });
+
   const handleCopyPushUrl = useEvent(() => {
-    copy(pushUrl);
+    toast.success(t('Copied to clipboard'));
+    copy(pushUpUrl);
+  });
+
+  const handleRegeneratePushToken = useEvent(async () => {
+    if (!monitorId) {
+      return;
+    }
+
+    await regeneratePushTokenMutation.mutateAsync({
+      workspaceId,
+      monitorId,
+    });
   });
 
   return (
@@ -38,7 +62,24 @@ const MonitorPush: React.FC = React.memo(() => {
           'Push token is automatically generated after saving, used to verify push requests'
         )}
       >
-        <Input.TextArea placeholder={t('Generated after saving')} readOnly />
+        <div className="flex items-center">
+          <Input
+            placeholder={t('Generated after saving')}
+            disabled
+            className="mr-2"
+            value={pushToken}
+          />
+          <Tooltip title={t('Rotate Push Token')}>
+            <Button
+              size="icon"
+              variant="outline"
+              Icon={LuRefreshCw}
+              loading={regeneratePushTokenMutation.isPending}
+              onClick={handleRegeneratePushToken}
+              type="button"
+            />
+          </Tooltip>
+        </div>
       </Form.Item>
 
       {pushToken && (
@@ -50,8 +91,8 @@ const MonitorPush: React.FC = React.memo(() => {
             )}
           >
             <div className="flex items-center">
-              <Input disabled value={pushUrl} className="mr-2" />
-              <Button size="sm" onClick={handleCopyPushUrl}>
+              <Input disabled value={pushUpUrl} className="mr-2" />
+              <Button size="sm" type="button" onClick={handleCopyPushUrl}>
                 {t('Copy')}
               </Button>
             </div>
@@ -165,7 +206,7 @@ export const pushProvider: MonitorProvider = {
   label: 'Push',
   name: 'push',
   form: MonitorPush,
-  valueLabel: 'response time',
-  valueFormatter: (value: number) => `${value}ms`,
+  valueLabel: 'value',
+  valueFormatter: (value: number) => `${value}`,
   minInterval: 10, // 最小10秒间隔运行
 };
