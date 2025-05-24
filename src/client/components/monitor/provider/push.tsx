@@ -1,4 +1,4 @@
-import { Form, Input, InputNumber, Typography } from 'antd';
+import { Form, Input, InputNumber, Typography, Switch, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { MonitorProvider } from './types';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -11,6 +11,7 @@ const MonitorPush: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const form = Form.useFormInstance();
   const pushToken = Form.useWatch(['payload', 'pushToken'], form);
+  const enableCron = Form.useWatch(['payload', 'enableCron'], form);
 
   const pushUrl = `${window.location.origin}/api/push/${pushToken}`;
   const downPushUrl = `${window.location.origin}/api/push/${pushToken}?status=down`;
@@ -93,6 +94,67 @@ const MonitorPush: React.FC = React.memo(() => {
       >
         <InputNumber min={10} step={10} />
       </Form.Item>
+
+      <Form.Item
+        name={['payload', 'enableCron']}
+        label={
+          <span className="flex items-center gap-1">
+            {t('Enable Cron Schedule')}
+            <Tooltip title={t('Check push status based on cron schedule')}>
+              <LuInfo className="text-gray-400" />
+            </Tooltip>
+          </span>
+        }
+        valuePropName="checked"
+        initialValue={false}
+      >
+        <Switch />
+      </Form.Item>
+
+      {enableCron && (
+        <>
+          <Form.Item
+            name={['payload', 'cronExpression']}
+            label={t('Cron Expression')}
+            tooltip={t(
+              'Schedule for push checking (e.g. "*/5 * * * *" for every 5 minutes)'
+            )}
+            rules={[
+              { required: true, message: t('Please input cron expression') },
+            ]}
+            initialValue="*/5 * * * *"
+          >
+            <Input placeholder="*/5 * * * *" />
+          </Form.Item>
+
+          <div className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200">
+            <div className="flex items-center gap-1">
+              <LuInfo className="text-lg" />
+              <span className="font-semibold">
+                {t('Cron Mode Explanation')}
+              </span>
+            </div>
+            <p className="mt-2">{t('When Cron Schedule is enabled:')}</p>
+            <ul className="mt-1 list-disc pl-5">
+              <li>
+                {t(
+                  'Push requests are expected to arrive according to the cron schedule'
+                )}
+              </li>
+              <li>
+                {t(
+                  'Monitoring will fail if no push is received within tolerance period after scheduled time'
+                )}
+              </li>
+              <li>
+                {t(
+                  'This is useful for monitoring scheduled jobs that should run at specific times'
+                )}
+              </li>
+            </ul>
+          </div>
+        </>
+      )}
     </>
   );
 });

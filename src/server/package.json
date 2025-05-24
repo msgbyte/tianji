@@ -43,6 +43,7 @@
     "compose-middleware": "^5.0.1",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
+    "cron-parser": "^5.2.0",
     "croner": "^8.1.2",
     "dayjs": "1.11.10",
     "detect-browser": "^5.3.0",
