@@ -1,5 +1,29 @@
 
 
+## [1.21.0](https://github.com/msgbyte/tianji/compare/v1.20.10...v1.21.0) (2025-05-25)
+
+### Features
+
+* add api manage page allow description editing ([48f14b6](https://github.com/msgbyte/tianji/commit/48f14b6b8c970a8d3dd273d6f71528a983e53c69))
+* add cron cron support to push monitor ([c23dff5](https://github.com/msgbyte/tianji/commit/c23dff5c699e92cfc5b74ccda5c7bd3816f83075))
+* add MonitorPushStatus component to display push monitor status ([211a7fa](https://github.com/msgbyte/tianji/commit/211a7fab1a28a5f9e3fe33eb52086657e4265ffa))
+* add more language example for push feature ([7a6fcbb](https://github.com/msgbyte/tianji/commit/7a6fcbbf057b8cee209176acda3cf1fd26ae322b))
+* add Prometheus counters for cron jobs and message queue operations ([0afcb3d](https://github.com/msgbyte/tianji/commit/0afcb3d987b915b6a9e494ec8fc3464dc6ddc77f))
+* add push monitor [#36](https://github.com/msgbyte/tianji/issues/36) ([2ca6487](https://github.com/msgbyte/tianji/commit/2ca6487f05e267308e8d34fb664765f9a99ea121))
+* add push token regeneration feature to MonitorPush component ([3b07de2](https://github.com/msgbyte/tianji/commit/3b07de24821cb90ded72d4f09cac0be603adad14))
+* integrate Stagewise toolbar for development environment ([303b799](https://github.com/msgbyte/tianji/commit/303b79941bdc1e6ea1e9c8263e55239464df975e))
+
+### Document
+
+* add document about push monitor ([8210f74](https://github.com/msgbyte/tianji/commit/8210f74e0127b08e9890ffe91a1fec4d86ea35e9))
+
+### Others
+
+* add badge SVG proxy in dev mode ([da0428c](https://github.com/msgbyte/tianji/commit/da0428c66b623863fd89acd64afd702e6eda919d))
+* add global rules and project structure documentation for Tianji ([e5c427c](https://github.com/msgbyte/tianji/commit/e5c427c78f815e790544693861118a58daaeb23d))
+* add more translation ([b21cd12](https://github.com/msgbyte/tianji/commit/b21cd123ccad10b52dee67acd7e78476e29ec1de))
+* update translation ([69f1a19](https://github.com/msgbyte/tianji/commit/69f1a197adbe4e48942cf4cf0ef2008c201d5575))
+
 ## [1.20.10](https://github.com/msgbyte/tianji/compare/v1.20.9...v1.20.10) (2025-05-21)
 
 ### Features
