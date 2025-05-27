@@ -26,7 +26,14 @@ import { Route as FeedImport } from './routes/feed'
 import { Route as ApplicationImport } from './routes/application'
 import { Route as AiGatewayImport } from './routes/aiGateway'
 import { Route as IndexImport } from './routes/index'
+import { Route as TelemetryIndexImport } from './routes/telemetry/index'
+import { Route as SurveyIndexImport } from './routes/survey/index'
+import { Route as PageIndexImport } from './routes/page/index'
+import { Route as MonitorIndexImport } from './routes/monitor/index'
 import { Route as InsightsIndexImport } from './routes/insights/index'
+import { Route as FeedIndexImport } from './routes/feed/index'
+import { Route as ApplicationIndexImport } from './routes/application/index'
+import { Route as AiGatewayIndexImport } from './routes/aiGateway/index'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
@@ -141,9 +148,44 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const TelemetryIndexRoute = TelemetryIndexImport.update({
+  path: '/',
+  getParentRoute: () => TelemetryRoute,
+} as any)
+
+const SurveyIndexRoute = SurveyIndexImport.update({
+  path: '/',
+  getParentRoute: () => SurveyRoute,
+} as any)
+
+const PageIndexRoute = PageIndexImport.update({
+  path: '/',
+  getParentRoute: () => PageRoute,
+} as any)
+
+const MonitorIndexRoute = MonitorIndexImport.update({
+  path: '/',
+  getParentRoute: () => MonitorRoute,
+} as any)
+
 const InsightsIndexRoute = InsightsIndexImport.update({
   path: '/insights/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const FeedIndexRoute = FeedIndexImport.update({
+  path: '/',
+  getParentRoute: () => FeedRoute,
+} as any)
+
+const ApplicationIndexRoute = ApplicationIndexImport.update({
+  path: '/',
+  getParentRoute: () => ApplicationRoute,
+} as any)
+
+const AiGatewayIndexRoute = AiGatewayIndexImport.update({
+  path: '/',
+  getParentRoute: () => AiGatewayRoute,
 } as any)
 
 const WebsiteOverviewRoute = WebsiteOverviewImport.update({
@@ -484,9 +526,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/aiGateway/': {
+      preLoaderRoute: typeof AiGatewayIndexImport
+      parentRoute: typeof AiGatewayImport
+    }
+    '/application/': {
+      preLoaderRoute: typeof ApplicationIndexImport
+      parentRoute: typeof ApplicationImport
+    }
+    '/feed/': {
+      preLoaderRoute: typeof FeedIndexImport
+      parentRoute: typeof FeedImport
+    }
     '/insights/': {
       preLoaderRoute: typeof InsightsIndexImport
       parentRoute: typeof rootRoute
+    }
+    '/monitor/': {
+      preLoaderRoute: typeof MonitorIndexImport
+      parentRoute: typeof MonitorImport
+    }
+    '/page/': {
+      preLoaderRoute: typeof PageIndexImport
+      parentRoute: typeof PageImport
+    }
+    '/survey/': {
+      preLoaderRoute: typeof SurveyIndexImport
+      parentRoute: typeof SurveyImport
+    }
+    '/telemetry/': {
+      preLoaderRoute: typeof TelemetryIndexImport
+      parentRoute: typeof TelemetryImport
     }
     '/aiGateway/$gatewayId/edit': {
       preLoaderRoute: typeof AiGatewayGatewayIdEditImport
@@ -549,6 +619,7 @@ export const routeTree = rootRoute.addChildren([
   IndexRoute,
   AiGatewayRoute.addChildren([
     AiGatewayAddRoute,
+    AiGatewayIndexRoute,
     AiGatewayGatewayIdEditRoute,
     AiGatewayGatewayIdIndexRoute,
   ]),
@@ -556,21 +627,24 @@ export const routeTree = rootRoute.addChildren([
     ApplicationAddRoute,
     ApplicationCompareRoute,
     ApplicationOverviewRoute,
+    ApplicationIndexRoute,
     ApplicationApplicationIdEditRoute,
     ApplicationApplicationIdIndexRoute,
   ]),
   FeedRoute.addChildren([
     FeedAddRoute,
+    FeedIndexRoute,
     FeedChannelIdEditRoute,
     FeedChannelIdIndexRoute,
   ]),
   LoginRoute,
   MonitorRoute.addChildren([
     MonitorAddRoute,
+    MonitorIndexRoute,
     MonitorMonitorIdEditRoute,
     MonitorMonitorIdIndexRoute,
   ]),
-  PageRoute.addChildren([PageSlugRoute, PageAddRoute]),
+  PageRoute.addChildren([PageSlugRoute, PageAddRoute, PageIndexRoute]),
   PlaygroundRoute,
   RegisterRoute,
   ServerRoute,
@@ -585,11 +659,16 @@ export const routeTree = rootRoute.addChildren([
   ]),
   SurveyRoute.addChildren([
     SurveyAddRoute,
+    SurveyIndexRoute,
     SurveySurveyIdEditRoute,
     SurveySurveyIdIndexRoute,
   ]),
   SwitchWorkspaceRoute,
-  TelemetryRoute.addChildren([TelemetryTelemetryIdRoute, TelemetryAddRoute]),
+  TelemetryRoute.addChildren([
+    TelemetryTelemetryIdRoute,
+    TelemetryAddRoute,
+    TelemetryIndexRoute,
+  ]),
   WebsiteRoute.addChildren([
     WebsiteAddRoute,
     WebsiteOverviewRoute,

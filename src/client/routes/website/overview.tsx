@@ -9,6 +9,7 @@ import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { Empty } from 'antd';
 import { LuArrowRight, LuPlus } from 'react-icons/lu';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { CommonHeader } from '@/components/CommonHeader';
 
 export const Route = createFileRoute('/website/overview')({
   beforeLoad: routeAuthBeforeLoad,
@@ -24,9 +25,7 @@ function WebsiteOverviewComponent() {
   const navigate = useNavigate();
 
   return (
-    <CommonWrapper
-      header={<h1 className="text-xl font-bold">{t('Website Overview')}</h1>}
-    >
+    <CommonWrapper header={<CommonHeader title={t('Website Overview')} />}>
       <ScrollArea className="h-full overflow-hidden p-4">
         {websites.length === 0 && isLoading === false && (
           <Empty
