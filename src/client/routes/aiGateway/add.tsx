@@ -29,6 +29,7 @@ function AIGatewayAddComponent() {
     const res = await addGatewayMutation.mutateAsync({
       workspaceId,
       name: values.name,
+      modelApiKey: values.modelApiKey ?? null,
     });
 
     trpcUtils.aiGateway.all.refetch(); // TODO: Uncomment when API is available

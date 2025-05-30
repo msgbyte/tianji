@@ -12,9 +12,11 @@ import { AIGatewayLogsModelSchema } from '../../prisma/zod/aigatewaylogs.js';
 import { prisma } from '../../model/_client.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
+import { clearGatewayInfoCache } from '../../model/aiGateway.js';
 
 const aiGatewayCreateSchema = z.object({
   name: z.string().max(100),
+  modelApiKey: z.string().nullable(),
 });
 
 export const aiGatewayRouter = router({
@@ -79,12 +81,13 @@ export const aiGatewayRouter = router({
     .input(aiGatewayCreateSchema)
     .output(AIGatewayModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, name } = input;
+      const { workspaceId, name, modelApiKey } = input;
 
       const aiGateway = await prisma.aIGateway.create({
         data: {
           workspaceId,
           name,
+          modelApiKey,
         },
       });
 
@@ -107,7 +110,7 @@ export const aiGatewayRouter = router({
     )
     .output(AIGatewayModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, gatewayId, name } = input;
+      const { workspaceId, gatewayId, name, modelApiKey } = input;
 
       const aiGateway = await prisma.aIGateway.update({
         where: {
@@ -116,8 +119,11 @@ export const aiGatewayRouter = router({
         },
         data: {
           name,
+          modelApiKey,
         },
       });
+
+      clearGatewayInfoCache(workspaceId, gatewayId);
 
       return aiGateway;
     }),
@@ -144,6 +150,8 @@ export const aiGatewayRouter = router({
           workspaceId,
         },
       });
+
+      clearGatewayInfoCache(workspaceId, gatewayId);
 
       return aiGateway;
     }),

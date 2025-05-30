@@ -6,6 +6,7 @@ export const AIGatewayModelSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
   name: z.string(),
+  modelApiKey: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

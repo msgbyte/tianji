@@ -23,6 +23,7 @@ export const AIGatewayLogsModelSchema = z.object({
   price: z.number(),
   requestPayload: jsonSchema,
   responsePayload: jsonSchema,
+  userId: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

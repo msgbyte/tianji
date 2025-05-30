@@ -904,6 +904,7 @@ model AIGateway {
   id          String   @id @default(cuid()) @db.VarChar(30)
   workspaceId String   @db.VarChar(30)
   name        String
+  modelApiKey String? // optional, if set, user can use this api key to request model
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
@@ -930,6 +931,7 @@ model AIGatewayLogs {
   price           Decimal             @default(0.0) @db.Decimal(30, 13) // unit: usd
   requestPayload  Json                @default("{}")
   responsePayload Json                @default("{}")
+  userId          String?             @db.VarChar(30) // if use api call, log the user id
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

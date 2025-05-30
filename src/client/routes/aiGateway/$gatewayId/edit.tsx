@@ -39,6 +39,7 @@ function AIGatewayEditComponent() {
       workspaceId,
       gatewayId,
       name: values.name,
+      modelApiKey: values.modelApiKey ?? null,
     });
 
     trpcUtils.aiGateway.all.refetch();

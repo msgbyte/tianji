@@ -19,6 +19,7 @@ import React from 'react';
 
 const addFormSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }).max(100),
+  modelApiKey: z.string().nullish(),
 });
 
 export type AIGatewayEditFormValues = z.infer<typeof addFormSchema>;
@@ -35,6 +36,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
       resolver: zodResolver(addFormSchema),
       defaultValues: props.defaultValues ?? {
         name: 'New Gateway',
+        modelApiKey: '',
       },
     });
 
@@ -61,6 +63,28 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     </FormControl>
                     <FormDescription>
                       {t('Application Name to Display')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="modelApiKey"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Model API Key')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t(
+                        'Optional, Model API Key which user can use to request model with their own api key in tianji, if not set, use the api key in the header'
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

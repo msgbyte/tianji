@@ -2,7 +2,6 @@ import { FeedChannelNotifyFrequency, FeedEvent, Prisma } from '@prisma/client';
 import { subscribeEventBus } from '../../ws/shared.js';
 import { prisma } from '../_client.js';
 import { serializeJSON } from '../../utils/json.js';
-import { buildQueryWithCache } from '../../cache/index.js';
 import { sendNotification } from '../notification/index.js';
 import { ContentToken, token } from '../notification/token/index.js';
 import { logger } from '../../utils/logger.js';

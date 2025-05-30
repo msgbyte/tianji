@@ -6,6 +6,9 @@ import { prisma } from '../model/_client.js';
 import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
 import { getLLMCostDecimal } from '../utils/llm.js';
 import { get } from 'lodash-es';
+import { buildQueryWithCache } from '../cache/index.js';
+import { verifyUserApiKey } from '../model/user.js';
+import { getGatewayInfoCache } from '../model/aiGateway.js';
 
 export const aiGatewayRouter = Router();
 
@@ -85,6 +88,15 @@ export function buildOpenAIHandler(
       })
       .parse(req.params);
     const apiKey = (req.headers.authorization ?? '').replace('Bearer ', '');
+    let modelApiKey = apiKey;
+    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
+    let userId: string | null = null;
+    if (gatewayInfo?.modelApiKey) {
+      const user = await verifyUserApiKey(apiKey);
+      userId = user.id;
+      modelApiKey = gatewayInfo.modelApiKey;
+    }
+
     const start = Date.now();
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
@@ -104,6 +116,7 @@ export function buildOpenAIHandler(
           ttft: -1,
           requestPayload: payload,
           responsePayload: {},
+          userId,
           status: AIGatewayLogsStatus.Pending,
         },
       });
@@ -113,7 +126,7 @@ export function buildOpenAIHandler(
 
     try {
       const openai = new OpenAI({
-        apiKey,
+        apiKey: modelApiKey,
         baseURL: options.baseUrl,
       });
       const modelPriceName = options.modelPriceName
