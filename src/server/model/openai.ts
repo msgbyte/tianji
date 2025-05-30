@@ -108,6 +108,61 @@ export async function requestOpenAI(
   return content ?? '';
 }
 
+export function ensureJSONOutput(content: string): Record<string, any> | null {
+  // Remove leading/trailing whitespace
+  const trimmedContent = content.trim();
+
+  // First, try to parse the content directly as JSON
+  try {
+    return JSON.parse(trimmedContent);
+  } catch (error) {
+    // If direct parsing fails, continue to try other methods
+  }
+
+  // Try to find JSON wrapped in ```json ``` blocks
+  const jsonBlockRegex = /```json\s*\n?([\s\S]*?)\n?\s*```/i;
+  const jsonBlockMatch = trimmedContent.match(jsonBlockRegex);
+
+  if (jsonBlockMatch && jsonBlockMatch[1]) {
+    try {
+      return JSON.parse(jsonBlockMatch[1].trim());
+    } catch (error) {
+      // JSON block parsing failed, continue
+    }
+  }
+
+  // Try to find JSON wrapped in generic ``` blocks (without language specification)
+  const codeBlockRegex = /```\s*\n?([\s\S]*?)\n?\s*```/;
+  const codeBlockMatch = trimmedContent.match(codeBlockRegex);
+
+  if (codeBlockMatch && codeBlockMatch[1]) {
+    const codeContent = codeBlockMatch[1].trim();
+    // Check if the content inside code block looks like JSON (starts with { or [)
+    if (codeContent.startsWith('{') || codeContent.startsWith('[')) {
+      try {
+        return JSON.parse(codeContent);
+      } catch (error) {
+        // Code block JSON parsing failed, continue
+      }
+    }
+  }
+
+  // Try to find JSON-like content in the text (starting with { or [ and ending with } or ])
+  const jsonLikeRegex = /(\{[\s\S]*\}|\[[\s\S]*\])/;
+  const jsonLikeMatch = trimmedContent.match(jsonLikeRegex);
+
+  if (jsonLikeMatch && jsonLikeMatch[1]) {
+    try {
+      return JSON.parse(jsonLikeMatch[1]);
+    } catch (error) {
+      // JSON-like content parsing failed
+    }
+  }
+
+  // If all parsing attempts fail, return null
+  return null;
+}
+
 export function calcOpenAIToken(message: string, model = modelName): number {
   let encoder: Tiktoken;
   try {

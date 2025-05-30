@@ -156,8 +156,8 @@ export function buildSurveyTranslationPrompt(
     content: any;
   }[],
   language: string = 'en'
-): string {
-  return `
+) {
+  const prompt = `
 You are a translator expert.
 
 Please help me translate those file to '${language}', direct give me json format response, don't be verbose:
@@ -171,4 +171,8 @@ ${JSON.stringify(
   }, {})
 )}
 `.trim();
+
+  return {
+    prompt,
+  };
 }

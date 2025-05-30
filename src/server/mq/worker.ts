@@ -14,7 +14,7 @@ import {
   translateSurveyMQSchema,
 } from '../model/prompt/survey.js';
 import dayjs from 'dayjs';
-import { requestOpenAI } from '../model/openai.js';
+import { ensureJSONOutput, requestOpenAI } from '../model/openai.js';
 import pMap from 'p-map';
 import { runTask } from '../model/task.js';
 import { promMQConsumeCounter } from '../utils/prometheus/client.js';
@@ -220,16 +220,20 @@ async function runSurveyAIClassifyWorker(msg: string) {
         temperature: 0,
       });
 
-      const json = JSON.parse(res);
+      const json = ensureJSONOutput(res);
+
+      if (json === null) {
+        throw new Error('Failed to parse JSON');
+      }
+
+      if (json.error) {
+        throw new Error(String(json.error));
+      }
 
       logger.info(
         'Process run survey AI classify, parsed size:',
         values(json).length
       );
-
-      if (json.error) {
-        throw new Error(String(json.error));
-      }
 
       const categoryMap = invertBy(json);
       await pMap(
@@ -366,7 +370,7 @@ async function runSurveyAITranslationWorker(msg: string) {
 
     let resultJson: Record<string, string> = {};
     for (const group of groups) {
-      const prompt = buildSurveyTranslationPrompt(
+      const { prompt } = buildSurveyTranslationPrompt(
         group,
         languageStrategy === 'user' ? language : 'en'
       );
@@ -384,16 +388,20 @@ async function runSurveyAITranslationWorker(msg: string) {
         }
       );
 
-      const json = JSON.parse(res);
+      const json = ensureJSONOutput(res);
+
+      if (json === null) {
+        throw new Error('Failed to parse JSON');
+      }
+
+      if (json.error) {
+        throw new Error(String(json.error));
+      }
 
       logger.info(
         'Process run survey AI translation, parsed size:',
         values(json).length
       );
-
-      if (json.error) {
-        throw new Error(String(json.error));
-      }
 
       resultJson = {
         ...resultJson,
