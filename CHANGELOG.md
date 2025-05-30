@@ -1,5 +1,15 @@
 
 
+## [1.21.2](https://github.com/msgbyte/tianji/compare/v1.21.1...v1.21.2) (2025-05-30)
+
+### Bug Fixes
+
+* fix sonnet mode will output invalid json problem ([94ce294](https://github.com/msgbyte/tianji/commit/94ce294a8666811b5704f25bea328d54b69d0287))
+
+### Document
+
+* add api related documents ([850b642](https://github.com/msgbyte/tianji/commit/850b642cead45beacaefe4e4f1dc54a7a447c580))
+
 ## [1.21.1](https://github.com/msgbyte/tianji/compare/v1.21.0...v1.21.1) (2025-05-30)
 
 ### Features
