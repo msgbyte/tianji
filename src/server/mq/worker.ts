@@ -370,7 +370,7 @@ async function runSurveyAITranslationWorker(msg: string) {
 
     let resultJson: Record<string, string> = {};
     for (const group of groups) {
-      const { prompt } = buildSurveyTranslationPrompt(
+      const { prompt, question } = buildSurveyTranslationPrompt(
         group,
         languageStrategy === 'user' ? language : 'en'
       );
@@ -379,14 +379,9 @@ async function runSurveyAITranslationWorker(msg: string) {
         `Process run survey AI translation, group batch ${++inc}/${groups.length}, size: ${group.length}`
       );
 
-      const res = await requestOpenAI(
-        workspaceId,
-        prompt,
-        'Please help me generate data.',
-        {
-          response_format: { type: 'json_object' },
-        }
-      );
+      const res = await requestOpenAI(workspaceId, prompt, question, {
+        response_format: { type: 'json_object' },
+      });
 
       const json = ensureJSONOutput(res);
 

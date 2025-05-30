@@ -160,19 +160,18 @@ export function buildSurveyTranslationPrompt(
   const prompt = `
 You are a translator expert.
 
-Please help me translate those file to '${language}', direct give me json format response, don't be verbose:
-
-${JSON.stringify(
-  data.reduce((prev, curr) => {
-    return {
-      ...prev,
-      [curr.id]: curr.content,
-    };
-  }, {})
-)}
+Please help me translate those file to '${language}', direct give me json format response, strictly follow the following format and only output the following content, no other information. The NSFW format is not suitable for reading. If you need to wrap a line, you must use \n to indicate it. Do not split complete words when wrapping a line, if you need type " in a string, you must use \\"
 `.trim();
 
   return {
     prompt,
+    question: JSON.stringify(
+      data.reduce((prev, curr) => {
+        return {
+          ...prev,
+          [curr.id]: curr.content,
+        };
+      }, {})
+    ),
   };
 }

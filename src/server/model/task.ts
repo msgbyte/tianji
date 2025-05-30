@@ -36,6 +36,7 @@ export async function runTask(
     });
   } catch (err) {
     const meta = { error: String(err), usageTime: Date.now() - start };
+    console.error('run task error:', meta);
     await prisma.workspaceTask.update({
       where: {
         id: task.id,

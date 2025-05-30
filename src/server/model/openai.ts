@@ -34,14 +34,16 @@ export function getOpenAIClient() {
   }
 }
 
+export type RequestOpenAIOptions = Omit<
+  ChatCompletionCreateParamsBase,
+  'model' | 'messages' | 'stream'
+>;
+
 export async function requestOpenAI(
   workspaceId: string,
   prompt: string,
   question: string,
-  options: Omit<
-    ChatCompletionCreateParamsBase,
-    'model' | 'messages' | 'stream'
-  > = {},
+  options: RequestOpenAIOptions = {},
   context?: Record<string, string>
 ): Promise<string> {
   if (!env.openai.enable) {

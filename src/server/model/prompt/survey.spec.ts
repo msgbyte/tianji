@@ -28,7 +28,7 @@ describe('buildSurveyClassifyPrompt', () => {
       const { prompt, question } = buildSurveyClassifyPrompt(
         [
           { id: 'fooo', content: 'Hello, World!' },
-          { id: 'bar', content: 'Hello, Tianji!' },
+          { id: 'baar', content: 'Hello, Tianji!' },
         ],
         []
       );
@@ -60,13 +60,14 @@ describe('buildSurveyTranslationPrompt', () => {
   test.runIf(Boolean(process.env.TEST_SURVEY_PROMPT))(
     'test prompt effect',
     {
-      timeout: 30_000,
+      timeout: 60_000,
     },
     async () => {
-      const { prompt } = buildSurveyTranslationPrompt(
+      const { prompt, question } = buildSurveyTranslationPrompt(
         [
           { id: 'fooo', content: 'Hello, World!' },
-          { id: 'bar', content: 'Hello, Tianji!' },
+          { id: 'baar', content: 'Hello, Tianji!' },
+          { id: 'baaz', content: 'Some bad case with "wrap with qutoe"' },
         ],
         'fr-FR'
       );
@@ -80,7 +81,7 @@ describe('buildSurveyTranslationPrompt', () => {
           },
           {
             role: 'user',
-            content: 'Please help me generate data.',
+            content: question,
           },
         ],
         response_format: {
