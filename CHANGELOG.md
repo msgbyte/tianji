@@ -1,5 +1,13 @@
 
 
+## [1.21.1](https://github.com/msgbyte/tianji/compare/v1.21.0...v1.21.1) (2025-05-30)
+
+### Features
+
+* add a function which make sure we can get json response from LLM output even mode not support json mode ([411c285](https://github.com/msgbyte/tianji/commit/411c285b536a20e2c14d906356962c73c8fa8a67))
+* add new routes and CommonPageEmpty component for various sections ([b5df979](https://github.com/msgbyte/tianji/commit/b5df979a92e8489bf15733b9c3882cce4c721dca))
+* wrap Empty component in DelayRender for improved loading experience in CommonPageEmpty ([fedb7f9](https://github.com/msgbyte/tianji/commit/fedb7f922bf91e56d85130f4badbbdefb1d323c4))
+
 ## [1.21.0](https://github.com/msgbyte/tianji/compare/v1.20.10...v1.21.0) (2025-05-25)
 
 ### Features
