@@ -1,5 +1,16 @@
 
 
+## [1.21.3](https://github.com/msgbyte/tianji/compare/v1.21.2...v1.21.3) (2025-06-01)
+
+### Features
+
+* add modelApiKey which can use same api key in one team ([43b1bbe](https://github.com/msgbyte/tianji/commit/43b1bbe9d2ee0868f66dbf9d7d61115c73e894e1))
+* add partial to save to database because translation task have more bad case to parse json format ([6a125d5](https://github.com/msgbyte/tianji/commit/6a125d54af8d78d56ce2c65321f96f610f69b62d))
+
+### Document
+
+* add authentication and getting started documents in multiple languages ([917306a](https://github.com/msgbyte/tianji/commit/917306a78d17fd91955287fc5af8473417a405b9))
+
 ## [1.21.2](https://github.com/msgbyte/tianji/compare/v1.21.1...v1.21.2) (2025-05-30)
 
 ### Bug Fixes
