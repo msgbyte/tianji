@@ -12,6 +12,7 @@ import type {
   // @ts-ignore
 } from 'openai/resources/chat/completions.mjs';
 import { createAuditLog } from './auditLog.js';
+import { logger } from '../utils/logger.js';
 
 export const modelName = env.openai.modelName ?? 'gpt-4o';
 
@@ -129,6 +130,7 @@ export function ensureJSONOutput(content: string): Record<string, any> | null {
     try {
       return JSON.parse(jsonBlockMatch[1].trim());
     } catch (error) {
+      logger.error('[ensureJSONOutput-2]:', error);
       // JSON block parsing failed, continue
     }
   }
@@ -144,6 +146,7 @@ export function ensureJSONOutput(content: string): Record<string, any> | null {
       try {
         return JSON.parse(codeContent);
       } catch (error) {
+        logger.error('[ensureJSONOutput-3]:', error);
         // Code block JSON parsing failed, continue
       }
     }
@@ -157,6 +160,7 @@ export function ensureJSONOutput(content: string): Record<string, any> | null {
     try {
       return JSON.parse(jsonLikeMatch[1]);
     } catch (error) {
+      logger.error('[ensureJSONOutput-4]:', error);
       // JSON-like content parsing failed
     }
   }

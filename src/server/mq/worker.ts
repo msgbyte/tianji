@@ -352,7 +352,7 @@ async function runSurveyAITranslationWorker(msg: string) {
     }
 
     logger.info(
-      'Process run survey AI classify, filtered data count:',
+      'Process run survey AI translation, filtered data count:',
       data.length
     );
 
@@ -364,11 +364,12 @@ async function runSurveyAITranslationWorker(msg: string) {
       100 // use 100 as group size default
     );
 
-    logger.info('Process run survey AI classify, groups', groups.length);
+    logger.info('Process run survey AI translation, groups', groups.length);
 
     let inc = 0;
 
     let resultJson: Record<string, string> = {};
+    let effectCount = 0;
     for (const group of groups) {
       const { prompt, question } = buildSurveyTranslationPrompt(
         group,
@@ -386,6 +387,14 @@ async function runSurveyAITranslationWorker(msg: string) {
       const json = ensureJSONOutput(res);
 
       if (json === null) {
+        logger.error(
+          'Process run survey AI translation, failed to parse JSON',
+          {
+            prompt,
+            question,
+            res,
+          }
+        );
         throw new Error('Failed to parse JSON');
       }
 
@@ -398,37 +407,37 @@ async function runSurveyAITranslationWorker(msg: string) {
         values(json).length
       );
 
+      // Write to the database in advance to ensure that some of the data that has already been successfully processed can be retained in case other batches encounter problems, reducing the token usage for the next time
+      await pMap(
+        Object.keys(json),
+        async (id) => {
+          const prev = data.find((d) => d.id === id);
+
+          if (prev && json[id]) {
+            await prisma.surveyResult.update({
+              where: {
+                id,
+              },
+              data: {
+                aiTranslation: json[id],
+              },
+            });
+
+            effectCount++;
+          }
+        },
+        {
+          concurrency: 5,
+        }
+      );
+
       resultJson = {
         ...resultJson,
         ...json,
       };
     }
 
-    logger.info('Process run survey AI classify, AI completed.');
-
-    let effectCount = 0;
-    await pMap(
-      Object.keys(resultJson),
-      async (id) => {
-        const prev = data.find((d) => d.id === id);
-
-        if (prev && resultJson[id]) {
-          await prisma.surveyResult.update({
-            where: {
-              id,
-            },
-            data: {
-              aiTranslation: resultJson[id],
-            },
-          });
-
-          effectCount++;
-        }
-      },
-      {
-        concurrency: 5,
-      }
-    );
+    logger.info('Process run survey AI translation, AI completed.');
 
     const result = {
       workspaceId,
