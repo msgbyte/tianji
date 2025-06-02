@@ -1,5 +1,11 @@
 
 
+## [1.21.5](https://github.com/msgbyte/tianji/compare/v1.21.4...v1.21.5) (2025-06-02)
+
+### Bug Fixes
+
+* try to fix quote bad case in sonnet which maybe more fit to real world case. ([08a8c5f](https://github.com/msgbyte/tianji/commit/08a8c5fc5382c937705f628dfcc71a13e24d3395))
+
 ## [1.21.4](https://github.com/msgbyte/tianji/compare/v1.21.3...v1.21.4) (2025-06-02)
 
 ### Bug Fixes
