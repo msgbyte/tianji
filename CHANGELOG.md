@@ -1,5 +1,11 @@
 
 
+## [1.21.6](https://github.com/msgbyte/tianji/compare/v1.21.5...v1.21.6) (2025-06-02)
+
+### Bug Fixes
+
+* improve JSON parsing and handling of quotes in user feedback ([b6368ba](https://github.com/msgbyte/tianji/commit/b6368baf0f470213c327d5d768e55c84955045a1))
+
 ## [1.21.5](https://github.com/msgbyte/tianji/compare/v1.21.4...v1.21.5) (2025-06-02)
 
 ### Bug Fixes
