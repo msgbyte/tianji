@@ -1,5 +1,11 @@
 
 
+## [1.21.4](https://github.com/msgbyte/tianji/compare/v1.21.3...v1.21.4) (2025-06-02)
+
+### Bug Fixes
+
+* try to handle sonnet problem in translation prompt ([e0587ac](https://github.com/msgbyte/tianji/commit/e0587acc4b04cb8827bc2aade9d2802b33840a11))
+
 ## [1.21.3](https://github.com/msgbyte/tianji/compare/v1.21.2...v1.21.3) (2025-06-01)
 
 ### Features
