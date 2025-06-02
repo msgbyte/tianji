@@ -361,7 +361,7 @@ async function runSurveyAITranslationWorker(msg: string) {
         id: item.id,
         content: item.payload[payloadContentField] ?? '',
       })),
-      100 // use 100 as group size default
+      40 // use 40 rather than 100 to avoid sonnet attention mechanism
     );
 
     logger.info('Process run survey AI translation, groups', groups.length);

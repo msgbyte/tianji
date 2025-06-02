@@ -169,7 +169,7 @@ Please help me translate those file to '${language}', direct give me json format
       data.reduce((prev, curr) => {
         return {
           ...prev,
-          [curr.id]: curr.content,
+          [curr.id]: curr.content.replace(/"/g, "'"), // replace user input double quotes to single quotes to avoid json parse error
         };
       }, {})
     ),
