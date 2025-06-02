@@ -9,7 +9,6 @@ import {
   ensureJSONOutput,
   getOpenAIClient,
   modelName,
-  requestOpenAI,
 } from '../openai.js';
 
 describe('buildSurveyClassifyPrompt', () => {

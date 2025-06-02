@@ -312,8 +312,8 @@ async function runSurveyAITranslationWorker(msg: string) {
     const where: Prisma.SurveyResultWhereInput = {
       surveyId,
       createdAt: {
-        gt: dayjs(startAt).toDate(),
-        lt: dayjs(endAt).toDate(),
+        gte: dayjs(startAt).toDate(),
+        lte: dayjs(endAt).toDate(),
       },
     };
 
