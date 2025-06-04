@@ -1,5 +1,11 @@
 
 
+## [1.21.8](https://github.com/msgbyte/tianji/compare/v1.21.7...v1.21.8) (2025-06-04)
+
+### Others
+
+* add more logs ([00286ef](https://github.com/msgbyte/tianji/commit/00286efa68e11bbe0ca2115eda9205f4bc8ec43d))
+
 ## [1.21.7](https://github.com/msgbyte/tianji/compare/v1.21.6...v1.21.7) (2025-06-04)
 
 ### Bug Fixes
