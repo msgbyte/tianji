@@ -153,7 +153,10 @@ export async function getAuthSession(
   );
 
   if (!req.headers.cookie) {
-    logger.warn('No cookie in request, can not get auth session');
+    logger.warn('No cookie in request, can not get auth session:', {
+      protocol,
+      headers: req.headers,
+    });
   }
 
   const response = await Auth(
