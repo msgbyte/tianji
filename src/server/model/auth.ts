@@ -178,7 +178,11 @@ export async function getAuthSession(
   }
 
   if (!data || !Object.keys(data).length) {
-    logger.error('Can not get info, auth session raw:', raw);
+    logger.error('Can not get info, auth session raw:', {
+      raw,
+      protocol,
+      headers: req.headers,
+    });
     return null;
   }
 
