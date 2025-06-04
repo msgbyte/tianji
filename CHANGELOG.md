@@ -1,5 +1,11 @@
 
 
+## [1.21.9](https://github.com/msgbyte/tianji/compare/v1.21.8...v1.21.9) (2025-06-04)
+
+### Others
+
+* add more context for debug ([f347440](https://github.com/msgbyte/tianji/commit/f3474406dd2f6d89995be022eed1607c6e9b1e54))
+
 ## [1.21.8](https://github.com/msgbyte/tianji/compare/v1.21.7...v1.21.8) (2025-06-04)
 
 ### Others
