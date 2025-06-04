@@ -21,6 +21,7 @@ import { SYSTEM_ROLES } from '@tianji/shared';
 import { IncomingMessage } from 'http';
 import { type Session } from '@auth/express';
 import { compact, set } from 'lodash-es';
+import { logger } from '../utils/logger.js';
 
 export interface UserAuthPayload {
   id: string;
@@ -151,6 +152,10 @@ export async function getAuthSession(
     authConfig.basePath
   );
 
+  if (!req.headers.cookie) {
+    logger.warn('No cookie in request, can not get auth session');
+  }
+
   const response = await Auth(
     new Request(url, { headers: { cookie: req.headers.cookie ?? '' } }),
     authConfig
@@ -158,9 +163,19 @@ export async function getAuthSession(
 
   const { status = 200 } = response;
 
-  const data = await response.json();
+  // Read text first to avoid "Body has already been read" error
+  const raw = await response.text();
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (error) {
+    logger.error('Failed to parse auth session response:', error);
+    return null;
+  }
 
   if (!data || !Object.keys(data).length) {
+    logger.error('Can not get info, auth session raw:', raw);
     return null;
   }
 
