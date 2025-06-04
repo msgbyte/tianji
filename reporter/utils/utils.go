@@ -160,6 +160,12 @@ func getDisk(interval int) (uint64, uint64) {
 
 func getCpu(interval int) float64 {
 	cpuInfo, _ := cpu.Percent(time.Duration(interval)*time.Second, false)
+	if len(cpuInfo) == 0 {
+		// If no CPU info available, return 0.0 as fallback
+		log.Println("Warning: Unable to get CPU usage information, returning 0.0")
+		return 0.0
+	}
+
 	return math.Round(cpuInfo[0]*10) / 10
 }
 
