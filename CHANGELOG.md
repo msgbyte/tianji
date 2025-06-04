@@ -1,5 +1,19 @@
 
 
+## [1.21.7](https://github.com/msgbyte/tianji/compare/v1.21.6...v1.21.7) (2025-06-04)
+
+### Bug Fixes
+
+* handle case when CPU information is unavailable, returning 0.0 as fallback [#193](https://github.com/msgbyte/tianji/issues/193) ([80d1be4](https://github.com/msgbyte/tianji/commit/80d1be40d3f752675df9631677566f7775cd9733))
+
+### Document
+
+* update env document ([9c0838e](https://github.com/msgbyte/tianji/commit/9c0838e39315caa5713f43605f6bc6058ffb4df1))
+
+### Others
+
+* add more log for get auth session which maybe can help to debug ([5eb57f4](https://github.com/msgbyte/tianji/commit/5eb57f438785f167fe6b76d6e3ec81c67e28ae32))
+
 ## [1.21.6](https://github.com/msgbyte/tianji/compare/v1.21.5...v1.21.6) (2025-06-02)
 
 ### Bug Fixes
