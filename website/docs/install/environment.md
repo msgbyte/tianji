@@ -27,7 +27,7 @@ Tianji supports various environment variables to customize its behavior. You can
 | `AUTH_SECRET` | Authentication secret | MD5 of JWT secret | `your-auth-secret` |
 | `AUTH_RESTRICT_EMAIL` | Restrict registration to specific email domains | - | `@example.com` |
 
-### Email Authentication
+### Email Authentication and Email Invitation
 
 | Variable | Description | Default | Example |
 | --- | --- | --- | --- |
