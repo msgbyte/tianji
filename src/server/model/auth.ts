@@ -144,8 +144,14 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
  */
 export async function getAuthSession(
   req: IncomingMessage,
-  secure = false
+  _secure = false
 ): Promise<Session | null> {
+  const cookieStr = req.headers.cookie ?? '';
+
+  // Not cool
+  const secure = cookieStr.includes('__Secure-authjs.session-token')
+    ? true
+    : false;
   const protocol = secure ? 'https:' : 'http:';
   const url = createActionURL(
     'session',
