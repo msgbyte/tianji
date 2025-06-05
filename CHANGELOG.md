@@ -1,5 +1,16 @@
 
 
+## [1.21.10](https://github.com/msgbyte/tianji/compare/v1.21.9...v1.21.10) (2025-06-05)
+
+### Document
+
+* add troubleshooting for websocket connection issues ([0db2013](https://github.com/msgbyte/tianji/commit/0db2013fc67de24a7f648698895dcb859d03c33f))
+
+### Others
+
+* add AUTH_USE_SECURE_COOKIES env var to try to resolve ws and https mix problem ([605443f](https://github.com/msgbyte/tianji/commit/605443f907265c1f3301f8d450e0478dd41e62c5))
+* improve secure cookie handling in getAuthSession function ([00b6e2d](https://github.com/msgbyte/tianji/commit/00b6e2d6e53cd1bdda12be1e7e706ac3352b7e4a))
+
 ## [1.21.9](https://github.com/msgbyte/tianji/compare/v1.21.8...v1.21.9) (2025-06-04)
 
 ### Others
