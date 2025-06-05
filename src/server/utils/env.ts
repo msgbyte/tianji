@@ -28,6 +28,8 @@ export const env = {
       email: process.env.AUTH_RESTRICT_EMAIL, // for example: @example.com
     },
     secret: process.env.AUTH_SECRET || md5(jwtSecret),
+    useSecureCookies:
+      checkEnvTrusty(process.env.AUTH_USE_SECURE_COOKIES) || undefined,
     /**
      * @deprecated use `env.smtp` instead
      */

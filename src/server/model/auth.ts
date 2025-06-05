@@ -33,6 +33,10 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
   debug: env.isProd ? false : true,
   basePath: '/api/auth',
   trustHost: true,
+  useSecureCookies:
+    typeof env.auth.useSecureCookies === 'boolean'
+      ? env.auth.useSecureCookies
+      : undefined,
   providers: compact([
     Credentials({
       id: 'account',
