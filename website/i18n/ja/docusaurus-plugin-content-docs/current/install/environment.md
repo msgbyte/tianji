@@ -1,19 +1,19 @@
 ---
 sidebar_position: 10
-_i18n_hash: 5ff3432ae327097b85732e04b2cda2d3
+_i18n_hash: 0648c6e4c85f3bd3ac4cdd91fad4eb39
 ---
 # 環境変数
 
-Tianjiは、その動作をカスタマイズできる様々な環境変数をサポートしています。これらの変数は、Docker Composeの`env`フィールドやデプロイメント環境で設定することができます。
+Tianjiは動作をカスタマイズするために様々な環境変数をサポートしています。これらの変数はdocker composeの`env`フィールドまたはデプロイメント環境で設定できます。
 
 ## 基本設定
 
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
 | `PORT` | サーバーポート | `12345` | `3000` |
-| `JWT_SECRET` | JWTトークンの秘密鍵 | ランダムなテキスト | `your-secret-key` |
-| `ALLOW_REGISTER` | ユーザー登録を可能にする | `false` | `true` |
-| `ALLOW_OPENAPI` | OpenAPIアクセスを可能にする | `true` | `false` |
+| `JWT_SECRET` | JWTトークンの秘密鍵 | ランダムテキスト | `your-secret-key` |
+| `ALLOW_REGISTER` | ユーザー登録を有効にする | `false` | `true` |
+| `ALLOW_OPENAPI` | OpenAPIアクセスを有効にする | `true` | `false` |
 | `WEBSITE_ID` | ウェブサイト識別子 | - | `your-website-id` |
 | `DISABLE_AUTO_CLEAR` | 自動データクリーンアップを無効にする | `false` | `true` |
 | `DISABLE_ACCESS_LOGS` | アクセスログを無効にする | `false` | `true` |
@@ -24,15 +24,15 @@ Tianjiは、その動作をカスタマイズできる様々な環境変数を�
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
 | `DISABLE_ACCOUNT` | アカウントベースの認証を無効にする | `false` | `true` |
-| `AUTH_SECRET` | 認証用の秘密鍵 | JWT秘密鍵のMD5 | `your-auth-secret` |
-| `AUTH_RESTRICT_EMAIL` | 特定のメールドメインへの登録を制限 | - | `@example.com` |
+| `AUTH_SECRET` | 認証の秘密鍵 | JWTの秘密鍵のMD5 | `your-auth-secret` |
+| `AUTH_RESTRICT_EMAIL` | 特定のメールドメインへの登録を制限する | - | `@example.com` |
 
-### メール認証
+### メール認証と招待
 
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
-| `EMAIL_SERVER` | メール用SMTPサーバー | - | `smtp://user:pass@smtp.example.com:587` |
-| `EMAIL_FROM` | メール送信元アドレス | - | `noreply@example.com` |
+| `EMAIL_SERVER` | メールのSMTPサーバー | - | `smtp://user:pass@smtp.example.com:587` |
+| `EMAIL_FROM` | メール送信者アドレス | - | `noreply@example.com` |
 
 ### GitHub認証
 
@@ -56,7 +56,7 @@ Tianjiは、その動作をカスタマイズできる様々な環境変数を�
 | `AUTH_CUSTOM_SECRET` | カスタムOAuth/OIDCクライアントシークレット | - | `your-custom-client-secret` |
 | `AUTH_CUSTOM_NAME` | カスタムプロバイダー名 | `Custom` | `Enterprise SSO` |
 | `AUTH_CUSTOM_TYPE` | 認証タイプ | `oidc` | `oauth` |
-| `AUTH_CUSTOM_ISSUR` | OIDC発行元URL | - | `https://auth.example.com` |
+| `AUTH_CUSTOM_ISSUR` | OIDC issuer URL | - | `https://auth.example.com` |
 
 ## AI機能
 
@@ -65,37 +65,37 @@ Tianjiは、その動作をカスタマイズできる様々な環境変数を�
 | `OPENAI_API_KEY` | OpenAI APIキー | - | `your-openai-api-key` |
 | `OPENAI_BASE_URL` | カスタムOpenAI API URL | - | `https://api.openai.com/v1` |
 | `OPENAI_MODEL_NAME` | 使用するOpenAIモデル | `gpt-4o` | `gpt-3.5-turbo` |
-| `DEBUG_AI_FEATURE` | AI機能をデバッグ | `false` | `true` |
+| `DEBUG_AI_FEATURE` | AI機能をデバッグする | `false` | `true` |
 
 ## サンドボックス設定
 
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
-| `USE_VM2` | VM2を使用してサンドボックスを実行 | `false` | `true` |
-| `SANDBOX_MEMORY_LIMIT` | サンドボックスのメモリ制限（MB） | `16` | `32` |
-| `PUPPETEER_EXECUTABLE_PATH` | Puppeteerの実行可能パスのカスタム設定 | - | `/usr/bin/chromium` |
+| `USE_VM2` | サンドボックス実行にVM2を使用 | `false` | `true` |
+| `SANDBOX_MEMORY_LIMIT` | サンドボックスのメモリ制限（MB単位） | `16` | `32` |
+| `PUPPETEER_EXECUTABLE_PATH` | Puppeteerの実行可能パスをカスタム設定 | - | `/usr/bin/chromium` |
 
-## マップ統合
+## 地図統合
 
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
-| `AMAP_TOKEN` | AMap（高徳）APIトークン | - | `your-amap-token` |
+| `AMAP_TOKEN` | AMap（高德）のAPIトークン | - | `your-amap-token` |
 | `MAPBOX_TOKEN` | Mapbox APIトークン | - | `your-mapbox-token` |
 
 ## テレメトリー
 
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
-| `DISABLE_ANONYMOUS_TELEMETRY` | 匿名テレメトリーを無効にする | `false` | `true` |
+| `DISABLE_ANONYMOUS_TELEMETRY` | 匿名のテレメトリーを無効にする | `false` | `true` |
 | `CUSTOM_TRACKER_SCRIPT_NAME` | カスタムトラッカースクリプト名 | - | `custom-tracker.js` |
 
 ## 環境変数の設定
 
-これらの環境変数は、以下の方法で設定することができます：
+これらの環境変数は以下の方法で設定可能です：
 
-1. デプロイメント環境（Docker、Kubernetesなど）で直接設定する
+1. デプロイ環境（Docker、Kubernetesなど）で直接設定。
 
-2. Dockerデプロイメントの場合は、docker-compose.ymlで下記のように環境変数を使用します：
+2. Dockerデプロイでは、docker-compose.ymlで環境変数を使用可能：
 
 ```yaml
 services:
@@ -108,4 +108,4 @@ services:
 
 ## ブール値
 
-ブール型の環境変数には、機能を有効にするために`"1"`または`"true"`を使うことができ、無効化する場合は変数を省略するか他の値を設定してください。
+ブール型の環境変数は、機能を有効にするために`"1"`または`"true"`を使用し、無効にするには変数を省略するかそれ以外の値を設定します。
