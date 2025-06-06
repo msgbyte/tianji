@@ -19,15 +19,20 @@ export interface ApplicationEventPayload {
   url?: string;
   application: string;
   name?: string;
+  version?: string;
+  sdkVersion?: string;
 }
 
-export async function findSession(req: Request): Promise<
+export async function findSession(
+  req: Request,
+  body: any
+): Promise<
   ApplicationSession & {
     workspaceId: string;
   }
 > {
   // Verify payload
-  const { payload } = req.body;
+  const { payload } = body;
 
   // Check if cache token is passed
   const cacheToken = req.headers['x-tianji-cache'] as string;
@@ -44,6 +49,8 @@ export async function findSession(req: Request): Promise<
     application: applicationId,
     os,
     language,
+    version,
+    sdkVersion,
   } = payload as ApplicationEventPayload;
 
   if (!isCuid(applicationId)) {
@@ -84,6 +91,8 @@ export async function findSession(req: Request): Promise<
           os,
           language,
           ip,
+          version,
+          sdkVersion,
           country,
           subdivision1,
           subdivision2,
