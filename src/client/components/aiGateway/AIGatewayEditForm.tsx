@@ -22,7 +22,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { LuCode } from 'react-icons/lu';
+import { LuChevronsUpDown, LuCode } from 'react-icons/lu';
 
 const addFormSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }).max(100),
@@ -88,7 +88,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                 name="modelApiKey"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Model API Key')}</FormLabel>
+                    <FormLabel optional={true}>{t('Model API Key')}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -98,7 +98,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     </FormControl>
                     <FormDescription>
                       {t(
-                        'Optional, Model API Key which user can use to request model with their own api key in tianji, if not set, use the api key in the header'
+                        'Model API Key which user can use to request model with their own api key in tianji, if not set, use the api key in the header'
                       )}
                     </FormDescription>
                     <FormMessage />
@@ -108,10 +108,14 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
 
               {/* Custom Model Settings - Collapsible Section */}
               <Collapsible className="w-full">
-                <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between rounded-lg border p-3 text-left">
-                  {t('Custom Model Settings')}
+                <CollapsibleTrigger className="flex w-full items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <h4 className="text-sm">{t('Custom Model Settings')}</h4>
+                    <LuChevronsUpDown className="h-4 w-4" />
+                  </div>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-4 p-3">
+
+                <CollapsibleContent className="border-muted space-y-4 border-l-4 p-4">
                   <Alert>
                     <LuCode />
                     <AlertTitle>
@@ -126,7 +130,9 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     name="customModelBaseUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('Custom Model Base URL')}</FormLabel>
+                        <FormLabel optional={true}>
+                          {t('Custom Model Base URL')}
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://api.example.com/v1"
@@ -136,7 +142,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Optional, Custom base URL for the AI model API. If set, requests will be made to this URL instead of the default provider URL.'
+                            'Custom base URL for the AI model API. If set, requests will be made to this URL instead of the default provider URL.'
                           )}
                         </FormDescription>
                         <FormMessage />
@@ -148,7 +154,9 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     name="customModelName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('Custom Model Name')}</FormLabel>
+                        <FormLabel optional={true}>
+                          {t('Custom Model Name')}
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="gpt-4o-mini"
@@ -158,7 +166,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Optional, Custom model name to use when making API requests. If set, this name will be used instead of the default model name.'
+                            'Custom model name to use when making API requests. If set, this name will be used instead of the default model name.'
                           )}
                         </FormDescription>
                         <FormMessage />
@@ -170,7 +178,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     name="customModelInputPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel optional={true}>
                           {t('Custom Model Input Price (USD per 1M tokens)')}
                         </FormLabel>
                         <FormControl>
@@ -188,7 +196,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Optional, Custom pricing for input tokens cost calculation. Price per 1 million input tokens in USD.'
+                            'Custom pricing for input tokens cost calculation. Price per 1 million input tokens in USD.'
                           )}
                         </FormDescription>
                         <FormMessage />
@@ -200,7 +208,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     name="customModelOutputPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel optional={true}>
                           {t('Custom Model Output Price (USD per 1M tokens)')}
                         </FormLabel>
                         <FormControl>
@@ -218,7 +226,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Optional, Custom pricing for output tokens cost calculation. Price per 1 million output tokens in USD.'
+                            'Custom pricing for output tokens cost calculation. Price per 1 million output tokens in USD.'
                           )}
                         </FormDescription>
                         <FormMessage />

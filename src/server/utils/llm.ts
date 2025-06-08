@@ -30,3 +30,20 @@ export function getLLMCostDecimal(
     return new Prisma.Decimal(0);
   }
 }
+
+export function getLLMCostDecimalWithCustomPrice(
+  inputToken: number,
+  outputToken: number,
+  customInputPrice: Prisma.Decimal | null | undefined,
+  customOutputPrice: Prisma.Decimal | null | undefined
+): Prisma.Decimal {
+  return (
+    customInputPrice
+      ? new Prisma.Decimal(customInputPrice).mul(inputToken).div(1_000_000)
+      : new Prisma.Decimal(0)
+  ).add(
+    customOutputPrice
+      ? new Prisma.Decimal(customOutputPrice).mul(outputToken).div(1_000_000)
+      : new Prisma.Decimal(0)
+  );
+}

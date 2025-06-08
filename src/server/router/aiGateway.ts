@@ -4,7 +4,10 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import { prisma } from '../model/_client.js';
 import { AIGatewayLogs, AIGatewayLogsStatus, Prisma } from '@prisma/client';
-import { getLLMCostDecimal } from '../utils/llm.js';
+import {
+  getLLMCostDecimal,
+  getLLMCostDecimalWithCustomPrice,
+} from '../utils/llm.js';
 import { get } from 'lodash-es';
 import { verifyUserApiKey } from '../model/user.js';
 import { getGatewayInfoCache } from '../model/aiGateway.js';
@@ -196,13 +199,11 @@ export function buildOpenAIHandler(
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
           const price =
             options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? (customInputPrice
-                  ? customInputPrice.mul(inputToken).div(1_000_000)
-                  : new Prisma.Decimal(0)
-                ).add(
+              ? getLLMCostDecimalWithCustomPrice(
+                  inputToken,
+                  outputToken,
+                  customInputPrice,
                   customOutputPrice
-                    ? customOutputPrice.mul(outputToken).div(1_000_000)
-                    : new Prisma.Decimal(0)
                 )
               : getLLMCostDecimal(modelPriceName, inputToken, outputToken);
 
@@ -247,13 +248,11 @@ export function buildOpenAIHandler(
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
           const price =
             options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? (customInputPrice
-                  ? customInputPrice.mul(inputToken).div(1_000_000)
-                  : new Prisma.Decimal(0)
-                ).add(
+              ? getLLMCostDecimalWithCustomPrice(
+                  inputToken,
+                  outputToken,
+                  customInputPrice,
                   customOutputPrice
-                    ? customOutputPrice.mul(outputToken).div(1_000_000)
-                    : new Prisma.Decimal(0)
                 )
               : getLLMCostDecimal(modelPriceName, inputToken, outputToken);
 
