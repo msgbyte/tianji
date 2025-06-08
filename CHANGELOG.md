@@ -1,5 +1,19 @@
 
 
+## [1.21.11](https://github.com/msgbyte/tianji/compare/v1.21.10...v1.21.11) (2025-06-08)
+
+### Features
+
+* add application batch endpoint ([d1ff4e6](https://github.com/msgbyte/tianji/commit/d1ff4e6f7b78bf904e9e65d4bd1b1ba4c31057c1))
+* add custom mode setting feature ([9227ddb](https://github.com/msgbyte/tianji/commit/9227ddba714bc7efeffa48e8dbe4a02b8ff2ef70))
+* add manual refresh button to ai gateway logs ([b3eba5f](https://github.com/msgbyte/tianji/commit/b3eba5f2aeb9840d32ffa66f6746ae9db4db40d0))
+* add render function for nullable values in AIGateway log columns ([b7dd1d9](https://github.com/msgbyte/tianji/commit/b7dd1d92b4e03d168295032e2a0aeca62bc5bbc8))
+
+### Others
+
+* improve style and improve code handle for calc cost ([bb14b5a](https://github.com/msgbyte/tianji/commit/bb14b5ae5b678c0f5477d6beecd163d0271aab12))
+* translation ([cac7519](https://github.com/msgbyte/tianji/commit/cac7519932234ddf09f00deb09981237947a05cb))
+
 ## [1.21.10](https://github.com/msgbyte/tianji/compare/v1.21.9...v1.21.10) (2025-06-05)
 
 ### Document
