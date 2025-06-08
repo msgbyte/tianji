@@ -7,6 +7,10 @@ export const AIGatewayModelSchema = z.object({
   workspaceId: z.string(),
   name: z.string(),
   modelApiKey: z.string().nullish(),
+  customModelBaseUrl: z.string().nullish(),
+  customModelName: z.string().nullish(),
+  customModelInputPrice: z.number().nullish(),
+  customModelOutputPrice: z.number().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

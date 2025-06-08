@@ -26,7 +26,7 @@ interface AIGatewayCodeExampleBtnProps {
 }
 
 // Define AI provider types
-type AIProvider = 'openai' | 'deepseek' | 'openrouter';
+type AIProvider = 'openai' | 'deepseek' | 'openrouter' | 'custom';
 
 // Define interface and models for each AI provider
 interface ProviderConfig {
@@ -56,22 +56,29 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
           endpoint:
             '/api/ai/v1/${workspaceId}/${gatewayId}/openai/chat/completions',
           defaultModel: 'gpt-4o',
-          description: 'OpenAI API compatible',
+          description: t('OpenAI API compatible'),
           label: 'OpenAI API',
         },
         deepseek: {
           endpoint:
             '/api/ai/v1/${workspaceId}/${gatewayId}/deepseek/chat/completions',
           defaultModel: 'deepseek-chat',
-          description: 'Deepseek API compatible',
+          description: t('Deepseek API compatible'),
           label: 'Deepseek API',
         },
         openrouter: {
           endpoint:
             '/api/ai/v1/${workspaceId}/${gatewayId}/openrouter/chat/completions',
           defaultModel: 'openai/gpt-4o-mini',
-          description: 'OpenRouter API compatible',
+          description: t('OpenRouter API compatible'),
           label: 'OpenRouter API',
+        },
+        custom: {
+          endpoint:
+            '/api/ai/v1/${workspaceId}/${gatewayId}/custom/chat/completions',
+          defaultModel: 'custom-model',
+          description: t('Custom model API with your own settings'),
+          label: 'Custom API',
         },
       }),
       [gatewayId]

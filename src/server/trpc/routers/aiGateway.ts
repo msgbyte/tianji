@@ -17,6 +17,10 @@ import { clearGatewayInfoCache } from '../../model/aiGateway.js';
 const aiGatewayCreateSchema = z.object({
   name: z.string().max(100),
   modelApiKey: z.string().nullable(),
+  customModelBaseUrl: z.string().nullable(),
+  customModelName: z.string().nullable(),
+  customModelInputPrice: z.number().nullable(),
+  customModelOutputPrice: z.number().nullable(),
 });
 
 export const aiGatewayRouter = router({
@@ -42,7 +46,15 @@ export const aiGatewayRouter = router({
         },
       });
 
-      return aiGateways;
+      return aiGateways.map((gateway) => ({
+        ...gateway,
+        customModelInputPrice: gateway.customModelInputPrice
+          ? Number(gateway.customModelInputPrice)
+          : null,
+        customModelOutputPrice: gateway.customModelOutputPrice
+          ? Number(gateway.customModelOutputPrice)
+          : null,
+      }));
     }),
   info: workspaceProcedure
     .meta(
@@ -67,7 +79,19 @@ export const aiGatewayRouter = router({
         },
       });
 
-      return aiGateway;
+      if (!aiGateway) {
+        return null;
+      }
+
+      return {
+        ...aiGateway,
+        customModelInputPrice: aiGateway.customModelInputPrice
+          ? Number(aiGateway.customModelInputPrice)
+          : null,
+        customModelOutputPrice: aiGateway.customModelOutputPrice
+          ? Number(aiGateway.customModelOutputPrice)
+          : null,
+      };
     }),
   create: workspaceAdminProcedure
     .meta({
@@ -81,17 +105,37 @@ export const aiGatewayRouter = router({
     .input(aiGatewayCreateSchema)
     .output(AIGatewayModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, name, modelApiKey } = input;
+      const {
+        workspaceId,
+        name,
+        modelApiKey,
+        customModelBaseUrl,
+        customModelName,
+        customModelInputPrice,
+        customModelOutputPrice,
+      } = input;
 
       const aiGateway = await prisma.aIGateway.create({
         data: {
           workspaceId,
           name,
           modelApiKey,
+          customModelBaseUrl,
+          customModelName,
+          customModelInputPrice,
+          customModelOutputPrice,
         },
       });
 
-      return aiGateway;
+      return {
+        ...aiGateway,
+        customModelInputPrice: aiGateway.customModelInputPrice
+          ? Number(aiGateway.customModelInputPrice)
+          : null,
+        customModelOutputPrice: aiGateway.customModelOutputPrice
+          ? Number(aiGateway.customModelOutputPrice)
+          : null,
+      };
     }),
 
   update: workspaceAdminProcedure
@@ -110,7 +154,16 @@ export const aiGatewayRouter = router({
     )
     .output(AIGatewayModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, gatewayId, name, modelApiKey } = input;
+      const {
+        workspaceId,
+        gatewayId,
+        name,
+        modelApiKey,
+        customModelBaseUrl,
+        customModelName,
+        customModelInputPrice,
+        customModelOutputPrice,
+      } = input;
 
       const aiGateway = await prisma.aIGateway.update({
         where: {
@@ -120,12 +173,24 @@ export const aiGatewayRouter = router({
         data: {
           name,
           modelApiKey,
+          customModelBaseUrl,
+          customModelName,
+          customModelInputPrice,
+          customModelOutputPrice,
         },
       });
 
       clearGatewayInfoCache(workspaceId, gatewayId);
 
-      return aiGateway;
+      return {
+        ...aiGateway,
+        customModelInputPrice: aiGateway.customModelInputPrice
+          ? Number(aiGateway.customModelInputPrice)
+          : null,
+        customModelOutputPrice: aiGateway.customModelOutputPrice
+          ? Number(aiGateway.customModelOutputPrice)
+          : null,
+      };
     }),
 
   delete: workspaceAdminProcedure
@@ -153,7 +218,15 @@ export const aiGatewayRouter = router({
 
       clearGatewayInfoCache(workspaceId, gatewayId);
 
-      return aiGateway;
+      return {
+        ...aiGateway,
+        customModelInputPrice: aiGateway.customModelInputPrice
+          ? Number(aiGateway.customModelInputPrice)
+          : null,
+        customModelOutputPrice: aiGateway.customModelOutputPrice
+          ? Number(aiGateway.customModelOutputPrice)
+          : null,
+      };
     }),
   logs: workspaceProcedure
     .meta(

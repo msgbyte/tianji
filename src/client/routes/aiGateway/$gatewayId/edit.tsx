@@ -40,6 +40,10 @@ function AIGatewayEditComponent() {
       gatewayId,
       name: values.name,
       modelApiKey: values.modelApiKey ?? null,
+      customModelBaseUrl: values.customModelBaseUrl ?? null,
+      customModelName: values.customModelName ?? null,
+      customModelInputPrice: values.customModelInputPrice ?? null,
+      customModelOutputPrice: values.customModelOutputPrice ?? null,
     });
 
     trpcUtils.aiGateway.all.refetch();

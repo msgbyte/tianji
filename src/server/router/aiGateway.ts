@@ -3,10 +3,9 @@ import { calcOpenAIToken } from '../model/openai.js';
 import { z } from 'zod';
 import OpenAI from 'openai';
 import { prisma } from '../model/_client.js';
-import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
+import { AIGatewayLogs, AIGatewayLogsStatus, Prisma } from '@prisma/client';
 import { getLLMCostDecimal } from '../utils/llm.js';
 import { get } from 'lodash-es';
-import { buildQueryWithCache } from '../cache/index.js';
 import { verifyUserApiKey } from '../model/user.js';
 import { getGatewayInfoCache } from '../model/aiGateway.js';
 
@@ -70,9 +69,17 @@ aiGatewayRouter.post(
   })
 );
 
+aiGatewayRouter.post(
+  '/v1/:workspaceId/:gatewayId/custom/chat/completions',
+  buildOpenAIHandler({
+    isCustomRoute: true,
+  })
+);
+
 interface OpenaiHandlerOptions {
   baseUrl?: string;
   modelPriceName?: (model: string) => string;
+  isCustomRoute?: boolean;
 }
 
 export function buildOpenAIHandler(
@@ -80,7 +87,7 @@ export function buildOpenAIHandler(
 ): RequestHandler {
   return async (req, res) => {
     const payload = openaiRequestSchema.parse(req.body);
-    const { model, messages, stream } = payload;
+    const { messages, stream } = payload;
     const { workspaceId, gatewayId } = z
       .object({
         workspaceId: z.string(),
@@ -97,18 +104,28 @@ export function buildOpenAIHandler(
       modelApiKey = gatewayInfo.modelApiKey;
     }
 
+    // Use custom settings from gateway if available
+    const baseUrl =
+      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
+        ? gatewayInfo?.customModelBaseUrl
+        : options.baseUrl;
+    const modelName =
+      options.isCustomRoute && gatewayInfo?.customModelName
+        ? gatewayInfo?.customModelName
+        : payload.model;
+
     const start = Date.now();
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
       const inputToken = messages.reduce((acc, msg) => {
-        return acc + calcOpenAIToken(String(msg.content), model);
+        return acc + calcOpenAIToken(String(msg.content), modelName);
       }, 0);
 
       const _log = await prisma.aIGatewayLogs.create({
         data: {
           workspaceId,
           gatewayId,
-          modelName: model,
+          modelName,
           stream,
           inputToken,
           outputToken: -1,
@@ -127,11 +144,17 @@ export function buildOpenAIHandler(
     try {
       const openai = new OpenAI({
         apiKey: modelApiKey,
-        baseURL: options.baseUrl,
+        baseURL: baseUrl,
       });
       const modelPriceName = options.modelPriceName
-        ? options.modelPriceName(model)
-        : model;
+        ? options.modelPriceName(modelName)
+        : modelName;
+
+      // Create payload with custom model name if specified
+      const requestPayload = {
+        ...payload,
+        model: modelName,
+      };
 
       // Handle stream response
       if (stream) {
@@ -140,15 +163,15 @@ export function buildOpenAIHandler(
         res.setHeader('Connection', 'keep-alive');
 
         const stream = await openai.chat.completions.create({
-          ...payload,
+          ...requestPayload,
           stream: true,
         });
 
         let outputContent = '';
         let ttft = -1;
-        let modelName = model; // real model name which returned from remote. its will be some changed because of the model alias.
+        let responseModelName = modelName; // real model name which returned from remote. its will be some changed because of the model alias.
         for await (const chunk of stream) {
-          modelName = chunk.model;
+          responseModelName = chunk.model;
           if (ttft === -1) {
             ttft = Date.now() - start;
           }
@@ -166,7 +189,22 @@ export function buildOpenAIHandler(
         const duration = Date.now() - start;
 
         logP.then(async ({ id: logId, inputToken }) => {
-          const outputToken = calcOpenAIToken(outputContent, model);
+          const outputToken = calcOpenAIToken(outputContent, modelName);
+
+          // Use custom price if available, otherwise use default pricing
+          const customInputPrice = gatewayInfo?.customModelInputPrice;
+          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const price =
+            options.isCustomRoute && (customInputPrice || customOutputPrice)
+              ? (customInputPrice
+                  ? customInputPrice.mul(inputToken).div(1_000_000)
+                  : new Prisma.Decimal(0)
+                ).add(
+                  customOutputPrice
+                    ? customOutputPrice.mul(outputToken).div(1_000_000)
+                    : new Prisma.Decimal(0)
+                )
+              : getLLMCostDecimal(modelPriceName, inputToken, outputToken);
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -174,11 +212,11 @@ export function buildOpenAIHandler(
             },
             data: {
               status: AIGatewayLogsStatus.Success,
-              modelName,
+              modelName: responseModelName,
               outputToken,
               duration,
               ttft,
-              price: getLLMCostDecimal(modelPriceName, inputToken, outputToken),
+              price,
               responsePayload: { content: outputContent },
             },
           });
@@ -186,11 +224,11 @@ export function buildOpenAIHandler(
       } else {
         // Handle normal response
         const response = await openai.chat.completions.create({
-          ...payload,
+          ...requestPayload,
           stream: false,
         });
 
-        const modelName = response.model ?? model;
+        const responseModelName = response.model ?? modelName;
 
         res.json(response);
         const duration = Date.now() - start;
@@ -200,7 +238,24 @@ export function buildOpenAIHandler(
 
           const outputToken =
             response.usage?.completion_tokens ??
-            (typeof content === 'string' ? calcOpenAIToken(content, model) : 0);
+            (typeof content === 'string'
+              ? calcOpenAIToken(content, modelName)
+              : 0);
+
+          // Use custom price if available, otherwise use default pricing
+          const customInputPrice = gatewayInfo?.customModelInputPrice;
+          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const price =
+            options.isCustomRoute && (customInputPrice || customOutputPrice)
+              ? (customInputPrice
+                  ? customInputPrice.mul(inputToken).div(1_000_000)
+                  : new Prisma.Decimal(0)
+                ).add(
+                  customOutputPrice
+                    ? customOutputPrice.mul(outputToken).div(1_000_000)
+                    : new Prisma.Decimal(0)
+                )
+              : getLLMCostDecimal(modelPriceName, inputToken, outputToken);
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -210,8 +265,8 @@ export function buildOpenAIHandler(
               status: AIGatewayLogsStatus.Success,
               outputToken,
               duration,
-              modelName,
-              price: getLLMCostDecimal(modelPriceName, inputToken, outputToken),
+              modelName: responseModelName,
+              price,
               responsePayload: { ...response },
             },
           });
