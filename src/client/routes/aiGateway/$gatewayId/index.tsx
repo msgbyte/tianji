@@ -17,7 +17,7 @@ import { Loading } from '@/components/Loading';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useNavigate } from '@tanstack/react-router';
-import { LuPencil, LuTrash } from 'react-icons/lu';
+import { LuPencil, LuTrash, LuRefreshCw } from 'react-icons/lu';
 import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
@@ -139,7 +139,10 @@ function PageComponent() {
             <div className="flex h-full w-full flex-col overflow-auto rounded-lg border p-4">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-lg font-medium">{t('Gateway Logs')}</h3>
-                <RealtimeUpdateButton gatewayId={gatewayId} />
+                <div className="flex items-center space-x-2">
+                  <ManualRefreshButton gatewayId={gatewayId} />
+                  <RealtimeUpdateButton gatewayId={gatewayId} />
+                </div>
               </div>
               <AIGatewayLogTable gatewayId={gatewayId} />
             </div>
@@ -152,6 +155,39 @@ function PageComponent() {
 
 interface RealtimeUpdateButtonProps {
   gatewayId: string;
+}
+
+interface ManualRefreshButtonProps {
+  gatewayId: string;
+}
+
+function ManualRefreshButton({ gatewayId }: ManualRefreshButtonProps) {
+  const workspaceId = useCurrentWorkspaceId();
+  const utils = trpc.useUtils();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useEvent(async () => {
+    setIsRefreshing(true);
+    try {
+      await utils.aiGateway.logs.refetch({
+        workspaceId,
+        gatewayId,
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  });
+
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={handleRefresh}
+      disabled={isRefreshing}
+      Icon={LuRefreshCw}
+      loading={isRefreshing}
+    />
+  );
 }
 
 function RealtimeUpdateButton({ gatewayId }: RealtimeUpdateButtonProps) {
