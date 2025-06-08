@@ -9,6 +9,14 @@ type AIGatewayLogItem = AppRouterOutput['aiGateway']['logs']['items'][number];
 
 const columnHelper = createColumnHelper<AIGatewayLogItem>();
 
+// Generic render function for fields that should show "(null)" when value is -1
+const renderNullableValue = (value: number) => {
+  if (value === -1) {
+    return <span className="text-muted-foreground opacity-50">(null)</span>;
+  }
+  return value;
+};
+
 export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
   const { t } = useTranslation();
 
@@ -47,10 +55,12 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
       columnHelper.accessor('inputToken', {
         header: t('Input Tokens'),
         size: 120,
+        cell: (props) => renderNullableValue(props.getValue()),
       }),
       columnHelper.accessor('outputToken', {
         header: t('Output Tokens'),
         size: 120,
+        cell: (props) => renderNullableValue(props.getValue()),
       }),
       columnHelper.accessor('price', {
         header: t('Price ($)'),
@@ -59,11 +69,12 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
       columnHelper.accessor('duration', {
         header: t('Duration (ms)'),
         size: 120,
+        cell: (props) => renderNullableValue(props.getValue()),
       }),
       columnHelper.accessor('ttft', {
         header: t('TTFT (ms)'),
         size: 100,
-        cell: (props) => props.getValue() || '-',
+        cell: (props) => renderNullableValue(props.getValue()),
       }),
       columnHelper.accessor('stream', {
         header: t('Stream'),
