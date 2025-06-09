@@ -45,12 +45,6 @@ services:
 export AUTH_USE_SECURE_COOKIES=true
 ```
 
-**systemd Service:**
-```ini
-[Service]
-Environment=AUTH_USE_SECURE_COOKIES=true
-```
-
 ### Verification Steps
 
 After configuration, restart the service and check:
