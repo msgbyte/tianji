@@ -101,10 +101,10 @@ export function generateSMTPHTML(
                 }
 
                 <tr>
-                  <td>
+                  <td style="padding: 12px 0;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr>
-                        <td style="height: 1px; background-color: #e5e7eb; margin: 24px 0;"></td>
+                        <td style="height: 1px; background-color: #e5e7eb;"></td>
                       </tr>
                     </table>
                   </td>
