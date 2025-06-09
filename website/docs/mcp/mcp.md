@@ -4,6 +4,8 @@ sidebar_position: 1
 
 # Integration with MCP
 
+<a href="https://cursor.com/install-mcp?name=tianji&config=eyJ0eXBlIjoic3RkaW8iLCJjb21tYW5kIjoibnB4IC15IHRpYW5qaS1tY3Atc2VydmVyIiwiZW52Ijp7IlRJQU5KSV9CQVNFX1VSTCI6IiIsIlRJQU5KSV9BUElfS0VZIjoiIiwiVElBTkpJX1dPUktTUEFDRV9JRCI6IiJ9fQ%3D%3D"><em><img src="https://cursor.com/deeplink/mcp-install-light.svg" alt="Add tianji MCP server to Cursor" height="32" /></em></a>
+
 ## Introduction
 
 Tianji MCP Server is a server based on Model Context Protocol (MCP) that serves as a bridge between AI assistants and the Tianji platform. It exposes Tianji platform's survey functionality to AI assistants through the MCP protocol. This server provides the following core features:
