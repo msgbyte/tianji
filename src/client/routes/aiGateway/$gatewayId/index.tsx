@@ -79,10 +79,10 @@ function PageComponent() {
           title={gateway.name}
           actions={
             <div className="space-x-2">
+              <AIGatewayCodeExampleBtn gatewayId={gatewayId} />
+
               {hasAdminPermission && (
                 <>
-                  <AIGatewayCodeExampleBtn gatewayId={gatewayId} />
-
                   <Button
                     size="icon"
                     variant="outline"
