@@ -26,7 +26,7 @@ interface AIGatewayCodeExampleBtnProps {
 }
 
 // Define AI provider types
-type AIProvider = 'openai' | 'deepseek' | 'openrouter' | 'custom';
+type AIProvider = 'openai' | 'deepseek' | 'openrouter' | 'anthropic' | 'custom';
 
 // Define interface and models for each AI provider
 interface ProviderConfig {
@@ -72,6 +72,13 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
           defaultModel: 'openai/gpt-4o-mini',
           description: t('OpenRouter API compatible'),
           label: 'OpenRouter API',
+        },
+        anthropic: {
+          endpoint:
+            '/api/ai/v1/${workspaceId}/${gatewayId}/anthropic/chat/completions',
+          defaultModel: 'claude-opus-4-20250514',
+          description: t('Anthropic API compatible'),
+          label: 'Anthropic API',
         },
         custom: {
           endpoint:

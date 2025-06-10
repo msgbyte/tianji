@@ -47,6 +47,13 @@ aiGatewayRouter.post(
 );
 
 aiGatewayRouter.post(
+  '/v1/:workspaceId/:gatewayId/anthropic/chat/completions',
+  buildOpenAIHandler({
+    baseUrl: 'https://api.anthropic.com/v1/',
+  })
+);
+
+aiGatewayRouter.post(
   '/v1/:workspaceId/:gatewayId/openrouter/chat/completions',
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
