@@ -1,5 +1,22 @@
 
 
+## [1.21.12](https://github.com/msgbyte/tianji/compare/v1.21.11...v1.21.12) (2025-06-11)
+
+### Bug Fixes
+
+* fix a bug which normal user can not see example ([6d607a9](https://github.com/msgbyte/tianji/commit/6d607a969011e3596b3b0017ee95062448a78960))
+
+### Document
+
+* add installation link for Tianji MCP server ([250a1e7](https://github.com/msgbyte/tianji/commit/250a1e7a62d4f618c8a34ab2aa25633e7fca79f9))
+* remove unused section ([b39faf2](https://github.com/msgbyte/tianji/commit/b39faf20de2c062c11f94aaceacc5755b4711f75))
+
+### Others
+
+* ai gateway add anthropic api ([79d403a](https://github.com/msgbyte/tianji/commit/79d403a938ab08a9614db4de127c6c1eceb026c9))
+* update email template style ([0a63cf3](https://github.com/msgbyte/tianji/commit/0a63cf3a8319947126a9cda1944718f668454f7e))
+* update model price and context window config ([a769d71](https://github.com/msgbyte/tianji/commit/a769d71b577a95bd68ae1a231c69fa14e1ce9d18))
+
 ## [1.21.11](https://github.com/msgbyte/tianji/compare/v1.21.10...v1.21.11) (2025-06-08)
 
 ### Features
