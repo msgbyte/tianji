@@ -18,6 +18,7 @@ import { ensureJSONOutput, requestOpenAI } from '../model/openai.js';
 import pMap from 'p-map';
 import { runTask } from '../model/task.js';
 import { promMQConsumeCounter } from '../utils/prometheus/client.js';
+import { formatString, hasTemplateRegex } from '../utils/template.js';
 
 export async function runMQWorker() {
   const sock = new zmq.Pull();
@@ -359,7 +360,10 @@ async function runSurveyAITranslationWorker(msg: string) {
     const groups = chunk(
       data.map((item) => ({
         id: item.id,
-        content: item.payload[payloadContentField] ?? '',
+        content:
+          (hasTemplateRegex(payloadContentField)
+            ? formatString(payloadContentField, { ...item.payload })
+            : item.payload[payloadContentField]) ?? '',
       })),
       40 // use 40 rather than 100 to avoid sonnet attention mechanism
     );

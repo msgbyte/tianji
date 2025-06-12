@@ -1,6 +1,7 @@
 import { template, templateSettings } from 'lodash-es';
 
-templateSettings.interpolate = /{{([\s\S]+?)}}/g;
+const templateRegex = /{{([\s\S]+?)}}/g;
+templateSettings.interpolate = templateRegex;
 
 /**
  * @example
@@ -10,4 +11,8 @@ templateSettings.interpolate = /{{([\s\S]+?)}}/g;
  */
 export function formatString(raw: string, variable: Record<string, string>) {
   return template(raw)(variable);
+}
+
+export function hasTemplateRegex(raw: string) {
+  return templateRegex.test(raw);
 }
