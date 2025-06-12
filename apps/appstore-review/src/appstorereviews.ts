@@ -21,11 +21,13 @@ export const startReview = (
   config.regions = config.regions || ['us'];
   config.interval = config.interval || DEFAULT_INTERVAL_SECONDS;
 
-  config.regions.forEach((region, i) => {
-    fetchAppInformation(config, region, (globalAppInformation) => {
+  config.regions.forEach(async (region, i) => {
+    try {
+      const globalAppInformation = await fetchAppInformation(config, region);
       const appInformation = { ...globalAppInformation };
 
-      fetchAppStoreReviews(config, appInformation, (reviews) => {
+      try {
+        const reviews = await fetchAppStoreReviews(config, appInformation);
         if (firstRun) {
           reviews.forEach((review) => markReviewAsPublished(config, review));
 
@@ -40,33 +42,54 @@ export const startReview = (
         } else {
           handleFetchedAppStoreReviews(config, appInformation, reviews);
         }
+      } catch (error) {
+        if (config.verbose) {
+          console.error(
+            `ERROR: Failed to fetch App Store reviews (${config.appId}) (${appInformation.region})`,
+            error
+          );
+        }
+      }
 
-        const intervalSeconds =
-          (config.interval ?? DEFAULT_INTERVAL_SECONDS) + i * 10;
+      const intervalSeconds =
+        (config.interval ?? DEFAULT_INTERVAL_SECONDS) + i * 10;
 
-        setInterval(() => {
+      setInterval(async () => {
+        if (config.verbose) {
+          console.log(`INFO: [${config.appId}] Fetching App Store reviews`);
+        }
+
+        try {
+          const reviews = await fetchAppStoreReviews(config, appInformation);
+          handleFetchedAppStoreReviews(config, appInformation, reviews);
+        } catch (error) {
           if (config.verbose) {
-            console.log(`INFO: [${config.appId}] Fetching App Store reviews`);
+            console.error(
+              `ERROR: Failed to fetch App Store reviews during interval (${config.appId}) (${appInformation.region})`,
+              error
+            );
           }
-
-          fetchAppStoreReviews(config, appInformation, (reviews) => {
-            handleFetchedAppStoreReviews(config, appInformation, reviews);
-          });
-        }, intervalSeconds * 1000);
-      });
-    });
+        }
+      }, intervalSeconds * 1000);
+    } catch (error) {
+      if (config.verbose) {
+        console.error(
+          `ERROR: Failed to fetch app information (${config.appId}) (${region})`,
+          error
+        );
+      }
+    }
   });
 };
 
 const fetchAppStoreReviewsByPage = (
   config: AppstoreConfig,
   appInformation: AppInformation,
-  page: number,
-  callback: (reviews: Review[]) => void
-): void => {
+  page: number
+): Promise<Review[]> => {
   const url = `https://itunes.apple.com/${appInformation.region}/rss/customerreviews/page=${page}/id=${config.appId}/sortBy=mostRecent/json`;
 
-  axios
+  return axios
     .get(url)
     .then((res) => {
       const rss = res.data;
@@ -77,8 +100,7 @@ const fetchAppStoreReviewsByPage = (
             `INFO: No reviews from App Store (${config.appId}) (${appInformation.region})`
           );
         }
-        callback([]);
-        return;
+        return [];
       }
 
       if (config.verbose) {
@@ -92,7 +114,7 @@ const fetchAppStoreReviewsByPage = (
         .reverse()
         .map((entry: any) => parseAppStoreReview(entry, appInformation));
 
-      callback(reviews);
+      return reviews;
     })
     .catch((error) => {
       if (config.verbose) {
@@ -101,29 +123,43 @@ const fetchAppStoreReviewsByPage = (
           error
         );
       }
-      callback([]);
+      return [];
     });
 };
 
-export const fetchAppStoreReviews = (
+export const fetchAppStoreReviews = async (
   config: AppstoreConfig,
-  appInformation: AppInformation,
-  callback: (reviews: Review[]) => void
-): void => {
+  appInformation: AppInformation
+): Promise<Review[]> => {
   let page = 1;
   const allReviews: Review[] = [];
 
-  const pageCallback = (reviews: Review[]): void => {
-    allReviews.push(...reviews);
-    if (reviews.length > 0 && page < 10) {
-      page++;
-      fetchAppStoreReviewsByPage(config, appInformation, page, pageCallback);
-    } else {
-      callback(allReviews);
-    }
-  };
+  while (page <= 10) {
+    try {
+      const reviews = await fetchAppStoreReviewsByPage(
+        config,
+        appInformation,
+        page
+      );
+      allReviews.push(...reviews);
 
-  fetchAppStoreReviewsByPage(config, appInformation, page, pageCallback);
+      if (reviews.length === 0) {
+        break;
+      }
+    } catch (error) {
+      if (config.verbose) {
+        console.error(
+          `ERROR: Failed to fetch App Store reviews for page ${page} (${config.appId}) (${appInformation.region})`,
+          error
+        );
+      }
+      // Continue to next page even if current page fails
+    }
+
+    page++;
+  }
+
+  return allReviews;
 };
 
 export const handleFetchedAppStoreReviews = (
@@ -179,9 +215,8 @@ const publishReview = (
 
 export const fetchAppInformation = (
   config: AppstoreConfig,
-  region: string,
-  callback: (info: AppInformation) => void
-): void => {
+  region: string
+): Promise<AppInformation> => {
   const url = `https://itunes.apple.com/lookup?id=${config.appId}&country=${region}`;
   const appInformation: AppInformation = {
     // appName: config.appName,
@@ -193,15 +228,14 @@ export const fetchAppInformation = (
     region,
   };
 
-  axios
+  return axios
     .get(url)
     .then(({ data }) => {
       const entries = data.results;
       if (!entries || entries.length === 0) {
         if (config.verbose)
           console.log(`INFO: No data from App Store (${config.appId})`);
-        callback(appInformation);
-        return;
+        return appInformation;
       }
 
       if (config.verbose)
@@ -212,7 +246,7 @@ export const fetchAppInformation = (
       appInformation.appIcon = appInformation.appIcon || entry.artworkUrl100;
       appInformation.appLink = appInformation.appLink || entry.trackViewUrl;
 
-      callback(appInformation);
+      return appInformation;
     })
     .catch((error) => {
       if (config.verbose) {
@@ -221,7 +255,7 @@ export const fetchAppInformation = (
           error
         );
       }
-      callback(appInformation);
+      return appInformation;
     });
 };
 
