@@ -22,6 +22,7 @@ import { LuTriangleAlert, LuEllipsisVertical, LuTrash2 } from 'react-icons/lu';
 import { useMonitorAction } from './useMonitorAction';
 import { Button } from '../ui/button';
 import { MonitorPushStatus } from './MonitorPushStatus';
+import { MonitorHTTPTiming } from './MonitorHTTPTiming';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -45,6 +46,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     workspaceId,
     monitorId,
   });
+  const trpcutils = trpc.useUtils();
 
   const {
     changeActiveMutation,
@@ -188,6 +190,10 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
               showCurrentStatus={true}
               onBeatsItemUpdate={(items) => {
                 setCurrentResponse(last(items)?.value ?? 0);
+                trpcutils.monitor.getStatus.invalidate({
+                  workspaceId,
+                  monitorId,
+                });
               }}
             />
           </Card>
@@ -203,6 +209,10 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
           <Card>
             <MonitorDataChart monitorId={monitorId} />
           </Card>
+
+          {monitorInfo.type === 'http' && (
+            <MonitorHTTPTiming monitorId={monitorId} />
+          )}
 
           {monitorInfo.type === 'push' && monitorInfo.active && (
             <Card>
