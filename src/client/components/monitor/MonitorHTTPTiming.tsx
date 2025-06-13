@@ -213,10 +213,8 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
           {/* Collapsed content */}
           <div
             className={cn(
-              'transition-all duration-200',
-              isExpanded
-                ? 'pointer-events-none -translate-y-2 opacity-0'
-                : 'translate-y-0 opacity-100'
+              'overflow-hidden transition-all duration-200',
+              isExpanded ? 'max-h-0 opacity-0' : 'max-h-20 opacity-100'
             )}
           >
             <CardContent>
@@ -239,10 +237,8 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
           {/* Expanded content */}
           <div
             className={cn(
-              'transition-all duration-200',
-              isExpanded
-                ? 'translate-y-0 opacity-100'
-                : 'pointer-events-none translate-y-2 opacity-0'
+              'overflow-hidden transition-all duration-200',
+              isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
             )}
           >
             <CardContent className="space-y-6">
@@ -312,6 +308,12 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
                               {/* Time markers */}
                               <div
                                 className="text-muted-foreground absolute text-[10px]"
+                                style={{ left: `${phaseStartPercentage}%` }}
+                              >
+                                {formatTime(phaseStartTime)}
+                              </div>
+                              <div
+                                className="text-muted-foreground absolute text-[10px]"
                                 style={{
                                   left: `${phaseStartPercentage + phaseWidthPercentage}%`,
                                 }}
@@ -326,6 +328,29 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
                         </div>
                       );
                     })}
+                  </div>
+
+                  {/* Total timeline at bottom */}
+                  <div className="border-border mt-4 border-t pt-3">
+                    <div className="flex h-8 items-center gap-3">
+                      <div className="text-foreground w-20 text-xs font-medium">
+                        {t('Total')}
+                      </div>
+                      <div className="relative flex-1">
+                        <div className="bg-foreground/10 h-6 rounded border">
+                          <div className="bg-foreground/20 h-full rounded"></div>
+                        </div>
+                        <div className="text-muted-foreground absolute -top-5 left-0 text-[10px]">
+                          0ms
+                        </div>
+                        <div className="text-muted-foreground absolute -top-5 right-0 text-[10px]">
+                          {formatTime(totalTime)}
+                        </div>
+                      </div>
+                      <div className="text-foreground w-16 text-right font-mono text-xs font-bold">
+                        {formatTime(totalTime)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
