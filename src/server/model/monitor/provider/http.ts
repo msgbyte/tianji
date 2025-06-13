@@ -1,5 +1,5 @@
 import { MonitorProvider } from './type.js';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { timedFetch, TimedFetchOptions } from '../../../utils/fetch.js';
 import { logger } from '../../../utils/logger.js';
 import dayjs from 'dayjs';
 import https from 'https';
@@ -33,19 +33,18 @@ export const http: MonitorProvider<{
       validStatusCodes = [],
     } = monitor.payload;
 
-    const config: AxiosRequestConfig = {
-      url: url,
-      method: (method || 'get').toLowerCase(),
+    const requestHeaders: Record<string, string> = {
+      Accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      ...(contentType ? { 'Content-Type': contentType } : {}),
+    };
+
+    const config: TimedFetchOptions = {
+      method: (method || 'get').toUpperCase() as TimedFetchOptions['method'],
       timeout: timeout * 1000,
-      headers: {
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        ...(contentType ? { 'Content-Type': contentType } : {}),
-      },
+      headers: requestHeaders,
       maxRedirects: maxRedirects,
-      // validateStatus: (status) => {
-      //   return checkStatusCode(status, this.getAcceptedStatuscodes());
-      // },
+      parseJson: false, // Keep as raw text for consistent behavior
     };
 
     if (headers) {
@@ -63,33 +62,47 @@ export const http: MonitorProvider<{
     }
 
     if (bodyValue) {
-      config.data = bodyValue;
+      config.body = bodyValue;
     }
 
-    const httpsAgentOptions = {
-      maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-      rejectUnauthorized: !ignoreTLS,
-    };
+    const isHttps = url.toLowerCase().startsWith('https:');
 
-    const httpsAgent = (config.httpsAgent = new https.Agent(httpsAgentOptions));
-    httpsAgent.once('keylog', (line, tlsSocket) => {
-      tlsSocket.once('secureConnect', async () => {
-        try {
-          const { valid, certInfo } = checkCertificate(tlsSocket);
+    if (isHttps) {
+      const httpsAgentOptions = {
+        maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+        rejectUnauthorized: !ignoreTLS,
+      };
 
-          await saveMonitorStatus(monitor.id, 'tls', {
-            valid,
-            certInfo,
-          });
-        } catch (err) {}
+      const httpsAgent = new https.Agent(httpsAgentOptions);
+      config.httpsAgent = httpsAgent;
+      httpsAgent.once('keylog', (line, tlsSocket) => {
+        tlsSocket.once('secureConnect', async () => {
+          try {
+            const { valid, certInfo } = checkCertificate(tlsSocket);
+
+            await saveMonitorStatus(monitor.id, 'tls', {
+              valid,
+              certInfo,
+            });
+          } catch (err) {}
+        });
       });
-    });
+    }
 
     try {
-      const startTime = dayjs();
-      const res = await axios({ ...config });
+      const res = await timedFetch(url, config);
 
-      const diff = dayjs().diff(startTime, 'ms');
+      saveMonitorStatus(monitor.id, 'timings', {
+        ...res.timings,
+      }).catch((err) => {
+        logger.error(
+          `run monitor(${monitor.id}) save timing error:`,
+          String(err)
+        );
+      });
+
+      // Use the total time from timedFetch instead of manual calculation
+      const diff = Math.round(res.timings.total);
 
       if (!validStatusCodes || validStatusCodes.length === 0) {
         // default is 200 - 299
