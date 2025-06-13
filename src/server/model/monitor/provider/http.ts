@@ -3,6 +3,7 @@ import { timedFetch, TimedFetchOptions } from '../../../utils/fetch.js';
 import { logger } from '../../../utils/logger.js';
 import dayjs from 'dayjs';
 import https from 'https';
+import * as httpModule from 'http';
 import { saveMonitorStatus } from './_utils.js';
 
 export const http: MonitorProvider<{
@@ -71,6 +72,7 @@ export const http: MonitorProvider<{
       const httpsAgentOptions = {
         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
         rejectUnauthorized: !ignoreTLS,
+        keepAlive: false,
       };
 
       const httpsAgent = new https.Agent(httpsAgentOptions);
@@ -87,6 +89,11 @@ export const http: MonitorProvider<{
           } catch (err) {}
         });
       });
+    } else {
+      const httpAgent = new httpModule.Agent({
+        keepAlive: false,
+      });
+      config.httpAgent = httpAgent;
     }
 
     try {

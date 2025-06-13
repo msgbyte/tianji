@@ -61,6 +61,8 @@ export interface TimedFetchOptions {
   /** Maximum number of redirects (default: 10) */
   maxRedirects?: number;
   /** HTTP Agent for connection pooling and proxy support */
+  httpAgent?: http.Agent;
+  /** HTTPS Agent for connection pooling and proxy support */
   httpsAgent?: https.Agent;
   /** Retry configuration */
   retry?: {
@@ -90,15 +92,23 @@ export interface TimedFetchOptions {
  *   json: { name: 'John', email: 'john@example.com' }
  * });
  *
- * // Custom configuration with agent
- * const customAgent = new https.Agent({ keepAlive: true });
+ * // Custom configuration with HTTPS agent
+ * const httpsCustomAgent = new https.Agent({ keepAlive: true });
  * const customResult = await timedFetch('https://api.example.com/data', {
  *   method: 'GET',
  *   headers: { 'Authorization': 'Bearer token' },
  *   timeout: 5000,
- *   agent: customAgent,
+ *   httpsAgent: httpsCustomAgent,
  *   parseJson: true,
  *   retry: { limit: 3 }
+ * });
+ *
+ * // Custom configuration with HTTP agent
+ * const httpCustomAgent = new http.Agent({ keepAlive: true });
+ * const httpResult = await timedFetch('http://api.example.com/data', {
+ *   method: 'GET',
+ *   httpAgent: httpCustomAgent,
+ *   timeout: 5000
  * });
  * ```
  */
@@ -116,6 +126,7 @@ export async function timedFetch<T = unknown>(
     searchParams,
     followRedirect = true,
     maxRedirects = 10,
+    httpAgent,
     httpsAgent,
     retry = { limit: 0 },
   } = options;
@@ -138,6 +149,7 @@ export async function timedFetch<T = unknown>(
         parseJson,
         followRedirect,
         maxRedirects,
+        httpAgent,
         httpsAgent
       );
     } catch (error) {
@@ -163,6 +175,7 @@ async function makeRequest<T>(
   parseJson: boolean = true,
   followRedirect: boolean = true,
   maxRedirects: number = 10,
+  httpAgent?: http.Agent,
   httpsAgent?: https.Agent,
   redirectCount: number = 0
 ): Promise<TimedResponse<T>> {
@@ -226,8 +239,10 @@ async function makeRequest<T>(
     };
 
     // Add agent if provided
-    if (httpsAgent !== undefined && isHttps) {
+    if (isHttps && httpsAgent !== undefined) {
       requestOptions.agent = httpsAgent;
+    } else if (!isHttps && httpAgent !== undefined) {
+      requestOptions.agent = httpAgent;
     }
 
     const req = httpModule.request(requestOptions, (res) => {
@@ -258,6 +273,7 @@ async function makeRequest<T>(
           parseJson,
           followRedirect,
           maxRedirects,
+          httpAgent,
           httpsAgent,
           redirectCount + 1
         )
@@ -292,12 +308,26 @@ async function makeRequest<T>(
         }
 
         // Calculate timing differences
+        // Handle cases where events didn't fire (e.g., connection reuse)
+        const dnsTime =
+          timings.dnsLookup > timings.start
+            ? timings.dnsLookup - timings.start
+            : 0;
+
+        const tcpTime =
+          timings.tcpConnect > timings.dnsLookup
+            ? timings.tcpConnect - timings.dnsLookup
+            : 0;
+
+        const tlsTime =
+          isHttps && timings.tlsConnect > timings.tcpConnect
+            ? timings.tlsConnect - timings.tcpConnect
+            : 0;
+
         const calculatedTimings: RequestTimings = {
-          dns: Math.max(0, timings.dnsLookup - timings.start),
-          tcp: Math.max(0, timings.tcpConnect - timings.dnsLookup),
-          tls: isHttps
-            ? Math.max(0, timings.tlsConnect - timings.tcpConnect)
-            : 0,
+          dns: dnsTime,
+          tcp: tcpTime,
+          tls: tlsTime,
           ttfb: Math.max(0, timings.firstByte - timings.start),
           download: Math.max(0, timings.end - timings.firstByte),
           total: Math.max(0, timings.end - timings.start),
@@ -343,6 +373,39 @@ async function makeRequest<T>(
 
     req.on('finish', () => {
       timings.requestSent = performance.now();
+    });
+
+    // Additional socket event listeners for better timing
+    req.on('socket', (socket) => {
+      if (socket.connecting) {
+        socket.on('lookup', () => {
+          if (timings.dnsLookup === 0) {
+            timings.dnsLookup = performance.now();
+          }
+        });
+
+        socket.on('connect', () => {
+          if (timings.tcpConnect === 0) {
+            timings.tcpConnect = performance.now();
+          }
+        });
+
+        if (isHttps) {
+          socket.on('secureConnect', () => {
+            if (timings.tlsConnect === 0) {
+              timings.tlsConnect = performance.now();
+            }
+          });
+        }
+      } else {
+        // If socket is already connected, set timing values to start time
+        // to indicate reused connection
+        timings.dnsLookup = timings.start;
+        timings.tcpConnect = timings.start;
+        if (isHttps) {
+          timings.tlsConnect = timings.start;
+        }
+      }
     });
 
     req.on('timeout', () => {
