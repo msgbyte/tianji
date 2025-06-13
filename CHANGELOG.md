@@ -1,5 +1,15 @@
 
 
+## [1.21.13](https://github.com/msgbyte/tianji/compare/v1.21.12...v1.21.13) (2025-06-13)
+
+### Features
+
+* add template support for ai translation worker which easy to translate mul-field ([7c7dbc3](https://github.com/msgbyte/tianji/commit/7c7dbc39d4ad71e83371f19e34ad50b00f773429))
+
+### Others
+
+* update app store and Google Play reviews fetching to use async/await for better error handling ([81bf407](https://github.com/msgbyte/tianji/commit/81bf4071d943fe71330c8a144be8480d6cb8067b))
+
 ## [1.21.12](https://github.com/msgbyte/tianji/compare/v1.21.11...v1.21.12) (2025-06-11)
 
 ### Bug Fixes
