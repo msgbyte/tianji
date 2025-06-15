@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   Clock,
   Globe,
   Zap,
@@ -145,6 +151,7 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
         icon: Globe,
         color: 'bg-blue-500',
         duration: dns,
+        tooltip: t('Time taken to resolve the domain name to an IP address.'),
       },
       {
         key: 'tcp',
@@ -152,6 +159,7 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
         icon: Zap,
         color: 'bg-green-500',
         duration: tcp,
+        tooltip: t('Time taken to establish a TCP connection with the server.'),
       },
       {
         key: 'tls',
@@ -159,6 +167,9 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
         icon: Shield,
         color: 'bg-yellow-500',
         duration: tls,
+        tooltip: t(
+          'Time taken for the client and server to establish a secure TLS connection (for HTTPS).'
+        ),
       },
       {
         key: 'waiting',
@@ -166,6 +177,9 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
         icon: Activity,
         color: 'bg-orange-500',
         duration: waitingTime,
+        tooltip: t(
+          'Time from when the server receives the request until the first byte is returned to the client.'
+        ),
       },
       {
         key: 'download',
@@ -173,6 +187,9 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
         icon: Download,
         color: 'bg-purple-500',
         duration: download,
+        tooltip: t(
+          'Time taken to download the response content from the server after the first byte.'
+        ),
       },
     ];
 
@@ -241,202 +258,192 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
               isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
             )}
           >
-            <CardContent className="space-y-6">
-              {/* Timeline visualization - Stacked Chart */}
-              <div className="space-y-4">
-                <div className="text-muted-foreground text-sm font-medium">
-                  {t('Request Timeline')}
-                </div>
+            <TooltipProvider delayDuration={100}>
+              <CardContent className="space-y-6">
+                {/* Timeline visualization - Stacked Chart */}
+                <div className="space-y-4">
+                  <div className="text-muted-foreground text-sm font-medium">
+                    {t('Request Timeline')}
+                  </div>
 
-                {/* Stacked Timeline */}
-                <div className="bg-muted relative rounded-lg p-4">
-                  <div className="space-y-2">
-                    {phases.map((phase, index) => {
-                      // Calculate the correct start time for each phase based on fetch.ts logic
-                      let phaseStartTime = 0;
-                      let phaseEndTime = phase.duration;
+                  {/* Stacked Timeline */}
+                  <div className="bg-muted relative rounded-lg p-4">
+                    <div className="space-y-2">
+                      {phases.map((phase, index) => {
+                        // Calculate the correct start time for each phase based on fetch.ts logic
+                        let phaseStartTime = 0;
+                        let phaseEndTime = phase.duration;
 
-                      if (phase.key === 'dns') {
-                        phaseStartTime = 0;
-                        phaseEndTime = dns;
-                      } else if (phase.key === 'tcp') {
-                        phaseStartTime = dns;
-                        phaseEndTime = dns + tcp;
-                      } else if (phase.key === 'tls') {
-                        phaseStartTime = dns + tcp;
-                        phaseEndTime = dns + tcp + tls;
-                      } else if (phase.key === 'waiting') {
-                        phaseStartTime = dns + tcp + tls;
-                        phaseEndTime = ttfb;
-                      } else if (phase.key === 'download') {
-                        phaseStartTime = ttfb;
-                        phaseEndTime = ttfb + download;
-                      }
+                        if (phase.key === 'dns') {
+                          phaseStartTime = 0;
+                          phaseEndTime = dns;
+                        } else if (phase.key === 'tcp') {
+                          phaseStartTime = dns;
+                          phaseEndTime = dns + tcp;
+                        } else if (phase.key === 'tls') {
+                          phaseStartTime = dns + tcp;
+                          phaseEndTime = dns + tcp + tls;
+                        } else if (phase.key === 'waiting') {
+                          phaseStartTime = dns + tcp + tls;
+                          phaseEndTime = ttfb;
+                        } else if (phase.key === 'download') {
+                          phaseStartTime = ttfb;
+                          phaseEndTime = ttfb + download;
+                        }
 
-                      const phaseStartPercentage =
-                        totalTime > 0 ? (phaseStartTime / totalTime) * 100 : 0;
-                      const phaseWidthPercentage =
-                        totalTime > 0 ? (phase.duration / totalTime) * 100 : 0;
+                        const phaseStartPercentage =
+                          totalTime > 0
+                            ? (phaseStartTime / totalTime) * 100
+                            : 0;
+                        const phaseWidthPercentage =
+                          totalTime > 0
+                            ? (phase.duration / totalTime) * 100
+                            : 0;
 
-                      return (
-                        <div key={phase.key} className="relative">
-                          {/* Phase bar */}
-                          <div className="flex h-7 items-center gap-3">
-                            <div className="text-muted-foreground flex w-20 items-center gap-2 text-xs font-medium">
-                              <phase.icon className="h-4 w-4 flex-shrink-0" />
-                              <span>{phase.label}</span>
-                            </div>
-                            <div className="relative flex-1">
-                              <div className="bg-background relative h-6 overflow-hidden rounded border">
-                                {/* Background track */}
-                                <div className="bg-muted/30 absolute inset-0"></div>
-                                {/* Active phase bar with offset */}
+                        return (
+                          <div key={phase.key} className="relative">
+                            {/* Phase bar */}
+                            <div className="flex h-7 items-center gap-3">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="text-muted-foreground flex w-20 cursor-help items-center gap-2 text-xs font-medium">
+                                    <phase.icon className="h-4 w-4 flex-shrink-0" />
+                                    <span>{phase.label}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{phase.tooltip}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <div className="relative flex-1">
+                                <div className="bg-background relative h-6 overflow-hidden rounded border">
+                                  {/* Background track */}
+                                  <div className="bg-muted/30 absolute inset-0"></div>
+                                  {/* Active phase bar with offset */}
+                                  <div
+                                    className={cn(
+                                      'absolute flex h-full items-center justify-center rounded-sm text-xs font-medium text-white transition-all hover:opacity-80',
+                                      phase.color
+                                    )}
+                                    style={{
+                                      left: `${phaseStartPercentage}%`,
+                                      width: `${phaseWidthPercentage}%`,
+                                    }}
+                                  >
+                                    {phaseWidthPercentage > 15 &&
+                                      formatTime(phase.duration)}
+                                  </div>
+                                </div>
+                                {/* Time markers */}
                                 <div
-                                  className={cn(
-                                    'absolute flex h-full items-center justify-center rounded-sm text-xs font-medium text-white transition-all hover:opacity-80',
-                                    phase.color
-                                  )}
+                                  className="text-muted-foreground absolute text-[10px]"
+                                  style={{ left: `${phaseStartPercentage}%` }}
+                                >
+                                  {formatTime(phaseStartTime)}
+                                </div>
+                                <div
+                                  className="text-muted-foreground absolute text-[10px]"
                                   style={{
-                                    left: `${phaseStartPercentage}%`,
-                                    width: `${phaseWidthPercentage}%`,
+                                    left: `${phaseStartPercentage + phaseWidthPercentage}%`,
                                   }}
                                 >
-                                  {phaseWidthPercentage > 15 &&
-                                    formatTime(phase.duration)}
+                                  {formatTime(phaseEndTime)}
                                 </div>
                               </div>
-                              {/* Time markers */}
-                              <div
-                                className="text-muted-foreground absolute text-[10px]"
-                                style={{ left: `${phaseStartPercentage}%` }}
-                              >
-                                {formatTime(phaseStartTime)}
+                              <div className="text-muted-foreground w-16 text-right font-mono text-xs">
+                                {formatTime(phase.duration)}
                               </div>
-                              <div
-                                className="text-muted-foreground absolute text-[10px]"
-                                style={{
-                                  left: `${phaseStartPercentage + phaseWidthPercentage}%`,
-                                }}
-                              >
-                                {formatTime(phaseEndTime)}
-                              </div>
-                            </div>
-                            <div className="text-muted-foreground w-16 text-right font-mono text-xs">
-                              {formatTime(phase.duration)}
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Total timeline at bottom */}
-                  <div className="border-border mt-4 border-t pt-3">
-                    <div className="flex h-8 items-center gap-3">
-                      <div className="text-foreground w-20 text-xs font-medium">
-                        {t('Total')}
-                      </div>
-                      <div className="relative flex-1">
-                        <div className="bg-foreground/10 h-6 rounded border">
-                          <div className="bg-foreground/20 h-full rounded"></div>
-                        </div>
-                        <div className="text-muted-foreground absolute -top-5 left-0 text-[10px]">
-                          0ms
-                        </div>
-                        <div className="text-muted-foreground absolute -top-5 right-0 text-[10px]">
-                          {formatTime(totalTime)}
-                        </div>
-                      </div>
-                      <div className="text-foreground w-16 text-right font-mono text-xs font-bold">
-                        {formatTime(totalTime)}
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Phase details */}
-              <div className="space-y-3">
-                <div className="text-muted-foreground text-sm font-medium">
-                  {t('Phase Breakdown')}
-                </div>
-                {phases.map((phase, index) => {
-                  const startTime = phases
-                    .slice(0, index)
-                    .reduce((sum, p) => sum + p.duration, 0);
-                  const endTime = startTime + phase.duration;
-                  const percentage =
-                    totalTime > 0
-                      ? ((phase.duration / totalTime) * 100).toFixed(1)
-                      : '0';
+                {/* Phase details */}
+                <div className="space-y-3">
+                  <div className="text-muted-foreground text-sm font-medium">
+                    {t('Phase Breakdown')}
+                  </div>
+                  {phases.map((phase, index) => {
+                    const startTime = phases
+                      .slice(0, index)
+                      .reduce((sum, p) => sum + p.duration, 0);
+                    const endTime = startTime + phase.duration;
+                    const percentage =
+                      totalTime > 0
+                        ? ((phase.duration / totalTime) * 100).toFixed(1)
+                        : '0';
 
-                  return (
-                    <div
-                      key={phase.key}
-                      className="hover:bg-muted/50 flex items-center justify-between rounded-lg px-3 py-2 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={cn('h-4 w-4 rounded', phase.color)} />
-                        <div className="flex items-center gap-2">
-                          <phase.icon className="text-muted-foreground h-5 w-5" />
-                          <span className="text-sm font-medium">
-                            {phase.label}
+                    return (
+                      <div
+                        key={phase.key}
+                        className="hover:bg-muted/50 flex items-center justify-between rounded-lg px-3 py-2 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn('h-4 w-4 rounded', phase.color)} />
+                          <div className="flex items-center gap-2">
+                            <phase.icon className="text-muted-foreground h-5 w-5" />
+                            <span className="text-sm font-medium">
+                              {phase.label}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="text-muted-foreground font-mono">
+                            {formatTime(startTime)} → {formatTime(endTime)}
                           </span>
+                          <Badge
+                            variant="outline"
+                            className="min-w-[70px] justify-center font-mono text-xs"
+                          >
+                            {formatTime(phase.duration)} ({percentage}%)
+                          </Badge>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="text-muted-foreground font-mono">
-                          {formatTime(startTime)} → {formatTime(endTime)}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="min-w-[70px] justify-center font-mono text-xs"
-                        >
-                          {formatTime(phase.duration)} ({percentage}%)
-                        </Badge>
-                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Summary metrics */}
+                <div className="grid grid-cols-2 gap-4 border-t pt-4 md:grid-cols-4">
+                  <div className="bg-muted/50 rounded-lg p-3 text-center">
+                    <div className="text-foreground text-lg font-bold">
+                      {formatTime(dns + tcp + tls)}
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="text-muted-foreground text-xs">
+                      {t('Connection Setup')}
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3 text-center">
+                    <div className="text-foreground text-lg font-bold">
+                      {formatTime(ttfb)}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      {t('Time to First Byte')}
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3 text-center">
+                    <div className="text-foreground text-lg font-bold">
+                      {formatTime(download)}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      {t('Download Time')}
+                    </div>
+                  </div>
 
-              {/* Summary metrics */}
-              <div className="grid grid-cols-2 gap-4 border-t pt-4 md:grid-cols-4">
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-foreground text-lg font-bold">
-                    {formatTime(dns + tcp + tls)}
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    {t('Connection Setup')}
-                  </div>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-foreground text-lg font-bold">
-                    {formatTime(ttfb)}
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    {t('Time to First Byte')}
+                  <div className="bg-muted/50 rounded-lg p-3 text-center">
+                    <div className="text-foreground text-lg font-bold">
+                      {formatTime(totalTime)}
+                    </div>
+                    <div className="text-muted-foreground text-xs">
+                      {t('Total Time')}
+                    </div>
                   </div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-foreground text-lg font-bold">
-                    {formatTime(download)}
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    {t('Download Time')}
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-foreground text-lg font-bold">
-                    {formatTime(totalTime)}
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    {t('Total Time')}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            </TooltipProvider>
           </div>
         </div>
       </Card>
