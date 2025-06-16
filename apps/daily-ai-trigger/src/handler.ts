@@ -7,11 +7,16 @@ export async function handleTriggerAITask(env: Env) {
 	const surveyId = env.SURVEY_ID;
 	const payloadContentField = env.PAYLOAD_CONTENT_FIELD;
 
-	const category = await openApiClient.SurveyService.surveyAiCategoryList({
-		workspaceId,
-		surveyId,
-	});
-	const suggestionCategory = category.map((c) => c.name).filter((n): n is string => Boolean(n));
+	let suggestionCategory: string[] = [];
+	if (typeof env.FOCUS_CATEGORY === 'string' && env.FOCUS_CATEGORY.length > 0) {
+		suggestionCategory = env.FOCUS_CATEGORY.split(',');
+	} else {
+		const category = await openApiClient.SurveyService.surveyAiCategoryList({
+			workspaceId,
+			surveyId,
+		});
+		suggestionCategory = category.map((c) => c.name).filter((n): n is string => Boolean(n));
+	}
 
 	const startAt = dayjs().subtract(1, 'day').startOf('day').valueOf();
 	const endAt = dayjs().endOf('day').valueOf();

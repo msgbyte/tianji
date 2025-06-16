@@ -7,6 +7,7 @@ interface Env {
 	SURVEY_ID: string;
 	PAYLOAD_CONTENT_FIELD: string;
 	LANGUAGE: string;
+	FOCUS_CATEGORY?: string;
 	FEISHU_WEBHOOK?: string;
 	FEISHU_APP_ID?: string;
 	FEISHU_APP_SECRET?: string;
