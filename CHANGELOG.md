@@ -1,5 +1,21 @@
 
 
+## [1.21.14](https://github.com/msgbyte/tianji/compare/v1.21.13...v1.21.14) (2025-06-16)
+
+### Features
+
+* add AIGatewaySummaryStats component and integrate it into AIGatewayOverview ([1a04d0a](https://github.com/msgbyte/tianji/commit/1a04d0a54920d0b05779ff38c05ae193e2406abe))
+* add FOCUS_CATEGORY support ([075e08d](https://github.com/msgbyte/tianji/commit/075e08d51523c2fa25384c11969e64a8d0181ba1))
+* add MonitorHTTPTiming component to display detailed HTTP request timing metrics in MonitorInfo ([a89ddbe](https://github.com/msgbyte/tianji/commit/a89ddbeb3dfd094b3158246a188c45c7afe461dd))
+* add timedFetch utility for HTTP requests with detailed timing metrics and integrate it into the monitor provider ([205cee6](https://github.com/msgbyte/tianji/commit/205cee69b03f1537f6ce26ded6e21fb92fae8945))
+* add tooltips to HTTP timing phases for better user guidance ([ad8c9fa](https://github.com/msgbyte/tianji/commit/ad8c9facdb2d015ee9c1794b0dc255850228c95a))
+
+### Others
+
+* improve animation of timing component ([fa3cbce](https://github.com/msgbyte/tianji/commit/fa3cbceb73e24c9d7275bb48f2765c68683f29aa))
+* simplify MonitorHTTPTiming component structure and improve timing metrics display ([a01fb40](https://github.com/msgbyte/tianji/commit/a01fb40ecf3d76901e5be549d219cd509cfc3345))
+* update translation ([4f7e7de](https://github.com/msgbyte/tianji/commit/4f7e7de695c96c73fa037228581244119424ec78))
+
 ## [1.21.13](https://github.com/msgbyte/tianji/compare/v1.21.12...v1.21.13) (2025-06-13)
 
 ### Features
