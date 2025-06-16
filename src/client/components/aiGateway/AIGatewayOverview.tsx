@@ -10,12 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+
 import { DateFilter } from '../DateFilter';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
 import { getDateArray } from '@tianji/shared';
 import colors from 'tailwindcss/colors';
 import { getUserTimezone } from '@/api/model/user';
+import { AIGatewaySummaryStats } from './AIGatewaySummaryStats';
 
 interface AIGatewayOverviewProps {
   gatewayId: string;
@@ -66,30 +68,34 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
     );
 
     const chartConfig = useMemo(() => {
-      let info = {
-        label: t('AIGateway Count'),
-        color: colors.blue[500],
-      };
-
       if (type === 'inputToken') {
-        info = {
-          label: t('AIGateway Input Token'),
-          color: colors.blue[500],
+        return {
+          value: {
+            label: t('AIGateway Input Token'),
+            color: colors.blue[500],
+          },
         };
       } else if (type === 'outputToken') {
-        info = {
-          label: t('AIGateway Output Token'),
-          color: colors.blue[500],
+        return {
+          value: {
+            label: t('AIGateway Output Token'),
+            color: colors.blue[500],
+          },
         };
       } else if (type === 'price') {
-        info = {
-          label: t('AIGateway Price'),
-          color: colors.blue[500],
+        return {
+          value: {
+            label: t('AIGateway Price'),
+            color: colors.blue[500],
+          },
         };
       }
 
       return {
-        value: info,
+        value: {
+          label: t('AIGateway Count'),
+          color: colors.blue[500],
+        },
       };
     }, [t, type]);
 
@@ -109,6 +115,8 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
           <h2 className="text-xl font-bold">{t('AIGateway Statistics')}</h2>
           <DateFilter />
         </div>
+
+        <AIGatewaySummaryStats gatewayId={props.gatewayId} />
 
         <div className="rounded-md shadow">
           <div className="mb-4 flex items-center justify-end">
