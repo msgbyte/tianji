@@ -337,12 +337,6 @@ export const MonitorHTTPTiming: React.FC<MonitorHTTPTimingProps> = React.memo(
                                 {/* Time markers */}
                                 <div
                                   className="text-muted-foreground absolute text-[10px]"
-                                  style={{ left: `${phaseStartPercentage}%` }}
-                                >
-                                  {formatTime(phaseStartTime)}
-                                </div>
-                                <div
-                                  className="text-muted-foreground absolute text-[10px]"
                                   style={{
                                     left: `${phaseStartPercentage + phaseWidthPercentage}%`,
                                   }}
