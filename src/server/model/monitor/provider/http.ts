@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import https from 'https';
 import * as httpModule from 'http';
 import { saveMonitorStatus } from './_utils.js';
+import { updateMonitorErrorMessage } from '../index.js';
 
 export const http: MonitorProvider<{
   url: string;
@@ -114,18 +115,33 @@ export const http: MonitorProvider<{
       if (!validStatusCodes || validStatusCodes.length === 0) {
         // default is 200 - 299
         if (res.status < 200 || res.status > 299) {
-          return -1;
+          throw new Error(
+            `Invalid status code, expected: 200-299, got: ${res.status}`
+          );
         }
       } else {
         // if config validStatusCodes, check it
         if (!validStatusCodes.includes(res.status)) {
-          return -1;
+          throw new Error(
+            `Invalid status code, expected: ${validStatusCodes.join(
+              ', '
+            )}, got: ${res.status}`
+          );
         }
       }
 
       return diff;
     } catch (err) {
       logger.error(`run monitor(${monitor.id}) http error`, String(err));
+      updateMonitorErrorMessage(
+        monitor.id,
+        `run monitor(${monitor.id}) http error: ${String(err)}`
+      ).catch((err) => {
+        logger.error(
+          `run monitor(${monitor.id}) update monitor error message failed:`,
+          String(err)
+        );
+      });
       return -1;
     }
   },

@@ -23,6 +23,7 @@ import {
   getTimestampIntervalQuery,
   parseWebsiteFilters,
 } from '../../utils/prisma.js';
+import { logger } from '../../utils/logger.js';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -126,6 +127,10 @@ export async function findSession(req: Request): Promise<
       if (!e.message.toLowerCase().includes('unique constraint')) {
         throw e;
       }
+
+      logger.error(
+        `[Find Session] create website session failed: ${String(e)}, sessionId: ${sessionId}, websiteId: ${websiteId}`
+      );
     }
   }
 
