@@ -59,8 +59,11 @@
       "@types/react": "18.2.78",
       "@types/react-dom": "18.2.21",
       "dayjs": "1.11.10",
-      "esbuild": "0.24.0",
+      "esbuild": "0.25.5",
       "postman-code-generators": "1.8.0",
+      "cross-spawn": "7.0.6",
+      "tar-fs@2": "2.1.3",
+      "tar-fs@3": "3.0.10",
       "typescript": "5.7.2"
     },
     "patchedDependencies": {
