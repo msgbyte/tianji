@@ -11,6 +11,7 @@ import { useStatusPageStore } from './store';
 import { useEvent } from '@/hooks/useEvent';
 import { useInterval } from 'ahooks';
 import { refetchInterval } from './const';
+import { useWatch } from '@/hooks/useWatch';
 
 interface StatusPageHeaderProps {
   info: NonNullable<AppRouterOutput['monitor']['getPageInfo']>;
@@ -109,6 +110,10 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
 
     useInterval(fetchDataQueries, refetchInterval, {
       immediate: true,
+    });
+
+    useWatch([info.id], () => {
+      fetchDataQueries();
     });
 
     const { overallStatus } = useMemo(() => {

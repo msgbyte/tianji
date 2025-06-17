@@ -123,7 +123,7 @@ export const StatusItemMonitor: React.FC<{
       totalCount += item.totalCount;
     });
 
-    const percent = Number(((upCount / totalCount) * 100).toFixed(1));
+    const percent = Number(((upCount / totalCount) * 100).toFixed(1)) || 0;
 
     return {
       summaryPercent: percent,
