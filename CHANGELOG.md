@@ -1,5 +1,18 @@
 
 
+## [1.21.15](https://github.com/msgbyte/tianji/compare/v1.21.14...v1.21.15) (2025-06-17)
+
+### Bug Fixes
+
+* fix update problem when switch page in admin which maybe not update data ([042cc8d](https://github.com/msgbyte/tianji/commit/042cc8ddf48a20efeb1404d659fa7a13a548c06a))
+
+### Others
+
+* add more logs ([f39e7fb](https://github.com/msgbyte/tianji/commit/f39e7fb8b64c653a8a3904d5b177a8389a9d153e))
+* remove unused time markers in MonitorHTTPTiming ([2e1ebb8](https://github.com/msgbyte/tianji/commit/2e1ebb8730ad2e093b86cd2804c56287c887240e))
+* update translation ([4a6ea01](https://github.com/msgbyte/tianji/commit/4a6ea01559d005a6105026efa6ab61378e4feea3))
+* upgrade dependency version ([79467e2](https://github.com/msgbyte/tianji/commit/79467e2b807f873757e429cf6c56b0c3a739831f))
+
 ## [1.21.14](https://github.com/msgbyte/tianji/compare/v1.21.13...v1.21.14) (2025-06-16)
 
 ### Features
