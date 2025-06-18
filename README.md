@@ -27,7 +27,7 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 
 - [x] website analysis
 - [x] monitor
-  - [ ] support passive reception of results
+  - [x] support passive reception of results
 - [x] server status
 - [x] problem notification
 - [x] telemetry
@@ -42,10 +42,10 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [x] hooks
 - [x] helm install support
   - [x] allow install from public
-- [ ] improve monitor reporter usage
+- [x] improve monitor reporter usage
   - [x] uninstall guide
-  - [ ] download from server
-  - [ ] custom params guide
+  - [x] download from server
+  - [x] custom params guide
 
 ## Preview
 

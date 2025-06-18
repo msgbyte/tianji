@@ -124,7 +124,7 @@ async function callAIGateway() {
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer YOUR_API_KEY"
+          "Authorization": "Bearer <YOUR_API_KEY>"
         }
       }
     );
@@ -145,7 +145,7 @@ def call_ai_gateway():
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer YOUR_API_KEY"
+        "Authorization": "Bearer <YOUR_API_KEY>"
     }
 
     data = {
@@ -174,7 +174,7 @@ call_ai_gateway()`;
         case 'curl':
           return `curl -X POST '${window.location.origin}${endpoint}' \\
   -H 'Content-Type: application/json' \\
-  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -H 'Authorization: Bearer <YOUR_API_KEY>' \\
   -d '{
   "messages": [
     {
