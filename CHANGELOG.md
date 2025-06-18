@@ -1,5 +1,11 @@
 
 
+## [1.22.0](https://github.com/msgbyte/tianji/compare/v1.21.17...v1.22.0) (2025-06-18)
+
+### Bug Fixes
+
+* change env and fix a bug which OPENAI_ will exposing to other openai instance. ([2ff7f16](https://github.com/msgbyte/tianji/commit/2ff7f16ab1e7aef03f3049018bc3e5bf9bf9bc5f))
+
 ## [1.21.17](https://github.com/msgbyte/tianji/compare/v1.21.16...v1.21.17) (2025-06-18)
 
 ### Bug Fixes
