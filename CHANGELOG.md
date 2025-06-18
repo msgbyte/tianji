@@ -1,5 +1,15 @@
 
 
+## [1.21.17](https://github.com/msgbyte/tianji/compare/v1.21.16...v1.21.17) (2025-06-18)
+
+### Bug Fixes
+
+* fix a bug which website event throw error if can not create session together ([0592355](https://github.com/msgbyte/tianji/commit/0592355841c41dec762fbfce6a673bd05aec83c7))
+
+### Others
+
+* improve display for common list and ai gateway example ([afa4391](https://github.com/msgbyte/tianji/commit/afa439168cc27391343e25f29faccf2cd355bc6c))
+
 ## [1.21.16](https://github.com/msgbyte/tianji/compare/v1.21.15...v1.21.16) (2025-06-17)
 
 ### Others
