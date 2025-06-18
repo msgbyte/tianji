@@ -13,7 +13,7 @@ The Tianji API uses **Bearer Token** authentication. You need to include your AP
 ### HTTP Header Format
 
 ```http
-Authorization: Bearer YOUR_API_KEY
+Authorization: Bearer <YOUR_API_KEY>
 ```
 
 ## Obtaining API Keys

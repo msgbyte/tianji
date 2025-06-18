@@ -54,7 +54,7 @@ Testen Sie Ihre API-Verbindung mit curl:
 
 ```bash
 curl -X GET "https://your-tianji-domain.com/open/global/config" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
   -H "Content-Type: application/json"
 ```
 

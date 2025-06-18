@@ -62,9 +62,9 @@ Tianji 支持多种环境变量以定制其行为。您可以在 docker compose 
 
 | 变量 | 描述 | 默认 | 示例 |
 | --- | --- | --- | --- |
-| `OPENAI_API_KEY` | OpenAI API 密钥 | - | `your-openai-api-key` |
-| `OPENAI_BASE_URL` | 自定义 OpenAI API URL | - | `https://api.openai.com/v1` |
-| `OPENAI_MODEL_NAME` | 使用的 OpenAI 模型 | `gpt-4o` | `gpt-3.5-turbo` |
+| `SHARED_OPENAI_API_KEY` | OpenAI API 密钥 | - | `your-openai-api-key` |
+| `SHARED_OPENAI_BASE_URL` | 自定义 OpenAI API URL | - | `https://api.openai.com/v1` |
+| `SHARED_OPENAI_MODEL_NAME` | 使用的 OpenAI 模型 | `gpt-4o` | `gpt-3.5-turbo` |
 | `DEBUG_AI_FEATURE` | 调试 AI 功能 | `false` | `true` |
 
 ## 沙盒配置

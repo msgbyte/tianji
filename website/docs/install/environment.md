@@ -62,9 +62,9 @@ Tianji supports various environment variables to customize its behavior. You can
 
 | Variable | Description | Default | Example |
 | --- | --- | --- | --- |
-| `OPENAI_API_KEY` | OpenAI API key | - | `your-openai-api-key` |
-| `OPENAI_BASE_URL` | Custom OpenAI API URL | - | `https://api.openai.com/v1` |
-| `OPENAI_MODEL_NAME` | OpenAI model to use | `gpt-4o` | `gpt-3.5-turbo` |
+| `SHARED_OPENAI_API_KEY` | OpenAI API key | - | `your-openai-api-key` |
+| `SHARED_OPENAI_BASE_URL` | Custom OpenAI API URL | - | `https://api.openai.com/v1` |
+| `SHARED_OPENAI_MODEL_NAME` | OpenAI model to use | `gpt-4o` | `gpt-3.5-turbo` |
 | `DEBUG_AI_FEATURE` | Debug AI features | `false` | `true` |
 
 ## Sandbox Configuration

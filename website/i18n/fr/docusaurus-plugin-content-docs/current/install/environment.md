@@ -62,9 +62,9 @@ Tianji prend en charge diverses variables d'environnement pour personnaliser son
 
 | Variable | Description | Défault | Exemple |
 | --- | --- | --- | --- |
-| `OPENAI_API_KEY` | Clé API OpenAI | - | `votre-clé-api-openai` |
-| `OPENAI_BASE_URL` | URL API OpenAI personnalisée | - | `https://api.openai.com/v1` |
-| `OPENAI_MODEL_NAME` | Modèle OpenAI à utiliser | `gpt-4o` | `gpt-3.5-turbo` |
+| `SHARED_OPENAI_API_KEY` | Clé API OpenAI | - | `votre-clé-api-openai` |
+| `SHARED_OPENAI_BASE_URL` | URL API OpenAI personnalisée | - | `https://api.openai.com/v1` |
+| `SHARED_OPENAI_MODEL_NAME` | Modèle OpenAI à utiliser | `gpt-4o` | `gpt-3.5-turbo` |
 | `DEBUG_AI_FEATURE` | Déboguer les fonctionnalités AI | `false` | `true` |
 
 ## Configuration du Bac à Sable

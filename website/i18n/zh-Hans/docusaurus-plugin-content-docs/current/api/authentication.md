@@ -13,7 +13,7 @@ _i18n_hash: f7563684ea7eed2924aecf5898530c93
 ### HTTP 标头格式
 
 ```http
-Authorization: Bearer YOUR_API_KEY
+Authorization: Bearer <YOUR_API_KEY>
 ```
 
 ## 获取 API 密钥

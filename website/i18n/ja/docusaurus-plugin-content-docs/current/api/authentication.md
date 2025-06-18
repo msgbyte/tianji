@@ -13,7 +13,7 @@ Tianji APIは**Bearer Token**認証を使用します。各APIリクエストの
 ### HTTPヘッダーフォーマット
 
 ```http
-Authorization: Bearer YOUR_API_KEY
+Authorization: Bearer <YOUR_API_KEY>
 ```
 
 ## APIキーの取得

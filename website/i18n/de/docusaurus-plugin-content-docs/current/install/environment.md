@@ -62,9 +62,9 @@ Tianji unterstützt verschiedene Umgebungsvariablen zur Anpassung des Verhaltens
 
 | Variable | Beschreibung | Standard | Beispiel |
 | --- | --- | --- | --- |
-| `OPENAI_API_KEY` | OpenAI API-Schlüssel | - | `your-openai-api-key` |
-| `OPENAI_BASE_URL` | Benutzerdefinierte OpenAI API-URL | - | `https://api.openai.com/v1` |
-| `OPENAI_MODEL_NAME` | Zu verwendendes OpenAI-Modell | `gpt-4o` | `gpt-3.5-turbo` |
+| `SHARED_OPENAI_API_KEY` | OpenAI API-Schlüssel | - | `your-openai-api-key` |
+| `SHARED_OPENAI_BASE_URL` | Benutzerdefinierte OpenAI API-URL | - | `https://api.openai.com/v1` |
+| `SHARED_OPENAI_MODEL_NAME` | Zu verwendendes OpenAI-Modell | `gpt-4o` | `gpt-3.5-turbo` |
 | `DEBUG_AI_FEATURE` | AI-Funktionen debuggen | `false` | `true` |
 
 ## Sandbox-Konfiguration

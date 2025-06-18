@@ -62,9 +62,9 @@ Tianjiは動作をカスタマイズするために様々な環境変数をサ�
 
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
-| `OPENAI_API_KEY` | OpenAI APIキー | - | `your-openai-api-key` |
-| `OPENAI_BASE_URL` | カスタムOpenAI API URL | - | `https://api.openai.com/v1` |
-| `OPENAI_MODEL_NAME` | 使用するOpenAIモデル | `gpt-4o` | `gpt-3.5-turbo` |
+| `SHARED_OPENAI_API_KEY` | OpenAI APIキー | - | `your-openai-api-key` |
+| `SHARED_OPENAI_BASE_URL` | カスタムOpenAI API URL | - | `https://api.openai.com/v1` |
+| `SHARED_OPENAI_MODEL_NAME` | 使用するOpenAIモデル | `gpt-4o` | `gpt-3.5-turbo` |
 | `DEBUG_AI_FEATURE` | AI機能をデバッグする | `false` | `true` |
 
 ## サンドボックス設定

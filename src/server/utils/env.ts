@@ -72,10 +72,12 @@ export const env = {
     },
   },
   openai: {
-    enable: Boolean(process.env.OPENAI_API_KEY),
-    baseUrl: process.env.OPENAI_BASE_URL,
-    apiKey: process.env.OPENAI_API_KEY,
-    modelName: process.env.OPENAI_MODEL_NAME ?? 'gpt-4o',
+    // This only work on tianji internal usage, which call ai feature by tianji.
+    // add `SHARED_` prefix to avoid exposing to other OpenAI instances.
+    enable: Boolean(process.env.SHARED_OPENAI_API_KEY),
+    baseUrl: process.env.SHARED_OPENAI_BASE_URL,
+    apiKey: process.env.SHARED_OPENAI_API_KEY,
+    modelName: process.env.SHARED_OPENAI_MODEL_NAME ?? 'gpt-4o',
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
