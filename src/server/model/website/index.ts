@@ -134,7 +134,26 @@ export async function findSession(req: Request): Promise<
     }
   }
 
-  const res: any = { ...session!, workspaceId: website.workspaceId };
+  const res: WebsiteSession & { workspaceId: string } = {
+    id: sessionId,
+    websiteId: session?.websiteId ?? websiteId,
+    hostname: session?.hostname ?? hostname,
+    browser: session?.browser ?? browser,
+    os: session?.os ?? os,
+    device: session?.device ?? device ?? null,
+    screen: session?.screen ?? screen ?? null,
+    language: session?.language ?? language ?? null,
+    ip: session?.ip ?? ip,
+    country: session?.country ?? country ?? null,
+    subdivision1: session?.subdivision1 ?? subdivision1 ?? null,
+    subdivision2: session?.subdivision2 ?? subdivision2 ?? null,
+    city: session?.city ?? city ?? null,
+    longitude: session?.longitude ?? longitude ?? null,
+    latitude: session?.latitude ?? latitude ?? null,
+    accuracyRadius: session?.accuracyRadius ?? accuracyRadius ?? null,
+    createdAt: session?.createdAt ?? new Date(),
+    workspaceId: website.workspaceId,
+  };
 
   return res;
 }
