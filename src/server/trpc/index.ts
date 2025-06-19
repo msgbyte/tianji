@@ -35,5 +35,5 @@ export const trpcOpenapiDocument = generateOpenApiDocument(appRouter, {
   title,
   description,
   version: `v${packageJson.default.version}`,
-  baseUrl: 'http://localhost:12345/open',
+  baseUrl: '/open',
 });
