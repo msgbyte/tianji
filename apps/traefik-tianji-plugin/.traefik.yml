@@ -1,0 +1,11 @@
+# Traefik plugin manifest for tianji plugin
+displayName: Tianji Plugin
+type: middleware
+import: github.com/msgbyte/tianji/apps/traefik-tianji-plugin
+
+summary: 'A Traefik plugin for Tianji analytics integration'
+
+testData:
+  forwardPath: _tianji
+  tianjiHost: http://localhost:12345
+  websiteId: "test-website-id"

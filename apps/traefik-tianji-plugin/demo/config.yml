@@ -1,0 +1,8 @@
+http:
+  middlewares:
+    tianji:
+      plugin:
+        traefik_tianji_plugin:
+          forwardPath: _tianji
+          tianjiHost: https://app-tianji.msgbyte.com
+          websiteId: "cmc3iqnrxuj6s14d5p8jrfnh8"

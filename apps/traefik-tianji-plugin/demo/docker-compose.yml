@@ -1,0 +1,48 @@
+# traefik
+
+version: "3.3"
+services:
+  traefik:
+    image: traefik:v2.11
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.rule=Host(`localhost`)"
+      - "traefik.http.routers.traefik.entrypoints=traefik"
+    networks:
+      - traefik
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+      - target: 8081
+        published: 8081
+        protocol: tcp
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      # To persist ACME data (certificates, account, etc)
+      - ./traefik.yml:/traefik.yml:ro
+      - ./config.yml:/config/config.yml:ro
+      # mount plugin
+      # - ../:/plugins-local/src/github.com/msgbyte/tianji/apps/traefik-tianji-plugin
+      - ../:/plugins-local/src/github.com/msgbyte/tianji/apps/traefik-tianji-plugin
+
+    restart: unless-stopped
+
+  whoami:
+    image: nginxdemos/hello
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+      - "traefik.http.routers.whoami.service=whoami"
+      - "traefik.http.routers.whoami.rule=Host(`localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=whoami"
+      # middleware
+      - "traefik.http.routers.whoami.middlewares=tianji@file"
+
+    networks:
+      - traefik
+
+networks:
+  traefik:
