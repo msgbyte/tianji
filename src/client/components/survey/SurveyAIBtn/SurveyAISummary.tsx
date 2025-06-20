@@ -3,9 +3,9 @@ import { useTranslation } from '@i18next-toolkit/react';
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { trpc } from '@/api/trpc';
-import { useEventWithLoading } from '@/hooks/useEvent';
+import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
 import { Button } from '../../ui/button';
-import { LuBot } from 'react-icons/lu';
+import { LuBot, LuHistory } from 'react-icons/lu';
 import { DatePicker, DatePickerRange } from '../../DatePicker';
 import { Select as AntdSelect, Checkbox } from 'antd';
 import { toast } from 'sonner';
@@ -16,8 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../ui/select';
-import { useWatch } from '@/hooks/useWatch';
 import { Alert, AlertDescription, AlertTitle } from '../../ui/alert';
+import { SimpleTooltip } from '@/components/ui/tooltip';
+import { useWatch } from '@/hooks/useWatch';
 
 type RunStrategy = 'skipExist' | 'skipInSuggest' | 'rebuildAll';
 type LanguageStrategy = 'default' | 'user';
@@ -41,23 +42,35 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
     const [runStrategy, setRunStrategy] = useState<RunStrategy>('skipExist');
     const [languageStrategy, setLanguageStrategy] =
       useState<LanguageStrategy>('user');
+    const trpcUtils = trpc.useUtils();
 
     const { data: info } = trpc.survey.get.useQuery({
       workspaceId,
       surveyId,
     });
-    const { data: aiCategoryList } = trpc.survey.aiCategoryList.useQuery({
-      workspaceId,
-      surveyId,
+
+    useWatch([info], () => {
+      if (
+        info?.recentSuggestionCategory &&
+        info.recentSuggestionCategory.length > 0
+      ) {
+        setCategory(info.recentSuggestionCategory);
+      }
     });
 
-    useWatch([aiCategoryList], () => {
-      if (aiCategoryList) {
-        setCategory(
-          aiCategoryList
-            .filter((item) => item.name !== null)
-            .map((c) => c.name!)
-        );
+    const handleFetchHistoryAICategory = useEvent(async () => {
+      const categoryList = await trpcUtils.survey.aiCategoryList
+        .fetch({
+          workspaceId,
+          surveyId,
+        })
+        .then((res) => res.map((r) => r.name).filter((n) => n !== null));
+
+      if (categoryList.length > 0) {
+        setCategory(categoryList);
+        toast(t('Use History Suggestion Category'));
+      } else {
+        toast(t('No History Suggestion Category'));
       }
     });
 
@@ -122,9 +135,21 @@ export const SurveyAISummary: React.FC<SurveyAISummaryProps> = React.memo(
         </div>
         <DatePicker className="w-full" value={date} onChange={setDate} />
 
-        <div className="text-xs opacity-50">
-          {t('Step 3: Please provide some suggestion category')}
+        <div className="flex items-center space-x-2">
+          <div className="text-xs opacity-50">
+            {t('Step 3: Please provide some suggestion category')}
+          </div>
+          <SimpleTooltip content={t('Use History Suggestion Category')}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-6 w-6"
+              Icon={LuHistory}
+              onClick={handleFetchHistoryAICategory}
+            />
+          </SimpleTooltip>
         </div>
+
         <AntdSelect
           mode="tags"
           className="w-full"

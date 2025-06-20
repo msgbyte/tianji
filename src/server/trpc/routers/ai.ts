@@ -26,6 +26,7 @@ import {
 } from '../../mq/producer.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../utils/const.js';
+import { prisma } from '../../model/_client.js';
 
 export const aiRouter = router({
   ask: workspaceProcedure
@@ -131,6 +132,15 @@ export const aiRouter = router({
         suggestionCategory,
       } = input;
       const { language } = ctx;
+
+      await prisma.survey.update({
+        where: {
+          id: surveyId,
+        },
+        data: {
+          recentSuggestionCategory: [...(suggestionCategory || [])],
+        },
+      });
 
       await sendBuildSurveyClassifyMessageQueue({
         workspaceId,
