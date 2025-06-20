@@ -1,5 +1,22 @@
 
 
+## [1.22.1](https://github.com/msgbyte/tianji/compare/v1.22.0...v1.22.1) (2025-06-20)
+
+### Features
+
+* add recent suggestion category feature to Survey model and remove auto input suggestion category ([f2a8184](https://github.com/msgbyte/tianji/commit/f2a81847b0b515fa7f042429883f3a382ce087b3))
+* add Tianji plugin for Traefik [#142](https://github.com/msgbyte/tianji/issues/142) ([b1d97e9](https://github.com/msgbyte/tianji/commit/b1d97e9d27b5064330c9072c1e7ce5f9fd3327c4))
+* improve daily ai trigger logic which can use recentSuggestionCategory ([b302104](https://github.com/msgbyte/tianji/commit/b3021044c5e6e89cb2d0ac03ef66ef674c2fa16f))
+* intro new visitor map layer style which fit on black and light theme ([32e3fa1](https://github.com/msgbyte/tianji/commit/32e3fa15fa31c26daa65b1aceff8f3d8d6aa86b6))
+
+### Bug Fixes
+
+* fix openapi swagger can not call self problem ([35f41de](https://github.com/msgbyte/tianji/commit/35f41de72c48ef78632b55a113c7478c2643d6b7))
+
+### Others
+
+* improve openapi ui page which maybe more prettier ([213f366](https://github.com/msgbyte/tianji/commit/213f366afcb50860e194f3a09daf133118ee4500))
+
 ## [1.22.0](https://github.com/msgbyte/tianji/compare/v1.21.17...v1.22.0) (2025-06-18)
 
 ### Bug Fixes
