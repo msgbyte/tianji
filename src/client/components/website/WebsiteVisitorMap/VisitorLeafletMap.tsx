@@ -2,9 +2,10 @@ import React, { useMemo } from 'react';
 import { AppRouterOutput } from '../../../api/trpc';
 import { MapContainer, CircleMarker, Popup, TileLayer } from 'react-leaflet';
 import { mapCenter } from './utils';
+import { useTranslation } from '@i18next-toolkit/react';
+import { useTheme } from '@/store/settings';
 import 'leaflet/dist/leaflet.css';
 import './VisitorLeafletMap.css';
-import { useTranslation } from '@i18next-toolkit/react';
 
 export const UserDataPoint: React.FC<{
   pointRadius?: number;
@@ -40,6 +41,7 @@ UserDataPoint.displayName = 'UserDataPoint';
 export const VisitorLeafletMap: React.FC<{
   data: AppRouterOutput['website']['geoStats'];
 }> = React.memo((props) => {
+  const theme = useTheme();
   const pointRadius = useMemo(() => {
     if (props.data.length > 20000) {
       return 1;
@@ -65,7 +67,13 @@ export const VisitorLeafletMap: React.FC<{
       maxZoom={10}
       scrollWheelZoom={true}
     >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {/* <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" /> */}
+
+      {theme === 'light' ? (
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+      ) : (
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+      )}
 
       {props.data.map((item) => (
         <UserDataPoint
