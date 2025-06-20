@@ -50,6 +50,384 @@ export class AiService {
         });
     }
     
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.gatewayId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static aiGatewayInfo(data: $OpenApiTs['/aiGateway/info']['get']['req']): CancelablePromise<$OpenApiTs['/aiGateway/info']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/aiGateway/info',
+            query: {
+                workspaceId: data.workspaceId,
+                gatewayId: data.gatewayId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static aiGatewayUpdate(data: $OpenApiTs['/aiGateway/update']['patch']['req']): CancelablePromise<$OpenApiTs['/aiGateway/update']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/aiGateway/update',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.gatewayId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static aiGatewayDelete(data: $OpenApiTs['/aiGateway/delete']['delete']['req']): CancelablePromise<$OpenApiTs['/aiGateway/delete']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/aiGateway/delete',
+            query: {
+                workspaceId: data.workspaceId,
+                gatewayId: data.gatewayId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.gatewayId
+     * @param data.cursor
+     * @param data.limit
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static aiGatewayLogs(data: $OpenApiTs['/aiGateway/logs']['get']['req']): CancelablePromise<$OpenApiTs['/aiGateway/logs']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/aiGateway/logs',
+            query: {
+                workspaceId: data.workspaceId,
+                gatewayId: data.gatewayId,
+                cursor: data.cursor,
+                limit: data.limit
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+}
+
+export class AiGatewayService {
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static aiGatewayAll(data: $OpenApiTs['/workspace/{workspaceId}/aiGateway/all']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/aiGateway/all']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/aiGateway/all',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+}
+
+export class ApplicationService {
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static aiGatewayCreate(data: $OpenApiTs['/workspace/{workspaceId}/aiGateway/create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/aiGateway/create']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/aiGateway/create',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationAll(data: $OpenApiTs['/workspace/{workspaceId}/application/all']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/all']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/application/all',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.applicationId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationInfo(data: $OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/info']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/info']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/application/{applicationId}/info',
+            path: {
+                workspaceId: data.workspaceId,
+                applicationId: data.applicationId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationCreate(data: $OpenApiTs['/workspace/{workspaceId}/application/create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/create']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/application/create',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.applicationId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationUpdate(data: $OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/update']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/update']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/workspace/{workspaceId}/application/{applicationId}/update',
+            path: {
+                workspaceId: data.workspaceId,
+                applicationId: data.applicationId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.applicationId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationDelete(data: $OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/delete']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/delete']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace/{workspaceId}/application/{applicationId}/delete',
+            path: {
+                workspaceId: data.workspaceId,
+                applicationId: data.applicationId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.keyword
+     * @param data.storeType
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationStoreAppSearch(data: $OpenApiTs['/application/storeAppSearch']['get']['req']): CancelablePromise<$OpenApiTs['/application/storeAppSearch']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/application/storeAppSearch',
+            query: {
+                workspaceId: data.workspaceId,
+                keyword: data.keyword,
+                storeType: data.storeType
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.applicationId
+     * @param data.storeType
+     * @param data.startAt
+     * @param data.endAt
+     * @param data.storeId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationStoreInfoHistory(data: $OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/storeInfoHistory']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/storeInfoHistory']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/application/{applicationId}/storeInfoHistory',
+            path: {
+                workspaceId: data.workspaceId,
+                applicationId: data.applicationId
+            },
+            query: {
+                storeType: data.storeType,
+                storeId: data.storeId,
+                startAt: data.startAt,
+                endAt: data.endAt
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.applicationId
+     * @param data.startAt
+     * @param data.endAt
+     * @param data.timezone
+     * @param data.unit
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static applicationEventStats(data: $OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/eventStats']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/application/{applicationId}/eventStats']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/application/{applicationId}/eventStats',
+            path: {
+                workspaceId: data.workspaceId,
+                applicationId: data.applicationId
+            },
+            query: {
+                startAt: data.startAt,
+                endAt: data.endAt,
+                timezone: data.timezone,
+                unit: data.unit
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
 }
 
 export class GlobalService {
@@ -124,10 +502,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceCreate(data: $OpenApiTs['/workspace//create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//create']['post']['res'][200]> {
+    public static workspaceCreate(data: $OpenApiTs['/workspace/create']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/create']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/workspace//create',
+            url: '/workspace/create',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -145,10 +523,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceSwitch(data: $OpenApiTs['/workspace//switch']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//switch']['post']['res'][200]> {
+    public static workspaceSwitch(data: $OpenApiTs['/workspace/switch']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/switch']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/workspace//switch',
+            url: '/workspace/switch',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -166,10 +544,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceRename(data: $OpenApiTs['/workspace//rename']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace//rename']['patch']['res'][200]> {
+    public static workspaceRename(data: $OpenApiTs['/workspace/rename']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace/rename']['patch']['res'][200]> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/workspace//rename',
+            url: '/workspace/rename',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
@@ -188,10 +566,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceDelete(data: $OpenApiTs['/workspace//{workspaceId}/del']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/del']['delete']['res'][200]> {
+    public static workspaceDelete(data: $OpenApiTs['/workspace/{workspaceId}/del']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/del']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/workspace//{workspaceId}/del',
+            url: '/workspace/{workspaceId}/del',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -211,10 +589,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceMembers(data: $OpenApiTs['/workspace//{workspaceId}/members']['get']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/members']['get']['res'][200]> {
+    public static workspaceMembers(data: $OpenApiTs['/workspace/{workspaceId}/members']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/members']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace//{workspaceId}/members',
+            url: '/workspace/{workspaceId}/members',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -235,10 +613,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceUpdateSettings(data: $OpenApiTs['/workspace//{workspaceId}/updateSettings']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/updateSettings']['post']['res'][200]> {
+    public static workspaceUpdateSettings(data: $OpenApiTs['/workspace/{workspaceId}/updateSettings']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/updateSettings']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/workspace//{workspaceId}/updateSettings',
+            url: '/workspace/{workspaceId}/updateSettings',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -260,10 +638,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceInvite(data: $OpenApiTs['/workspace//{workspaceId}/invite']['post']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/invite']['post']['res'][200]> {
+    public static workspaceInvite(data: $OpenApiTs['/workspace/{workspaceId}/invite']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/invite']['post']['res'][200]> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/workspace//{workspaceId}/invite',
+            url: '/workspace/{workspaceId}/invite',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -286,10 +664,10 @@ export class WorkspaceService {
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceTick(data: $OpenApiTs['/workspace//{workspaceId}/tick']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/tick']['delete']['res'][200]> {
+    public static workspaceTick(data: $OpenApiTs['/workspace/{workspaceId}/tick']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/tick']['delete']['res'][200]> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/workspace//{workspaceId}/tick',
+            url: '/workspace/{workspaceId}/tick',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -307,15 +685,42 @@ export class WorkspaceService {
     }
     
     /**
+     * Update workspace member role
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workspaceUpdateMemberRole(data: $OpenApiTs['/workspace/{workspaceId}/updateMemberRole']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/updateMemberRole']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/workspace/{workspaceId}/updateMemberRole',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
      * @throws ApiError
      */
-    public static workspaceGetServiceCount(data: $OpenApiTs['/workspace//{workspaceId}/getServiceCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace//{workspaceId}/getServiceCount']['get']['res'][200]> {
+    public static workspaceGetServiceCount(data: $OpenApiTs['/workspace/{workspaceId}/getServiceCount']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/getServiceCount']['get']['res'][200]> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/workspace//{workspaceId}/getServiceCount',
+            url: '/workspace/{workspaceId}/getServiceCount',
             path: {
                 workspaceId: data.workspaceId
             },
@@ -894,6 +1299,30 @@ export class MonitorService {
                 401: 'Authorization not provided',
                 403: 'Insufficient access',
                 404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.monitorId
+     * @returns string Successful response
+     * @throws ApiError
+     */
+    public static monitorRegeneratePushToken(data: $OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/regeneratePushToken']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/monitor/{monitorId}/regeneratePushToken']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/monitor/{monitorId}/regeneratePushToken',
+            path: {
+                workspaceId: data.workspaceId,
+                monitorId: data.monitorId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
                 500: 'Internal server error'
             }
         });
@@ -2390,6 +2819,85 @@ export class FeedService {
             },
             errors: {
                 400: 'Invalid input data',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.channelId
+     * @param data.limit
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedStateAll(data: $OpenApiTs['/workspace/{workspaceId}/feed/state/all']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/state/all']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/feed/state/all',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            query: {
+                channelId: data.channelId,
+                limit: data.limit
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.channelId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedStateUpsert(data: $OpenApiTs['/feed/{channelId}/state/upsert']['post']['req']): CancelablePromise<$OpenApiTs['/feed/{channelId}/state/upsert']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/feed/{channelId}/state/upsert',
+            path: {
+                channelId: data.channelId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.channelId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static feedStateResolve(data: $OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/state/resolve']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/feed/{channelId}/state/resolve']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/feed/{channelId}/state/resolve',
+            path: {
+                workspaceId: data.workspaceId,
+                channelId: data.channelId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
                 500: 'Internal server error'
             }
         });

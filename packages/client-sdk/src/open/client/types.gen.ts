@@ -176,6 +176,664 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/aiGateway/info': {
+        get: {
+            req: {
+                gatewayId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    modelApiKey?: string | null;
+                    customModelBaseUrl?: string | null;
+                    customModelName?: string | null;
+                    customModelInputPrice?: number | null;
+                    customModelOutputPrice?: number | null;
+                    createdAt: string;
+                    updatedAt: string;
+                } | null;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/update': {
+        patch: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    gatewayId: string;
+                    name: string;
+                    modelApiKey: string | null;
+                    customModelBaseUrl: string | null;
+                    customModelName: string | null;
+                    customModelInputPrice: number | null;
+                    customModelOutputPrice: number | null;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    modelApiKey?: string | null;
+                    customModelBaseUrl?: string | null;
+                    customModelName?: string | null;
+                    customModelInputPrice?: number | null;
+                    customModelOutputPrice?: number | null;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/delete': {
+        delete: {
+            req: {
+                gatewayId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    modelApiKey?: string | null;
+                    customModelBaseUrl?: string | null;
+                    customModelName?: string | null;
+                    customModelInputPrice?: number | null;
+                    customModelOutputPrice?: number | null;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/logs': {
+        get: {
+            req: {
+                cursor?: string;
+                gatewayId: string;
+                limit?: number;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    items: Array<{
+                        id: string;
+                        workspaceId: string;
+                        gatewayId: string;
+                        inputToken: number;
+                        outputToken: number;
+                        stream: boolean;
+                        modelName: string;
+                        status: 'Pending' | 'Success' | 'Failed';
+                        duration: number;
+                        ttft: number;
+                        price: number;
+                        userId?: string | null;
+                        createdAt: string;
+                        updatedAt: string;
+                        requestPayload?: unknown;
+                        responsePayload?: unknown;
+                    }>;
+                    nextCursor?: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/aiGateway/all': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    modelApiKey?: string | null;
+                    customModelBaseUrl?: string | null;
+                    customModelName?: string | null;
+                    customModelInputPrice?: number | null;
+                    customModelOutputPrice?: number | null;
+                    createdAt: string;
+                    updatedAt: string;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/aiGateway/create': {
+        post: {
+            req: {
+                requestBody: {
+                    name: string;
+                    modelApiKey: string | null;
+                    customModelBaseUrl: string | null;
+                    customModelName: string | null;
+                    customModelInputPrice: number | null;
+                    customModelOutputPrice: number | null;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    modelApiKey?: string | null;
+                    customModelBaseUrl?: string | null;
+                    customModelName?: string | null;
+                    customModelInputPrice?: number | null;
+                    customModelOutputPrice?: number | null;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/all': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt?: string | null;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/{applicationId}/info': {
+        get: {
+            req: {
+                applicationId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt?: string | null;
+                    applicationStoreInfos: Array<{
+                        applicationId: string;
+                        storeType: string;
+                        storeId: string;
+                        appId: string;
+                        title: string;
+                        description: string;
+                        releaseNotes: string;
+                        url: string;
+                        downloads?: number | null;
+                        score?: number | null;
+                        ratingCount?: number | null;
+                        reviews?: number | null;
+                        version?: string | null;
+                        size?: number | null;
+                        createdAt: string;
+                        updatedAt: string;
+                    }>;
+                } | null;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/create': {
+        post: {
+            req: {
+                requestBody: {
+                    name: string;
+                    appstoreId?: string;
+                    playstoreId?: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt: string | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/{applicationId}/update': {
+        patch: {
+            req: {
+                applicationId: string;
+                requestBody: {
+                    name: string;
+                    appstoreId?: string;
+                    playstoreId?: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt: string | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/{applicationId}/delete': {
+        delete: {
+            req: {
+                applicationId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    deletedAt: string | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/application/storeAppSearch': {
+        get: {
+            req: {
+                keyword: string;
+                storeType: 'appstore' | 'googleplay';
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id?: string;
+                    appId: string;
+                    title: string;
+                    icon: string;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/{applicationId}/storeInfoHistory': {
+        get: {
+            req: {
+                applicationId: string;
+                endAt: number;
+                startAt: number;
+                storeId?: string;
+                storeType: 'appstore' | 'googleplay';
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    downloads?: number | null;
+                    score?: number | null;
+                    ratingCount?: number | null;
+                    reviews?: number | null;
+                    size?: number | null;
+                    createdAt: string;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/application/{applicationId}/eventStats': {
+        get: {
+            req: {
+                applicationId: string;
+                endAt: number;
+                startAt: number;
+                timezone?: string;
+                unit?: 'minute' | 'hour' | 'day' | 'month' | 'year';
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    current: Array<{
+                        date: string;
+                        eventCount: number;
+                        sessionCount: number;
+                        totalTime: number;
+                        avgEventsPerSession: number;
+                        avgScreensPerSession: number;
+                    }>;
+                    previous: Array<{
+                        date: string;
+                        eventCount: number;
+                        sessionCount: number;
+                        totalTime: number;
+                        avgEventsPerSession: number;
+                        avgScreensPerSession: number;
+                    }>;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
     '/global/config': {
         get: {
             res: {
@@ -322,7 +980,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//create': {
+    '/workspace/create': {
         post: {
             req: {
                 requestBody: {
@@ -375,7 +1033,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//switch': {
+    '/workspace/switch': {
         post: {
             req: {
                 requestBody: {
@@ -428,7 +1086,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//rename': {
+    '/workspace/rename': {
         patch: {
             req: {
                 requestBody: {
@@ -471,7 +1129,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//{workspaceId}/del': {
+    '/workspace/{workspaceId}/del': {
         delete: {
             req: {
                 workspaceId: string;
@@ -504,7 +1162,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//{workspaceId}/members': {
+    '/workspace/{workspaceId}/members': {
         get: {
             req: {
                 workspaceId: string;
@@ -549,7 +1207,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//{workspaceId}/updateSettings': {
+    '/workspace/{workspaceId}/updateSettings': {
         post: {
             req: {
                 requestBody: {
@@ -590,11 +1248,12 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//{workspaceId}/invite': {
+    '/workspace/{workspaceId}/invite': {
         post: {
             req: {
                 requestBody: {
                     emailOrId: string;
+                    role?: 'admin' | 'readOnly';
                 };
                 workspaceId: string;
             };
@@ -622,7 +1281,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//{workspaceId}/tick': {
+    '/workspace/{workspaceId}/tick': {
         delete: {
             req: {
                 targetUserId: string;
@@ -656,7 +1315,44 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/workspace//{workspaceId}/getServiceCount': {
+    '/workspace/{workspaceId}/updateMemberRole': {
+        patch: {
+            req: {
+                requestBody: {
+                    userId: string;
+                    role: 'owner' | 'admin' | 'readOnly';
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/getServiceCount': {
         get: {
             req: {
                 workspaceId: string;
@@ -667,12 +1363,14 @@ export type $OpenApiTs = {
                  */
                 200: {
                     website: number;
+                    application: number;
                     monitor: number;
                     server: number;
                     telemetry: number;
                     page: number;
                     survey: number;
                     feed: number;
+                    aiGateway: number;
                 };
                 /**
                  * Invalid input data
@@ -1541,6 +2239,36 @@ export type $OpenApiTs = {
                  * Not found
                  */
                 404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/monitor/{monitorId}/regeneratePushToken': {
+        post: {
+            req: {
+                monitorId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: string;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
                 /**
                  * Internal server error
                  */
@@ -2584,6 +3312,7 @@ export type $OpenApiTs = {
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
                     webhookUrl: string;
+                    recentSuggestionCategory: Array<(string)>;
                     createdAt: string;
                     updatedAt: string;
                 }>;
@@ -2635,6 +3364,7 @@ export type $OpenApiTs = {
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
                     webhookUrl: string;
+                    recentSuggestionCategory: Array<(string)>;
                     createdAt: string;
                     updatedAt: string;
                 } | null;
@@ -2803,6 +3533,7 @@ export type $OpenApiTs = {
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
                     webhookUrl: string;
+                    recentSuggestionCategory: Array<(string)>;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -2864,6 +3595,7 @@ export type $OpenApiTs = {
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
                     webhookUrl: string;
+                    recentSuggestionCategory: Array<(string)>;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -2915,6 +3647,7 @@ export type $OpenApiTs = {
                     feedChannelIds: Array<(string)>;
                     feedTemplate: string;
                     webhookUrl: string;
+                    recentSuggestionCategory: Array<(string)>;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -3826,6 +4559,165 @@ export type $OpenApiTs = {
                  * Invalid input data
                  */
                 400: error_BAD_REQUEST;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/state/all': {
+        get: {
+            req: {
+                channelId: string;
+                limit?: number;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    channelId: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    eventId: string;
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    url?: string | null;
+                    important: boolean;
+                    status: 'Ongoing' | 'Resolved';
+                    resolvedAt?: string | null;
+                    payload?: {
+                        [key: string]: unknown;
+                    } | null;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/feed/{channelId}/state/upsert': {
+        post: {
+            req: {
+                channelId: string;
+                requestBody: {
+                    eventId: string;
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    important: boolean;
+                    payload?: {
+                        [key: string]: unknown;
+                    } | null;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    channelId: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    eventId: string;
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    url?: string | null;
+                    important: boolean;
+                    status: 'Ongoing' | 'Resolved';
+                    resolvedAt?: string | null;
+                    payload?: {
+                        [key: string]: unknown;
+                    } | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/{channelId}/state/resolve': {
+        post: {
+            req: {
+                channelId: string;
+                requestBody: {
+                    stateId: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    channelId: string;
+                    createdAt: string;
+                    updatedAt: string;
+                    eventId: string;
+                    eventName: string;
+                    eventContent: string;
+                    tags: Array<(string)>;
+                    source: string;
+                    senderId?: string | null;
+                    senderName?: string | null;
+                    url?: string | null;
+                    important: boolean;
+                    status: 'Ongoing' | 'Resolved';
+                    resolvedAt?: string | null;
+                    payload?: {
+                        [key: string]: unknown;
+                    } | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
                 /**
                  * Internal server error
                  */

@@ -238,7 +238,7 @@ importers:
   packages/react:
     dependencies:
       tianji-client-sdk:
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../client-sdk
     devDependencies:
       '@types/react':
@@ -251,7 +251,7 @@ importers:
   packages/react-native:
     dependencies:
       tianji-client-sdk:
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../client-sdk
     devDependencies:
       '@types/react':

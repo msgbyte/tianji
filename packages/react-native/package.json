@@ -1,6 +1,6 @@
 {
   "name": "tianji-react-native",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "tianji-client-sdk": "workspace:^"
+    "tianji-client-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.2.22",

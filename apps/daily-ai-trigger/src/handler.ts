@@ -11,39 +11,41 @@ export async function handleTriggerAITask(env: Env) {
 	if (typeof env.FOCUS_CATEGORY === 'string' && env.FOCUS_CATEGORY.length > 0) {
 		suggestionCategory = env.FOCUS_CATEGORY.split(',');
 	} else {
-		const category = await openApiClient.SurveyService.surveyAiCategoryList({
+		const survey = await openApiClient.SurveyService.surveyGet({
 			workspaceId,
 			surveyId,
 		});
-		suggestionCategory = category.map((c) => c.name).filter((n): n is string => Boolean(n));
+		suggestionCategory = survey?.recentSuggestionCategory || [];
 	}
 
 	const startAt = dayjs().subtract(1, 'day').startOf('day').valueOf();
 	const endAt = dayjs().endOf('day').valueOf();
 
-	await openApiClient.AiService.aiClassifySurvey({
-		requestBody: {
-			workspaceId,
-			surveyId,
-			startAt,
-			endAt,
-			payloadContentField,
-			suggestionCategory,
-			languageStrategy: 'user',
-			runStrategy: 'skipExist',
-		},
-	});
-	await openApiClient.AiService.aiTranslateSurvey({
-		requestBody: {
-			workspaceId,
-			surveyId,
-			startAt,
-			endAt,
-			payloadContentField,
-			languageStrategy: 'user',
-			runStrategy: 'skipExist',
-		},
-	});
+	await Promise.all([
+		await openApiClient.AiService.aiClassifySurvey({
+			requestBody: {
+				workspaceId,
+				surveyId,
+				startAt,
+				endAt,
+				payloadContentField,
+				suggestionCategory,
+				languageStrategy: 'user',
+				runStrategy: 'skipExist',
+			},
+		}),
+		await openApiClient.AiService.aiTranslateSurvey({
+			requestBody: {
+				workspaceId,
+				surveyId,
+				startAt,
+				endAt,
+				payloadContentField,
+				languageStrategy: 'user',
+				runStrategy: 'skipExist',
+			},
+		}),
+	]);
 
 	console.log('Run aiClassifySurvey completed.');
 }
