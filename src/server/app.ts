@@ -76,8 +76,35 @@ if (env.customTrackerScriptName) {
 }
 
 if (env.allowOpenapi) {
-  app.use('/open/_ui', swaggerUI.serve, swaggerUI.setup(trpcOpenapiDocument));
+  app.use(
+    '/open/_swagger',
+    swaggerUI.serve,
+    swaggerUI.setup(trpcOpenapiDocument)
+  );
   app.use('/open/_document', (req, res) => res.send(trpcOpenapiDocument));
+  app.use('/open/_ui', (req, res) =>
+    res.send(`
+      <html>
+        <head>
+          <title>Tianji OpenAPI</title>
+          <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+          <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+        </head>
+        <body>
+          <elements-api
+            apiDescriptionUrl="/open/_document"
+            router="hash"
+            layout="responsive"
+            logo="https://tianji.msgbyte.com/img/logo.svg"
+          />
+          <style>
+            a[href^='https://stoplight.io'] {
+              display: none !important;
+            }
+          </style>
+        </body>
+      </html>`)
+  );
   app.use('/open', trpcOpenapiHttpHandler);
 }
 
