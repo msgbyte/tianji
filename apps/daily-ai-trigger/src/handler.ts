@@ -31,7 +31,7 @@ export async function handleTriggerAITask(env: Env) {
 				payloadContentField,
 				suggestionCategory,
 				languageStrategy: 'user',
-				runStrategy: 'skipExist',
+				runStrategy: 'skipInSuggest',
 			},
 		}),
 		await openApiClient.AiService.aiTranslateSurvey({
