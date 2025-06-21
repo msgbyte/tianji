@@ -3,19 +3,371 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --foreground: #ffffff;
+  --card-background: rgba(255, 255, 255, 0.1);
+  --card-border: rgba(255, 255, 255, 0.2);
+  --shadow: rgba(0, 0, 0, 0.1);
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary: #059669;
+  --secondary-hover: #047857;
+  --accent: #dc2626;
+  --accent-hover: #b91c1c;
 }
 
-/* @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    --foreground: #ffffff;
+    --card-background: rgba(255, 255, 255, 0.08);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --shadow: rgba(0, 0, 0, 0.3);
   }
-} */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: var(--card-background);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  box-shadow: 0 12px 48px var(--shadow);
+}
+
+/* Animated background */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-shape:nth-child(1) {
+  width: 60px;
+  height: 60px;
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.floating-shape:nth-child(2) {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  right: 15%;
+  animation-delay: -2s;
+}
+
+.floating-shape:nth-child(3) {
+  width: 40px;
+  height: 40px;
+  bottom: 20%;
+  left: 20%;
+  animation-delay: -4s;
+}
+
+.floating-shape:nth-child(4) {
+  width: 100px;
+  height: 100px;
+  top: 30%;
+  right: 30%;
+  animation-delay: -1s;
+}
+
+/* Button animations - Target Radix UI button correctly */
+button.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border: none !important;
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39) !important;
+  transition: all 0.3s ease;
+  position: relative !important;
+  overflow: hidden !important;
+  z-index: 1;
+  border-radius: 8px !important;
+}
+
+button.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease-in-out;
+  z-index: 2;
+  pointer-events: none;
+  will-change: left;
+  border-radius: inherit;
+}
+
+button.btn-primary:hover::before {
+  left: 100%;
+}
+
+button.btn-secondary {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-hover)) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  border: none !important;
+  box-shadow: 0 4px 14px 0 rgba(5, 150, 105, 0.35) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease;
+  z-index: 1;
+  border-radius: 8px !important;
+}
+
+button.btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease-in-out;
+  z-index: 2;
+  pointer-events: none;
+  will-change: left;
+  border-radius: inherit;
+}
+
+button.btn-secondary:hover::before {
+  left: 100%;
+}
+
+button.btn-accent {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  border: none !important;
+  box-shadow: 0 4px 14px 0 rgba(220, 38, 38, 0.35) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease;
+  z-index: 1;
+  border-radius: 8px !important;
+}
+
+button.btn-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transition: left 0.6s ease-in-out;
+  z-index: 2;
+  pointer-events: none;
+  will-change: left;
+  border-radius: inherit;
+}
+
+button.btn-accent:hover::before {
+  left: 100%;
+}
+
+/* Status indicator */
+.status-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--secondary);
+  position: relative;
+}
+
+.status-dot::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--secondary);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Form field enhancements */
+.form-field {
+  transition: all 0.3s ease;
+}
+
+.form-field:focus-within {
+  transform: translateY(-2px);
+}
+
+/* Grid animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-300 {
+  animation-delay: 0.3s;
+}
+
+/* Fix button animation flickering */
+button.btn-primary,
+button.btn-secondary,
+button.btn-accent {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+button.btn-primary::before,
+button.btn-secondary::before,
+button.btn-accent::before {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Prevent animation restart on rapid hover */
+button.btn-primary:not(:hover)::before,
+button.btn-secondary:not(:hover)::before,
+button.btn-accent:not(:hover)::before {
+  transition: left 0.3s ease-out;
+}
+
+/* Enhanced hover states */
+button.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px 0 rgba(37, 99, 235, 0.5) !important;
+  filter: brightness(1.1) !important;
+}
+
+button.btn-secondary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px 0 rgba(5, 150, 105, 0.45) !important;
+  filter: brightness(1.1) !important;
+}
+
+button.btn-accent:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px 0 rgba(220, 38, 38, 0.45) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Additional containment for Radix UI buttons */
+button.btn-primary > span,
+button.btn-secondary > span,
+button.btn-accent > span {
+  position: relative;
+  z-index: 3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-weight: inherit;
+}
+
+/* Active states for better feedback */
+button.btn-primary:active {
+  transform: translateY(0px) !important;
+  box-shadow: 0 2px 8px 0 rgba(37, 99, 235, 0.4) !important;
+}
+
+button.btn-secondary:active {
+  transform: translateY(0px) !important;
+  box-shadow: 0 2px 8px 0 rgba(5, 150, 105, 0.4) !important;
+}
+
+button.btn-accent:active {
+  transform: translateY(0px) !important;
+  box-shadow: 0 2px 8px 0 rgba(220, 38, 38, 0.4) !important;
+}
+
+/* Disabled state improvements */
+button.btn-primary:disabled,
+button.btn-secondary:disabled,
+button.btn-accent:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  filter: none !important;
 }
