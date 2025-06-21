@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
-_i18n_hash: a144af118d2aa2c5e95b1cee1897ae7a
+_i18n_hash: 2a8dfc997c42846304cde1b51f4d6145
 ---
-# API Erste Schritte
+# Erste Schritte mit der API
 
-Tianji bietet eine vollständige REST-API, die Ihnen ermöglicht, programmatisch auf alle Funktionen von Tianji zuzugreifen und diese zu bedienen. Dieser Leitfaden hilft Ihnen, schnell mit der Tianji-API zu beginnen.
+Tianji bietet eine vollständige REST-API, mit der Sie programmatisch auf alle Funktionen von Tianji zugreifen und diese bedienen können. Dieser Leitfaden hilft Ihnen, schnell mit der Tianji-API zu starten.
 
 ## Überblick
 
-Die Tianji-API basiert auf der REST-Architektur und verwendet das JSON-Format für den Datenaustausch. Alle API-Anfragen müssen über HTTPS gestellt werden und erfordern eine ordnungsgemäße Authentifizierung.
+Die Tianji-API basiert auf der REST-Architektur und verwendet das JSON-Format für den Datenaustausch. Alle API-Anfragen müssen über HTTPS erfolgen und erfordern eine entsprechende Authentifizierung.
 
 ### API-Basis-URL
 
@@ -22,10 +22,10 @@ https://your-tianji-domain.com/open
 
 - Website-Analysedaten verwalten
 - Überwachungsprojekte erstellen und verwalten
-- Informationen zum Serverstatus abrufen
+- Serverstatusinformationen abrufen
 - Umfragen verwalten
-- Telemetriedaten bearbeiten
-- Arbeitsbereiche erstellen und verwalten
+- Telemetriedaten betreiben
+- Arbeitsräume erstellen und verwalten
 
 ## Schnellstart
 
@@ -33,17 +33,17 @@ https://your-tianji-domain.com/open
 
 Bevor Sie die API verwenden, müssen Sie einen API-Schlüssel erhalten:
 
-1. Melden Sie sich bei Ihrem Tianji-Exemplar an
+1. Melden Sie sich bei Ihrer Tianji-Instanz an
 2. Klicken Sie auf Ihr Avatar in der oberen rechten Ecke
-3. Suchen Sie den Abschnitt **API-Keys**
-4. Klicken Sie auf die + Schaltfläche, um einen neuen API-Schlüssel zu erstellen
+3. Finden Sie den Bereich **API-Schlüssel**
+4. Klicken Sie auf die Schaltfläche +, um einen neuen API-Schlüssel zu erstellen
 5. Benennen Sie Ihren API-Schlüssel und speichern Sie ihn
 
 ### 2. OpenAPI aktivieren
 
-Stellen Sie sicher, dass Ihr Tianji-Exemplar den OpenAPI-Zugriff aktiviert hat:
+Stellen Sie sicher, dass Ihre Tianji-Instanz den Zugang zu OpenAPI aktiviert hat:
 
-Setzen Sie in Ihren Umgebungsvariablen:
+Setzen Sie dies in Ihren Umgebungsvariablen:
 ```bash
 ALLOW_OPENAPI=true
 ```
@@ -61,5 +61,5 @@ curl -X GET "https://your-tianji-domain.com/open/global/config" \
 ## Nächste Schritte
 
 - Überprüfen Sie die [Authentifizierungsdokumentation](./authentication.md) für detaillierte Authentifizierungsmethoden
-- Stöbern Sie in der [API-Referenzdokumentation](/api) nach allen verfügbaren Endpunkten
+- Durchstöbern Sie die [API-Referenzdokumentation](/api) für alle verfügbaren Endpunkte
 - Verwenden Sie das [OpenAPI SDK](./openapi-sdk.md) für typsichere API-Aufrufe

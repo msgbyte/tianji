@@ -1,6 +1,6 @@
 ---
 sidebar_position: 100
-_i18n_hash: 05e241c8bd878bb8fb511bdc81a2cee9
+_i18n_hash: 2419750faca3b35056a24bc0a5e02a22
 ---
 # Fehlerbehebung
 
@@ -10,24 +10,24 @@ Dieses Dokument sammelt häufige Probleme und deren Lösungen, die bei der Verwe
 
 ### Problembeschreibung
 
-Beim Verwenden von HTTPS-Diensten funktionieren andere Funktionen normal, aber der WebSocket-Dienst kann nicht ordnungsgemäß verbunden werden, was sich wie folgt äußert:
+Bei der Nutzung von HTTPS-Diensten funktionieren andere Funktionen normal, aber der WebSocket-Dienst kann nicht ordnungsgemäß verbunden werden, was sich wie folgt zeigt:
 
-- Der Verbindungsstatusanzeiger in der unteren linken Ecke zeigt grau
+- Der Verbindungsstatusanzeiger in der unteren linken Ecke zeigt grau an
 - Die Serverseitenseitenliste zeigt Zählungen, aber keinen tatsächlichen Inhalt
 
-### Ursache
+### Ursachenermittlung
 
-Dieses Problem wird normalerweise durch falsche Weiterleitungsrichtlinien für WebSockets in Revers-Proxy-Software verursacht. In HTTPS-Umgebungen erfordern WebSocket-Verbindungen korrekte Cookie-Sicherheitsrichtlinien.
+Dieses Problem wird meist durch unzureichende WebSocket-Weiterleitungsrichtlinien in der Reverse-Proxy-Software verursacht. In HTTPS-Umgebungen erfordern WebSocket-Verbindungen korrekte Cookie-Sicherheitsrichtlinien.
 
 ### Lösung
 
-Sie können dieses Problem beheben, indem Sie die folgende Umgebungsvariable setzen:
+Sie können dieses Problem durch Setzen der folgenden Umgebungsvariable lösen:
 
 ```bash
 AUTH_USE_SECURE_COOKIES=true
 ```
 
-Diese Einstellung zwingt die Anwendung, Cookies, die vom Browser übergeben werden, als verschlüsselte Cookies zu behandeln, wodurch das Problem mit den WebSocket-Verbindungen behoben wird.
+Diese Einstellung zwingt die Anwendung, Cookies, die vom Browser übermittelt werden, als verschlüsselte Cookies zu behandeln und löst somit die Probleme mit WebSocket-Verbindungen.
 
 #### Konfigurationsmethoden
 
@@ -43,12 +43,6 @@ services:
 **Direkte Bereitstellung:**
 ```bash
 export AUTH_USE_SECURE_COOKIES=true
-```
-
-**systemd-Dienst:**
-```ini
-[Service]
-Environment=AUTH_USE_SECURE_COOKIES=true
 ```
 
 ### Überprüfungsschritte
