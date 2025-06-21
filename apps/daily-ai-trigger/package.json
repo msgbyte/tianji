@@ -15,7 +15,7 @@
 		"@cloudflare/workers-types": "^4.20250310.0",
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.8",
-		"wrangler": "^3.112.0"
+		"wrangler": "^4.20.5"
 	},
 	"dependencies": {
 		"dayjs": "^1.11.9",
