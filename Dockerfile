@@ -1,11 +1,11 @@
 # tianji reporter
 FROM golang:1.21.1-bookworm AS reporter
-WORKDIR /app/reporter
+WORKDIR /app
 
 COPY ./reporter/ ./reporter/
 
 RUN apt update
-RUN cd reporter && go build .
+RUN cd reporter && CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o tianji-reporter .
 
 # Base ------------------------------
 # The current Chromium version in Alpine 3.20 is causing timeout issues with Puppeteer. Downgrading to Alpine 3.19 fixes the issue. See #11640, #12637, #12189
@@ -62,9 +62,18 @@ RUN mkdir -p ./src/server/public
 COPY --from=static /app/tianji/geo /app/tianji/geo
 COPY --from=static /app/tianji/src/server/public /app/tianji/src/server/public
 
+# Copy reporter binary from reporter stage
+COPY --from=reporter /app/reporter/tianji-reporter /usr/local/bin/tianji-reporter
+RUN chmod +x /usr/local/bin/tianji-reporter
+
 RUN pnpm build:server
 
 RUN pip install apprise cryptography --break-system-packages
+
+# Copy startup script
+COPY ./scripts/start-tianji-container.sh /usr/local/bin/start-tianji-container.sh
+RUN chmod +x /usr/local/bin/start-tianji-container.sh
+
 
 RUN rm -rf ./src/client
 RUN rm -rf ./website
@@ -72,4 +81,4 @@ RUN rm -rf ./reporter
 
 EXPOSE 12345
 
-CMD ["pnpm", "start:docker"]
+CMD ["/usr/local/bin/start-tianji-container.sh"]
