@@ -1,5 +1,21 @@
 
 
+## [1.22.2](https://github.com/msgbyte/tianji/compare/v1.22.1...v1.22.2) (2025-06-22)
+
+### Features
+
+* add start tianji container shell and which make tianji report can build in report self ([d420443](https://github.com/msgbyte/tianji/commit/d420443735a2fa0fb823ffff395d771123e2667e))
+
+### Document
+
+* add document about docker monitoring ([c2354f6](https://github.com/msgbyte/tianji/commit/c2354f69ff317e822d5412ab82513e78f4becf95))
+
+### Others
+
+* change run strategy of ai classify ([8923df3](https://github.com/msgbyte/tianji/commit/8923df34fadfcf5d47db73f5b01eabd2d8105150))
+* improve example app style ([60af300](https://github.com/msgbyte/tianji/commit/60af3005b6c17d9f989408c85288769153d7936b))
+* upgrade wrangler version ([ff3c4a5](https://github.com/msgbyte/tianji/commit/ff3c4a569d093737c07c07c27a4a5dfd861f0e0d))
+
 ## [1.22.1](https://github.com/msgbyte/tianji/compare/v1.22.0...v1.22.1) (2025-06-20)
 
 ### Features
