@@ -1,5 +1,12 @@
 
 
+## [1.22.3](https://github.com/msgbyte/tianji/compare/v1.22.2...v1.22.3) (2025-06-22)
+
+### Others
+
+* update server list header name to improve display ([76236e9](https://github.com/msgbyte/tianji/commit/76236e9bf0a8bac28800a72d836730bcde713c4d))
+* upgrade reporter version from 1.21.1 to 1.22.5 ([49f90af](https://github.com/msgbyte/tianji/commit/49f90afac845a9504bfacc6534d83d40f5051432))
+
 ## [1.22.2](https://github.com/msgbyte/tianji/compare/v1.22.1...v1.22.2) (2025-06-22)
 
 ### Features
