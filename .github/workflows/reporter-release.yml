@@ -22,7 +22,7 @@ jobs:
           project_path: ./reporter
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: 1.21.1
+          goversion: 1.22.5
           binary_name: "tianji-reporter"
           compress_assets: "OFF"
           asset_name: "tianji-reporter-${{ matrix.goos }}-${{ matrix.goarch }}"
