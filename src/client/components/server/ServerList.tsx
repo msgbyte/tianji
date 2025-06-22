@@ -92,8 +92,8 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         cell: (props) => prettyMilliseconds(Number(props.getValue()) * 1000),
       }),
       columnHelper.accessor('payload.load', {
-        header: t('Load'),
-        size: 70,
+        header: t('CPU Load'),
+        size: 85,
       }),
       columnHelper.display({
         header: t('Network'),
@@ -116,8 +116,8 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         ),
       }),
       columnHelper.accessor('payload.cpu', {
-        header: 'CPU',
-        size: 80,
+        header: 'CPU Usage',
+        size: 100,
         cell: (props) => (
           <ColorizedText percent={props.getValue() / 100}>
             {props.getValue()}%
