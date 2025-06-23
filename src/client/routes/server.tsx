@@ -4,6 +4,7 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { AddServerStep } from '@/components/server/AddServerStep';
 import { InstallScript } from '@/components/server/InstallScript';
 import { ServerList } from '@/components/server/ServerList';
+import { ServerCardView } from '@/components/server/ServerCardView';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,8 +24,8 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Popconfirm } from 'antd';
 import React from 'react';
-import { useState } from 'react';
-import { LuPlus } from 'react-icons/lu';
+import { LuPlus, LuTable, LuGrid3X3 } from 'react-icons/lu';
+import { useLocalStorageState } from 'ahooks';
 
 export const Route = createFileRoute('/server')({
   beforeLoad: routeAuthBeforeLoad,
@@ -40,7 +41,16 @@ function ServerComponent() {
 }
 
 export const ServerContent: React.FC = React.memo(() => {
-  const [hideOfflineServer, setHideOfflineServer] = useState(false);
+  const [hideOfflineServer, setHideOfflineServer] = useLocalStorageState(
+    'server-hide-offline-server',
+    {
+      defaultValue: false,
+    }
+  );
+  const [viewMode, setViewMode] = useLocalStorageState<'list' | 'card'>(
+    'server-view-mode',
+    { defaultValue: 'list' }
+  );
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
 
@@ -80,6 +90,28 @@ export const ServerContent: React.FC = React.memo(() => {
 
               <Separator orientation="vertical" className="h-6" />
 
+              {/* View Mode Toggle */}
+              <div className="flex items-center rounded-md border">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="h-8 rounded-r-none border-r px-2"
+                >
+                  <LuTable className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'card' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('card')}
+                  className="h-8 rounded-l-none px-2"
+                >
+                  <LuGrid3X3 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <Separator orientation="vertical" className="h-6" />
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" Icon={LuPlus}>
@@ -112,8 +144,18 @@ export const ServerContent: React.FC = React.memo(() => {
         />
       }
     >
-      <div className="h-full overflow-hidden p-4">
-        <ServerList hideOfflineServer={hideOfflineServer} />
+      <div
+        className={
+          viewMode === 'card'
+            ? 'h-full overflow-auto p-4'
+            : 'h-full overflow-hidden p-4'
+        }
+      >
+        {viewMode === 'list' ? (
+          <ServerList hideOfflineServer={hideOfflineServer} />
+        ) : (
+          <ServerCardView hideOfflineServer={hideOfflineServer} />
+        )}
       </div>
     </CommonWrapper>
   );

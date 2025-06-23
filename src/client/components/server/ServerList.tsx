@@ -116,7 +116,7 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
         ),
       }),
       columnHelper.accessor('payload.cpu', {
-        header: 'CPU Usage',
+        header: t('CPU Usage'),
         size: 100,
         cell: (props) => (
           <ColorizedText percent={props.getValue() / 100}>
