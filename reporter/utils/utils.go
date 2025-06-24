@@ -14,11 +14,13 @@ import (
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 	pNet "github.com/shirou/gopsutil/v3/net"
+	"github.com/shirou/gopsutil/v3/process"
 	"log"
 	"math"
 	"net"
 	"os/exec"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -26,20 +28,22 @@ import (
 )
 
 type ReportDataPayload struct {
-	Uptime      uint64              `json:"uptime"`
-	Load        jsoniter.Number     `json:"load"`
-	MemoryTotal uint64              `json:"memory_total"`
-	MemoryUsed  uint64              `json:"memory_used"`
-	SwapTotal   uint64              `json:"swap_total"`
-	SwapUsed    uint64              `json:"swap_used"`
-	HddTotal    uint64              `json:"hdd_total"`
-	HddUsed     uint64              `json:"hdd_used"`
-	CPU         jsoniter.Number     `json:"cpu"`
-	NetworkTx   uint64              `json:"network_tx"`
-	NetworkRx   uint64              `json:"network_rx"`
-	NetworkIn   uint64              `json:"network_in"`
-	NetworkOut  uint64              `json:"network_out"`
-	Docker      []DockerDataPayload `json:"docker,omitempty"`
+	Uptime             uint64              `json:"uptime"`
+	Load               jsoniter.Number     `json:"load"`
+	MemoryTotal        uint64              `json:"memory_total"`
+	MemoryUsed         uint64              `json:"memory_used"`
+	SwapTotal          uint64              `json:"swap_total"`
+	SwapUsed           uint64              `json:"swap_used"`
+	HddTotal           uint64              `json:"hdd_total"`
+	HddUsed            uint64              `json:"hdd_used"`
+	CPU                jsoniter.Number     `json:"cpu"`
+	NetworkTx          uint64              `json:"network_tx"`
+	NetworkRx          uint64              `json:"network_rx"`
+	NetworkIn          uint64              `json:"network_in"`
+	NetworkOut         uint64              `json:"network_out"`
+	Docker             []DockerDataPayload `json:"docker,omitempty"`
+	TopCPUProcesses    []ProcessInfo       `json:"top_cpu_processes,omitempty"`
+	TopMemoryProcesses []ProcessInfo       `json:"top_memory_processes,omitempty"`
 }
 
 type DockerDataPayload struct {
@@ -60,6 +64,13 @@ type DockerDataPayload struct {
 	NetworkTx        float64            `json:"networkTx"`
 	IORead           uint64             `json:"ioRead"`
 	IOWrite          uint64             `json:"ioWrite"`
+}
+
+type ProcessInfo struct {
+	PID    int32   `json:"pid"`
+	Name   string  `json:"name"`
+	CPU    float64 `json:"cpu"`
+	Memory uint64  `json:"memory"`
 }
 
 var checkIP int
@@ -98,6 +109,8 @@ func GetReportDataPaylod(interval int, isVnstat bool) ReportDataPayload {
 	payload.NetworkIn = netIn
 	payload.NetworkOut = netOut
 	payload.Docker = dockerStat
+	payload.TopCPUProcesses = getTopCPUProcesses(3)
+	payload.TopMemoryProcesses = getTopMemoryProcesses(3)
 
 	return payload
 }
@@ -329,6 +342,81 @@ func GetDockerStat() ([]DockerDataPayload, error) {
 	}
 
 	return dockerPayloads, nil
+}
+
+func getTopCPUProcesses(n int) []ProcessInfo {
+	procs, err := process.Processes()
+	if err != nil {
+		return nil
+	}
+
+	result := make([]ProcessInfo, 0, n)
+	for _, p := range procs {
+		cpuPercent, err := p.CPUPercent()
+		if err != nil {
+			continue
+		}
+		if cpuPercent == 0 {
+			continue
+		}
+		name, _ := p.Name()
+		memInfo, _ := p.MemoryInfo()
+		mem := uint64(0)
+		if memInfo != nil {
+			mem = memInfo.RSS / 1024
+		}
+		result = append(result, ProcessInfo{
+			PID:    p.Pid,
+			Name:   name,
+			CPU:    cpuPercent,
+			Memory: mem,
+		})
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].CPU > result[j].CPU
+	})
+
+	if len(result) > n {
+		result = result[:n]
+	}
+	return result
+}
+
+func getTopMemoryProcesses(n int) []ProcessInfo {
+	procs, err := process.Processes()
+	if err != nil {
+		return nil
+	}
+
+	result := make([]ProcessInfo, 0, n)
+	for _, p := range procs {
+		memInfo, err := p.MemoryInfo()
+		if err != nil || memInfo == nil {
+			continue
+		}
+		mem := memInfo.RSS / 1024
+		if mem == 0 {
+			continue
+		}
+		cpuPercent, _ := p.CPUPercent()
+		name, _ := p.Name()
+		result = append(result, ProcessInfo{
+			PID:    p.Pid,
+			Name:   name,
+			CPU:    cpuPercent,
+			Memory: mem,
+		})
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Memory > result[j].Memory
+	})
+
+	if len(result) > n {
+		result = result[:n]
+	}
+	return result
 }
 
 /**

@@ -24,8 +24,18 @@ export interface ServerStatusInfoPayload {
   network_in: number;
   network_out: number;
 
+  top_cpu_processes?: ProcessInfo[];
+  top_memory_processes?: ProcessInfo[];
+
   // docker info
   docker?: ServerStatusDockerContainerPayload[];
+}
+
+export interface ProcessInfo {
+  pid: number;
+  name: string;
+  cpu: number;
+  memory: number;
 }
 
 export interface ServerStatusDockerContainerPayload {
