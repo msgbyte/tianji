@@ -49,7 +49,7 @@ export const env = {
       // Reference: https://authjs.dev/guides/configuring-oauth-providers
       name: process.env.AUTH_CUSTOM_NAME || 'Custom',
       type: process.env.AUTH_CUSTOM_TYPE || 'oidc', // or oauth
-      issuer: process.env.AUTH_CUSTOM_ISSUR,
+      issuer: process.env.AUTH_CUSTOM_ISSUER,
       clientId: process.env.AUTH_CUSTOM_ID,
       clientSecret: process.env.AUTH_CUSTOM_SECRET,
     },

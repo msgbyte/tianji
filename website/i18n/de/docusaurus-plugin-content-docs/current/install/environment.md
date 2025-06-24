@@ -56,7 +56,7 @@ Tianji unterstützt verschiedene Umgebungsvariablen, um sein Verhalten anzupasse
 | `AUTH_CUSTOM_SECRET` | Benutzerdefiniertes OAuth/OIDC-Client-Geheimnis | - | `your-custom-client-secret` |
 | `AUTH_CUSTOM_NAME` | Benutzerdefinierter Anbietername | `Custom` | `Enterprise SSO` |
 | `AUTH_CUSTOM_TYPE` | Authentifizierungstyp | `oidc` | `oauth` |
-| `AUTH_CUSTOM_ISSUR` | OIDC-Herausgeber-URL | - | `https://auth.example.com` |
+| `AUTH_CUSTOM_ISSUER` | OIDC-Herausgeber-URL | - | `https://auth.example.com` |
 
 ## KI-Funktionen
 

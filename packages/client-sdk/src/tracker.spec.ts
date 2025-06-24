@@ -8,7 +8,7 @@ describe('initTianjiTracker', () => {
   });
 
   test('simple', async () => {
-    await initTianjiTracker({
+    const script = await initTianjiTracker({
       url: 'https://example.com',
       websiteId: 'fooo',
     });
@@ -20,6 +20,8 @@ describe('initTianjiTracker', () => {
     expect(scriptDoms[0].dataset).toEqual({
       websiteId: 'fooo',
     });
+    expect(script).toBe(scriptDoms[0]);
+    expect(script.parentElement).toBe(document.head);
   });
 
   test('customTrackerName', async () => {

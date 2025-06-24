@@ -40,10 +40,10 @@ its will auto download reporter and create linux service in your machine. so its
 
 if you wanna uninstall reporter service, you can use this command like:
 ```bash
-curl -o- https://tianji.exmaple.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
+curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ``` 
 
-major change is append `-s uninstall` after your install command.
+The main change is to append `-s uninstall` to your install command.
 
 ## Q&A
 
