@@ -74,7 +74,7 @@ func main() {
 			WorkspaceId: *WorkspaceId,
 			Name:        name,
 			Hostname:    hostname,
-			Timeout:     interval * 5,
+			Timeout:     interval * 10,
 			Payload:     utils.GetReportDataPaylod(interval, *IsVnstat),
 		}
 
