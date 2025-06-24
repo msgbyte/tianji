@@ -14,6 +14,9 @@ import { filesize } from 'filesize';
 import { UpDownCounter } from '../UpDownCounter';
 import dayjs from 'dayjs';
 import { Switch } from '../ui/switch';
+import { trpc } from '@/api/trpc';
+import { useCurrentWorkspaceId } from '@/store/user';
+import { TimeEventChart, useTimeEventChartConfig } from '../chart/TimeEventChart';
 
 const columnHelper = createColumnHelper<ServerStatusDockerContainerPayload>();
 const processColumnHelper = createColumnHelper<ProcessInfo>();
@@ -146,15 +149,29 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
       ? row.payload.docker
       : row.payload.docker?.filter((item) => item.state === 'running');
 
+    const workspaceId = useCurrentWorkspaceId();
+    const { data: history = [] } = trpc.serverStatus.history.useQuery({
+      workspaceId,
+      name: row.name,
+    });
+
+    const chartData = useMemo(() => {
+      return history.map((h) => ({
+        date: dayjs(h.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+        cpu: h.payload.cpu,
+        memory: (h.payload.memory_used / h.payload.memory_total) * 100,
+      }));
+    }, [history]);
+
+    const chartConfig = useTimeEventChartConfig(chartData);
+
     return (
       <div className="p-2">
         <Tabs defaultValue="docker">
           <TabsList>
             <TabsTrigger value="docker">Docker</TabsTrigger>
             <TabsTrigger value="process">Process</TabsTrigger>
-            <TabsTrigger value="history" disabled={true}>
-              History(Comming Soon)
-            </TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
           <TabsContent value="docker">
             {!row.payload.docker ? (
@@ -186,7 +203,21 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="history">Comming Soon</TabsContent>
+          <TabsContent value="history">
+            {chartData.length === 0 ? (
+              <div className="text-muted-foreground flex h-32 items-center justify-center">
+                {t('No Data')}
+              </div>
+            ) : (
+              <TimeEventChart
+                data={chartData}
+                unit="minute"
+                chartConfig={chartConfig}
+                chartType="line"
+                isTrendingMode={true}
+              />
+            )}
+          </TabsContent>
         </Tabs>
       </div>
     );
