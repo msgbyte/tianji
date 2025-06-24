@@ -11,7 +11,14 @@ import { filesize } from 'filesize';
 import prettyMilliseconds from 'pretty-ms';
 import { UpDownCounter } from '../UpDownCounter';
 import { ColorizedText } from './ColorizedText';
-import { FaDocker, FaServer, FaClock, FaMemory, FaHdd } from 'react-icons/fa';
+import {
+  FaDocker,
+  FaServer,
+  FaClock,
+  FaMemory,
+  FaHdd,
+  FaEye,
+} from 'react-icons/fa';
 import { LuCpu, LuNetwork } from 'react-icons/lu';
 import { Button } from '../ui/button';
 import { cn } from '@/utils/style';
@@ -198,19 +205,17 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
           </div>
 
           {/* Docker Info - Button */}
-          {server.payload.docker && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-full justify-start"
-              onClick={() => onDockerClick?.(server)}
-            >
-              <span className="flex items-center gap-2">
-                <FaDocker className="h-4 w-4" />
-                {t('View Docker Containers')} ({server.payload.docker.length})
-              </span>
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-full justify-start"
+            onClick={() => onDockerClick?.(server)}
+          >
+            <span className="flex items-center gap-2">
+              <FaEye className="h-4 w-4" />
+              {t('View Detail')}
+            </span>
+          </Button>
         </CardContent>
       </Card>
     );
