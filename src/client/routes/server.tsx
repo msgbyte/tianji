@@ -42,7 +42,7 @@ function ServerComponent() {
 
 export const ServerContent: React.FC = React.memo(() => {
   const [hideOfflineServer = false, setHideOfflineServer] =
-    useLocalStorageState('server-hide-offline-server', {
+    useLocalStorageState<boolean>('server-hide-offline-server', {
       defaultValue: false,
     });
   const [viewMode, setViewMode] = useLocalStorageState<'list' | 'card'>(
