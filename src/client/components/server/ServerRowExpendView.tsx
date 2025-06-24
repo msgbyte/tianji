@@ -215,6 +215,7 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
                 chartConfig={chartConfig}
                 chartType="line"
                 isTrendingMode={true}
+                valueFormatter={(v) => `${v.toFixed(2)}%`}
               />
             )}
           </TabsContent>
