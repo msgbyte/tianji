@@ -11,6 +11,11 @@ const serverMap: Record<
   >
 > = {};
 
+const serverHistoryMap: Record<
+  string,
+  Record<string, ServerStatusInfo[]>
+> = {};
+
 createSubscribeInitializer('onServerStatusUpdate', (workspaceId) => {
   if (!serverMap[workspaceId]) {
     serverMap[workspaceId] = {};
@@ -34,6 +39,14 @@ export function recordServerStatus(info: ServerStatusInfo) {
     serverMap[workspaceId] = {};
   }
 
+  if (!serverHistoryMap[workspaceId]) {
+    serverHistoryMap[workspaceId] = {};
+  }
+
+  if (!serverHistoryMap[workspaceId][name || hostname]) {
+    serverHistoryMap[workspaceId][name || hostname] = [];
+  }
+
   serverMap[workspaceId][name || hostname] = {
     workspaceId,
     name,
@@ -42,6 +55,12 @@ export function recordServerStatus(info: ServerStatusInfo) {
     updatedAt: Date.now(),
     payload,
   };
+
+  const arr = serverHistoryMap[workspaceId][name || hostname];
+  arr.push(serverMap[workspaceId][name || hostname]);
+  if (arr.length > 20) {
+    arr.shift();
+  }
 
   promServerCounter.set(
     {
@@ -88,4 +107,13 @@ export function getServerCount(workspaceId: string): number {
   }
 
   return Object.keys(serverMap[workspaceId]).length;
+}
+
+export function getServerStatusHistory(
+  workspaceId: string,
+  name: string
+): ServerStatusInfo[] {
+  return (
+    serverHistoryMap[workspaceId]?.[name] ?? []
+  );
 }
