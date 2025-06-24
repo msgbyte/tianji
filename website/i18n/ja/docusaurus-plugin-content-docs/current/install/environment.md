@@ -57,7 +57,7 @@ Tianjiは、様々な環境変数をサポートしており、その動作を�
 | `AUTH_CUSTOM_SECRET` | カスタムOAuth/OIDCクライアントシークレット | - | `your-custom-client-secret` |
 | `AUTH_CUSTOM_NAME` | カスタムプロバイダーの名前 | `Custom` | `Enterprise SSO` |
 | `AUTH_CUSTOM_TYPE` | 認証タイプ | `oidc` | `oauth` |
-| `AUTH_CUSTOM_ISSUR` | OIDC発行者URL | - | `https://auth.example.com` |
+| `AUTH_CUSTOM_ISSUER` | OIDC発行者URL | - | `https://auth.example.com` |
 
 ## AI機能
 

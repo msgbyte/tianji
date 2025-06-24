@@ -56,7 +56,7 @@ Tianji 支持通过各种环境变量来自定义其行为。您可以在 docker
 | `AUTH_CUSTOM_SECRET` | 自定义 OAuth/OIDC 客户端密钥 | - | `your-custom-client-secret` |
 | `AUTH_CUSTOM_NAME` | 自定义提供者名称 | `Custom` | `Enterprise SSO` |
 | `AUTH_CUSTOM_TYPE` | 认证类型 | `oidc` | `oauth` |
-| `AUTH_CUSTOM_ISSUR` | OIDC 发行者 URL | - | `https://auth.example.com` |
+| `AUTH_CUSTOM_ISSUER` | OIDC 发行者 URL | - | `https://auth.example.com` |
 
 ## AI 特性
 
