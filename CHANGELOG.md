@@ -1,5 +1,24 @@
 
 
+## [1.22.4](https://github.com/msgbyte/tianji/compare/v1.22.3...v1.22.4) (2025-06-25)
+
+### Features
+
+* add process stats support ([6079501](https://github.com/msgbyte/tianji/commit/607950178ce2d7f8beaeff5090a0e3485a3400e7))
+* add ServerCard and ServerCardView components for improved server monitoring display ([79a026e](https://github.com/msgbyte/tianji/commit/79a026e441d19d6366eb0c7540d577299a677904))
+* **server-status:** add history caching and chart ([4c9c938](https://github.com/msgbyte/tianji/commit/4c9c93852dab03a6996f72c0fe53f03d7a627896))
+
+### Document
+
+* fix typos and env variable ([7ca6fff](https://github.com/msgbyte/tianji/commit/7ca6fff64a8da4601e78f6e31d4b5a9b99f8260d))
+
+### Others
+
+* add translation ([9331c6a](https://github.com/msgbyte/tianji/commit/9331c6a349b45d708a6fbf73fa8076e492c34525))
+* fix ci issue ([257ecad](https://github.com/msgbyte/tianji/commit/257ecad0fe679087ca7c3350719030f6c6b62f75))
+* fix ci type issue ([d6328b4](https://github.com/msgbyte/tianji/commit/d6328b4435ece16186996cc08e551e3714886189))
+* scale timeout time to 10x which added more tolerance ([f6ba75e](https://github.com/msgbyte/tianji/commit/f6ba75ecef841193b869d82fbaf05ebec5c5498a))
+
 ## [1.22.3](https://github.com/msgbyte/tianji/compare/v1.22.2...v1.22.3) (2025-06-22)
 
 ### Others
