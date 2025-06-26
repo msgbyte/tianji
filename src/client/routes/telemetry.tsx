@@ -95,8 +95,7 @@ function TelemetryComponent() {
                     <Trans>
                       At the same time, we can also use it in some client-side
                       application scenarios, such as collecting the frequency of
-                      cli usage, such as collecting the installation of
-                      selfhosted apps, and so on.
+                      cli usage or installation of selfhosted apps, and so on.
                     </Trans>
                   </p>
                 </div>
