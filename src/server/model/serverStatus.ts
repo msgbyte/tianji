@@ -2,29 +2,96 @@ import { ServerStatusInfo } from '../../types/index.js';
 import { promServerCounter } from '../utils/prometheus/client.js';
 import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared.js';
 import { isServerOnline } from '@tianji/shared';
+import { getCacheManager } from '../cache/index.js';
+import { logger } from '../utils/logger.js';
 
-const serverMap: Record<
-  string, // workspaceId
-  Record<
-    string, // nodeName or hostname
-    ServerStatusInfo
-  >
-> = {};
+// Helper function to get cache key for server map
+function getServerMapCacheKey(workspaceId: string): string {
+  return `server_map:${workspaceId}`;
+}
 
-const serverHistoryMap: Record<
-  string,
-  Record<string, ServerStatusInfo[]>
-> = {};
+// Helper function to get server map from cache
+async function getServerMapFromCache(
+  workspaceId: string
+): Promise<Record<string, ServerStatusInfo>> {
+  const cacheManager = await getCacheManager();
+  const key = getServerMapCacheKey(workspaceId);
 
-createSubscribeInitializer('onServerStatusUpdate', (workspaceId) => {
-  if (!serverMap[workspaceId]) {
-    serverMap[workspaceId] = {};
+  const cachedValue = await cacheManager.get(key);
+  if (cachedValue) {
+    try {
+      return JSON.parse(String(cachedValue));
+    } catch (err) {
+      logger.error('[ServerStatus] Error parsing cached server map:', err);
+      return {};
+    }
   }
 
-  return serverMap[workspaceId];
+  return {};
+}
+
+// Helper function to save server map to cache
+async function saveServerMapToCache(
+  workspaceId: string,
+  serverMap: Record<string, ServerStatusInfo>
+): Promise<void> {
+  const cacheManager = await getCacheManager();
+  const key = getServerMapCacheKey(workspaceId);
+
+  try {
+    await cacheManager.set(key, JSON.stringify(serverMap));
+  } catch (err) {
+    logger.error('[ServerStatus] Error saving server map to cache:', err);
+  }
+}
+
+// Helper function to get cache key for server history
+function getServerHistoryCacheKey(workspaceId: string, name: string): string {
+  return `server_history:${workspaceId}:${name}`;
+}
+
+// Helper function to get server history from cache
+async function getServerHistoryFromCache(
+  workspaceId: string,
+  name: string
+): Promise<ServerStatusInfo[]> {
+  const cacheManager = await getCacheManager();
+  const key = getServerHistoryCacheKey(workspaceId, name);
+
+  const cachedValue = await cacheManager.get(key);
+  if (cachedValue) {
+    try {
+      return JSON.parse(String(cachedValue));
+    } catch (err) {
+      logger.error('[ServerStatus] Error parsing cached history:', err);
+      return [];
+    }
+  }
+
+  return [];
+}
+
+// Helper function to save server history to cache
+async function saveServerHistoryToCache(
+  workspaceId: string,
+  name: string,
+  history: ServerStatusInfo[]
+): Promise<void> {
+  const cacheManager = await getCacheManager();
+  const key = getServerHistoryCacheKey(workspaceId, name);
+
+  try {
+    await cacheManager.set(key, JSON.stringify(history));
+  } catch (err) {
+    logger.error('[ServerStatus] Error saving history to cache:', err);
+  }
+}
+
+createSubscribeInitializer('onServerStatusUpdate', async (workspaceId) => {
+  return await getServerMapFromCache(workspaceId);
 });
 
-export function recordServerStatus(info: ServerStatusInfo) {
+export async function recordServerStatus(info: ServerStatusInfo) {
   const { workspaceId, name, hostname, timeout, payload } = info;
 
   if (!workspaceId || !name || !hostname) {
@@ -35,19 +102,12 @@ export function recordServerStatus(info: ServerStatusInfo) {
     return;
   }
 
-  if (!serverMap[workspaceId]) {
-    serverMap[workspaceId] = {};
-  }
+  // Get current server map from cache
+  const serverMap = await getServerMapFromCache(workspaceId);
 
-  if (!serverHistoryMap[workspaceId]) {
-    serverHistoryMap[workspaceId] = {};
-  }
-
-  if (!serverHistoryMap[workspaceId][name || hostname]) {
-    serverHistoryMap[workspaceId][name || hostname] = [];
-  }
-
-  serverMap[workspaceId][name || hostname] = {
+  // Update current server status
+  const serverKey = name || hostname;
+  serverMap[serverKey] = {
     workspaceId,
     name,
     hostname,
@@ -56,64 +116,66 @@ export function recordServerStatus(info: ServerStatusInfo) {
     payload,
   };
 
-  const arr = serverHistoryMap[workspaceId][name || hostname];
-  arr.push(serverMap[workspaceId][name || hostname]);
-  if (arr.length > 20) {
-    arr.shift();
+  // Save updated server map to cache
+  await saveServerMapToCache(workspaceId, serverMap);
+
+  // Update server history using cache
+  const history = await getServerHistoryFromCache(workspaceId, serverKey);
+  history.push(serverMap[serverKey]);
+
+  // Keep only the last 20 records
+  if (history.length > 20) {
+    history.shift();
   }
+
+  saveServerHistoryToCache(workspaceId, serverKey, history).catch((err) => {
+    logger.error('[ServerStatus] Error saving history to cache:', err);
+  });
 
   promServerCounter.set(
     {
       workspaceId,
     },
-    Object.keys(serverMap[workspaceId]).length
+    Object.keys(serverMap).length
   );
 
-  subscribeEventBus.emit(
-    'onServerStatusUpdate',
-    workspaceId,
-    serverMap[workspaceId]
-  );
+  subscribeEventBus.emit('onServerStatusUpdate', workspaceId, serverMap);
 }
 
-export function clearOfflineServerStatus(workspaceId: string) {
-  if (!serverMap[workspaceId]) {
-    return;
+export async function clearOfflineServerStatus(workspaceId: string) {
+  const serverMap = await getServerMapFromCache(workspaceId);
+
+  if (!serverMap || Object.keys(serverMap).length === 0) {
+    return serverMap;
   }
 
   const offlineNode: string[] = [];
-  Object.entries(serverMap[workspaceId]).forEach(([key, info]) => {
+  Object.entries(serverMap).forEach(([key, info]) => {
     if (!isServerOnline(info)) {
       offlineNode.push(key);
     }
   });
 
   for (const node of offlineNode) {
-    delete serverMap[workspaceId][node];
+    delete serverMap[node];
   }
 
-  subscribeEventBus.emit(
-    'onServerStatusUpdate',
-    workspaceId,
-    serverMap[workspaceId]
-  );
+  // Save updated server map to cache
+  await saveServerMapToCache(workspaceId, serverMap);
 
-  return serverMap[workspaceId];
+  subscribeEventBus.emit('onServerStatusUpdate', workspaceId, serverMap);
+
+  return serverMap;
 }
 
-export function getServerCount(workspaceId: string): number {
-  if (!serverMap[workspaceId]) {
-    return 0;
-  }
-
-  return Object.keys(serverMap[workspaceId]).length;
+export async function getServerCount(workspaceId: string): Promise<number> {
+  const serverMap = await getServerMapFromCache(workspaceId);
+  return Object.keys(serverMap).length;
 }
 
-export function getServerStatusHistory(
+export async function getServerStatusHistory(
   workspaceId: string,
   name: string
-): ServerStatusInfo[] {
-  return (
-    serverHistoryMap[workspaceId]?.[name] ?? []
-  );
+): Promise<ServerStatusInfo[]> {
+  return await getServerHistoryFromCache(workspaceId, name);
 }

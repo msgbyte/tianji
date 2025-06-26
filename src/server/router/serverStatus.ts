@@ -21,7 +21,7 @@ serverStatusRouter.post(
   async (req, res) => {
     const body = req.body;
 
-    recordServerStatus(body);
+    await recordServerStatus(body);
 
     res.send('success');
   }

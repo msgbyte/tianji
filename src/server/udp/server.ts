@@ -10,14 +10,14 @@ export function initUdpServer(port: number) {
     server.close();
   });
 
-  server.on('message', (msg, rinfo) => {
+  server.on('message', async (msg, rinfo) => {
     try {
       const raw = String(msg);
       const json = JSON.parse(String(msg));
 
       logger.info('[UDP] recevice tianji report:', raw, 'info', rinfo);
 
-      recordServerStatus(json);
+      await recordServerStatus(json);
     } catch (err) {}
   });
 

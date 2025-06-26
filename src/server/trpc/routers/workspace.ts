@@ -520,6 +520,11 @@ export const workspaceRouter = router({
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
+      const [serviceCount, server] = await Promise.all([
+        getWorkspaceServiceCount(workspaceId),
+        getServerCount(workspaceId),
+      ]);
+
       const {
         website,
         application,
@@ -529,9 +534,7 @@ export const workspaceRouter = router({
         survey,
         feed,
         aiGateway,
-      } = await getWorkspaceServiceCount(workspaceId);
-
-      const server = getServerCount(workspaceId);
+      } = serviceCount;
 
       return {
         website,

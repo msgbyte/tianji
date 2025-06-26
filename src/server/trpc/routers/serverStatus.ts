@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { router, workspaceAdminProcedure, workspaceProcedure } from '../trpc.js';
+import {
+  router,
+  workspaceAdminProcedure,
+  workspaceProcedure,
+} from '../trpc.js';
 import {
   clearOfflineServerStatus,
   getServerStatusHistory,
@@ -10,7 +14,7 @@ export const serverStatusRouter = router({
     async ({ input }) => {
       const workspaceId = input.workspaceId;
 
-      return clearOfflineServerStatus(workspaceId);
+      return await clearOfflineServerStatus(workspaceId);
     }
   ),
   history: workspaceProcedure
