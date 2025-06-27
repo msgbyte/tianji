@@ -22,6 +22,7 @@ import { useStrokeDasharray } from '@/hooks/useStrokeDasharray';
 import { flatten, get, union, without } from 'lodash-es';
 import { pickColorWithNum } from '@/utils/color';
 import { cn } from '@/utils/style';
+import { type AxisDomain } from 'recharts/types/util/types';
 
 export type TimeEventChartType = 'area' | 'stack' | 'line';
 
@@ -43,6 +44,7 @@ export const TimeEventChart: React.FC<{
   className?: string;
   data: TimeEventChartData[];
   unit: DateUnit;
+  yAxisDomain?: AxisDomain;
   chartConfig?: ChartConfig;
   drawGradientArea?: boolean;
   drawDashLine?: boolean;
@@ -59,6 +61,7 @@ export const TimeEventChart: React.FC<{
     chartType = 'area',
     isTrendingMode = false,
     showDifference = false,
+    yAxisDomain,
   } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
@@ -113,7 +116,7 @@ export const TimeEventChart: React.FC<{
         />
         <YAxis
           mirror
-          domain={isTrendingMode ? ['auto', 'auto'] : undefined}
+          domain={isTrendingMode ? ['auto', 'auto'] : yAxisDomain}
           tickFormatter={props.valueFormatter}
         />
         <ChartLegend

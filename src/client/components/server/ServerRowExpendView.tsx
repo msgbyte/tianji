@@ -16,7 +16,10 @@ import dayjs from 'dayjs';
 import { Switch } from '../ui/switch';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { TimeEventChart, useTimeEventChartConfig } from '../chart/TimeEventChart';
+import {
+  TimeEventChart,
+  useTimeEventChartConfig,
+} from '../chart/TimeEventChart';
 
 const columnHelper = createColumnHelper<ServerStatusDockerContainerPayload>();
 const processColumnHelper = createColumnHelper<ProcessInfo>();
@@ -195,11 +198,17 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
             <div className="space-y-4">
               <div>
                 <div className="mb-2 font-medium">Top CPU Processes</div>
-                <DataTable columns={cpuColumns} data={row.payload.top_cpu_processes ?? []} />
+                <DataTable
+                  columns={cpuColumns}
+                  data={row.payload.top_cpu_processes ?? []}
+                />
               </div>
               <div>
                 <div className="mb-2 font-medium">Top Memory Processes</div>
-                <DataTable columns={memColumns} data={row.payload.top_memory_processes ?? []} />
+                <DataTable
+                  columns={memColumns}
+                  data={row.payload.top_memory_processes ?? []}
+                />
               </div>
             </div>
           </TabsContent>
@@ -212,9 +221,10 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
               <TimeEventChart
                 data={chartData}
                 unit="minute"
+                drawDashLine={false}
                 chartConfig={chartConfig}
                 chartType="line"
-                isTrendingMode={true}
+                yAxisDomain={[0, 100]}
                 valueFormatter={(v) => `${v.toFixed(2)}%`}
               />
             )}
