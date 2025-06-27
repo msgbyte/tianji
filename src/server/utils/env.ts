@@ -54,6 +54,13 @@ export const env = {
       clientSecret: process.env.AUTH_CUSTOM_SECRET,
     },
   },
+  db: {
+    debug: checkEnvTrusty(process.env.DB_DEBUG),
+    transactionOptions: {
+      maxWait: Number(process.env.PRISMA_TRANSACTION_MAX_WAIT) || 2000,
+      timeout: Number(process.env.PRISMA_TRANSACTION_TIMEOUT) || 5000,
+    },
+  },
   smtp: {
     server: process.env.EMAIL_SERVER,
     from: process.env.EMAIL_FROM,
@@ -89,7 +96,6 @@ export const env = {
       : 16, // unit: MB
   },
   puppeteerExecutablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-  dbDebug: checkEnvTrusty(process.env.DB_DEBUG),
   amapToken: process.env.AMAP_TOKEN,
   mapboxToken: process.env.MAPBOX_TOKEN,
   alphaMode: checkEnvTrusty(process.env.ALPHA_MODE),

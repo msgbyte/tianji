@@ -7,13 +7,14 @@ const debugEvent = {
   level: 'query',
 } as const;
 
-const log = env.dbDebug ? [debugEvent] : [];
+const log = env.db.debug ? [debugEvent] : [];
 
 export const prisma = new PrismaClient({
   log,
+  transactionOptions: env.db.transactionOptions,
 });
 
-if (env.dbDebug) {
+if (env.db.debug) {
   prisma.$on('query', async (e) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
