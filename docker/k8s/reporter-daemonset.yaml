@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tianji-reporter
+  labels:
+    app: tianji-reporter
+spec:
+  selector:
+    matchLabels:
+      app: tianji-reporter
+  template:
+    metadata:
+      labels:
+        app: tianji-reporter
+    spec:
+      containers:
+        - name: reporter
+          image: moonrailgun/tianji:latest
+          args:
+            - /usr/local/bin/tianji-reporter
+            - --url=$(TIANJI_SERVER_URL)
+            - --workspace=$(TIANJI_WORKSPACE_ID)
+            - --name=$(NODE_NAME)
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: TIANJI_SERVER_URL
+              value: "http://tianji.example.com"
+            - name: TIANJI_WORKSPACE_ID
+              value: "<your_workspace_id>"
+          volumeMounts:
+            - name: proc
+              mountPath: /proc
+              readOnly: true
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: rootfs
+              mountPath: /rootfs
+              readOnly: true
+          securityContext:
+            privileged: true
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: rootfs
+          hostPath:
+            path: /
