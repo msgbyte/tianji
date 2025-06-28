@@ -1,67 +1,68 @@
 ---
 sidebar_position: 1
-_i18n_hash: 1de8a86599061f446dd0699137a4e68c
+_i18n_hash: d9dd1597f6c275ebc68c7421c31b29fe
 ---
-# Server Status Reporter
+# Serverstatus Reporter
 
-Sie können den Status Ihres Servers ganz einfach mit dem Tianji-Reporter melden.
+Sie können den Status Ihres Servers ganz einfach mit dem Tianji Reporter melden.
 
 Sie können es von [https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases) herunterladen.
 
 ## Verwendung
 
 ```
-Verwendung des tianji-reporters:
+Verwendung von tianji-reporter:
   --interval int
-        Geben Sie das INTERVAL an, in Sekunden (standardmäßig 5)
+        Geben Sie das INTERVALL ein, in Sekunden (Standard 5)
   --mode http
-        Der Sendemodus der Berichtsdaten, Sie können auswählen: `http` oder `udp`, standardmäßig ist `http` (standardmäßig "http")
+        Der Sendemodus der Berichtsdaten, Sie können wählen: `http` oder `udp`, Standard ist `http` (Standard "http")
   --name string
         Der Identifikationsname für diese Maschine
   --url string
         Die HTTP-URL von Tianji, zum Beispiel: https://tianji.msgbyte.com
   --vnstat
-        Verwenden Sie vnstat zur Verkehrstatistik, nur Linux
+        Verwenden Sie vnstat für Verkehrsstatistiken, nur Linux
   --workspace string
-        Die Workspace-ID für Tianji, dies sollte eine UUID sein
+        Die Arbeitsbereich-ID für Tianji, dies sollte eine UUID sein
 ```
 
-Die **url** und **workspace** sind erforderlich, das bedeutet, dass Sie melden, an welchen Host und in welches Workspace Sie Ihren Dienst berichten.
+Die **URL** und der **Arbeitsbereich** sind erforderlich, das bedeutet, Sie werden Ihren Dienst zu welchem Host und Arbeitsbereich melden.
 
-Standardmäßig ist der Name eines Serverknotens derselbe wie der Hostname, Sie können jedoch Ihren Namen mit `--name` anpassen, was Ihnen hilft, den Server zu identifizieren.
+Standardmäßig ist der Serverknotenname derselbe wie der Hostname; daher können Sie mit `--name` einen benutzerdefinierten Namen festlegen, der Ihnen hilft, den Server zu identifizieren.
 
 ## Automatisches Installationsskript
 
-Sie können Ihr automatisches Installationsskript in `Tianji` -> `Server` -> `Hinzufügen` -> `Auto`-Registerkarte erhalten.
+Sie können Ihr automatisches Installationsskript erhalten in `Tianji` -> `Server` -> `Hinzufügen` -> Registerkarte `Auto`.
 
-Es wird automatisch den Reporter herunterladen und einen Linux-Dienst auf Ihrer Maschine erstellen. Daher sind Root-Berechtigungen erforderlich.
+Es wird automatisch den Reporter herunterladen und einen Linux-Dienst auf Ihrer Maschine erstellen, daher sind Root-Berechtigungen erforderlich.
 
 ### Deinstallation
 
-Wenn Sie den Reporter-Dienst deinstallieren möchten, können Sie diesen Befehl verwenden:
+Wenn Sie den Reports-Dienst deinstallieren möchten, können Sie diesen Befehl verwenden:
+
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ``` 
 
-Die wesentliche Änderung besteht darin, `-s uninstall` nach Ihrem Installationsbefehl hinzuzufügen.
+Die Hauptänderung besteht darin, `-s uninstall` an Ihren Installationsbefehl anzuhängen.
 
-## Fragen & Antworten
+## F&A
 
-### Wie kann ich das Protokoll des Tianji-Reporters überprüfen?
+### Wie überprüfe ich das Tianji Reporter Dienstprotokoll?
 
-Wenn Sie mit dem automatischen Installationsskript installiert haben, hilft Ihnen Tianji, einen Dienst namens `tianji-reporter` auf Ihrem Linux-Computer zu installieren.
+Wenn Sie mit dem automatischen Installationsskript installieren, wird Tianji Ihnen helfen, einen Dienst mit dem Namen `tianji-reporter` auf Ihrer Linux-Maschine zu installieren.
 
-Sie können diesen Befehl verwenden, um das Protokoll des Tianji-Reporters zu überprüfen:
+Sie können diesen Befehl verwenden, um das Tianji Reporter Protokoll zu überprüfen:
 
 ```bash
 journalctl -fu tianji-reporter.service
 ```
 
-### Nicht gefunden Ihre Maschine in der Server-Registerkarte, obwohl der Bericht erfolgreich angezeigt wird
+### Ihre Maschine wird nicht im Server-Tab gefunden, obwohl der Bericht Erfolg zeigt
 
-Vielleicht befindet sich Ihr Tianji hinter einem Reverse-Proxy wie `nginx`.
+Vielleicht befindet sich Ihr Tianji hinter einem Reverse-Proxy, zum Beispiel `nginx`.
 
-Bitte stellen Sie sicher, dass Ihr Reverse-Proxy WebSocket-Unterstützung hinzufügt.
+Bitte stellen Sie sicher, dass Ihr Reverse-Proxy Websocket-Unterstützung hinzufügt.
 
 ## Warum ist meine Maschine immer offline?
 
