@@ -1,5 +1,25 @@
 
 
+## [1.22.5](https://github.com/msgbyte/tianji/compare/v1.22.4...v1.22.5) (2025-06-28)
+
+### Features
+
+* add yAxisDomain to time event chart and improve history display ([235920a](https://github.com/msgbyte/tianji/commit/235920aee10ec10fc4b1c9ef664552304cff9c13))
+* enhance database configuration with debug and transaction options ([812bfe5](https://github.com/msgbyte/tianji/commit/812bfe571674f5ecf70044ea88d625faaf7f64b7))
+* **server-status:** implement caching for server status and history, update related functions to support async operations ([ca7cb73](https://github.com/msgbyte/tianji/commit/ca7cb738fbb83d963903cd277f8a658348c79676))
+
+### Document
+
+* add document for traefik plugin ([1493d4a](https://github.com/msgbyte/tianji/commit/1493d4a1a386db3fa4267029344db667ae1889cb))
+* change website domain to tianji.dev ([30834aa](https://github.com/msgbyte/tianji/commit/30834aad73179bd5f642833428dee4a68e4f3f11))
+* move traefik with plugin document position ([422fbde](https://github.com/msgbyte/tianji/commit/422fbdec40b93a11eca463e5921fe6710cdc9160))
+
+### Others
+
+* change docker start script, redirect tianji-reporter output to /dev/null for cleaner logs ([0034253](https://github.com/msgbyte/tianji/commit/0034253944015446f25d388b1e898a093c3b0763))
+* migrate traefik tianji plugin to independent repo ([0718edb](https://github.com/msgbyte/tianji/commit/0718edb39d9813eb3d1848efcacaf3369cae3a01))
+* update translation ([d7e94fc](https://github.com/msgbyte/tianji/commit/d7e94fca3ef27aa46bd413b4b5955ec3b1193168))
+
 ## [1.22.4](https://github.com/msgbyte/tianji/compare/v1.22.3...v1.22.4) (2025-06-25)
 
 ### Features
