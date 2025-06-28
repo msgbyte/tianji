@@ -45,6 +45,11 @@ curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?
 
 The main change is to append `-s uninstall` to your install command.
 
+## Kubernetes
+
+If your servers are running in a Kubernetes cluster, you can deploy the reporter as a DaemonSet so each node reports metrics automatically. See [Deploy Reporter as DaemonSet](./kubernetes/reporter-daemonset.md) for details.
+
+
 ## Q&A
 
 ### How to check tianji reporter service log?
