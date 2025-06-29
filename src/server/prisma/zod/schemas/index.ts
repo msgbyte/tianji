@@ -6,6 +6,7 @@ export const MonitorStatusPageListSchema = z.array(
   z.object({
     id: z.string(),
     showCurrent: z.boolean().default(false).optional(),
+    showDetail: z.boolean().default(true).optional(),
   })
 );
 

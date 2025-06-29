@@ -11,6 +11,7 @@ interface StatusPageServicesProps {
   monitorList: {
     id: string;
     showCurrent?: boolean;
+    showDetail?: boolean;
   }[];
 }
 /**

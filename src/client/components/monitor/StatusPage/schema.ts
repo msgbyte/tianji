@@ -5,6 +5,7 @@ export const leafItemSchema = z.object({
   id: z.string(),
   type: z.enum(['monitor']),
   showCurrent: z.boolean().default(false).optional(),
+  showDetail: z.boolean().default(true).optional(),
 });
 
 export const groupItemSchema = z.object({
