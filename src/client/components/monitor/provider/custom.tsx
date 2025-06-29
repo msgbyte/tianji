@@ -86,5 +86,5 @@ export const customProvider: MonitorProvider = {
   name: 'custom',
   form: MonitorCustom,
   valueLabel: 'Result',
-  valueFormatter: (value) => String(value),
+  valueFormatter: (value) => Number(value).toLocaleString(),
 };
