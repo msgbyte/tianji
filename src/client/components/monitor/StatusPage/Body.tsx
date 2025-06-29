@@ -1,5 +1,5 @@
 import { AppRouterOutput, trpc } from '@/api/trpc';
-import React, { useMemo, useReducer } from 'react';
+import React, { useMemo, useReducer, useCallback } from 'react';
 import { bodySchema } from './schema';
 import { Empty } from 'antd';
 import { Separator } from '@/components/ui/separator';
@@ -63,6 +63,7 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
                         workspaceId={props.workspaceId}
                         monitorId={item.id}
                         showCurrent={item.showCurrent ?? false}
+                        showDetail={item.showDetail ?? true}
                       />
                     </React.Fragment>
                   );
@@ -82,8 +83,10 @@ StatusPageBody.displayName = 'StatusPageBody';
 export const StatusItemMonitor: React.FC<{
   monitorId: string;
   showCurrent: boolean;
+  showDetail?: boolean;
   workspaceId: string;
 }> = React.memo((props) => {
+  const { showDetail = true } = props;
   const updateLastUpdatedAt = useStatusPageStore(
     (state) => state.updateLastUpdatedAt
   );
@@ -114,6 +117,11 @@ export const StatusItemMonitor: React.FC<{
   });
 
   const [showChart, toggleShowChart] = useReducer((state) => !state, false);
+  const handleToggleChart = useCallback(() => {
+    if (showDetail) {
+      toggleShowChart();
+    }
+  }, [showDetail]);
 
   const { summaryStatus, summaryPercent } = useMemo(() => {
     let upCount = 0;
@@ -141,7 +149,7 @@ export const StatusItemMonitor: React.FC<{
         className={cn(
           'mb-1 flex cursor-pointer items-center overflow-hidden rounded-lg bg-green-500 bg-opacity-0 px-4 py-3 hover:bg-opacity-10'
         )}
-        onClick={toggleShowChart}
+        onClick={handleToggleChart}
       >
         <div>
           <span
@@ -185,7 +193,7 @@ export const StatusItemMonitor: React.FC<{
         </div>
       </div>
 
-      {showChart && (
+      {showChart && showDetail && (
         <MonitorPublicDataChart
           workspaceId={props.workspaceId}
           monitorId={props.monitorId}

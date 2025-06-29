@@ -60,6 +60,7 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
           id: '',
           type: 'monitor',
           showCurrent: false,
+          showDetail: true,
         },
       ] as MonitorStatusPageServiceItem[];
 
@@ -219,6 +220,23 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
 
                       <span className="ml-1 flex-1 align-middle text-sm">
                         {t('Show Latest Value')}
+                      </span>
+
+                      <Switch
+                        className="ml-4"
+                        checked={item.showDetail ?? true}
+                        onCheckedChange={(val) =>
+                          handleUpdateItem(
+                            group.key,
+                            item.key,
+                            'showDetail',
+                            val
+                          )
+                        }
+                      />
+
+                      <span className="ml-1 flex-1 align-middle text-sm">
+                        {t('Show Detail')}
                       </span>
 
                       <LuCircleMinus

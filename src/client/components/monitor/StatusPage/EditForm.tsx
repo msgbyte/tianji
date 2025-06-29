@@ -50,6 +50,7 @@ const editFormSchema = z.object({
     z.object({
       id: z.string(),
       showCurrent: z.boolean().default(false).optional(),
+      showDetail: z.boolean().default(true).optional(),
     })
   ),
 });
@@ -264,6 +265,22 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                             {t('Show Latest Value')}
                           </span>
 
+                          <Controller
+                            control={form.control}
+                            name={`monitorList.${i}.showDetail`}
+                            render={({ field }) => (
+                              <Switch
+                                className="ml-4"
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            )}
+                          />
+
+                          <span className="ml-1 flex-1 align-middle text-sm">
+                            {t('Show Detail')}
+                          </span>
+
                           <LuCircleMinus
                             className="cursor-pointer text-lg"
                             onClick={() => remove(i)}
@@ -282,6 +299,7 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
                       append({
                         id: '',
                         showCurrent: false,
+                        showDetail: true,
                       })
                     }
                     style={{ width: '60%' }}
