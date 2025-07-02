@@ -9,6 +9,8 @@ import {
   SurveyEditForm,
   SurveyEditFormValues,
 } from '@/components/survey/SurveyEditForm';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { CommonHeader } from '@/components/CommonHeader';
 
 export const Route = createFileRoute('/survey/add')({
   beforeLoad: routeAuthBeforeLoad,
@@ -41,12 +43,10 @@ function PageComponent() {
   });
 
   return (
-    <CommonWrapper
-      header={<h1 className="text-xl font-bold">{t('Add Survey')}</h1>}
-    >
-      <div className="p-4">
+    <CommonWrapper header={<CommonHeader title={t('Add Survey')} />}>
+      <ScrollArea className="h-full overflow-hidden p-4">
         <SurveyEditForm onSubmit={onSubmit} />
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }
