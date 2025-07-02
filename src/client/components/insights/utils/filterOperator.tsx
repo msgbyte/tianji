@@ -9,7 +9,7 @@ import {
   FilterOperator,
   FilterStringOperator,
 } from '@tianji/shared';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEvent } from '@/hooks/useEvent';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -23,12 +23,17 @@ import { Button } from '@/components/ui/button';
 import { LuCalendar } from 'react-icons/lu';
 import { Calendar } from '@/components/ui/calendar';
 import dayjs from 'dayjs';
+import { useInsightsStore } from '@/store/insights';
+import { useCurrentWorkspaceId } from '@/store/user';
+import { trpc } from '@/api/trpc';
+import { MultiSelectPopover } from '../MultiSelectPopover';
 
 export type FilterOperatorMap<T extends string> = Record<
   T,
   {
     label: string;
     component?: (
+      name: string,
       value: FilterInfoValue,
       onChange: (val: FilterInfoValue) => void,
       onSubmit: () => void
@@ -37,9 +42,10 @@ export type FilterOperatorMap<T extends string> = Record<
 >;
 
 interface FilterComponentProps {
+  name: string;
   value: FilterInfoValue;
   onChange: (val: FilterInfoValue) => void;
-  onSubmit: () => void;
+  onSubmit: (val?: FilterInfoValue) => void;
 }
 
 export const numberOperators: FilterOperatorMap<
@@ -47,7 +53,7 @@ export const numberOperators: FilterOperatorMap<
 > = {
   equals: {
     label: t('Equals'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="number"
         value={Number(value)}
@@ -58,7 +64,7 @@ export const numberOperators: FilterOperatorMap<
   },
   'not equals': {
     label: t('Not equals'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="number"
         value={Number(value)}
@@ -69,7 +75,7 @@ export const numberOperators: FilterOperatorMap<
   },
   'greater than': {
     label: t('Greater Than'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="number"
         value={Number(value)}
@@ -80,7 +86,7 @@ export const numberOperators: FilterOperatorMap<
   },
   'less than': {
     label: t('Less Than'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="number"
         value={Number(value)}
@@ -91,7 +97,7 @@ export const numberOperators: FilterOperatorMap<
   },
   'greater than or equal': {
     label: t('Greater than or Equal'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="number"
         value={Number(value)}
@@ -102,7 +108,7 @@ export const numberOperators: FilterOperatorMap<
   },
   'less than or equal': {
     label: t('Less than or Equal'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="number"
         value={Number(value)}
@@ -113,8 +119,13 @@ export const numberOperators: FilterOperatorMap<
   },
   between: {
     label: t('Between'),
-    component: (value, onChange, onSubmit) => (
-      <FilterBetween value={value} onChange={onChange} onSubmit={onSubmit} />
+    component: (name, value, onChange, onSubmit) => (
+      <FilterBetween
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+      />
     ),
   },
 };
@@ -124,29 +135,29 @@ export const stringOperators: FilterOperatorMap<
 > = {
   equals: {
     label: t('Equals'),
-    component: (value, onChange, onSubmit) => (
-      <Input
-        type="text"
-        value={String(value)}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onSubmit}
+    component: (name, value, onChange, onSubmit) => (
+      <FilterInputWithReference
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
       />
     ),
   },
   'not equals': {
     label: t('Not equals'),
-    component: (value, onChange, onSubmit) => (
-      <Input
-        type="text"
-        value={String(value)}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onSubmit}
+    component: (name, value, onChange, onSubmit) => (
+      <FilterInputWithReference
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
       />
     ),
   },
   contains: {
     label: t('Contains'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="text"
         value={String(value)}
@@ -157,7 +168,7 @@ export const stringOperators: FilterOperatorMap<
   },
   'not contains': {
     label: t('Not contains'),
-    component: (value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit) => (
       <Input
         type="text"
         value={String(value)}
@@ -171,14 +182,24 @@ export const stringOperators: FilterOperatorMap<
 export const booleanOperators: FilterOperatorMap<FilterBooleanOperator> = {
   equals: {
     label: t('Equals'),
-    component: (value, onChange, onSubmit) => (
-      <FilterBoolean value={value} onChange={onChange} onSubmit={onSubmit} />
+    component: (name, value, onChange, onSubmit) => (
+      <FilterBoolean
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+      />
     ),
   },
   'not equals': {
     label: t('Not equals'),
-    component: (value, onChange, onSubmit) => (
-      <FilterBoolean value={value} onChange={onChange} onSubmit={onSubmit} />
+    component: (name, value, onChange, onSubmit) => (
+      <FilterBoolean
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+      />
     ),
   },
 };
@@ -188,8 +209,13 @@ export const dateOperators: FilterOperatorMap<
 > = {
   'in day': {
     label: t('in Day'),
-    component: (value, onChange, onSubmit) => (
-      <FilterDate value={value} onChange={onChange} onSubmit={onSubmit} />
+    component: (name, value, onChange, onSubmit) => (
+      <FilterDate
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+      />
     ),
   },
 };
@@ -312,3 +338,57 @@ const FilterDate: React.FC<FilterComponentProps> = React.memo((props) => {
   );
 });
 FilterDate.displayName = 'FilterDate';
+
+const FilterInputWithReference: React.FC<FilterComponentProps> = React.memo(
+  (props) => {
+    const insightId = useInsightsStore((state) => state.insightId);
+    const insightType = useInsightsStore((state) => state.insightType);
+    const workspaceId = useCurrentWorkspaceId();
+
+    const { data: referenceValues = [] } =
+      trpc.insights.filterParamValues.useQuery(
+        {
+          workspaceId,
+          insightId,
+          insightType,
+          paramName: props.name,
+        },
+        {
+          enabled: !!insightId && !!insightType && !!props.name,
+        }
+      );
+
+    // Convert reference values to options format
+    const options = referenceValues.map((value) => ({
+      value: String(value),
+      label: String(value),
+    }));
+
+    // Handle current value - convert to array format for MultiSelectPopover
+    const selectedValues = useMemo(() => {
+      if (Array.isArray(props.value)) {
+        return props.value.map(String);
+      }
+
+      return props.value ? [String(props.value)] : [];
+    }, [props.value]);
+
+    const handleValueChange = useEvent((values: string[]) => {
+      const value = values.length > 0 ? values[0] : '';
+
+      props.onSubmit(value);
+    });
+
+    return (
+      <MultiSelectPopover
+        options={options}
+        selectedValues={selectedValues}
+        onValueChange={handleValueChange}
+        allowCustomInput={true}
+        singleSelect={true}
+        showSelectAll={false}
+      />
+    );
+  }
+);
+FilterInputWithReference.displayName = 'FilterInputWithReference';

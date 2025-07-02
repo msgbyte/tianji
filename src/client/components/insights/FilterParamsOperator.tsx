@@ -15,6 +15,7 @@ import {
   stringOperators,
 } from './utils/filterOperator';
 import { cn } from '@/utils/style';
+import { isNil } from 'lodash-es';
 
 interface FilterParamsOperatorProps {
   info: FilterInfo;
@@ -31,15 +32,21 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
       isDirtyRef.current = true;
     };
 
-    const handleSubmit = () => {
-      if (isDirtyRef.current === true) {
+    const handleSubmit = (_value?: FilterInfoValue) => {
+      if (!isNil(_value)) {
+        setValue(_value);
+        onSelect({
+          ...info,
+          value: _value,
+        });
+      } else if (isDirtyRef.current === true) {
         onSelect({
           ...info,
           value,
         });
-
-        isDirtyRef.current = false;
       }
+
+      isDirtyRef.current = false;
     };
 
     const operators: FilterOperatorMap<FilterOperator> = useMemo(() => {
@@ -94,6 +101,7 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
           {operators[info.operator]?.component && (
             <div className="flex-1">
               {operators[info.operator]?.component?.(
+                info.name,
                 value,
                 handleChange,
                 handleSubmit

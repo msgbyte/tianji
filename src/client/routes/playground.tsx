@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { Separator } from '@/components/ui/separator';
+import { MultiSelectPopover } from '@/components/insights/MultiSelectPopover';
 
 export const Route = createFileRoute('/playground')({
   beforeLoad: () => {
@@ -59,6 +60,7 @@ function PageComponent() {
           <TabsList>
             <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="webhook">Webhook</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
             <TabsTrigger value="misc">Misc</TabsTrigger>
           </TabsList>
         </div>
@@ -68,6 +70,9 @@ function PageComponent() {
         </TabsContent>
         <TabsContent value="webhook" className="flex-1 overflow-hidden">
           <WebhookPlayground />
+        </TabsContent>
+        <TabsContent value="insights" className="flex-1 overflow-hidden">
+          <MultiSelectExample />
         </TabsContent>
         <TabsContent value="misc">
           <div>
@@ -194,3 +199,116 @@ export const BillingPlayground: React.FC = React.memo(() => {
   );
 });
 BillingPlayground.displayName = 'BillingPlayground';
+
+// Sample data
+const sampleOptions = [
+  { value: '19524244142', label: '19524244142' },
+  { value: 'ExpertMode', label: 'ExpertMode' },
+  { value: 'BasicMode', label: 'Basic Mode' },
+  { value: 'AdvancedMode', label: 'Advanced Mode' },
+  { value: 'TestMode', label: 'Test Mode' },
+  { value: '(not set)', label: '(not set)' },
+  { value: '(empty string)', label: '(empty string)' },
+  { value: 'ExpertModePreview', label: 'ExpertModePreview' },
+];
+
+export const MultiSelectExample: React.FC = () => {
+  const [multiSelectedValues, setMultiSelectedValues] = useState<string[]>([]);
+  const [singleSelectedValue, setSingleSelectedValue] = useState<string[]>([]);
+
+  return (
+    <div className="space-y-6 p-6">
+      <h2 className="text-2xl font-bold">MultiSelectPopover Examples</h2>
+
+      {/* Multi-select mode example */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Multi-Select Mode</h3>
+        <MultiSelectPopover
+          label="from"
+          placeholder="Select multiple options..."
+          options={sampleOptions}
+          selectedValues={multiSelectedValues}
+          onValueChange={setMultiSelectedValues}
+          allowCustomInput={true}
+          showSelectAll={true}
+        />
+        <p className="text-sm text-gray-600">
+          Selected:{' '}
+          {multiSelectedValues.length > 0
+            ? multiSelectedValues.join(', ')
+            : 'None'}
+        </p>
+      </div>
+
+      {/* Single-select mode example */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Single-Select Mode</h3>
+        <MultiSelectPopover
+          label="filter"
+          placeholder="Select an option..."
+          options={sampleOptions}
+          selectedValues={singleSelectedValue}
+          onValueChange={setSingleSelectedValue}
+          singleSelect={true}
+          allowCustomInput={true}
+          showSelectAll={false}
+        />
+        <p className="text-sm text-gray-600">
+          Selected:{' '}
+          {singleSelectedValue.length > 0 ? singleSelectedValue[0] : 'None'}
+        </p>
+      </div>
+
+      {/* Custom trigger example */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Custom Trigger</h3>
+        <MultiSelectPopover
+          options={sampleOptions}
+          selectedValues={multiSelectedValues}
+          onValueChange={setMultiSelectedValues}
+          allowCustomInput={true}
+        >
+          <Button variant="outline" className="w-full justify-start">
+            {multiSelectedValues.length === 0
+              ? 'Click to select options...'
+              : `${multiSelectedValues.length} options selected`}
+          </Button>
+        </MultiSelectPopover>
+      </div>
+
+      {/* Disabled state example */}
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Disabled State</h3>
+        <MultiSelectPopover
+          label="disabled"
+          placeholder="This component is disabled"
+          options={sampleOptions}
+          selectedValues={['ExpertMode']}
+          onValueChange={() => {}}
+          disabled={true}
+        />
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <Button onClick={() => setMultiSelectedValues([])} variant="outline">
+          Clear Multi-Select
+        </Button>
+        <Button onClick={() => setSingleSelectedValue([])} variant="outline">
+          Clear Single-Select
+        </Button>
+        <Button
+          onClick={() => {
+            setMultiSelectedValues(['ExpertMode', 'BasicMode']);
+            setSingleSelectedValue(['ExpertMode']);
+          }}
+          variant="outline"
+        >
+          Set Example Values
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+MultiSelectExample.displayName = 'MultiSelectExample';
