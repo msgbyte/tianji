@@ -121,4 +121,84 @@ export const insightsRouter = router({
 
       return [];
     }),
+  filterParamValues: workspaceProcedure
+    .input(
+      z.object({
+        insightId: z.string(),
+        insightType: z.enum(['website', 'survey']),
+        paramName: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { insightId, insightType, paramName } = input;
+
+      if (insightType === 'website') {
+        const res = await prisma.websiteEventData.findMany({
+          where: {
+            websiteId: insightId,
+            eventKey: paramName,
+          },
+          select: {
+            stringValue: true,
+            numberValue: true,
+            dateValue: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 5,
+        });
+
+        return res.map((item) => {
+          if (item.stringValue) {
+            return item.stringValue;
+          }
+
+          if (item.numberValue) {
+            return item.numberValue.toString();
+          }
+
+          if (item.dateValue) {
+            return item.dateValue.toISOString();
+          }
+
+          return null;
+        });
+      } else if (insightType === 'survey') {
+        const results = await prisma.surveyResult.findMany({
+          where: {
+            surveyId: insightId,
+          },
+          select: {
+            payload: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 100,
+        });
+
+        if (!results.length) {
+          return [];
+        }
+
+        // Extract unique values for the specific paramName
+        const uniqueValues = new Set<string>();
+
+        results.forEach((result) => {
+          const payload: any = result.payload;
+          if (payload && payload[paramName] !== undefined) {
+            const value = payload[paramName];
+            // Convert value to string for consistent handling
+            if (value !== null && value !== undefined) {
+              uniqueValues.add(String(value));
+            }
+          }
+        });
+
+        return Array.from(uniqueValues).slice(0, 10);
+      }
+
+      return [];
+    }),
 });
