@@ -65,7 +65,7 @@ export function DataTable<TData>({
 
   return (
     <div className="overflow-hidden rounded-md border">
-      <Table style={{ width: table.getCenterTotalSize() }}>
+      <Table style={{ width: table.getCenterTotalSize(), minWidth: '100%' }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

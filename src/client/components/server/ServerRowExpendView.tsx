@@ -219,6 +219,7 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
               </div>
             ) : (
               <TimeEventChart
+                className="h-[400px] w-full"
                 data={chartData}
                 unit="minute"
                 drawDashLine={false}
