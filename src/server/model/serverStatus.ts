@@ -11,7 +11,7 @@ function getServerMapCacheKey(workspaceId: string): string {
 }
 
 // Helper function to get server map from cache
-async function getServerMapFromCache(
+export async function getServerMapFromCache(
   workspaceId: string
 ): Promise<Record<string, ServerStatusInfo>> {
   const cacheManager = await getCacheManager();

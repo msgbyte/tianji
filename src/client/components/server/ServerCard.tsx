@@ -25,11 +25,12 @@ import { cn } from '@/utils/style';
 
 interface ServerCardProps {
   server: ServerStatusInfo;
-  onDockerClick?: (server: ServerStatusInfo) => void;
+  showDetailButton?: boolean;
+  onDetailClick?: (server: ServerStatusInfo) => void;
 }
 
 export const ServerCard: React.FC<ServerCardProps> = React.memo(
-  ({ server, onDockerClick }) => {
+  ({ server, showDetailButton, onDetailClick }) => {
     const { t } = useTranslation();
     const isOnline = isServerOnline(server);
     const cpuPercent = server.payload.cpu;
@@ -204,18 +205,20 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
             </Tooltip>
           </div>
 
-          {/* Docker Info - Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-full justify-start"
-            onClick={() => onDockerClick?.(server)}
-          >
-            <span className="flex items-center gap-2">
-              <FaEye className="h-4 w-4" />
-              {t('View Detail')}
-            </span>
-          </Button>
+          {/* Detail Button */}
+          {showDetailButton && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-full justify-start"
+              onClick={() => onDetailClick?.(server)}
+            >
+              <span className="flex items-center gap-2">
+                <FaEye className="h-4 w-4" />
+                {t('View Detail')}
+              </span>
+            </Button>
+          )}
         </CardContent>
       </Card>
     );

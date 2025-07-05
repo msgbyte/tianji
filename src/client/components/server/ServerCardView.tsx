@@ -6,7 +6,7 @@ import { isServerOnline } from '@tianji/shared';
 import { max, orderBy } from 'lodash-es';
 import { ServerStatusInfo } from '../../../types';
 import dayjs from 'dayjs';
-import { FaDocker } from 'react-icons/fa';
+import { FaDocker, FaServer } from 'react-icons/fa';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
 import { ServerRowExpendView } from './ServerRowExpendView';
 import { ServerCard } from './ServerCard';
@@ -21,7 +21,7 @@ export const ServerCardView: React.FC<ServerCardViewProps> = React.memo(
     const serverMap = useServerMap();
     const inc = useIntervalUpdate(2 * 1000);
     const { hideOfflineServer } = props;
-    const [dockerDrawerOpen, setDockerDrawerOpen] = useState(false);
+    const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
     const [selectedServer, setSelectedServer] =
       useState<ServerStatusInfo | null>(null);
 
@@ -38,9 +38,9 @@ export const ServerCardView: React.FC<ServerCardViewProps> = React.memo(
 
     const lastUpdatedAt = max(dataSource.map((d) => d.updatedAt));
 
-    const handleDockerClick = (server: ServerStatusInfo) => {
+    const handleDetailClick = (server: ServerStatusInfo) => {
       setSelectedServer(server);
-      setDockerDrawerOpen(true);
+      setDetailDrawerOpen(true);
     };
 
     return (
@@ -61,19 +61,20 @@ export const ServerCardView: React.FC<ServerCardViewProps> = React.memo(
               <ServerCard
                 key={server.name}
                 server={server}
-                onDockerClick={handleDockerClick}
+                showDetailButton={true}
+                onDetailClick={handleDetailClick}
               />
             ))}
           </div>
         )}
 
-        {/* Docker Info Drawer */}
-        <Drawer open={dockerDrawerOpen} onOpenChange={setDockerDrawerOpen}>
-          <DrawerContent>
+        {/* Detail Drawer */}
+        <Drawer open={detailDrawerOpen} onOpenChange={setDetailDrawerOpen}>
+          <DrawerContent className="max-h-[90vh]">
             <DrawerHeader>
               <DrawerTitle className="flex items-center gap-2">
-                <FaDocker className="h-5 w-5" />
-                {selectedServer?.name} - {t('Docker Containers')}
+                <FaServer className="h-5 w-5" />
+                {selectedServer?.name} - {t('Detail Information')}
               </DrawerTitle>
             </DrawerHeader>
             <div className="p-4">

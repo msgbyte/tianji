@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const leafItemSchema = z.object({
   key: z.string(),
   id: z.string(),
-  type: z.enum(['monitor']),
+  type: z.enum(['monitor', 'server']),
   showCurrent: z.boolean().default(false).optional(),
   showDetail: z.boolean().default(true).optional(),
 });

@@ -6,10 +6,17 @@ import { useEvent } from '@/hooks/useEvent';
 import { v1 as uuid } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuCircleMinus, LuCirclePlus, LuTrash } from 'react-icons/lu';
+import {
+  LuCircleMinus,
+  LuCirclePlus,
+  LuTrash,
+  LuMonitor,
+  LuServer,
+} from 'react-icons/lu';
 import { cn } from '@/utils/style';
 import { Separator } from '@/components/ui/separator';
 import { MonitorPicker } from '../MonitorPicker';
+import { ServerPicker } from '../../server/ServerPicker';
 import { Switch } from '@/components/ui/switch';
 import { set } from 'lodash-es';
 import { EditableText } from '@/components/EditableText';
@@ -41,31 +48,40 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
       ]);
     });
 
-    const handleAddItem = useEvent((groupKey: string) => {
-      const index = props.value.findIndex((item) => item.key === groupKey);
-      if (index === -1) {
-        return;
-      }
+    const handleAddItem = useEvent(
+      (groupKey: string, type: 'monitor' | 'server') => {
+        const index = props.value.findIndex((item) => item.key === groupKey);
+        if (index === -1) {
+          return;
+        }
 
-      const newList = [...props.value];
+        const newList = [...props.value];
 
-      if (!('children' in newList[index])) {
-        return;
-      }
+        if (!('children' in newList[index])) {
+          return;
+        }
 
-      newList[index].children = [
-        ...newList[index].children,
-        {
+        const newItem = {
           key: uuid(),
           id: '',
-          type: 'monitor',
+          type,
           showCurrent: false,
           showDetail: true,
-        },
-      ] as MonitorStatusPageServiceItem[];
+        } as any;
 
-      props.onChange(newList);
-    });
+        // Only add showCurrent for monitor type
+        if (type === 'monitor') {
+          newItem.showCurrent = false;
+        }
+
+        newList[index].children = [
+          ...newList[index].children,
+          newItem,
+        ] as MonitorStatusPageServiceItem[];
+
+        props.onChange(newList);
+      }
+    );
 
     const handleDeleteGroup = useEvent((groupKey: string) => {
       const index = props.value.findIndex((item) => item.key === groupKey);
@@ -162,12 +178,23 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
                   />
 
                   <Button
-                    className="h-6 w-6"
+                    className="h-6 w-6 text-blue-600 hover:text-blue-700"
                     variant="outline"
                     size="icon"
                     type="button"
-                    Icon={LuCirclePlus}
-                    onClick={() => handleAddItem(group.key)}
+                    Icon={LuMonitor}
+                    onClick={() => handleAddItem(group.key, 'monitor')}
+                    title={t('Add Monitor')}
+                  />
+
+                  <Button
+                    className="h-6 w-6 text-green-600 hover:text-green-700"
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    Icon={LuServer}
+                    onClick={() => handleAddItem(group.key, 'server')}
+                    title={t('Add Server')}
                   />
 
                   <Button
@@ -192,64 +219,72 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
             </div>
           )}
           renderItem={(item, i, group) => {
-            if (item.type === 'monitor') {
-              return (
-                <div key={item.key}>
-                  {i !== 0 && <Separator className="my-2" />}
+            return (
+              <div key={item.key}>
+                {i !== 0 && <Separator className="my-2" />}
 
-                  <div className="mb-2 flex flex-col gap-2">
+                <div className="mb-2 flex flex-col gap-2">
+                  <div className="text-sm font-medium">
+                    {item.type === 'monitor' ? t('Monitor') : t('Server')}
+                  </div>
+
+                  {item.type === 'monitor' ? (
                     <MonitorPicker
                       value={item.id}
                       onValueChange={(val) =>
                         handleUpdateItem(group.key, item.key, 'id', val)
                       }
                     />
+                  ) : (
+                    <ServerPicker
+                      value={item.id}
+                      onValueChange={(val) =>
+                        handleUpdateItem(group.key, item.key, 'id', val)
+                      }
+                    />
+                  )}
 
-                    <div className="flex flex-1 items-center">
-                      <Switch
-                        checked={item.showCurrent ?? false}
-                        onCheckedChange={(val) =>
-                          handleUpdateItem(
-                            group.key,
-                            item.key,
-                            'showCurrent',
-                            val
-                          )
-                        }
-                      />
+                  <div className="flex flex-1 items-center">
+                    {item.type === 'monitor' && (
+                      <>
+                        <Switch
+                          checked={item.showCurrent ?? false}
+                          onCheckedChange={(val) =>
+                            handleUpdateItem(
+                              group.key,
+                              item.key,
+                              'showCurrent',
+                              val
+                            )
+                          }
+                        />
 
-                      <span className="ml-1 flex-1 align-middle text-sm">
-                        {t('Show Latest Value')}
-                      </span>
+                        <span className="ml-1 flex-1 align-middle text-sm">
+                          {t('Show Latest Value')}
+                        </span>
+                      </>
+                    )}
 
-                      <Switch
-                        className="ml-4"
-                        checked={item.showDetail ?? true}
-                        onCheckedChange={(val) =>
-                          handleUpdateItem(
-                            group.key,
-                            item.key,
-                            'showDetail',
-                            val
-                          )
-                        }
-                      />
+                    <Switch
+                      className={item.type === 'monitor' ? 'ml-4' : ''}
+                      checked={item.showDetail ?? true}
+                      onCheckedChange={(val) =>
+                        handleUpdateItem(group.key, item.key, 'showDetail', val)
+                      }
+                    />
 
-                      <span className="ml-1 flex-1 align-middle text-sm">
-                        {t('Show Detail')}
-                      </span>
+                    <span className="ml-1 flex-1 align-middle text-sm">
+                      {t('Show Detail')}
+                    </span>
 
-                      <LuCircleMinus
-                        className="cursor-pointer text-lg"
-                        onClick={() => handleDeleteItem(group.key, item.key)}
-                      />
-                    </div>
+                    <LuCircleMinus
+                      className="cursor-pointer text-lg"
+                      onClick={() => handleDeleteItem(group.key, item.key)}
+                    />
                   </div>
                 </div>
-              );
-            }
-
-            return null;
+              </div>
+            );
           }}
         />
 

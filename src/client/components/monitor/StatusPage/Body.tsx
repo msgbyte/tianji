@@ -20,6 +20,7 @@ import { MonitorPublicDataChart } from '../MonitorPublicDataChart';
 import { refetchInterval } from './const';
 import { useWatch } from '@/hooks/useWatch';
 import { useStatusPageStore } from './store';
+import { StatusItemServer } from './StatusItemServer';
 
 interface StatusPageBodyProps {
   workspaceId: string;
@@ -63,6 +64,19 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
                         workspaceId={props.workspaceId}
                         monitorId={item.id}
                         showCurrent={item.showCurrent ?? false}
+                        showDetail={item.showDetail ?? true}
+                      />
+                    </React.Fragment>
+                  );
+                }
+
+                if (item.type === 'server') {
+                  return (
+                    <React.Fragment key={item.key}>
+                      <Separator />
+                      <StatusItemServer
+                        name={item.id}
+                        workspaceId={props.workspaceId}
                         showDetail={item.showDetail ?? true}
                       />
                     </React.Fragment>
