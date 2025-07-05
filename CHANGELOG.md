@@ -1,5 +1,26 @@
 
 
+## [1.22.6](https://github.com/msgbyte/tianji/compare/v1.22.5...v1.22.6) (2025-07-05)
+
+### Features
+
+* add multiselectpopover logic which support filter reference value ([4b11135](https://github.com/msgbyte/tianji/commit/4b111352202e29a4a7c79498750a644698ee4e4e))
+* **insights:** add filterParamValues query for website and survey insights ([7d7e65e](https://github.com/msgbyte/tianji/commit/7d7e65e8e493e402b9825000529c5342c3bb385a))
+* **status-page:** toggle detail display ([5a3a336](https://github.com/msgbyte/tianji/commit/5a3a336ec5a79e89a3cca64dce4c57ea158b5bac))
+
+### Bug Fixes
+
+* fix survey create page can not scroll if form is too large ([96d9c79](https://github.com/msgbyte/tianji/commit/96d9c79f31023ff94539ca1f7b2dbdf7cda5f4ec))
+
+### Document
+
+* add kubernetes reporter daemonset ([80d5b7f](https://github.com/msgbyte/tianji/commit/80d5b7fae6569c6ffcef17e112f38c1d12b5ae0f))
+* add translation file note ([2e4da45](https://github.com/msgbyte/tianji/commit/2e4da453c420f1ccab13c820bf1958618954b565))
+
+### Others
+
+* update valueFormatter to format numbers with locale ([a76890d](https://github.com/msgbyte/tianji/commit/a76890d9494df1443cfa093f9c0a097a64bf591b))
+
 ## [1.22.5](https://github.com/msgbyte/tianji/compare/v1.22.4...v1.22.5) (2025-06-28)
 
 ### Features
