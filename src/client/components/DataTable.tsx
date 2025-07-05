@@ -153,7 +153,10 @@ export function DataTable<TData>({
                   {renderedRow}
 
                   {row.getIsExpanded() && ExpandComponent && (
-                    <TableRow key={row.id + 'expand'}>
+                    <TableRow
+                      key={row.id + 'expand'}
+                      className="hover:bg-transparent"
+                    >
                       <TableCell colSpan={columnLen}>
                         <ExpandComponent row={row.original} />
                       </TableCell>
