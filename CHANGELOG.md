@@ -1,5 +1,21 @@
 
 
+## [1.23.0](https://github.com/msgbyte/tianji/compare/v1.22.6...v1.23.0) (2025-07-06)
+
+### Features
+
+* add server status option for status pages ([f281d1d](https://github.com/msgbyte/tianji/commit/f281d1d8b30b0427c6447784edb49f92446b5a55))
+* add tipicon which tell user how to use api key ([174d1df](https://github.com/msgbyte/tianji/commit/174d1df781e8d4f8ad5a674cc609c8d7135671e8))
+* add tooltip of user invitation which SMTP maybe not config [#180](https://github.com/msgbyte/tianji/issues/180) ([c721595](https://github.com/msgbyte/tianji/commit/c721595a876e1c42044678a2f4f946c943924a3b))
+
+### Bug Fixes
+
+* fix tooltip can only display part issue ([d9678f3](https://github.com/msgbyte/tianji/commit/d9678f3481d3d12b814e40c29810784ed8d86d64))
+
+### Others
+
+* improve display for server status page ([4513026](https://github.com/msgbyte/tianji/commit/4513026a63fcc143d5adf14ef9d3449cf818ad47))
+
 ## [1.22.6](https://github.com/msgbyte/tianji/compare/v1.22.5...v1.22.6) (2025-07-05)
 
 ### Features
