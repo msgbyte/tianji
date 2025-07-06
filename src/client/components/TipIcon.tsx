@@ -5,13 +5,14 @@ import { LuCircleHelp } from 'react-icons/lu';
 interface TipIconProps {
   className?: string;
   content: React.ReactNode;
+  onClick?: () => void;
 }
 export const TipIcon: React.FC<TipIconProps> = React.memo((props) => {
-  const { className, content } = props;
+  const { className, content, onClick } = props;
 
   return (
     <Tooltip>
-      <TooltipTrigger type="button">
+      <TooltipTrigger type="button" onClick={onClick}>
         <LuCircleHelp className={className} />
       </TooltipTrigger>
 

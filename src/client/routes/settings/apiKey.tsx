@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { TipIcon } from '@/components/TipIcon';
 
 export const Route = createFileRoute('/settings/apiKey')({
   beforeLoad: routeAuthBeforeLoad,
@@ -181,7 +182,20 @@ function PageComponent() {
             <Card>
               <CardHeader className="text-lg font-bold">
                 <div className="flex items-center justify-between gap-2">
-                  <div>{t('Api Keys')}</div>
+                  <div className="flex items-center gap-2">
+                    <span>{t('Api Keys')}</span>
+                    <TipIcon
+                      content={t(
+                        'API keys are used to authenticate requests to the Tianji API. Click to check the usage of your API keys.'
+                      )}
+                      onClick={() => {
+                        window.open(
+                          'https://tianji.dev/docs/api/authentication',
+                          '_blank'
+                        );
+                      }}
+                    />
+                  </div>
 
                   <Button
                     Icon={LuPlus}
