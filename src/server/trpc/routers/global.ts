@@ -24,6 +24,7 @@ export const globalRouter = router({
         disableAnonymousTelemetry: z.boolean(),
         customTrackerScriptName: z.string().optional(),
         authProvider: z.array(z.string()),
+        smtpAvailable: z.boolean(),
         enableBilling: z.boolean(),
         enableAI: z.boolean(),
       })
@@ -38,6 +39,7 @@ export const globalRouter = router({
         disableAnonymousTelemetry: env.disableAnonymousTelemetry,
         customTrackerScriptName: env.customTrackerScriptName,
         authProvider: env.auth.provider,
+        smtpAvailable: env.smtp.enable,
         enableBilling: env.billing.enable,
         enableAI: env.openai.enable,
       };

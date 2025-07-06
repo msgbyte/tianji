@@ -47,6 +47,9 @@ import {
 import dayjs from 'dayjs';
 import { getTimezoneList } from '@/utils/date';
 import { useWorkspaceMembers } from '@/components/workspace/useWorkspaceMembers';
+import { useGlobalConfig } from '@/hooks/useConfig';
+import { SimpleTooltip } from '@/components/ui/tooltip';
+import { LuTriangleAlert } from 'react-icons/lu';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -70,6 +73,7 @@ function PageComponent() {
   const updateCurrentWorkspaceSettings = useUserStore(
     (state) => state.updateCurrentWorkspaceSettings
   );
+  const globalConfig = useGlobalConfig();
 
   const { tableEl: workspaceMembersTable } = useWorkspaceMembers();
   const form = useForm<InviteFormValues>({
@@ -193,7 +197,18 @@ function PageComponent() {
             >
               <Card>
                 <CardHeader className="text-lg font-bold">
-                  {t('Invite new members by email address')}
+                  <div className="flex items-center gap-2">
+                    <span>{t('Invite new members by email address')}</span>
+                    {!globalConfig.smtpAvailable && (
+                      <SimpleTooltip
+                        content={t(
+                          'SMTP service is not configured on the server, invitation emails will not be sent'
+                        )}
+                      >
+                        <LuTriangleAlert className="h-4 w-4 text-yellow-500" />
+                      </SimpleTooltip>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <FormField
