@@ -90,6 +90,7 @@ export function DataTable<TData>({
                     key={header.id}
                     className={cn(
                       'text-nowrap',
+                      getCommonPinningClassName(header.column),
                       header.column.columnDef.meta?.className
                     )}
                     style={{
@@ -135,6 +136,7 @@ export function DataTable<TData>({
                       key={cell.id}
                       className={cn(
                         'text-nowrap',
+                        getCommonPinningClassName(cell.column),
                         cell.column.columnDef.meta?.className
                       )}
                       style={{ ...getCommonPinningStyles(cell.column) }}
@@ -178,6 +180,14 @@ export function DataTable<TData>({
   );
 }
 DataTable.displayName = 'DataTable';
+
+function getCommonPinningClassName<TData>(column: Column<TData>): string {
+  const isPinned = column.getIsPinned();
+
+  return isPinned
+    ? 'group-hover/tr:bg-muted bg-background transition-colors'
+    : '';
+}
 
 function getCommonPinningStyles<TData>(
   column: Column<TData>
