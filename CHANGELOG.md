@@ -1,5 +1,19 @@
 
 
+## [1.23.1](https://github.com/msgbyte/tianji/compare/v1.23.0...v1.23.1) (2025-07-07)
+
+### Features
+
+* add in list filter support in string operator ([e68cc15](https://github.com/msgbyte/tianji/commit/e68cc150d35d254f0655d10c19e6e23906b29a79))
+
+### Bug Fixes
+
+* fix a problem which can not support insight input and save ([9ce3a8d](https://github.com/msgbyte/tianji/commit/9ce3a8d4ff4a02d09eb968776511381c55025935))
+
+### Others
+
+* translation ([b98c630](https://github.com/msgbyte/tianji/commit/b98c6302706613c897aac89ff89bf9ec763e858d))
+
 ## [1.23.0](https://github.com/msgbyte/tianji/compare/v1.22.6...v1.23.0) (2025-07-06)
 
 ### Features
