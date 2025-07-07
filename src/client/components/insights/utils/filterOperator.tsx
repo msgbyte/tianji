@@ -130,9 +130,7 @@ export const numberOperators: FilterOperatorMap<
   },
 };
 
-export const stringOperators: FilterOperatorMap<
-  Exclude<FilterStringOperator, 'in list' | 'not in list'>
-> = {
+export const stringOperators: FilterOperatorMap<FilterStringOperator> = {
   equals: {
     label: t('Equals'),
     component: (name, value, onChange, onSubmit) => (
@@ -152,6 +150,30 @@ export const stringOperators: FilterOperatorMap<
         value={value}
         onChange={onChange}
         onSubmit={onSubmit}
+      />
+    ),
+  },
+  'in list': {
+    label: t('In list'),
+    component: (name, value, onChange, onSubmit) => (
+      <FilterInputWithReference
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        multiple={true}
+      />
+    ),
+  },
+  'not in list': {
+    label: t('Not in list'),
+    component: (name, value, onChange, onSubmit) => (
+      <FilterInputWithReference
+        name={name}
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        multiple={true}
       />
     ),
   },
@@ -339,56 +361,62 @@ const FilterDate: React.FC<FilterComponentProps> = React.memo((props) => {
 });
 FilterDate.displayName = 'FilterDate';
 
-const FilterInputWithReference: React.FC<FilterComponentProps> = React.memo(
-  (props) => {
-    const insightId = useInsightsStore((state) => state.insightId);
-    const insightType = useInsightsStore((state) => state.insightType);
-    const workspaceId = useCurrentWorkspaceId();
+const FilterInputWithReference: React.FC<
+  FilterComponentProps & {
+    multiple?: boolean;
+  }
+> = React.memo((props) => {
+  const insightId = useInsightsStore((state) => state.insightId);
+  const insightType = useInsightsStore((state) => state.insightType);
+  const workspaceId = useCurrentWorkspaceId();
 
-    const { data: referenceValues = [] } =
-      trpc.insights.filterParamValues.useQuery(
-        {
-          workspaceId,
-          insightId,
-          insightType,
-          paramName: props.name,
-        },
-        {
-          enabled: !!insightId && !!insightType && !!props.name,
-        }
-      );
-
-    // Convert reference values to options format
-    const options = referenceValues.map((value) => ({
-      value: String(value),
-      label: String(value),
-    }));
-
-    // Handle current value - convert to array format for MultiSelectPopover
-    const selectedValues = useMemo(() => {
-      if (Array.isArray(props.value)) {
-        return props.value.map(String);
+  const { data: referenceValues = [] } =
+    trpc.insights.filterParamValues.useQuery(
+      {
+        workspaceId,
+        insightId,
+        insightType,
+        paramName: props.name,
+      },
+      {
+        enabled: !!insightId && !!insightType && !!props.name,
       }
+    );
 
-      return props.value ? [String(props.value)] : [];
-    }, [props.value]);
+  // Convert reference values to options format
+  const options = referenceValues.map((value) => ({
+    value: String(value),
+    label: String(value),
+  }));
 
-    const handleValueChange = useEvent((values: string[]) => {
+  // Handle current value - convert to array format for MultiSelectPopover
+  const selectedValues = useMemo(() => {
+    if (Array.isArray(props.value)) {
+      return props.value.map(String);
+    }
+
+    return props.value ? [String(props.value)] : [];
+  }, [props.value]);
+
+  const handleValueChange = useEvent((values: string[]) => {
+    if (props.multiple) {
+      props.onSubmit(values);
+    } else {
       const value = values.length > 0 ? values[0] : '';
 
       props.onSubmit(value);
-    });
+    }
+  });
 
-    return (
-      <MultiSelectPopover
-        options={options}
-        selectedValues={selectedValues}
-        onValueChange={handleValueChange}
-        allowCustomInput={true}
-        singleSelect={true}
-        showSelectAll={false}
-      />
-    );
-  }
-);
+  return (
+    <MultiSelectPopover
+      options={options}
+      selectedValues={selectedValues}
+      onValueChange={handleValueChange}
+      allowCustomInput={true}
+      singleSelect={props.multiple ? false : true}
+      showSelectAll={props.multiple ? true : false}
+    />
+  );
+});
 FilterInputWithReference.displayName = 'FilterInputWithReference';
