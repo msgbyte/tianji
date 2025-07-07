@@ -4,7 +4,10 @@ import { prisma } from '../_client.js';
 import { Prisma } from '@prisma/client';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { InsightsSqlBuilder } from './shared.js';
-import { processGroupedTimeSeriesData } from './utils.js';
+import {
+  insightsSurveyBuiltinFields,
+  processGroupedTimeSeriesData,
+} from './utils.js';
 
 export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
@@ -86,6 +89,15 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
     operator: string,
     value: FilterInfoValue | null
   ): Prisma.Sql {
+    if (insightsSurveyBuiltinFields.includes(name)) {
+      return this.buildCommonFilterQueryOperator(
+        type,
+        operator,
+        value,
+        Prisma.sql`"SurveyResult"."${Prisma.raw(name)}"` // this is safe because the name is defined in the `insightsSurveyBuiltinFields`
+      );
+    }
+
     const valueField = Prisma.sql`("SurveyResult"."payload"->> ${name})${type === 'number' ? Prisma.raw('::int') : type === 'boolean' ? Prisma.raw('::boolean') : Prisma.empty}`;
     return this.buildCommonFilterQueryOperator(
       type,

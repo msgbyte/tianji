@@ -36,7 +36,7 @@ export type FilterOperatorMap<T extends string> = Record<
       name: string,
       value: FilterInfoValue,
       onChange: (val: FilterInfoValue) => void,
-      onSubmit: () => void
+      onSubmit: (val?: FilterInfoValue) => void
     ) => React.ReactNode;
   }
 >;
@@ -58,7 +58,7 @@ export const numberOperators: FilterOperatorMap<
         type="number"
         value={Number(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -69,7 +69,7 @@ export const numberOperators: FilterOperatorMap<
         type="number"
         value={Number(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -80,7 +80,7 @@ export const numberOperators: FilterOperatorMap<
         type="number"
         value={Number(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -91,7 +91,7 @@ export const numberOperators: FilterOperatorMap<
         type="number"
         value={Number(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -102,7 +102,7 @@ export const numberOperators: FilterOperatorMap<
         type="number"
         value={Number(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -113,7 +113,7 @@ export const numberOperators: FilterOperatorMap<
         type="number"
         value={Number(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -124,7 +124,7 @@ export const numberOperators: FilterOperatorMap<
         name={name}
         value={value}
         onChange={onChange}
-        onSubmit={onSubmit}
+        onSubmit={() => onSubmit()}
       />
     ),
   },
@@ -162,7 +162,7 @@ export const stringOperators: FilterOperatorMap<
         type="text"
         value={String(value)}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -173,7 +173,7 @@ export const stringOperators: FilterOperatorMap<
         type="text"
         value={String(value)}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onSubmit}
+        onBlur={() => onSubmit()}
       />
     ),
   },
@@ -187,7 +187,7 @@ export const booleanOperators: FilterOperatorMap<FilterBooleanOperator> = {
         name={name}
         value={value}
         onChange={onChange}
-        onSubmit={onSubmit}
+        onSubmit={() => onSubmit()}
       />
     ),
   },
@@ -198,7 +198,7 @@ export const booleanOperators: FilterOperatorMap<FilterBooleanOperator> = {
         name={name}
         value={value}
         onChange={onChange}
-        onSubmit={onSubmit}
+        onSubmit={() => onSubmit()}
       />
     ),
   },
@@ -214,7 +214,7 @@ export const dateOperators: FilterOperatorMap<
         name={name}
         value={value}
         onChange={onChange}
-        onSubmit={onSubmit}
+        onSubmit={() => onSubmit()}
       />
     ),
   },

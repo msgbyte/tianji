@@ -16,6 +16,7 @@ import {
 } from './utils/filterOperator';
 import { cn } from '@/utils/style';
 import { isNil } from 'lodash-es';
+import { isValidFilterValue } from './utils/common';
 
 interface FilterParamsOperatorProps {
   info: FilterInfo;
@@ -33,7 +34,7 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
     };
 
     const handleSubmit = (_value?: FilterInfoValue) => {
-      if (!isNil(_value)) {
+      if (!isNil(_value) && isValidFilterValue(_value)) {
         setValue(_value);
         onSelect({
           ...info,

@@ -3,6 +3,14 @@ import { insightsQuerySchema } from '../../utils/schema.js';
 import { get, uniq } from 'lodash-es';
 import { getDateArray } from '@tianji/shared';
 
+export const insightsSurveyBuiltinFields = [
+  'aiCategory',
+  'aiTranslation',
+  'browser',
+  'os',
+  'language',
+];
+
 /**
  * Process the grouped time series data
  * @param query - The query object
