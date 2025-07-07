@@ -27,6 +27,9 @@ export interface InsightEvent<
 export abstract class InsightsSqlBuilder {
   protected abstract getTableName(): string;
 
+  protected resultLimit = 100; // set default result limit for insights query
+  protected maxResultLimit = 1000; // set max result limit for insights query to avoid performance issues
+
   constructor(
     protected query: z.infer<typeof insightsQuerySchema>,
     protected context: { timezone: string }
@@ -228,7 +231,9 @@ export abstract class InsightsSqlBuilder {
       )}
     from "${Prisma.raw(tableName)}" ${innerJoinQuery}
     where ${Prisma.join(whereQueryArr, ' AND ')}
-    group by ${Prisma.raw(groupByText)}`;
+    group by ${Prisma.raw(groupByText)}
+    order by 1 desc
+    limit ${this.maxResultLimit}`;
 
     if (env.debugInsights) {
       printSQL(sql);
@@ -246,8 +251,8 @@ export abstract class InsightsSqlBuilder {
       from "${Prisma.raw(tableName)}"
       where ${Prisma.join(whereQueryArr, ' AND ')}
       ${cursor ? Prisma.sql`AND "id" < ${cursor}` : Prisma.empty}
-      order by "id" desc
-      limit 100
+      order by "createdAt" desc
+      limit ${this.resultLimit}
     `;
   }
 
