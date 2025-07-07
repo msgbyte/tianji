@@ -22,10 +22,18 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
           return Prisma.sql`count(1) as "$all_event"`;
         }
 
+        if (insightsSurveyBuiltinFields.includes(item.name)) {
+          return Prisma.sql`sum(case WHEN "SurveyResult"."${Prisma.raw(item.name)}" IS NOT NULL AND "SurveyResult"."${Prisma.raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+        }
+
         return Prisma.sql`sum(case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
           return Prisma.sql`count(distinct "sessionId") as "$all_event"`;
+        }
+
+        if (insightsSurveyBuiltinFields.includes(item.name)) {
+          return Prisma.sql`count(distinct case WHEN "SurveyResult"."${Prisma.raw(item.name)}" IS NOT NULL AND "SurveyResult"."${Prisma.raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
         }
 
         return Prisma.sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
@@ -41,9 +49,15 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
     if (groups.length > 0) {
       for (const g of groups) {
         if (!g.customGroups) {
-          groupSelectQueryArr.push(
-            Prisma.sql`"SurveyResult"."payload" ->> ${g.value} as "%${Prisma.raw(g.value)}"`
-          );
+          if (insightsSurveyBuiltinFields.includes(g.value)) {
+            groupSelectQueryArr.push(
+              Prisma.sql`"SurveyResult"."${Prisma.raw(g.value)}" as "%${Prisma.raw(g.value)}"`
+            );
+          } else {
+            groupSelectQueryArr.push(
+              Prisma.sql`"SurveyResult"."payload" ->> ${g.value} as "%${Prisma.raw(g.value)}"`
+            );
+          }
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
             groupSelectQueryArr.push(
