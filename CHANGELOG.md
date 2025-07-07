@@ -1,5 +1,11 @@
 
 
+## [1.23.2](https://github.com/msgbyte/tianji/compare/v1.23.1...v1.23.2) (2025-07-07)
+
+### Features
+
+* add more group support for insightsSurveyBuiltinFields ([eac0c65](https://github.com/msgbyte/tianji/commit/eac0c65d905ff5aede93c64c915cd27e5992b433))
+
 ## [1.23.1](https://github.com/msgbyte/tianji/compare/v1.23.0...v1.23.1) (2025-07-07)
 
 ### Features
