@@ -5,7 +5,6 @@ import { getDateArray } from '@tianji/shared';
 
 export const insightsSurveyBuiltinFields = [
   'aiCategory',
-  'aiTranslation',
   'browser',
   'os',
   'language',
