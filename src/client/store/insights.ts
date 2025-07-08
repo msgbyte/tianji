@@ -3,6 +3,9 @@ import { pullAt } from 'lodash-es';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { DateUnit } from '@tianji/shared';
+import { TimeEventChartType } from '../components/chart/TimeEventChart';
+import dayjs from 'dayjs';
 
 interface InsightsState {
   insightId: string;
@@ -10,6 +13,10 @@ interface InsightsState {
   currentMetrics: (MetricsInfo | null)[];
   currentFilters: (FilterInfo | null)[];
   currentGroups: (GroupInfo | null)[];
+  currentDateKey: string;
+  currentDateRange: [Date, Date];
+  currentDateUnit: DateUnit;
+  currentChartType: TimeEventChartType;
   reset: () => void;
   setMetrics: (index: number, info: MetricsInfo) => void;
   addMetrics: () => void;
@@ -20,6 +27,10 @@ interface InsightsState {
   setGroups: (index: number, info: GroupInfo) => void;
   addGroups: () => void;
   removeGroups: (index: number) => void;
+  setCurrentDateKey: (key: string) => void;
+  setCurrentDateRange: (range: [Date, Date]) => void;
+  setCurrentDateUnit: (unit: DateUnit) => void;
+  setCurrentChartType: (type: TimeEventChartType) => void;
 }
 
 export const useInsightsStore = create<InsightsState>()(
@@ -31,12 +42,26 @@ export const useInsightsStore = create<InsightsState>()(
         currentMetrics: [null],
         currentFilters: [null],
         currentGroups: [null],
+        currentDateKey: '30D',
+        currentDateRange: [
+          dayjs().subtract(30, 'day').startOf('day').toDate(),
+          dayjs().endOf('day').toDate(),
+        ],
+        currentDateUnit: 'day',
+        currentChartType: 'line',
         reset: () => {
           set(() => ({
             selectedWebsiteId: '',
             currentMetrics: [null],
             currentFilters: [null],
             currentGroups: [null],
+            currentDateKey: '30D',
+            currentDateRange: [
+              dayjs().subtract(30, 'day').startOf('day').toDate(),
+              dayjs().endOf('day').toDate(),
+            ],
+            currentDateUnit: 'day',
+            currentChartType: 'line',
           }));
         },
         setMetrics: (index, info) => {
@@ -82,6 +107,26 @@ export const useInsightsStore = create<InsightsState>()(
         removeGroups: (index: number) => {
           set((state) => {
             pullAt(state.currentGroups, index);
+          });
+        },
+        setCurrentDateKey: (key) => {
+          set((state) => {
+            state.currentDateKey = key;
+          });
+        },
+        setCurrentDateRange: (range) => {
+          set((state) => {
+            state.currentDateRange = range;
+          });
+        },
+        setCurrentDateUnit: (unit) => {
+          set((state) => {
+            state.currentDateUnit = unit;
+          });
+        },
+        setCurrentChartType: (type) => {
+          set((state) => {
+            state.currentChartType = type;
           });
         },
       }),

@@ -1,7 +1,7 @@
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { TimeEventChart, TimeEventChartType } from '../chart/TimeEventChart';
 import { useInsightsStore } from '@/store/insights';
 import { pickColorWithNum } from '@/utils/color';
@@ -22,6 +22,7 @@ import { SearchLoadingView } from '../loading/Searching';
 import { get, groupBy, merge, omit, values } from 'lodash-es';
 import { ChartTypeSelection } from './ChartTypeSelection';
 import { useWatch } from '@/hooks/useWatch';
+import { getUserTimezone } from '@/api/model/user';
 
 interface ChartRenderProps {
   insightId: string;
@@ -39,18 +40,20 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const groups = useInsightsStore((state) =>
     state.currentGroups.filter((item): item is GroupInfo => Boolean(item))
   );
-  const [dateKey, setDateKey] = useState('30D');
-  const [dateRange, setDateRange] = useState(() => [
-    dayjs().subtract(30, 'day').startOf('day').toDate(),
-    dayjs().endOf('day').toDate(),
-  ]);
+  const dateKey = useInsightsStore((state) => state.currentDateKey);
+  const dateRange = useInsightsStore((state) => state.currentDateRange);
+  const dateUnit = useInsightsStore((state) => state.currentDateUnit);
+  const chartType = useInsightsStore((state) => state.currentChartType);
+  const setDateKey = useInsightsStore((state) => state.setCurrentDateKey);
+  const setDateRange = useInsightsStore((state) => state.setCurrentDateRange);
+  const setDateUnit = useInsightsStore((state) => state.setCurrentDateUnit);
+  const setChartType = useInsightsStore((state) => state.setCurrentChartType);
+
   const allowMinute = useMemo(() => {
     const start = dayjs(dateRange[0]);
     const end = dayjs(dateRange[1]);
     return end.diff(start, 'day') <= 1;
   }, [dateRange]);
-  const [dateUnit, setDateUnit] = useState<DateUnit>('day');
-  const [chartType, setChartType] = useState<TimeEventChartType>('line');
 
   useWatch([allowMinute, dateUnit], () => {
     if (!allowMinute && dateUnit === 'minute') {
@@ -60,9 +63,10 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
 
   const time = useMemo(
     () => ({
-      startAt: dateRange[0].valueOf(),
-      endAt: dateRange[1].valueOf(),
+      startAt: dayjs(dateRange[0]).valueOf(),
+      endAt: dayjs(dateRange[1]).valueOf(),
       unit: dateUnit,
+      timezone: getUserTimezone(),
     }),
     [dateRange, dateUnit]
   );

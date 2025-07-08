@@ -5,6 +5,7 @@ import { Spin } from 'antd';
 import { Card } from '../ui/card';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
+import { getUserTimezone } from '@/api/model/user';
 
 interface AIGatewaySummaryStatsProps {
   gatewayId: string;
@@ -33,6 +34,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
           startAt: startDate.valueOf(),
           endAt: endDate.valueOf(),
           unit,
+          timezone: getUserTimezone(),
         },
       },
       {

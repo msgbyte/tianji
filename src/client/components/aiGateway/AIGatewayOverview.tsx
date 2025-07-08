@@ -44,6 +44,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
           startAt: startDate.valueOf(),
           endAt: endDate.valueOf(),
           unit,
+          timezone: getUserTimezone(),
         },
       },
       {
@@ -60,8 +61,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
             })),
             startDate,
             endDate,
-            unit,
-            getUserTimezone()
+            unit
           );
         },
       }

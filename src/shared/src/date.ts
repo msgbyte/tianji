@@ -25,16 +25,27 @@ export function getMinimumUnit(
 }
 
 function createDateUnitFn(unit: DateUnit, timezone?: string) {
+  if (timezone) {
+    return {
+      diff: (end: ConfigType, start: ConfigType) =>
+        dayjs(end).tz(timezone).diff(start, unit),
+      add: (date: ConfigType, n: number) =>
+        dayjs(date).tz(timezone).add(n, unit),
+      normalize: (date: ConfigType) => dayjs(date).tz(timezone).startOf(unit),
+    };
+  }
+
   return {
-    diff: (end: ConfigType, start: ConfigType) =>
-      dayjs(end).tz(timezone).diff(start, unit),
-    add: (date: ConfigType, n: number) => dayjs(date).tz(timezone).add(n, unit),
-    normalize: (date: ConfigType) => dayjs(date).tz(timezone).startOf(unit),
+    diff: (end: ConfigType, start: ConfigType) => dayjs(end).diff(start, unit),
+    add: (date: ConfigType, n: number) => dayjs(date).add(n, unit),
+    normalize: (date: ConfigType) => dayjs(date).startOf(unit),
   };
 }
 
 export function formatDate(val: ConfigType, timezone?: string) {
-  return dayjs(val).tz(timezone).format('YYYY-MM-DD HH:mm:ss');
+  return timezone
+    ? dayjs(val).tz(timezone).format('YYYY-MM-DD HH:mm:ss')
+    : dayjs(val).format('YYYY-MM-DD HH:mm:ss');
 }
 
 /**

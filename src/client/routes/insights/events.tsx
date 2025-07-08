@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cleanObject } from '@/utils/common';
 import { Switch } from '@/components/ui/switch';
 import Identicon from 'react-identicons';
+import { getUserTimezone } from '@/api/model/user';
 
 export const Route = createFileRoute('/insights/events')({
   beforeLoad: routeAuthBeforeLoad,
@@ -73,6 +74,7 @@ function PageComponent() {
         startAt: dateRange[0].valueOf(),
         endAt: dateRange[1].valueOf(),
         unit: 'day' as const,
+        timezone: getUserTimezone(),
       },
     }),
     [workspaceId, insightId, insightType, filters, dateRange]
