@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { publicProcedure, router } from '../trpc.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { env } from '../../utils/env.js';
+import dayjs from 'dayjs';
 
 export const globalRouter = router({
   config: publicProcedure
@@ -23,6 +24,7 @@ export const globalRouter = router({
         alphaMode: z.boolean(),
         disableAnonymousTelemetry: z.boolean(),
         customTrackerScriptName: z.string().optional(),
+        serverTimezone: z.string().optional(),
         authProvider: z.array(z.string()),
         smtpAvailable: z.boolean(),
         enableBilling: z.boolean(),
@@ -38,6 +40,7 @@ export const globalRouter = router({
         alphaMode: env.alphaMode,
         disableAnonymousTelemetry: env.disableAnonymousTelemetry,
         customTrackerScriptName: env.customTrackerScriptName,
+        serverTimezone: dayjs.tz.guess(),
         authProvider: env.auth.provider,
         smtpAvailable: env.smtp.enable,
         enableBilling: env.billing.enable,
