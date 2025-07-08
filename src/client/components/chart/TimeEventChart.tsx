@@ -23,8 +23,9 @@ import { flatten, get, union, without } from 'lodash-es';
 import { pickColorWithNum } from '@/utils/color';
 import { cn } from '@/utils/style';
 import { type AxisDomain } from 'recharts/types/util/types';
+import { TimeEventPieChart } from './TimeEventPieChart';
 
-export type TimeEventChartType = 'area' | 'stack' | 'line';
+export type TimeEventChartType = 'area' | 'stack' | 'line' | 'pie';
 
 export type TimeEventChartData = {
   date: string;
@@ -77,6 +78,18 @@ export const TimeEventChart: React.FC<{
 
   const stacked = chartType === 'stack';
 
+  // Render pie chart
+  if (chartType === 'pie') {
+    return (
+      <TimeEventPieChart
+        className={className}
+        data={props.data}
+        chartConfig={chartConfig}
+      />
+    );
+  }
+
+  // Render time series chart (existing logic)
   return (
     <ChartContainer className={className} config={chartConfig}>
       <AreaChart

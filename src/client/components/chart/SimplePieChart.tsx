@@ -73,7 +73,7 @@ export type PieChartSegment = {
 
 export const SimplePieChart: React.FC<{
   className?: string;
-  data: { label: string; count: number }[];
+  data: { label: string; count: number; fill?: string }[];
   chartConfig: ChartConfig;
   onClick?: (data: PieChartSegment) => void;
 }> = React.memo((props) => {
