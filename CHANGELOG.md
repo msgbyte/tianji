@@ -1,5 +1,24 @@
 
 
+## [1.23.3](https://github.com/msgbyte/tianji/compare/v1.23.2...v1.23.3) (2025-07-09)
+
+### Features
+
+* add bar chart support ([a6839c3](https://github.com/msgbyte/tianji/commit/a6839c346ddc6166aea26e98b0c91cbdb4588331))
+* add default and max result limits for insights queries to avoid performance issues ([47eb27e](https://github.com/msgbyte/tianji/commit/47eb27e4cdf812f21380fea73ee916adef208d14))
+* add pie chart view type ([f9e7c26](https://github.com/msgbyte/tianji/commit/f9e7c2614c553ec7708fecb9507eb683871ce9af))
+* add server timezone options in global config ([ec3f5ac](https://github.com/msgbyte/tianji/commit/ec3f5ac8d4b88a17cffecc8eb48ff477cc9ac541))
+* add timezone support for insights components and add presist date setting ([0bf04a2](https://github.com/msgbyte/tianji/commit/0bf04a2f07bc0519d82918403eee0ba618eadbbf))
+
+### Document
+
+* update yandex verify html ([8cf94d9](https://github.com/msgbyte/tianji/commit/8cf94d9d59f80977fea0dec7f4514e610863e043))
+
+### Others
+
+* improve display for table view ([e6bd1e3](https://github.com/msgbyte/tianji/commit/e6bd1e30932ef5ed204f4d39a9b92f4bcdc1a92a))
+* remove ai category which should not filter or group ([000253f](https://github.com/msgbyte/tianji/commit/000253fd20bc6b38efbbbc6d71cd837f69caa7f0))
+
 ## [1.23.2](https://github.com/msgbyte/tianji/compare/v1.23.1...v1.23.2) (2025-07-07)
 
 ### Features
