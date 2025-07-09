@@ -2,12 +2,12 @@ import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
 import React, { useMemo } from 'react';
-import { TimeEventChart, TimeEventChartType } from '../chart/TimeEventChart';
+import { TimeEventChart } from '../chart/TimeEventChart';
 import { useInsightsStore } from '@/store/insights';
 import { pickColorWithNum } from '@/utils/color';
 import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
-import { DateUnit, FilterInfo, GroupInfo, MetricsInfo } from '@tianji/shared';
+import { FilterInfo, GroupInfo, MetricsInfo } from '@tianji/shared';
 import { TableView } from './TableView';
 import {
   ResizableHandle,

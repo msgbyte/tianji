@@ -8,7 +8,12 @@ import {
 } from '../ui/select';
 import { TimeEventChartType } from '../chart/TimeEventChart';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuChartArea, LuChartLine, LuChartPie } from 'react-icons/lu';
+import {
+  LuChartArea,
+  LuChartBar,
+  LuChartLine,
+  LuChartPie,
+} from 'react-icons/lu';
 
 interface ChartTypeSelectionProps {
   value: TimeEventChartType;
@@ -27,6 +32,8 @@ export const ChartTypeSelection: React.FC<ChartTypeSelectionProps> = React.memo(
           return <LuChartArea />;
         case 'stack':
           return <LuChartArea />;
+        case 'bar':
+          return <LuChartBar />;
         case 'pie':
           return <LuChartPie />;
         default:
@@ -41,6 +48,7 @@ export const ChartTypeSelection: React.FC<ChartTypeSelectionProps> = React.memo(
           <SelectItem value="line">{t('Line')}</SelectItem>
           <SelectItem value="area">{t('Area')}</SelectItem>
           <SelectItem value="stack">{t('Stack')}</SelectItem>
+          <SelectItem value="bar">{t('Bar')}</SelectItem>
           <SelectItem value="pie">{t('Pie')}</SelectItem>
         </SelectContent>
       </Select>

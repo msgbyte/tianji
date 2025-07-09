@@ -24,8 +24,9 @@ import { pickColorWithNum } from '@/utils/color';
 import { cn } from '@/utils/style';
 import { type AxisDomain } from 'recharts/types/util/types';
 import { TimeEventPieChart } from './TimeEventPieChart';
+import { TimeEventBarChart } from './TimeEventBarChart';
 
-export type TimeEventChartType = 'area' | 'stack' | 'line' | 'pie';
+export type TimeEventChartType = 'area' | 'stack' | 'line' | 'pie' | 'bar';
 
 export type TimeEventChartData = {
   date: string;
@@ -85,6 +86,23 @@ export const TimeEventChart: React.FC<{
         className={className}
         data={props.data}
         chartConfig={chartConfig}
+      />
+    );
+  }
+
+  // Render bar chart
+  if (chartType === 'bar') {
+    return (
+      <TimeEventBarChart
+        className={className}
+        data={props.data}
+        unit={props.unit}
+        yAxisDomain={yAxisDomain}
+        chartConfig={chartConfig}
+        stacked={true}
+        isTrendingMode={isTrendingMode}
+        showDifference={showDifference}
+        valueFormatter={props.valueFormatter}
       />
     );
   }
