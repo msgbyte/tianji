@@ -19,36 +19,24 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     return metrics.map((item) => {
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return this.useClickhouse
-            ? Prisma.sql`count(1) as "$all_event"`
-            : Prisma.sql`count(1) as "$all_event"`;
+          return Prisma.sql`count(1) as "$all_event"`;
         }
 
         if (item.name === '$page_view') {
-          return this.useClickhouse
-            ? Prisma.sql`sum(case WHEN WebsiteEvent.eventName = '' AND WebsiteEvent.eventType = ${Prisma.raw(EVENT_TYPE.pageView.toString())} THEN 1 ELSE 0 END) as "$page_view"`
-            : Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
+          return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
         }
 
-        return this.useClickhouse
-          ? Prisma.sql`sum(case WHEN WebsiteEvent.eventName = ${Prisma.raw(`'${item.name}'`)} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`
-          : Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return this.useClickhouse
-            ? Prisma.sql`count(distinct sessionId) as "$all_event"`
-            : Prisma.sql`count(distinct "sessionId") as "$all_event"`;
+          return Prisma.sql`count(distinct "sessionId") as "$all_event"`;
         }
 
         if (item.name === '$page_view') {
-          return this.useClickhouse
-            ? Prisma.sql`count(distinct case WHEN WebsiteEvent.eventName = '' AND WebsiteEvent.eventType = ${Prisma.raw(EVENT_TYPE.pageView.toString())} THEN sessionId ELSE null END) as "$page_view"`
-            : Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
+          return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
         }
 
-        return this.useClickhouse
-          ? Prisma.sql`count(distinct case WHEN WebsiteEvent.eventName = ${Prisma.raw(`'${item.name}'`)} THEN sessionId END) as ${Prisma.raw(`"${item.name}"`)}`
-          : Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
       }
 
       return null;
@@ -84,11 +72,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     const { filters, groups } = this.query;
     let innerJoinQuery = Prisma.empty;
     if (filters.length > 0 || groups.length > 0) {
-      if (this.useClickhouse) {
-        innerJoinQuery = Prisma.sql`INNER JOIN WebsiteEventData ON WebsiteEvent.id = WebsiteEventData.websiteEventId`;
-      } else {
-        innerJoinQuery = Prisma.sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId"`;
-      }
+      innerJoinQuery = Prisma.sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId"`;
 
       if (filters.length > 0) {
         innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
@@ -104,10 +88,8 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       }
 
       if (groups.length > 0) {
-        const groupConditions = groups.map((g) =>
-          this.useClickhouse
-            ? Prisma.sql`WebsiteEventData.eventKey = ${Prisma.raw(`'${g.value}'`)}`
-            : Prisma.sql`"WebsiteEventData"."eventKey" = ${g.value}`
+        const groupConditions = groups.map(
+          (g) => Prisma.sql`"WebsiteEventData"."eventKey" = ${g.value}`
         );
         innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
           groupConditions,
@@ -124,18 +106,10 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
 
     const whereConditions = [
       // website id
-      this.useClickhouse
-        ? Prisma.sql`WebsiteEvent.websiteId = ${Prisma.raw(`'${insightId}'`)}`
-        : Prisma.sql`"WebsiteEvent"."websiteId" = ${insightId}`,
+      Prisma.sql`"WebsiteEvent"."websiteId" = ${insightId}`,
 
       // date
-      this.useClickhouse
-        ? this.buildDateRangeQuery('WebsiteEvent.createdAt', startAt, endAt)
-        : this.buildDateRangeQuery(
-            '"WebsiteEvent"."createdAt"',
-            startAt,
-            endAt
-          ),
+      this.buildDateRangeQuery('"WebsiteEvent"."createdAt"', startAt, endAt),
 
       // event name
       Prisma.join(
@@ -145,14 +119,10 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
           }
 
           if (item.name === '$page_view') {
-            return this.useClickhouse
-              ? Prisma.sql`WebsiteEvent.eventType = ${Prisma.raw(EVENT_TYPE.pageView.toString())}`
-              : Prisma.sql`"WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}`;
+            return Prisma.sql`"WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}`;
           }
 
-          return this.useClickhouse
-            ? Prisma.sql`WebsiteEvent.eventName = ${Prisma.raw(`'${item.name}'`)}`
-            : Prisma.sql`"WebsiteEvent"."eventName" = ${item.name}`;
+          return Prisma.sql`"WebsiteEvent"."eventName" = ${item.name}`;
         }),
         ' OR ',
         '(',
@@ -164,19 +134,6 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 
   private getValueField(type: FilterInfoType): Prisma.Sql {
-    if (this.useClickhouse) {
-      const valueField =
-        type === 'number'
-          ? Prisma.sql`WebsiteEventData.numberValue`
-          : type === 'string'
-            ? Prisma.sql`WebsiteEventData.stringValue`
-            : type === 'date'
-              ? Prisma.sql`WebsiteEventData.dateValue`
-              : Prisma.sql`WebsiteEventData.numberValue`;
-
-      return valueField;
-    }
-
     const valueField =
       type === 'number'
         ? Prisma.sql`"WebsiteEventData"."numberValue"`
