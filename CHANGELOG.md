@@ -1,5 +1,11 @@
 
 
+## [1.23.4](https://github.com/msgbyte/tianji/compare/v1.23.3...v1.23.4) (2025-07-10)
+
+### Features
+
+* upgrade go runtime and upgrade gopsutil version and add process command support ([a17a4b4](https://github.com/msgbyte/tianji/commit/a17a4b44e956ae8f0cd43d0c940ec7f38f28f6e3))
+
 ## [1.23.3](https://github.com/msgbyte/tianji/compare/v1.23.2...v1.23.3) (2025-07-09)
 
 ### Features
