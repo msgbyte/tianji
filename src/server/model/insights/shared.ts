@@ -14,6 +14,16 @@ import { insightsQuerySchema } from '../../utils/schema.js';
 import { z } from 'zod';
 import { POSTGRESQL_DATE_FORMATS, printSQL } from '../../utils/prisma.js';
 import { env } from '../../utils/env.js';
+import { clickhouse } from '../../clickhouse/index.js';
+
+// ClickHouse date formats for different time units
+export const CLICKHOUSE_DATE_FORMATS = {
+  minute: '%Y-%m-%d %H:%M:00',
+  hour: '%Y-%m-%d %H:00:00',
+  day: '%Y-%m-%d',
+  month: '%Y-%m-01',
+  year: '%Y-01-01',
+};
 
 export interface InsightEvent<
   T extends Record<string, any> = Record<string, any>,
@@ -30,6 +40,8 @@ export abstract class InsightsSqlBuilder {
   protected resultLimit = 100; // set default result limit for insights query
   protected maxResultLimit = 1000; // set max result limit for insights query to avoid performance issues
 
+  protected useClickhouse = env.clickhouse.enable;
+
   constructor(
     protected query: z.infer<typeof insightsQuerySchema>,
     protected context: { timezone: string }
@@ -40,12 +52,46 @@ export abstract class InsightsSqlBuilder {
     unit: string,
     timezone: string
   ): Prisma.Sql {
+    if (this.useClickhouse) {
+      return this.getClickHouseDateQuery(field, unit, timezone);
+    }
+
     // Check if unit exists in POSTGRESQL_DATE_FORMATS before using it
     if (!(unit in POSTGRESQL_DATE_FORMATS)) {
       throw new Error(`Invalid date unit: ${unit}`);
     }
 
     return Prisma.sql`to_char(date_trunc(${unit}, ${Prisma.raw(field)} at time zone ${timezone}), '${Prisma.raw(POSTGRESQL_DATE_FORMATS[unit as keyof typeof POSTGRESQL_DATE_FORMATS])}')`;
+  }
+
+  protected getClickHouseDateQuery(
+    field: string,
+    unit: string,
+    timezone: string
+  ): Prisma.Sql {
+    // Check if unit exists in CLICKHOUSE_DATE_FORMATS before using it
+    if (!(unit in CLICKHOUSE_DATE_FORMATS)) {
+      throw new Error(`Invalid date unit: ${unit}`);
+    }
+
+    const format =
+      CLICKHOUSE_DATE_FORMATS[unit as keyof typeof CLICKHOUSE_DATE_FORMATS];
+
+    // ClickHouse uses different functions for date manipulation
+    // Use Prisma.raw for string literals to avoid parameter binding issues
+    if (unit === 'minute') {
+      return Prisma.sql`formatDateTime(toStartOfMinute(${Prisma.raw(field)}, ${Prisma.raw(`'${timezone}'`)}), ${Prisma.raw(`'${format}'`)})`;
+    } else if (unit === 'hour') {
+      return Prisma.sql`formatDateTime(toStartOfHour(${Prisma.raw(field)}, ${Prisma.raw(`'${timezone}'`)}), ${Prisma.raw(`'${format}'`)})`;
+    } else if (unit === 'day') {
+      return Prisma.sql`formatDateTime(toStartOfDay(${Prisma.raw(field)}, ${Prisma.raw(`'${timezone}'`)}), ${Prisma.raw(`'${format}'`)})`;
+    } else if (unit === 'month') {
+      return Prisma.sql`formatDateTime(toStartOfMonth(${Prisma.raw(field)}, ${Prisma.raw(`'${timezone}'`)}), ${Prisma.raw(`'${format}'`)})`;
+    } else if (unit === 'year') {
+      return Prisma.sql`formatDateTime(toStartOfYear(${Prisma.raw(field)}, ${Prisma.raw(`'${timezone}'`)}), ${Prisma.raw(`'${format}'`)})`;
+    }
+
+    return Prisma.sql`formatDateTime(toStartOfDay(${Prisma.raw(field)}, ${Prisma.raw(`'${timezone}'`)}), ${Prisma.raw(`'${format}'`)})`;
   }
 
   protected buildGroupByText(length: number): string {
@@ -59,6 +105,13 @@ export abstract class InsightsSqlBuilder {
     startAt: number,
     endAt: number
   ): Prisma.Sql {
+    if (this.useClickhouse) {
+      // NOTICE: ClickHouse needs proper DateTime conversion functions
+      const startTime = dayjs(startAt).utc().format('YYYY-MM-DD HH:mm:ss');
+      const endTime = dayjs(endAt).utc().format('YYYY-MM-DD HH:mm:ss');
+      return Prisma.sql`${Prisma.raw(field)} BETWEEN toDateTime(${Prisma.raw(`'${startTime}'`)}, 'UTC') AND toDateTime(${Prisma.raw(`'${endTime}'`)}, 'UTC')`;
+    }
+
     return Prisma.sql`${Prisma.raw(field)} between ${dayjs(startAt).toISOString()}::timestamptz and ${dayjs(endAt).toISOString()}::timestamptz`;
   }
 
@@ -218,20 +271,41 @@ export abstract class InsightsSqlBuilder {
 
     const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
 
-    const sql = Prisma.sql`select
-      ${Prisma.join(
-        compact([
-          Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`,
-          ...groupSelectQueryArr,
-          ...selectQueryArr,
-        ]),
-        ' , '
-      )}
-    from "${Prisma.raw(tableName)}" ${innerJoinQuery}
-    where ${Prisma.join(whereQueryArr, ' AND ')}
-    group by ${Prisma.raw(groupByText)}
-    order by 1 desc
-    limit ${this.maxResultLimit}`;
+    let sql: Prisma.Sql;
+
+    if (this.useClickhouse) {
+      // ClickHouse SQL syntax
+      sql = Prisma.sql`SELECT
+        ${Prisma.join(
+          compact([
+            Prisma.sql`${this.getDateQuery(tableName + '.createdAt', unit, timezone)} as date`,
+            ...groupSelectQueryArr,
+            ...selectQueryArr,
+          ]),
+          ' , '
+        )}
+      FROM ${Prisma.raw(tableName)} ${innerJoinQuery}
+      WHERE ${Prisma.join(whereQueryArr, ' AND ')}
+      GROUP BY ${Prisma.raw(groupByText)}
+      ORDER BY 1 DESC
+      LIMIT ${Prisma.raw(this.maxResultLimit.toString())}`;
+    } else {
+      // PostgreSQL SQL syntax
+      sql = Prisma.sql`select
+        ${Prisma.join(
+          compact([
+            Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`,
+            ...groupSelectQueryArr,
+            ...selectQueryArr,
+          ]),
+          ' , '
+        )}
+      from "${Prisma.raw(tableName)}" ${innerJoinQuery}
+      where ${Prisma.join(whereQueryArr, ' AND ')}
+      group by ${Prisma.raw(groupByText)}
+      order by 1 desc
+      limit ${this.maxResultLimit}`;
+    }
 
     if (env.debugInsights) {
       printSQL(sql);
@@ -245,6 +319,17 @@ export abstract class InsightsSqlBuilder {
     const whereQueryArr = this.buildWhereQueryArr();
     const innerJoinQuery = this.buildInnerJoinQuery();
 
+    if (this.useClickhouse) {
+      return Prisma.sql`
+        SELECT *
+        FROM ${Prisma.raw(tableName)}
+        WHERE ${Prisma.join(whereQueryArr, ' AND ')}
+        ${cursor ? Prisma.sql`AND id < ${Prisma.raw(`'${cursor}'`)}` : Prisma.empty}
+        ORDER BY createdAt DESC
+        LIMIT ${Prisma.raw(this.resultLimit.toString())}
+      `;
+    }
+
     return Prisma.sql`
       select *
       from "${Prisma.raw(tableName)}"
@@ -254,6 +339,21 @@ export abstract class InsightsSqlBuilder {
       order by "${Prisma.raw(tableName)}"."createdAt" desc
       limit ${this.resultLimit}
     `;
+  }
+
+  public async executeQuery(sql: Prisma.Sql): Promise<any[]> {
+    if (this.useClickhouse) {
+      // For ClickHouse, we use the raw SQL string since we're using Prisma.raw for all parameters
+      // TODO: NOTICE: its have inject sql issue, need to improve it
+      const result = await clickhouse.query({
+        query: sql.sql,
+      });
+      const { data } = await result.json();
+      return data;
+    } else {
+      const { prisma } = await import('../_client.js');
+      return await prisma.$queryRaw(sql);
+    }
   }
 
   public async queryEvents(
