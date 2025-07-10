@@ -8,13 +8,13 @@ import (
 	dockerContainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/disk"
-	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/load"
-	"github.com/shirou/gopsutil/v3/mem"
-	pNet "github.com/shirou/gopsutil/v3/net"
-	"github.com/shirou/gopsutil/v3/process"
+	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/disk"
+	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/load"
+	"github.com/shirou/gopsutil/v4/mem"
+	pNet "github.com/shirou/gopsutil/v4/net"
+	"github.com/shirou/gopsutil/v4/process"
 	"log"
 	"math"
 	"net"
@@ -360,6 +360,17 @@ func getTopCPUProcesses(n int) []ProcessInfo {
 			continue
 		}
 		name, _ := p.Name()
+		if cmdlineSlice, _ := p.CmdlineSlice(); len(cmdlineSlice) > 1 {
+			// Skip first argument (process name) and join the rest
+			args := strings.Join(cmdlineSlice[1:], " ")
+			if len(args) > 0 {
+				name += " " + args
+			}
+		}
+		// Limit total length to 100 characters
+		if len(name) > 100 {
+			name = name[:100] + "..."
+		}
 		memInfo, _ := p.MemoryInfo()
 		mem := uint64(0)
 		if memInfo != nil {
@@ -401,6 +412,17 @@ func getTopMemoryProcesses(n int) []ProcessInfo {
 		}
 		cpuPercent, _ := p.CPUPercent()
 		name, _ := p.Name()
+		if cmdlineSlice, _ := p.CmdlineSlice(); len(cmdlineSlice) > 1 {
+			// Skip first argument (process name) and join the rest
+			args := strings.Join(cmdlineSlice[1:], " ")
+			if len(args) > 0 {
+				name += " " + args
+			}
+		}
+		// Limit total length to 100 characters
+		if len(name) > 100 {
+			name = name[:100] + "..."
+		}
 		result = append(result, ProcessInfo{
 			PID:    p.Pid,
 			Name:   name,

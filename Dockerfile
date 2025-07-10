@@ -1,5 +1,5 @@
 # tianji reporter
-FROM golang:1.22.5-bookworm AS reporter
+FROM golang:1.23.11-bookworm AS reporter
 WORKDIR /app
 
 COPY ./reporter/ ./reporter/
