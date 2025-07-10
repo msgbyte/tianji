@@ -6,6 +6,7 @@ import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
 import { InsightEvent, InsightsSqlBuilder } from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
+import { clickhouse } from '../../clickhouse/index.js';
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
@@ -18,24 +19,36 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     return metrics.map((item) => {
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return Prisma.sql`count(1) as "$all_event"`;
+          return this.useClickhouse
+            ? Prisma.sql`count(1) as "$all_event"`
+            : Prisma.sql`count(1) as "$all_event"`;
         }
 
         if (item.name === '$page_view') {
-          return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
+          return this.useClickhouse
+            ? Prisma.sql`sum(case WHEN WebsiteEvent.eventName = '' AND WebsiteEvent.eventType = ${Prisma.raw(EVENT_TYPE.pageView.toString())} THEN 1 ELSE 0 END) as "$page_view"`
+            : Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
         }
 
-        return Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return this.useClickhouse
+          ? Prisma.sql`sum(case WHEN WebsiteEvent.eventName = ${Prisma.raw(`'${item.name}'`)} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`
+          : Prisma.sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return Prisma.sql`count(distinct "sessionId") as "$all_event"`;
+          return this.useClickhouse
+            ? Prisma.sql`count(distinct sessionId) as "$all_event"`
+            : Prisma.sql`count(distinct "sessionId") as "$all_event"`;
         }
 
         if (item.name === '$page_view') {
-          return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
+          return this.useClickhouse
+            ? Prisma.sql`count(distinct case WHEN WebsiteEvent.eventName = '' AND WebsiteEvent.eventType = ${Prisma.raw(EVENT_TYPE.pageView.toString())} THEN sessionId ELSE null END) as "$page_view"`
+            : Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
         }
 
-        return Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return this.useClickhouse
+          ? Prisma.sql`count(distinct case WHEN WebsiteEvent.eventName = ${Prisma.raw(`'${item.name}'`)} THEN sessionId END) as ${Prisma.raw(`"${item.name}"`)}`
+          : Prisma.sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${Prisma.raw(`"${item.name}"`)}`;
       }
 
       return null;
@@ -71,7 +84,11 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     const { filters, groups } = this.query;
     let innerJoinQuery = Prisma.empty;
     if (filters.length > 0 || groups.length > 0) {
-      innerJoinQuery = Prisma.sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId"`;
+      if (this.useClickhouse) {
+        innerJoinQuery = Prisma.sql`INNER JOIN WebsiteEventData ON WebsiteEvent.id = WebsiteEventData.websiteEventId`;
+      } else {
+        innerJoinQuery = Prisma.sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId"`;
+      }
 
       if (filters.length > 0) {
         innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
@@ -87,10 +104,13 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       }
 
       if (groups.length > 0) {
+        const groupConditions = groups.map((g) =>
+          this.useClickhouse
+            ? Prisma.sql`WebsiteEventData.eventKey = ${Prisma.raw(`'${g.value}'`)}`
+            : Prisma.sql`"WebsiteEventData"."eventKey" = ${g.value}`
+        );
         innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
-          groups.map(
-            (g) => Prisma.sql`"WebsiteEventData"."eventKey" = ${g.value}`
-          ),
+          groupConditions,
           ' OR '
         )}`;
       }
@@ -102,12 +122,20 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     const { insightId, time, metrics } = this.query;
     const { startAt, endAt } = time;
 
-    return [
+    const whereConditions = [
       // website id
-      Prisma.sql`"WebsiteEvent"."websiteId" = ${insightId}`,
+      this.useClickhouse
+        ? Prisma.sql`WebsiteEvent.websiteId = ${Prisma.raw(`'${insightId}'`)}`
+        : Prisma.sql`"WebsiteEvent"."websiteId" = ${insightId}`,
 
       // date
-      this.buildDateRangeQuery('"WebsiteEvent"."createdAt"', startAt, endAt),
+      this.useClickhouse
+        ? this.buildDateRangeQuery('WebsiteEvent.createdAt', startAt, endAt)
+        : this.buildDateRangeQuery(
+            '"WebsiteEvent"."createdAt"',
+            startAt,
+            endAt
+          ),
 
       // event name
       Prisma.join(
@@ -117,19 +145,38 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
           }
 
           if (item.name === '$page_view') {
-            return Prisma.sql`"WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}`;
+            return this.useClickhouse
+              ? Prisma.sql`WebsiteEvent.eventType = ${Prisma.raw(EVENT_TYPE.pageView.toString())}`
+              : Prisma.sql`"WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}`;
           }
 
-          return Prisma.sql`"WebsiteEvent"."eventName" = ${item.name}`;
+          return this.useClickhouse
+            ? Prisma.sql`WebsiteEvent.eventName = ${Prisma.raw(`'${item.name}'`)}`
+            : Prisma.sql`"WebsiteEvent"."eventName" = ${item.name}`;
         }),
         ' OR ',
         '(',
         ')'
       ),
     ];
+
+    return whereConditions;
   }
 
   private getValueField(type: FilterInfoType): Prisma.Sql {
+    if (this.useClickhouse) {
+      const valueField =
+        type === 'number'
+          ? Prisma.sql`WebsiteEventData.numberValue`
+          : type === 'string'
+            ? Prisma.sql`WebsiteEventData.stringValue`
+            : type === 'date'
+              ? Prisma.sql`WebsiteEventData.dateValue`
+              : Prisma.sql`WebsiteEventData.numberValue`;
+
+      return valueField;
+    }
+
     const valueField =
       type === 'number'
         ? Prisma.sql`"WebsiteEventData"."numberValue"`
@@ -161,16 +208,46 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     cursor: string | undefined
   ): Promise<InsightEvent[]> {
     const allEventsSql = this.buildFetchEventsQuery(cursor);
-    const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);
 
-    const allEventProperties = await prisma.websiteEventData.findMany({
-      where: {
-        websiteEventId: {
-          in: allEvents.map((event) => event.id),
+    if (this.useClickhouse) {
+      const result = await clickhouse.query({
+        query: allEventsSql.sql,
+      });
+      const { data } = await result.json<any[]>();
+      const allEvents = data as unknown as WebsiteEvent[];
+
+      // Get event properties from ClickHouse
+      const eventIds = allEvents.map((event) => event.id);
+      if (eventIds.length > 0) {
+        const eventDataResult = await clickhouse.query({
+          query: `SELECT * FROM WebsiteEventData WHERE websiteEventId IN (${eventIds.map((id) => `'${id}'`).join(',')})`,
+        });
+        const { data: eventDataRows } = await eventDataResult.json<any[]>();
+        const allEventProperties = eventDataRows;
+
+        return this.processEventsData(allEvents, allEventProperties);
+      } else {
+        return this.processEventsData(allEvents, []);
+      }
+    } else {
+      const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);
+
+      const allEventProperties = await prisma.websiteEventData.findMany({
+        where: {
+          websiteEventId: {
+            in: allEvents.map((event) => event.id),
+          },
         },
-      },
-    });
+      });
 
+      return this.processEventsData(allEvents, allEventProperties);
+    }
+  }
+
+  private processEventsData(
+    allEvents: WebsiteEvent[],
+    allEventProperties: any[]
+  ): InsightEvent[] {
     const result = allEvents.map((event) => {
       const propertyRecords = allEventProperties.filter(
         (property) => property.websiteEventId === event.id
@@ -219,7 +296,7 @@ export async function insightsWebsite(
   const builder = new WebsiteInsightsSqlBuilder(query, context);
   const sql = builder.build();
 
-  const data = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+  const data = await builder.executeQuery(sql);
 
   const result = processGroupedTimeSeriesData(query, context, data);
 
