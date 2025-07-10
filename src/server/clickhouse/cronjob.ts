@@ -81,10 +81,11 @@ async function initSyncStateTable() {
 }
 
 // Get last sync timestamp for a table
-async function getLastSyncTimestamp(tableName: string): Promise<string | null> {
+async function getLastSyncTimestamp(tableName: string): Promise<number | null> {
   try {
     const result = await clickhouse.query({
-      query: `SELECT last_sync_timestamp FROM ${SYNC_STATE_TABLE} WHERE table_name = {table:String}`,
+      // NOTICE: toUnixTimestamp64Milli need clickhouse version >= 22.10
+      query: `SELECT toUnixTimestamp64Milli(last_sync_timestamp) as last_sync_timestamp FROM ${SYNC_STATE_TABLE} WHERE table_name = {table:String}`,
       query_params: {
         table: tableName,
       },
@@ -94,7 +95,7 @@ async function getLastSyncTimestamp(tableName: string): Promise<string | null> {
     if (data.length === 0) {
       return null;
     }
-    return data[0].last_sync_timestamp;
+    return Number(data[0].last_sync_timestamp);
   } catch (err) {
     logger.error(`Failed to get last sync timestamp for ${tableName}:`, err);
     return null;
@@ -123,7 +124,7 @@ async function updateSyncState(tableName: string, timestamp: string) {
       await clickhouse.exec({
         query: `
           ALTER TABLE ${SYNC_STATE_TABLE}
-          UPDATE last_sync_timestamp = toDateTime64({timestamp:UInt64}, 3, 'UTC'),
+          UPDATE last_sync_timestamp = toDateTime64({timestamp:UInt64} / 1000.0, 3, 'UTC'),
                  updated_at = now64(3, 'UTC')
           WHERE table_name = {table:String}
         `,
@@ -137,7 +138,7 @@ async function updateSyncState(tableName: string, timestamp: string) {
       await clickhouse.exec({
         query: `
           INSERT INTO ${SYNC_STATE_TABLE} (table_name, last_sync_timestamp)
-          VALUES ({table:String}, toDateTime64({timestamp:UInt64}, 3, 'UTC'))
+          VALUES ({table:String}, toDateTime64({timestamp:UInt64} / 1000.0, 3, 'UTC'))
         `,
         query_params: {
           table: tableName,
@@ -163,6 +164,7 @@ async function syncTable(tableConfig: (typeof TABLES_TO_SYNC)[0]) {
     let query: any = {};
     if (lastSyncTimestamp) {
       const lastSyncDate = dayjs(lastSyncTimestamp).toISOString();
+
       query = {
         where: {
           [timestampField]: {
