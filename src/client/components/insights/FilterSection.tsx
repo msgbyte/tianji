@@ -2,9 +2,10 @@ import React from 'react';
 import { useInsightsStore } from '@/store/insights';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { LuPlus } from 'react-icons/lu';
+import { LuFilter, LuPlus } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 import { FilterParamsBlock } from './FilterParamsBlock';
+import { Button } from '../ui/button';
 
 export const FilterSection: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
@@ -28,24 +29,20 @@ export const FilterSection: React.FC = React.memo(() => {
   );
 
   return (
-    <div>
-      <div
-        className="hover:bg-muted mb-2 flex cursor-pointer items-center justify-between rounded-lg px-2 py-1"
-        onClick={() => {
-          addFilter();
-        }}
-      >
-        <div>{t('Filter')}</div>
-        <div>
-          <LuPlus />
-        </div>
-      </div>
+    <div className="flex w-full items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        Icon={LuFilter}
+        onClick={addFilter}
+      />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-1 flex-row flex-wrap gap-2 overflow-hidden">
         {currentFilters.map((filter, i) => (
           <FilterParamsBlock
             key={i}
             index={i}
+            direction="horizontal"
             list={allFilterParams}
             info={filter}
             onSelect={(info) => setFilter(i, info)}
