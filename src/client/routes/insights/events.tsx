@@ -152,27 +152,34 @@ function PageComponent() {
       >
         <div className="mx-auto flex h-full flex-col overflow-hidden p-4">
           <div className="mb-4 flex items-center gap-2 md:flex-row">
-            <span>{t('Date Range')}：</span>
-            <DatePicker.RangePicker
-              value={dateRange}
-              onChange={(val) => {
-                if (val && val[0] && val[1]) {
-                  setDateRange([
-                    dayjs(val[0]).startOf('day'),
-                    dayjs(val[1]).endOf('day'),
-                  ]);
-                }
-              }}
-              allowClear={false}
-            />
+            <div className="flex items-center gap-2">
+              <span>{t('Date Range')}：</span>
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={(val) => {
+                  if (val && val[0] && val[1]) {
+                    setDateRange([
+                      dayjs(val[0]).startOf('day'),
+                      dayjs(val[1]).endOf('day'),
+                    ]);
+                  }
+                }}
+                allowClear={false}
+              />
+            </div>
+
             <div className="flex-1" />
-            <FilterSection />
+
             {/* Switch for JSON/Grid mode */}
             <div className="ml-4 flex items-center gap-1">
               <span className="text-xs text-gray-500">Grid</span>
               <Switch checked={jsonMode} onCheckedChange={setJsonMode} />
               <span className="text-xs text-gray-500">JSON</span>
             </div>
+          </div>
+
+          <div className="mb-2">
+            <FilterSection />
           </div>
 
           <ScrollArea className="flex-1 overflow-hidden">

@@ -243,13 +243,15 @@ export abstract class InsightsSqlBuilder {
   public buildFetchEventsQuery(cursor: string | undefined): Prisma.Sql {
     const tableName = this.getTableName();
     const whereQueryArr = this.buildWhereQueryArr();
+    const innerJoinQuery = this.buildInnerJoinQuery();
 
     return Prisma.sql`
       select *
       from "${Prisma.raw(tableName)}"
+      ${innerJoinQuery}
       where ${Prisma.join(whereQueryArr, ' AND ')}
-      ${cursor ? Prisma.sql`AND "id" < ${cursor}` : Prisma.empty}
-      order by "createdAt" desc
+      ${cursor ? Prisma.sql`AND "${Prisma.raw(tableName)}"."id" < ${cursor}` : Prisma.empty}
+      order by "${Prisma.raw(tableName)}"."createdAt" desc
       limit ${this.resultLimit}
     `;
   }
