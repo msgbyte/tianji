@@ -66,7 +66,13 @@ export async function queryEvents(
         sessions: session
           ? {
               ...omit(session, ['sessionData']),
-              ...session.sessionData,
+              ...session.sessionData.reduce(
+                (acc, item) => {
+                  acc[item.key] = item.numberValue ?? item.stringValue;
+                  return acc;
+                },
+                {} as Record<string, any>
+              ),
             }
           : null,
       };
