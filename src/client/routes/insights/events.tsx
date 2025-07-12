@@ -27,6 +27,8 @@ import { cleanObject } from '@/utils/common';
 import { Switch } from '@/components/ui/switch';
 import Identicon from 'react-identicons';
 import { getUserTimezone } from '@/api/model/user';
+import { LuChevronDown } from 'react-icons/lu';
+import { cn } from '@/utils/style';
 
 export const Route = createFileRoute('/insights/events')({
   beforeLoad: routeAuthBeforeLoad,
@@ -106,7 +108,9 @@ function PageComponent() {
                   </div>
                 </div>
                 <div className="text-foreground mt-1 break-all font-bold">
-                  {String(value)}
+                  {typeof value === 'object'
+                    ? JSON.stringify(value)
+                    : String(value)}
                 </div>
               </div>
             ))}
@@ -179,7 +183,15 @@ function PageComponent() {
             ) : data.length === 0 ? (
               <Empty description={t('No event data yet')} />
             ) : (
-              <Collapse accordion>
+              <Collapse
+                accordion
+                expandIcon={({ isActive }) => (
+                  <LuChevronDown
+                    className={cn(isActive ? 'rotate-0' : '-rotate-90')}
+                    size={16}
+                  />
+                )}
+              >
                 {data.map((event) => {
                   // Calculate date difference
                   const eventDate = dayjs(event.createdAt);
