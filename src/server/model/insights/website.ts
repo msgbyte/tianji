@@ -177,7 +177,8 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       const eventIds = allEvents.map((event) => event.id);
       if (eventIds.length > 0) {
         const eventDataResult = await clickhouse.query({
-          query: `SELECT * FROM WebsiteEventData WHERE websiteEventId IN (${eventIds.map((id) => `'${id}'`).join(',')})`,
+          query: `SELECT * FROM WebsiteEventData WHERE websiteEventId IN ({eventIds:Array(String)})`,
+          query_params: { eventIds },
         });
         const { data: eventDataRows } = await eventDataResult.json<any[]>();
         const allEventProperties = eventDataRows;
