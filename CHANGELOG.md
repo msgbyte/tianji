@@ -1,5 +1,20 @@
 
 
+## [1.23.5](https://github.com/msgbyte/tianji/compare/v1.23.4...v1.23.5) (2025-07-13)
+
+### Features
+
+* add direction prop to FilterParamsBlock and update FilterSection for horizontal layout ([ed17bbb](https://github.com/msgbyte/tianji/commit/ed17bbb3c501ab97c373762f62218224ba1bf686))
+* enhance event display with object serialization and custom collapse icon ([a7e5efa](https://github.com/msgbyte/tianji/commit/a7e5efa88ed01bb0e9cffb6f16bfeb3468580b55))
+
+### Bug Fixes
+
+* fix insights event feature session data incorrect problem ([2c2b570](https://github.com/msgbyte/tianji/commit/2c2b5704c5dd10a85e0f21e6c4756e44a0d6fe53))
+
+### Others
+
+* fix filter not work issue in fetch event ([107de00](https://github.com/msgbyte/tianji/commit/107de0006a7e6101be2d6590dc61fa1844ebeb35))
+
 ## [1.23.4](https://github.com/msgbyte/tianji/compare/v1.23.3...v1.23.4) (2025-07-10)
 
 ### Features
