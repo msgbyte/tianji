@@ -71,6 +71,8 @@ async function applyMigration(filename: string) {
       .split(';')
       .filter((query) => query.trim().length > 0);
 
+    await clickhouse.exec({ query: 'BEGIN' });
+
     for (const query of queries) {
       await clickhouse.exec({ query: query.trim() });
     }
@@ -80,9 +82,12 @@ async function applyMigration(filename: string) {
       query_params: { filename },
     });
 
+    await clickhouse.exec({ query: 'COMMIT' });
+
     logger.info(`Applied migration: ${filename}`);
     return true;
   } catch (err) {
+    await clickhouse.exec({ query: 'ROLLBACK' });
     logger.error(`Failed to apply migration ${filename}:`, err);
     return false;
   }
