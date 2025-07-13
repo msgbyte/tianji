@@ -15,6 +15,9 @@ import { z } from 'zod';
 import { POSTGRESQL_DATE_FORMATS, printSQL } from '../../utils/prisma.js';
 import { env } from '../../utils/env.js';
 import { clickhouse } from '../../clickhouse/index.js';
+import { clickhouseHealthManager } from '../../clickhouse/health.js';
+import { logger } from '../../utils/logger.js';
+import { prisma } from '../_client.js';
 
 // ClickHouse date formats for different time units
 export const CLICKHOUSE_DATE_FORMATS = {
@@ -47,12 +50,19 @@ export abstract class InsightsSqlBuilder {
     protected context: { timezone: string }
   ) {}
 
+  /**
+   * Dynamically check if ClickHouse should be used
+   */
+  protected shouldUseClickhouse(): boolean {
+    return this.useClickhouse && clickhouseHealthManager.isClickHouseHealthy();
+  }
+
   protected getDateQuery(
     field: string,
     unit: string,
     timezone: string
   ): Prisma.Sql {
-    if (this.useClickhouse) {
+    if (this.shouldUseClickhouse()) {
       return this.getClickHouseDateQuery(field, unit, timezone);
     }
 
@@ -105,7 +115,7 @@ export abstract class InsightsSqlBuilder {
     startAt: number,
     endAt: number
   ): Prisma.Sql {
-    if (this.useClickhouse) {
+    if (this.shouldUseClickhouse()) {
       // NOTICE: ClickHouse needs proper DateTime conversion functions
       const startTime = dayjs(startAt).utc().format('YYYY-MM-DD HH:mm:ss');
       const endTime = dayjs(endAt).utc().format('YYYY-MM-DD HH:mm:ss');
@@ -312,40 +322,56 @@ export abstract class InsightsSqlBuilder {
   }
 
   public async executeQuery(sql: Prisma.Sql): Promise<any[]> {
-    if (this.useClickhouse) {
-      // transform prisma sql to clickhouse sql
-      let index = 0;
-      const values = sql.values;
-      const queryParams: Record<string, any> = {};
-      const query = sql.sql.replace(/\?/g, () => {
-        const fieldName = `field${index}`;
-        queryParams[fieldName] = values[index];
+    const shouldUseClickhouse = this.shouldUseClickhouse();
 
-        const type = typeof values[index];
-        if (type === 'number') {
-          return `{${fieldName}:UInt64}`;
-        } else if (type === 'boolean') {
-          return `{${fieldName}:UInt8}`;
+    if (shouldUseClickhouse) {
+      try {
+        // transform prisma sql to clickhouse sql
+        let index = 0;
+        const values = sql.values;
+        const queryParams: Record<string, any> = {};
+        const query = sql.sql.replace(/\?/g, () => {
+          const fieldName = `field${index}`;
+          queryParams[fieldName] = values[index];
+
+          const type = typeof values[index];
+          if (type === 'number') {
+            return `{${fieldName}:UInt64}`;
+          } else if (type === 'boolean') {
+            return `{${fieldName}:UInt8}`;
+          }
+
+          index++;
+
+          return `{${fieldName}:String}`;
+        });
+
+        if (env.debugInsights) {
+          console.log('clickhouse query', query, queryParams);
         }
 
-        index++;
+        const result = await clickhouse.query({
+          query,
+          query_params: queryParams,
+        });
 
-        return `{${fieldName}:String}`;
-      });
+        const { data } = await result.json();
+        return data;
+      } catch (error) {
+        // ClickHouse query failed, fallback to PostgreSQL
+        logger.warn(
+          `ClickHouse query failed, falling back to PostgreSQL: ${error}`
+        );
 
-      if (env.debugInsights) {
-        console.log('clickhouse query', query, queryParams);
+        // Trigger health check re-evaluation
+        clickhouseHealthManager.forceHealthCheck().catch(() => {
+          // Ignore health check failure as we're already in fallback handling
+        });
+
+        // Execute PostgreSQL query
+        return await prisma.$queryRaw(sql);
       }
-
-      const result = await clickhouse.query({
-        query,
-        query_params: queryParams,
-      });
-
-      const { data } = await result.json();
-      return data;
     } else {
-      const { prisma } = await import('../_client.js');
       return await prisma.$queryRaw(sql);
     }
   }
