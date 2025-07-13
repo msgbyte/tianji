@@ -7,6 +7,8 @@ import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
 import { InsightEvent, InsightsSqlBuilder } from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
 import { clickhouse } from '../../clickhouse/index.js';
+import { logger } from '../../utils/logger.js';
+import { clickhouseHealthManager } from '../../clickhouse/health.js';
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
@@ -165,27 +167,53 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     cursor: string | undefined
   ): Promise<InsightEvent[]> {
     const allEventsSql = this.buildFetchEventsQuery(cursor);
+    const shouldUseClickhouse = this.shouldUseClickhouse();
 
-    if (this.useClickhouse) {
-      const result = await clickhouse.query({
-        query: allEventsSql.sql,
-      });
-      const { data } = await result.json<any[]>();
-      const allEvents = data as unknown as WebsiteEvent[];
-
-      // Get event properties from ClickHouse
-      const eventIds = allEvents.map((event) => event.id);
-      if (eventIds.length > 0) {
-        const eventDataResult = await clickhouse.query({
-          query: `SELECT * FROM WebsiteEventData WHERE websiteEventId IN ({eventIds:Array(String)})`,
-          query_params: { eventIds },
+    if (shouldUseClickhouse) {
+      try {
+        const result = await clickhouse.query({
+          query: allEventsSql.sql,
         });
-        const { data: eventDataRows } = await eventDataResult.json<any[]>();
-        const allEventProperties = eventDataRows;
+        const { data } = await result.json<any[]>();
+        const allEvents = data as unknown as WebsiteEvent[];
+
+        // Get event properties from ClickHouse
+        const eventIds = allEvents.map((event) => event.id);
+        if (eventIds.length > 0) {
+          const eventDataResult = await clickhouse.query({
+            query: `SELECT * FROM WebsiteEventData WHERE websiteEventId IN ({eventIds:Array(String)})`,
+            query_params: { eventIds },
+          });
+          const { data: eventDataRows } = await eventDataResult.json<any[]>();
+          const allEventProperties = eventDataRows;
+
+          return this.processEventsData(allEvents, allEventProperties);
+        } else {
+          return this.processEventsData(allEvents, []);
+        }
+      } catch (error) {
+        // ClickHouse query failed, fallback to PostgreSQL
+        logger.warn(
+          `ClickHouse queryEvents failed, falling back to PostgreSQL: ${error}`
+        );
+
+        // Trigger health check re-evaluation
+        clickhouseHealthManager.forceHealthCheck().catch(() => {
+          // Ignore health check failure as we're already in fallback handling
+        });
+
+        // Execute PostgreSQL query, same code with below
+        const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);
+
+        const allEventProperties = await prisma.websiteEventData.findMany({
+          where: {
+            websiteEventId: {
+              in: allEvents.map((event) => event.id),
+            },
+          },
+        });
 
         return this.processEventsData(allEvents, allEventProperties);
-      } else {
-        return this.processEventsData(allEvents, []);
       }
     } else {
       const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);

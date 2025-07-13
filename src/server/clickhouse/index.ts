@@ -1,6 +1,7 @@
 import { createClient } from '@clickhouse/client';
 import { logger } from '../utils/logger.js';
 import { env } from '../utils/env.js';
+import { clickhouseHealthManager } from './health.js';
 
 export const clickhouse = createClient({
   url: env.clickhouse.url,
@@ -18,6 +19,10 @@ export async function initClickHouse() {
     } else {
       logger.error('ClickHouse ping failed');
     }
+
+    // Start health check
+    const healthy = await clickhouseHealthManager.forceHealthCheck();
+    logger.info(`ClickHouse health check completed. Healthy: ${healthy}`);
   } catch (err) {
     logger.error('ClickHouse connection error:', err);
   }

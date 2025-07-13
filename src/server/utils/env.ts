@@ -94,6 +94,19 @@ export const env = {
     username: process.env.CLICKHOUSE_USER,
     password: process.env.CLICKHOUSE_PASSWORD,
     database: process.env.CLICKHOUSE_DATABASE,
+    // Fallback configuration
+    fallback: {
+      enableFallback: checkEnvTrusty(
+        process.env.CLICKHOUSE_ENABLE_FALLBACK ?? 'true'
+      ),
+      healthCheckInterval: parseInt(
+        process.env.CLICKHOUSE_HEALTH_CHECK_INTERVAL || '30000'
+      ),
+      maxConsecutiveFailures: parseInt(
+        process.env.CLICKHOUSE_MAX_CONSECUTIVE_FAILURES || '3'
+      ),
+      retryInterval: parseInt(process.env.CLICKHOUSE_RETRY_INTERVAL || '5000'),
+    },
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
   allowOpenapi: checkEnvTrusty(process.env.ALLOW_OPENAPI ?? 'true'),
