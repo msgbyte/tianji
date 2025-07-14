@@ -21,7 +21,7 @@ describe('initTianjiTracker', () => {
       websiteId: 'fooo',
     });
     expect(script).toBe(scriptDoms[0]);
-    expect(script.parentElement).toBe(document.head);
+    expect(script?.parentElement).toBe(document.head);
   });
 
   test('customTrackerName', async () => {

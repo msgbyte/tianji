@@ -5,6 +5,33 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button, Code, TextField } from '@radix-ui/themes';
 import { faker } from '@faker-js/faker';
+
+// 定义 tianji tracker 的类型
+interface TianjiPayload {
+  website: string;
+  hostname: string;
+  screen: string;
+  language: string;
+  title: string;
+  url: string;
+  referrer: string;
+}
+
+interface TianjiTracker {
+  track: (
+    payload?:
+      | string
+      | TianjiPayload
+      | ((payload: TianjiPayload) => TianjiPayload)
+  ) => void;
+  identify: (data: Record<string, unknown>) => void;
+}
+
+declare global {
+  interface Window {
+    tianji?: TianjiTracker;
+  }
+}
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -96,6 +123,25 @@ export default function Home() {
     }));
   };
 
+  // 封装 pageview 发送函数
+  const sendPageView = (
+    pageUrl: string,
+    pageTitle: string,
+    pageReferrer: string
+  ) => {
+    if (window.tianji && websiteId) {
+      window.tianji.track({
+        website: websiteId,
+        hostname: window.location.hostname,
+        screen: `${window.screen.width}x${window.screen.height}`,
+        language: navigator.language,
+        title: pageTitle,
+        url: pageUrl,
+        referrer: pageReferrer,
+      });
+    }
+  };
+
   const batchSendEvents = async (eventType: string, eventTitle: string) => {
     if (isBatchSending) return;
 
@@ -114,6 +160,77 @@ export default function Home() {
           switch (eventType) {
             case 'basic':
               reportEvent('Tianji Demo Event (Batch)');
+              break;
+            case 'pageview':
+              const pages = [
+                '/home',
+                '/about',
+                '/products',
+                '/blog',
+                '/contact',
+                '/pricing',
+                '/features',
+                '/docs',
+                '/support',
+                '/login',
+                '/signup',
+                '/dashboard',
+                '/profile',
+                '/settings',
+                '/search',
+                '/api',
+                '/help',
+                '/terms',
+                '/privacy',
+                '/news',
+                '/events',
+                '/careers',
+                '/team',
+                '/partners',
+              ];
+              const referrers = [
+                'https://google.com',
+                'https://twitter.com',
+                'https://facebook.com',
+                'https://linkedin.com',
+                'https://github.com',
+                'direct',
+                'https://reddit.com',
+                'https://youtube.com',
+                'https://bing.com',
+                'https://duckduckgo.com',
+                'https://yahoo.com',
+              ];
+              const randomPage =
+                pages[Math.floor(Math.random() * pages.length)];
+              const randomReferrer =
+                referrers[Math.floor(Math.random() * referrers.length)];
+
+              sendPageView(
+                randomPage,
+                `${randomPage.slice(1) || 'Home'} - Tianji Demo`,
+                randomReferrer
+              );
+              break;
+            case 'unique_visitor':
+              const userId = faker.string.uuid();
+              const sessionId = faker.string.uuid();
+              const userAgent = faker.internet.userAgent();
+              const country = faker.location.country();
+              const city = faker.location.city();
+
+              identify({
+                userId,
+                sessionId,
+                username: faker.person.fullName(),
+                email: faker.internet.email(),
+                country,
+                city,
+                userAgent,
+                firstVisit: Math.random() > 0.8, // 20% chance of being first visit
+                timestamp: Date.now() - Math.random() * 604800000, // Random time within last week
+                batchId: i + j,
+              });
               break;
             case 'string':
               reportEvent('Tianji String Event (Batch)', {
@@ -148,6 +265,97 @@ export default function Home() {
                 email: `batch${i + j}@example.com`,
                 batchId: i + j,
               });
+              break;
+            case 'user_session':
+              // Create a user session with multiple page views
+              const sessionUserId = faker.string.uuid();
+              const sessionSessionId = faker.string.uuid();
+              const sessionUserAgent = faker.internet.userAgent();
+              const sessionCountry = faker.location.country();
+              const sessionCity = faker.location.city();
+
+              identify({
+                userId: sessionUserId,
+                sessionId: sessionSessionId,
+                username: faker.person.fullName(),
+                email: faker.internet.email(),
+                country: sessionCountry,
+                city: sessionCity,
+                userAgent: sessionUserAgent,
+                firstVisit: Math.random() > 0.6,
+                batchId: i + j,
+              });
+
+              // Send 2-3 page views for this session
+              const sessionPages = ['/home', '/about', '/products', '/contact'];
+              const numSessionPages = Math.floor(Math.random() * 2) + 2;
+
+              for (let k = 0; k < numSessionPages; k++) {
+                const page = sessionPages[Math.min(k, sessionPages.length - 1)];
+                const referrer =
+                  k === 0 ? 'https://google.com' : sessionPages[k - 1];
+
+                sendPageView(
+                  page,
+                  `${page.slice(1) || 'Home'} - Tianji Demo`,
+                  referrer
+                );
+              }
+              break;
+            case 'traffic_boost':
+              // Send mixed traffic data
+              const trafficType = Math.random();
+
+              if (trafficType < 0.4) {
+                // Page view
+                const trafficPages = ['/home', '/about', '/products', '/blog'];
+                const trafficReferrers = [
+                  'https://google.com',
+                  'https://twitter.com',
+                  'direct',
+                ];
+                const randomTrafficPage =
+                  trafficPages[Math.floor(Math.random() * trafficPages.length)];
+                const randomTrafficReferrer =
+                  trafficReferrers[
+                    Math.floor(Math.random() * trafficReferrers.length)
+                  ];
+
+                sendPageView(
+                  randomTrafficPage,
+                  `${randomTrafficPage.slice(1) || 'Home'} - Tianji Demo`,
+                  randomTrafficReferrer
+                );
+              } else if (trafficType < 0.6) {
+                // New visitor
+                identify({
+                  userId: faker.string.uuid(),
+                  sessionId: faker.string.uuid(),
+                  username: faker.person.fullName(),
+                  email: faker.internet.email(),
+                  country: faker.location.country(),
+                  city: faker.location.city(),
+                  userAgent: faker.internet.userAgent(),
+                  firstVisit: Math.random() > 0.7,
+                  batchId: i + j,
+                });
+              } else {
+                // Custom event
+                const customEvents = [
+                  'button_click',
+                  'form_submit',
+                  'video_play',
+                  'download',
+                ];
+                const randomCustomEvent =
+                  customEvents[Math.floor(Math.random() * customEvents.length)];
+
+                reportEvent(randomCustomEvent, {
+                  element: `${randomCustomEvent}_${Math.floor(Math.random() * 100)}`,
+                  timestamp: Date.now() - Math.random() * 86400000,
+                  batchId: i + j,
+                });
+              }
               break;
           }
         }
@@ -188,6 +396,88 @@ export default function Home() {
         reportEvent('Tianji Demo Event');
         incrementEventCount('basic');
         toast.success('Basic event sent successfully!');
+      },
+    },
+    {
+      title: 'Fake Page View',
+      description: 'Simulate a page view with random URL',
+      variant: 'accent' as const,
+      emoji: '👁️',
+      eventType: 'pageview',
+      action: () => {
+        const pages = [
+          '/home',
+          '/about',
+          '/products',
+          '/blog',
+          '/contact',
+          '/pricing',
+          '/features',
+          '/docs',
+          '/support',
+          '/login',
+          '/signup',
+          '/dashboard',
+          '/profile',
+          '/settings',
+          '/search',
+        ];
+        const randomPage = pages[Math.floor(Math.random() * pages.length)];
+        const referrers = [
+          'https://google.com',
+          'https://twitter.com',
+          'https://facebook.com',
+          'https://linkedin.com',
+          'https://github.com',
+          'direct',
+          'https://reddit.com',
+          'https://youtube.com',
+        ];
+        const randomReferrer =
+          referrers[Math.floor(Math.random() * referrers.length)];
+
+        // 使用封装的函数发送 pageview
+        sendPageView(
+          randomPage,
+          `${randomPage.slice(1) || 'Home'} - Tianji Demo`,
+          randomReferrer
+        );
+
+        incrementEventCount('pageview');
+        toast.success(`Page view sent: ${randomPage}`, {
+          description: `Referrer: ${randomReferrer}`,
+        });
+      },
+    },
+    {
+      title: 'Fake Unique Visitor',
+      description: 'Create a new unique visitor session',
+      variant: 'accent' as const,
+      emoji: '👤',
+      eventType: 'unique_visitor',
+      action: () => {
+        const userId = faker.string.uuid();
+        const sessionId = faker.string.uuid();
+        const userAgent = faker.internet.userAgent();
+        const country = faker.location.country();
+        const city = faker.location.city();
+
+        identify({
+          userId,
+          sessionId,
+          username: faker.person.fullName(),
+          email: faker.internet.email(),
+          country,
+          city,
+          userAgent,
+          firstVisit: Math.random() > 0.7, // 30% chance of being first visit
+          timestamp: Date.now(),
+        });
+
+        incrementEventCount('unique_visitor');
+        toast.success(`New unique visitor created!`, {
+          description: `From ${city}, ${country}`,
+        });
       },
     },
     {
@@ -273,6 +563,151 @@ export default function Home() {
         reportEvent('Tianji Array Event', { array });
         incrementEventCount('array');
         toast.success(`Array event sent: [${array.join(', ')}]`);
+      },
+    },
+    {
+      title: 'Simulate User Session',
+      description: 'Create realistic user session with multiple page views',
+      variant: 'accent' as const,
+      emoji: '🌐',
+      eventType: 'user_session',
+      action: () => {
+        const userId = faker.string.uuid();
+        const sessionId = faker.string.uuid();
+        const userAgent = faker.internet.userAgent();
+        const country = faker.location.country();
+        const city = faker.location.city();
+        const userName = faker.person.fullName();
+        const userEmail = faker.internet.email();
+
+        // First, identify the user
+        identify({
+          userId,
+          sessionId,
+          username: userName,
+          email: userEmail,
+          country,
+          city,
+          userAgent,
+          firstVisit: Math.random() > 0.6, // 40% chance of being first visit
+        });
+
+        // Then simulate a browsing session with multiple page views
+        const sessionPages = [
+          '/home',
+          '/about',
+          '/products',
+          '/pricing',
+          '/contact',
+        ];
+        const numPages = Math.floor(Math.random() * 4) + 2; // 2-5 pages
+
+        for (let i = 0; i < numPages; i++) {
+          const page = sessionPages[Math.min(i, sessionPages.length - 1)];
+          const referrer = i === 0 ? 'https://google.com' : sessionPages[i - 1];
+
+          setTimeout(() => {
+            sendPageView(
+              page,
+              `${page.slice(1) || 'Home'} - Tianji Demo`,
+              referrer
+            );
+          }, i * 1000); // 1 second delay between page views
+        }
+
+        incrementEventCount('user_session');
+        toast.success(`User session created: ${userName}`, {
+          description: `${numPages} page views from ${city}, ${country}`,
+        });
+      },
+    },
+    {
+      title: 'Analytics Traffic Boost',
+      description: 'Mix of PV, UV, and events to simulate real traffic',
+      variant: 'accent' as const,
+      emoji: '📈',
+      eventType: 'traffic_boost',
+      action: () => {
+        const eventsToSend = Math.floor(Math.random() * 10) + 5; // 5-15 events
+        let sentEvents = 0;
+
+        for (let i = 0; i < eventsToSend; i++) {
+          setTimeout(() => {
+            const eventType = Math.random();
+
+            if (eventType < 0.4) {
+              // 40% chance: Page view
+              const pages = [
+                '/home',
+                '/about',
+                '/products',
+                '/blog',
+                '/contact',
+              ];
+              const referrers = [
+                'https://google.com',
+                'https://twitter.com',
+                'direct',
+              ];
+              const randomPage =
+                pages[Math.floor(Math.random() * pages.length)];
+              const randomReferrer =
+                referrers[Math.floor(Math.random() * referrers.length)];
+
+              sendPageView(
+                randomPage,
+                `${randomPage.slice(1) || 'Home'} - Tianji Demo`,
+                randomReferrer
+              );
+            } else if (eventType < 0.6) {
+              // 20% chance: New unique visitor
+              identify({
+                userId: faker.string.uuid(),
+                sessionId: faker.string.uuid(),
+                username: faker.person.fullName(),
+                email: faker.internet.email(),
+                country: faker.location.country(),
+                city: faker.location.city(),
+                userAgent: faker.internet.userAgent(),
+                firstVisit: Math.random() > 0.7,
+              });
+            } else if (eventType < 0.8) {
+              // 20% chance: Custom event
+              const customEvents = [
+                'button_click',
+                'form_submit',
+                'video_play',
+                'download',
+              ];
+              const randomEvent =
+                customEvents[Math.floor(Math.random() * customEvents.length)];
+
+              reportEvent(randomEvent, {
+                element: `${randomEvent}_${Math.floor(Math.random() * 100)}`,
+                timestamp: Date.now(),
+              });
+            } else {
+              // 20% chance: User interaction
+              const interactions = ['scroll', 'hover', 'focus', 'resize'];
+              const randomInteraction =
+                interactions[Math.floor(Math.random() * interactions.length)];
+
+              reportEvent('user_interaction', {
+                type: randomInteraction,
+                duration: Math.floor(Math.random() * 5000) + 1000,
+                timestamp: Date.now(),
+              });
+            }
+
+            sentEvents++;
+            if (sentEvents === eventsToSend) {
+              incrementEventCount('traffic_boost');
+              toast.success(`Traffic boost complete!`, {
+                description: `Sent ${eventsToSend} mixed analytics events`,
+              });
+            }
+          }, i * 200); // 200ms delay between events
+        }
       },
     },
   ];
