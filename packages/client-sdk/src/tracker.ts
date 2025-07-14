@@ -33,6 +33,11 @@ interface InjectTrackerOptions {
 }
 
 export async function initTianjiTracker(options: InjectTrackerOptions) {
+  if (typeof window === 'undefined') {
+    console.warn('This function should be called in browser environment!');
+    return;
+  }
+
   const trackerName = options.customTrackerName ?? 'tracker.js';
 
   const attrs: Record<string, string> = {
@@ -71,6 +76,11 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
 }
 
 export function reportEvent(eventName: string, data: Record<string, any> = {}) {
+  if (typeof window === 'undefined') {
+    console.warn('This function should be called in browser environment!');
+    return;
+  }
+
   const tianji = (window as any).tianji;
   if (!tianji) {
     return;
@@ -85,6 +95,11 @@ export function reportEvent(eventName: string, data: Record<string, any> = {}) {
 }
 
 export function identify(data: IdentifyPayload) {
+  if (typeof window === 'undefined') {
+    console.warn('This function should be called in browser environment!');
+    return;
+  }
+
   const tianji = (window as any).tianji;
   if (!tianji) {
     return;
