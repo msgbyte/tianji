@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.11
 
 require (
-	github.com/docker/docker v26.1.2+incompatible
+	github.com/docker/docker v26.1.5+incompatible
 	github.com/json-iterator/go v1.1.12
 	github.com/shirou/gopsutil/v4 v4.25.6
 	github.com/stretchr/testify v1.10.0
