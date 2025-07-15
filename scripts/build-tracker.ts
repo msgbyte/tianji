@@ -7,7 +7,7 @@ vite
   .build({
     build: {
       lib: {
-        entry: resolve(process.cwd(), './src/tracker/index.js'),
+        entry: resolve(process.cwd(), './src/tracker/index.ts'),
         name: 'tianji',
         fileName: () => 'tracker.js',
         formats: ['iife'],

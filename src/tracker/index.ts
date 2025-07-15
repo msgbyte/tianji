@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Fork from https://github.com/umami-software/umami/blob/master/src/tracker/index.js
  */
