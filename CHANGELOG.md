@@ -1,5 +1,28 @@
 
 
+## [1.24.0](https://github.com/msgbyte/tianji/compare/v1.23.5...v1.24.0) (2025-07-15)
+
+### Features
+
+* add ClickHouse health check manager and integrate it into insights query handling ([b755b63](https://github.com/msgbyte/tianji/commit/b755b632424f258e1b0994161bcfd2cf7727c194))
+* add clickhouse infrastructure ([23ea9c1](https://github.com/msgbyte/tianji/commit/23ea9c1da2965ba40f686343bb5769812b71c50b))
+* add clickhouse insights support ([4fdfacd](https://github.com/msgbyte/tianji/commit/4fdfacdef9fe0241ae90e04e033e331b7dd23b63))
+* implement transaction handling in migration process and improve SQL query parameterization ([bd1a866](https://github.com/msgbyte/tianji/commit/bd1a866eb8d5ca0ec302a759e15b48e31953c052))
+
+### Bug Fixes
+
+* fix a bug which last_sync_timestamp incorrect ([6ac7250](https://github.com/msgbyte/tianji/commit/6ac7250f0f17b831c92f2760a859cd66e387939c))
+
+### Others
+
+* add CLICKHOUSE_DISABLE_SYNC environment ([8de9899](https://github.com/msgbyte/tianji/commit/8de9899d1c4b18be46f2f6abe09195bd6a79f9a7))
+* add sdk environment check before run browser only logic ([407ab74](https://github.com/msgbyte/tianji/commit/407ab74e1721042b38d98aa6ca06f6c139c158c3))
+* change client sdk tracker path ([83c50bb](https://github.com/msgbyte/tianji/commit/83c50bbbd45578b1157670511c86ca484ee4efb9))
+* **example app:** add Tianji tracking functionality with page view simulation and user session management ([0eeb672](https://github.com/msgbyte/tianji/commit/0eeb6722919ab7411b9e6446807c1d604a6331e4))
+* simplify SQL query construction for ClickHouse and PostgreSQL ([1ade1fb](https://github.com/msgbyte/tianji/commit/1ade1fb637a432e3b580ee2cf42561f0564c66fe))
+* update ClickHouse env examples ([f0ff7cf](https://github.com/msgbyte/tianji/commit/f0ff7cf34f1cfeeeac732555f4bc52c0c66082de))
+* update dependencies and bump docker version ([7d007b5](https://github.com/msgbyte/tianji/commit/7d007b5cbbcc866cfca4c1600c4bd8cd3bd3e039))
+
 ## [1.23.5](https://github.com/msgbyte/tianji/compare/v1.23.4...v1.23.5) (2025-07-13)
 
 ### Features
