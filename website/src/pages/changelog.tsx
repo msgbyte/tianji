@@ -48,75 +48,110 @@ function Timeline() {
           </p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/11/19">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/07/15">
+          <h3 className="vertical-timeline-element-title">Release v1.24.0</h3>
+          <p>add clickhouse infrastructure and support</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/07/06">
+          <h3 className="vertical-timeline-element-title">Release v1.23.0</h3>
+          <p>add server status in status page</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/06/18">
+          <h3 className="vertical-timeline-element-title">Release v1.22.0</h3>
+          <p>break change: change OPENAI_* env variable name</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/05/25">
+          <h3 className="vertical-timeline-element-title">Release v1.21.0</h3>
+          <p>add push monitor and cron monitor</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/04/14">
+          <h3 className="vertical-timeline-element-title">Release v1.20.0</h3>
+          <p>add AI Gateway</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/03/22">
+          <h3 className="vertical-timeline-element-title">Release v1.19.0</h3>
+          <p>add Application module</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2025/02/02">
+          <h3 className="vertical-timeline-element-title">Release v1.18.0</h3>
+          <p>add survey AI tools</p>
+        </VerticalTimelineElement>
+
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/11/19">
           <h3 className="vertical-timeline-element-title">Release v1.17.0</h3>
           <p>add subscription system</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/10/19">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/10/19">
           <h3 className="vertical-timeline-element-title">Release v1.16.0</h3>
           <p>add monitor summary</p>
           <p>improve monitor page display</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/09/18">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/09/18">
           <h3 className="vertical-timeline-element-title">Release v1.15.0</h3>
           <p>add lighthouse feature</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/08/29">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/08/29">
           <h3 className="vertical-timeline-element-title">Release v1.14.0</h3>
           <p>add workspace switch and create</p>
           <p>add workspace invite</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/08/11">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/08/11">
           <h3 className="vertical-timeline-element-title">Release v1.13.0</h3>
           <p>add authjs backend and new auth framework</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/07/22">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/07/22">
           <h3 className="vertical-timeline-element-title">Release v1.12.0</h3>
           <p>add channel feed feature</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/05/20">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/05/20">
           <h3 className="vertical-timeline-element-title">Release v1.11.0</h3>
           <p>add server docker view</p>
           <p>new homepage</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/05/15">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/05/15">
           <h3 className="vertical-timeline-element-title">Release v1.10.0</h3>
           <p>add survey</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/04/22">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/04/22">
           <h3 className="vertical-timeline-element-title">Release v1.9.0</h3>
           <p>add custom domain support for status page</p>
           <p>Add pl language!</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/04/09">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/04/09">
           <h3 className="vertical-timeline-element-title">Release v1.8.0</h3>
           <p>New Design!</p>
           <p>Add pt language!</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/03/08">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/03/08">
           <h3 className="vertical-timeline-element-title">Release v1.7.0</h3>
           <p>add telemetry feature</p>
           <p>improve docker image size(reduce 40% size)</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/15">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/02/15">
           <h3 className="vertical-timeline-element-title">Release v1.6.0</h3>
           <p>add i18n support</p>
           <p>add timeout in http monitor</p>
           <p>monitor add max retries to avoid network fluctuation</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/02/01">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/02/01">
           <h3 className="vertical-timeline-element-title">Release v1.5.0</h3>
           <p>add visitor map</p>
           <p>add audit log</p>
@@ -124,7 +159,7 @@ function Timeline() {
           <p>add audit log for monitor</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/14">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/01/14">
           <h3 className="vertical-timeline-element-title">Release v1.4.0</h3>
           <p>add apprise notification</p>
           <p>add status page delete action</p>
@@ -133,7 +168,7 @@ function Timeline() {
           <p>add arm64 support</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/09">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/01/09">
           <h3 className="vertical-timeline-element-title">Release v1.3.0</h3>
           <p>add monitor badge</p>
           <p>add telegram notification support</p>
@@ -142,7 +177,7 @@ function Timeline() {
           <p>add daily cron job to calc workspace usage</p>
         </VerticalTimelineElement>
 
-        <VerticalTimelineElement {...timelineStyle.normal} date="2023/01/01">
+        <VerticalTimelineElement {...timelineStyle.normal} date="2024/01/01">
           <h3 className="vertical-timeline-element-title">Release v1.2.0</h3>
           <p>Add custom monitor!</p>
           <p>Now you can build your custom monitor logic with javascript</p>
