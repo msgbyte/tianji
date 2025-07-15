@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { initTianjiTracker } from './tracker';
+import { initTianjiTracker } from '.';
 
 describe('initTianjiTracker', () => {
   beforeEach(() => {

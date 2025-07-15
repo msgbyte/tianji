@@ -1,5 +1,5 @@
 import loadScript from 'load-script';
-import { IdentifyPayload } from './types';
+import { IdentifyPayload } from '../types';
 
 interface InjectTrackerOptions {
   /**
