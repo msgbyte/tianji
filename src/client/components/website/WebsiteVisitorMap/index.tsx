@@ -28,6 +28,7 @@ function useMapType() {
 
 interface WebsiteVisitorMapProps {
   websiteId: string;
+  fullScreen?: boolean;
 }
 export const WebsiteVisitorMap: React.FC<WebsiteVisitorMapProps> = React.memo(
   (props) => {
@@ -48,11 +49,17 @@ export const WebsiteVisitorMap: React.FC<WebsiteVisitorMapProps> = React.memo(
       return <Loading />;
     }
 
-    if (mapType === 'Leaflet') {
-      return <VisitorLeafletMap data={data} />;
+    if (mapType === 'Mapbox' || mapType === 'Gaode') {
+      return (
+        <VisitorLarkMap
+          mapType={mapType}
+          data={data}
+          fullScreen={props.fullScreen}
+        />
+      );
     }
 
-    return <VisitorLarkMap mapType={mapType} data={data} />;
+    return <VisitorLeafletMap data={data} fullScreen={props.fullScreen} />;
   }
 );
 WebsiteVisitorMap.displayName = 'WebsiteVisitorMap';

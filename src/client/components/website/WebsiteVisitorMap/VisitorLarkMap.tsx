@@ -68,6 +68,7 @@ function useMapConfig(mapType: 'Mapbox' | 'Gaode' = 'Mapbox'): LarkMapProps {
 export const VisitorLarkMap: React.FC<{
   data: AppRouterOutput['website']['geoStats'];
   mapType: 'Mapbox' | 'Gaode';
+  fullScreen?: boolean;
 }> = React.memo((props) => {
   const config = useMapConfig(props.mapType);
 
@@ -85,7 +86,7 @@ export const VisitorLarkMap: React.FC<{
   }, [props.data.length]);
 
   return (
-    <LarkMap {...config} style={{ height: '60vh' }}>
+    <LarkMap {...config} style={{ height: props.fullScreen ? '100%' : '60vh' }}>
       <FullscreenControl />
       <PointLayer {...layerOptions} size={size} source={source} />
     </LarkMap>

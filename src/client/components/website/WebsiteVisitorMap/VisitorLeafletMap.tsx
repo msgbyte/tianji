@@ -4,6 +4,7 @@ import { MapContainer, CircleMarker, Popup, TileLayer } from 'react-leaflet';
 import { mapCenter } from './utils';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useTheme } from '@/store/settings';
+import { cn } from '@/utils/style';
 import 'leaflet/dist/leaflet.css';
 import './VisitorLeafletMap.css';
 
@@ -40,6 +41,7 @@ UserDataPoint.displayName = 'UserDataPoint';
 
 export const VisitorLeafletMap: React.FC<{
   data: AppRouterOutput['website']['geoStats'];
+  fullScreen?: boolean;
 }> = React.memo((props) => {
   const theme = useTheme();
   const pointRadius = useMemo(() => {
@@ -60,7 +62,7 @@ export const VisitorLeafletMap: React.FC<{
 
   return (
     <MapContainer
-      className="h-[60vh] w-full"
+      className={cn('w-full', props.fullScreen ? 'h-full' : 'h-[60vh]')}
       center={mapCenter}
       zoom={2}
       minZoom={2}

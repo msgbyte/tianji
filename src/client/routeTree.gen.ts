@@ -63,6 +63,7 @@ import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorI
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
 import { Route as ApplicationApplicationIdIndexImport } from './routes/application/$applicationId/index'
 import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
+import { Route as WebsiteVisitorMapWebsiteIdImport } from './routes/website_/visitor-map/$websiteId'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
@@ -334,6 +335,13 @@ const AiGatewayGatewayIdIndexRoute = AiGatewayGatewayIdIndexImport.update({
   getParentRoute: () => AiGatewayRoute,
 } as any)
 
+const WebsiteVisitorMapWebsiteIdRoute = WebsiteVisitorMapWebsiteIdImport.update(
+  {
+    path: '/website/visitor-map/$websiteId',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
   path: '/$websiteId/config',
   getParentRoute: () => WebsiteRoute,
@@ -586,6 +594,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
     }
+    '/website/visitor-map/$websiteId': {
+      preLoaderRoute: typeof WebsiteVisitorMapWebsiteIdImport
+      parentRoute: typeof rootRoute
+    }
     '/aiGateway/$gatewayId/': {
       preLoaderRoute: typeof AiGatewayGatewayIdIndexImport
       parentRoute: typeof AiGatewayImport
@@ -680,6 +692,7 @@ export const routeTree = rootRoute.addChildren([
   StatusSlugRoute,
   InsightsIndexRoute,
   InvitationAcceptTokenRoute,
+  WebsiteVisitorMapWebsiteIdRoute,
 ])
 
 /* prettier-ignore-end */
