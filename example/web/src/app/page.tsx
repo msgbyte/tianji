@@ -1,6 +1,10 @@
 'use client';
 import { useLocalStorageState } from 'ahooks';
-import { initTianjiTracker, reportEvent, identify } from 'tianji-client-react';
+import {
+  initTianjiTracker,
+  reportWebsiteEvent,
+  identifyWebsiteUser,
+} from 'tianji-client-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button, Code, TextField } from '@radix-ui/themes';
@@ -98,7 +102,9 @@ export default function Home() {
       });
 
       console.log('scriptEl', scriptEl);
-      setInjectedEl(scriptEl);
+      if (scriptEl) {
+        setInjectedEl(scriptEl);
+      }
       toast.success('Tianji tracker injected successfully!', {
         description:
           'You can now start sending events to your analytics dashboard.',
@@ -159,7 +165,7 @@ export default function Home() {
         for (let j = 0; j < currentChunk; j++) {
           switch (eventType) {
             case 'basic':
-              reportEvent('Tianji Demo Event (Batch)');
+              reportWebsiteEvent('Tianji Demo Event (Batch)');
               break;
             case 'pageview':
               const pages = [
@@ -219,7 +225,7 @@ export default function Home() {
               const country = faker.location.country();
               const city = faker.location.city();
 
-              identify({
+              identifyWebsiteUser({
                 userId,
                 sessionId,
                 username: faker.person.fullName(),
@@ -233,20 +239,22 @@ export default function Home() {
               });
               break;
             case 'string':
-              reportEvent('Tianji String Event (Batch)', {
+              reportWebsiteEvent('Tianji String Event (Batch)', {
                 string: `batch-${i + j}`,
               });
               break;
             case 'number':
-              reportEvent('Tianji Number Event (Batch)', {
+              reportWebsiteEvent('Tianji Number Event (Batch)', {
                 number: Math.round(Math.random() * 1000),
               });
               break;
             case 'date':
-              reportEvent('Tianji Date Event (Batch)', { date: new Date() });
+              reportWebsiteEvent('Tianji Date Event (Batch)', {
+                date: new Date(),
+              });
               break;
             case 'object':
-              reportEvent('Tianji Object Event (Batch)', {
+              reportWebsiteEvent('Tianji Object Event (Batch)', {
                 object: {
                   batchId: i + j,
                   timestamp: Date.now(),
@@ -255,12 +263,12 @@ export default function Home() {
               });
               break;
             case 'array':
-              reportEvent('Tianji Array Event (Batch)', {
+              reportWebsiteEvent('Tianji Array Event (Batch)', {
                 array: [i + j, 'batch', Math.random()],
               });
               break;
             case 'identify':
-              identify({
+              identifyWebsiteUser({
                 username: `BatchUser-${i + j}`,
                 email: `batch${i + j}@example.com`,
                 batchId: i + j,
@@ -274,7 +282,7 @@ export default function Home() {
               const sessionCountry = faker.location.country();
               const sessionCity = faker.location.city();
 
-              identify({
+              identifyWebsiteUser({
                 userId: sessionUserId,
                 sessionId: sessionSessionId,
                 username: faker.person.fullName(),
@@ -328,7 +336,7 @@ export default function Home() {
                 );
               } else if (trafficType < 0.6) {
                 // New visitor
-                identify({
+                identifyWebsiteUser({
                   userId: faker.string.uuid(),
                   sessionId: faker.string.uuid(),
                   username: faker.person.fullName(),
@@ -337,7 +345,6 @@ export default function Home() {
                   city: faker.location.city(),
                   userAgent: faker.internet.userAgent(),
                   firstVisit: Math.random() > 0.7,
-                  batchId: i + j,
                 });
               } else {
                 // Custom event
@@ -350,7 +357,7 @@ export default function Home() {
                 const randomCustomEvent =
                   customEvents[Math.floor(Math.random() * customEvents.length)];
 
-                reportEvent(randomCustomEvent, {
+                reportWebsiteEvent(randomCustomEvent, {
                   element: `${randomCustomEvent}_${Math.floor(Math.random() * 100)}`,
                   timestamp: Date.now() - Math.random() * 86400000,
                   batchId: i + j,
@@ -393,7 +400,7 @@ export default function Home() {
       emoji: '🎯',
       eventType: 'basic',
       action: () => {
-        reportEvent('Tianji Demo Event');
+        reportWebsiteEvent('Tianji Demo Event');
         incrementEventCount('basic');
         toast.success('Basic event sent successfully!');
       },
@@ -462,7 +469,7 @@ export default function Home() {
         const country = faker.location.country();
         const city = faker.location.city();
 
-        identify({
+        identifyWebsiteUser({
           userId,
           sessionId,
           username: faker.person.fullName(),
@@ -492,7 +499,7 @@ export default function Home() {
           email: faker.internet.email(),
           avatar: faker.image.avatar(),
         };
-        identify(info);
+        identifyWebsiteUser(info);
         incrementEventCount('identify');
         toast.success(`Session identified as: ${info.username}`, {
           description: `Email: ${info.email}`,
@@ -506,7 +513,7 @@ export default function Home() {
       emoji: '📝',
       eventType: 'string',
       action: () => {
-        reportEvent('Tianji String Event', { string: 'bar' });
+        reportWebsiteEvent('Tianji String Event', { string: 'bar' });
         incrementEventCount('string');
         toast.success('String event sent!');
       },
@@ -519,7 +526,7 @@ export default function Home() {
       eventType: 'number',
       action: () => {
         const number = Math.round(Math.random() * 1000);
-        reportEvent('Tianji Number Event', { number });
+        reportWebsiteEvent('Tianji Number Event', { number });
         incrementEventCount('number');
         toast.success(`Number event sent with value: ${number}`);
       },
@@ -532,7 +539,7 @@ export default function Home() {
       eventType: 'date',
       action: () => {
         const date = new Date();
-        reportEvent('Tianji Date Event', { date });
+        reportWebsiteEvent('Tianji Date Event', { date });
         incrementEventCount('date');
         toast.success(`Date event sent: ${date.toLocaleString()}`);
       },
@@ -545,7 +552,7 @@ export default function Home() {
       eventType: 'object',
       action: () => {
         const obj = { a: 1, b: '2', c: { d: 3 } };
-        reportEvent('Tianji Object Event', { object: obj });
+        reportWebsiteEvent('Tianji Object Event', { object: obj });
         incrementEventCount('object');
         toast.success('Object event sent!', {
           description: 'Complex nested object with multiple data types',
@@ -560,7 +567,7 @@ export default function Home() {
       eventType: 'array',
       action: () => {
         const array = [1, 2, 3, 4, 5];
-        reportEvent('Tianji Array Event', { array });
+        reportWebsiteEvent('Tianji Array Event', { array });
         incrementEventCount('array');
         toast.success(`Array event sent: [${array.join(', ')}]`);
       },
@@ -581,7 +588,7 @@ export default function Home() {
         const userEmail = faker.internet.email();
 
         // First, identify the user
-        identify({
+        identifyWebsiteUser({
           userId,
           sessionId,
           username: userName,
@@ -661,7 +668,7 @@ export default function Home() {
               );
             } else if (eventType < 0.6) {
               // 20% chance: New unique visitor
-              identify({
+              identifyWebsiteUser({
                 userId: faker.string.uuid(),
                 sessionId: faker.string.uuid(),
                 username: faker.person.fullName(),
@@ -682,7 +689,7 @@ export default function Home() {
               const randomEvent =
                 customEvents[Math.floor(Math.random() * customEvents.length)];
 
-              reportEvent(randomEvent, {
+              reportWebsiteEvent(randomEvent, {
                 element: `${randomEvent}_${Math.floor(Math.random() * 100)}`,
                 timestamp: Date.now(),
               });
@@ -692,7 +699,7 @@ export default function Home() {
               const randomInteraction =
                 interactions[Math.floor(Math.random() * interactions.length)];
 
-              reportEvent('user_interaction', {
+              reportWebsiteEvent('user_interaction', {
                 type: randomInteraction,
                 duration: Math.floor(Math.random() * 5000) + 1000,
                 timestamp: Date.now(),
