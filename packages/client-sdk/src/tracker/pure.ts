@@ -58,6 +58,14 @@ export interface WebsiteIdentifyPayload extends WebsiteEventPayload {
 }
 
 /**
+ * Batch request item interface
+ */
+export interface BatchRequestItem {
+  type: 'event' | 'identify';
+  payload: WebsiteEventPayload | WebsiteIdentifyPayload;
+}
+
+/**
  * Options for website tracking
  */
 export interface WebsiteTrackingOptions {
@@ -70,15 +78,39 @@ export interface WebsiteTrackingOptions {
    * Website identifier
    */
   websiteId: string;
+  /**
+   * Batch delay in milliseconds (optional, defaults to 200ms)
+   */
+  batchDelay?: number;
+  /**
+   * Disable batch mode and send requests immediately (optional, defaults to false)
+   */
+  disableBatch?: boolean;
 }
 
 let options: WebsiteTrackingOptions | undefined;
+let batchQueue: BatchRequestItem[] = [];
+let batchTimer: NodeJS.Timeout | number | null = null;
 
 /**
  * Initialize website tracking
  */
 export function initWebsiteTracking(_options: WebsiteTrackingOptions) {
   options = _options;
+
+  // Clear any existing batch queue and timer when reinitializing
+  clearBatchQueue();
+}
+
+/**
+ * Clear batch queue and timer
+ */
+function clearBatchQueue() {
+  batchQueue = [];
+  if (batchTimer) {
+    clearTimeout(batchTimer as any);
+    batchTimer = null;
+  }
 }
 
 /**
@@ -184,13 +216,51 @@ export async function identifyWebsiteUser(
 }
 
 /**
- * Send request to Tianji website API
+ * Send website request with automatic batching
+ * Events are automatically queued and sent together at fixed intervals (throttling)
+ * If queue reaches 100 events, it will be sent immediately
  *
  * @param serverUrl - Tianji server URL
  * @param type - Request type ('event' or 'identify')
  * @param payload - Request payload
  */
-async function sendWebsiteRequest(
+function sendWebsiteRequest(
+  serverUrl: string,
+  type: 'event' | 'identify',
+  payload: WebsiteEventPayload | WebsiteIdentifyPayload
+): void {
+  if (options?.disableBatch) {
+    // Send immediately if batch mode is disabled
+    sendSingleRequest(serverUrl, type, payload);
+    return;
+  }
+
+  // Add to batch queue
+  batchQueue.push({ type, payload });
+
+  // Send immediately if queue reaches the limit (100 events)
+  if (batchQueue.length >= 100) {
+    flushBatchQueue();
+    return;
+  }
+
+  // Start timer only if not already running (throttling behavior)
+  if (!batchTimer) {
+    const delay = options?.batchDelay || 200;
+    batchTimer = setTimeout(() => {
+      sendBatchRequest(serverUrl);
+    }, delay);
+  }
+}
+
+/**
+ * Send single request to Tianji website API (fallback when batch is disabled)
+ *
+ * @param serverUrl - Tianji server URL
+ * @param type - Request type ('event' or 'identify')
+ * @param payload - Request payload
+ */
+async function sendSingleRequest(
   serverUrl: string,
   type: 'event' | 'identify',
   payload: WebsiteEventPayload | WebsiteIdentifyPayload
@@ -214,5 +284,55 @@ async function sendWebsiteRequest(
   } catch (error) {
     console.error(`Error sending website ${type}:`, error);
     return; // As event tracking SDK, should not throw error which maybe cause crash
+  }
+}
+
+/**
+ * Send batch request to Tianji website API
+ *
+ * @param serverUrl - Tianji server URL
+ */
+async function sendBatchRequest(serverUrl: string): Promise<void> {
+  if (batchQueue.length === 0) {
+    return;
+  }
+
+  const requestData = [...batchQueue];
+  batchQueue = [];
+  batchTimer = null;
+
+  try {
+    const response = await fetch(`${serverUrl}/api/website/batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        events: requestData,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to send batch request: ${errorText}`);
+    }
+  } catch (error) {
+    console.error('Error sending batch request:', error);
+    return; // As event tracking SDK, should not throw error which maybe cause crash
+  }
+}
+
+/**
+ * Flush batch queue manually (send all pending requests immediately)
+ * Useful for ensuring events are sent before page unload
+ */
+export async function flushBatchQueue(): Promise<void> {
+  if (batchTimer) {
+    clearTimeout(batchTimer as any);
+    batchTimer = null;
+  }
+
+  if (batchQueue.length > 0 && options) {
+    await sendBatchRequest(options.serverUrl);
   }
 }

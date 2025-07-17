@@ -37,13 +37,16 @@ export interface WebsiteEventPayload {
   name?: string;
 }
 
-export async function findSession(req: Request): Promise<
+export async function findSession(
+  req: Request,
+  body: any
+): Promise<
   WebsiteSession & {
     workspaceId: string;
   }
 > {
   // Verify payload
-  const { payload } = req.body;
+  const { payload } = body;
 
   // Check if cache token is passed
   const cacheToken = req.headers['x-tianji-cache'] as string;

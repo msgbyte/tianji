@@ -108,7 +108,7 @@ websiteRouter.post(
 
     const { type, payload } = req.body;
 
-    const session = await findSession(req);
+    const session = await findSession(req, req.body);
 
     if (await isWorkspacePaused(session.workspaceId)) {
       res.status(403).send('Workspace is paused.');
@@ -154,7 +154,7 @@ websiteRouter.post(
   async (req, res) => {
     const { events } = req.body;
 
-    const session = await findSession(req);
+    const session = await findSession(req, events[0]);
 
     if (await isWorkspacePaused(session.workspaceId)) {
       res.status(403).send('Workspace is paused.');
