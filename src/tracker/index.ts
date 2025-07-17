@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Fork from https://github.com/umami-software/umami/blob/master/src/tracker/index.js
  */
@@ -15,7 +14,9 @@
   const { hostname, pathname, search } = location;
   const { currentScript } = document;
 
-  if (!currentScript) return;
+  if (!currentScript) {
+    return;
+  }
 
   const _data = 'data-';
   const _false = 'false';
@@ -28,7 +29,7 @@
   const domains = domain.split(',').map((n) => n.trim());
   const root = hostUrl
     ? hostUrl.replace(/\/$/, '')
-    : currentScript.src.split('/').slice(0, -1).join('/');
+    : (currentScript as any).src.split('/').slice(0, -1).join('/');
   const endpoint = `${root}/api/website/send`;
   const screen = `${width}x${height}`;
   const eventRegex = /data-tianji-event-([\w-_]+)/;
@@ -37,17 +38,17 @@
 
   /* Helper functions */
 
-  const hook = (_this, method, callback) => {
+  const hook = (_this: any, method: string, callback: any) => {
     const orig = _this[method];
 
-    return (...args) => {
+    return (...args: any[]) => {
       callback.apply(null, args);
 
       return orig.apply(_this, args);
     };
   };
 
-  const getPath = (url) => {
+  const getPath = (url: string) => {
     try {
       return new URL(url).pathname;
     } catch (e) {
@@ -68,7 +69,7 @@
   /* Tracking functions */
 
   const doNotTrack = () => {
-    const { doNotTrack, navigator, external } = window;
+    const { doNotTrack, navigator, external } = window as any;
 
     const msTrackProtection = 'msTrackingProtectionEnabled';
     const msTracking = () => {
@@ -93,7 +94,7 @@
     (dnt && doNotTrack()) ||
     (domain && !domains.includes(hostname));
 
-  const handlePush = (state, title, url) => {
+  const handlePush = (state: any, title: any, url: any) => {
     if (!url) return;
 
     currentRef = currentUrl;
@@ -105,14 +106,14 @@
   };
 
   const handleClick = () => {
-    const trackElement = (el) => {
+    const trackElement = (el: any) => {
       const attr = el.getAttribute.bind(el);
       const eventName = attr(eventNameAttribute);
 
       if (eventName) {
-        const eventData = {};
+        const eventData: any = {};
 
-        el.getAttributeNames().forEach((name) => {
+        el.getAttributeNames().forEach((name: any) => {
           const match = name.match(eventRegex);
 
           if (match) {
@@ -125,8 +126,8 @@
       return Promise.resolve();
     };
 
-    const callback = (e) => {
-      const findATagParent = (rootElem, maxSearchDepth) => {
+    const callback = (e: any) => {
+      const findATagParent = (rootElem: any, maxSearchDepth: any) => {
         let currentElement = rootElem;
         for (let i = 0; i < maxSearchDepth; i++) {
           if (currentElement.tagName === 'A') {
@@ -157,7 +158,7 @@
           if (!external) {
             e.preventDefault();
           }
-          return trackElement(anchor).then(() => {
+          trackElement(anchor)?.then(() => {
             if (!external) location.href = href;
           });
         }
@@ -170,7 +171,7 @@
   };
 
   const observeTitle = () => {
-    const callback = ([entry]) => {
+    const callback = ([entry]: any) => {
       title = entry && entry.target ? entry.target.text : undefined;
     };
 
@@ -187,11 +188,11 @@
     }
   };
 
-  const send = (payload, type = 'event') => {
+  const send = (payload: any, type = 'event') => {
     if (trackingDisabled()) {
       return;
     }
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
     if (typeof cache !== 'undefined') {
@@ -207,7 +208,7 @@
       .catch(() => {});
   };
 
-  const track = (obj, data) => {
+  const track = (obj?: any, data?: any) => {
     if (typeof obj === 'string') {
       return send({
         ...getPayload(),
@@ -222,12 +223,12 @@
     return send(getPayload());
   };
 
-  const identify = (data) => send({ ...getPayload(), data }, 'identify');
+  const identify = (data: any) => send({ ...getPayload(), data }, 'identify');
 
   /* Start */
 
-  if (!window.tianji) {
-    window.tianji = {
+  if (!(window as any).tianji) {
+    (window as any).tianji = {
       track,
       identify,
     };
@@ -236,8 +237,8 @@
   let currentUrl = `${pathname}${search}`;
   let currentRef = document.referrer;
   let title = document.title;
-  let cache;
-  let initialized;
+  let cache: any;
+  let initialized: any;
 
   if (autoTrack && !trackingDisabled()) {
     history.pushState = hook(history, 'pushState', handlePush);

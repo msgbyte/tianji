@@ -1,5 +1,12 @@
 import loadScript from 'load-script';
 import { IdentifyPayload } from '../types';
+import {
+  identifyWebsiteUser,
+  initWebsiteTracking,
+  reportWebsiteEvent,
+} from './pure';
+
+export { identifyWebsiteUser, initWebsiteTracking, reportWebsiteEvent };
 
 interface InjectTrackerOptions {
   /**
@@ -44,6 +51,11 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
     'data-website-id': options.websiteId,
   };
 
+  initWebsiteTracking({
+    serverUrl: options.url,
+    websiteId: options.websiteId,
+  });
+
   if (options.autoTrack === false) {
     attrs['data-auto-track'] = 'false';
   }
@@ -75,6 +87,9 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
   });
 }
 
+/**
+ * @deprecated use reportWebsiteEvent instead
+ */
 export function reportEvent(eventName: string, data: Record<string, any> = {}) {
   if (typeof window === 'undefined') {
     console.warn('This function should be called in browser environment!');
@@ -82,18 +97,21 @@ export function reportEvent(eventName: string, data: Record<string, any> = {}) {
   }
 
   const tianji = (window as any).tianji;
-  if (!tianji) {
-    return;
-  }
+  if (tianji) {
+    if (!tianji.track) {
+      console.warn('tianji.track is not ready');
+      return;
+    }
 
-  if (!tianji.track) {
-    console.warn('tianji.track is not ready');
-    return;
+    tianji.track(eventName, data);
+  } else {
+    reportWebsiteEvent(eventName, data);
   }
-
-  tianji.track(eventName, data);
 }
 
+/**
+ * @deprecated use identifyWebsiteUser instead
+ */
 export function identify(data: IdentifyPayload) {
   if (typeof window === 'undefined') {
     console.warn('This function should be called in browser environment!');
@@ -101,14 +119,14 @@ export function identify(data: IdentifyPayload) {
   }
 
   const tianji = (window as any).tianji;
-  if (!tianji) {
-    return;
-  }
+  if (tianji) {
+    if (!tianji.identify) {
+      console.warn('tianji.identify is not ready');
+      return;
+    }
 
-  if (!tianji.identify) {
-    console.warn('tianji.identify is not ready');
-    return;
+    tianji.identify(data);
+  } else {
+    identifyWebsiteUser(data);
   }
-
-  tianji.identify(data);
 }
