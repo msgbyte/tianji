@@ -82,7 +82,11 @@ export function getDateArray<T extends { date: string }>(
 
   function findData(date: dayjs.Dayjs) {
     const target = data.find((item) => {
-      return normalize(dayjs(item.date)).unix() === date.unix();
+      if (timezone) {
+        return normalize(dayjs.tz(item.date, timezone)).unix() === date.unix();
+      } else {
+        return normalize(dayjs(item.date)).unix() === date.unix();
+      }
     });
 
     return { ...defaultItem, ...target };

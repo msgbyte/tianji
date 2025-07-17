@@ -12,6 +12,7 @@
     "check:type": "tsc --noEmit --skipLibCheck --module esnext",
     "test": "vitest",
     "build": "tsup",
+    "dev": "tsup --watch",
     "postinstall": "pnpm build"
   },
   "keywords": [],
