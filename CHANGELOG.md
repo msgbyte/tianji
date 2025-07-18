@@ -1,5 +1,30 @@
 
 
+## [1.24.1](https://github.com/msgbyte/tianji/compare/v1.24.0...v1.24.1) (2025-07-18)
+
+### Features
+
+* add batch endpoint for website events ([44d45b2](https://github.com/msgbyte/tianji/commit/44d45b2d59558d7f6871b928813b69aaaf22f131))
+* add pure website tracking functions and update existing tracker to utilize them ([0662362](https://github.com/msgbyte/tianji/commit/0662362f29d2172e8b481590e094e778bbd65f48))
+* add WebsiteVisitorMap route and enhance map components with full-screen support ([fc6266f](https://github.com/msgbyte/tianji/commit/fc6266fffd3c776c2b43a9692adffd96786b916f))
+* implement batch request handling for website events and enhance tracking options ([38bd5e9](https://github.com/msgbyte/tianji/commit/38bd5e9c26f9b7bbd6671e356cdacee1f606a5a8))
+
+### Bug Fixes
+
+* fix a bug which insight can not good handle timezone problem when in different timezone ([a20cb7a](https://github.com/msgbyte/tianji/commit/a20cb7ae5f6231d944319924e382317568fd52ac))
+
+### Document
+
+* update changelog page ([e06d1b5](https://github.com/msgbyte/tianji/commit/e06d1b506c7b9a5457ac34e554dabdb03488709e))
+
+### Others
+
+* add TypeScript tracker implementation and update build entry point ([fcc7f94](https://github.com/msgbyte/tianji/commit/fcc7f94b883ee257e91611946607c3f0ee4bc51d))
+* redesign changelog page ([658c045](https://github.com/msgbyte/tianji/commit/658c045ed1828a4e9067e3b1b7e22947043d6317))
+* simplify insightsAIGateway function by utilizing processGroupedTimeSeriesData ([58369d4](https://github.com/msgbyte/tianji/commit/58369d4d6a2d17a198cf8651cfa5bd64b3684f11))
+* update model prices ([46ba80d](https://github.com/msgbyte/tianji/commit/46ba80db81d478c6be1940ae62391c11c052c2ed))
+* update tracking functions to use new website event reporting methods ([2494227](https://github.com/msgbyte/tianji/commit/2494227933b1fe477d8d34755a3fab1d2ebad07f))
+
 ## [1.24.0](https://github.com/msgbyte/tianji/compare/v1.23.5...v1.24.0) (2025-07-15)
 
 ### Features
