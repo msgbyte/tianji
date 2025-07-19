@@ -73,7 +73,6 @@ async function initSyncStateTable() {
         ORDER BY table_name
       `,
     });
-    logger.info('ClickHouse sync state table initialized');
   } catch (err) {
     logger.error('Failed to initialize sync state table:', err);
     throw err;
@@ -286,11 +285,8 @@ export async function syncPostgresToClickHouse() {
 export function initClickHouseSyncCronjob() {
   // Run every hour
   const job = Cron(env.isDev ? '* * * * *' : '0 * * * *', async () => {
-    logger.info('Starting scheduled PostgreSQL to ClickHouse sync');
-
     try {
       await syncPostgresToClickHouse();
-      logger.info('Scheduled PostgreSQL to ClickHouse sync completed');
     } catch (err) {
       logger.error('Scheduled PostgreSQL to ClickHouse sync failed:', err);
     }
