@@ -1,5 +1,12 @@
 
 
+## [1.24.2](https://github.com/msgbyte/tianji/compare/v1.24.1...v1.24.2) (2025-07-19)
+
+### Features
+
+* add monitor manual trigger ([4db5d04](https://github.com/msgbyte/tianji/commit/4db5d041128bd6b8897646ded3b5ab3dac7ae670))
+* reporter build add alpine support ([07af814](https://github.com/msgbyte/tianji/commit/07af814b7f8e0b05be899d20896f447004148e34))
+
 ## [1.24.1](https://github.com/msgbyte/tianji/compare/v1.24.0...v1.24.1) (2025-07-18)
 
 ### Features
