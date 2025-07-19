@@ -1,5 +1,11 @@
 
 
+## [1.24.3](https://github.com/msgbyte/tianji/compare/v1.24.2...v1.24.3) (2025-07-19)
+
+### Others
+
+* add amd64 support for alpine release ([8df7071](https://github.com/msgbyte/tianji/commit/8df707160276771c76e0e16c5c3e3c365fee3178))
+
 ## [1.24.2](https://github.com/msgbyte/tianji/compare/v1.24.1...v1.24.2) (2025-07-19)
 
 ### Features
