@@ -35,6 +35,8 @@ import { monitorPageManager } from '../../model/monitor/page/manager.js';
 import { token } from '../../model/notification/token/index.js';
 import { runCodeInVM } from '../../utils/vm/index.js';
 import { nanoid } from 'nanoid';
+import { get } from 'lodash-es';
+import { logger } from '../../utils/logger.js';
 
 export const monitorRouter = router({
   all: workspaceProcedure
@@ -276,6 +278,60 @@ export const monitorRouter = router({
         token.paragraph('Test content'),
         token.paragraph(`Send from monitor: ${runner.monitor.name}`),
       ]);
+    }),
+  triggerMonitor: workspaceProcedure
+    .meta(
+      buildMonitorOpenapi({
+        method: 'POST',
+        path: '/{monitorId}/trigger',
+      })
+    )
+    .input(
+      z.object({
+        monitorId: z.string(),
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input, ctx }) => {
+      const { workspaceId, monitorId } = input;
+      const user = ctx.user;
+
+      try {
+        // Create audit log for manual trigger
+        createAuditLog({
+          workspaceId: workspaceId,
+          relatedId: monitorId,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitorId}) manual trigger by ${String(
+            user.username
+          )}(${String(user.id)})`,
+        });
+
+        const runner = await monitorManager.ensureRunner(
+          workspaceId,
+          monitorId
+        );
+
+        await runner.manualTrigger();
+      } catch (err) {
+        const errorMessage = get(err, 'message', String(err));
+        logger.error(
+          `[Monitor] (id: ${monitorId}) manual trigger error:`,
+          errorMessage
+        );
+
+        // Create audit log for error
+        createAuditLog({
+          workspaceId: workspaceId,
+          relatedId: monitorId,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitorId}) manual trigger error: ${errorMessage} by ${String(
+            user.username
+          )}(${String(user.id)})`,
+        });
+
+        throw new Error(`Manual trigger failed: ${errorMessage}`);
+      }
     }),
   data: workspaceProcedure
     .meta(

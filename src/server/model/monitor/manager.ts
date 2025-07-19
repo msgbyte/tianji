@@ -159,4 +159,34 @@ export class MonitorManager {
 
     return runner;
   }
+
+  /**
+   * ensure runner has been created.
+   */
+  async ensureRunner(workspaceId: string, monitorId: string) {
+    const runner = this.getRunner(monitorId);
+    if (runner) {
+      return runner;
+    }
+
+    const monitor = await prisma.monitor.findUnique({
+      where: {
+        id: monitorId,
+        workspaceId,
+      },
+      include: {
+        notifications: true,
+      },
+    });
+
+    if (!monitor) {
+      throw new Error('Monitor not found');
+    }
+
+    if (!monitor.active) {
+      throw new Error('Monitor is not active');
+    }
+
+    return this.createRunner(monitor);
+  }
 }

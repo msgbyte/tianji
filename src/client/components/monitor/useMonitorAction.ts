@@ -26,6 +26,10 @@ export function useMonitorAction(workspaceId: string, monitorId: string) {
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
+  const triggerMonitorMutation = trpc.monitor.triggerMonitor.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
   const trpcUtils = trpc.useUtils();
 
   const handleStart = useEvent(async () => {
@@ -130,16 +134,36 @@ export function useMonitorAction(workspaceId: string, monitorId: string) {
     });
   });
 
+  const handleTriggerMonitor = useEvent(async () => {
+    await triggerMonitorMutation.mutateAsync({
+      workspaceId,
+      monitorId,
+    });
+
+    // Refresh monitor data and status
+    trpcUtils.monitor.get.refetch({
+      workspaceId,
+      monitorId,
+    });
+    trpcUtils.monitor.getStatus.refetch({
+      workspaceId,
+      monitorId,
+      statusName: 'lastPush',
+    });
+  });
+
   return {
     changeActiveMutation,
     deleteMutation,
     clearEventsMutation,
     clearDataMutation,
     testNotifyScriptMutation,
+    triggerMonitorMutation,
     handleStart,
     handleStop,
     handleDelete,
     handleClearEvents,
     handleClearData,
+    handleTriggerMonitor,
   };
 }

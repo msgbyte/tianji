@@ -1,4 +1,4 @@
-import { Notification, Workspace } from '@prisma/client';
+import { Workspace } from '@prisma/client';
 import { subscribeEventBus } from '../../ws/shared.js';
 import { prisma } from '../_client.js';
 import { monitorProviders } from './provider/index.js';
@@ -19,6 +19,7 @@ export class MonitorRunner {
   isStopped = false;
   timer: NodeJS.Timeout | null = null;
   retriedNum = 0;
+  currentStatus: 'UP' | 'DOWN' = 'UP';
 
   constructor(
     public workspace: Workspace,
@@ -29,19 +30,95 @@ export class MonitorRunner {
     return get(this.workspace, ['settings', 'timezone']) || 'utc';
   }
 
-  /**
-   * Start single monitor
-   */
-  async startMonitor() {
+  private async runMonitor() {
     const monitor = this.monitor;
-    const { type, interval, workspaceId, maxRetries } = monitor;
+    const { type, workspaceId, maxRetries } = monitor;
 
     const provider = monitorProviders[type];
     if (!provider) {
       throw new Error(`Unknown monitor type: ${type}`);
     }
 
-    let currentStatus: 'UP' | 'DOWN' = 'UP';
+    try {
+      let value = 0;
+      try {
+        value = await provider.run(monitor);
+
+        if (value === 0) {
+          return; // if value is 0, skip all logic
+        }
+      } catch (err) {
+        const errorMessage = get(err, 'message', String(err));
+        logger.error(`[Monitor] (id: ${monitor.id}) run error:`, errorMessage);
+        createAuditLog({
+          workspaceId: this.monitor.workspaceId,
+          relatedId: this.monitor.id,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitor.id}) exec error: ${errorMessage}`,
+        });
+        updateMonitorErrorMessage(this.monitor.id, errorMessage);
+        value = -1;
+      }
+
+      if (value < 0 && this.retriedNum < maxRetries) {
+        // can be retry
+        this.retriedNum++;
+      } else {
+        this.retriedNum = 0; // make sure its will throw error in every retry times
+
+        // check event update
+        if (value < 0 && this.currentStatus === 'UP') {
+          // UP -> DOWN
+          await this.createEvent(
+            'DOWN',
+            `Monitor [${monitor.name}] has been down`
+          );
+          await this.notify(`[${monitor.name}] 🔴 Down`, [
+            token.text(
+              `[${monitor.name}] 🔴 Down\nTime: ${dayjs()
+                .tz(this.getTimezone())
+                .format('YYYY-MM-DD HH:mm:ss (z)')}`
+            ),
+          ]);
+          this.currentStatus = 'DOWN';
+        } else if (value > 0 && this.currentStatus === 'DOWN') {
+          // DOWN -> UP
+          await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
+          await this.notify(`[${monitor.name}] ✅ Up`, [
+            token.text(
+              `[${monitor.name}] ✅ Up\nTime: ${dayjs()
+                .tz(this.getTimezone())
+                .format('YYYY-MM-DD HH:mm:ss (z)')}`
+            ),
+          ]);
+          this.currentStatus = 'UP';
+        }
+      }
+
+      // insert into data
+      const data = await prisma.monitorData.create({
+        data: {
+          monitorId: monitor.id,
+          value,
+        },
+      });
+
+      subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
+    } catch (err) {
+      logger.error('[Monitor] Run monitor error,', monitor.id, String(err));
+    }
+  }
+
+  async manualTrigger() {
+    await this.runMonitor();
+  }
+
+  /**
+   * Start single monitor
+   */
+  async startMonitor() {
+    const monitor = this.monitor;
+    const { interval } = monitor;
 
     const nextAction = () => {
       if (this.isStopped === true) {
@@ -55,78 +132,8 @@ export class MonitorRunner {
 
     const run = async () => {
       try {
-        let value = 0;
-        try {
-          value = await provider.run(monitor);
-
-          if (value === 0) {
-            return; // if value is 0, skip all logic
-          }
-        } catch (err) {
-          const errorMessage = get(err, 'message', String(err));
-          logger.error(
-            `[Monitor] (id: ${monitor.id}) run error:`,
-            errorMessage
-          );
-          createAuditLog({
-            workspaceId: this.monitor.workspaceId,
-            relatedId: this.monitor.id,
-            relatedType: 'Monitor',
-            content: `Monitor(id: ${monitor.id}) exec error: ${errorMessage}`,
-          });
-          updateMonitorErrorMessage(this.monitor.id, errorMessage);
-          value = -1;
-        }
-
-        if (value < 0 && this.retriedNum < maxRetries) {
-          // can be retry
-          this.retriedNum++;
-        } else {
-          this.retriedNum = 0; // make sure its will throw error in every retry times
-
-          // check event update
-          if (value < 0 && currentStatus === 'UP') {
-            // UP -> DOWN
-            await this.createEvent(
-              'DOWN',
-              `Monitor [${monitor.name}] has been down`
-            );
-            await this.notify(`[${monitor.name}] 🔴 Down`, [
-              token.text(
-                `[${monitor.name}] 🔴 Down\nTime: ${dayjs()
-                  .tz(this.getTimezone())
-                  .format('YYYY-MM-DD HH:mm:ss (z)')}`
-              ),
-            ]);
-            currentStatus = 'DOWN';
-          } else if (value > 0 && currentStatus === 'DOWN') {
-            // DOWN -> UP
-            await this.createEvent(
-              'UP',
-              `Monitor [${monitor.name}] has been up`
-            );
-            await this.notify(`[${monitor.name}] ✅ Up`, [
-              token.text(
-                `[${monitor.name}] ✅ Up\nTime: ${dayjs()
-                  .tz(this.getTimezone())
-                  .format('YYYY-MM-DD HH:mm:ss (z)')}`
-              ),
-            ]);
-            currentStatus = 'UP';
-          }
-        }
-
-        // insert into data
-        const data = await prisma.monitorData.create({
-          data: {
-            monitorId: monitor.id,
-            value,
-          },
-        });
-
-        subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
+        await this.runMonitor();
       } catch (err) {
-        logger.error('[Monitor] Run monitor error,', monitor.id, String(err));
         createAuditLog({
           workspaceId: this.monitor.workspaceId,
           relatedId: this.monitor.id,
@@ -134,7 +141,6 @@ export class MonitorRunner {
           content: `Run monitor(id: ${monitor.id}) error: ${String(err)}`,
         });
       } finally {
-        // Run next loop
         nextAction();
       }
     };

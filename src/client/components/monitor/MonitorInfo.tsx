@@ -56,6 +56,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
     handleDelete,
     handleClearEvents,
     handleClearData,
+    handleTriggerMonitor,
   } = useMonitorAction(workspaceId, monitorId);
 
   if (isInitialLoading) {
@@ -116,6 +117,11 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                     placement="bottomRight"
                     menu={{
                       items: [
+                        {
+                          key: 'trigger',
+                          label: t('Trigger Monitor'),
+                          onClick: handleTriggerMonitor,
+                        },
                         {
                           key: 'badge',
                           label: t('Show Badge'),
