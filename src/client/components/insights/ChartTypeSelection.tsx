@@ -45,11 +45,11 @@ export const ChartTypeSelection: React.FC<ChartTypeSelectionProps> = React.memo(
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-[60px]">{getIcon()}</SelectTrigger>
         <SelectContent align="end">
-          <SelectItem value="line">{t('Line')}</SelectItem>
-          <SelectItem value="area">{t('Area')}</SelectItem>
-          <SelectItem value="stack">{t('Stack')}</SelectItem>
-          <SelectItem value="bar">{t('Bar')}</SelectItem>
-          <SelectItem value="pie">{t('Pie')}</SelectItem>
+          <SelectItem value="line">{t('Line Chart')}</SelectItem>
+          <SelectItem value="area">{t('Area Chart')}</SelectItem>
+          <SelectItem value="stack">{t('Stack Chart')}</SelectItem>
+          <SelectItem value="bar">{t('Bar Chart')}</SelectItem>
+          <SelectItem value="pie">{t('Pie Chart')}</SelectItem>
         </SelectContent>
       </Select>
     );
