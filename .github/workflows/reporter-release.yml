@@ -26,3 +26,25 @@ jobs:
           binary_name: "tianji-reporter"
           compress_assets: "OFF"
           asset_name: "tianji-reporter-${{ matrix.goos }}-${{ matrix.goarch }}"
+  build-go-binary-static:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wangyoucao577/go-release-action@v1.40
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          project_path: ./reporter
+          ldflags: '-extldflags "-static"'
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          goversion: 1.23.11
+          binary_name: "tianji-reporter"
+          compress_assets: "OFF"
+          asset_name: "tianji-reporter-${{ matrix.goos }}-${{ matrix.goarch }}-alpine"
