@@ -5,6 +5,8 @@ alwaysApply: true
 ---
 # Tianji Project Cursor Rules
 
+IMPORTANT: Do not operate my git to add or rm files at any time.
+
 ## Project Overview
 
 **Tianji** is the project name - a proprietary monitoring and analytics platform. Always use "Tianji" (not "tianji" or other variations) when referring to the project in documentation, comments, and user-facing text.

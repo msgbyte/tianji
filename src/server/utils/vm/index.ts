@@ -46,7 +46,10 @@ export async function runCodeInVM(_code: string): Promise<{
   }
 }
 
-async function runCodeInIVM(_code: string) {
+/**
+ * Only run code with isolated-vm
+ */
+export async function runCodeInIVM(_code: string) {
   const start = Date.now();
   const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
 
@@ -78,10 +81,11 @@ ${_code}`;
 
   const res = await script.run(context, {
     promise: true,
+    copy: true,
   });
 
   context.release();
   script.release();
 
-  return { logger, result: res, usage: Date.now() - start };
+  return { isolate, logger, result: res, usage: Date.now() - start };
 }

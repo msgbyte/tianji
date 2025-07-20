@@ -119,6 +119,7 @@ model Workspace {
   surveys             Survey[]
   feedChannels        FeedChannel[]
   workspaceInvitation WorkspaceInvitation[]
+  functionWorkers     FunctionWorker[]
 }
 
 model WorkspacesOnUsers {
@@ -945,4 +946,46 @@ model AIGatewayLogs {
 
   @@index([gatewayId])
   @@index([createdAt])
+}
+
+model FunctionWorker {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String
+  description String?
+  code        String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  executions FunctionWorkerExecution[]
+
+  @@index([workspaceId])
+}
+
+enum FunctionWorkerExecutionStatus {
+  Pending
+  Success
+  Failed
+}
+
+model FunctionWorkerExecution {
+  id              String                        @id @default(cuid()) @db.VarChar(30)
+  workerId        String                        @db.VarChar(30)
+  status          FunctionWorkerExecutionStatus
+  requestPayload  Json?                         @db.Json
+  responsePayload Json?                         @db.Json
+  error           String?
+  duration        Int? // execution time(ms)
+  memoryUsed      Int? // memory used(bytes)
+  cpuTime         Int? // cpu time(ns)
+  logs            Json?                         @default("[]") @db.Json // logs, should be json array
+  createdAt       DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime                      @updatedAt @db.Timestamptz(6)
+
+  worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([workerId])
 }

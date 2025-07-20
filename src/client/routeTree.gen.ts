@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as WorkerImport } from './routes/worker'
 import { Route as WebsiteImport } from './routes/website'
 import { Route as TelemetryImport } from './routes/telemetry'
 import { Route as SwitchWorkspaceImport } from './routes/switchWorkspace'
@@ -26,6 +27,7 @@ import { Route as FeedImport } from './routes/feed'
 import { Route as ApplicationImport } from './routes/application'
 import { Route as AiGatewayImport } from './routes/aiGateway'
 import { Route as IndexImport } from './routes/index'
+import { Route as WorkerIndexImport } from './routes/worker/index'
 import { Route as TelemetryIndexImport } from './routes/telemetry/index'
 import { Route as SurveyIndexImport } from './routes/survey/index'
 import { Route as PageIndexImport } from './routes/page/index'
@@ -34,6 +36,8 @@ import { Route as InsightsIndexImport } from './routes/insights/index'
 import { Route as FeedIndexImport } from './routes/feed/index'
 import { Route as ApplicationIndexImport } from './routes/application/index'
 import { Route as AiGatewayIndexImport } from './routes/aiGateway/index'
+import { Route as WorkerAddImport } from './routes/worker/add'
+import { Route as WorkerWorkerIdImport } from './routes/worker/$workerId'
 import { Route as WebsiteOverviewImport } from './routes/website/overview'
 import { Route as WebsiteAddImport } from './routes/website/add'
 import { Route as TelemetryAddImport } from './routes/telemetry/add'
@@ -73,6 +77,11 @@ import { Route as ApplicationApplicationIdEditImport } from './routes/applicatio
 import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
 
 // Create/Update Routes
+
+const WorkerRoute = WorkerImport.update({
+  path: '/worker',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const WebsiteRoute = WebsiteImport.update({
   path: '/website',
@@ -149,6 +158,11 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const WorkerIndexRoute = WorkerIndexImport.update({
+  path: '/',
+  getParentRoute: () => WorkerRoute,
+} as any)
+
 const TelemetryIndexRoute = TelemetryIndexImport.update({
   path: '/',
   getParentRoute: () => TelemetryRoute,
@@ -187,6 +201,16 @@ const ApplicationIndexRoute = ApplicationIndexImport.update({
 const AiGatewayIndexRoute = AiGatewayIndexImport.update({
   path: '/',
   getParentRoute: () => AiGatewayRoute,
+} as any)
+
+const WorkerAddRoute = WorkerAddImport.update({
+  path: '/add',
+  getParentRoute: () => WorkerRoute,
+} as any)
+
+const WorkerWorkerIdRoute = WorkerWorkerIdImport.update({
+  path: '/$workerId',
+  getParentRoute: () => WorkerRoute,
 } as any)
 
 const WebsiteOverviewRoute = WebsiteOverviewImport.update({
@@ -442,6 +466,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteImport
       parentRoute: typeof rootRoute
     }
+    '/worker': {
+      preLoaderRoute: typeof WorkerImport
+      parentRoute: typeof rootRoute
+    }
     '/aiGateway/add': {
       preLoaderRoute: typeof AiGatewayAddImport
       parentRoute: typeof AiGatewayImport
@@ -534,6 +562,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteOverviewImport
       parentRoute: typeof WebsiteImport
     }
+    '/worker/$workerId': {
+      preLoaderRoute: typeof WorkerWorkerIdImport
+      parentRoute: typeof WorkerImport
+    }
+    '/worker/add': {
+      preLoaderRoute: typeof WorkerAddImport
+      parentRoute: typeof WorkerImport
+    }
     '/aiGateway/': {
       preLoaderRoute: typeof AiGatewayIndexImport
       parentRoute: typeof AiGatewayImport
@@ -565,6 +601,10 @@ declare module '@tanstack/react-router' {
     '/telemetry/': {
       preLoaderRoute: typeof TelemetryIndexImport
       parentRoute: typeof TelemetryImport
+    }
+    '/worker/': {
+      preLoaderRoute: typeof WorkerIndexImport
+      parentRoute: typeof WorkerImport
     }
     '/aiGateway/$gatewayId/edit': {
       preLoaderRoute: typeof AiGatewayGatewayIdEditImport
@@ -686,6 +726,11 @@ export const routeTree = rootRoute.addChildren([
     WebsiteOverviewRoute,
     WebsiteWebsiteIdConfigRoute,
     WebsiteWebsiteIdIndexRoute,
+  ]),
+  WorkerRoute.addChildren([
+    WorkerWorkerIdRoute,
+    WorkerAddRoute,
+    WorkerIndexRoute,
   ]),
   FeedPlaygroundRoute,
   InsightsEventsRoute,
