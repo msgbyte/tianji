@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -8,59 +7,79 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
+import { toast } from 'sonner';
+import { Loading } from '@/components/Loading';
+import { ErrorTip } from '@/components/ErrorTip';
 import {
   WorkerEditForm,
   WorkerEditFormValues,
 } from '@/components/worker/WorkerEditForm';
-import { toast } from 'sonner';
+import { useEvent } from '@/hooks/useEvent';
 
-export const Route = createFileRoute('/worker/add')({
+export const Route = createFileRoute('/worker/$workerId/edit')({
   beforeLoad: routeAuthBeforeLoad,
-  component: WorkerAddComponent,
+  component: PageComponent,
 });
 
-function WorkerAddComponent() {
+function PageComponent() {
+  const { workerId } = Route.useParams<{ workerId: string }>();
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
 
-  const mutation = trpc.worker.upsert.useMutation({
+  const { data: worker, isLoading } = trpc.worker.get.useQuery({
+    workspaceId,
+    workerId,
+  });
+
+  const updateMutation = trpc.worker.upsert.useMutation({
     onError: defaultErrorHandler,
-    onSuccess: (worker) => {
-      toast.success(t('Worker created successfully'));
+    onSuccess: () => {
+      toast.success(t('Worker updated successfully'));
       navigate({
         to: '/worker/$workerId',
-        params: { workerId: worker.id },
+        params: { workerId },
       });
     },
   });
 
-  const trpcUtils = trpc.useUtils();
-
   const handleSubmit = useEvent(async (values: WorkerEditFormValues) => {
-    const res = await mutation.mutateAsync({
+    if (!worker) return;
+
+    await updateMutation.mutateAsync({
       ...values,
+      id: worker.id,
       workspaceId,
     });
-
-    trpcUtils.worker.all.invalidate();
-    navigate({
-      to: '/worker/$workerId',
-      params: { workerId: res.id },
-    });
   });
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!worker) {
+    return <ErrorTip />;
+  }
 
   return (
     <CommonWrapper
       header={
         <CommonHeader
-          title={t('Add Function Worker')}
-          desc={t('Create a new JavaScript function worker')}
+          title={t('Edit Worker')}
+          desc={t('Modify worker configuration and code')}
         />
       }
     >
       <ScrollArea className="h-full overflow-hidden p-4">
-        <WorkerEditForm onSubmit={handleSubmit} />
+        <WorkerEditForm
+          defaultValues={{
+            name: worker.name,
+            description: worker.description || '',
+            code: worker.code,
+            active: worker.active,
+          }}
+          onSubmit={handleSubmit}
+        />
       </ScrollArea>
     </CommonWrapper>
   );
