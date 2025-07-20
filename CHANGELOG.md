@@ -1,5 +1,12 @@
 
 
+## [1.24.4](https://github.com/msgbyte/tianji/compare/v1.24.3...v1.24.4) (2025-07-20)
+
+### Others
+
+* clean logs ([c3fe3a8](https://github.com/msgbyte/tianji/commit/c3fe3a8d2d4dd3dbb9688b4ea24e9740466c794b))
+* update chart type labels for better clarity and add missing translations ([fc31946](https://github.com/msgbyte/tianji/commit/fc319462358ad2a122b6ec3b6140c0096d6c65aa))
+
 ## [1.24.3](https://github.com/msgbyte/tianji/compare/v1.24.2...v1.24.3) (2025-07-19)
 
 ### Others
