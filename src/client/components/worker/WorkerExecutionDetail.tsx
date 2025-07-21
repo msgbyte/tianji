@@ -55,7 +55,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
 
           <SheetDataSection label={t('CPU Time')}>
             {execution.cpuTime !== null && execution.cpuTime !== undefined
-              ? `${Math.round(execution.cpuTime / 1000000)}ms`
+              ? `${Math.round(execution.cpuTime / 1000)}μs`
               : '-'}
           </SheetDataSection>
 

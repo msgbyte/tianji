@@ -86,7 +86,7 @@ export const WorkerExecutionsTable: React.FC<WorkerExecutionsTableProps> =
         size: 100,
         cell: (props) => {
           const cpuTime = props.getValue();
-          return cpuTime !== null ? `${Math.round(cpuTime / 1000000)}ms` : '-';
+          return cpuTime !== null ? `${Math.round(cpuTime / 1000)}μs` : '-';
         },
       }),
       columnHelper.accessor('createdAt', {

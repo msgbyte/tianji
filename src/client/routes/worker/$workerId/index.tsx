@@ -52,7 +52,6 @@ import {
 import { WorkerExecutionsTable } from '@/components/worker/WorkerExecutionsTable';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
 import { toast } from 'sonner';
-import { CodeBlock } from '@/components/CodeBlock';
 
 export const Route = createFileRoute('/worker/$workerId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -543,7 +542,7 @@ function PageComponent() {
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {stats.avgCpuTime
-                        ? `${Math.round(stats.avgCpuTime / 1000000)}ms`
+                        ? `${Math.round(stats.avgCpuTime / 1000)}μs`
                         : '-'}
                     </div>
                   </CardContent>
