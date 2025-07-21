@@ -1,3 +1,4 @@
+import React from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
@@ -9,11 +10,29 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { SimpleTooltip } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { CodeEditor } from '@/components/CodeEditor';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
-import { LuPlay, LuPencil, LuTrash, LuActivity, LuGlobe } from 'react-icons/lu';
+import {
+  LuPlay,
+  LuPencil,
+  LuTrash,
+  LuActivity,
+  LuGlobe,
+  LuRefreshCw,
+  LuExternalLink,
+  LuCopy,
+} from 'react-icons/lu';
 import { useState } from 'react';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { Loading } from '@/components/Loading';
@@ -49,7 +68,10 @@ function PageComponent() {
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [showExecutionResult, setShowExecutionResult] = useState(false);
   const [selectedExecutionIndex, setSelectedExecutionIndex] = useState(-1);
-  const trpcUtils = trpc.useUtils();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [previewKey, setPreviewKey] = useState(0);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   const {
     data: worker,
@@ -60,17 +82,22 @@ function PageComponent() {
     workerId,
   });
 
-  const { data: executions, refetch: refetchExecutions } =
-    trpc.worker.getExecutions.useQuery({
-      workspaceId,
-      workerId,
-      limit: 10,
-    });
+  const {
+    data: executionsData,
+    refetch: refetchExecutions,
+    isLoading: isLoadingExecutions,
+  } = trpc.worker.getExecutions.useQuery({
+    workspaceId,
+    workerId,
+    page: currentPage,
+    pageSize,
+  });
+
+  const executions = executionsData?.executions || [];
+  const pagination = executionsData?.pagination;
 
   const selectedExecution =
-    selectedExecutionIndex >= 0
-      ? executions?.executions?.[selectedExecutionIndex]
-      : null;
+    selectedExecutionIndex >= 0 ? executions[selectedExecutionIndex] : null;
 
   const { data: stats } = trpc.worker.getExecutionStats.useQuery({
     workspaceId,
@@ -142,6 +169,37 @@ function PageComponent() {
     setSelectedExecutionIndex(index);
   });
 
+  const handleExecutePreview = useEvent(() => {
+    setIsLoadingPreview(true);
+    setPreviewKey((prev) => prev + 1);
+  });
+
+  const handlePreviewLoad = useEvent(() => {
+    setIsLoadingPreview(false);
+  });
+
+  const handleOpenInNewWindow = useEvent(() => {
+    const url = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  });
+
+  const handleCopyUrl = useEvent(async () => {
+    const url = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(t('API endpoint URL copied to clipboard'));
+    } catch (error) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast.success(t('API endpoint URL copied to clipboard'));
+    }
+  });
+
   if (isLoading) {
     return <Loading />;
   }
@@ -210,62 +268,206 @@ function PageComponent() {
         />
       }
     >
-      <ScrollArea className="h-full overflow-hidden p-4">
-        <Tabs defaultValue="code" className="space-y-4">
-          <TabsList>
+      <div className="h-full overflow-hidden p-4">
+        <Tabs defaultValue="code" className="flex h-full flex-col space-y-4">
+          <TabsList className="self-start">
             <TabsTrigger value="code">{t('Code')}</TabsTrigger>
             <TabsTrigger value="executions">{t('Executions')}</TabsTrigger>
             <TabsTrigger value="stats">{t('Statistics')}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="code" className="space-y-4">
-            {/* API Calling Guide */}
-            <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-blue-700 dark:text-blue-300">
-                  <LuGlobe className="h-5 w-5" />
-                  <span>{t('API Endpoint')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-sm text-blue-600 dark:text-blue-400">
-                    {t(
-                      'You can call this worker function directly via HTTP API:'
-                    )}
-                  </p>
-                  <CodeBlock
-                    code={`${window.location.origin}/api/worker/${workspaceId}/${workerId}`}
+          <TabsContent value="code" className="flex flex-1 flex-col space-y-4">
+            <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+              <Card className="flex flex-col">
+                <CardHeader>
+                  <CardTitle>{t('Worker Code')}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <CodeEditor
+                    readOnly={true}
+                    height={'100%'}
+                    value={worker.code}
+                    onChange={() => {}} // Read-only
                   />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('Worker Code')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CodeEditor
-                  readOnly={true}
-                  height={400}
-                  value={worker.code}
-                  onChange={() => {}} // Read-only
-                />
-              </CardContent>
-            </Card>
+              <Card className="flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle>{t('Preview')}</CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <SimpleTooltip content={t('Copy API URL')}>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        Icon={LuCopy}
+                        onClick={handleCopyUrl}
+                        className="h-8 w-8"
+                      />
+                    </SimpleTooltip>
+                    <SimpleTooltip content={t('Open in New Window')}>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        Icon={LuExternalLink}
+                        onClick={handleOpenInNewWindow}
+                        disabled={!worker.active}
+                        className="h-8 w-8"
+                      />
+                    </SimpleTooltip>
+                    <SimpleTooltip content={t('Execute Preview')}>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        Icon={LuPlay}
+                        onClick={handleExecutePreview}
+                        loading={isLoadingPreview}
+                        disabled={!worker.active}
+                        className="h-8 w-8"
+                      />
+                    </SimpleTooltip>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  {previewKey > 0 ? (
+                    <div className="flex h-full flex-col space-y-2">
+                      <p className="text-muted-foreground text-sm">
+                        {t('Live preview of the worker API endpoint:')}
+                      </p>
+                      <div className="bg-background relative h-full flex-1 rounded-md border">
+                        {isLoadingPreview && (
+                          <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
+                            <div className="flex items-center space-x-2">
+                              <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
+                              <span className="text-sm">{t('Loading...')}</span>
+                            </div>
+                          </div>
+                        )}
+                        <iframe
+                          key={previewKey}
+                          src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}`}
+                          className="h-full w-full rounded-md"
+                          title="Worker Preview"
+                          sandbox="allow-same-origin allow-scripts"
+                          onLoad={handlePreviewLoad}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground flex h-[400px] items-center justify-center">
+                      <div className="space-y-2 text-center">
+                        <LuPlay className="mx-auto h-12 w-12" />
+                        <p>
+                          {t('Click "Execute Preview" to see the live result')}
+                        </p>
+                        {!worker.active && (
+                          <p className="text-sm text-orange-500">
+                            {t('Worker must be active to preview')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="executions" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{t('Recent Executions')}</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  Icon={LuRefreshCw}
+                  onClick={() => {
+                    setCurrentPage(1);
+                    refetchExecutions();
+                  }}
+                  className="h-8"
+                >
+                  {t('Refresh')}
+                </Button>
               </CardHeader>
-              <CardContent>
-                <WorkerExecutionsTable
-                  executions={executions?.executions || []}
-                  onExecutionSelect={handleExecutionSelect}
-                />
+              <CardContent className="space-y-4">
+                <div className="overflow-y-auto">
+                  <WorkerExecutionsTable
+                    executions={executions}
+                    loading={isLoadingExecutions}
+                    onExecutionSelect={handleExecutionSelect}
+                  />
+                </div>
+
+                {pagination && pagination.totalPages > 1 && (
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage > 1) {
+                              setCurrentPage(currentPage - 1);
+                            }
+                          }}
+                          className={
+                            currentPage <= 1
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
+                        />
+                      </PaginationItem>
+
+                      {Array.from(
+                        { length: pagination.totalPages },
+                        (_, i) => i + 1
+                      )
+                        .filter(
+                          (page) =>
+                            page === 1 ||
+                            page === pagination.totalPages ||
+                            Math.abs(page - currentPage) <= 1
+                        )
+                        .map((page, index, array) => (
+                          <React.Fragment key={page}>
+                            {index > 0 && array[index - 1] !== page - 1 && (
+                              <PaginationItem>
+                                <span className="px-3 py-2">...</span>
+                              </PaginationItem>
+                            )}
+                            <PaginationItem>
+                              <PaginationLink
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setCurrentPage(page);
+                                }}
+                                isActive={currentPage === page}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          </React.Fragment>
+                        ))}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage < pagination.totalPages) {
+                              setCurrentPage(currentPage + 1);
+                            }
+                          }}
+                          className={
+                            currentPage >= pagination.totalPages
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -350,7 +552,7 @@ function PageComponent() {
             )}
           </TabsContent>
         </Tabs>
-      </ScrollArea>
+      </div>
 
       {/* Execution Result Dialog */}
       <Dialog open={showExecutionResult} onOpenChange={setShowExecutionResult}>

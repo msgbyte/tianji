@@ -214,12 +214,12 @@ export const workerRouter = router({
     .input(
       z.object({
         workerId: z.string().cuid2(),
-        limit: z.number().min(1).max(100).default(20),
-        cursor: z.string().optional(),
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(100).default(20),
       })
     )
     .query(async ({ input }) => {
-      const { workerId, workspaceId, limit, cursor } = input;
+      const { workerId, workspaceId, page, pageSize } = input;
 
       // Verify worker exists and belongs to workspace
       const worker = await prisma.functionWorker.findUnique({
@@ -233,26 +233,34 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const executions = await prisma.functionWorkerExecution.findMany({
-        where: {
-          workerId,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-      });
+      const [executions, total] = await Promise.all([
+        prisma.functionWorkerExecution.findMany({
+          where: {
+            workerId,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        prisma.functionWorkerExecution.count({
+          where: {
+            workerId,
+          },
+        }),
+      ]);
 
-      let nextCursor: typeof cursor | undefined = undefined;
-      if (executions.length > limit) {
-        const nextItem = executions.pop();
-        nextCursor = nextItem!.id;
-      }
+      const totalPages = Math.ceil(total / pageSize);
 
       return {
         executions,
-        nextCursor,
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages,
+        },
       };
     }),
 
