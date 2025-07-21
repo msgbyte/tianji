@@ -1,11 +1,15 @@
 import { FunctionWorkerExecutionStatus } from '@prisma/client';
 import { runCodeInIVM } from '../../utils/vm/index.js';
 import { prisma } from '../_client.js';
+import { isPlainObject } from 'lodash-es';
 
 /**
  * execute a worker code in isolated-vm
  */
-export async function execWorker(workerId: string) {
+export async function execWorker(
+  workerId: string,
+  requestPayload?: Record<string, any>
+) {
   const worker = await prisma.functionWorker.findUnique({
     where: {
       id: workerId,
@@ -21,14 +25,17 @@ export async function execWorker(workerId: string) {
   }
 
   const code = worker.code;
-  const requestPayload = {};
+
+  const requestPayloadString = isPlainObject(requestPayload)
+    ? JSON.stringify(requestPayload)
+    : '';
 
   try {
     const { isolate, logger, result, usage } = await runCodeInIVM(`
       (async () => {
         ${code}
 
-        return typeof fetch === 'function' ? fetch() : 'fetch is not defined';
+        return typeof fetch === 'function' ? fetch(${requestPayloadString}) : 'fetch is not defined';
       })()
     `);
 

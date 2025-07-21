@@ -15,7 +15,10 @@ workerRouter.all(
   async (req, res) => {
     try {
       const { workspaceId, workerId } = req.params;
-      // const { requestPayload = {} } = req.body;
+      const requestPayload = {
+        ...req.query,
+        ...req.body,
+      };
 
       // Verify worker exists and belongs to workspace
       const worker = await prisma.functionWorker.findUnique({
@@ -40,7 +43,7 @@ workerRouter.all(
       }
 
       // Execute the worker
-      const execution = await execWorker(workerId);
+      const execution = await execWorker(workerId, requestPayload);
 
       const response = execution.responsePayload;
 
