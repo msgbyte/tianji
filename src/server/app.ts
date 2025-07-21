@@ -26,6 +26,7 @@ import { prometheusApiVersion } from './middleware/prometheus/index.js';
 import { billingRouter } from './router/billing.js';
 import { aiGatewayRouter } from './router/aiGateway.js';
 import { pushRouter } from './router/push.js';
+import { workerRouter } from './router/worker.js';
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use('/api/application', applicationRouter);
 app.use('/api/ai', aiGatewayRouter);
 app.use('/api/billing', billingRouter);
 app.use('/api/push', pushRouter);
+app.use('/api/worker', workerRouter);
 app.use('/monitor', monitorRouter);
 app.use('/telemetry', telemetryRouter);
 app.use('/serverStatus', serverStatusRouter);

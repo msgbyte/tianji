@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CodeEditor } from '@/components/CodeEditor';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
-import { LuPlay, LuPencil, LuTrash, LuActivity } from 'react-icons/lu';
+import { LuPlay, LuPencil, LuTrash, LuActivity, LuGlobe } from 'react-icons/lu';
 import { useState } from 'react';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { Loading } from '@/components/Loading';
@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/sheet';
 import { WorkerExecutionsTable } from '@/components/worker/WorkerExecutionsTable';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
+import { toast } from 'sonner';
+import { CodeBlock } from '@/components/CodeBlock';
 
 export const Route = createFileRoute('/worker/$workerId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -217,6 +219,28 @@ function PageComponent() {
           </TabsList>
 
           <TabsContent value="code" className="space-y-4">
+            {/* API Calling Guide */}
+            <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/50">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-blue-700 dark:text-blue-300">
+                  <LuGlobe className="h-5 w-5" />
+                  <span>{t('API Endpoint')}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-blue-600 dark:text-blue-400">
+                    {t(
+                      'You can call this worker function directly via HTTP API:'
+                    )}
+                  </p>
+                  <CodeBlock
+                    code={`${window.location.origin}/api/worker/${workspaceId}/${workerId}`}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>{t('Worker Code')}</CardTitle>
