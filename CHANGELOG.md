@@ -1,5 +1,20 @@
 
 
+## [1.24.5](https://github.com/msgbyte/tianji/compare/v1.24.4...v1.24.5) (2025-07-21)
+
+### Features
+
+* add function worker feature ([58f8eca](https://github.com/msgbyte/tianji/commit/58f8eca551933f58186d42a6c39ecd351dc925de))
+* add request payload handle for worker ([24e4fdc](https://github.com/msgbyte/tianji/commit/24e4fdc6f54f488761a0ea60da37d889afbb2add))
+* add worker API endpoint ([6f34f37](https://github.com/msgbyte/tianji/commit/6f34f37bd4bb7b71acb25e4bf5ee9eab45079cbe))
+* implement pagination for worker executions and enhance preview functionality ([d256e5c](https://github.com/msgbyte/tianji/commit/d256e5c706a95024f237d960417e5d2fd856124b))
+* refactor worker routes and add edit functionality with new components ([334484d](https://github.com/msgbyte/tianji/commit/334484d3d863973390f910a21c760773b27e85ef))
+
+### Others
+
+* add pagination component ([558e7cf](https://github.com/msgbyte/tianji/commit/558e7cfd0fe2755917b11ec7bfb5218abda8d3b4))
+* update CPU time display from milliseconds to microseconds for better precision ([6e6a10e](https://github.com/msgbyte/tianji/commit/6e6a10e3e390d9e117313aa1b7e32f536c616f61))
+
 ## [1.24.4](https://github.com/msgbyte/tianji/compare/v1.24.3...v1.24.4) (2025-07-20)
 
 ### Others
