@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,6 +23,17 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
   React.memo((props) => {
     const { execution } = props;
     const { t } = useTranslation();
+
+    const response = useMemo<string>(() => {
+      try {
+        if (typeof execution.responsePayload === 'string') {
+          return execution.responsePayload;
+        }
+        return JSON.stringify(execution.responsePayload as any, null, 2);
+      } catch {
+        return '[Invalid JSON]';
+      }
+    }, [execution.responsePayload]);
 
     return (
       <ScrollArea className="h-full">
@@ -63,32 +74,15 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
             {dayjs(execution.createdAt).format('YYYY-MM-DD HH:mm:ss')}
           </SheetDataSection>
 
-          {/* Response Result */}
           {execution.responsePayload !== null &&
             execution.responsePayload !== undefined && (
               <SheetDataSection label={t('Response')}>
                 <div className="bg-muted mt-1 max-h-[400px] overflow-auto rounded-md p-3">
-                  <code className="text-sm">
-                    {(() => {
-                      try {
-                        if (typeof execution.responsePayload === 'string') {
-                          return execution.responsePayload;
-                        }
-                        return JSON.stringify(
-                          execution.responsePayload as any,
-                          null,
-                          2
-                        );
-                      } catch {
-                        return '[Invalid JSON]';
-                      }
-                    })()}
-                  </code>
+                  <code className="text-sm">{response}</code>
                 </div>
               </SheetDataSection>
             )}
 
-          {/* Error Message */}
           {execution.error && (
             <SheetDataSection label={t('Error')}>
               <div className="mt-1 rounded-md border border-red-200 bg-red-50 p-3">
@@ -97,8 +91,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
             </SheetDataSection>
           )}
 
-          {/* Logs */}
-          {execution.logs &&
+          {Boolean(execution.logs) &&
             Array.isArray(execution.logs) &&
             execution.logs.length > 0 && (
               <SheetDataSection label={t('Logs')}>
