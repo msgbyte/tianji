@@ -9,6 +9,7 @@ import { FunctionWorkerModelSchema } from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
 import { execWorker } from '../../model/worker/index.js';
 import { FunctionWorkerExecutionStatus } from '@prisma/client';
+import { env } from '../../utils/env.js';
 
 export const workerRouter = router({
   // Get all workers in workspace
@@ -185,6 +186,10 @@ export const workerRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { workerId, workspaceId } = input;
+
+      if (!env.enableFunctionWorker) {
+        throw new Error('Function worker is not enabled');
+      }
 
       // Verify worker exists and belongs to workspace
       const worker = await prisma.functionWorker.findUnique({

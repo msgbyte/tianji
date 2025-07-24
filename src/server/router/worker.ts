@@ -3,6 +3,7 @@ import { param, validate } from '../middleware/validate.js';
 import { execWorker } from '../model/worker/index.js';
 import { prisma } from '../model/_client.js';
 import { logger } from '../utils/logger.js';
+import { env } from '../utils/env.js';
 
 export const workerRouter = Router();
 
@@ -13,6 +14,13 @@ workerRouter.all(
   '/:workspaceId/:workerId',
   validate(param('workspaceId').isString(), param('workerId').isString()),
   async (req, res) => {
+    if (!env.enableFunctionWorker) {
+      return res.status(500).json({
+        success: false,
+        error: 'Function worker is not enabled',
+      });
+    }
+
     try {
       const { workspaceId, workerId } = req.params;
       const requestPayload = {

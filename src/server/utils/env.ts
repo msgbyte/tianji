@@ -129,6 +129,7 @@ export const env = {
   disableAccessLogs: checkEnvTrusty(process.env.DISABLE_ACCESS_LOGS), // disable show access logs
   debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
   debugInsights: checkEnvTrusty(process.env.DEBUG_INSIGHTS) || isDev, // debug insights
+  enableFunctionWorker: checkEnvTrusty(process.env.ENABLE_FUNCTION_WORKER),
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {

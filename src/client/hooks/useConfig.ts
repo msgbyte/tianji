@@ -13,6 +13,7 @@ const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   smtpAvailable: false,
   enableBilling: false,
   enableAI: false,
+  enableFunctionWorker: false,
 };
 
 const callAnonymousTelemetry = once(() => {

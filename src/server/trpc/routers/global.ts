@@ -29,6 +29,7 @@ export const globalRouter = router({
         smtpAvailable: z.boolean(),
         enableBilling: z.boolean(),
         enableAI: z.boolean(),
+        enableFunctionWorker: z.boolean(),
       })
     )
     .query(async () => {
@@ -45,6 +46,7 @@ export const globalRouter = router({
         smtpAvailable: env.smtp.enable,
         enableBilling: env.billing.enable,
         enableAI: env.openai.enable,
+        enableFunctionWorker: env.enableFunctionWorker,
       };
     }),
 });
