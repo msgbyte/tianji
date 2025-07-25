@@ -10,6 +10,7 @@ interface CodeEditorProps {
   readOnly?: boolean;
   onChange?: (code: string) => void;
 }
+
 export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
   const { readOnly = false } = props;
   const colorScheme = useSettingsStore((state) => state.colorScheme);

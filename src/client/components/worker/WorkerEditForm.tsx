@@ -16,8 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
+import React, { useState } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
+import { FullscreenModal } from '@/components/ui/fullscreen-modal';
+import { LuMaximize2 } from 'react-icons/lu';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -41,6 +43,7 @@ interface WorkerEditFormProps {
 export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     const form = useForm<WorkerEditFormValues>({
       resolver: zodResolver(formSchema),
@@ -107,7 +110,16 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('JavaScript Code')}</FormLabel>
+                    <FormLabel className="flex items-center justify-between">
+                      {t('JavaScript Code')}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        Icon={LuMaximize2}
+                        onClick={() => setIsFullscreen(true)}
+                      />
+                    </FormLabel>
                     <FormControl>
                       <CodeEditor
                         height={400}
@@ -117,7 +129,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                     </FormControl>
                     <FormDescription>
                       {t(
-                        'Write your JavaScript code that will be executed by this worker'
+                        'Write your JavaScript code that will be executed by this worker. Click the fullscreen button for a better coding experience.'
                       )}
                     </FormDescription>
                     <FormMessage />
@@ -134,6 +146,18 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
               </Button>
             </CardFooter>
           </Card>
+
+          <FullscreenModal
+            isOpen={isFullscreen}
+            onClose={() => setIsFullscreen(false)}
+            title={t('JavaScript Code Editor')}
+          >
+            <CodeEditor
+              height="100%"
+              value={form.watch('code')}
+              onChange={(value) => form.setValue('code', value)}
+            />
+          </FullscreenModal>
         </form>
       </Form>
     );
