@@ -333,7 +333,7 @@ function PageComponent() {
                       <p className="text-muted-foreground text-sm">
                         {t('Live preview of the worker API endpoint:')}
                       </p>
-                      <div className="bg-background relative h-full flex-1 rounded-md border">
+                      <div className="relative h-full flex-1 rounded-md border bg-white">
                         {isLoadingPreview && (
                           <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
                             <div className="flex items-center space-x-2">
