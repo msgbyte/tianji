@@ -203,7 +203,7 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const execution = await execWorker(workerId);
+      const execution = await execWorker(worker.code, workerId);
 
       await createAuditLog({
         workspaceId,
@@ -344,5 +344,22 @@ export const workerRouter = router({
         avgMemoryUsed,
         avgCpuTime,
       };
+    }),
+  testCode: workspaceAdminProcedure
+    .input(
+      z.object({
+        code: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { code } = input;
+
+      if (!env.enableFunctionWorker) {
+        throw new Error('Function worker is not enabled');
+      }
+
+      const execution = await execWorker(code);
+
+      return execution;
     }),
 });

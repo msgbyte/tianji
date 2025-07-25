@@ -19,7 +19,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
 import { FullscreenModal } from '@/components/ui/fullscreen-modal';
-import { LuMaximize2 } from 'react-icons/lu';
+import { LuMaximize2, LuPlay } from 'react-icons/lu';
+import { trpc } from '@/api/trpc';
+import { defaultErrorHandler } from '@/api/trpc';
+import { useCurrentWorkspaceId } from '@/store/user';
+import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -43,7 +53,18 @@ interface WorkerEditFormProps {
 export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
+    const workspaceId = useCurrentWorkspaceId();
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [testResult, setTestResult] = useState<any>(null);
+    const [showTestResult, setShowTestResult] = useState(false);
+
+    const testCodeMutation = trpc.worker.testCode.useMutation({
+      onError: defaultErrorHandler,
+      onSuccess: (result) => {
+        setTestResult(result);
+        setShowTestResult(true);
+      },
+    });
 
     const form = useForm<WorkerEditFormValues>({
       resolver: zodResolver(formSchema),
@@ -61,6 +82,14 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
         await props.onSubmit(values);
       }
     );
+
+    const [handleTestCode, isTestLoading] = useEventWithLoading(async () => {
+      const code = form.getValues('code');
+      await testCodeMutation.mutateAsync({
+        workspaceId,
+        code,
+      });
+    });
 
     return (
       <Form {...form}>
@@ -112,13 +141,23 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                   <FormItem>
                     <FormLabel className="flex items-center justify-between">
                       {t('JavaScript Code')}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        Icon={LuMaximize2}
-                        onClick={() => setIsFullscreen(true)}
-                      />
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          Icon={LuPlay}
+                          onClick={handleTestCode}
+                          loading={isTestLoading}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          Icon={LuMaximize2}
+                          onClick={() => setIsFullscreen(true)}
+                        />
+                      </div>
                     </FormLabel>
                     <FormControl>
                       <CodeEditor
@@ -129,7 +168,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                     </FormControl>
                     <FormDescription>
                       {t(
-                        'Write your JavaScript code that will be executed by this worker. Click the fullscreen button for a better coding experience.'
+                        'Write your JavaScript code that will be executed by this worker. Click the play button to test your code or the fullscreen button for a better coding experience.'
                       )}
                     </FormDescription>
                     <FormMessage />
@@ -158,6 +197,15 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
               onChange={(value) => form.setValue('code', value)}
             />
           </FullscreenModal>
+
+          <Dialog open={showTestResult} onOpenChange={setShowTestResult}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>{t('Test Result')}</DialogTitle>
+              </DialogHeader>
+              {testResult && <WorkerExecutionDetail execution={testResult} />}
+            </DialogContent>
+          </Dialog>
         </form>
       </Form>
     );

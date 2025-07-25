@@ -4,10 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SheetDataSection } from '@/components/ui/sheet';
 import dayjs from 'dayjs';
+import { cn } from '@/utils/style';
 
 interface WorkerExecutionDetailProps {
+  vertical?: boolean;
   execution: {
-    id: string;
+    id?: string;
     status: string;
     duration?: number | null;
     memoryUsed?: number | null;
@@ -21,7 +23,7 @@ interface WorkerExecutionDetailProps {
 
 export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
   React.memo((props) => {
-    const { execution } = props;
+    const { vertical = false, execution } = props;
     const { t } = useTranslation();
 
     const response = useMemo<string>(() => {
@@ -38,41 +40,46 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
     return (
       <ScrollArea className="h-full">
         <div className="space-y-4 p-1">
-          <SheetDataSection label="ID">{execution.id}</SheetDataSection>
+          <div className={cn(vertical ? 'flex flex-col' : 'grid grid-cols-2')}>
+            {execution.id && (
+              <SheetDataSection label="ID">{execution.id}</SheetDataSection>
+            )}
 
-          <SheetDataSection label={t('Status')}>
-            <div className="flex items-center space-x-2">
-              <Badge
-                variant={
-                  execution.status === 'Success' ? 'default' : 'destructive'
-                }
-              >
-                {execution.status}
-              </Badge>
-            </div>
-          </SheetDataSection>
+            <SheetDataSection label={t('Status')}>
+              <div className="flex items-center space-x-2">
+                <Badge
+                  variant={
+                    execution.status === 'Success' ? 'default' : 'destructive'
+                  }
+                >
+                  {execution.status}
+                </Badge>
+              </div>
+            </SheetDataSection>
 
-          <SheetDataSection label={t('Duration')}>
-            {execution.duration !== null && execution.duration !== undefined
-              ? `${execution.duration}ms`
-              : '-'}
-          </SheetDataSection>
+            <SheetDataSection label={t('Duration')}>
+              {execution.duration !== null && execution.duration !== undefined
+                ? `${execution.duration}ms`
+                : '-'}
+            </SheetDataSection>
 
-          <SheetDataSection label={t('Memory Used')}>
-            {execution.memoryUsed !== null && execution.memoryUsed !== undefined
-              ? `${Math.round(execution.memoryUsed / 1024)}KB`
-              : '-'}
-          </SheetDataSection>
+            <SheetDataSection label={t('Memory Used')}>
+              {execution.memoryUsed !== null &&
+              execution.memoryUsed !== undefined
+                ? `${Math.round(execution.memoryUsed / 1024)}KB`
+                : '-'}
+            </SheetDataSection>
 
-          <SheetDataSection label={t('CPU Time')}>
-            {execution.cpuTime !== null && execution.cpuTime !== undefined
-              ? `${Math.round(execution.cpuTime / 1000)}μs`
-              : '-'}
-          </SheetDataSection>
+            <SheetDataSection label={t('CPU Time')}>
+              {execution.cpuTime !== null && execution.cpuTime !== undefined
+                ? `${Math.round(execution.cpuTime / 1000)}μs`
+                : '-'}
+            </SheetDataSection>
 
-          <SheetDataSection label={t('Created At')}>
-            {dayjs(execution.createdAt).format('YYYY-MM-DD HH:mm:ss')}
-          </SheetDataSection>
+            <SheetDataSection label={t('Created At')}>
+              {dayjs(execution.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+            </SheetDataSection>
+          </div>
 
           {execution.responsePayload !== null &&
             execution.responsePayload !== undefined && (

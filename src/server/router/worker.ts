@@ -51,7 +51,7 @@ workerRouter.all(
       }
 
       // Execute the worker
-      const execution = await execWorker(workerId, requestPayload);
+      const execution = await execWorker(worker.code, workerId, requestPayload);
 
       const response = execution.responsePayload;
 

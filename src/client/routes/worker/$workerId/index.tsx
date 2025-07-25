@@ -585,7 +585,10 @@ function PageComponent() {
           </SheetHeader>
 
           {selectedExecution && (
-            <WorkerExecutionDetail execution={selectedExecution} />
+            <WorkerExecutionDetail
+              vertical={true}
+              execution={selectedExecution}
+            />
           )}
         </SheetContent>
       </Sheet>
