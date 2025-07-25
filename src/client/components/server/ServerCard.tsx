@@ -3,7 +3,12 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { isServerOnline } from '@tianji/shared';
 import { ServerStatusInfo } from '../../../types';
 import { Badge } from 'antd';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import {
+  SimpleTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../ui/tooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 import dayjs from 'dayjs';
@@ -22,6 +27,7 @@ import {
 import { LuCpu, LuNetwork } from 'react-icons/lu';
 import { Button } from '../ui/button';
 import { cn } from '@/utils/style';
+import { CountryName } from '../CountryName';
 
 interface ServerCardProps {
   server: ServerStatusInfo;
@@ -88,6 +94,14 @@ export const ServerCard: React.FC<ServerCardProps> = React.memo(
           </CardTitle>
           <div className="text-muted-foreground truncate text-sm">
             {server.hostname}
+            {server.payload.country && (
+              <SimpleTooltip content={server.payload.ip}>
+                <div className="text-muted-foreground ml-1">
+                  (
+                  <CountryName country={server.payload.country} />)
+                </div>
+              </SimpleTooltip>
+            )}
           </div>
         </CardHeader>
 

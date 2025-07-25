@@ -3,6 +3,7 @@ import { body, header, param, validate } from '../middleware/validate.js';
 import { recordServerStatus } from '../model/serverStatus.js';
 import fs from 'fs-extra';
 import { libraryPath } from '../utils/lib.js';
+import { getIpAddress, getLocation } from '../utils/detect.js';
 
 export const serverStatusRouter = Router();
 
@@ -21,7 +22,14 @@ serverStatusRouter.post(
   async (req, res) => {
     const body = req.body;
 
-    await recordServerStatus(body);
+    const ip = getIpAddress(req);
+    const location = await getLocation(ip);
+    const requestContext = {
+      country: location?.country,
+      ip,
+    };
+
+    await recordServerStatus(body, requestContext);
 
     res.send('success');
   }

@@ -1,4 +1,7 @@
-import { ServerStatusInfo } from '../../types/index.js';
+import {
+  ServerStatusInfo,
+  ServerStatusRequestContext,
+} from '../../types/index.js';
 import { promServerCounter } from '../utils/prometheus/client.js';
 import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared.js';
 import { isServerOnline } from '@tianji/shared';
@@ -91,7 +94,10 @@ createSubscribeInitializer('onServerStatusUpdate', async (workspaceId) => {
   return await getServerMapFromCache(workspaceId);
 });
 
-export async function recordServerStatus(info: ServerStatusInfo) {
+export async function recordServerStatus(
+  info: ServerStatusInfo,
+  requestContext: ServerStatusRequestContext
+) {
   const { workspaceId, name, hostname, timeout, payload } = info;
 
   if (!workspaceId || !name || !hostname) {
@@ -113,7 +119,10 @@ export async function recordServerStatus(info: ServerStatusInfo) {
     hostname,
     timeout,
     updatedAt: Date.now(),
-    payload,
+    payload: {
+      ...requestContext,
+      ...payload,
+    },
   };
 
   // Save updated server map to cache

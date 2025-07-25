@@ -7,7 +7,12 @@ import { isServerOnline } from '@tianji/shared';
 import { max, orderBy } from 'lodash-es';
 import { ServerStatusInfo } from '../../../types';
 import { Badge } from 'antd';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import {
+  SimpleTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../ui/tooltip';
 import dayjs from 'dayjs';
 import { filesize } from 'filesize';
 import prettyMilliseconds from 'pretty-ms';
@@ -16,6 +21,7 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { ServerRowExpendView } from './ServerRowExpendView';
 import { FaDocker } from 'react-icons/fa';
 import { ColorizedText } from './ColorizedText';
+import { CountryName } from '../CountryName';
 
 const columnHelper = createColumnHelper<ServerStatusInfo>();
 
@@ -85,6 +91,18 @@ export const ServerList: React.FC<ServerListProps> = React.memo((props) => {
       columnHelper.accessor('hostname', {
         header: t('Host Name'),
         size: 150,
+      }),
+      columnHelper.display({
+        header: t('IP'),
+        size: 150,
+        cell: (props) =>
+          props.row.original.payload.country ? (
+            <SimpleTooltip content={props.row.original.payload.ip}>
+              <CountryName country={props.row.original.payload.country} />
+            </SimpleTooltip>
+          ) : (
+            <span>{props.row.original.payload.ip}</span>
+          ),
       }),
       columnHelper.accessor('payload.uptime', {
         header: t('Uptime'),

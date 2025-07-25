@@ -6,7 +6,7 @@ export interface ServerStatusInfo {
   hostname: string;
   timeout: number;
   updatedAt: number;
-  payload: ServerStatusInfoPayload;
+  payload: ServerStatusInfoPayload & ServerStatusRequestContext;
 }
 
 export interface ServerStatusInfoPayload {
@@ -29,6 +29,11 @@ export interface ServerStatusInfoPayload {
 
   // docker info
   docker?: ServerStatusDockerContainerPayload[];
+}
+
+export interface ServerStatusRequestContext {
+  country?: string;
+  ip?: string;
 }
 
 export interface ProcessInfo {
