@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { CommonHeader } from '@/components/CommonHeader';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SimpleTooltip } from '@/components/ui/tooltip';
@@ -21,6 +20,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { CodeEditor } from '@/components/CodeEditor';
+
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
 import {
@@ -51,6 +51,11 @@ import {
 } from '@/components/ui/sheet';
 import { WorkerExecutionsTable } from '@/components/worker/WorkerExecutionsTable';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
+import {
+  UrlParamsInput,
+  getQueryString,
+  type UrlParam,
+} from '@/components/worker/UrlParamsInput';
 import { toast } from 'sonner';
 
 export const Route = createFileRoute('/worker/$workerId/')({
@@ -71,6 +76,12 @@ function PageComponent() {
   const [pageSize] = useState(10);
   const [previewKey, setPreviewKey] = useState(0);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewParams, setPreviewParams] = useState<UrlParam[]>([
+    { key: '', value: '' },
+  ]);
+  const [activePreviewParams, setActivePreviewParams] = useState<UrlParam[]>([
+    { key: '', value: '' },
+  ]);
 
   const {
     data: worker,
@@ -169,6 +180,7 @@ function PageComponent() {
   });
 
   const handleExecutePreview = useEvent(() => {
+    setActivePreviewParams([...previewParams]);
     setIsLoadingPreview(true);
     setPreviewKey((prev) => prev + 1);
   });
@@ -178,12 +190,16 @@ function PageComponent() {
   });
 
   const handleOpenInNewWindow = useEvent(() => {
-    const url = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
+    const baseUrl = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
+    const queryString = getQueryString(previewParams);
+    const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
     window.open(url, '_blank', 'noopener,noreferrer');
   });
 
   const handleCopyUrl = useEvent(async () => {
-    const url = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
+    const baseUrl = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
+    const queryString = getQueryString(previewParams);
+    const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
     try {
       await navigator.clipboard.writeText(url);
       toast.success(t('API endpoint URL copied to clipboard'));
@@ -328,28 +344,37 @@ function PageComponent() {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1">
+                  <UrlParamsInput
+                    params={previewParams}
+                    onChange={setPreviewParams}
+                  />
+
                   {previewKey > 0 ? (
-                    <div className="flex h-full flex-col space-y-2">
-                      <p className="text-muted-foreground text-sm">
-                        {t('Live preview of the worker API endpoint:')}
-                      </p>
-                      <div className="relative h-full flex-1 rounded-md border bg-white">
-                        {isLoadingPreview && (
-                          <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
-                            <div className="flex items-center space-x-2">
-                              <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
-                              <span className="text-sm">{t('Loading...')}</span>
+                    <div className="flex h-full flex-col space-y-4">
+                      <div className="flex-1 space-y-2">
+                        <p className="text-muted-foreground text-sm">
+                          {t('Live preview of the worker API endpoint:')}
+                        </p>
+                        <div className="relative h-full flex-1 rounded-md border bg-white">
+                          {isLoadingPreview && (
+                            <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
+                              <div className="flex items-center space-x-2">
+                                <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
+                                <span className="text-sm">
+                                  {t('Loading...')}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        <iframe
-                          key={previewKey}
-                          src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}`}
-                          className="h-full w-full rounded-md"
-                          title="Worker Preview"
-                          sandbox="allow-same-origin allow-scripts"
-                          onLoad={handlePreviewLoad}
-                        />
+                          )}
+                          <iframe
+                            key={previewKey}
+                            src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}${getQueryString(activePreviewParams) ? `?${getQueryString(activePreviewParams)}` : ''}`}
+                            className="h-full w-full rounded-md"
+                            title="Worker Preview"
+                            sandbox="allow-same-origin allow-scripts"
+                            onLoad={handlePreviewLoad}
+                          />
+                        </div>
                       </div>
                     </div>
                   ) : (

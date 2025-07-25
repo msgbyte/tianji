@@ -456,6 +456,9 @@ importers:
       pretty-ms:
         specifier: ^9.2.0
         version: 9.2.0
+      qs:
+        specifier: ^6.14.0
+        version: 6.14.0
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -562,6 +565,9 @@ importers:
       '@types/node':
         specifier: 22.13.11
         version: 22.13.11
+      '@types/qs':
+        specifier: ^6.9.18
+        version: 6.9.18
       '@types/react':
         specifier: 18.2.78
         version: 18.2.78
@@ -13605,10 +13611,6 @@ packages:
 
   qs@6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
-    engines: {node: '>=0.6'}
-
-  qs@6.13.1:
-    resolution: {integrity: sha512-EJPeIn0CYrGu+hli1xilKAPXODtJ12T0sP63Ijx2/khC2JtuaN3JyNIpvmnkmaEtha9ocbG4A4cMcr+TvqvwQg==}
     engines: {node: '>=0.6'}
 
   qs@6.14.0:
@@ -29053,7 +29055,7 @@ snapshots:
       extend: 3.0.2
       gaxios: 6.7.1(encoding@0.1.13)
       google-auth-library: 9.15.0(encoding@0.1.13)
-      qs: 6.13.1
+      qs: 6.14.0
       url-template: 2.0.8
       uuid: 9.0.1
     transitivePeerDependencies:
@@ -33739,10 +33741,6 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
-  qs@6.13.1:
-    dependencies:
-      side-channel: 1.1.0
-
   qs@6.14.0:
     dependencies:
       side-channel: 1.1.0
@@ -37202,7 +37200,7 @@ snapshots:
   url@0.11.4:
     dependencies:
       punycode: 1.4.1
-      qs: 6.13.1
+      qs: 6.14.0
 
   urlpattern-polyfill@10.0.0: {}
 
