@@ -28,6 +28,7 @@ var (
 	Name        = flag.String("name", "", "The identification name for this machine")
 	Interval    = flag.Int("interval", 5.0, "Input the INTERVAL, seconed")
 	IsVnstat    = flag.Bool("vnstat", false, "Use vnstat for traffic statistics, linux only")
+	Verbose     = flag.Bool("verbose", false, "Enable verbose logging to show full payload content")
 )
 
 var version = "1.0.0"
@@ -109,10 +110,15 @@ func sendUDPPack(url url.URL, payload ReportData) {
 
 	// serialized message
 	jsonData, err := jsoniter.Marshal(payload)
-	log.Printf("[Report] %s\n", jsonData)
 	if err != nil {
 		log.Println("Error encoding JSON:", err)
 		return
+	}
+
+	if *Verbose {
+		log.Printf("[Report] %s\n", jsonData)
+	} else {
+		log.Printf("[Report] Payload length: %d bytes\n", len(jsonData))
 	}
 
 	// Send message
@@ -134,7 +140,12 @@ func sendHTTPRequest(_url url.URL, payload ReportData, client *http.Client) {
 		log.Println("Error encoding JSON:", err)
 		return
 	}
-	log.Printf("[Report] %s\n", jsonData)
+
+	if *Verbose {
+		log.Printf("[Report] %s\n", jsonData)
+	} else {
+		log.Printf("[Report] Payload length: %d bytes\n", len(jsonData))
+	}
 
 	reportUrl, err := url.JoinPath(_url.String(), "/serverStatus/report")
 	if err != nil {
