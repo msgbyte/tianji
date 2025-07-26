@@ -71,7 +71,7 @@ export const UrlParamsInput: React.FC<UrlParamsInputProps> = ({
       <div className="flex items-center">
         <Label className="text-sm font-medium">{t('URL Parameters')}</Label>
       </div>
-      <div className="space-y-2">
+      <div className="max-h-[200px] space-y-2 overflow-y-auto p-0.5">
         {params.map((param, index) => (
           <div key={index} className="flex items-center space-x-2">
             <Input

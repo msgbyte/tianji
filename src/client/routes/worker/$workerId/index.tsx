@@ -343,38 +343,34 @@ function PageComponent() {
                     </SimpleTooltip>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1">
+                <CardContent className="flex flex-1 flex-col">
                   <UrlParamsInput
                     params={previewParams}
                     onChange={setPreviewParams}
                   />
 
                   {previewKey > 0 ? (
-                    <div className="flex h-full flex-col space-y-4">
-                      <div className="flex-1 space-y-2">
-                        <p className="text-muted-foreground text-sm">
-                          {t('Live preview of the worker API endpoint:')}
-                        </p>
-                        <div className="relative h-full flex-1 rounded-md border bg-white">
-                          {isLoadingPreview && (
-                            <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
-                              <div className="flex items-center space-x-2">
-                                <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
-                                <span className="text-sm">
-                                  {t('Loading...')}
-                                </span>
-                              </div>
+                    <div className="flex h-full flex-1 flex-col space-y-4">
+                      <p className="text-muted-foreground text-sm">
+                        {t('Live preview of the worker API endpoint:')}
+                      </p>
+                      <div className="relative h-full flex-1 rounded-md border bg-white">
+                        {isLoadingPreview && (
+                          <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
+                            <div className="flex items-center space-x-2">
+                              <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
+                              <span className="text-sm">{t('Loading...')}</span>
                             </div>
-                          )}
-                          <iframe
-                            key={previewKey}
-                            src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}${getQueryString(activePreviewParams) ? `?${getQueryString(activePreviewParams)}` : ''}`}
-                            className="h-full w-full rounded-md"
-                            title="Worker Preview"
-                            sandbox="allow-same-origin allow-scripts"
-                            onLoad={handlePreviewLoad}
-                          />
-                        </div>
+                          </div>
+                        )}
+                        <iframe
+                          key={previewKey}
+                          src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}${getQueryString(activePreviewParams) ? `?${getQueryString(activePreviewParams)}` : ''}`}
+                          className="h-full w-full rounded-md"
+                          title="Worker Preview"
+                          sandbox="allow-same-origin allow-scripts"
+                          onLoad={handlePreviewLoad}
+                        />
                       </div>
                     </div>
                   ) : (
