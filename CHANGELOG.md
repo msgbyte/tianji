@@ -1,5 +1,26 @@
 
 
+## [1.24.7](https://github.com/msgbyte/tianji/compare/v1.24.6...v1.24.7) (2025-07-27)
+
+### Features
+
+* add code testing functionality in worker edit form ([849d51b](https://github.com/msgbyte/tianji/commit/849d51bf530748ee2ad85cd2b3553c2f9a41d201))
+* add country and ip for server ([374a302](https://github.com/msgbyte/tianji/commit/374a302f25d36db336db1a658b256565d15e903f))
+* add env switch for worker which can control permission and risk ([c926c5e](https://github.com/msgbyte/tianji/commit/c926c5e89326993fdaec0fa024fd44b2f17b5f7d))
+* add fullscreen modal for code editor in worker edit form ([5a7a2ed](https://github.com/msgbyte/tianji/commit/5a7a2ed7490e7c527b2b8772046ea5ab60011112))
+* add UrlParamsInput component for handling URL parameters ([9a29c48](https://github.com/msgbyte/tianji/commit/9a29c488aaf96d325d4b9cedb654f95ea281523d))
+* add verbose logging option to display full payload content or its length ([a62aa22](https://github.com/msgbyte/tianji/commit/a62aa2242397b50569bfad2242f8cdf6ee23ce2c))
+
+### Document
+
+* update openapi schema ([bf1c684](https://github.com/msgbyte/tianji/commit/bf1c6841afc9c7ab65c93fccb069e81015cd532b))
+
+### Others
+
+* update background of worker preview ([38ef5ae](https://github.com/msgbyte/tianji/commit/38ef5aeb550533b5a5489fce5cb05cc1c6c0eadc))
+* update model prices and context window configurations in JSON files ([8a8855c](https://github.com/msgbyte/tianji/commit/8a8855cecc9abbda3eee39dde5b06bf865a155ec))
+* update UrlParamsInput component to improve layout and add overflow handling ([1a085a6](https://github.com/msgbyte/tianji/commit/1a085a6d43b20d0c59c3f4c6d92ef34c901d6ea8))
+
 ## [1.24.6](https://github.com/msgbyte/tianji/compare/v1.24.5...v1.24.6) (2025-07-22)
 
 ### Others
