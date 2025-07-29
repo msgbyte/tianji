@@ -58,6 +58,7 @@ export async function execWorker(
       requestPayload,
       error: String(e),
       logs: [], // TODO: add logs for error worker
+      responsePayload: null,
     };
 
     if (workerId) {

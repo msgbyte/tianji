@@ -96,7 +96,7 @@ createSubscribeInitializer('onServerStatusUpdate', async (workspaceId) => {
 
 export async function recordServerStatus(
   info: ServerStatusInfo,
-  requestContext: ServerStatusRequestContext
+  requestContext: ServerStatusRequestContext = {}
 ) {
   const { workspaceId, name, hostname, timeout, payload } = info;
 
