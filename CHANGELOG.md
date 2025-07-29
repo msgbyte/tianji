@@ -1,5 +1,11 @@
 
 
+## [1.24.8](https://github.com/msgbyte/tianji/compare/v1.24.7...v1.24.8) (2025-07-29)
+
+### Bug Fixes
+
+* fix type check [#213](https://github.com/msgbyte/tianji/issues/213) ([06ab175](https://github.com/msgbyte/tianji/commit/06ab17595012a0ea1f73b22652d72491a1f56f0e))
+
 ## [1.24.7](https://github.com/msgbyte/tianji/compare/v1.24.6...v1.24.7) (2025-07-27)
 
 ### Features
