@@ -13,7 +13,7 @@ export async function execWorker(
 ) {
   const requestPayloadString = isPlainObject(requestPayload)
     ? JSON.stringify(requestPayload)
-    : '';
+    : '{}';
 
   try {
     const { isolate, logger, result, usage } = await runCodeInIVM(`
@@ -37,9 +37,7 @@ export async function execWorker(
       cpuTime,
       requestPayload,
       responsePayload: result,
-      logs: Array.isArray(logger)
-        ? logger.map((log) => JSON.stringify(log.join(' ')))
-        : [],
+      logs: Array.isArray(logger) ? logger : [],
     };
 
     if (workerId) {

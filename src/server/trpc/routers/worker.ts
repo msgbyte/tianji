@@ -8,8 +8,12 @@ import { z } from 'zod';
 import { FunctionWorkerModelSchema } from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
 import { execWorker } from '../../model/worker/index.js';
-import { FunctionWorkerExecutionStatus } from '@prisma/client';
+import {
+  FunctionWorkerExecutionStatus,
+  WorkspaceAuditLogType,
+} from '@prisma/client';
 import { env } from '../../utils/env.js';
+import { workerCronManager } from '../../model/worker/manager.js';
 
 export const workerRouter = router({
   // Get all workers in workspace
@@ -61,34 +65,76 @@ export const workerRouter = router({
         description: z.string().optional(),
         code: z.string().min(1, 'Code is required'),
         active: z.boolean().default(true),
+        enableCron: z.boolean().default(false),
+        cronExpression: z.string().optional(),
       })
     )
     .output(FunctionWorkerModelSchema)
     .mutation(async ({ input, ctx }) => {
-      const { id, name, description, code, active, workspaceId } = input;
+      const {
+        id,
+        name,
+        description,
+        code,
+        active,
+        enableCron,
+        cronExpression,
+        workspaceId,
+      } = input;
 
-      const worker = await prisma.functionWorker.upsert({
-        where: {
-          id: id || '',
-        },
-        create: {
-          workspaceId,
-          name,
-          description,
-          code,
-          active,
-        },
-        update: {
-          name,
-          description,
-          code,
-          active,
-        },
+      // Validate cron expression if provided
+      if (enableCron && cronExpression) {
+        try {
+          const { Cron } = await import('croner');
+          const cronJob = new Cron(cronExpression, { paused: true }); // Test cron expression validity
+
+          // Check if interval is less than 1 minute
+          const now = new Date();
+          const nextRun = cronJob.nextRun(now);
+          if (!nextRun) {
+            throw new Error(
+              `Invalid cron expression: ${cronExpression}. Unable to calculate next execution time`
+            );
+          }
+
+          const secondRun = cronJob.nextRun(nextRun);
+          if (!secondRun) {
+            throw new Error(
+              `Invalid cron expression: ${cronExpression}. Unable to calculate subsequent execution time`
+            );
+          }
+
+          const intervalMs = secondRun.getTime() - nextRun.getTime();
+          const intervalSeconds = intervalMs / 1000;
+
+          if (intervalSeconds < 60) {
+            throw new Error(
+              `Cron expression interval is too frequent. Minimum interval is 1 minute, but got ${intervalSeconds} seconds`
+            );
+          }
+        } catch (err) {
+          if (err instanceof Error) {
+            throw err;
+          }
+          throw new Error(`Invalid cron expression: ${cronExpression}`);
+        }
+      }
+
+      const worker = await workerCronManager.upsert({
+        id,
+        workspaceId,
+        name,
+        description,
+        code,
+        active,
+        enableCron,
+        cronExpression: cronExpression || null,
       });
 
       await createAuditLog({
         workspaceId,
         relatedId: worker.id,
+        relatedType: WorkspaceAuditLogType.FunctionWorker,
         content: id
           ? `Updated worker: ${name} by ${ctx.user?.username}(${ctx.user?.id})`
           : `Created worker: ${name} by ${ctx.user?.username}(${ctx.user?.id})`,
@@ -119,12 +165,10 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const deletedWorker = await prisma.functionWorker.delete({
-        where: {
-          id: workerId,
-          workspaceId,
-        },
-      });
+      const deletedWorker = await workerCronManager.delete(
+        workspaceId,
+        workerId
+      );
 
       await createAuditLog({
         workspaceId,
@@ -158,14 +202,16 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const updatedWorker = await prisma.functionWorker.update({
-        where: {
-          id: workerId,
-          workspaceId,
-        },
-        data: {
-          active,
-        },
+      // Use workerCronManager.upsert to update both database and cron manager state
+      const updatedWorker = await workerCronManager.upsert({
+        id: workerId,
+        workspaceId,
+        name: worker.name,
+        description: worker.description ?? undefined,
+        code: worker.code,
+        active,
+        enableCron: worker.enableCron,
+        cronExpression: worker.cronExpression,
       });
 
       await createAuditLog({

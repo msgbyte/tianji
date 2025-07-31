@@ -4,6 +4,7 @@ import { initUdpServer } from './udp/server.js';
 import { createServer } from 'http';
 import { initSocketio } from './ws/index.js';
 import { monitorManager } from './model/monitor/index.js';
+import { workerCronManager } from './model/worker/manager.js';
 import { env } from './utils/env.js';
 import { initCronjob } from './cronjob/index.js';
 import { logger } from './utils/logger.js';
@@ -33,6 +34,10 @@ if (env.clickhouse.enable) {
 }
 
 monitorManager.startAll();
+
+if (env.enableFunctionWorker) {
+  workerCronManager.startAll();
+}
 
 httpServer.listen(port, () => {
   logger.info(`Server is listening on port ${port}...`);

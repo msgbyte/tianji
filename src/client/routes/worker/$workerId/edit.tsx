@@ -77,6 +77,8 @@ function PageComponent() {
             description: worker.description || '',
             code: worker.code,
             active: worker.active,
+            enableCron: worker.enableCron || false,
+            cronExpression: worker.cronExpression || '',
           }}
           onSubmit={handleSubmit}
         />

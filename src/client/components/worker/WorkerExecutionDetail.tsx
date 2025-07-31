@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { SheetDataSection } from '@/components/ui/sheet';
 import dayjs from 'dayjs';
 import { cn } from '@/utils/style';
+import { formatDate } from '@/utils/date';
 
 interface WorkerExecutionDetailProps {
   vertical?: boolean;
@@ -17,7 +18,7 @@ interface WorkerExecutionDetailProps {
     createdAt: string;
     error?: string | null;
     responsePayload?: unknown;
-    logs?: unknown;
+    logs?: (string | number)[][];
   };
 }
 
@@ -102,12 +103,27 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
             Array.isArray(execution.logs) &&
             execution.logs.length > 0 && (
               <SheetDataSection label={t('Logs')}>
-                <ScrollArea className="mt-1 h-32 rounded-md bg-gray-900 p-3 text-gray-100">
-                  {execution.logs.map((log: any, index: number) => (
-                    <div key={index} className="font-mono text-sm">
-                      {String(log)}
-                    </div>
-                  ))}
+                <ScrollArea className="mt-1 h-32 rounded-md bg-gray-900 text-gray-100">
+                  <div className="px-3 py-2">
+                    {execution.logs.map((log, index) => (
+                      <div
+                        key={index}
+                        className="hover:bg-muted p-1 font-mono text-sm"
+                      >
+                        {Array.isArray(log) ? (
+                          <div className="flex items-center space-x-2">
+                            <Badge>{log[0]}</Badge>
+                            <span className="opacity-60">
+                              {formatDate(log[1])}
+                            </span>
+                            <span>{log[2]}</span>
+                          </div>
+                        ) : (
+                          String(log)
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </ScrollArea>
               </SheetDataSection>
             )}

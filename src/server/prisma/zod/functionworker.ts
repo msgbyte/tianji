@@ -9,6 +9,8 @@ export const FunctionWorkerModelSchema = z.object({
   description: z.string().nullish(),
   code: z.string(),
   active: z.boolean(),
+  enableCron: z.boolean(),
+  cronExpression: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

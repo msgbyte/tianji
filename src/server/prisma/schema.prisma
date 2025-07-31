@@ -770,6 +770,7 @@ enum WorkspaceAuditLogType {
   Monitor
   Notification
   Task
+  FunctionWorker
 }
 
 model Survey {
@@ -949,14 +950,16 @@ model AIGatewayLogs {
 }
 
 model FunctionWorker {
-  id          String   @id @default(cuid()) @db.VarChar(30)
-  workspaceId String   @db.VarChar(30)
-  name        String
-  description String?
-  code        String
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  id             String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId    String   @db.VarChar(30)
+  name           String
+  description    String?
+  code           String
+  active         Boolean  @default(true)
+  enableCron     Boolean  @default(false) // Enable cron scheduling
+  cronExpression String? // Cron expression for scheduled execution
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 

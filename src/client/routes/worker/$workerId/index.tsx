@@ -233,6 +233,15 @@ function PageComponent() {
               <Badge variant={worker.active ? 'default' : 'secondary'}>
                 {worker.active ? t('Active') : t('Inactive')}
               </Badge>
+              {worker.enableCron && (
+                <Badge
+                  variant="outline"
+                  className="flex items-center space-x-1"
+                >
+                  <LuActivity className="h-3 w-3" />
+                  <span>{t('Cron Enabled')}</span>
+                </Badge>
+              )}
             </div>
           }
           desc={worker.description || undefined}
@@ -493,6 +502,40 @@ function PageComponent() {
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-4">
+            {/* Cron Information */}
+            {worker.enableCron && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <LuActivity className="h-5 w-5" />
+                    <span>{t('Cron Schedule')}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <div className="text-muted-foreground text-sm font-medium">
+                        {t('Expression')}
+                      </div>
+                      <div className="font-mono text-sm">
+                        {worker.cronExpression}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-sm font-medium">
+                        {t('Status')}
+                      </div>
+                      <div className="text-sm">
+                        {worker.active
+                          ? t('Running')
+                          : t('Stopped (Worker Inactive)')}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {stats && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>

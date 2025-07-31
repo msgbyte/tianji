@@ -14,12 +14,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
 import { FullscreenModal } from '@/components/ui/fullscreen-modal';
-import { LuMaximize2, LuPlay } from 'react-icons/lu';
+import { LuMaximize2, LuPlay, LuClock } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -31,12 +33,27 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  description: z.string().optional(),
-  code: z.string().min(1, 'Code is required'),
-  active: z.boolean().default(true),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required').max(100),
+    description: z.string().optional(),
+    code: z.string().min(1, 'Code is required'),
+    active: z.boolean().default(true),
+    enableCron: z.boolean().default(false),
+    cronExpression: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.enableCron && !data.cronExpression) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Cron expression is required when cron is enabled',
+      path: ['cronExpression'],
+    }
+  );
 
 const defaultCode = `function fetch() {
   return 'Hello, World!';
@@ -73,6 +90,8 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
         description: '',
         code: defaultCode,
         active: true,
+        enableCron: false,
+        cronExpression: '',
         ...props.defaultValues,
       },
     });
@@ -175,6 +194,98 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                   </FormItem>
                 )}
               />
+
+              <div className="flex flex-col space-y-4 rounded-lg border p-4">
+                <FormField
+                  control={form.control}
+                  name="enableCron"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          {t('Enable Cron Schedule')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t('Automatically execute this worker on a schedule')}
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch('enableCron') && (
+                  <FormField
+                    control={form.control}
+                    name="cronExpression"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Cron Expression')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="0 */5 * * * *"
+                            className="font-mono"
+                          />
+                        </FormControl>
+                        <FormDescription className="space-y-2">
+                          <div>
+                            {t(
+                              'Enter a cron expression to define when the worker should run automatically.'
+                            )}
+                          </div>
+                          <div>
+                            <div className="mb-2 text-sm font-medium">
+                              {t('Common Examples:')}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {[
+                                {
+                                  expr: '0 */5 * * * *',
+                                  desc: t('Every 5 minutes'),
+                                },
+                                { expr: '0 0 * * * *', desc: t('Every hour') },
+                                {
+                                  expr: '0 0 9 * * *',
+                                  desc: t('Daily at 9 AM'),
+                                },
+                                {
+                                  expr: '0 0 9 * * 1',
+                                  desc: t('Weekly on Monday at 9 AM'),
+                                },
+                                {
+                                  expr: '0 0 9 1 * *',
+                                  desc: t('Monthly on 1st at 9 AM'),
+                                },
+                              ].map((example) => (
+                                <Badge
+                                  key={example.expr}
+                                  variant="outline"
+                                  className="hover:bg-accent cursor-pointer"
+                                  onClick={() =>
+                                    form.setValue(
+                                      'cronExpression',
+                                      example.expr
+                                    )
+                                  }
+                                >
+                                  {example.desc}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
             </CardContent>
 
             <CardFooter>
