@@ -179,7 +179,7 @@ function PageComponent() {
           </div>
 
           <div className="mb-2">
-            <FilterSection />
+            <FilterSection direction="horizontal" />
           </div>
 
           <ScrollArea className="flex-1 overflow-hidden">

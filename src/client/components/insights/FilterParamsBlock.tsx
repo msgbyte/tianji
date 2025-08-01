@@ -64,8 +64,10 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
     return (
       <div
         className={cn(
-          'flex w-full cursor-pointer flex-col items-center gap-1 rounded-lg border border-zinc-300 px-2 py-1 dark:border-zinc-700',
-          direction === 'horizontal' && 'w-auto flex-row'
+          'flex cursor-pointer gap-1 rounded-lg border border-zinc-300 px-2 py-1 dark:border-zinc-700',
+          direction === 'horizontal'
+            ? 'w-auto flex-row items-center'
+            : 'w-full flex-col'
         )}
       >
         {/* Params */}

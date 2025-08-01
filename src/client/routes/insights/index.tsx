@@ -111,7 +111,7 @@ function PageComponent() {
               <ScrollArea className="h-full overflow-hidden p-4">
                 <div className="flex flex-col space-y-8">
                   <MetricsSection />
-                  <FilterSection />
+                  <FilterSection direction="vertical" />
                   <BreakdownSection />
                 </div>
               </ScrollArea>
