@@ -11,6 +11,7 @@ import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
+import { WebsiteSimpleMap } from '@/components/website/WebsiteSimpleMap';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
 import { useInsightsStore } from '@/store/insights';
@@ -154,12 +155,10 @@ function PageComponent() {
           </Card.Grid>
           <Card.Grid
             hoverable={false}
-            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"
+            className="!w-full sm:min-h-[470px] sm:!w-full md:!w-2/3"
           >
-            <WebsiteMetricsTable
+            <WebsiteSimpleMap
               websiteId={websiteId}
-              type="title"
-              title={[t('Title'), t('Views')]}
               startAt={startAt}
               endAt={endAt}
             />
