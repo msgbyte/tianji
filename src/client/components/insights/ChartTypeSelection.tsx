@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select';
 import { TimeEventChartType } from '../chart/TimeEventChart';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
@@ -24,32 +18,35 @@ export const ChartTypeSelection: React.FC<ChartTypeSelectionProps> = React.memo(
     const { value, onChange } = props;
     const { t } = useTranslation();
 
-    const getIcon = () => {
-      switch (value) {
-        case 'line':
-          return <LuChartLine />;
-        case 'area':
-          return <LuChartArea />;
-        case 'stack':
-          return <LuChartArea />;
-        case 'bar':
-          return <LuChartBar />;
-        case 'pie':
-          return <LuChartPie />;
-        default:
-          return <LuChartArea />;
-      }
+    const chartTypes = [
+      { value: 'line' as const, label: t('Line Chart'), icon: <LuChartLine /> },
+      { value: 'area' as const, label: t('Area Chart'), icon: <LuChartArea /> },
+      {
+        value: 'stack' as const,
+        label: t('Stack Chart'),
+        icon: <LuChartArea />,
+      },
+      { value: 'bar' as const, label: t('Bar Chart'), icon: <LuChartBar /> },
+      { value: 'pie' as const, label: t('Pie Chart'), icon: <LuChartPie /> },
+    ];
+
+    const getIcon = (type: TimeEventChartType) => {
+      const chartType = chartTypes.find((item) => item.value === type);
+      return chartType?.icon || <LuChartArea />;
     };
 
     return (
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-[60px]">{getIcon()}</SelectTrigger>
+        <SelectTrigger className="w-[60px]">{getIcon(value)}</SelectTrigger>
         <SelectContent align="end">
-          <SelectItem value="line">{t('Line Chart')}</SelectItem>
-          <SelectItem value="area">{t('Area Chart')}</SelectItem>
-          <SelectItem value="stack">{t('Stack Chart')}</SelectItem>
-          <SelectItem value="bar">{t('Bar Chart')}</SelectItem>
-          <SelectItem value="pie">{t('Pie Chart')}</SelectItem>
+          {chartTypes.map((chartType) => (
+            <SelectItem key={chartType.value} value={chartType.value}>
+              <div className="flex items-center gap-1">
+                {chartType.icon}
+                <span>{t(chartType.label)}</span>
+              </div>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     );
