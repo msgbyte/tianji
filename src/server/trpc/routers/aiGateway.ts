@@ -240,6 +240,7 @@ export const aiGatewayRouter = router({
         gatewayId: z.string(),
         cursor: z.string().optional(),
         limit: z.number().int().min(1).max(100).default(20),
+        logId: z.string().optional(),
       })
     )
     .output(
@@ -256,7 +257,7 @@ export const aiGatewayRouter = router({
       )
     )
     .query(async ({ input }) => {
-      const { workspaceId, gatewayId, cursor, limit } = input;
+      const { workspaceId, gatewayId, cursor, limit, logId } = input;
 
       const { items, nextCursor } = await fetchDataByCursor(
         prisma.aIGatewayLogs,
@@ -264,6 +265,7 @@ export const aiGatewayRouter = router({
           where: {
             workspaceId,
             gatewayId,
+            ...(logId && { id: logId }),
           },
           limit,
           cursor,

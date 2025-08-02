@@ -3,6 +3,7 @@ import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
 import { useState, useRef } from 'react';
+import { Input } from '@/components/ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -17,11 +18,12 @@ import { Loading } from '@/components/Loading';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useNavigate } from '@tanstack/react-router';
-import { LuPencil, LuTrash, LuRefreshCw } from 'react-icons/lu';
+import { LuPencil, LuTrash, LuRefreshCw, LuSearch } from 'react-icons/lu';
 import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
 import { useWatch } from '@/hooks/useWatch';
+import { useDebounce } from 'ahooks';
 
 export const Route = createFileRoute('/aiGateway/$gatewayId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -31,6 +33,8 @@ export const Route = createFileRoute('/aiGateway/$gatewayId/')({
 function PageComponent() {
   const { gatewayId } = Route.useParams<{ gatewayId: string }>();
   const workspaceId = useCurrentWorkspaceId();
+  const [_searchLogId, setSearchLogId] = useState<string>('');
+  const searchLogId = useDebounce(_searchLogId);
   const { data: gateway, isLoading } = trpc.aiGateway.info.useQuery({
     workspaceId,
     gatewayId,
@@ -140,11 +144,31 @@ function PageComponent() {
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-lg font-medium">{t('Gateway Logs')}</h3>
                 <div className="flex items-center space-x-2">
-                  <ManualRefreshButton gatewayId={gatewayId} />
-                  <RealtimeUpdateButton gatewayId={gatewayId} />
+                  <ManualRefreshButton
+                    gatewayId={gatewayId}
+                    logId={searchLogId || undefined}
+                  />
+                  <RealtimeUpdateButton
+                    gatewayId={gatewayId}
+                    logId={searchLogId || undefined}
+                  />
                 </div>
               </div>
-              <AIGatewayLogTable gatewayId={gatewayId} />
+              <div className="mb-4 flex items-center space-x-2">
+                <div className="relative max-w-xs">
+                  <LuSearch className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    placeholder={t('Search by Log ID')}
+                    value={_searchLogId}
+                    onChange={(e) => setSearchLogId(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+              <AIGatewayLogTable
+                gatewayId={gatewayId}
+                logId={searchLogId || undefined}
+              />
             </div>
           </TabsContent>
         </Tabs>
@@ -155,13 +179,15 @@ function PageComponent() {
 
 interface RealtimeUpdateButtonProps {
   gatewayId: string;
+  logId?: string;
 }
 
 interface ManualRefreshButtonProps {
   gatewayId: string;
+  logId?: string;
 }
 
-function ManualRefreshButton({ gatewayId }: ManualRefreshButtonProps) {
+function ManualRefreshButton({ gatewayId, logId }: ManualRefreshButtonProps) {
   const workspaceId = useCurrentWorkspaceId();
   const utils = trpc.useUtils();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -172,6 +198,7 @@ function ManualRefreshButton({ gatewayId }: ManualRefreshButtonProps) {
       await utils.aiGateway.logs.refetch({
         workspaceId,
         gatewayId,
+        logId,
       });
     } finally {
       setIsRefreshing(false);
@@ -190,19 +217,20 @@ function ManualRefreshButton({ gatewayId }: ManualRefreshButtonProps) {
   );
 }
 
-function RealtimeUpdateButton({ gatewayId }: RealtimeUpdateButtonProps) {
+function RealtimeUpdateButton({ gatewayId, logId }: RealtimeUpdateButtonProps) {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const [isRealtime, setIsRealtime] = useState(false);
   const utils = trpc.useUtils();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useWatch([isRealtime, gatewayId], () => {
+  useWatch([isRealtime, gatewayId, logId], () => {
     if (isRealtime) {
       timerRef.current = setInterval(() => {
         utils.aiGateway.logs.invalidate({
           workspaceId,
           gatewayId,
+          logId,
         });
       }, 4000);
     } else {

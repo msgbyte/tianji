@@ -22,10 +22,11 @@ import { AIGatewayStatus } from './AIGatewayStatus';
 
 interface AIGatewayLogTableProps {
   gatewayId: string;
+  logId?: string;
 }
 export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
   (props) => {
-    const { gatewayId } = props;
+    const { gatewayId, logId } = props;
     const workspaceId = useCurrentWorkspaceId();
     const { t } = useTranslation();
 
@@ -39,6 +40,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
       {
         workspaceId,
         gatewayId,
+        logId,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
