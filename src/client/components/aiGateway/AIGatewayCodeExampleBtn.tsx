@@ -30,7 +30,7 @@ type AIProvider = 'openai' | 'deepseek' | 'openrouter' | 'anthropic' | 'custom';
 
 // Define interface and models for each AI provider
 interface ProviderConfig {
-  endpoint: string; // API endpoint path
+  baseUrl: string; // Base URL
   defaultModel: string; // Default model
   description?: string; // Description
   label: string; // Display name
@@ -53,36 +53,31 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
     const providerConfigs: Record<AIProvider, ProviderConfig> = useMemo(
       () => ({
         openai: {
-          endpoint:
-            '/api/ai/v1/${workspaceId}/${gatewayId}/openai/chat/completions',
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openai',
           defaultModel: 'gpt-4o',
           description: t('OpenAI API compatible'),
           label: 'OpenAI API',
         },
         deepseek: {
-          endpoint:
-            '/api/ai/v1/${workspaceId}/${gatewayId}/deepseek/chat/completions',
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/deepseek',
           defaultModel: 'deepseek-chat',
           description: t('Deepseek API compatible'),
           label: 'Deepseek API',
         },
         openrouter: {
-          endpoint:
-            '/api/ai/v1/${workspaceId}/${gatewayId}/openrouter/chat/completions',
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openrouter',
           defaultModel: 'openai/gpt-4o-mini',
           description: t('OpenRouter API compatible'),
           label: 'OpenRouter API',
         },
         anthropic: {
-          endpoint:
-            '/api/ai/v1/${workspaceId}/${gatewayId}/anthropic/chat/completions',
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/anthropic',
           defaultModel: 'claude-opus-4-20250514',
           description: t('Anthropic API compatible'),
           label: 'Anthropic API',
         },
         custom: {
-          endpoint:
-            '/api/ai/v1/${workspaceId}/${gatewayId}/custom/chat/completions',
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/custom',
           defaultModel: 'custom-model',
           description: t('Custom model API with your own settings'),
           label: 'Custom API',
@@ -94,7 +89,7 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
     // Generate base code template
     const generateCodeTemplate = (provider: AIProvider, language: string) => {
       const config = providerConfigs[provider];
-      const endpoint = config.endpoint
+      const baseUrl = config.baseUrl
         .replace('${workspaceId}', workspaceId)
         .replace('${gatewayId}', gatewayId);
       const model = config.defaultModel;
@@ -107,7 +102,7 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
 async function callAIGateway() {
   try {
     const response = await axios.post(
-      '${window.location.origin}${endpoint}',
+      '${window.location.origin}${baseUrl}/v1/chat/completions',
       {
         messages: [
           {
@@ -141,7 +136,7 @@ callAIGateway();`;
 import json
 
 def call_ai_gateway():
-    url = '${window.location.origin}${endpoint}'
+    url = '${window.location.origin}${baseUrl}/v1/chat/completions'
 
     headers = {
         "Content-Type": "application/json",
@@ -172,7 +167,7 @@ def call_ai_gateway():
 call_ai_gateway()`;
 
         case 'curl':
-          return `curl -X POST '${window.location.origin}${endpoint}' \\
+          return `curl -X POST '${window.location.origin}${baseUrl}/v1/chat/completions' \\
   -H 'Content-Type: application/json' \\
   -H 'Authorization: Bearer <YOUR_API_KEY>' \\
   -d '{
@@ -261,10 +256,10 @@ call_ai_gateway()`;
               <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-950 dark:text-blue-200">
                 <h3 className="mb-2 font-medium">{t(currentConfig.label)}</h3>
                 <p>
-                  <strong>{t('Endpoint')}:</strong>{' '}
+                  <strong>{t('Base URL')}:</strong>{' '}
                   <code className="break-all rounded bg-blue-100 px-1 py-0.5 text-blue-900 dark:bg-blue-900 dark:text-blue-100">
                     {window.location.origin}
-                    {currentConfig.endpoint
+                    {currentConfig.baseUrl
                       .replace('${workspaceId}', workspaceId)
                       .replace('${gatewayId}', gatewayId)}
                   </code>
