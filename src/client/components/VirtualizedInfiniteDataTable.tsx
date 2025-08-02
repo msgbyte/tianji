@@ -20,6 +20,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useTranslation } from '@i18next-toolkit/react';
 import { cn } from '@/utils/style';
+import { LoadingView } from './LoadingView';
 
 interface VirtualizedInfiniteDataTableProps<TData> {
   selectedIndex?: number;
@@ -110,132 +111,130 @@ export function VirtualizedInfiniteDataTable<TData>(
     return colSizes;
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <div
-      className="virtualized-infinite-data-table relative h-full overflow-auto"
-      onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
-      ref={tableContainerRef}
-    >
-      {/* Even though we're still using sematic table tags, we must use CSS grid and flexbox for dynamic row heights */}
-      <table style={{ display: 'grid' }}>
-        <TableHeader
-          className="sticky top-0 z-10 grid"
-          style={{
-            ...columnSizeVars,
-          }}
-        >
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow
-              key={headerGroup.id}
-              className="bg-background hover:bg-background flex w-full"
-            >
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className="relative overflow-hidden text-ellipsis text-nowrap pt-2.5"
-                    style={{
-                      width: `calc(var(--header-${header?.id}-size) * 1px)`,
-                    }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-
-                    <div
-                      {...{
-                        onDoubleClick: () => header.column.resetSize(),
-                        onMouseDown: header.getResizeHandler(),
-                        onTouchStart: header.getResizeHandler(),
-                        className: `resizer ${
-                          header.column.getIsResizing() ? 'isResizing' : ''
-                        }`,
-                      }}
-                    />
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody
-          className="relative grid"
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`, //tells scrollbar how big the table is
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const row = rows[virtualRow.index] as Row<TData>;
-            return (
+    <LoadingView isLoading={isLoading}>
+      <div
+        className="virtualized-infinite-data-table relative h-full overflow-auto"
+        onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
+        ref={tableContainerRef}
+      >
+        {/* Even though we're still using sematic table tags, we must use CSS grid and flexbox for dynamic row heights */}
+        <table style={{ display: 'grid' }}>
+          <TableHeader
+            className="sticky top-0 z-10 grid"
+            style={{
+              ...columnSizeVars,
+            }}
+          >
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
-                data-index={virtualRow.index} //needed for dynamic row height measurement
-                ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
-                key={row.id}
-                className="absolute flex w-full"
-                style={{
-                  transform: `translateY(${virtualRow.start}px)`, //this should always be a `style` as it changes on scroll
-                }}
+                key={headerGroup.id}
+                className="bg-background hover:bg-background flex w-full"
               >
-                {row.getVisibleCells().map((cell) => {
-                  const content = flexRender(
-                    cell.column.columnDef.cell,
-                    cell.getContext()
-                  );
-                  const value = cell.getValue();
-                  const useSystemTooltip =
-                    typeof value === 'string' || typeof value === 'number';
-
+                {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(
-                        'flex transition-all',
-                        selectedIndex === virtualRow.index &&
-                          'bg-zinc-200 dark:bg-zinc-700'
-                      )}
+                    <TableHead
+                      key={header.id}
+                      className="relative overflow-hidden text-ellipsis text-nowrap pt-2.5"
                       style={{
-                        width: cell.column.getSize(),
+                        width: `calc(var(--header-${header?.id}-size) * 1px)`,
                       }}
                     >
-                      {useSystemTooltip ? (
-                        <div
-                          className="w-full cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-left"
-                          title={String(value)}
-                        >
-                          {content}
-                        </div>
-                      ) : (
-                        <Tooltip>
-                          <TooltipTrigger asChild={true}>
-                            <div className="w-full cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-left">
-                              {content}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{content}</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </TableCell>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+
+                      <div
+                        {...{
+                          onDoubleClick: () => header.column.resetSize(),
+                          onMouseDown: header.getResizeHandler(),
+                          onTouchStart: header.getResizeHandler(),
+                          className: `resizer ${
+                            header.column.getIsResizing() ? 'isResizing' : ''
+                          }`,
+                        }}
+                      />
+                    </TableHead>
                   );
                 })}
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </table>
+            ))}
+          </TableHeader>
+          <TableBody
+            className="relative grid"
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`, //tells scrollbar how big the table is
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const row = rows[virtualRow.index] as Row<TData>;
+              return (
+                <TableRow
+                  data-index={virtualRow.index} //needed for dynamic row height measurement
+                  ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
+                  key={row.id}
+                  className="absolute flex w-full"
+                  style={{
+                    transform: `translateY(${virtualRow.start}px)`, //this should always be a `style` as it changes on scroll
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => {
+                    const content = flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    );
+                    const value = cell.getValue();
+                    const useSystemTooltip =
+                      typeof value === 'string' || typeof value === 'number';
 
-      {isFetching && (
-        <div className="w-full text-center text-sm">
-          {t('Fetching More...')}
-        </div>
-      )}
-    </div>
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          'flex transition-all',
+                          selectedIndex === virtualRow.index &&
+                            'bg-zinc-200 dark:bg-zinc-700'
+                        )}
+                        style={{
+                          width: cell.column.getSize(),
+                        }}
+                      >
+                        {useSystemTooltip ? (
+                          <div
+                            className="w-full cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-left"
+                            title={String(value)}
+                          >
+                            {content}
+                          </div>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild={true}>
+                              <div className="w-full cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-left">
+                                {content}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{content}</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </table>
+
+        {isFetching && (
+          <div className="w-full text-center text-sm">
+            {t('Fetching More...')}
+          </div>
+        )}
+      </div>
+    </LoadingView>
   );
 }
 VirtualizedInfiniteDataTable.displayName = 'VirtualizedInfiniteDataTable';
