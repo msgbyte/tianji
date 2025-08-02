@@ -1,11 +1,7 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
-import { prisma } from '../_client.js';
-import { printSQL } from '../../utils/prisma.js';
 import { Prisma } from '@prisma/client';
-import { FilterInfoType, FilterInfoValue, getDateArray } from '@tianji/shared';
-import { get, uniq } from 'lodash-es';
-import { env } from '../../utils/env.js';
+import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { InsightsSqlBuilder } from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
 
@@ -117,10 +113,13 @@ export async function insightsAIGateway(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
-  const builder = new AIGatewayInsightsSqlBuilder(query, context);
+  const builder = new AIGatewayInsightsSqlBuilder(query, {
+    ...context,
+    useClickhouse: false,
+  });
   const sql = builder.build();
 
-  const data = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+  const data = await builder.executeQuery(sql);
 
   const result = processGroupedTimeSeriesData(query, context, data);
 

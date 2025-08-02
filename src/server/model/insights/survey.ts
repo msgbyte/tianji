@@ -126,10 +126,13 @@ export async function insightsSurvey(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
-  const builder = new SurveyInsightsSqlBuilder(query, context);
+  const builder = new SurveyInsightsSqlBuilder(query, {
+    ...context,
+    useClickhouse: false,
+  });
   const sql = builder.build();
 
-  const data = await prisma.$queryRaw<{ date: string | null }[]>(sql);
+  const data = await builder.executeQuery(sql);
 
   const result = processGroupedTimeSeriesData(query, context, data);
 

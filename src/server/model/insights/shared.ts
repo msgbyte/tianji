@@ -37,6 +37,11 @@ export interface InsightEvent<
   properties: T;
 }
 
+export interface InsightsQueryContext {
+  timezone: string;
+  useClickhouse?: boolean;
+}
+
 export abstract class InsightsSqlBuilder {
   protected abstract getTableName(): string;
 
@@ -47,8 +52,12 @@ export abstract class InsightsSqlBuilder {
 
   constructor(
     protected query: z.infer<typeof insightsQuerySchema>,
-    protected context: { timezone: string }
-  ) {}
+    protected context: InsightsQueryContext
+  ) {
+    if (typeof context.useClickhouse === 'boolean') {
+      this.useClickhouse = context.useClickhouse;
+    }
+  }
 
   /**
    * Dynamically check if ClickHouse should be used
