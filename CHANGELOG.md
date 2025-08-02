@@ -1,5 +1,24 @@
 
 
+## [1.24.9](https://github.com/msgbyte/tianji/compare/v1.24.8...v1.24.9) (2025-08-02)
+
+### Features
+
+* add cron worker support ([c794d42](https://github.com/msgbyte/tianji/commit/c794d4222b5769d7f6bf868beb7761cb921a8ba5))
+* add react simple map for website detail ([ab8a6b8](https://github.com/msgbyte/tianji/commit/ab8a6b8d7e1f2e197c211b53430dc62f21d1b50a))
+
+### Bug Fixes
+
+* fix a bug which survey and aigateway insight query not work ([d3c10ee](https://github.com/msgbyte/tianji/commit/d3c10ee2ea5d06a0f8c163ed4f757d33653c3b4e))
+* fix layout issue about filter section in vertical mode ([c429a12](https://github.com/msgbyte/tianji/commit/c429a125dd5323160ec52d72b107721698fee100))
+
+### Others
+
+* add aigateway alias which maybe more better for gateway using api ([3c214a9](https://github.com/msgbyte/tianji/commit/3c214a973a7eec449429cf14aa445e25c5910b79))
+* add translation ([6781f6f](https://github.com/msgbyte/tianji/commit/6781f6f5c22edc3b7fb016a8d4c3105e66a678a4))
+* extract buildOpenAIHandler to model folder ([648fa2e](https://github.com/msgbyte/tianji/commit/648fa2ea472f84448b8831449d6ff6efcec27129))
+* optimize ChartTypeSelection component by consolidating chart type definitions and improving icon retrieval ([6cf85f7](https://github.com/msgbyte/tianji/commit/6cf85f74d96fcbf98bb5608096297b807b8aeb01))
+
 ## [1.24.8](https://github.com/msgbyte/tianji/compare/v1.24.7...v1.24.8) (2025-07-29)
 
 ### Bug Fixes
