@@ -3,7 +3,7 @@ import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
 import { useState, useRef } from 'react';
-import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ import { Loading } from '@/components/Loading';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useNavigate } from '@tanstack/react-router';
-import { LuPencil, LuTrash, LuRefreshCw, LuSearch } from 'react-icons/lu';
+import { LuPencil, LuTrash, LuRefreshCw } from 'react-icons/lu';
 import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
@@ -155,15 +155,12 @@ function PageComponent() {
                 </div>
               </div>
               <div className="mb-4 flex items-center space-x-2">
-                <div className="relative max-w-xs">
-                  <LuSearch className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-                  <Input
-                    placeholder={t('Search by Log ID')}
-                    value={_searchLogId}
-                    onChange={(e) => setSearchLogId(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
+                <SearchInput
+                  placeholder={t('Search by Log ID')}
+                  value={_searchLogId}
+                  onChange={(e) => setSearchLogId(e.target.value)}
+                  containerClassName="max-w-xs"
+                />
               </div>
               <AIGatewayLogTable
                 gatewayId={gatewayId}

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { LuSearch } from 'react-icons/lu';
 
 import { cn } from '@/utils/style';
 
@@ -22,4 +23,21 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = 'Input';
 
-export { Input };
+export interface SearchInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  containerClassName?: string;
+}
+
+const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
+  ({ className, containerClassName, ...props }, ref) => {
+    return (
+      <div className={cn('relative', containerClassName)}>
+        <LuSearch className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+        <Input {...props} className={cn('pl-9', className)} ref={ref} />
+      </div>
+    );
+  }
+);
+SearchInput.displayName = 'SearchInput';
+
+export { Input, SearchInput };
