@@ -52,9 +52,19 @@ export type WarehouseInsightsApplication = z.infer<
   typeof warehouseInsightsApplicationSchema
 >;
 
+let applications: WarehouseInsightsApplication[] | null = null;
+export function getWarehouseApplications() {
+  if (!applications) {
+    applications = warehouseInsightsApplicationSchema
+      .array()
+      .parse(JSON.parse(env.insights.warehouse.applicationsJson || '[]'));
+  }
+
+  return applications;
+}
+
 export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
   private connection: Pool | null = null;
-  private applications: WarehouseInsightsApplication[] | null = null;
 
   private getConnection(): Pool {
     if (!env.insights.warehouse.enable || !env.insights.warehouse.url) {
@@ -68,20 +78,12 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
     return this.connection;
   }
 
-  getApplications(): WarehouseInsightsApplication[] {
-    if (!this.applications) {
-      this.applications = warehouseInsightsApplicationSchema
-        .array()
-        .parse(JSON.parse(env.insights.warehouse.applicationsJson || '[]'));
-    }
-
-    return this.applications;
-  }
-
   getApplication(): WarehouseInsightsApplication {
     const name = this.query.insightId;
 
-    const application = this.getApplications().find((app) => app.name === name);
+    const application = getWarehouseApplications().find(
+      (app) => app.name === name
+    );
 
     if (!application) {
       throw new Error(`Application ${name} not found`);

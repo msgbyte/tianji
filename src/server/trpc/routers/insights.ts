@@ -5,11 +5,12 @@ import {
 } from '../../utils/schema.js';
 import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
-import { EVENT_TYPE } from '../../utils/const.js';
+import { EVENT_TYPE, INIT_WORKSPACE_ID } from '../../utils/const.js';
 import { stringifyDateType } from '../../utils/common.js';
 import { queryEvents, queryInsight } from '../../model/insights/index.js';
 import { insightsSurveyBuiltinFields } from '../../model/insights/utils.js';
 import { uniq } from 'lodash-es';
+import { getWarehouseApplications } from '../../model/insights/warehouse.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
@@ -233,4 +234,11 @@ export const insightsRouter = router({
 
       return [];
     }),
+  warehouseApplications: workspaceProcedure.query(async ({ input }) => {
+    if (input.workspaceId !== INIT_WORKSPACE_ID) {
+      return [];
+    }
+
+    return getWarehouseApplications().map((a) => a.name);
+  }),
 });

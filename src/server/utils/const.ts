@@ -1,3 +1,8 @@
+/**
+ * This is the initial workspace id for the admin user.
+ */
+export const INIT_WORKSPACE_ID = 'clnzoxcy10001vy2ohi4obbi0';
+
 export const COLLECTION_TYPE = {
   event: 'event',
   identify: 'identify',

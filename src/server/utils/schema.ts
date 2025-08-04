@@ -46,6 +46,7 @@ const FilterInfoSchema = z.object({
 });
 
 export const insightsQuerySchema = z.object({
+  workspaceId: z.string(),
   insightId: z.string(),
   insightType: z.enum(['website', 'survey', 'aigateway', 'warehouse']),
   metrics: z.array(

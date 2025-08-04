@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 interface InsightsState {
   insightId: string;
-  insightType: 'website' | 'survey';
+  insightType: 'website' | 'survey' | 'warehouse';
   currentMetrics: (MetricsInfo | null)[];
   currentFilters: (FilterInfo | null)[];
   currentGroups: (GroupInfo | null)[];

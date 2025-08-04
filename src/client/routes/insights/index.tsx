@@ -42,11 +42,15 @@ function PageComponent() {
   const insightType = useInsightsStore((state) => state.insightType);
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
   const { data: surveys = [] } = trpc.survey.all.useQuery({ workspaceId });
+  const { data: warehouseApplicationIds = [] } =
+    trpc.insights.warehouseApplications.useQuery({ workspaceId });
 
   const handleValueChange = useEvent((value: string) => {
     const type = surveys.some((item) => item.id === value)
       ? 'survey'
-      : 'website';
+      : warehouseApplicationIds.some((item) => item === value)
+        ? 'warehouse'
+        : 'website';
     useInsightsStore.setState({
       insightId: value,
       insightType: type,
@@ -83,6 +87,16 @@ function PageComponent() {
                         </SelectItem>
                       ))}
                     </SelectGroup>
+                    {warehouseApplicationIds.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>{t('Warehouse')}</SelectLabel>
+                        {warehouseApplicationIds.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

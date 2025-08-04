@@ -110,7 +110,7 @@ export const env = {
   },
   insights: {
     warehouse: {
-      enable: checkEnvTrusty(process.env.INSIGHTS_WAREHOUSE_URL),
+      enable: Boolean(process.env.INSIGHTS_WAREHOUSE_URL),
       url: process.env.INSIGHTS_WAREHOUSE_URL,
       applicationsJson: process.env.INSIGHTS_WAREHOUSE_APPLICATIONS_JSON,
     },

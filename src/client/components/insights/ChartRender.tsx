@@ -26,7 +26,7 @@ import { getUserTimezone } from '@/api/model/user';
 
 interface ChartRenderProps {
   insightId: string;
-  insightType: 'survey' | 'website';
+  insightType: 'survey' | 'website' | 'warehouse';
 }
 export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
