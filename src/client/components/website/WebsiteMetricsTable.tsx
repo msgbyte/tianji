@@ -7,6 +7,7 @@ import { sum } from 'lodash-es';
 import { formatNumber } from '../../utils/common';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useCountryMap } from '@/utils/country';
+import { LoadingView } from '../LoadingView';
 
 type MetricsItemType = AppRouterOutput['website']['metrics'][number];
 
@@ -87,18 +88,19 @@ export const WebsiteMetricsTable: React.FC<MetricsTableProps> = React.memo(
     ];
 
     return (
-      <Table
-        rowKey="x"
-        loading={isLoading}
-        dataSource={metrics}
-        columns={columns}
-        pagination={{
-          pageSize: 10,
-          hideOnSinglePage: true,
-          showSizeChanger: false,
-        }}
-        size="small"
-      />
+      <LoadingView isLoading={isLoading}>
+        <Table
+          rowKey="x"
+          dataSource={metrics}
+          columns={columns}
+          pagination={{
+            pageSize: 10,
+            hideOnSinglePage: true,
+            showSizeChanger: false,
+          }}
+          size="small"
+        />
+      </LoadingView>
     );
   }
 );

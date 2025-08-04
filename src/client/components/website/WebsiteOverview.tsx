@@ -16,6 +16,8 @@ import { useGlobalStateStore } from '../../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
 import { TimeEventChart } from '../chart/TimeEventChart';
 import { Link } from '@tanstack/react-router';
+import { LoadingView } from '../LoadingView';
+import { toast } from 'sonner';
 
 export const WebsiteOverview: React.FC<{
   website: WebsiteInfo;
@@ -77,13 +79,13 @@ export const WebsiteOverview: React.FC<{
 
     await Promise.all([refetchPageview(), refetchStats()]);
 
-    message.success(t('Refreshed'));
+    toast.success(t('Refreshed'));
   });
 
   const loading = isLoadingPageview || isLoadingStats;
 
   return (
-    <Spin spinning={loading}>
+    <LoadingView isLoading={loading}>
       <div className="flex flex-col-reverse sm:flex-row">
         <div className="flex flex-1 flex-col gap-2 text-2xl font-bold sm:flex-row sm:items-center">
           <span className="mr-2" title={website.domain ?? ''}>
@@ -147,7 +149,7 @@ export const WebsiteOverview: React.FC<{
       <div>
         <TimeEventChart data={chartData} unit={unit} />
       </div>
-    </Spin>
+    </LoadingView>
   );
 });
 WebsiteOverview.displayName = 'WebsiteOverview';
