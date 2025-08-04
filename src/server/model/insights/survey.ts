@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
-import { prisma } from '../_client.js';
 import { Prisma } from '@prisma/client';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { InsightsSqlBuilder } from './shared.js';

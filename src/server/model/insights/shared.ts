@@ -278,10 +278,15 @@ export abstract class InsightsSqlBuilder {
     return [];
   }
 
-  public build(): Prisma.Sql {
+  protected buildDateQuerySql(): Prisma.Sql {
     const { time } = this.query;
     const { unit, timezone = 'UTC' } = time;
+    const tableName = this.getTableName();
 
+    return Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`;
+  }
+
+  public build(): Prisma.Sql {
     const tableName = this.getTableName();
     const selectQueryArr = this.buildSelectQueryArr();
     const groupSelectQueryArr = this.buildGroupSelectQueryArr();
@@ -295,7 +300,7 @@ export abstract class InsightsSqlBuilder {
     sql = Prisma.sql`select
         ${Prisma.join(
           compact([
-            Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`,
+            this.buildDateQuerySql(),
             ...groupSelectQueryArr,
             ...selectQueryArr,
           ]),
@@ -305,7 +310,7 @@ export abstract class InsightsSqlBuilder {
       where ${Prisma.join(whereQueryArr, ' AND ')}
       group by ${Prisma.raw(groupByText)}
       order by 1 desc
-      limit ${this.maxResultLimit}`;
+      limit ${Prisma.raw(String(this.maxResultLimit))}`;
 
     if (env.debugInsights) {
       printSQL(sql);
