@@ -30,12 +30,13 @@ const dateTypeSchema = z.enum([
 
 export const warehouseInsightsApplicationSchema = z.object({
   name: z.string(),
+  type: z.enum(['longTable', 'wideTable']).default('longTable'), // long table or wide table, TODO: implement wide table support
   eventTable: z.object({
     name: z.string(),
     eventNameField: z.string(),
     createdAtField: z.string(),
     createdAtFieldType: dateTypeSchema.default('timestampMs'),
-    dateBasedCreatedAtField: z.string().optional(), // for improve performance
+    dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type
   }),
   eventParametersTable: z.object({
     name: z.string(),
@@ -46,7 +47,7 @@ export const warehouseInsightsApplicationSchema = z.object({
     paramsValueDateField: z.string().optional(),
     createdAtField: z.string(),
     createdAtFieldType: dateTypeSchema.default('timestampMs'),
-    dateBasedCreatedAtField: z.string().optional(), // for improve performance
+    dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type
   }),
 });
 
