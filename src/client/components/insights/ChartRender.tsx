@@ -1,7 +1,7 @@
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { TimeEventChart } from '../chart/TimeEventChart';
 import { useInsightsStore } from '@/store/insights';
 import { pickColorWithNum } from '@/utils/color';
@@ -23,6 +23,7 @@ import { get, groupBy, merge, omit, values } from 'lodash-es';
 import { ChartTypeSelection } from './ChartTypeSelection';
 import { useWatch } from '@/hooks/useWatch';
 import { getUserTimezone } from '@/api/model/user';
+import prettyMilliseconds from 'pretty-ms';
 
 interface ChartRenderProps {
   insightId: string;
@@ -31,6 +32,9 @@ interface ChartRenderProps {
 export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
+
+  const queryStartTimeRef = useRef<number | null>(null);
+  const [queryDuration, setQueryDuration] = React.useState<number | null>(null);
   const metrics = useInsightsStore((state) =>
     state.currentMetrics.filter((item): item is MetricsInfo => Boolean(item))
   );
@@ -80,6 +84,23 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     groups,
     time,
   });
+
+  // Track query duration
+  useEffect(() => {
+    if (isFetching) {
+      // Query started
+      queryStartTimeRef.current = performance.now();
+      setQueryDuration(null);
+    } else if (queryStartTimeRef.current !== null) {
+      // Query finished
+      const duration = performance.now() - queryStartTimeRef.current;
+      setQueryDuration(Math.round(duration));
+      queryStartTimeRef.current = null;
+
+      // Log query duration for debugging
+      console.log(`Insights query completed in ${Math.round(duration)}ms`);
+    }
+  }, [isFetching]);
 
   const chartData = useMemo(() => {
     const res: { date: string }[] = [];
@@ -177,14 +198,16 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-2 flex justify-between p-4">
-        <DateRangeSelection
-          value={dateKey}
-          onChange={(key, range) => {
-            setDateKey(key);
-            setDateRange(range);
-          }}
-        />
+      <div className="flex justify-between p-4 pb-2">
+        <div className="flex items-center gap-4">
+          <DateRangeSelection
+            value={dateKey}
+            onChange={(key, range) => {
+              setDateKey(key);
+              setDateRange(range);
+            }}
+          />
+        </div>
 
         <div className="flex gap-2">
           <DateUnitSelection
@@ -194,6 +217,25 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
           />
           <ChartTypeSelection value={chartType} onChange={setChartType} />
         </div>
+      </div>
+
+      {/* Query status and duration indicator */}
+      <div className="text-muted-foreground flex items-center gap-2 self-end px-4 text-sm">
+        {isFetching ? (
+          <>
+            <span>{t('Querying...')}</span>
+            <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+          </>
+        ) : queryDuration !== null ? (
+          <>
+            <span>
+              {t('Query completed in {{duration}}', {
+                duration: prettyMilliseconds(queryDuration),
+              })}
+            </span>
+            <div className="h-2 w-2 rounded-full bg-green-500" />
+          </>
+        ) : null}
       </div>
 
       {mainEl}
