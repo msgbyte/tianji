@@ -1,5 +1,23 @@
 
 
+## [1.24.10](https://github.com/msgbyte/tianji/compare/v1.24.9...v1.24.10) (2025-08-05)
+
+### Features
+
+* add basic warehouse insight query ([d107f76](https://github.com/msgbyte/tianji/commit/d107f767072652867d5e662d841309c137ed3ef7))
+* add logId filter support for AIGatewayLogTable ([d59675a](https://github.com/msgbyte/tianji/commit/d59675a9d236ea834e77e67ec5117d227c02e793))
+* add optimized date based query support ([5bfd8dd](https://github.com/msgbyte/tianji/commit/5bfd8ddabe60a47769c11a568ea6a87efd668bdf))
+* add query time tracking for insights feature ([465569f](https://github.com/msgbyte/tianji/commit/465569f2c7a0d5fbf482d4fc1d163fbeb9f48507))
+* add warehouse view ([3abe951](https://github.com/msgbyte/tianji/commit/3abe95102ace6eb2eeba0440b5da976acc96a53e))
+
+### Others
+
+* add LoadingView component and integrate it into VirtualizedInfiniteDataTable for improved loading state handling ([48ee26b](https://github.com/msgbyte/tianji/commit/48ee26bc9ba22fdd5bc423da9b396137af930707))
+* extract SearchInput component ([dfd79c6](https://github.com/msgbyte/tianji/commit/dfd79c6cc78585630d490597841f13a6bb217d78))
+* integrate LoadingView component into website detail view ([c6d386a](https://github.com/msgbyte/tianji/commit/c6d386a53fa41f4f97502fb9102cab8e89ad33dd))
+* translation ([68e00c2](https://github.com/msgbyte/tianji/commit/68e00c2869dc7b2a7cb8d8929758263be840c8c6))
+* update translation ([6ef8b96](https://github.com/msgbyte/tianji/commit/6ef8b96f0f9c25a1fb1c05d5e3bd27b1651d9b5c))
+
 ## [1.24.9](https://github.com/msgbyte/tianji/compare/v1.24.8...v1.24.9) (2025-08-02)
 
 ### Features
