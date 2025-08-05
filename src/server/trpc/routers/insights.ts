@@ -2,6 +2,7 @@ import { router, workspaceProcedure } from '../trpc.js';
 import {
   insightsQueryEventsSchema,
   insightsQuerySchema,
+  insightTypeSchema,
 } from '../../utils/schema.js';
 import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
@@ -31,7 +32,7 @@ export const insightsRouter = router({
     .input(
       z.object({
         insightId: z.string(),
-        insightType: z.enum(['website', 'survey']),
+        insightType: insightTypeSchema,
       })
     )
     .query(async ({ input }) => {
@@ -72,7 +73,7 @@ export const insightsRouter = router({
     .input(
       z.object({
         insightId: z.string(),
-        insightType: z.enum(['website', 'survey']),
+        insightType: insightTypeSchema,
       })
     )
     .query(async ({ input }) => {

@@ -35,6 +35,7 @@ export const warehouseInsightsApplicationSchema = z.object({
     eventNameField: z.string(),
     createdAtField: z.string(),
     createdAtFieldType: dateTypeSchema.default('timestampMs'),
+    dateBasedCreatedAtField: z.string().optional(), // for improve performance
   }),
   eventParametersTable: z.object({
     name: z.string(),
@@ -45,6 +46,7 @@ export const warehouseInsightsApplicationSchema = z.object({
     paramsValueDateField: z.string().optional(),
     createdAtField: z.string(),
     createdAtFieldType: dateTypeSchema.default('timestampMs'),
+    dateBasedCreatedAtField: z.string().optional(), // for improve performance
   }),
 });
 
@@ -90,6 +92,28 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
     }
 
     return application;
+  }
+
+  private enableDateBasedOptimizedEventTable() {
+    const eventTable = this.getEventTable();
+    const startAt = this.query.time.startAt;
+    const endAt = this.query.time.endAt;
+
+    return (
+      !!eventTable.dateBasedCreatedAtField &&
+      dayjs(endAt).diff(startAt, 'day') >= 1
+    );
+  }
+
+  private enableDateBasedOptimizedEventParametersTable() {
+    const eventParametersTable = this.getEventParametersTable();
+    const startAt = this.query.time.startAt;
+    const endAt = this.query.time.endAt;
+
+    return (
+      !!eventParametersTable.dateBasedCreatedAtField &&
+      dayjs(endAt).diff(startAt, 'day') >= 1
+    );
   }
 
   private getEventTable() {
@@ -174,48 +198,124 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
     return Prisma.sql`DATE_FORMAT(CONVERT_TZ(${timeExpression}, '+00:00', ${timezone}), '${Prisma.raw(format)}')`;
   }
 
-  protected buildOptimizedDateRangeQuery(
-    field: string,
-    startAt: number,
-    endAt: number,
-    type: z.infer<typeof dateTypeSchema> = 'timestampMs'
-  ): Prisma.Sql {
-    let startTime: string;
-    let endTime: string;
-    // Initialize startTime and endTime, then assign by type using only if statements
-    startTime = String(dayjs(startAt).valueOf());
-    endTime = String(dayjs(endAt).valueOf());
+  protected buildOptimizedDateRangeQuery(): Prisma.Sql {
+    const { time } = this.query;
+    const { startAt, endAt } = time;
 
-    if (type === 'timestamp') {
-      // Unix timestamp in seconds
-      startTime = String(dayjs(startAt).unix());
-      endTime = String(dayjs(endAt).unix());
-    }
-    if (type === 'date') {
-      // Date string format (YYYY-MM-DD)
-      startTime = dayjs(startAt).startOf('day').format('YYYY-MM-DD');
-      endTime = dayjs(endAt).endOf('day').format('YYYY-MM-DD');
-    }
-    if (type === 'datetime') {
-      // Datetime string format (YYYY-MM-DD HH:mm:ss)
-      startTime = dayjs(startAt).utc().format('YYYY-MM-DD HH:mm:ss');
-      endTime = dayjs(endAt).utc().format('YYYY-MM-DD HH:mm:ss');
+    const eventTable = this.getEventTable();
+    const enableDateBasedOptimizedEventTable =
+      this.enableDateBasedOptimizedEventTable();
+    const type = eventTable.createdAtFieldType;
+
+    let startTime = String(dayjs(startAt).valueOf());
+    let endTime = String(dayjs(endAt).valueOf());
+
+    let field = enableDateBasedOptimizedEventTable
+      ? `"${eventTable.name}"."${eventTable.dateBasedCreatedAtField ?? eventTable.createdAtField}"`
+      : `"${eventTable.name}"."${eventTable.createdAtField}"`;
+
+    if (this.enableDateBasedOptimizedEventTable()) {
+      // if enable date based optimized event table,
+      // and the date range is more than 1 day,
+      // we need to use the date based created at field
+      startTime = String(dayjs(startAt).startOf('day').format('YYYY-MM-DD'));
+      endTime = String(dayjs(endAt).endOf('day').format('YYYY-MM-DD'));
+    } else {
+      if (type === 'timestamp') {
+        // Unix timestamp in seconds
+        startTime = String(dayjs(startAt).unix());
+        endTime = String(dayjs(endAt).unix());
+      }
+      if (type === 'date') {
+        // Date string format (YYYY-MM-DD)
+        startTime = dayjs(startAt).startOf('day').format('YYYY-MM-DD');
+        endTime = dayjs(endAt).endOf('day').format('YYYY-MM-DD');
+      }
+      if (type === 'datetime') {
+        // Datetime string format (YYYY-MM-DD HH:mm:ss)
+        startTime = dayjs(startAt).utc().format('YYYY-MM-DD HH:mm:ss');
+        endTime = dayjs(endAt).utc().format('YYYY-MM-DD HH:mm:ss');
+      }
     }
 
     return Prisma.sql`${Prisma.raw(field)} BETWEEN ${startTime} AND ${endTime}`;
   }
 
-  protected buildDateQuerySql(): Prisma.Sql {
+  protected getOptimizedDateQuery(): Prisma.Sql {
+    const { time } = this.query;
+    const { unit, timezone = 'UTC' } = time;
+    const eventTable = this.getEventTable();
+    const enableDateBasedOptimizedEventTable =
+      this.enableDateBasedOptimizedEventTable();
+    const type = enableDateBasedOptimizedEventTable
+      ? eventTable.dateBasedCreatedAtField
+        ? 'date'
+        : eventTable.createdAtFieldType
+      : eventTable.createdAtFieldType;
+    const field = enableDateBasedOptimizedEventTable
+      ? `"${eventTable.name}"."${eventTable.dateBasedCreatedAtField ?? eventTable.createdAtField}"`
+      : `"${eventTable.name}"."${eventTable.createdAtField}"`;
+
+    // Check if unit exists in MYSQL_DATE_FORMATS before using it
+    if (!(unit in MYSQL_DATE_FORMATS)) {
+      throw new Error(`Invalid date unit: ${unit}`);
+    }
+
+    const format = MYSQL_DATE_FORMATS[unit as keyof typeof MYSQL_DATE_FORMATS];
+    let timeExpression: Prisma.Sql;
+
+    switch (type) {
+      case 'timestamp':
+        // Unix timestamp in seconds - convert to datetime first
+        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)})`;
+        break;
+      case 'timestampMs':
+        // Unix timestamp in milliseconds - convert to seconds first, then to datetime
+        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)} / 1000)`;
+        break;
+      case 'date':
+        // Date string format (YYYY-MM-DD) - convert to datetime
+        timeExpression = Prisma.sql`STR_TO_DATE(${Prisma.raw(field)}, '%Y-%m-%d')`;
+        break;
+      case 'datetime':
+        // Datetime string format (YYYY-MM-DD HH:MM:SS) - use directly
+        timeExpression = Prisma.sql`STR_TO_DATE(${Prisma.raw(field)}, '%Y-%m-%d %H:%i:%s')`;
+        break;
+      default:
+        // Default to timestampMs for backwards compatibility
+        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)} / 1000)`;
+        break;
+    }
+
+    return Prisma.sql`DATE_FORMAT(CONVERT_TZ(${timeExpression}, '+00:00', ${timezone}), '${Prisma.raw(format)}')`;
+  }
+
+  protected buildOptimizedDateQuerySql(): Prisma.Sql {
     const { time } = this.query;
     const { unit, timezone = 'UTC' } = time;
     const eventTable = this.getEventTable();
 
-    return Prisma.sql`${this.getDateQuery(
-      `"${eventTable.name}"."${eventTable.createdAtField}"`,
-      unit,
-      timezone,
-      eventTable.createdAtFieldType
-    )} date`;
+    if (
+      this.enableDateBasedOptimizedEventTable() &&
+      eventTable.dateBasedCreatedAtField
+    ) {
+      const field = `"${eventTable.name}"."${eventTable.dateBasedCreatedAtField}"`;
+      const format =
+        MYSQL_DATE_FORMATS[unit as keyof typeof MYSQL_DATE_FORMATS];
+
+      return Prisma.sql`DATE_FORMAT(${Prisma.raw(field)}, '${Prisma.raw(format)}') date`;
+    } else {
+      return Prisma.sql`${this.getDateQuery(
+        `"${eventTable.name}"."${eventTable.createdAtField}"`,
+        unit,
+        timezone,
+        eventTable.createdAtFieldType
+      )} date`;
+    }
+  }
+
+  protected buildDateQuerySql(): Prisma.Sql {
+    return this.buildOptimizedDateQuerySql();
   }
 
   buildSelectQueryArr() {
@@ -261,18 +361,12 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 
   buildWhereQueryArr() {
-    const { time, metrics } = this.query;
-    const { startAt, endAt } = time;
+    const { metrics } = this.query;
     const eventTable = this.getEventTable();
 
     const whereConditions = [
       // date
-      this.buildOptimizedDateRangeQuery(
-        `"${eventTable.name}"."${eventTable.createdAtField}"`,
-        startAt,
-        endAt,
-        eventTable.createdAtFieldType
-      ),
+      this.buildOptimizedDateRangeQuery(),
 
       // event name
       Prisma.join(

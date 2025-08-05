@@ -45,10 +45,17 @@ const FilterInfoSchema = z.object({
   value: FilterInfoValue.nullable(),
 });
 
+export const insightTypeSchema = z.enum([
+  'website',
+  'survey',
+  'aigateway',
+  'warehouse',
+]);
+
 export const insightsQuerySchema = z.object({
   workspaceId: z.string(),
   insightId: z.string(),
-  insightType: z.enum(['website', 'survey', 'aigateway', 'warehouse']),
+  insightType: insightTypeSchema,
   metrics: z.array(
     z.object({
       name: z.string(),
