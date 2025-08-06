@@ -1,5 +1,7 @@
 
 
+## [1.24.12](https://github.com/msgbyte/tianji/compare/v1.24.11...v1.24.12) (2025-08-06)
+
 ## [1.24.11](https://github.com/msgbyte/tianji/compare/v1.24.10...v1.24.11) (2025-08-06)
 
 ## [1.24.10](https://github.com/msgbyte/tianji/compare/v1.24.9...v1.24.10) (2025-08-05)
