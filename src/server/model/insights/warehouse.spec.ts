@@ -1,4 +1,4 @@
-import { beforeAll, describe, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { WarehouseInsightsSqlBuilder } from './warehouse.js';
 import { unwrapSQL } from '../../utils/prisma.js';
 import dayjs from 'dayjs';
@@ -32,6 +32,7 @@ describe('WarehouseInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -52,7 +53,6 @@ describe('WarehouseInsightsSqlBuilder', () => {
     );
 
     const sql = builder.build();
-    // expect(unwrapSQL(sql)).toMatchSnapshot('sql');
-    console.log(unwrapSQL(sql).replaceAll('"', '`'));
+    expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 });

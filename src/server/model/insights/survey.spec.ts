@@ -11,6 +11,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -44,6 +45,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -83,6 +85,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -124,6 +127,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: 'rating',
@@ -160,6 +164,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -188,6 +193,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -228,6 +234,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -263,6 +270,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -304,6 +312,7 @@ describe('SurveyInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',

@@ -11,6 +11,7 @@ describe('AIGatewayInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: '$all_event',
@@ -39,6 +40,7 @@ describe('AIGatewayInsightsSqlBuilder', () => {
       {
         insightId,
         insightType,
+        workspaceId: '',
         metrics: [
           {
             name: 'inputToken',
