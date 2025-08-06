@@ -11,7 +11,10 @@ import { stringifyDateType } from '../../utils/common.js';
 import { queryEvents, queryInsight } from '../../model/insights/index.js';
 import { insightsSurveyBuiltinFields } from '../../model/insights/utils.js';
 import { uniq } from 'lodash-es';
-import { getWarehouseApplications } from '../../model/insights/warehouse.js';
+import {
+  getWarehouseApplications,
+  insightsWarehouseEvents,
+} from '../../model/insights/warehouse.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
@@ -65,6 +68,14 @@ export const insightsRouter = router({
 
       if (insightType === 'survey') {
         return [];
+      }
+
+      if (insightType === 'warehouse') {
+        const events = await insightsWarehouseEvents(insightId);
+        return events.map((item) => ({
+          name: item,
+          count: 0,
+        }));
       }
 
       return [];

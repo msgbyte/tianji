@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import { processGroupedTimeSeriesData } from './utils.js';
 import { env } from '../../utils/env.js';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
+import { compact, get } from 'lodash-es';
 
 // MySQL date formats for different time units
 const MYSQL_DATE_FORMATS = {
@@ -66,21 +67,20 @@ export function getWarehouseApplications() {
   return applications;
 }
 
-export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
-  private connection: Pool | null = null;
-
-  private getConnection(): Pool {
-    if (!env.insights.warehouse.enable || !env.insights.warehouse.url) {
-      throw new Error('Warehouse is not enabled');
-    }
-
-    if (!this.connection) {
-      this.connection = createPool(env.insights.warehouse.url);
-    }
-
-    return this.connection;
+let connection: Pool | null = null;
+export function getWarehouseConnection() {
+  if (!env.insights.warehouse.enable || !env.insights.warehouse.url) {
+    throw new Error('Warehouse is not enabled');
   }
 
+  if (!connection) {
+    connection = createPool(env.insights.warehouse.url);
+  }
+
+  return connection;
+}
+
+export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
   getApplication(): WarehouseInsightsApplication {
     const name = this.query.insightId;
 
@@ -388,7 +388,7 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 
   async executeQuery(sql: Prisma.Sql): Promise<any[]> {
-    const connection = this.getConnection();
+    const connection = getWarehouseConnection();
 
     const [rows] = await connection.query(
       sql.sql.replaceAll('"', '`'), // avoid mysql and pg sql syntax error about double quote
@@ -411,4 +411,32 @@ export async function insightsWarehouse(
   const result = processGroupedTimeSeriesData(query, context, data);
 
   return result;
+}
+
+export async function insightsWarehouseEvents(
+  applicationId: string
+): Promise<string[]> {
+  const connection = getWarehouseConnection();
+  const eventTable = getWarehouseApplications().find(
+    (app) => app.name === applicationId
+  )?.eventTable;
+
+  if (!eventTable) {
+    throw new Error(`Event table not found for application ${applicationId}`);
+  }
+
+  const [rows] = await connection.query(`
+SELECT DISTINCT event_name
+FROM (
+    SELECT \`${eventTable.eventNameField}\` as event_name, \`${eventTable.dateBasedCreatedAtField ?? eventTable.createdAtField}\` as date
+    FROM \`${eventTable.name}\`
+    ORDER BY \`${eventTable.dateBasedCreatedAtField ?? eventTable.createdAtField}\` DESC
+) t
+LIMIT 100;`);
+
+  if (!Array.isArray(rows)) {
+    throw new Error(`Invalid rows from warehouse`);
+  }
+
+  return compact(rows.map((row) => get(row, 'event_name', '')));
 }
