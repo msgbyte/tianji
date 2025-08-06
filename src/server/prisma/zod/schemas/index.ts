@@ -43,3 +43,7 @@ export const StatusPageIncidentPayloadSchema = z.object({
     })
   ),
 });
+
+export const FunctionWorkerExecutionLogsSchema = z.array(
+  z.array(z.union([z.string(), z.number()]))
+);

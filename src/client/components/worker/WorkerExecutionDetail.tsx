@@ -18,7 +18,7 @@ interface WorkerExecutionDetailProps {
     createdAt: string;
     error?: string | null;
     responsePayload?: unknown;
-    logs?: (string | number)[][];
+    logs?: (string | number)[][] | null;
   };
 }
 

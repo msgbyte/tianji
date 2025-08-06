@@ -136,7 +136,7 @@ export const insightsRouter = router({
     .input(
       z.object({
         insightId: z.string(),
-        insightType: z.enum(['website', 'survey']),
+        insightType: insightTypeSchema,
         paramName: z.string(),
       })
     )

@@ -984,6 +984,8 @@ model FunctionWorkerExecution {
   duration        Int? // execution time(ms)
   memoryUsed      Int? // memory used(bytes)
   cpuTime         Int? // cpu time(ns)
+  /// [FunctionWorkerExecutionLogs]
+  /// @zod.custom(imports.FunctionWorkerExecutionLogsSchema)
   logs            Json?                         @default("[]") @db.Json // logs, should be json array
   createdAt       DateTime                      @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime                      @updatedAt @db.Timestamptz(6)

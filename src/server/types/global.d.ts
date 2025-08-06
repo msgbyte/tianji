@@ -3,6 +3,7 @@ import type {
   MonitorStatusPageListSchema,
   SurveyPayloadSchema,
   StatusPageIncidentPayloadSchema,
+  FunctionWorkerExecutionLogsSchema,
 } from '../prisma/zod/schemas/index.ts';
 
 declare global {
@@ -26,5 +27,6 @@ declare global {
     type StatusPageIncidentPayload = z.infer<
       typeof StatusPageIncidentPayloadSchema
     >;
+    type FunctionWorkerExecutionLogs = (string | number)[][];
   }
 }

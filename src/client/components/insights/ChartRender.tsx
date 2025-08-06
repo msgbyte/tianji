@@ -27,7 +27,7 @@ import prettyMilliseconds from 'pretty-ms';
 
 interface ChartRenderProps {
   insightId: string;
-  insightType: 'survey' | 'website' | 'warehouse';
+  insightType: 'survey' | 'website' | 'aigateway' | 'warehouse';
 }
 export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();

@@ -19,7 +19,10 @@ export const FunctionWorkerExecutionModelSchema = z.object({
   duration: z.number().int().nullish(),
   memoryUsed: z.number().int().nullish(),
   cpuTime: z.number().int().nullish(),
-  logs: jsonSchema,
+  /**
+   * [FunctionWorkerExecutionLogs]
+   */
+  logs: imports.FunctionWorkerExecutionLogsSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
 })
