@@ -26,9 +26,7 @@ export const BreakdownParamsBlock: React.FC<BreakdownParamsBlockProps> =
     const { t } = useTranslation();
     const [filterText, setFilterText] = useState('');
 
-    const filteredMetrics = props.list
-      .filter((item) => item.type !== 'array') // TODO: not support array type yet
-      .filter((item) => item.name.includes(filterText));
+    const metrics = props.list.filter((item) => item.type !== 'array'); // TODO: not support array type yet
 
     return (
       <div className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-zinc-300 px-2 py-1 dark:border-zinc-700">
@@ -36,7 +34,8 @@ export const BreakdownParamsBlock: React.FC<BreakdownParamsBlockProps> =
         <DropdownSelect
           dropdownSize="default"
           defaultIsOpen={props.info === null}
-          list={filteredMetrics}
+          filterText={filterText}
+          list={metrics}
           value={props.info?.value ?? ''}
           onSelect={(name, item) => {
             props.onSelect({

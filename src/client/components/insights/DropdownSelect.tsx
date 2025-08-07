@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useState, useMemo } from 'react';
 import {
   Popover,
   PopoverContent,
@@ -24,6 +24,8 @@ interface DropdownSelectProps<T> extends PropsWithChildren {
   onSelect: (name: string, item: T) => void;
   onSelectEmpty?: () => void;
   renderItem?: (item: T) => React.ReactNode;
+  filterText?: string; // Optional filter text for internal filtering
+  allowCustomInput?: boolean;
 }
 export const DropdownSelect = <T extends BasicListItem>(
   props: DropdownSelectProps<T>
@@ -31,6 +33,42 @@ export const DropdownSelect = <T extends BasicListItem>(
   const [isOpen, setIsOpen] = useState(props.defaultIsOpen ?? false);
   const { t } = useTranslation();
   const dropdownSize = props.dropdownSize ?? 'default';
+  const allowCustomInput = props.allowCustomInput ?? true;
+
+  // Filter list based on filterText if provided
+  const filteredList = useMemo(() => {
+    if (!props.filterText) {
+      return props.list;
+    }
+    return props.list.filter(
+      (item) =>
+        item.name.toLowerCase().includes(props.filterText!.toLowerCase()) ||
+        (item.label &&
+          item.label.toLowerCase().includes(props.filterText!.toLowerCase()))
+    );
+  }, [props.list, props.filterText]);
+
+  // Check if we should show the specify option
+  const shouldShowSpecify = useMemo(() => {
+    return (
+      allowCustomInput &&
+      props.filterText &&
+      props.filterText.trim().length > 0 &&
+      filteredList.length === 0
+    );
+  }, [allowCustomInput, props.filterText, filteredList.length]);
+
+  const handleSpecifySelect = () => {
+    if (shouldShowSpecify) {
+      // Create a custom item with the filterText as name
+      const customItem = {
+        name: props.filterText!.trim(),
+        label: props.filterText!.trim(),
+      } as T;
+      props.onSelect(props.filterText!.trim(), customItem);
+      setIsOpen(false);
+    }
+  };
 
   return (
     <Popover
@@ -62,35 +100,46 @@ export const DropdownSelect = <T extends BasicListItem>(
           <div>{props.dropdownHeader}</div>
 
           <ScrollArea className="flex-1">
-            {props.list.length === 0 && (
+            {shouldShowSpecify ? (
+              <div
+                className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all"
+                onClick={handleSpecifySelect}
+              >
+                <span className="text-primary">
+                  {t('Specify')}: <strong>{props.filterText!.trim()}</strong>
+                </span>
+              </div>
+            ) : filteredList.length === 0 ? (
               <div className="mt-4 text-center opacity-80">
-                {t('No any item availabled.')}
+                {props.filterText
+                  ? t('No items match your search.')
+                  : t('No any item availabled.')}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-0.5">
+                {filteredList.map((item, i) => {
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all',
+                        props.value === item.name && 'bg-muted'
+                      )}
+                      onClick={() => {
+                        props.onSelect(item.name, item);
+                        setIsOpen(false);
+                      }}
+                    >
+                      {props.renderItem ? (
+                        props.renderItem(item)
+                      ) : (
+                        <span>{item.label ?? item.name}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
-
-            <div className="flex flex-col gap-0.5">
-              {props.list.map((item, i) => {
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all',
-                      props.value === item.name && 'bg-muted'
-                    )}
-                    onClick={() => {
-                      props.onSelect(item.name, item);
-                      setIsOpen(false);
-                    }}
-                  >
-                    {props.renderItem ? (
-                      props.renderItem(item)
-                    ) : (
-                      <span>{item.label ?? item.name}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </ScrollArea>
         </div>
       </PopoverContent>

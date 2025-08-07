@@ -31,9 +31,7 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
     const { t } = useTranslation();
     const [filterText, setFilterText] = useState('');
 
-    const filteredMetrics = props.list
-      .filter((item) => item.type !== 'array') // TODO: not support array type yet
-      .filter((item) => item.name.includes(filterText));
+    const metrics = props.list.filter((item) => item.type !== 'array'); // TODO: not support array type yet
 
     const moreEl = (
       <div>
@@ -74,7 +72,8 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
         <DropdownSelect
           dropdownSize="default"
           defaultIsOpen={props.info === null}
-          list={filteredMetrics}
+          filterText={filterText}
+          list={metrics}
           value={props.info?.name ?? ''}
           onSelect={(name, item) => {
             props.onSelect({

@@ -47,17 +47,14 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
     mathMethod.find((m) => m.name === props.info?.math)?.label ??
     mathMethod[0].label;
 
-  const filteredMetrics = props.list.filter((item) =>
-    item.name.includes(filterText)
-  );
-
   return (
     <div className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-zinc-300 px-2 py-1 dark:border-zinc-700">
       {/* Event */}
       <DropdownSelect
         dropdownSize="lg"
         defaultIsOpen={props.info === null}
-        list={filteredMetrics}
+        filterText={filterText}
+        list={props.list}
         value={props.info?.name ?? ''}
         onSelect={(name: string) => {
           props.onSelect({
