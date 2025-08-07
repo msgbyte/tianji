@@ -14,6 +14,7 @@ import { uniq } from 'lodash-es';
 import {
   getWarehouseApplications,
   insightsWarehouseEvents,
+  insightsWarehouseFilterParams,
 } from '../../model/insights/warehouse.js';
 
 export const insightsRouter = router({
@@ -139,6 +140,13 @@ export const insightsRouter = router({
         }));
 
         return [...payloadFields, ...builtinFields];
+      } else if (insightType === 'warehouse') {
+        const params = await insightsWarehouseFilterParams(insightId);
+        return params.map((item) => ({
+          name: item,
+          type: 'string',
+          count: 0,
+        }));
       }
 
       return [];

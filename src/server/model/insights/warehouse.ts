@@ -440,3 +440,31 @@ LIMIT 100;`);
 
   return compact(rows.map((row) => get(row, 'event_name', '')));
 }
+
+export async function insightsWarehouseFilterParams(
+  applicationId: string
+): Promise<string[]> {
+  const connection = getWarehouseConnection();
+  const eventParametersTable = getWarehouseApplications().find(
+    (app) => app.name === applicationId
+  )?.eventParametersTable;
+
+  if (!eventParametersTable) {
+    throw new Error(`Event table not found for application ${applicationId}`);
+  }
+
+  const [rows] = await connection.query(`
+SELECT DISTINCT param_value
+FROM (
+    SELECT \`${eventParametersTable.paramsNameField}\` as param_value, \`${eventParametersTable.dateBasedCreatedAtField ?? eventParametersTable.createdAtField}\` as date
+    FROM \`${eventParametersTable.name}\`
+    ORDER BY \`${eventParametersTable.dateBasedCreatedAtField ?? eventParametersTable.createdAtField}\` DESC
+) t
+LIMIT 100;`);
+
+  if (!Array.isArray(rows)) {
+    throw new Error(`Invalid rows from warehouse`);
+  }
+
+  return compact(rows.map((row) => get(row, 'param_value', '')));
+}
