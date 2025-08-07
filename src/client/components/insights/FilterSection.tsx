@@ -34,6 +34,11 @@ export const FilterSection: React.FC<FilterSectionProps> = React.memo(
       },
       {
         enabled: Boolean(insightId),
+        trpc: {
+          context: {
+            skipBatch: true,
+          },
+        },
       }
     );
 

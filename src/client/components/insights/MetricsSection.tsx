@@ -28,6 +28,11 @@ export const MetricsSection: React.FC = React.memo(() => {
       select(data) {
         return [{ name: '$all_event', count: sumBy(data, 'count') }, ...data];
       },
+      trpc: {
+        context: {
+          skipBatch: true,
+        },
+      },
     }
   );
 

@@ -75,15 +75,24 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     [dateRange, dateUnit]
   );
 
-  const { data = [], isFetching } = trpc.insights.query.useQuery({
-    workspaceId,
-    insightId: props.insightId,
-    insightType: props.insightType,
-    metrics,
-    filters,
-    groups,
-    time,
-  });
+  const { data = [], isFetching } = trpc.insights.query.useQuery(
+    {
+      workspaceId,
+      insightId: props.insightId,
+      insightType: props.insightType,
+      metrics,
+      filters,
+      groups,
+      time,
+    },
+    {
+      trpc: {
+        context: {
+          skipBatch: true,
+        },
+      },
+    }
+  );
 
   // Track query duration
   useEffect(() => {
