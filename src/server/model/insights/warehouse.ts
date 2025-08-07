@@ -41,6 +41,7 @@ export const warehouseInsightsApplicationSchema = z.object({
   }),
   eventParametersTable: z.object({
     name: z.string(),
+    eventNameField: z.string(),
     paramsNameField: z.string(),
     paramsValueField: z.string(),
     paramsValueNumberField: z.string().optional(),
@@ -102,17 +103,6 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
 
     return (
       !!eventTable.dateBasedCreatedAtField &&
-      dayjs(endAt).diff(startAt, 'day') >= 1
-    );
-  }
-
-  private enableDateBasedOptimizedEventParametersTable() {
-    const eventParametersTable = this.getEventParametersTable();
-    const startAt = this.query.time.startAt;
-    const endAt = this.query.time.endAt;
-
-    return (
-      !!eventParametersTable.dateBasedCreatedAtField &&
       dayjs(endAt).diff(startAt, 'day') >= 1
     );
   }
@@ -359,6 +349,43 @@ export class WarehouseInsightsSqlBuilder extends InsightsSqlBuilder {
       }
     }
     return groupSelectQueryArr;
+  }
+
+  buildInnerJoinQuery() {
+    const { filters, groups } = this.query;
+    const eventTable = this.getEventTable();
+    const eventParametersTable = this.getEventParametersTable();
+
+    let innerJoinQuery = Prisma.empty;
+    if (filters.length > 0 || groups.length > 0) {
+      innerJoinQuery = Prisma.sql`INNER JOIN "${Prisma.raw(eventParametersTable.name)}" ON "${Prisma.raw(eventTable.name)}"."${Prisma.raw(eventTable.eventNameField)}" = "${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.eventNameField)}"`;
+
+      if (filters.length > 0) {
+        innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
+          filters.map((filter) =>
+            this.buildFilterQueryOperator(
+              filter.type,
+              filter.operator,
+              filter.value
+            )
+          ),
+          ' AND '
+        )}`;
+      }
+
+      if (groups.length > 0) {
+        const groupConditions = groups.map(
+          (g) =>
+            Prisma.sql`"${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.eventNameField)}" = ${g.value}`
+        );
+        innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
+          groupConditions,
+          ' OR '
+        )}`;
+      }
+    }
+
+    return innerJoinQuery;
   }
 
   buildWhereQueryArr() {
