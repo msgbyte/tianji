@@ -8,8 +8,10 @@ import { insightsSurvey } from './survey.js';
 import { insightsAIGateway } from './aiGateway.js';
 import { compact, omit } from 'lodash-es';
 import { prisma } from '../_client.js';
-import { insightsWarehouse } from './warehouse/longTable.js';
+import { insightsLongTableWarehouse } from './warehouse/longTable.js';
 import { INIT_WORKSPACE_ID } from '../../utils/const.js';
+import { findWarehouseApplication } from './warehouse/utils.js';
+import { insightsWideTableWarehouse } from './warehouse/wideTable.js';
 
 export function queryInsight(
   query: z.infer<typeof insightsQuerySchema>,
@@ -30,7 +32,12 @@ export function queryInsight(
   }
 
   if (insightType === 'warehouse' && query.workspaceId === INIT_WORKSPACE_ID) {
-    return insightsWarehouse(query, context);
+    const application = findWarehouseApplication(query.insightId);
+    if (application?.type === 'wideTable') {
+      return insightsWideTableWarehouse(query, context);
+    }
+
+    return insightsLongTableWarehouse(query, context);
   }
 
   throw new Error('Unknown Insight Type');

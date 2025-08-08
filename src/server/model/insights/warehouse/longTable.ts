@@ -15,16 +15,16 @@ import {
   getWarehouseApplications,
   getWarehouseConnection,
   MYSQL_DATE_FORMATS,
-  WarehouseInsightsApplication,
+  WarehouseLongTableInsightsApplication,
 } from './utils.js';
 
 export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
-  getApplication(): WarehouseInsightsApplication {
+  getApplication(): WarehouseLongTableInsightsApplication {
     const name = this.query.insightId;
 
     const application = getWarehouseApplications().find(
-      (app) => app.name === name
-    );
+      (app) => app.name === name && app.type === 'longTable'
+    ) as WarehouseLongTableInsightsApplication;
 
     if (!application) {
       throw new Error(`Application ${name} not found`);
@@ -352,7 +352,8 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 
   async executeQuery(sql: Prisma.Sql): Promise<any[]> {
-    const connection = getWarehouseConnection();
+    const application = this.getApplication();
+    const connection = getWarehouseConnection(application.databaseUrl);
 
     const [rows] = await connection.query(
       sql.sql.replaceAll('"', '`'), // avoid mysql and pg sql syntax error about double quote
@@ -363,7 +364,7 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 }
 
-export async function insightsWarehouse(
+export async function insightsLongTableWarehouse(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
@@ -377,17 +378,19 @@ export async function insightsWarehouse(
   return result;
 }
 
-export async function insightsWarehouseEvents(
+export async function insightsLongTableWarehouseEvents(
   applicationId: string
 ): Promise<string[]> {
-  const connection = getWarehouseConnection();
-  const eventTable = getWarehouseApplications().find(
-    (app) => app.name === applicationId
-  )?.eventTable;
+  const application = getWarehouseApplications().find(
+    (app) => app.name === applicationId && app.type === 'longTable'
+  ) as WarehouseLongTableInsightsApplication;
+  const connection = getWarehouseConnection(application.databaseUrl);
 
-  if (!eventTable) {
+  if (!application) {
     throw new Error(`Event table not found for application ${applicationId}`);
   }
+
+  const eventTable = application.eventTable;
 
   const [rows] = await connection.query(`
 SELECT DISTINCT event_name
@@ -405,17 +408,19 @@ LIMIT 100;`);
   return compact(rows.map((row) => get(row, 'event_name', '')));
 }
 
-export async function insightsWarehouseFilterParams(
+export async function insightsLongTableWarehouseFilterParams(
   applicationId: string
 ): Promise<string[]> {
-  const connection = getWarehouseConnection();
-  const eventParametersTable = getWarehouseApplications().find(
-    (app) => app.name === applicationId
-  )?.eventParametersTable;
+  const application = getWarehouseApplications().find(
+    (app) => app.name === applicationId && app.type === 'longTable'
+  ) as WarehouseLongTableInsightsApplication;
+  const connection = getWarehouseConnection(application.databaseUrl);
 
-  if (!eventParametersTable) {
+  if (!application) {
     throw new Error(`Event table not found for application ${applicationId}`);
   }
+
+  const eventParametersTable = application.eventParametersTable;
 
   const [rows] = await connection.query(`
 SELECT DISTINCT param_value

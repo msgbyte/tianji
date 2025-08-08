@@ -12,10 +12,17 @@ import { queryEvents, queryInsight } from '../../model/insights/index.js';
 import { insightsSurveyBuiltinFields } from '../../model/insights/utils.js';
 import { uniq } from 'lodash-es';
 import {
-  insightsWarehouseEvents,
-  insightsWarehouseFilterParams,
+  insightsLongTableWarehouseEvents,
+  insightsLongTableWarehouseFilterParams,
 } from '../../model/insights/warehouse/longTable.js';
-import { getWarehouseApplications } from '../../model/insights/warehouse/utils.js';
+import {
+  findWarehouseApplication,
+  getWarehouseApplications,
+} from '../../model/insights/warehouse/utils.js';
+import {
+  insightsWideTableWarehouseEvents,
+  insightsWideTableWarehouseFilterParams,
+} from '../../model/insights/warehouse/wideTable.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
@@ -72,7 +79,15 @@ export const insightsRouter = router({
       }
 
       if (insightType === 'warehouse') {
-        const events = await insightsWarehouseEvents(insightId);
+        const application = findWarehouseApplication(insightId);
+        let events: string[] = [];
+        console.log('application', application);
+        if (application?.type === 'wideTable') {
+          events = await insightsWideTableWarehouseEvents(insightId);
+        } else {
+          events = await insightsLongTableWarehouseEvents(insightId);
+        }
+
         return events.map((item) => ({
           name: item,
           count: 0,
@@ -141,7 +156,14 @@ export const insightsRouter = router({
 
         return [...payloadFields, ...builtinFields];
       } else if (insightType === 'warehouse') {
-        const params = await insightsWarehouseFilterParams(insightId);
+        const application = findWarehouseApplication(insightId);
+        let params: string[] = [];
+        if (application?.type === 'wideTable') {
+          params = await insightsWideTableWarehouseFilterParams(insightId);
+        } else {
+          params = await insightsLongTableWarehouseFilterParams(insightId);
+        }
+
         return params.map((item) => ({
           name: item,
           type: 'string',

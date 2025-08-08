@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WarehouseWideTableInsightsSqlBuilder > default > sql 1`] = `
+"select
+        DATE_FORMAT("event_date", '%Y-%m-%d') date , count(1) as "$all_event"
+      from "events" 
+      where "event_date" BETWEEN '2025-08-01' AND '2025-08-02'
+      group by 1
+      order by 1 desc
+      limit 1000"
+`;
+
+exports[`WarehouseWideTableInsightsSqlBuilder > group by > sql 1`] = `
+"select
+        DATE_FORMAT("event_date", '%Y-%m-%d') date , is_public as "%is_public" , count(1) as "$all_event"
+      from "events" 
+      where "event_date" BETWEEN '2025-08-01' AND '2025-08-08'
+      group by 1 , 2
+      order by 1 desc
+      limit 1000"
+`;

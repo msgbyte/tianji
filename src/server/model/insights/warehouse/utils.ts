@@ -18,9 +18,10 @@ export const dateTypeSchema = z.enum([
   'datetime', // for example: 2025-08-01 00:00:00
 ]);
 
-export const warehouseInsightsApplicationSchema = z.object({
+const warehouseLongTableInsightsApplicationSchema = z.object({
+  databaseUrl: z.string().optional(),
   name: z.string(),
-  type: z.enum(['longTable', 'wideTable']).default('longTable'), // long table or wide table, TODO: implement wide table support
+  type: z.literal('longTable').optional(), // long table, default
   eventTable: z.object({
     name: z.string(),
     eventNameField: z.string(),
@@ -42,8 +43,38 @@ export const warehouseInsightsApplicationSchema = z.object({
   }),
 });
 
+const warehouseWideTableInsightsApplicationSchema = z.object({
+  databaseUrl: z.string().optional(),
+  name: z.string(),
+  type: z.literal('wideTable'), // wide table
+  tableName: z.string(),
+  fields: z.array(
+    z.object({
+      name: z.string(),
+      type: z.string().default('string'),
+    })
+  ),
+  distinctField: z.string(),
+  createdAtField: z.string(),
+  createdAtFieldType: dateTypeSchema.default('timestampMs'),
+  dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type
+});
+
+export const warehouseInsightsApplicationSchema = z.union([
+  warehouseLongTableInsightsApplicationSchema,
+  warehouseWideTableInsightsApplicationSchema,
+]);
+
 export type WarehouseInsightsApplication = z.infer<
   typeof warehouseInsightsApplicationSchema
+>;
+
+export type WarehouseLongTableInsightsApplication = z.infer<
+  typeof warehouseLongTableInsightsApplicationSchema
+>;
+
+export type WarehouseWideTableInsightsApplication = z.infer<
+  typeof warehouseWideTableInsightsApplicationSchema
 >;
 
 let applications: WarehouseInsightsApplication[] | null = null;
@@ -57,14 +88,24 @@ export function getWarehouseApplications() {
   return applications;
 }
 
-let connection: Pool | null = null;
-export function getWarehouseConnection() {
-  if (!env.insights.warehouse.enable || !env.insights.warehouse.url) {
+export function findWarehouseApplication(name: string) {
+  return getWarehouseApplications().find((app) => app.name === name);
+}
+
+const connections = new Map<string, Pool>();
+export function getWarehouseConnection(url = env.insights.warehouse.url) {
+  if (!env.insights.warehouse.enable) {
     throw new Error('Warehouse is not enabled');
   }
 
+  if (!url) {
+    throw new Error('Warehouse url is not set');
+  }
+
+  let connection = connections.get(url);
   if (!connection) {
-    connection = createPool(env.insights.warehouse.url);
+    connection = createPool(url);
+    connections.set(url, connection);
   }
 
   return connection;
