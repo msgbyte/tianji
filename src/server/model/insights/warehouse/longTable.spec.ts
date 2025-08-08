@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from 'vitest';
-import { WarehouseInsightsSqlBuilder } from './warehouse.js';
-import { unwrapSQL } from '../../utils/prisma.js';
+import { WarehouseLongTableInsightsSqlBuilder } from './longTable.js';
+import { unwrapSQL } from '../../../utils/prisma.js';
 import dayjs from 'dayjs';
-import { env } from '../../utils/env.js';
+import { env } from '../../../utils/env.js';
 
 describe('WarehouseInsightsSqlBuilder', () => {
   const insightId = 'test'; // application name
@@ -29,7 +29,7 @@ describe('WarehouseInsightsSqlBuilder', () => {
   });
 
   test('default', () => {
-    const builder = new WarehouseInsightsSqlBuilder(
+    const builder = new WarehouseLongTableInsightsSqlBuilder(
       {
         insightId,
         insightType,
@@ -58,7 +58,7 @@ describe('WarehouseInsightsSqlBuilder', () => {
   });
 
   test('with filter', () => {
-    const builder = new WarehouseInsightsSqlBuilder(
+    const builder = new WarehouseLongTableInsightsSqlBuilder(
       {
         insightId,
         insightType,

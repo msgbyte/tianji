@@ -8,7 +8,7 @@ import { insightsSurvey } from './survey.js';
 import { insightsAIGateway } from './aiGateway.js';
 import { compact, omit } from 'lodash-es';
 import { prisma } from '../_client.js';
-import { insightsWarehouse } from './warehouse.js';
+import { insightsWarehouse } from './warehouse/longTable.js';
 import { INIT_WORKSPACE_ID } from '../../utils/const.js';
 
 export function queryInsight(

@@ -12,10 +12,10 @@ import { queryEvents, queryInsight } from '../../model/insights/index.js';
 import { insightsSurveyBuiltinFields } from '../../model/insights/utils.js';
 import { uniq } from 'lodash-es';
 import {
-  getWarehouseApplications,
   insightsWarehouseEvents,
   insightsWarehouseFilterParams,
-} from '../../model/insights/warehouse.js';
+} from '../../model/insights/warehouse/longTable.js';
+import { getWarehouseApplications } from '../../model/insights/warehouse/utils.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
