@@ -3,7 +3,7 @@
  */
 
 import { Prisma } from '@prisma/client';
-import { InsightsSqlBuilder } from '../shared.js';
+import { InsightEvent, InsightsSqlBuilder } from '../shared.js';
 import { insightsQuerySchema } from '../../../utils/schema.js';
 import { z } from 'zod';
 import dayjs from 'dayjs';
@@ -56,6 +56,14 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
   getTableName() {
     return this.getEventTable().name;
+  }
+
+  protected getCreateAtFieldName(): string {
+    return this.getEventTable().createdAtField;
+  }
+
+  protected getDistinctFieldName(): string {
+    return this.getEventTable().eventNameField;
   }
 
   private getValueField(type: FilterInfoType): Prisma.Sql {
@@ -363,6 +371,53 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
     );
 
     return rows as any[];
+  }
+
+  public buildFetchEventsQuery(cursor: string | undefined): Prisma.Sql {
+    return super.buildFetchEventsQuery(cursor);
+  }
+
+  public async queryEvents(
+    cursor: string | undefined
+  ): Promise<InsightEvent[]> {
+    const allEventsSql = this.buildFetchEventsQuery(cursor);
+    const rows = await this.executeQuery(allEventsSql);
+
+    const createdAtType =
+      this.getEventTable().createdAtFieldType ?? 'timestampMs';
+
+    function normalizeCreatedAt(val: any): Date {
+      if (val == null) return new Date(0);
+      if (createdAtType === 'timestamp') {
+        const num = typeof val === 'string' ? Number(val) : val;
+        return new Date(Number(num) * 1000);
+      }
+      if (createdAtType === 'timestampMs') {
+        const num = typeof val === 'string' ? Number(val) : val;
+        return new Date(Number(num));
+      }
+      // 'date' or 'datetime'
+      return new Date(val);
+    }
+
+    return rows.map((row) => {
+      const distinctId = String(
+        row.distinctId ?? row[this.getDistinctFieldName()] ?? ''
+      );
+      const createdAt = normalizeCreatedAt(
+        row.createdAt ?? row[this.getCreateAtFieldName()]
+      );
+      const eventName = String(
+        row[this.getEventTable().eventNameField] ?? distinctId
+      );
+
+      return {
+        id: distinctId || `${eventName}-${createdAt.getTime()}`,
+        name: eventName,
+        createdAt,
+        properties: { ...row },
+      };
+    });
   }
 }
 

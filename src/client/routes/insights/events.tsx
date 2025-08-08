@@ -3,9 +3,9 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { InsightType, useInsightsStore } from '@/store/insights';
 import { trpc } from '@/api/trpc';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
-import { Collapse, DatePicker, Empty, Spin } from 'antd';
+import { Collapse, Empty } from 'antd';
 import { FilterSection } from '@/components/insights/FilterSection';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Layout } from '@/components/layout';
@@ -30,6 +30,9 @@ import { getUserTimezone } from '@/api/model/user';
 import { LuChevronDown } from 'react-icons/lu';
 import { cn } from '@/utils/style';
 import { get } from 'lodash-es';
+import { DelayRender } from '@/components/DelayRender';
+import { SearchLoadingView } from '@/components/loading/Searching';
+import { DateRangeSelection } from '@/components/insights/DateRangeSelection';
 
 export const Route = createFileRoute('/insights/events')({
   beforeLoad: routeAuthBeforeLoad,
@@ -44,15 +47,14 @@ function PageComponent() {
   const filters = useInsightsStore((state) =>
     state.currentFilters.filter((f): f is NonNullable<typeof f> => !!f)
   );
+  const dateKey = useInsightsStore((state) => state.currentDateKey);
+  const dateRange = useInsightsStore((state) => state.currentDateRange);
+  const setDateKey = useInsightsStore((state) => state.setCurrentDateKey);
+  const setDateRange = useInsightsStore((state) => state.setCurrentDateRange);
+
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
   const { data: warehouseApplicationIds = [] } =
     trpc.insights.warehouseApplications.useQuery({ workspaceId });
-
-  // Date range state
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
-    dayjs().subtract(7, 'day').startOf('day'),
-    dayjs().endOf('day'),
-  ]);
 
   // JSON mode state
   const [jsonMode, setJsonMode] = useState(false);
@@ -170,18 +172,12 @@ function PageComponent() {
         <div className="mx-auto flex h-full flex-col overflow-hidden p-4">
           <div className="mb-4 flex items-center gap-2 md:flex-row">
             <div className="flex items-center gap-2">
-              <span>{t('Date Range')}：</span>
-              <DatePicker.RangePicker
-                value={dateRange}
-                onChange={(val) => {
-                  if (val && val[0] && val[1]) {
-                    setDateRange([
-                      dayjs(val[0]).startOf('day'),
-                      dayjs(val[1]).endOf('day'),
-                    ]);
-                  }
+              <DateRangeSelection
+                value={dateKey}
+                onChange={(key, range) => {
+                  setDateKey(key);
+                  setDateRange(range);
                 }}
-                allowClear={false}
               />
             </div>
 
@@ -201,9 +197,11 @@ function PageComponent() {
 
           <ScrollArea className="flex-1 overflow-hidden">
             {isFetching ? (
-              <div className="flex h-40 items-center justify-center">
-                <Spin />
-              </div>
+              <DelayRender>
+                <div className="flex h-40 items-center justify-center">
+                  <SearchLoadingView className="pt-4" />
+                </div>
+              </DelayRender>
             ) : data.length === 0 ? (
               <Empty description={t('No event data yet')} />
             ) : (
@@ -291,9 +289,12 @@ function PageComponent() {
                             <TabsTrigger value="event">
                               {t('Event')}
                             </TabsTrigger>
-                            <TabsTrigger value="session">
-                              {t('Session')}
-                            </TabsTrigger>
+
+                            {Object.keys(cleanedSessions).length > 0 && (
+                              <TabsTrigger value="session">
+                                {t('Session')}
+                              </TabsTrigger>
+                            )}
                           </TabsList>
                           <TabsContent value="all">
                             {renderGrid({

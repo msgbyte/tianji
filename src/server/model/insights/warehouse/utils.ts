@@ -21,7 +21,7 @@ export const dateTypeSchema = z.enum([
 const warehouseLongTableInsightsApplicationSchema = z.object({
   databaseUrl: z.string().optional(),
   name: z.string(),
-  type: z.literal('longTable').optional(), // long table, default
+  type: z.literal('longTable'), // long table
   eventTable: z.object({
     name: z.string(),
     eventNameField: z.string(),
