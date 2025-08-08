@@ -18,6 +18,8 @@ import {
   WarehouseLongTableInsightsApplication,
 } from './utils.js';
 
+const { sql, raw } = Prisma;
+
 export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
   getApplication(): WarehouseLongTableInsightsApplication {
     const name = this.query.insightId;
@@ -61,12 +63,12 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
     const valueField =
       type === 'number'
-        ? Prisma.sql`"${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.paramsValueNumberField ?? eventParametersTable.paramsValueField)}"`
+        ? sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.paramsValueNumberField ?? eventParametersTable.paramsValueField)}"`
         : type === 'string'
-          ? Prisma.sql`"${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.paramsValueStringField ?? eventParametersTable.paramsValueField)}"`
+          ? sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.paramsValueStringField ?? eventParametersTable.paramsValueField)}"`
           : type === 'date'
-            ? Prisma.sql`"${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.paramsValueDateField ?? eventParametersTable.paramsValueField)}"`
-            : Prisma.sql`"${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.paramsValueField)}"`;
+            ? sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.paramsValueDateField ?? eventParametersTable.paramsValueField)}"`
+            : sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.paramsValueField)}"`;
 
     return valueField;
   }
@@ -103,27 +105,27 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
     switch (type) {
       case 'timestamp':
         // Unix timestamp in seconds - convert to datetime first
-        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)})`;
+        timeExpression = sql`FROM_UNIXTIME(${raw(field)})`;
         break;
       case 'timestampMs':
         // Unix timestamp in milliseconds - convert to seconds first, then to datetime
-        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)} / 1000)`;
+        timeExpression = sql`FROM_UNIXTIME(${raw(field)} / 1000)`;
         break;
       case 'date':
         // Date string format (YYYY-MM-DD) - convert to datetime
-        timeExpression = Prisma.sql`STR_TO_DATE(${Prisma.raw(field)}, '%Y-%m-%d')`;
+        timeExpression = sql`STR_TO_DATE(${raw(field)}, '%Y-%m-%d')`;
         break;
       case 'datetime':
         // Datetime string format (YYYY-MM-DD HH:MM:SS) - use directly
-        timeExpression = Prisma.sql`STR_TO_DATE(${Prisma.raw(field)}, '%Y-%m-%d %H:%i:%s')`;
+        timeExpression = sql`STR_TO_DATE(${raw(field)}, '%Y-%m-%d %H:%i:%s')`;
         break;
       default:
         // Default to timestampMs for backwards compatibility
-        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)} / 1000)`;
+        timeExpression = sql`FROM_UNIXTIME(${raw(field)} / 1000)`;
         break;
     }
 
-    return Prisma.sql`DATE_FORMAT(CONVERT_TZ(${timeExpression}, '+00:00', ${timezone}), '${Prisma.raw(format)}')`;
+    return sql`DATE_FORMAT(CONVERT_TZ(${timeExpression}, '+00:00', ${timezone}), '${raw(format)}')`;
   }
 
   protected buildOptimizedDateRangeQuery(): Prisma.Sql {
@@ -166,7 +168,7 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       }
     }
 
-    return Prisma.sql`${Prisma.raw(field)} BETWEEN ${startTime} AND ${endTime}`;
+    return sql`${raw(field)} BETWEEN ${startTime} AND ${endTime}`;
   }
 
   protected getOptimizedDateQuery(): Prisma.Sql {
@@ -195,27 +197,27 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
     switch (type) {
       case 'timestamp':
         // Unix timestamp in seconds - convert to datetime first
-        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)})`;
+        timeExpression = sql`FROM_UNIXTIME(${raw(field)})`;
         break;
       case 'timestampMs':
         // Unix timestamp in milliseconds - convert to seconds first, then to datetime
-        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)} / 1000)`;
+        timeExpression = sql`FROM_UNIXTIME(${raw(field)} / 1000)`;
         break;
       case 'date':
         // Date string format (YYYY-MM-DD) - convert to datetime
-        timeExpression = Prisma.sql`STR_TO_DATE(${Prisma.raw(field)}, '%Y-%m-%d')`;
+        timeExpression = sql`STR_TO_DATE(${raw(field)}, '%Y-%m-%d')`;
         break;
       case 'datetime':
         // Datetime string format (YYYY-MM-DD HH:MM:SS) - use directly
-        timeExpression = Prisma.sql`STR_TO_DATE(${Prisma.raw(field)}, '%Y-%m-%d %H:%i:%s')`;
+        timeExpression = sql`STR_TO_DATE(${raw(field)}, '%Y-%m-%d %H:%i:%s')`;
         break;
       default:
         // Default to timestampMs for backwards compatibility
-        timeExpression = Prisma.sql`FROM_UNIXTIME(${Prisma.raw(field)} / 1000)`;
+        timeExpression = sql`FROM_UNIXTIME(${raw(field)} / 1000)`;
         break;
     }
 
-    return Prisma.sql`DATE_FORMAT(CONVERT_TZ(${timeExpression}, '+00:00', ${timezone}), '${Prisma.raw(format)}')`;
+    return sql`DATE_FORMAT(CONVERT_TZ(${timeExpression}, '+00:00', ${timezone}), '${raw(format)}')`;
   }
 
   protected buildOptimizedDateQuerySql(): Prisma.Sql {
@@ -231,9 +233,9 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       const format =
         MYSQL_DATE_FORMATS[unit as keyof typeof MYSQL_DATE_FORMATS];
 
-      return Prisma.sql`DATE_FORMAT(${Prisma.raw(field)}, '${Prisma.raw(format)}') date`;
+      return sql`DATE_FORMAT(${raw(field)}, '${raw(format)}') date`;
     } else {
-      return Prisma.sql`${this.getDateQuery(
+      return sql`${this.getDateQuery(
         `"${eventTable.name}"."${eventTable.createdAtField}"`,
         unit,
         timezone,
@@ -253,10 +255,10 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
     return metrics.map((item) => {
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return Prisma.sql`count(1) as "$all_event"`;
+          return sql`count(1) as "$all_event"`;
         }
 
-        return Prisma.sql`sum(case WHEN "${Prisma.raw(eventTable.name)}"."${Prisma.raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return sql`sum(case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
       }
 
       return null;
@@ -270,16 +272,16 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       for (const g of groups) {
         if (!g.customGroups) {
           groupSelectQueryArr.push(
-            Prisma.sql`${this.getValueField(g.type)} as "%${Prisma.raw(g.value)}"`
+            sql`${this.getValueField(g.type)} as "%${raw(g.value)}"`
           );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
             groupSelectQueryArr.push(
-              Prisma.sql`${this.buildFilterQueryOperator(
+              sql`${this.buildFilterQueryOperator(
                 g.type,
                 cg.filterOperator,
                 cg.filterValue
-              )} as "%${Prisma.raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
             );
           }
         }
@@ -295,10 +297,10 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
     let innerJoinQuery = Prisma.empty;
     if (filters.length > 0 || groups.length > 0) {
-      innerJoinQuery = Prisma.sql`INNER JOIN "${Prisma.raw(eventParametersTable.name)}" ON "${Prisma.raw(eventTable.name)}"."${Prisma.raw(eventTable.eventNameField)}" = "${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.eventNameField)}"`;
+      innerJoinQuery = sql`INNER JOIN "${raw(eventParametersTable.name)}" ON "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = "${raw(eventParametersTable.name)}"."${raw(eventParametersTable.eventNameField)}"`;
 
       if (filters.length > 0) {
-        innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
+        innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
           filters.map((filter) =>
             this.buildFilterQueryOperator(
               filter.type,
@@ -313,9 +315,9 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       if (groups.length > 0) {
         const groupConditions = groups.map(
           (g) =>
-            Prisma.sql`"${Prisma.raw(eventParametersTable.name)}"."${Prisma.raw(eventParametersTable.eventNameField)}" = ${g.value}`
+            sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.eventNameField)}" = ${g.value}`
         );
-        innerJoinQuery = Prisma.sql`${innerJoinQuery} AND ${Prisma.join(
+        innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
           groupConditions,
           ' OR '
         )}`;
@@ -337,10 +339,10 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       Prisma.join(
         metrics.map((item) => {
           if (item.name === '$all_event') {
-            return Prisma.sql`1 = 1`;
+            return sql`1 = 1`;
           }
 
-          return Prisma.sql`"${Prisma.raw(eventTable.name)}"."${Prisma.raw(eventTable.eventNameField)}" = ${item.name}`;
+          return sql`"${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name}`;
         }),
         ' OR ',
         '(',

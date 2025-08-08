@@ -5,6 +5,8 @@ import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { InsightsSqlBuilder } from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
 
+const { sql, raw } = Prisma;
+
 export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
     return 'AIGatewayLogs';
@@ -15,18 +17,18 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
     return metrics.map((item) => {
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return Prisma.sql`count(1) as "$all_event"`;
+          return sql`count(1) as "$all_event"`;
         }
 
         // For standard fields, directly count
         // TODO: maybe use other math functions
         if (['inputToken', 'outputToken', 'price'].includes(item.name)) {
-          return Prisma.sql`sum("AIGatewayLogs"."${Prisma.raw(item.name)}") as ${Prisma.raw(`"${item.name}"`)}`;
+          return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${item.name}"`)}`;
         }
       } else if (item.math === 'sessions') {
         // AIGatewayLogs has no concept of sessions, but can be grouped by gatewayId
         if (item.name === '$all_event') {
-          return Prisma.sql`count(distinct "gatewayId") as "$all_event"`;
+          return sql`count(distinct "gatewayId") as "$all_event"`;
         }
       }
 
@@ -40,7 +42,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
 
     return [
       // gatewayId
-      Prisma.sql`"AIGatewayLogs"."gatewayId" = ${insightId}`,
+      sql`"AIGatewayLogs"."gatewayId" = ${insightId}`,
 
       // date range
       this.buildDateRangeQuery('"AIGatewayLogs"."createdAt"', startAt, endAt),
@@ -76,7 +78,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         'price',
       ].includes(name)
     ) {
-      const valueField = Prisma.sql`"AIGatewayLogs"."${Prisma.raw(name)}"${type === 'number' ? Prisma.empty : type === 'boolean' ? Prisma.empty : Prisma.empty}`;
+      const valueField = sql`"AIGatewayLogs"."${raw(name)}"${type === 'number' ? Prisma.empty : type === 'boolean' ? Prisma.empty : Prisma.empty}`;
       return this.buildCommonFilterQueryOperator(
         type,
         operator,
@@ -87,7 +89,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
     // Process JSON fields
     else if (name.startsWith('request.')) {
       const field = name.replace('request.', '');
-      const valueField = Prisma.sql`("AIGatewayLogs"."requestPayload"->> '${field}')${type === 'number' ? Prisma.raw('::int') : type === 'boolean' ? Prisma.raw('::boolean') : Prisma.empty}`;
+      const valueField = sql`("AIGatewayLogs"."requestPayload"->> '${field}')${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
       return this.buildCommonFilterQueryOperator(
         type,
         operator,
@@ -96,7 +98,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
       );
     } else if (name.startsWith('response.')) {
       const field = name.replace('response.', '');
-      const valueField = Prisma.sql`("AIGatewayLogs"."responsePayload"->> '${field}')${type === 'number' ? Prisma.raw('::int') : type === 'boolean' ? Prisma.raw('::boolean') : Prisma.empty}`;
+      const valueField = sql`("AIGatewayLogs"."responsePayload"->> '${field}')${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
       return this.buildCommonFilterQueryOperator(
         type,
         operator,
@@ -105,7 +107,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
       );
     }
 
-    return Prisma.sql`1 = 1`;
+    return sql`1 = 1`;
   }
 }
 

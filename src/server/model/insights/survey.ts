@@ -8,6 +8,8 @@ import {
   processGroupedTimeSeriesData,
 } from './utils.js';
 
+const { sql, raw } = Prisma;
+
 export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
     return 'SurveyResult';
@@ -18,24 +20,24 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
     return metrics.map((item) => {
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return Prisma.sql`count(1) as "$all_event"`;
+          return sql`count(1) as "$all_event"`;
         }
 
         if (insightsSurveyBuiltinFields.includes(item.name)) {
-          return Prisma.sql`sum(case WHEN "SurveyResult"."${Prisma.raw(item.name)}" IS NOT NULL AND "SurveyResult"."${Prisma.raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+          return sql`sum(case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
         }
 
-        return Prisma.sql`sum(case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN 1 ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return sql`sum(case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return Prisma.sql`count(distinct "sessionId") as "$all_event"`;
+          return sql`count(distinct "sessionId") as "$all_event"`;
         }
 
         if (insightsSurveyBuiltinFields.includes(item.name)) {
-          return Prisma.sql`count(distinct case WHEN "SurveyResult"."${Prisma.raw(item.name)}" IS NOT NULL AND "SurveyResult"."${Prisma.raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+          return sql`count(distinct case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${item.name}"`)}`;
         }
 
-        return Prisma.sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${Prisma.raw(`"${item.name}"`)}`;
+        return sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${item.name}"`)}`;
       }
 
       return null;
@@ -50,22 +52,22 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
         if (!g.customGroups) {
           if (insightsSurveyBuiltinFields.includes(g.value)) {
             groupSelectQueryArr.push(
-              Prisma.sql`"SurveyResult"."${Prisma.raw(g.value)}" as "%${Prisma.raw(g.value)}"`
+              sql`"SurveyResult"."${raw(g.value)}" as "%${raw(g.value)}"`
             );
           } else {
             groupSelectQueryArr.push(
-              Prisma.sql`"SurveyResult"."payload" ->> ${g.value} as "%${Prisma.raw(g.value)}"`
+              sql`"SurveyResult"."payload" ->> ${g.value} as "%${raw(g.value)}"`
             );
           }
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
             groupSelectQueryArr.push(
-              Prisma.sql`${this.buildFilterQueryOperator(
+              sql`${this.buildFilterQueryOperator(
                 g.value,
                 g.type,
                 cg.filterOperator,
                 cg.filterValue
-              )} as "%${Prisma.raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
             );
           }
         }
@@ -80,7 +82,7 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
 
     return [
       // survey id
-      Prisma.sql`"SurveyResult"."surveyId" = ${insightId}`,
+      sql`"SurveyResult"."surveyId" = ${insightId}`,
 
       // date
       this.buildDateRangeQuery('"SurveyResult"."createdAt"', startAt, endAt),
@@ -107,11 +109,11 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
         type,
         operator,
         value,
-        Prisma.sql`"SurveyResult"."${Prisma.raw(name)}"` // this is safe because the name is defined in the `insightsSurveyBuiltinFields`
+        sql`"SurveyResult"."${raw(name)}"` // this is safe because the name is defined in the `insightsSurveyBuiltinFields`
       );
     }
 
-    const valueField = Prisma.sql`("SurveyResult"."payload"->> ${name})${type === 'number' ? Prisma.raw('::int') : type === 'boolean' ? Prisma.raw('::boolean') : Prisma.empty}`;
+    const valueField = sql`("SurveyResult"."payload"->> ${name})${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
     return this.buildCommonFilterQueryOperator(
       type,
       operator,
