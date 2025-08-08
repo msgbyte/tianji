@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { useInsightsStore } from '@/store/insights';
+import { InsightType, useInsightsStore } from '@/store/insights';
 import { trpc } from '@/api/trpc';
 import dayjs, { Dayjs } from 'dayjs';
 import { useMemo, useState } from 'react';
@@ -29,6 +29,7 @@ import Identicon from 'react-identicons';
 import { getUserTimezone } from '@/api/model/user';
 import { LuChevronDown } from 'react-icons/lu';
 import { cn } from '@/utils/style';
+import { get } from 'lodash-es';
 
 export const Route = createFileRoute('/insights/events')({
   beforeLoad: routeAuthBeforeLoad,
@@ -44,6 +45,8 @@ function PageComponent() {
     state.currentFilters.filter((f): f is NonNullable<typeof f> => !!f)
   );
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
+  const { data: warehouseApplicationIds = [] } =
+    trpc.insights.warehouseApplications.useQuery({ workspaceId });
 
   // Date range state
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
@@ -55,7 +58,11 @@ function PageComponent() {
   const [jsonMode, setJsonMode] = useState(false);
 
   const handleValueChange = useEvent((value: string) => {
-    const type = 'website';
+    let type: InsightType = 'website';
+
+    if (warehouseApplicationIds.includes(value)) {
+      type = 'warehouse';
+    }
 
     useInsightsStore.setState({
       insightId: value,
@@ -143,6 +150,16 @@ function PageComponent() {
                         </SelectItem>
                       ))}
                     </SelectGroup>
+                    {warehouseApplicationIds.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>{t('Warehouse')}</SelectLabel>
+                        {warehouseApplicationIds.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {item}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -199,7 +216,7 @@ function PageComponent() {
                   />
                 )}
               >
-                {data.map((event) => {
+                {data.map((event, index) => {
                   // Calculate date difference
                   const eventDate = dayjs(event.createdAt);
                   const diffNow = eventDate.isValid()
@@ -208,14 +225,19 @@ function PageComponent() {
 
                   // Get user ID
                   const userId =
+                    event.properties.distinctId ||
                     event.properties.userId ||
                     event.properties.user_id ||
                     event.properties.sessionId ||
                     '';
 
                   // Clean properties and sessions objects to remove falsy values
-                  const cleanedProperties = cleanObject(event.properties);
-                  const cleanedSessions = cleanObject(event.sessions);
+                  const cleanedProperties = cleanObject(
+                    get(event, 'properties', {})
+                  );
+                  const cleanedSessions = cleanObject(
+                    get(event, 'sessions', {})
+                  );
 
                   return (
                     <Collapse.Panel
@@ -249,7 +271,7 @@ function PageComponent() {
                           </div>
                         </div>
                       }
-                      key={event.id}
+                      key={`${event.id}-${index}`}
                     >
                       {jsonMode ? (
                         <pre className="overflow-x-auto rounded p-2 text-xs">

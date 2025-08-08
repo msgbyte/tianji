@@ -92,4 +92,6 @@ describe('WarehouseInsightsSqlBuilder', () => {
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
+
+  test.todo('buildFetchEventsQuery');
 });

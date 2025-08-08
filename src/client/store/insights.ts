@@ -7,9 +7,11 @@ import { DateUnit } from '@tianji/shared';
 import { TimeEventChartType } from '../components/chart/TimeEventChart';
 import dayjs from 'dayjs';
 
+export type InsightType = 'website' | 'survey' | 'aigateway' | 'warehouse';
+
 interface InsightsState {
   insightId: string;
-  insightType: 'website' | 'survey' | 'aigateway' | 'warehouse';
+  insightType: InsightType;
   currentMetrics: (MetricsInfo | null)[];
   currentFilters: (FilterInfo | null)[];
   currentGroups: (GroupInfo | null)[];

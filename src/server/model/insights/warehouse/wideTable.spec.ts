@@ -90,4 +90,39 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
+
+  test('buildFetchEventsQuery', () => {
+    const builder = new WarehouseWideTableInsightsSqlBuilder(
+      {
+        workspaceId: '',
+        insightId: 'wide_table_test',
+        insightType: 'warehouse',
+        metrics: [
+          {
+            math: 'events',
+            name: '$all_event',
+          },
+        ],
+        filters: [],
+        groups: [
+          {
+            value: 'is_public',
+            type: 'string',
+          },
+        ],
+        time: {
+          startAt: 1753977600000,
+          endAt: 1754668799999,
+          unit: 'day',
+          timezone: 'Asia/Shanghai',
+        },
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = builder.buildFetchEventsQuery(undefined);
+    expect(unwrapSQL(sql)).toMatchSnapshot('sql');
+  });
 });

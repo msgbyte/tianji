@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { InsightsSqlBuilder } from '../shared.js';
+import { InsightEvent, InsightsSqlBuilder } from '../shared.js';
 import {
   dateTypeSchema,
   getWarehouseApplications,
@@ -85,6 +85,14 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
   protected getTableName(): string {
     return this.getApplication().tableName;
+  }
+
+  protected getCreateAtFieldName(): string {
+    return this.getApplication().createdAtField;
+  }
+
+  protected getDistinctFieldName(): string {
+    return this.getApplication().distinctField;
   }
 
   protected getDateQuery(
@@ -219,6 +227,27 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
     }
 
     return groupSelectQueryArr;
+  }
+
+  public async queryEvents(
+    cursor: string | undefined
+  ): Promise<InsightEvent[]> {
+    const allEventsSql = this.buildFetchEventsQuery(cursor);
+
+    const rows = await this.executeQuery(allEventsSql);
+
+    if (!Array.isArray(rows)) {
+      throw new Error('Invalid query result');
+    }
+
+    return rows.map((row) => {
+      return {
+        id: row[this.getDistinctFieldName()],
+        name: row[this.getDistinctFieldName()],
+        createdAt: row[this.getCreateAtFieldName()],
+        properties: { ...row },
+      };
+    });
   }
 
   async executeQuery(sql: Prisma.Sql): Promise<any[]> {

@@ -19,6 +19,8 @@ import { clickhouseHealthManager } from '../../clickhouse/health.js';
 import { logger } from '../../utils/logger.js';
 import { prisma } from '../_client.js';
 
+const { sql, raw } = Prisma;
+
 // ClickHouse date formats for different time units
 export const CLICKHOUSE_DATE_FORMATS = {
   minute: '%Y-%m-%d %H:%M:00',
@@ -44,6 +46,12 @@ export interface InsightsQueryContext {
 
 export abstract class InsightsSqlBuilder {
   protected abstract getTableName(): string;
+  protected getDistinctFieldName(): string {
+    return 'userId';
+  }
+  protected getCreateAtFieldName(): string {
+    return 'createdAt';
+  }
 
   protected resultLimit = 100; // set default result limit for insights query
   protected maxResultLimit = 1000; // set max result limit for insights query to avoid performance issues
@@ -80,7 +88,7 @@ export abstract class InsightsSqlBuilder {
       throw new Error(`Invalid date unit: ${unit}`);
     }
 
-    return Prisma.sql`to_char(date_trunc(${unit}, ${Prisma.raw(field)} at time zone ${timezone}), '${Prisma.raw(POSTGRESQL_DATE_FORMATS[unit as keyof typeof POSTGRESQL_DATE_FORMATS])}')`;
+    return sql`to_char(date_trunc(${unit}, ${raw(field)} at time zone ${timezone}), '${raw(POSTGRESQL_DATE_FORMATS[unit as keyof typeof POSTGRESQL_DATE_FORMATS])}')`;
   }
 
   protected getClickHouseDateQuery(
@@ -97,20 +105,20 @@ export abstract class InsightsSqlBuilder {
       CLICKHOUSE_DATE_FORMATS[unit as keyof typeof CLICKHOUSE_DATE_FORMATS];
 
     // ClickHouse uses different functions for date manipulation
-    // Use Prisma.raw for string literals to avoid parameter binding issues
+    // Use raw for string literals to avoid parameter binding issues
     if (unit === 'minute') {
-      return Prisma.sql`formatDateTime(toStartOfMinute(${Prisma.raw(field)}, '${Prisma.raw(timezone)}'), '${Prisma.raw(format)}')`;
+      return sql`formatDateTime(toStartOfMinute(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
     } else if (unit === 'hour') {
-      return Prisma.sql`formatDateTime(toStartOfHour(${Prisma.raw(field)}, '${Prisma.raw(timezone)}'), '${Prisma.raw(format)}')`;
+      return sql`formatDateTime(toStartOfHour(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
     } else if (unit === 'day') {
-      return Prisma.sql`formatDateTime(toStartOfDay(${Prisma.raw(field)}, '${Prisma.raw(timezone)}'), '${Prisma.raw(format)}')`;
+      return sql`formatDateTime(toStartOfDay(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
     } else if (unit === 'month') {
-      return Prisma.sql`formatDateTime(toStartOfMonth(${Prisma.raw(field)}, '${Prisma.raw(timezone)}'), '${Prisma.raw(format)}')`;
+      return sql`formatDateTime(toStartOfMonth(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
     } else if (unit === 'year') {
-      return Prisma.sql`formatDateTime(toStartOfYear(${Prisma.raw(field)}, '${Prisma.raw(timezone)}'), '${Prisma.raw(format)}')`;
+      return sql`formatDateTime(toStartOfYear(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
     }
 
-    return Prisma.sql`formatDateTime(toStartOfDay(${Prisma.raw(field)}, '${Prisma.raw(timezone)}'), '${Prisma.raw(format)}')`;
+    return sql`formatDateTime(toStartOfDay(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
   }
 
   protected buildGroupByText(length: number): string {
@@ -128,10 +136,10 @@ export abstract class InsightsSqlBuilder {
       // NOTICE: ClickHouse needs proper DateTime conversion functions
       const startTime = dayjs(startAt).utc().format('YYYY-MM-DD HH:mm:ss');
       const endTime = dayjs(endAt).utc().format('YYYY-MM-DD HH:mm:ss');
-      return Prisma.sql`${Prisma.raw(field)} BETWEEN toDateTime(${startTime}, 'UTC') AND toDateTime(${endTime}, 'UTC')`;
+      return sql`${raw(field)} BETWEEN toDateTime(${startTime}, 'UTC') AND toDateTime(${endTime}, 'UTC')`;
     }
 
-    return Prisma.sql`${Prisma.raw(field)} between ${dayjs(startAt).toISOString()}::timestamptz and ${dayjs(endAt).toISOString()}::timestamptz`;
+    return sql`${raw(field)} between ${dayjs(startAt).toISOString()}::timestamptz and ${dayjs(endAt).toISOString()}::timestamptz`;
   }
 
   public buildCommonFilterQueryOperator(
@@ -166,7 +174,7 @@ export abstract class InsightsSqlBuilder {
       );
     }
 
-    return Prisma.sql`1 = 1`;
+    return sql`1 = 1`;
   }
 
   private buildNumberFilterOperator(
@@ -175,34 +183,34 @@ export abstract class InsightsSqlBuilder {
     valueField: Prisma.Sql
   ): Prisma.Sql {
     if (operator === 'equals') {
-      return Prisma.sql`${valueField} = ${castToNumber(value)}`;
+      return sql`${valueField} = ${castToNumber(value)}`;
     }
     if (operator === 'not equals') {
-      return Prisma.sql`${valueField} != ${castToNumber(value)}`;
+      return sql`${valueField} != ${castToNumber(value)}`;
     }
     if (operator === 'in list' && Array.isArray(value)) {
-      return Prisma.sql`${valueField} IN (${value.join(',')})`;
+      return sql`${valueField} IN (${value.join(',')})`;
     }
     if (operator === 'not in list' && Array.isArray(value)) {
-      return Prisma.sql`${valueField} NOT IN (${value.join(',')})`;
+      return sql`${valueField} NOT IN (${value.join(',')})`;
     }
     if (operator === 'greater than') {
-      return Prisma.sql`${valueField} > ${castToNumber(value)}`;
+      return sql`${valueField} > ${castToNumber(value)}`;
     }
     if (operator === 'greater than or equal') {
-      return Prisma.sql`${valueField} >= ${castToNumber(value)}`;
+      return sql`${valueField} >= ${castToNumber(value)}`;
     }
     if (operator === 'less than') {
-      return Prisma.sql`${valueField} < ${castToNumber(value)}`;
+      return sql`${valueField} < ${castToNumber(value)}`;
     }
     if (operator === 'less than or equal') {
-      return Prisma.sql`${valueField} <= ${castToNumber(value)}`;
+      return sql`${valueField} <= ${castToNumber(value)}`;
     }
     if (operator === 'between') {
-      return Prisma.sql`${valueField} BETWEEN ${castToNumber(get(value, '0'))} AND ${castToNumber(get(value, '1'))}`;
+      return sql`${valueField} BETWEEN ${castToNumber(get(value, '0'))} AND ${castToNumber(get(value, '1'))}`;
     }
 
-    return Prisma.sql`1 = 1`;
+    return sql`1 = 1`;
   }
 
   private buildStringFilterOperator(
@@ -211,25 +219,25 @@ export abstract class InsightsSqlBuilder {
     valueField: Prisma.Sql
   ): Prisma.Sql {
     if (operator === 'equals') {
-      return Prisma.sql`${valueField} = ${castToString(value)}`;
+      return sql`${valueField} = ${castToString(value)}`;
     }
     if (operator === 'not equals') {
-      return Prisma.sql`${valueField} != ${castToString(value)}`;
+      return sql`${valueField} != ${castToString(value)}`;
     }
     if (operator === 'contains') {
-      return Prisma.sql`${valueField} LIKE ${`%${castToString(value)}%`}`;
+      return sql`${valueField} LIKE ${`%${castToString(value)}%`}`;
     }
     if (operator === 'not contains') {
-      return Prisma.sql`${valueField} NOT LIKE ${`%${castToString(value)}%`}`;
+      return sql`${valueField} NOT LIKE ${`%${castToString(value)}%`}`;
     }
     if (operator === 'in list' && Array.isArray(value)) {
-      return Prisma.sql`${valueField} IN (${Prisma.join(value, ' , ')})`;
+      return sql`${valueField} IN (${Prisma.join(value, ' , ')})`;
     }
     if (operator === 'not in list' && Array.isArray(value)) {
-      return Prisma.sql`${valueField} NOT IN (${value.join(',')})`;
+      return sql`${valueField} NOT IN (${value.join(',')})`;
     }
 
-    return Prisma.sql`1 = 1`;
+    return sql`1 = 1`;
   }
 
   private buildBooleanFilterOperator(
@@ -238,13 +246,13 @@ export abstract class InsightsSqlBuilder {
     valueField: Prisma.Sql
   ): Prisma.Sql {
     if (operator === 'equals') {
-      return Prisma.sql`${valueField} = ${castToNumber(value)}`;
+      return sql`${valueField} = ${castToNumber(value)}`;
     }
     if (operator === 'not equals') {
-      return Prisma.sql`${valueField} != ${castToNumber(value)}`;
+      return sql`${valueField} != ${castToNumber(value)}`;
     }
 
-    return Prisma.sql`1 = 1`;
+    return sql`1 = 1`;
   }
 
   private buildDateFilterOperator(
@@ -253,13 +261,13 @@ export abstract class InsightsSqlBuilder {
     valueField: Prisma.Sql
   ): Prisma.Sql {
     if (operator === 'between') {
-      return Prisma.sql`${valueField} BETWEEN ${castToDate(get(value, '0')).toISOString()} AND ${castToDate(get(value, '1')).toISOString()}`;
+      return sql`${valueField} BETWEEN ${castToDate(get(value, '0')).toISOString()} AND ${castToDate(get(value, '1')).toISOString()}`;
     }
     if (operator === 'in day') {
-      return Prisma.sql`${valueField} = DATE(${castToDate(value).toISOString()})`;
+      return sql`${valueField} = DATE(${castToDate(value).toISOString()})`;
     }
 
-    return Prisma.sql`1 = 1`;
+    return sql`1 = 1`;
   }
 
   protected buildSelectQueryArr(): (Prisma.Sql | null)[] {
@@ -283,7 +291,7 @@ export abstract class InsightsSqlBuilder {
     const { unit, timezone = 'UTC' } = time;
     const tableName = this.getTableName();
 
-    return Prisma.sql`${this.getDateQuery(`"${tableName}"."createdAt"`, unit, timezone)} date`;
+    return sql`${this.getDateQuery(`"${tableName}"."${this.getCreateAtFieldName()}"`, unit, timezone)} date`;
   }
 
   public build(): Prisma.Sql {
@@ -295,9 +303,9 @@ export abstract class InsightsSqlBuilder {
 
     const groupByText = this.buildGroupByText(groupSelectQueryArr.length + 1);
 
-    let sql: Prisma.Sql;
+    let _sql: Prisma.Sql;
 
-    sql = Prisma.sql`select
+    _sql = sql`select
         ${Prisma.join(
           compact([
             this.buildDateQuerySql(),
@@ -306,32 +314,37 @@ export abstract class InsightsSqlBuilder {
           ]),
           ' , '
         )}
-      from "${Prisma.raw(tableName)}" ${innerJoinQuery}
+      from "${raw(tableName)}" ${innerJoinQuery}
       where ${Prisma.join(whereQueryArr, ' AND ')}
-      group by ${Prisma.raw(groupByText)}
+      group by ${raw(groupByText)}
       order by 1 desc
-      limit ${Prisma.raw(String(this.maxResultLimit))}`;
+      limit ${raw(String(this.maxResultLimit))}`;
 
     if (env.debugInsights) {
-      printSQL(sql);
+      printSQL(_sql);
     }
 
-    return sql;
+    return _sql;
   }
 
   public buildFetchEventsQuery(cursor: string | undefined): Prisma.Sql {
     const tableName = this.getTableName();
     const whereQueryArr = this.buildWhereQueryArr();
     const innerJoinQuery = this.buildInnerJoinQuery();
+    const distinctFieldName = this.getDistinctFieldName();
+    const createAtFieldName = this.getCreateAtFieldName();
 
-    return Prisma.sql`
-      select *
-      from "${Prisma.raw(tableName)}"
+    return sql`
+      select
+        *,
+        "${raw(distinctFieldName)}" as "distinctId",
+        "${raw(createAtFieldName)}" as "createdAt"
+      from "${raw(tableName)}"
       ${innerJoinQuery}
       where ${Prisma.join(whereQueryArr, ' AND ')}
-      ${cursor ? Prisma.sql`AND "${Prisma.raw(tableName)}"."id" < ${cursor}` : Prisma.empty}
-      order by "${Prisma.raw(tableName)}"."createdAt" desc
-      limit ${this.resultLimit}
+      ${cursor ? sql`AND "${raw(tableName)}"."id" < ${cursor}` : Prisma.empty}
+      order by "${raw(tableName)}"."${raw(createAtFieldName)}" desc
+      limit ${raw(String(this.resultLimit))}
     `;
   }
 

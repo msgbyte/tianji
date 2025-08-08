@@ -12,6 +12,7 @@ import { insightsLongTableWarehouse } from './warehouse/longTable.js';
 import { INIT_WORKSPACE_ID } from '../../utils/const.js';
 import { findWarehouseApplication } from './warehouse/utils.js';
 import { insightsWideTableWarehouse } from './warehouse/wideTable.js';
+import { queryWarehouseEvents } from './warehouse/index.js';
 
 export function queryInsight(
   query: z.infer<typeof insightsQuerySchema>,
@@ -90,6 +91,10 @@ export async function queryEvents(
           : null,
       };
     });
+  }
+
+  if (insightType === 'warehouse' && query.workspaceId === INIT_WORKSPACE_ID) {
+    return queryWarehouseEvents(query, context);
   }
 
   throw new Error('Unknown Insight Type');

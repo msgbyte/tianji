@@ -1,5 +1,20 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`WarehouseWideTableInsightsSqlBuilder > buildFetchEventsQuery > sql 1`] = `
+"
+      select
+        *,
+        "user_id" as "distinctId",
+        "event_timestamp" as "createdAt"
+      from "events"
+      
+      where "event_date" BETWEEN '2025-08-01' AND '2025-08-08'
+      
+      order by "events"."event_timestamp" desc
+      limit 100
+    "
+`;
+
 exports[`WarehouseWideTableInsightsSqlBuilder > default > sql 1`] = `
 "select
         DATE_FORMAT("event_date", '%Y-%m-%d') date , count(1) as "$all_event"
