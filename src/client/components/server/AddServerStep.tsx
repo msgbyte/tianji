@@ -40,7 +40,7 @@ export const AddServerStep: React.FC = React.memo(() => {
     }
   });
 
-  const command = `./tianji-reporter --url ${window.location.origin} --workspace ${workspaceId}`;
+  const command = `./tianji-reporter --url ${window.location.origin} --workspace ${workspaceId} [--secret <your-secret>]`;
 
   return (
     <Steps

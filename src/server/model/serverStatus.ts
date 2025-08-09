@@ -7,6 +7,7 @@ import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared.js';
 import { isServerOnline } from '@tianji/shared';
 import { getCacheManager } from '../cache/index.js';
 import { logger } from '../utils/logger.js';
+import { env } from '../utils/env.js';
 
 // Helper function to get cache key for server map
 function getServerMapCacheKey(workspaceId: string): string {
@@ -98,11 +99,19 @@ export async function recordServerStatus(
   info: ServerStatusInfo,
   requestContext: ServerStatusRequestContext = {}
 ) {
-  const { workspaceId, name, hostname, timeout, payload } = info;
+  const { workspaceId, name, hostname, timeout, payload, secret } = info;
 
   if (!workspaceId || !name || !hostname) {
     console.warn(
       '[ServerStatus] lost some necessary params, request will be ignore',
+      info
+    );
+    return;
+  }
+
+  if (env.serverStatusSecret && env.serverStatusSecret !== secret) {
+    console.warn(
+      '[ServerStatus] secret mismatch, request will be ignore',
       info
     );
     return;
