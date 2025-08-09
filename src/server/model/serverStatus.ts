@@ -7,6 +7,7 @@ import { createSubscribeInitializer, subscribeEventBus } from '../ws/shared.js';
 import { isServerOnline } from '@tianji/shared';
 import { getCacheManager } from '../cache/index.js';
 import { logger } from '../utils/logger.js';
+import { env } from '../utils/env.js';
 
 // Helper function to get cache key for server map
 function getServerMapCacheKey(workspaceId: string): string {
@@ -64,7 +65,7 @@ async function getServerHistoryFromCache(
   const cachedValue = await cacheManager.get(key);
   if (cachedValue) {
     try {
-      return JSON.parse(String(cachedValue));
+     return JSON.parse(String(cachedValue));
     } catch (err) {
       logger.error('[ServerStatus] Error parsing cached history:', err);
       return [];
@@ -98,11 +99,19 @@ export async function recordServerStatus(
   info: ServerStatusInfo,
   requestContext: ServerStatusRequestContext = {}
 ) {
-  const { workspaceId, name, hostname, timeout, payload } = info;
+  const { workspaceId, name, hostname, timeout, payload, secret } = info;
 
   if (!workspaceId || !name || !hostname) {
     console.warn(
       '[ServerStatus] lost some necessary params, request will be ignore',
+      info
+    );
+    return;
+  }
+
+  if (env.serverStatusSecret && env.serverStatusSecret !== secret) {
+    console.warn(
+      '[ServerStatus] secret mismatch, request will be ignore',
       info
     );
     return;
@@ -182,9 +191,19 @@ export async function getServerCount(workspaceId: string): Promise<number> {
   return Object.keys(serverMap).length;
 }
 
-export async function getServerStatusHistory(
+export async function getPublicServerStatusHistory(
   workspaceId: string,
   name: string
 ): Promise<ServerStatusInfo[]> {
-  return await getServerHistoryFromCache(workspaceId, name);
+  const serverStatus = await getServerHistoryFromCache(workspaceId, name);
+  return serverStatus.map((item: ServerStatusInfo) => {
+    // we remove sensitive datas
+    const { secret, ...rest } = item;
+    const { top_cpu_processes, top_memory_processes, docker, ...restPayload } =
+      rest.payload;
+    return {
+      ...rest,
+      payload: restPayload,
+    };
+  });
 }
