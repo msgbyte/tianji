@@ -60,6 +60,17 @@ export const DateRangeSelection: React.FC<DateRangeSelectionProps> = React.memo(
             {t('Yesterday')}
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
+            selected={value === '3D'}
+            onClick={() =>
+              onChange('3D', [
+                dayjs().subtract(3, 'day').startOf('day').toDate(),
+                dayjs().endOf('day').toDate(),
+              ])
+            }
+          >
+            3D
+          </DateRangeSelectionItem>
+          <DateRangeSelectionItem
             selected={value === '7D'}
             onClick={() =>
               onChange('7D', [
