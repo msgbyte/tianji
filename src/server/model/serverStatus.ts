@@ -65,7 +65,7 @@ async function getServerHistoryFromCache(
   const cachedValue = await cacheManager.get(key);
   if (cachedValue) {
     try {
-      return JSON.parse(String(cachedValue));
+     return JSON.parse(String(cachedValue));
     } catch (err) {
       logger.error('[ServerStatus] Error parsing cached history:', err);
       return [];
@@ -191,9 +191,19 @@ export async function getServerCount(workspaceId: string): Promise<number> {
   return Object.keys(serverMap).length;
 }
 
-export async function getServerStatusHistory(
+export async function getPublicServerStatusHistory(
   workspaceId: string,
   name: string
 ): Promise<ServerStatusInfo[]> {
-  return await getServerHistoryFromCache(workspaceId, name);
+  const serverStatus = await getServerHistoryFromCache(workspaceId, name);
+  return serverStatus.map((item: ServerStatusInfo) => {
+    // we remove sensitive datas
+    const { secret, ...rest } = item;
+    const { top_cpu_processes, top_memory_processes, docker, ...restPayload } =
+      rest.payload;
+    return {
+      ...rest,
+      payload: restPayload,
+    };
+  });
 }
