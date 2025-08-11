@@ -23,7 +23,6 @@ import {
   insightsWideTableWarehouseEvents,
   insightsWideTableWarehouseFilterParams,
 } from '../../../model/insights/warehouse/wideTable.js';
-import { insightCohortsRouter } from './cohorts.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
