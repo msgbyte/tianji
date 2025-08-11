@@ -1,28 +1,29 @@
-import { router, workspaceProcedure } from '../trpc.js';
+import { router, workspaceProcedure } from '../../trpc.js';
 import {
   insightsQueryEventsSchema,
   insightsQuerySchema,
   insightTypeSchema,
-} from '../../utils/schema.js';
+} from '../../../utils/schema.js';
 import { z } from 'zod';
-import { prisma } from '../../model/_client.js';
-import { EVENT_TYPE, INIT_WORKSPACE_ID } from '../../utils/const.js';
-import { stringifyDateType } from '../../utils/common.js';
-import { queryEvents, queryInsight } from '../../model/insights/index.js';
-import { insightsSurveyBuiltinFields } from '../../model/insights/utils.js';
+import { prisma } from '../../../model/_client.js';
+import { EVENT_TYPE, INIT_WORKSPACE_ID } from '../../../utils/const.js';
+import { stringifyDateType } from '../../../utils/common.js';
+import { queryEvents, queryInsight } from '../../../model/insights/index.js';
+import { insightsSurveyBuiltinFields } from '../../../model/insights/utils.js';
 import { uniq } from 'lodash-es';
 import {
   insightsLongTableWarehouseEvents,
   insightsLongTableWarehouseFilterParams,
-} from '../../model/insights/warehouse/longTable.js';
+} from '../../../model/insights/warehouse/longTable.js';
 import {
   findWarehouseApplication,
   getWarehouseApplications,
-} from '../../model/insights/warehouse/utils.js';
+} from '../../../model/insights/warehouse/utils.js';
 import {
   insightsWideTableWarehouseEvents,
   insightsWideTableWarehouseFilterParams,
-} from '../../model/insights/warehouse/wideTable.js';
+} from '../../../model/insights/warehouse/wideTable.js';
+import { insightCohortsRouter } from './cohorts.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure

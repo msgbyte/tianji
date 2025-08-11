@@ -12,7 +12,7 @@ import { telemetryRouter } from './telemetry.js';
 import { surveyRouter } from './survey.js';
 import { feedRouter } from './feed/index.js';
 import { aiRouter } from './ai.js';
-import { insightsRouter } from './insights.js';
+import { insightsRouter } from './insights/index.js';
 import { applicationRouter } from './application.js';
 import { aiGatewayRouter } from './aiGateway.js';
 import { workerRouter } from './worker.js';
