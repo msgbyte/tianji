@@ -994,3 +994,14 @@ model FunctionWorkerExecution {
 
   @@index([workerId])
 }
+
+model WarehouseCohorts {
+  id                     String   @id @default(cuid()) @db.VarChar(30)
+  name                   String
+  warehouseApplicationId String // aka application name
+  filter                 Json     @db.Json
+  createdAt              DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([createdAt])
+}
