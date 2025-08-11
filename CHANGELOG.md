@@ -1,5 +1,26 @@
 
 
+## [1.24.13](https://github.com/msgbyte/tianji/compare/v1.24.12...v1.24.13) (2025-08-11)
+
+### Features
+
+* add 3-day date range selection option in DateRangeSelection component ([b5f7c12](https://github.com/msgbyte/tianji/commit/b5f7c12c2a9f56561646624d1dfc7d427959f809))
+* add event name field and filter support in WarehouseInsightsSqlBuilder ([88940e2](https://github.com/msgbyte/tianji/commit/88940e248707806221afd666c0f4d554c1d629fd))
+* add event names fetcher ([8737a34](https://github.com/msgbyte/tianji/commit/8737a34db82da6364e11e4dcdc5d475995fc7d66))
+* add insights event handling with warehouse wide table application ([13e3fb8](https://github.com/msgbyte/tianji/commit/13e3fb8c296768e18ff6b2fdd9cc0953f0282030))
+* add insightsWarehouseFilterParams function to fetch distinct event parameters ([47f3506](https://github.com/msgbyte/tianji/commit/47f3506f7d508fa29168dff37a5f8cb2ca383bf6))
+* add long table query events logic and improve display of event list page ([9a81ec9](https://github.com/msgbyte/tianji/commit/9a81ec921f2898a45b1900a1ce41718d4a1158b3))
+* add skipBatch context to TRPC queries in insights components ([c2df195](https://github.com/msgbyte/tianji/commit/c2df19512b8347b00e4e059aab3e29fd60f60b9f))
+* add specify feature for events ([0d3c841](https://github.com/msgbyte/tianji/commit/0d3c8414864724cdf4aaf1076a2169a5e4125146))
+* add warehousecohorts db model ([6f2f15d](https://github.com/msgbyte/tianji/commit/6f2f15d41907e116dfc68a61167d9b8cb9eb57c2))
+* add wide table query support ([b8fa898](https://github.com/msgbyte/tianji/commit/b8fa8988344b3b59a31eabe691fa7646456c277f))
+
+### Others
+
+* reduce intro of raw and sql from prisma ([37b0640](https://github.com/msgbyte/tianji/commit/37b064098023fdb49cdbf06e4e4700629711fd65))
+* rename insight file path ([11bbf01](https://github.com/msgbyte/tianji/commit/11bbf0164ca09a59bfbbb1e43f15d36cf4d85f1a))
+* rename warehouse to warehouse long table and extract some logic ([476553b](https://github.com/msgbyte/tianji/commit/476553b67c5e9fb3f5f94b771c1d848fbc71e08c))
+
 ## [1.24.12](https://github.com/msgbyte/tianji/compare/v1.24.11...v1.24.12) (2025-08-06)
 
 ## [1.24.11](https://github.com/msgbyte/tianji/compare/v1.24.10...v1.24.11) (2025-08-06)
