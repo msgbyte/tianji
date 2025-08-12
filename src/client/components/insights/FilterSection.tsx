@@ -1,5 +1,4 @@
 import React from 'react';
-import { useInsightsStore } from '@/store/insights';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { LuFilter, LuPlus } from 'react-icons/lu';
@@ -7,33 +6,35 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { FilterParamsBlock } from './FilterParamsBlock';
 import { Button } from '../ui/button';
 import { cn } from '@/utils/style';
+import type { FilterInfo } from '@tianji/shared';
+import type { InsightType } from '@/store/insights';
 
 interface FilterSectionProps {
   /**
    * @default "vertical"
    */
   direction?: 'horizontal' | 'vertical';
+  insightId: string;
+  insightType: InsightType;
+  filters: (FilterInfo | null)[];
+  onSetFilter: (index: number, info: FilterInfo) => void;
+  onAddFilter: () => void;
+  onRemoveFilter: (index: number) => void;
 }
 export const FilterSection: React.FC<FilterSectionProps> = React.memo(
   (props) => {
     const direction = props.direction ?? 'vertical';
     const workspaceId = useCurrentWorkspaceId();
-    const insightId = useInsightsStore((state) => state.insightId);
-    const insightType = useInsightsStore((state) => state.insightType);
-    const currentFilters = useInsightsStore((state) => state.currentFilters);
-    const setFilter = useInsightsStore((state) => state.setFilter);
-    const addFilter = useInsightsStore((state) => state.addFilter);
-    const removeFilter = useInsightsStore((state) => state.removeFilter);
     const { t } = useTranslation();
 
     const { data: allFilterParams = [] } = trpc.insights.filterParams.useQuery(
       {
         workspaceId,
-        insightId,
-        insightType,
+        insightId: props.insightId,
+        insightType: props.insightType,
       },
       {
-        enabled: Boolean(insightId),
+        enabled: Boolean(props.insightId),
         trpc: {
           context: {
             skipBatch: true,
@@ -53,16 +54,17 @@ export const FilterSection: React.FC<FilterSectionProps> = React.memo(
       >
         {direction === 'horizontal' ? (
           <Button
+            className="self-start"
             variant="outline"
             size="icon"
             Icon={LuFilter}
-            onClick={addFilter}
+            onClick={props.onAddFilter}
           />
         ) : (
           <div
             className="hover:bg-muted mb-2 flex cursor-pointer items-center justify-between rounded-lg px-2 py-1"
             onClick={() => {
-              addFilter();
+              props.onAddFilter();
             }}
           >
             <div>{t('Filter')}</div>
@@ -73,17 +75,18 @@ export const FilterSection: React.FC<FilterSectionProps> = React.memo(
         )}
 
         <div className="flex flex-1 flex-row flex-wrap gap-2 overflow-hidden">
-          {currentFilters.map((filter, i) => (
-            <FilterParamsBlock
-              key={i}
-              index={i}
-              direction={direction}
-              list={allFilterParams}
-              info={filter}
-              onSelect={(info) => setFilter(i, info)}
-              onDelete={() => removeFilter(i)}
-            />
-          ))}
+          {Array.isArray(props.filters) &&
+            props.filters.map((filter, i) => (
+              <FilterParamsBlock
+                key={i}
+                index={i}
+                direction={direction}
+                list={allFilterParams}
+                info={filter}
+                onSelect={(info) => props.onSetFilter(i, info)}
+                onDelete={() => props.onRemoveFilter(i)}
+              />
+            ))}
         </div>
       </div>
     );

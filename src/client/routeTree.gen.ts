@@ -54,6 +54,7 @@ import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as InsightsEventsImport } from './routes/insights/events'
+import { Route as InsightsCohortsImport } from './routes/insights/cohorts'
 import { Route as FeedPlaygroundImport } from './routes/feed_/playground'
 import { Route as FeedAddImport } from './routes/feed/add'
 import { Route as ApplicationOverviewImport } from './routes/application/overview'
@@ -294,6 +295,11 @@ const InsightsEventsRoute = InsightsEventsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const InsightsCohortsRoute = InsightsCohortsImport.update({
+  path: '/insights/cohorts',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const FeedPlaygroundRoute = FeedPlaygroundImport.update({
   path: '/feed/playground',
   getParentRoute: () => rootRoute,
@@ -498,6 +504,10 @@ declare module '@tanstack/react-router' {
     }
     '/feed/playground': {
       preLoaderRoute: typeof FeedPlaygroundImport
+      parentRoute: typeof rootRoute
+    }
+    '/insights/cohorts': {
+      preLoaderRoute: typeof InsightsCohortsImport
       parentRoute: typeof rootRoute
     }
     '/insights/events': {
@@ -744,6 +754,7 @@ export const routeTree = rootRoute.addChildren([
     WorkerWorkerIdIndexRoute,
   ]),
   FeedPlaygroundRoute,
+  InsightsCohortsRoute,
   InsightsEventsRoute,
   StatusSlugRoute,
   InsightsIndexRoute,

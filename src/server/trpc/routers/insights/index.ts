@@ -23,6 +23,7 @@ import {
   insightsWideTableWarehouseEvents,
   insightsWideTableWarehouseFilterParams,
 } from '../../../model/insights/warehouse/wideTable.js';
+import { insightCohortsRouter } from './cohorts.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
@@ -283,4 +284,16 @@ export const insightsRouter = router({
 
     return getWarehouseApplications().map((a) => a.name);
   }),
+  warehouseApplicationsWideTable: workspaceProcedure.query(
+    async ({ input }) => {
+      if (input.workspaceId !== INIT_WORKSPACE_ID) {
+        return [];
+      }
+
+      return getWarehouseApplications()
+        .filter((a) => a.type === 'wideTable')
+        .map((a) => a.name);
+    }
+  ),
+  cohorts: insightCohortsRouter,
 });

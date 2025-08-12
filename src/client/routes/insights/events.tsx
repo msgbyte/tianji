@@ -44,6 +44,10 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const insightId = useInsightsStore((state) => state.insightId);
   const insightType = useInsightsStore((state) => state.insightType);
+  const currentFilters = useInsightsStore((state) => state.currentFilters);
+  const setFilter = useInsightsStore((state) => state.setFilter);
+  const addFilter = useInsightsStore((state) => state.addFilter);
+  const removeFilter = useInsightsStore((state) => state.removeFilter);
   const filters = useInsightsStore((state) =>
     state.currentFilters.filter((f): f is NonNullable<typeof f> => !!f)
   );
@@ -192,7 +196,15 @@ function PageComponent() {
           </div>
 
           <div className="mb-2">
-            <FilterSection direction="horizontal" />
+            <FilterSection
+              direction="horizontal"
+              insightId={insightId}
+              insightType={insightType}
+              filters={currentFilters}
+              onSetFilter={setFilter}
+              onAddFilter={addFilter}
+              onRemoveFilter={removeFilter}
+            />
           </div>
 
           <ScrollArea className="flex-1 overflow-hidden">

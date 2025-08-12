@@ -40,6 +40,10 @@ function PageComponent() {
 
   const insightId = useInsightsStore((state) => state.insightId);
   const insightType = useInsightsStore((state) => state.insightType);
+  const currentFilters = useInsightsStore((state) => state.currentFilters);
+  const setFilter = useInsightsStore((state) => state.setFilter);
+  const addFilter = useInsightsStore((state) => state.addFilter);
+  const removeFilter = useInsightsStore((state) => state.removeFilter);
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
   const { data: surveys = [] } = trpc.survey.all.useQuery({ workspaceId });
   const { data: warehouseApplicationIds = [] } =
@@ -125,7 +129,15 @@ function PageComponent() {
               <ScrollArea className="h-full overflow-hidden p-4">
                 <div className="flex flex-col space-y-8">
                   <MetricsSection />
-                  <FilterSection direction="vertical" />
+                  <FilterSection
+                    direction="vertical"
+                    insightId={insightId}
+                    insightType={insightType}
+                    filters={currentFilters}
+                    onSetFilter={setFilter}
+                    onAddFilter={addFilter}
+                    onRemoveFilter={removeFilter}
+                  />
                   <BreakdownSection />
                 </div>
               </ScrollArea>

@@ -120,6 +120,7 @@ model Workspace {
   feedChannels        FeedChannel[]
   workspaceInvitation WorkspaceInvitation[]
   functionWorkers     FunctionWorker[]
+  warehouseCohorts    WarehouseCohorts[]
 }
 
 model WorkspacesOnUsers {
@@ -998,10 +999,14 @@ model FunctionWorkerExecution {
 model WarehouseCohorts {
   id                     String   @id @default(cuid()) @db.VarChar(30)
   name                   String
+  workspaceId            String   @db.VarChar(30)
   warehouseApplicationId String // aka application name
-  filter                 Json     @db.Json
+  filter                 Json     @default("[]") @db.Json
   createdAt              DateTime @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime @updatedAt @db.Timestamptz(6)
 
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([workspaceId])
   @@index([createdAt])
 }
