@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createPool, Pool } from 'mysql2/promise';
 import { env } from '../../../utils/env.js';
+import { Prisma } from '@prisma/client';
 
 // MySQL date formats for different time units
 export const MYSQL_DATE_FORMATS = {
@@ -109,4 +110,29 @@ export function getWarehouseConnection(url = env.insights.warehouse.url) {
   }
 
   return connection;
+}
+
+/**
+ * Execute a data warehouse query
+ * @param applicationId Application ID
+ * @param sql Query SQL
+ * @returns Query result
+ */
+export async function executeWarehouseQuery(
+  applicationId: string,
+  sql: Prisma.Sql
+): Promise<any[]> {
+  const application = findWarehouseApplication(applicationId);
+  if (!application) {
+    throw new Error(`Application ${applicationId} not found`);
+  }
+
+  const connection = getWarehouseConnection(application.databaseUrl);
+
+  const [rows] = await connection.query(
+    sql.sql.replaceAll('"', '`'), // avoid mysql and pg sql syntax error about double quote
+    sql.values
+  );
+
+  return rows as any[];
 }

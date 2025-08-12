@@ -113,6 +113,10 @@ export const env = {
       enable: Boolean(process.env.INSIGHTS_WAREHOUSE_URL),
       url: process.env.INSIGHTS_WAREHOUSE_URL,
       applicationsJson: process.env.INSIGHTS_WAREHOUSE_APPLICATIONS_JSON,
+      retention: {
+        userApplicationId:
+          process.env.INSIGHTS_WAREHOUSE_RETENTION_USER_APPLICATION_ID,
+      },
     },
   },
   allowRegister: checkEnvTrusty(process.env.ALLOW_REGISTER),
