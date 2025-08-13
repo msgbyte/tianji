@@ -22,7 +22,7 @@ overrides:
 
 patchedDependencies:
   '@docusaurus/plugin-sitemap':
-    hash: 2dmw5afembaabx5nmvp5w55y2q
+    hash: hfw7pszwmfeyz2p6epnewrpyei
     path: patches/@docusaurus__plugin-sitemap.patch
   zod-prisma@0.5.4:
     hash: 7m3k6hik5q4kosvcy74j54segm
@@ -956,7 +956,7 @@ importers:
         version: 3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/plugin-sitemap':
         specifier: 3.7.0
-        version: 3.7.0(patch_hash=2dmw5afembaabx5nmvp5w55y2q)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
+        version: 3.7.0(patch_hash=hfw7pszwmfeyz2p6epnewrpyei)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/preset-classic':
         specifier: 3.7.0
         version: 3.7.0(@algolia/client-search@5.23.4)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(@types/react@18.2.78)(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(search-insights@2.17.2)(typescript@5.7.2)
@@ -19782,7 +19782,7 @@ snapshots:
       - vue-template-compiler
       - webpack-cli
 
-  '@docusaurus/plugin-sitemap@3.7.0(patch_hash=2dmw5afembaabx5nmvp5w55y2q)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)':
+  '@docusaurus/plugin-sitemap@3.7.0(patch_hash=hfw7pszwmfeyz2p6epnewrpyei)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)':
     dependencies:
       '@docusaurus/core': 3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/logger': 3.7.0
@@ -19857,7 +19857,7 @@ snapshots:
       '@docusaurus/plugin-google-analytics': 3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/plugin-google-gtag': 3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/plugin-google-tag-manager': 3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
-      '@docusaurus/plugin-sitemap': 3.7.0(patch_hash=2dmw5afembaabx5nmvp5w55y2q)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
+      '@docusaurus/plugin-sitemap': 3.7.0(patch_hash=hfw7pszwmfeyz2p6epnewrpyei)(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/plugin-svgr': 3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/theme-classic': 3.7.0(@types/react@18.2.78)(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2)
       '@docusaurus/theme-common': 3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
