@@ -69,7 +69,8 @@
       "typescript": "5.7.2"
     },
     "patchedDependencies": {
-      "zod-prisma@0.5.4": "patches/zod-prisma@0.5.4.patch"
+      "zod-prisma@0.5.4": "patches/zod-prisma@0.5.4.patch",
+      "@docusaurus/plugin-sitemap": "patches/@docusaurus__plugin-sitemap.patch"
     }
   }
 }

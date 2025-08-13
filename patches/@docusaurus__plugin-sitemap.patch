@@ -1,0 +1,13 @@
+diff --git a/lib/createSitemapItem.js b/lib/createSitemapItem.js
+index af7f01f633c98b4daee3ddb947056679afd4395c..b1a73130e43fea772019c5966de6114be70ca931 100644
+--- a/lib/createSitemapItem.js
++++ b/lib/createSitemapItem.js
+@@ -10,6 +10,8 @@ exports.createSitemapItem = createSitemapItem;
+ const utils_common_1 = require("@docusaurus/utils-common");
+ const utils_1 = require("@docusaurus/utils");
+ async function getRouteLastUpdatedAt(route) {
++    return null;
++
+     if (route.metadata?.lastUpdatedAt) {
+         return route.metadata?.lastUpdatedAt;
+     }
