@@ -1,6 +1,5 @@
 User-Agent: *
 Allow: /
-Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
 Disallow: /404
