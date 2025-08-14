@@ -1,68 +1,73 @@
 ---
 sidebar_position: 1
-_i18n_hash: d9dd1597f6c275ebc68c7421c31b29fe
+_i18n_hash: 21a5dc8265605536c8c328c551abdcc9
 ---
 # サーバーステータスレポーター
 
-tianji reporterを使えば、サーバーステータスを簡単に報告できます。
+Tianji レポーターを使うと、サーバーステータスを簡単に報告できます。
 
-[https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases) からダウンロードできます。
+[https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases) からダウンロードしてください。
 
 ## 使用法
 
 ```
-tianji-reporterの使用:
+tianji-reporter の使用法:
   --interval int
-        INTERVALを入力、秒単位 (デフォルトは5)
+        INTERVAL を秒で入力します (デフォルトは 5)
   --mode http
-        レポートデータの送信モードを選択できます: `http` または `udp`、デフォルトは `http` (デフォルト "http")
+        レポートデータの送信モードを設定します。`http` または `udp` を選択可能です。デフォルトは `http` です (デフォルト "http")
   --name string
         このマシンの識別名
   --url string
-        tianjiのhttp URL、例: https://tianji.msgbyte.com
+        Tianji の http URL 例: https://tianji.msgbyte.com
   --vnstat
-        トラフィック統計にvnstatを使用、Linuxのみ
+        トラフィック統計に vnstat を使用。Linux のみ
   --workspace string
-        tianjiのワークスペースID、これはUUIDである必要があります
+        Tianji のワークスペース ID、UUID である必要があります
 ```
 
-**url**と**workspace**は必須であり、どのホストとどのワークスペースにサービスを報告するかを意味します。
+**url** と **workspace** は必須項目です。サービスを報告するホストとワークスペースを指定します。
 
-デフォルトではサーバーノード名はホスト名と同じになりますが、`--name`を使用して名前をカスタマイズすることで、サーバーを識別しやすくなります。
+サーバーノード名はデフォルトでホスト名と同じになりますが、`--name` オプションを使って自分で名前をカスタマイズでき、サーバーを特定するのに役立ちます。
 
 ## 自動インストールスクリプト
 
-`Tianji` -> `Servers` -> `Add` -> `Auto`タブで自動インストールスクリプトを入手できます。
+`Tianji` -> `Servers` -> `Add` -> `Auto` タブで自動インストールスクリプトを取得できます。
 
-これにより、自動的にレポーターをダウンロードし、マシンでLinuxサービスを作成します。そのためルート権限が必要です。
+これにより、自動的にレポーターをダウンロードし、マシンに Linux サービスを作成します。そのため、root 権限が必要です。
 
 ### アンインストール
 
-レポーターサービスをアンインストールしたい場合は、以下のコマンドを使用できます:
+レポーターサービスをアンインストールしたい場合、以下のコマンドを使用します:
+
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
-```
+``` 
 
-インストールコマンドに`-s uninstall`を追加するのが主な変更点です。
+主な変更点は、インストールコマンドに `-s uninstall` を追加することです。
+
+## Kubernetes
+
+サーバーが Kubernetes クラスターで動作している場合、レポーターを DaemonSet としてデプロイすることで、各ノードが自動的にメトリクスを報告するようにできます。詳細は [Deploy Reporter as DaemonSet](./kubernetes/reporter-daemonset.md) をご覧ください。
 
 ## Q&A
 
-### tianjiレポーターサービスログを確認するには？
+### Tianji レポーターサービスのログを確認するには？
 
-自動インストールスクリプトでインストールした場合、tianjiはLinuxマシンに`tianji-reporter`というサービスをインストールします。
+自動インストールスクリプトでインストールした場合、Tianji は `tianji-reporter` という名前のサービスを Linux マシンにインストールします。
 
-以下のコマンドでtianjiレポーターのログを確認できます:
+以下のコマンドで Tianji レポーターログを確認できます:
 
 ```bash
 journalctl -fu tianji-reporter.service
 ```
 
-### レポートが成功したのにサーバータブにマシンがない
+### レポートが成功してもサーバータブにマシンが見つからない
 
-おそらくあなたのtianjiは逆プロキシ（例えば`nginx`）の背後にあるかもしれません。
+もしかすると、Tianji がリバースプロキシ（例えば `nginx`）の背後にあるかもしれません。
 
-逆プロキシがWebSocketサポートを追加していることを確認してください。
+リバースプロキシにウェブソケット対応がされているか確認してください。
 
-## なぜ私のマシンは常にオフラインですか？
+## なぜ私のマシンは常にオフラインなのか？
 
 サーバーの日時を確認してください。

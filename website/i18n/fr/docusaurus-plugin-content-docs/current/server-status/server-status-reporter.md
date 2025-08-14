@@ -1,55 +1,59 @@
 ---
 sidebar_position: 1
-_i18n_hash: d9dd1597f6c275ebc68c7421c31b29fe
+_i18n_hash: 21a5dc8265605536c8c328c551abdcc9
 ---
 # Rapporteur de Statut du Serveur
 
-Vous pouvez facilement rapporter le statut de votre serveur avec le rapporteur tianji.
+Vous pouvez facilement rapporter le statut de votre serveur avec le rapporteur Tianji.
 
-Vous pouvez le télécharger depuis [https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases)
+Vous pouvez le télécharger depuis [https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases).
 
 ## Utilisation
 
 ```
-Utilisation de tianji-reporter:
+Utilisation de tianji-reporter :
   --interval int
-        Saisissez l'INTERVALLE, en secondes (par défaut 5)
+        Entrez l'INTERVALLE, en secondes (par défaut 5)
   --mode http
-        Le mode d'envoi des données de rapport, vous pouvez sélectionner : `http` ou `udp`, par défaut est `http` (par défaut "http")
+        Le mode d'envoi des données de rapport, vous pouvez choisir : `http` ou `udp`, par défaut est `http` (par défaut "http")
   --name string
-        Le nom d'identification pour cette machine
+        Le nom d'identification de cette machine
   --url string
         L'URL http de tianji, par exemple : https://tianji.msgbyte.com
   --vnstat
-        Utiliser vnstat pour les statistiques de trafic, uniquement sous linux
+        Utiliser vnstat pour les statistiques de trafic, uniquement sous Linux
   --workspace string
-        L'ID de l'espace de travail pour tianji, cela doit être un uuid
+        L'ID de l'espace de travail pour tianji, cela devrait être un uuid
 ```
 
-Les **url** et **workspace** sont obligatoires, cela signifie que vous allez rapporter votre service à quel hôte et quel espace de travail.
+L’**url** et l'**espace de travail** sont requis, ce qui signifie que vous rapporterez votre service à quel hôte et dans quel espace.
 
-Par défaut, un nom de nœud de serveur sera identique au nom d'hôte, vous pouvez donc personnaliser votre nom avec `--name` pour vous aider à identifier le serveur.
+Par défaut, un nom de nœud serveur sera identique au nom d'hôte, vous pouvez donc personnaliser votre nom avec `--name` pour vous aider à identifier le serveur.
 
 ## Script d'installation automatique
 
 Vous pouvez obtenir votre script d'installation automatique dans `Tianji` -> `Servers` -> `Add` -> onglet `Auto`
 
-il téléchargera automatiquement le rapporteur et créera un service linux sur votre machine. donc il nécessite des permissions root.
+Cela téléchargera automatiquement le rapporteur et créera un service Linux sur votre machine, donc cela nécessite une autorisation root.
 
 ### Désinstallation
 
-si vous souhaitez désinstaller le service de rapport, vous pouvez utiliser cette commande comme :
+Si vous souhaitez désinstaller le service rapporteur, vous pouvez utiliser cette commande comme suit :
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ``` 
 
-La principale modification est d'ajouter `-s uninstall` à votre commande d'installation.
+Le principal changement est d'ajouter `-s uninstall` à votre commande d'installation.
 
-## FAQ
+## Kubernetes
 
-### Comment vérifier le journal de service du rapporteur tianji ?
+Si vos serveurs fonctionnent dans un cluster Kubernetes, vous pouvez déployer le rapporteur en tant que DaemonSet pour que chaque nœud rapporte automatiquement les métriques. Voir [Déployer le rapporteur en tant que DaemonSet](./kubernetes/reporter-daemonset.md) pour plus de détails.
 
-Si vous installez avec le script d'installation automatique, tianji vous aidera à installer un service nommé `tianji-reporter` sur votre machine linux.
+## Q&R
+
+### Comment vérifier le journal du service tianji reporter ?
+
+Si vous installez avec le script d'installation automatique, tianji vous aidera à installer un service nommé `tianji-reporter` sur votre machine Linux.
 
 Vous pouvez utiliser cette commande pour vérifier le journal du rapporteur tianji :
 
@@ -57,11 +61,11 @@ Vous pouvez utiliser cette commande pour vérifier le journal du rapporteur tian
 journalctl -fu tianji-reporter.service
 ```
 
-### Pas trouvé votre machine dans l'onglet serveur même si le rapport montre un succès
+### Machine non trouvée dans l'onglet serveur même si le rapport affiche un succès
 
-Peut-être que votre tianji est derrière un proxy inverse par exemple `nginx`.
+Peut-être que votre tianji est derrière un proxy inverse, par exemple `nginx`.
 
-Veuillez vous assurer que votre proxy inverse ajoute la prise en charge du websocket.
+Veuillez vous assurer que votre proxy inverse ajoute le support websocket.
 
 ## Pourquoi ma machine est-elle toujours hors ligne ?
 
