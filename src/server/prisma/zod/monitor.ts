@@ -22,6 +22,8 @@ export const MonitorModelSchema = z.object({
   payload: imports.CommonPayloadSchema,
   trendingMode: z.boolean(),
   recentError: z.string().nullish(),
+  upMessageTemplate: z.string().nullish(),
+  downMessageTemplate: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

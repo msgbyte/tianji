@@ -136,6 +136,8 @@ export const monitorRouter = router({
         trendingMode: z.boolean().default(false),
         notificationIds: z.array(z.string()).default([]),
         payload: z.object({}).passthrough(),
+        upMessageTemplate: z.string().nullish(),
+        downMessageTemplate: z.string().nullish(),
       })
     )
     .output(MonitorModelSchema)
@@ -151,6 +153,8 @@ export const monitorRouter = router({
         trendingMode,
         notificationIds,
         payload,
+        upMessageTemplate,
+        downMessageTemplate,
       } = input;
 
       const monitor = await monitorManager.upsert({
@@ -164,6 +168,8 @@ export const monitorRouter = router({
         trendingMode,
         notificationIds,
         payload,
+        upMessageTemplate: upMessageTemplate || null,
+        downMessageTemplate: downMessageTemplate || null,
       });
 
       return monitor;

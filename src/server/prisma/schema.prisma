@@ -652,6 +652,8 @@ model Monitor {
   payload      Json     @db.Json
   trendingMode Boolean  @default(false) @db.Boolean
   recentError  String?
+  upMessageTemplate   String?  @db.VarChar(500) // template for UP notification
+  downMessageTemplate String?  @db.VarChar(500) // template for DOWN notification
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 

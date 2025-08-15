@@ -7,7 +7,14 @@ import { promMonitorRunnerCounter } from '../../utils/prometheus/client.js';
 
 export type MonitorUpsertData = Pick<
   Monitor,
-  'workspaceId' | 'name' | 'type' | 'interval' | 'maxRetries' | 'trendingMode'
+  | 'workspaceId'
+  | 'name'
+  | 'type'
+  | 'interval'
+  | 'maxRetries'
+  | 'trendingMode'
+  | 'upMessageTemplate'
+  | 'downMessageTemplate'
 > & {
   id?: string;
   active?: boolean;

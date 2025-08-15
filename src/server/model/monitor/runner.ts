@@ -11,6 +11,7 @@ import { createAuditLog } from '../auditLog.js';
 import { MonitorWithNotification } from './types.js';
 import { get } from 'lodash-es';
 import { updateMonitorErrorMessage } from './index.js';
+import { formatString } from '../../utils/template.js';
 
 /**
  * Class which actually run monitor data collect
@@ -73,24 +74,18 @@ export class MonitorRunner {
             'DOWN',
             `Monitor [${monitor.name}] has been down`
           );
-          await this.notify(`[${monitor.name}] 🔴 Down`, [
-            token.text(
-              `[${monitor.name}] 🔴 Down\nTime: ${dayjs()
-                .tz(this.getTimezone())
-                .format('YYYY-MM-DD HH:mm:ss (z)')}`
-            ),
-          ]);
+
+          const { title, content } = this.buildDownNotification(
+            this.monitor.recentError || 'Unknown error'
+          );
+          await this.notify(title, [token.text(content)]);
           this.currentStatus = 'DOWN';
         } else if (value > 0 && this.currentStatus === 'DOWN') {
           // DOWN -> UP
           await this.createEvent('UP', `Monitor [${monitor.name}] has been up`);
-          await this.notify(`[${monitor.name}] ✅ Up`, [
-            token.text(
-              `[${monitor.name}] ✅ Up\nTime: ${dayjs()
-                .tz(this.getTimezone())
-                .format('YYYY-MM-DD HH:mm:ss (z)')}`
-            ),
-          ]);
+
+          const { title, content } = this.buildUpNotification();
+          await this.notify(title, [token.text(content)]);
           this.currentStatus = 'UP';
         }
       }
@@ -187,5 +182,89 @@ export class MonitorRunner {
         })
       )
     );
+  }
+
+  private buildUpNotification(): { title: string; content: string } {
+    const monitor = this.monitor as MonitorWithNotification & {
+      upMessageTemplate?: string | null;
+    };
+    const currentTime = dayjs()
+      .tz(this.getTimezone())
+      .format('YYYY-MM-DD HH:mm:ss (z)');
+
+    const templateVars = {
+      monitorName: monitor.name,
+      currentTime,
+      monitorType: monitor.type,
+    };
+
+    const defaultTitle = `[${monitor.name}] ✅ Up`;
+    const defaultContent = `[${monitor.name}] ✅ Up\nTime: ${currentTime}`;
+
+    let title = defaultTitle;
+    let content = defaultContent;
+
+    if (monitor.upMessageTemplate) {
+      try {
+        content = formatString(monitor.upMessageTemplate, templateVars);
+        // Extract title from first line or use default
+        const lines = content.split('\n');
+        title = lines[0] || defaultTitle;
+      } catch (err) {
+        logger.warn(
+          `[Monitor] Failed to format up template for ${monitor.id}:`,
+          err
+        );
+        // Fallback to default
+        title = defaultTitle;
+        content = defaultContent;
+      }
+    }
+
+    return { title, content };
+  }
+
+  private buildDownNotification(errorMessage: string): {
+    title: string;
+    content: string;
+  } {
+    const monitor = this.monitor as MonitorWithNotification & {
+      downMessageTemplate?: string | null;
+    };
+    const currentTime = dayjs()
+      .tz(this.getTimezone())
+      .format('YYYY-MM-DD HH:mm:ss (z)');
+
+    const templateVars = {
+      monitorName: monitor.name,
+      currentTime,
+      monitorType: monitor.type,
+      errorMessage,
+    };
+
+    const defaultTitle = `[${monitor.name}] 🔴 Down`;
+    const defaultContent = `[${monitor.name}] 🔴 Down\nTime: ${currentTime}\nError: ${errorMessage}`;
+
+    let title = defaultTitle;
+    let content = defaultContent;
+
+    if (monitor.downMessageTemplate) {
+      try {
+        content = formatString(monitor.downMessageTemplate, templateVars);
+        // Extract title from first line or use default
+        const lines = content.split('\n');
+        title = lines[0] || defaultTitle;
+      } catch (err) {
+        logger.warn(
+          `[Monitor] Failed to format down template for ${monitor.id}:`,
+          err
+        );
+        // Fallback to default
+        title = defaultTitle;
+        content = defaultContent;
+      }
+    }
+
+    return { title, content };
   }
 }

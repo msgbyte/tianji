@@ -14,6 +14,8 @@ export type MonitorInfoEditorValues = Omit<
   payload: Record<string, any>;
   trendingMode: boolean;
   notificationIds?: string[];
+  upMessageTemplate?: string;
+  downMessageTemplate?: string;
 };
 
 const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
@@ -24,6 +26,8 @@ const defaultValues: Omit<MonitorInfoEditorValues, 'payload'> = {
   maxRetries: 0,
   trendingMode: false,
   recentError: null,
+  upMessageTemplate: '',
+  downMessageTemplate: '',
 };
 
 interface MonitorInfoEditorProps {
@@ -119,6 +123,32 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
 
           <Form.Item label={t('Notification')} name="notificationIds">
             <NotificationPicker allowClear={true} mode="multiple" />
+          </Form.Item>
+
+          <Form.Item
+            label={t('Up Notification Template')}
+            name="upMessageTemplate"
+            tooltip={t(
+              'Optional, Custom template for UP notification. Available variables: {{monitorName}}, {{currentTime}}, {{monitorType}}'
+            )}
+          >
+            <Input.TextArea
+              placeholder="[{{monitorName}}] ✅ Up&#10;Time: {{currentTime}}"
+              rows={3}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={t('Down Notification Template')}
+            name="downMessageTemplate"
+            tooltip={t(
+              'Optional, Custom template for DOWN notification. Available variables: {{monitorName}}, {{currentTime}}, {{monitorType}}, {{errorMessage}}'
+            )}
+          >
+            <Input.TextArea
+              placeholder="[{{monitorName}}] 🔴 Down&#10;Time: {{currentTime}}&#10;Error: {{errorMessage}}"
+              rows={3}
+            />
           </Form.Item>
 
           <Button type="primary" htmlType="submit" loading={isLoading}>
