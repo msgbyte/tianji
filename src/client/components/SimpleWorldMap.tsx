@@ -1,4 +1,4 @@
-import React, { useState, HTMLAttributes } from 'react';
+import React, { useState, HTMLAttributes, useMemo } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -11,6 +11,8 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { ISO_COUNTRIES, useCountryMap } from '@/utils/country';
 import { useTheme } from '@/store/settings';
 import { HoverTooltip } from './HoverTooltip';
+import { sumBy } from 'lodash-es';
+import { useEvent } from '@/hooks/useEvent';
 
 interface SimpleWorldMapProps extends HTMLAttributes<HTMLDivElement> {
   websiteId?: string;
@@ -26,7 +28,11 @@ export const SimpleWorldMap: React.FC<SimpleWorldMapProps> = React.memo(
     const countryMap = useCountryMap();
     const theme = useTheme();
 
-    const getFillColor = (code: string) => {
+    const total = useMemo(() => {
+      return sumBy(data, 'visitors');
+    }, [data]);
+
+    const getFillColor = useEvent((code: string) => {
       if (code === 'AQ') {
         return;
       }
@@ -39,16 +45,16 @@ export const SimpleWorldMap: React.FC<SimpleWorldMapProps> = React.memo(
 
       return colord('#2680eb')
         [theme === 'light' ? 'lighten' : 'darken'](
-          0.4 * (1.0 - country.visitors / 100)
+          0.4 * (1.0 - country.visitors / total)
         )
         .toHex();
-    };
+    });
 
-    const getOpacity = (code: string) => {
+    const getOpacity = useEvent((code: string) => {
       return code === 'AQ' ? 0 : 1;
-    };
+    });
 
-    const handleHover = (code: string) => {
+    const handleHover = useEvent((code: string) => {
       if (code === 'AQ') {
         return;
       }
@@ -59,7 +65,7 @@ export const SimpleWorldMap: React.FC<SimpleWorldMapProps> = React.memo(
           country?.visitors || 0
         } ${t('Visitors')}`
       );
-    };
+    });
 
     return (
       <div
