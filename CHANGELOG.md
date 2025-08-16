@@ -1,5 +1,29 @@
 
 
+## [1.24.15](https://github.com/msgbyte/tianji/compare/v1.24.14...v1.24.15) (2025-08-16)
+
+### Features
+
+* add cohorts workspace id support for warehouse and some design ([3c60859](https://github.com/msgbyte/tianji/commit/3c608592fec188edc0c5c458a6054b326d922597))
+* add simple retention query ([3309c9b](https://github.com/msgbyte/tianji/commit/3309c9b0077397866d8948d51bb3cad22101f743))
+* allow user modify up / down message template ([f3678b0](https://github.com/msgbyte/tianji/commit/f3678b0b4c3e5a8fab23f7e57a21317e03a3619b))
+
+### Bug Fixes
+
+* fix color issue of simple world map ([df1340c](https://github.com/msgbyte/tianji/commit/df1340cf869d6c088ce3dfc8b3e9767d4b4665a8))
+
+### Document
+
+* [#216](https://github.com/msgbyte/tianji/issues/216) fix website openapi doc issue ([b5a59ee](https://github.com/msgbyte/tianji/commit/b5a59ee400d03a081b6d0111debb052a2bce8d42))
+* add feed documents ([e9a3796](https://github.com/msgbyte/tianji/commit/e9a3796470b96cdd5d2b27840f29f49e9048ada4))
+* add lastUpdatedAt support for route ([b38b500](https://github.com/msgbyte/tianji/commit/b38b500c0a51293edba7b18560bcb09742a7beff))
+* add new blog post on cost-aware observability to optimize cloud spending while maintaining SLOs ([a5c84f2](https://github.com/msgbyte/tianji/commit/a5c84f27dd50dd75b731cb286f617dd9d8520abd))
+* add new blog post on runbook automation connecting detection, diagnosis, and repair into a closed loop ([19352a2](https://github.com/msgbyte/tianji/commit/19352a287442530db47a52a29edf9c298f32e4e6))
+* add some blog for SEO ([7949a21](https://github.com/msgbyte/tianji/commit/7949a2156c5433012cbe8ba603433f69f1274a14))
+* try to resolve vercel build issue for sitemap ([acc45a1](https://github.com/msgbyte/tianji/commit/acc45a145e6545faee85f2b130185e1d038f54a3))
+* update i18n support for docs ([c8916bc](https://github.com/msgbyte/tianji/commit/c8916bca8e1c1f8d48d3e6afe2c596ebe5173d4d))
+* update robot config which allow /api route ([c3c13e1](https://github.com/msgbyte/tianji/commit/c3c13e14d2c837831748178e021825af6f764e07))
+
 ## [1.24.14](https://github.com/msgbyte/tianji/compare/v1.24.13...v1.24.14) (2025-08-11)
 
 ## [1.24.13](https://github.com/msgbyte/tianji/compare/v1.24.12...v1.24.13) (2025-08-11)
