@@ -15,6 +15,7 @@ serverStatusRouter.post(
     header('x-tianji-report-version').isSemVer(),
     body('workspaceId').isString(),
     body('name').isString(),
+    body('secret').optional().isString(),
     body('hostname').isString(),
     body('timeout').optional().isInt(),
     body('payload').isObject()

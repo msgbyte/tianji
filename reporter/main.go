@@ -19,6 +19,7 @@ type ReportData struct {
 	Hostname    string                  `json:"hostname"`
 	Timeout     int                     `json:"timeout"` // if service receive after timeout second, its means client are offline
 	Payload     utils.ReportDataPayload `json:"payload"`
+	Secret      *string                 `json:"secret,omitempty"` // optional secret for server status
 }
 
 var (
@@ -29,6 +30,7 @@ var (
 	Interval    = flag.Int("interval", 5.0, "Input the INTERVAL, seconed")
 	IsVnstat    = flag.Bool("vnstat", false, "Use vnstat for traffic statistics, linux only")
 	Verbose     = flag.Bool("verbose", false, "Enable verbose logging to show full payload content")
+	Secret      = flag.String("secret", "", "The server status secret, optional")
 )
 
 var version = "1.0.0"
@@ -77,6 +79,7 @@ func main() {
 			Hostname:    hostname,
 			Timeout:     interval * 10,
 			Payload:     utils.GetReportDataPaylod(interval, *IsVnstat),
+			Secret:      Secret,
 		}
 
 		if *Mode == "udp" {

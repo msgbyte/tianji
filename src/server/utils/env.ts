@@ -141,6 +141,7 @@ export const env = {
   debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
   debugInsights: checkEnvTrusty(process.env.DEBUG_INSIGHTS) || isDev, // debug insights
   enableFunctionWorker: checkEnvTrusty(process.env.ENABLE_FUNCTION_WORKER),
+  serverStatusSecret: process.env.SERVER_STATUS_SECRET, // an optional secret for server monitoring
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
