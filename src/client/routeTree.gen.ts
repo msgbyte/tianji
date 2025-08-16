@@ -53,6 +53,7 @@ import { Route as SettingsApiKeyImport } from './routes/settings/apiKey'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
+import { Route as InsightsWarehouseImport } from './routes/insights/warehouse'
 import { Route as InsightsEventsImport } from './routes/insights/events'
 import { Route as InsightsCohortsImport } from './routes/insights/cohorts'
 import { Route as FeedPlaygroundImport } from './routes/feed_/playground'
@@ -290,6 +291,11 @@ const MonitorAddRoute = MonitorAddImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
+const InsightsWarehouseRoute = InsightsWarehouseImport.update({
+  path: '/insights/warehouse',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const InsightsEventsRoute = InsightsEventsImport.update({
   path: '/insights/events',
   getParentRoute: () => rootRoute,
@@ -512,6 +518,10 @@ declare module '@tanstack/react-router' {
     }
     '/insights/events': {
       preLoaderRoute: typeof InsightsEventsImport
+      parentRoute: typeof rootRoute
+    }
+    '/insights/warehouse': {
+      preLoaderRoute: typeof InsightsWarehouseImport
       parentRoute: typeof rootRoute
     }
     '/monitor/add': {
@@ -756,6 +766,7 @@ export const routeTree = rootRoute.addChildren([
   FeedPlaygroundRoute,
   InsightsCohortsRoute,
   InsightsEventsRoute,
+  InsightsWarehouseRoute,
   StatusSlugRoute,
   InsightsIndexRoute,
   InvitationAcceptTokenRoute,

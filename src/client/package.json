@@ -18,6 +18,7 @@
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "dependencies": {
+    "@ai-sdk/react": "^2.0.15",
     "@ant-design/icons": "^5.6.1",
     "@antv/l7": "^2.22.5",
     "@antv/larkmap": "^1.5.1",
@@ -57,6 +58,7 @@
     "@trpc/next": "11.0.0-rc.648",
     "@trpc/react-query": "11.0.0-rc.648",
     "ahooks": "^3.8.4",
+    "ai": "^5.0.15",
     "antd": "^5.24.3",
     "array-move": "^3.0.1",
     "axios": "1.7.7",
