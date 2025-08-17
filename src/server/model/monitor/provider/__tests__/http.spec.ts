@@ -35,6 +35,8 @@ describe('http', () => {
         ignoreTLS: false,
         validStatusCodes: [200],
       },
+      upMessageTemplate: '',
+      downMessageTemplate: '',
     });
 
     expect(typeof res).toBe('number');

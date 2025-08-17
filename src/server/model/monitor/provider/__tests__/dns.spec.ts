@@ -21,6 +21,8 @@ describe('dns', () => {
         resolverPort: 53,
         rrtype: 'CNAME',
       },
+      upMessageTemplate: '',
+      downMessageTemplate: '',
     });
 
     expect(typeof res).toBe('number');
