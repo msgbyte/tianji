@@ -1,5 +1,15 @@
 
 
+## [1.24.17](https://github.com/msgbyte/tianji/compare/v1.24.16...v1.24.17) (2025-08-18)
+
+### Features
+
+* add download buttion for insights table ([abebd62](https://github.com/msgbyte/tianji/commit/abebd6206382e11069b9a19c69dfb2a3362a9b13))
+
+### Document
+
+* update llms file generator ([ac07c8c](https://github.com/msgbyte/tianji/commit/ac07c8c773e27a1aa6b5a2c23a3b364a52731b02))
+
 ## [1.24.16](https://github.com/msgbyte/tianji/compare/v1.24.15...v1.24.16) (2025-08-18)
 
 ### Features
