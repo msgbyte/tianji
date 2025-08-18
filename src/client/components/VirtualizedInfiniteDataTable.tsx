@@ -112,12 +112,12 @@ export function VirtualizedInfiniteDataTable<TData>(
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
   return (
-    <LoadingView isLoading={isLoading}>
-      <div
-        className="virtualized-infinite-data-table relative h-full overflow-auto"
-        onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
-        ref={tableContainerRef}
-      >
+    <div
+      className="virtualized-infinite-data-table relative h-full overflow-auto"
+      onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
+      ref={tableContainerRef}
+    >
+      <LoadingView isLoading={isLoading}>
         {/* Even though we're still using sematic table tags, we must use CSS grid and flexbox for dynamic row heights */}
         <table style={{ display: 'grid' }}>
           <TableHeader
@@ -233,8 +233,8 @@ export function VirtualizedInfiniteDataTable<TData>(
             {t('Fetching More...')}
           </div>
         )}
-      </div>
-    </LoadingView>
+      </LoadingView>
+    </div>
   );
 }
 VirtualizedInfiniteDataTable.displayName = 'VirtualizedInfiniteDataTable';
