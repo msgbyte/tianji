@@ -6,6 +6,8 @@
     "docusaurus": "docusaurus",
     "dev": "docusaurus start",
     "build": "docusaurus build",
+    "compile-llm": "TS_NODE_SKIP_PROJECT=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\"}' node -r ts-node/register/transpile-only -e \"require('./scripts/compile-llm-docs.ts')\"",
+    "postbuild": "TS_NODE_SKIP_PROJECT=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\"}' node -r ts-node/register/transpile-only -e \"require('./scripts/compile-llm-docs.ts')\"",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",

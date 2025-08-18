@@ -1,51 +1,2254 @@
-# Complete Introduction to Tianji
+# Tianji Documentation Export (Full)
 
-> Tianji is a modern open-source monitoring and telemetry platform that provides comprehensive service monitoring solutions for developers and operations teams. It integrates website analytics, server monitoring, event tracking, and application telemetry features to help you monitor system status in real-time, optimize user experience, and improve application performance. Whether you're an individual developer or an enterprise team, Tianji can meet all your monitoring and analytics needs.
+This file aggregates documentation for LLM consumption.
+It preserves Markdown headings, links, and code fences; frontmatter and MDX ESM are removed.
+
+================================================================================
+
+===== FILE: docs/api/authentication.md =====
+
+# Authentication
+
+This document provides detailed instructions on how to authenticate with the Tianji API, including obtaining, using, and managing API keys.
+
+## Authentication Method
+
+The Tianji API uses **Bearer Token** authentication. You need to include your API key in the HTTP header of each API request.
+
+### HTTP Header Format
+
+```http
+Authorization: Bearer <YOUR_API_KEY>
+```
+
+## Obtaining API Keys
+
+1. Log in to your Tianji instance
+2. Click on your avatar in the top right corner
+4. Find the **API Keys** section
+5. Click the + button to create a new API key
+6. Name your API key and save it
+
+## API Key Management
+
+### View Existing Keys
+
+In the **API Keys** section, you can see:
+- API key name/description
+- Creation date
+- Last used time
+- Usage count statistics
+
+### Delete API Keys
+
+If you need to revoke an API key:
+1. Find the API key you want to delete
+2. Click the **Delete** button
+3. Confirm the deletion operation
+
+:::warning Note
+After deleting an API key, all applications using that key will no longer be able to access the API.
+:::
+
+## Using API Keys
+
+### cURL Example
+
+```bash
+curl -X GET "https://your-tianji-domain.com/open/global/config" \
+  -H "Authorization: Bearer <your_api_key_here>" \
+  -H "Content-Type: application/json"
+```
+
+### JavaScript/Node.js Example
+
+```javascript
+const apiKey = '<your_api_key_here>';
+const baseUrl = 'https://your-tianji-domain.com/open';
+
+const headers = {
+  'Authorization': `Bearer ${apiKey}`,
+  'Content-Type': 'application/json'
+};
+
+// Using fetch
+const response = await fetch(`${baseUrl}/global/config`, {
+  method: 'GET',
+  headers: headers
+});
+
+// Using axios
+const axios = require('axios');
+const response = await axios.get(`${baseUrl}/global/config`, {
+  headers: headers
+});
+```
+
+### Python Example
+
+```python
+
+$baseUrl = 'https://your-tianji-domain.com/open';
+
+$headers = [
+    'Authorization: Bearer ' . $apiKey,
+    'Content-Type: application/json'
+];
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $baseUrl . '/global/config');
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$data = json_decode($response, true);
+?>
+```
+
+## Permissions and Scope
+
+### API Key Permissions
+
+API keys inherit all permissions of their creator, including:
+- Access to all data in the user's workspaces
+- Execute all operations the user has permission for
+- Manage resources created by that user
+
+### Workspace Access
+
+API keys can only access workspaces that the user belongs to. If you need to access multiple workspaces, ensure your user account has appropriate permissions for those workspaces.
+
+## Error Handling
+
+### Common Authentication Errors
+
+#### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Authorization not provided"
+  }
+}
+```
+
+**Causes**:
+- No Authorization header provided
+- Incorrect API key format
+
+#### 403 Forbidden
+
+```json
+{
+  "error": {
+    "code": "FORBIDDEN", 
+    "message": "Insufficient access"
+  }
+}
+```
+
+**Causes**:
+- Invalid or deleted API key
+- User doesn't have permission to access the requested resource
+
+### Debugging Authentication Issues
+
+1. **Check API key format**: Ensure you're using the `Bearer token_here` format
+2. **Verify key validity**: Confirm the key still exists in the Tianji interface
+3. **Check permissions**: Ensure the user account has permission to access the target resource
+4. **Test simple endpoints**: Start by testing public endpoints like `/global/config`
+
+
+===== FILE: docs/api/getting-started.md =====
+
+# API Getting Started
+
+Tianji provides a complete REST API that allows you to programmatically access and operate all Tianji features. This guide will help you quickly get started with the Tianji API.
+
+## Overview
+
+The Tianji API is based on REST architecture and uses JSON format for data exchange. All API requests must be made over HTTPS and require proper authentication.
+
+### API Base URL
+
+```bash
+https://your-tianji-domain.com/open
+```
+
+### Supported Features
+
+Through the Tianji API, you can:
+
+- Manage website analytics data
+- Create and manage monitoring projects
+- Get server status information
+- Manage surveys
+- Operate telemetry data
+- Create and manage workspaces
+
+## Quick Start
+
+### 1. Get API Key
+
+Before using the API, you need to obtain an API key:
+
+1. Log in to your Tianji instance
+2. Click on your avatar in the top right corner
+4. Find the **API Keys** section
+5. Click the + button to create a new API key
+6. Name your API key and save it
+
+### 2. Enable OpenAPI
+
+Make sure your Tianji instance has OpenAPI access enabled:
+
+Set in your environment variables:
+```bash
+ALLOW_OPENAPI=true
+```
+
+### 3. First API Call
+
+Test your API connection using curl:
+
+```bash
+curl -X GET "https://your-tianji-domain.com/open/global/config" \
+  -H "Authorization: Bearer <YOUR_API_KEY>" \
+  -H "Content-Type: application/json"
+```
+
+## Next Steps
+
+- Check the [Authentication Documentation](./authentication.md) for detailed authentication methods
+- Browse the [API Reference Documentation](/api) for all available endpoints
+- Use the [OpenAPI SDK](./openapi-sdk.md) for type-safe API calls
+
+
+===== FILE: docs/api/openapi-sdk.md =====
+
+# OpenAPI SDK Usage Guide
+
+This document provides detailed instructions on how to use the Tianji SDK to call OpenAPI interfaces and achieve complete programmatic access to Tianji services.
+
+## Overview
+
+The Tianji OpenAPI SDK is based on an auto-generated TypeScript client, providing type-safe API calling methods. Through the SDK, you can:
+
+- Manage workspaces and websites
+- Retrieve analytics data and statistics
+- Operate monitoring projects
+- Manage surveys
+- Handle Feed channels and events
+- ...
+
+[Complete API Documentation](/api)
+
+## Installation and Initialization
+
+### Install SDK
+
+```bash
+npm install tianji-client-sdk
+# or
+yarn add tianji-client-sdk
+# or
+pnpm add tianji-client-sdk
+```
+
+### Initialize OpenAPI Client
+
+```javascript
+
+initOpenapiSDK('https://your-tianji-domain.com', {
+  apiKey: 'your-api-key'
+});
+```
+
+## Global Configuration API
+
+### Get System Configuration
+
+```javascript
+
+async function getSystemConfig() {
+  try {
+    const config = await openApiClient.GlobalService.globalConfig();
+    
+    console.log('Allow registration:', config.allowRegister);
+    console.log('AI features enabled:', config.enableAI);
+    console.log('Billing enabled:', config.enableBilling);
+    
+    return config;
+  } catch (error) {
+    console.error('Failed to get system configuration:', error);
+  }
+}
+```
+
+
+===== FILE: docs/application/tracking.md =====
+
+# Application Tracking
+
+Tianji provides a powerful SDK for tracking events and user behavior in your applications. This guide explains how to integrate and use the Application Tracking SDK in your projects.
+
+## Installation
+
+Install the Tianji react native SDK in your project:
+
+```bash
+npm install tianji-react-native
+# or
+yarn add tianji-react-native
+# or
+pnpm add tianji-react-native
+```
+
+## Initialization
+
+Before using any tracking features, you need to initialize the Application SDK with your Tianji server URL and application ID:
+
+```ts
+
+initApplication({
+  serverUrl: 'https://tianji.example.com',  // Your Tianji server URL
+  applicationId: 'your-application-id'       // Your application identifier
+});
+```
+
+## Tracking Events
+
+You can track custom events in your application to monitor user actions and behaviors:
+
+```ts
+
+// Track a simple event
+reportApplicationEvent('Button Clicked');
+
+// Track an event with additional data
+reportApplicationEvent('Purchase Completed', {
+  productId: 'product-123',
+  price: 29.99,
+  currency: 'USD'
+});
+```
+
+## Screen Tracking
+
+Track screen views in your application to understand user navigation patterns:
+
+### Setting Current Screen
+
+You can set the current screen information which will be included in subsequent events:
+
+```ts
+
+// Update current screen when user navigates
+updateCurrentApplicationScreen('ProductDetails', { productId: 'product-123' });
+```
+
+### Reporting Screen Views
+
+Explicitly report screen view events:
+
+```ts
+
+// Report current screen view
+reportApplicationScreenView();
+
+// Or report a specific screen view
+reportApplicationScreenView('Checkout', { cartItems: 3 });
+```
+
+## User Identification
+
+Identify users in your application to track their behavior across sessions:
+
+```ts
+
+// Identify a user with their information
+identifyApplicationUser({
+  id: 'user-123',          // Unique user identifier
+  email: 'user@example.com',
+  name: 'John Doe',
+  // Add any other user properties
+  plan: 'premium',
+  signupDate: '2023-01-15'
+});
+```
+
+## API Reference
+
+### `initApplication(options)`
+
+Initializes the application tracking SDK.
+
+**Parameters:**
+
+- `options`: ApplicationTrackingOptions
+  - `serverUrl`: Your Tianji server URL (e.g., 'https://tianji.example.com')
+  - `applicationId`: Your application identifier
+
+### `reportApplicationEvent(eventName, eventData?, screenName?, screenParams?)`
+
+Sends an application event to the Tianji server.
+
+**Parameters:**
+
+- `eventName`: Name of the event (max 50 chars)
+- `eventData`: (Optional) Event data object
+- `screenName`: (Optional) Screen name to override current screen
+- `screenParams`: (Optional) Screen parameters to override current screen params
+
+### `updateCurrentApplicationScreen(name, params)`
+
+Updates the current application screen information.
+
+**Parameters:**
+
+- `name`: Screen name
+- `params`: Screen parameters object
+
+### `reportApplicationScreenView(screenName?, screenParams?)`
+
+Sends a screen view event to the Tianji server.
+
+**Parameters:**
+
+- `screenName`: (Optional) Screen name to override current screen
+- `screenParams`: (Optional) Screen parameters to override current screen params
+
+### `identifyApplicationUser(userInfo)`
+
+Identifies a user in the application.
+
+**Parameters:**
+
+- `userInfo`: User identification data object
+
+## Payload Limitations
+
+- Language information: max 35 characters
+- Operating system information: max 20 characters
+- URL information: max 500 characters
+- Event name: max 50 characters
+
+
+===== FILE: docs/dev/prepare.md =====
+
+# Prepare To Develop
+
+## Prepare Database which using docker
+
+```bash
+docker run --name tianji-pg -e POSTGRES_DB=tianji -e POSTGRES_USER=tianji -e POSTGRES_PASSWORD=tianji -d postgres:15.4-alpine
+```
+
+## Prepare .env file
+
+```bash
+cp .env.example src/server/.env
+```
+
+config `DATABASE_URL` with `postgresql://tianji:tianji@localhost:5432/tianji?schema=public`
+
+Like this:
+
+```ini
+DATABASE_URL="postgresql://tianji:tianji@localhost:5432/tianji?schema=public"
+ALLOW_OPENAPI=true
+```
+
+## Prepare Database struct
+
+Now you can visit database, and you can visit 
+
+```bash
+cd src/server && pnpm db:migrate:apply
+```
+
+## Default Account
+
+Default Account is `admin`/`admin`
+
+
+===== FILE: docs/environment.md =====
+
+# Environment
+
+Here is enviroment which you can config in docker
+
+| Name | Default Value | Description |
+| ---- | ---- | ----- |
+| JWT_SECRET | - | A random string used to calculate the secret key |
+| ALLOW_REGISTER | false | whether allow user can register account |
+| ALLOW_OPENAPI | false | whether allow openapi which can fetch or post data just like you with ui |
+| SANDBOX_MEMORY_LIMIT | 16 | custom script monitor sandbox memory limit, which can control which monitor script not use too many memory (unit MB, the minimum value is 8) |
+| MAPBOX_TOKEN | - | MapBox token for use amap to replace default visitor map |
+| AMAP_TOKEN | - | AMap token for use amap to replace default visitor map |
+| CUSTOM_TRACKER_SCRIPT_NAME | - | modify default `tracker.js` script name for adblock |
+| DISABLE_ANONYMOUS_TELEMETRY | false | Disabled send telemetry report to tianji official, we will report usage to tianji official website with a minimum of anonymity. |
+| DISABLE_AUTO_CLEAR | false | disable auto clear data. |
+
+
+===== FILE: docs/events/track.md =====
+
+# Event Tracking
+
+You can track user actions on your website. Tianji provides a simple way to do that.
+
+## Using Script Tag
+
+if you are using script tag, you just need to call `track` function in any where after you inject script
+
+```ts
+tianji.track(eventName, data);
+```
+
+## Using SDK
+
+if you are using sdk, you just need to call `reportEvent()` function after you `initTianjiTracker()`
+
+```ts
+
+initTianjiTracker({
+  url: backendUrl,
+  websiteId,
+});
+    
+reportEvent('Demo Event', {
+  foo: 'bar',
+});
+```
+
+
+===== FILE: docs/feed/channels.md =====
+
+# Channels
+
+Channels are containers of events. You can create multiple channels for different products/teams/environments.
+
+## Create a channel
+
+Console → Feed → Add Channel.
+
+Fields
+
+- name: Display name
+- notifyFrequency: Control how often notifications are sent for this channel
+- notificationIds: Select existing notification targets to receive fan-out
+
+## Edit a channel
+
+You can update name, notificationIds, notifyFrequency, and set an optional webhookSignature. Once a signature is set, any public webhook to this channel must include header `x-webhook-signature` with the same value.
+
+## API
+
+- List channels: GET `/open/workspace/{workspaceId}/feed/channels`
+- Channel info: GET `/open/workspace/{workspaceId}/feed/{channelId}/info`
+- Update: POST `/open/workspace/{workspaceId}/feed/{channelId}/update`
+- Create: POST `/open/workspace/{workspaceId}/feed/createChannel`
+- Delete: DELETE `/open/workspace/{workspaceId}/feed/{channelId}/del`
+
+Example (update notification targets)
+
+```bash
+curl -X POST \
+  "$BASE_URL/workspace/$WORKSPACE_ID/feed/$CHANNEL_ID/update" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Ops",
+    "notifyFrequency": 60,
+    "notificationIds": ["notif_123", "notif_456"]
+  }'
+```
+
+
+===== FILE: docs/feed/integrations.md =====
+
+# Integrations
+
+Tianji provides built-in webhook adapters to convert third-party payloads into Feed events.
+
+## GitHub
+
+Endpoint
+
+POST `/open/feed/{channelId}/github`
+
+Notes
+
+- Use "application/json" content type.
+- Header `X-GitHub-Event` is required by GitHub and consumed by the adapter.
+- Supported types: `push`, `star`, `issues` (opened/closed). Others will be logged as unknown.
+
+## Stripe
+
+Endpoint
+
+POST `/open/feed/{channelId}/stripe`
+
+Notes
+
+- Configure a Stripe webhook endpoint pointing to the URL above.
+- Supported types: `payment_intent.succeeded`, `payment_intent.canceled`, `customer.subscription.created`, `customer.subscription.deleted`.
+
+## Sentry
+
+Endpoint
+
+POST `/open/feed/{channelId}/sentry`
+
+Notes
+
+- Header `Sentry-Hook-Resource: event_alert` and action `triggered` are mapped to Feed events.
+- See step-by-step screenshots in "Integration with Sentry".
+
+## Tencent Cloud Alarm
+
+Endpoint
+
+POST `/open/feed/{channelId}/tencent-cloud/alarm`
+
+Notes
+
+- Supports alarm types `event` and `metric`. Payload is validated; invalid requests are rejected.
+
+## Webhook Playground
+
+Endpoint
+
+POST `/open/feed/playground/{workspaceId}`
+
+Notes
+
+- Echo headers/body/method/url to the workspace real-time playground for debugging integrations.
+
+
+===== FILE: docs/feed/intro.md =====
+
+# Feed overview
+
+Feed is a lightweight event stream for your workspace. It helps teams aggregate important events from different systems into channels, collaborate around incidents, and keep stakeholders informed.
+
+## Concepts
+
+- Channel: A logical stream to collect and organize events. Each channel can be connected to one or more notification targets and can optionally require a webhook signature.
+- Event: A single record with name, content, tags, source, sender identity, importance and optional payload. Events can be archived/unarchived.
+- State: A special kind of ongoing event that can be upserted (created or updated) repeatedly by a stable eventId, and resolved when finished.
+- Integration: Built-in webhook adapters that convert 3rd-party payloads (e.g. GitHub, Stripe, Sentry, Tencent Cloud Alarm) into Feed events.
+- Notification: Channels can fan-out events to configured notifiers; delivery frequency can be tuned by channel settings.
+
+## Typical use cases
+
+- Product and infra incident stream across multiple services
+- CI/CD deployment and release notices
+- Billing and subscription signals
+- Security, monitoring and error alerts
+
+
+===== FILE: docs/feed/sentry.md =====
+
+# Integration with Sentry
+
+:::info
+Learn more about sentry in [sentry.io](https://sentry.io/)
+:::
+
+Click `Settings` => `Integrations` => `Create New Integration`
+
+![](/img/docs/sentry/sentry1.png)
+
+Create a `Internal Integration` application
+
+![](/img/docs/sentry/sentry2.png)
+
+Input name `Tianji` and put in webhook url into form.
+
+![](/img/docs/sentry/sentry3.png)
+
+Don't forget enable `Alert Rule Action`
+
+![](/img/docs/sentry/sentry4.png)
+
+Then, add issue read `permission`, and webhook add `issue` and `error`
+
+![](/img/docs/sentry/sentry5.png)
+
+Finally, you can create a alert rule, and you can see `Tianji` in notification section dropdown list
+
+![](/img/docs/sentry/sentry6.png)
+
+
+===== FILE: docs/feed/state.md =====
+
+# State (ongoing incidents)
+
+Feed State models ongoing incidents with an immutable `eventId`. You can repeatedly upsert updates to the same `eventId` until it is resolved.
+
+## Endpoints
+
+- Upsert state (public): `POST /open/feed/{channelId}/state/upsert`
+- Resolve state (auth): `POST /open/workspace/{workspaceId}/feed/{channelId}/state/resolve`
+- List ongoing states (auth): `GET /open/workspace/{workspaceId}/feed/state/all?channelId=...&limit=...`
+
+## Upsert body
+
+```json
+{
+  "eventId": "deploy#2025-08-12",
+  "eventName": "deploy_progress",
+  "eventContent": "Rollout 60%",
+  "tags": ["prod"],
+  "source": "ci",
+  "senderId": "runner-42",
+  "senderName": "GitHub Actions",
+  "important": true,
+  "payload": {"stage": "canary"}
+}
+```
+
+If the channel is configured with `webhookSignature`, you must include header `x-webhook-signature`.
+
+## Resolve example
+
+```bash
+curl -X POST \
+  "$BASE_URL/workspace/$WORKSPACE_ID/feed/$CHANNEL_ID/state/resolve" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"stateId": "STATE_ID"}'
+```
+
+
+===== FILE: docs/install/docker-monitoring.md =====
+
+# Docker Container Monitoring Configuration
+
+## Default Monitoring Behavior
+
+When you install Tianji using Docker or Docker Compose, the system automatically enables built-in server monitoring functionality. By default:
+
+- **Tianji automatically monitors its own container's** system resource usage
+- Monitoring data includes: CPU usage, memory usage, disk usage, network traffic, etc.
+- This data is automatically reported to the default workspace without additional configuration
+- The container will appear as `tianji-container` in the monitoring dashboard
+
+## Monitoring All Docker Services on the Host Machine
+
+If you want Tianji to monitor all Docker containers and services running on the host machine, not just Tianji itself, you need to map the Docker Socket into the container.
+
+### Configuration Method
+
+Add the following volumes configuration to the `tianji` service section in your `docker-compose.yml` file:
+
+```yaml
+services:
+  tianji:
+    image: moonrailgun/tianji
+    # ... other configurations ...
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # ... other configurations ...
+```
+
+### Complete docker-compose.yml Example
+
+```yaml
+version: '3'
+services:
+  tianji:
+    image: moonrailgun/tianji
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "12345:12345"
+    environment:
+      DATABASE_URL: postgresql://tianji:tianji@postgres:5432/tianji
+      JWT_SECRET: replace-me-with-a-random-string
+      ALLOW_REGISTER: "false"
+      ALLOW_OPENAPI: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Add this line
+    depends_on:
+      - postgres
+    restart: always
+  postgres:
+    # ... postgres configuration ...
+```
+
+### Using Docker Run Command
+
+If you start Tianji using the `docker run` command, you can add the following parameter:
+
+```bash
+docker run -d \
+  --name tianji \
+  -p 12345:12345 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  moonrailgun/tianji
+```
+
+## Effects After Configuration
+
+After adding the Docker Socket mapping, Tianji will be able to:
+
+- Monitor all Docker containers running on the host machine
+- Obtain container resource usage information
+- Display container status information
+- Provide a more comprehensive system monitoring view
+
+
+===== FILE: docs/install/environment.md =====
+
+# Environment Variables
+
+Tianji supports various environment variables to customize its behavior. You can configure these variables in your docker compose `env` field or through your deployment environment.
+
+## Basic Configuration
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `PORT` | Server port | `12345` | `3000` |
+| `JWT_SECRET` | Secret for JWT tokens | Random Text | `your-secret-key` |
+| `ALLOW_REGISTER` | Enable user registration | `false` | `true` |
+| `ALLOW_OPENAPI` | Enable OpenAPI access | `true` | `false` |
+| `WEBSITE_ID` | Website identifier | - | `your-website-id` |
+| `DISABLE_AUTO_CLEAR` | Disable automatic data cleanup | `false` | `true` |
+| `DISABLE_ACCESS_LOGS` | Disable access logs | `false` | `true` |
+| `DB_DEBUG` | Enable database debugging | `false` | `true` |
+
+## Authentication
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `DISABLE_ACCOUNT` | Disable account-based authentication | `false` | `true` |
+| `AUTH_SECRET` | Authentication secret | MD5 of JWT secret | `your-auth-secret` |
+| `AUTH_RESTRICT_EMAIL` | Restrict registration to specific email domains | - | `@example.com` |
+
+### Email Authentication and Email Invitation
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `EMAIL_SERVER` | SMTP server for email | - | `smtp://user:pass@smtp.example.com:587` |
+| `EMAIL_FROM` | Email sender address | - | `noreply@example.com` |
+
+### GitHub Authentication
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `AUTH_GITHUB_ID` | GitHub OAuth client ID | - | `your-github-client-id` |
+| `AUTH_GITHUB_SECRET` | GitHub OAuth client secret | - | `your-github-client-secret` |
+
+### Google Authentication
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `AUTH_GOOGLE_ID` | Google OAuth client ID | - | `your-google-client-id` |
+| `AUTH_GOOGLE_SECRET` | Google OAuth client secret | - | `your-google-client-secret` |
+
+### Custom OAuth/OIDC Authentication
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `AUTH_CUSTOM_ID` | Custom OAuth/OIDC client ID | - | `your-custom-client-id` |
+| `AUTH_CUSTOM_SECRET` | Custom OAuth/OIDC client secret | - | `your-custom-client-secret` |
+| `AUTH_CUSTOM_NAME` | Custom provider name | `Custom` | `Enterprise SSO` |
+| `AUTH_CUSTOM_TYPE` | Authentication type | `oidc` | `oauth` |
+| `AUTH_CUSTOM_ISSUER` | OIDC issuer URL | - | `https://auth.example.com` |
+
+## AI Features
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `SHARED_OPENAI_API_KEY` | OpenAI API key | - | `your-openai-api-key` |
+| `SHARED_OPENAI_BASE_URL` | Custom OpenAI API URL | - | `https://api.openai.com/v1` |
+| `SHARED_OPENAI_MODEL_NAME` | OpenAI model to use | `gpt-4o` | `gpt-3.5-turbo` |
+| `DEBUG_AI_FEATURE` | Debug AI features | `false` | `true` |
+
+## Sandbox Configuration
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `USE_VM2` | Use VM2 for sandbox execution | `false` | `true` |
+| `SANDBOX_MEMORY_LIMIT` | Memory limit for sandbox (MB) | `16` | `32` |
+| `PUPPETEER_EXECUTABLE_PATH` | Custom path to Puppeteer executable | - | `/usr/bin/chromium` |
+
+## Maps Integration
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `AMAP_TOKEN` | AMap (Gaode) API token | - | `your-amap-token` |
+| `MAPBOX_TOKEN` | Mapbox API token | - | `your-mapbox-token` |
+
+## Telemetry
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `DISABLE_ANONYMOUS_TELEMETRY` | Disable anonymous telemetry | `false` | `true` |
+| `CUSTOM_TRACKER_SCRIPT_NAME` | Custom tracker script name | - | `custom-tracker.js` |
+
+## Setting Environment Variables
+
+You can set these environment variables in different ways:
+
+1. Set them directly in your deployment environment (Docker, Kubernetes, etc.)
+
+2. For Docker deployments, you can use environment variables in your docker-compose.yml:
+
+```yaml
+services:
+  tianji:
+    image: moonrailgun/tianji:latest
+    environment:
+      - PORT=3000
+      - ALLOW_REGISTER=true
+```
+
+## Boolean Values
+
+For boolean environment variables, you can use either `"1"` or `"true"` to enable the feature, and either omit the variable or set it to any other value to disable it.
+
+
+===== FILE: docs/install/kubernetes/helm.md =====
+
+# Install in Helm
+
+Helm is a tool that streamlines installing and managing Kubernetes applications. Although helm you can easy and quickly enjoy tianji in kubernetes.
+
+## Add repo
+
+At first, you should add msgbyte charts registry into helm repo list.
+
+```bash
+helm repo add msgbyte https://msgbyte.github.io/charts
+```
+
+Now you can search tianji with `helm search` command.
+
+```bash
+helm search repo tianji
+```
+
+## Install 
+
+Then, feel free to install with one command:
+
+```bash
+helm install tianji msgbyte/tianji
+```
+
+Its will bring you a pg database and tianji.
+
+
+===== FILE: docs/install/manual.md =====
+
+# Install without docker
+
+Use docker to install `Tianji` is best way which you dont need consider about enviroment problem.
+
+But if your server not support dockerize, you can try to install by manual.
+
+## Requirements
+
+You need:
+
+- [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
+- [pnpm](https://pnpm.io/) 9.x(9.7.1 better)
+- [Git](https://git-scm.com/downloads)
+- [postgresql](https://www.postgresql.org/)
+- [pm2](https://pm2.keymetrics.io/) - For running Tianji in the background
+- [apprise](https://github.com/caronc/apprise) - optional, if you need it to notify
+
+## Clone Code and Build
+
+```bash
+git clone https://github.com/msgbyte/tianji.git
+cd tianji
+pnpm install
+
+pnpm build
+```
+
+## Prepare Environment File
+
+Create a `.env` file in `src/server`
+
+```ini
+DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
+JWT_SECRET="replace-me-with-a-random-string"
+```
+
+Make sure your database url is correct. and dont remember create database before.
+
+For more environment can check this document [environment](../environment.md)
+
+> if you can, better to make sure your encoding is en_US.utf8, for example: `createdb -E UTF8 -l en_US.utf8 tianji`
+
+## Run server
+
+```bash
+npm install pm2 -g && pm2 install pm2-logrotate
+
+# Init db migrate
+cd src/server
+pnpm db:migrate:apply
+
+# Start Server
+pm2 start ./dist/src/server/main.js --name tianji
+```
+
+Default, `Tianji` will run on `http://localhost:12345`
+
+## Update Code to new Version
+
+```bash
+# Checkout new release/tags
+cd tianji
+git fetch --tags
+git checkout -q <version>
+
+# Update dependencies
+pnpm install
+
+# Build project
+pnpm build
+
+# Run db migrations
+cd src/server
+pnpm db:migrate:apply
+
+# Restart Server
+pm2 restart tianji
+```
+
+# Frequently Asked Questions
+
+## Install `isolated-vm` failed
+
+If you are using python 3.12, its will report error like this:
+
+```
+ModuleNotFoundError: No module named 'distutils'
+```
+
+Its because of python 3.12 remove `distutils` from builtin module. now we have good resolution about it.
+
+You can switch your python version from 3.12 to 3.9 can resolve it.
+
+### How to resolve it in brew controlled python
+
+```bash
+brew install python@3.9
+rm /opt/homebrew/bin/python3
+ln -sf /opt/homebrew/bin/python3 /opt/homebrew/bin/python3.9
+```
+
+then you can check version with `python3 --version`
+
+
+===== FILE: docs/install/other/install-in-aapanel.md =====
+
+# Install in aaPanel
+
+## Intro
+
+`aaPanel` is a powerful and easy-to-use web hosting control panel for linux server. one-click install LNMP/LAMP/OpenLiteSpeed developing environment and software.
+
+[Click here to deploy aaPanel in your server](https://www.aapanel.com/new/download.html?r=dk_tianji)
+
+> Applicable only for aaPanel version 7.0.11 and above.
+
+## Update List and Search
+
+Navbar `docker` -> `one click install` -> `search tianji`
+
+![](/img/docs/aapanel/1.png)
+
+> If you can't find it, please click `Update app list` button.
+
+## Fill form to install
+
+![](/img/docs/aapanel/2.png)
+
+you can fill the form quickly to install.
+
+and only just need to wait for a moment. then you can open your own Tianji in your browser.
+
+> Url: `http://<your-ip>:12345`  
+> Default username: `admin`  
+> Default password: `admin`
+
+
+===== FILE: docs/install/telemetry.md =====
+
+# Telemetry
+
+## About Anonymous Telemetry  
+
+To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.  
+
+We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:  
+
+- **Completely Anonymous**: We do not collect any personally identifiable information or service content.  
+- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.  
+- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.  
+
+Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:  
+
+```bash
+DISABLE_ANONYMOUS_TELEMETRY=1
+```
+
+For detailed configuration instructions, please refer to the Environment Variables Documentation.
+
+With this approach, we aim to improve Tianji while ensuring privacy and security. If you have any questions or feedback, please feel free to reach out to us!
+
+
+===== FILE: docs/install/troubleshooting.md =====
+
+# Troubleshooting
+
+This document collects common issues and their solutions that you may encounter when using Tianji.
+
+## WebSocket Connection Issues
+
+### Problem Description
+
+When using HTTPS services, other functions work normally, but WebSocket service cannot connect properly, which manifests as:
+
+- The connection status indicator in the bottom left corner shows gray
+- Server page list shows counts but no actual content
+
+### Root Cause
+
+This issue is usually caused by improper WebSocket forwarding policies in reverse proxy software. In HTTPS environments, WebSocket connections require correct Cookie security policies.
+
+### Solution
+
+You can resolve this issue by setting the following environment variable:
+
+```bash
+AUTH_USE_SECURE_COOKIES=true
+```
+
+This setting forces the application to treat cookies passed by the browser as encrypted cookies, thereby resolving WebSocket connection issues.
+
+#### Configuration Methods
+
+**Docker Environment:**
+```yaml
+# docker-compose.yml
+services:
+  tianji:
+    environment:
+      - AUTH_USE_SECURE_COOKIES=true
+```
+
+**Direct Deployment:**
+```bash
+export AUTH_USE_SECURE_COOKIES=true
+```
+
+### Verification Steps
+
+After configuration, restart the service and check:
+
+1. The bottom left connection status indicator should show green
+2. Server pages should display real-time data normally
+3. WebSocket connections should be established properly in browser developer tools
+
+---
+
+*If you encounter other issues, feel free to submit an [Issue](https://github.com/msgbyte/tianji/issues) or contribute solutions to this documentation.*
+
+
+===== FILE: docs/intro.md =====
+
+# Introduction
+
+## What is Tianji
+
+One sentence to summarize:
+
+**Tianji** = **Website Analytics** + **Uptime Monitor** + **Server Status**
+
+### Why is it called Tianji?
+
+Tianji(天机, pronunciation Tiān Jī) in chinese which means **Heavenly Opportunity** or **Strategy**
+
+The characters 天 (Tiān) and 机 (Jī) can be translated as "heaven" and "machine" or "mechanism" respectively. When combined, it might refer to a strategic or opportunistic plan or opportunity that seems to be orchestrated by a higher power or a celestial force.
+
+## Motivation
+
+During our observations of the website. We often need to use multiple applications together. For example, we need analysis tools such as `GA`/`umami` to check pv/uv and the number of visits to each page, we need an uptime monitor to check the network quality and connectivity of the server, and we need to use prometheus to obtain the status reported by the server to check the quality of the server. In addition, if we develop an application that allows open source deployment, we often need a telemetry system to help us collect the simplest information about other people's deployment situations.
+
+I think these tools should serve the same purpose, so is there an application that can integrate these common needs in a lightweight way? After all, most of the time we don't need very professional and in-depth functions. But in order to achieve comprehensive monitoring, I need to install so many services.
+
+It's good to specialize in one thing, if we are experts in related abilities we need such specialized tools. But for most users who only have lightweight needs, an **All-in-One** application will be more convenient and easier to use.
+
+## Installation
+
+Install Tianji with Docker is very simple. just make sure you have been install docker and docker-compose plugin
+
+and then, run those command in anywhere:
+
+```bash
+wget https://raw.githubusercontent.com/msgbyte/tianji/master/docker-compose.yml
+docker compose up -d
+```
+
+> Default account is **admin**/**admin**, please change password ASAP.
+
+## Community
+
+Join our thriving community to connect with fellow users, share experiences, and stay updated on the latest features and developments. Collaborate, ask questions, and contribute to the growth of the Tianji community.
+
+- [GitHub](https://github.com/msgbyte/tianji)
+- [Discord](https://discord.gg/8Vv47wAEej)
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/tianji)
+
+
+===== FILE: docs/mcp/mcp.md =====
+
+# Integration with MCP
+
+<a href="https://cursor.com/install-mcp?name=tianji&config=eyJ0eXBlIjoic3RkaW8iLCJjb21tYW5kIjoibnB4IC15IHRpYW5qaS1tY3Atc2VydmVyIiwiZW52Ijp7IlRJQU5KSV9CQVNFX1VSTCI6IiIsIlRJQU5KSV9BUElfS0VZIjoiIiwiVElBTkpJX1dPUktTUEFDRV9JRCI6IiJ9fQ%3D%3D"><em><img src="https://cursor.com/deeplink/mcp-install-light.svg" alt="Add tianji MCP server to Cursor" height="32" /></em></a>
+
+## Introduction
+
+Tianji MCP Server is a server based on Model Context Protocol (MCP) that serves as a bridge between AI assistants and the Tianji platform. It exposes Tianji platform's survey functionality to AI assistants through the MCP protocol. This server provides the following core features:
+
+- Query survey results
+- Get detailed survey information
+- Get all surveys in a workspace
+- Get website list
+
+## Installation Methods
+
+### NPX Installation
+
+You can use Tianji MCP Server by adding the following configuration to your AI assistant's configuration file:
+
+```json
+{
+  "mcpServers": {
+    "tianji": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "tianji-mcp-server"
+      ],
+      "env": {
+        "TIANJI_BASE_URL": "https://tianji.example.com",
+        "TIANJI_API_KEY": "<your-api-key>",
+        "TIANJI_WORKSPACE_ID": "<your-workspace-id>"
+      }
+    }
+  }
+}
+```
+
+### Environment Variable Configuration
+
+Before using Tianji MCP Server, you need to set the following environment variables:
+
+```bash
+# Tianji platform API base URL
+TIANJI_BASE_URL=https://tianji.example.com
+
+# Tianji platform API key
+TIANJI_API_KEY=your_api_key_here
+
+# Tianji platform workspace ID
+TIANJI_WORKSPACE_ID=your_workspace_id_here
+```
+
+### Getting an API Key
+
+You can obtain a Tianji platform API key by following these steps:
+
+1. After logging into the Tianji platform, click on your **profile picture** in the top right corner
+2. Select **Profile** from the dropdown menu
+3. On the profile page, find the **API Keys** option
+4. Click on create new key, and follow the prompts to complete the key creation
+
+## Usage Instructions
+
+Tianji MCP Server provides a series of tools that can interact with AI assistants through the MCP protocol. Below are detailed descriptions of each tool:
+
+### Query Survey Results
+
+Use the `tianji_get_survey_results` tool to query result data for a specific survey.
+
+**Parameters:**
+
+- `workspaceId`: Tianji workspace ID (defaults to the value configured in environment variables)
+- `surveyId`: Survey ID
+- `limit`: Limit on the number of records returned (default 20)
+- `cursor`: Pagination cursor (optional)
+- `startAt`: Start time, ISO format, example: 2023-10-01T00:00:00Z
+- `endAt`: End time, ISO format, example: 2023-10-31T23:59:59Z
+- `filter`: Filter conditions (optional)
+
+### Get Survey Information
+
+Use the `tianji_get_survey_info` tool to get basic information about a specific survey.
+
+**Parameters:**
+
+- `workspaceId`: Tianji workspace ID (defaults to the value configured in environment variables)
+- `surveyId`: Survey ID
+
+### Get All Survey List
+
+Use the `tianji_get_all_survey_list` tool to get a list of all surveys in the workspace.
+
+**Parameters:**
+
+- `workspaceId`: Tianji workspace ID (defaults to the value configured in environment variables)
+
+### Get Website List
+
+Use the `tianji_get_website_list` tool to get a list of websites in the workspace.
+
+**Parameters:**
+
+- `workspaceId`: Tianji workspace ID (defaults to the value configured in environment variables)
+
+## Usage Examples
+
+Below are examples of natural language interactions between users and AI assistants integrated with Tianji MCP Server:
+
+### Example 1: Get All Survey List
+
+```
+User: Help me view all my survey questionnaire lists
+
+AI Assistant: I'll get all your survey questionnaire lists for you.
+[AI Assistant calls tianji_get_all_survey_list through MCP protocol to get data]
+Based on the data in your workspace, you currently have the following surveys:
+1. User Experience Satisfaction Survey (created on 2023-09-15)
+2. Product Feature Feedback Survey (created on 2023-10-01)
+3. Website Usability Assessment (created on 2023-10-20)
+```
+
+### Example 2: Get Specific Survey Details
+
+```
+User: Please tell me the details of the "User Experience Satisfaction Survey"
+
+AI Assistant: I'll query the details of that survey for you.
+[AI Assistant calls tianji_get_survey_info through MCP protocol to get data]
+Details of the "User Experience Satisfaction Survey":
+- Creation time: 2023-09-15
+- Status: Active
+- Number of questions: 10
+- Responses collected: 128
+- Most recent response: 2023-10-25
+```
+
+### Example 3: Query Survey Results
+
+```
+User: Help me analyze the October results of the "Product Feature Feedback Survey"
+
+AI Assistant: I'll analyze the October results of the "Product Feature Feedback Survey".
+[AI Assistant calls tianji_get_survey_results through MCP protocol to get data for the specific time range]
+Analysis of the October "Product Feature Feedback Survey" results:
+- Total responses: 42
+- Most popular feature: Automated Reports (85% positive feedback)
+- Feature most in need of improvement: Mobile adaptation (mentioned by 62%)
+- Average satisfaction rating: 4.2/5
+- Main user suggestions: Add data export functionality, optimize page loading speed
+```
+
+
+===== FILE: docs/monitor/custom-script.md =====
+
+# Custom Script
+
+Compared with traditional monitoring services, **Tianji** supports custom scripts to support more customized scenarios.
+
+Essentially, you can understand it as a restricted, memory safe JavaScript runtime that accepts a number to display on your chart. The most common scenario is the time required for network requests to access an url. Of course, it can also be other things, such as your OpenAI balance, your github star number, and all the information that can be expressed in numbers.
+
+if this script return -1, its means this work is failed, and try to send notification to you, just like normal monitor.
+
+If you want to view the trend of a number's changes, opening the trending mode can help you better discover subtle changes in the number
+
+Here is some example:
+
+## Examples
+
+### get tailchat available service number from health endpoint
+
+```js
+const res = await request({
+  url: 'https://<tailchat-server-api>/health'
+})
+
+if(!res || !res.data || !res.data.services) {
+  return -1
+}
+
+return res.data.services.length
+```
+
+### get github star count
+
+```js
+const res = await request({
+  url: 'https://api.github.com/repos/msgbyte/tianji'
+})
+
+return res.data.stargazers_count ?? -1
+```
+
+replace `msgbyte/tianji` to your own repo name
+
+### get docker pull count
+
+```js
+const res = await request({
+  url: "https://hub.docker.com/v2/repositories/moonrailgun/tianji/"
+});
+
+return res.data.pull_count;
+```
+
+replace `moonrailgun/tianji` to your own image name
+
+### example for match text
+
+```js
+const start = Date.now();
+const res = await request({
+  url: "https://example.com/"
+});
+
+const usage = Date.now() - start;
+
+const matched = /maintain/.test(String(res.data));
+
+if(matched) {
+  return -1;
+}
+
+return usage;
+```
+
+return `-1` means somthing wrong. in this case, its means in html body include `maintain` text.
+
+### or more
+
+Very very welcome to submit your script in this page. Tianji is driven by open source community.
+
+
+===== FILE: docs/monitor/push-monitor.md =====
+
+# Push Monitor
+
+Push Monitor is a monitoring method where your application actively sends heartbeat signals to **Tianji** instead of Tianji checking your service. This is particularly useful for monitoring background tasks, cron jobs, or services behind firewalls that cannot be accessed directly.
+
+## How It Works
+
+1. **Tianji** provides you with a unique push endpoint URL
+2. Your application sends HTTP POST requests to this endpoint at regular intervals
+3. If no heartbeat is received within the configured timeout period, Tianji triggers an alert
+
+## Configuration
+
+When creating a Push Monitor, you need to configure:
+
+- **Monitor Name**: A descriptive name for your monitor
+- **Timeout**: The maximum time (in seconds) to wait between heartbeats before considering the service down
+- **Recommended Interval**: How often your application should send heartbeats (typically the same as timeout)
+
+## Push Endpoint Format
+
+```
+POST https://tianji.example.com/api/push/{pushToken}
+```
+
+### Status Parameters
+
+- **Normal Status**: Send without parameters or with `?status=up`
+- **Down Status**: Send with `?status=down` to manually trigger an alert
+- **Custom Message**: Add `&msg=your-message` to include additional information
+- **Custom Value**: Add `&value=123` to track numeric values
+
+## Examples
+
+### Basic Heartbeat (cURL)
+
+```bash
+# Send heartbeat every 60 seconds
+while true; do
+  curl -X POST "https://tianji.example.com/api/push/<your-push-token>"
+  sleep 60
+done
+```
+
+### JavaScript/Node.js
+
+```javascript
+// Send heartbeat every 60 seconds
+setInterval(async () => {
+  try {
+    await fetch('https://tianji.example.com/api/push/<your-push-token>', { 
+      method: 'POST' 
+    });
+    console.log('Heartbeat sent successfully');
+  } catch (error) {
+    console.error('Failed to send heartbeat:', error);
+  }
+}, 60000);
+```
+
+### Python
+
+```python
+import requests
+import time
+
+def send_heartbeat():
+    try:
+        response = requests.post('https://tianji.example.com/api/push/<your-push-token>')
+        print('Heartbeat sent successfully')
+    except Exception as e:
+        print(f'Failed to send heartbeat: {e}')
+
+# Send heartbeat every 60 seconds
+while True:
+    send_heartbeat()
+    time.sleep(60)
+```
+
+## Use Cases
+
+### 1. Cron Jobs
+
+Monitor the execution of scheduled tasks:
+
+```bash
+#!/bin/bash
+# your-cron-job.sh
+
+# Your actual job logic here
+./run-backup.sh
+
+# Send success signal
+if [ $? -eq 0 ]; then
+  curl -X POST "https://tianji.example.com/api/push/<your-push-token>?status=up&msg=backup-completed"
+else
+  curl -X POST "https://tianji.example.com/api/push/<your-push-token>?status=down&msg=backup-failed"
+fi
+```
+
+### 2. Background Services
+
+Monitor long-running background processes:
+
+```python
+import requests
+import time
+import threading
+
+class ServiceMonitor:
+    def __init__(self, push_url):
+        self.push_url = push_url
+        self.running = True
+        
+    def start_heartbeat(self):
+        def heartbeat_loop():
+            while self.running:
+                try:
+                    requests.post(self.push_url)
+                    time.sleep(30)  # Send every 30 seconds
+                except Exception as e:
+                    print(f"Heartbeat failed: {e}")
+        
+        thread = threading.Thread(target=heartbeat_loop)
+        thread.daemon = True
+        thread.start()
+
+# Usage
+monitor = ServiceMonitor('https://tianji.example.com/api/push/<your-push-token>')
+monitor.start_heartbeat()
+
+# Your main service logic here
+while True:
+    # Do your work
+    time.sleep(1)
+```
+
+### 3. Database Sync Jobs
+
+Monitor data synchronization tasks:
+
+```python
+import requests
+import schedule
+import time
+
+def sync_data():
+    try:
+        # Your data sync logic here
+        result = perform_data_sync()
+        
+        if result.success:
+            requests.post(
+                'https://tianji.example.com/api/push/<your-push-token>',
+                params={'status': 'up', 'msg': f'synced-{result.records}-records'}
+            )
+        else:
+            requests.post(
+                'https://tianji.example.com/api/push/<your-push-token>',
+                params={'status': 'down', 'msg': 'sync-failed'}
+            )
+    except Exception as e:
+        requests.post(
+            'https://tianji.example.com/api/push/<your-push-token>',
+            params={'status': 'down', 'msg': f'error-{str(e)}'}
+        )
+
+# Schedule to run every hour
+schedule.every().hour.do(sync_data)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+```
+
+## Best Practices
+
+1. **Set Appropriate Timeouts**: Configure timeout values based on your application's needs. For frequent tasks, use shorter timeouts. For periodic jobs, use longer timeouts.
+
+2. **Handle Network Failures**: Implement retry logic in your heartbeat code to handle temporary network issues.
+
+3. **Use Meaningful Messages**: Include descriptive messages with your heartbeats to provide context when reviewing logs.
+
+4. **Monitor Critical Paths**: Place heartbeat calls at critical points in your application flow, not just at the beginning.
+
+5. **Exception Handling**: Send a "down" status when an exception occurs in your application.
+
+## Troubleshooting
+
+### Common Issues
+
+**No heartbeats received**:
+- Verify the push token is correct
+- Check network connectivity from your application to Tianji
+- Ensure your application is actually running the heartbeat code
+
+**Frequent false alarms**:
+- Increase the timeout value
+- Check if your application is experiencing performance issues
+- Review network stability between your app and Tianji
+
+**Missing heartbeats**:
+- Add error handling and logging to your heartbeat code
+- Consider implementing retry logic for failed requests
+- Monitor your application's resource usage
+
+## Security Considerations
+
+- Keep your push tokens secure and don't expose them in public repositories
+- Use HTTPS endpoints to encrypt data in transit
+- Consider rotating push tokens periodically
+- Limit the frequency of heartbeats to avoid overwhelming your Tianji instance
+
+Push monitoring provides a reliable way to monitor services that traditional ping-based monitoring cannot reach, making it an essential tool for comprehensive infrastructure monitoring.
+
+
+===== FILE: docs/notification/webhook.md =====
+
+# Webhook
+
+If you need a more flexible notification method, you can try using custom webhooks to notify your messages. This way, you can integrate Tianji's notifications into any system.
+
+### Example Result
+
+Tianji system will send a POST request with below example content.
+
+```json
+{
+    "notification": {
+        "workspaceId": "xxxxxxxxxxx",
+        "name": "New Notification",
+        "type": "webhook",
+        "payload": {
+            "webhookUrl": "example.com"
+        }
+    },
+    "title": "New Notification Notification Testing",
+    "content": "Tianji: Insight into everything\\nThis is Notification Testing from New Notification\\n[image]",
+    "raw": [
+        {
+            "type": "title",
+            "level": 2,
+            "content": "Tianji: Insight into everything"
+        },
+        {
+            "type": "text",
+            "content": "This is Notification Testing from New Notification"
+        },
+        {
+            "type": "newline"
+        },
+        {
+            "type": "image",
+            "url": "https://tianji.msgbyte.com/img/social-card.png"
+        }
+    ],
+    "time": "2024-06-19T15:41:09.390Z"
+}
+```
+
+
+===== FILE: docs/server-status/kubernetes/reporter-daemonset.md =====
+
+# Deploy Reporter as DaemonSet
+
+If you are running Tianji inside Kubernetes, you may want to collect each node's
+system metrics. The easiest way is to run `tianji-reporter` as a DaemonSet so it
+runs on every node.
+
+1. Edit `docker/k8s/reporter-daemonset.yaml` and replace the `TIANJI_SERVER_URL` and `TIANJI_WORKSPACE_ID` values with your actual server address and workspace ID.
+2. Apply the manifest:
+
+```bash
+kubectl apply -f docker/k8s/reporter-daemonset.yaml
+```
+
+Every node will start a `tianji-reporter` container which reports system
+statistics to your Tianji instance. You can check the logs of a specific pod to
+ensure it works:
+
+```bash
+kubectl logs -l app=tianji-reporter -f
+```
+
+Once the pods are running, the **Servers** page in Tianji will list your
+Kubernetes nodes just like regular machines.
+
+
+===== FILE: docs/server-status/server-status-page.md =====
+
+# Server Status Page
+
+You can create a server status page for user to show your server status to public which wanna make others know.
+
+## Configure custom domain
+
+You can config your status page in your own domain, for example: `status.example.com`
+
+set it in page config, and create a `CNAME` record in your DNS dashboard.
+
+```
+CNAME status.example.com tianji.example.com
+```
+
+then you can visit custom `status.example.com` to your page.
+
+### Troubleshooting
+
+If you will throw 500 error, it looks like your Reverse Proxy is not configured correctly.
+
+Please make sure your reverse proxy include your new status route.
+
+for example:
+```
+server {
+  listen 80;
+  server_name tianji.example.com status.example.com;
+  listen 443 ssl;
+}
+```
+
+
+===== FILE: docs/server-status/server-status-reporter.md =====
+
+# Server Status Reporter
+
+you can report your server status easily with tianji reporter
+
+you can download from [https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases)
+
+## Usage
+
+```
+Usage of tianji-reporter:
+  --interval int
+        Input the INTERVAL, seconed (default 5)
+  --mode http
+        The send mode of report data, you can select: `http` or `udp`, default is `http` (default "http")
+  --name string
+        The identification name for this machine
+  --url string
+        The http url of tianji, for example: https://tianji.msgbyte.com
+  --vnstat
+        Use vnstat for traffic statistics, linux only
+  --workspace string
+        The workspace id for tianji, this should be a uuid
+```
+
+The **url** and **workspace** is required, its means you will report your service to which host and which workspace.
+
+Default a server node name will be same with hostname, so you can custom your name with `--name` which can help you identify server.
+
+## Auto install script
+
+You can get your auto install script in `Tianji` -> `Servers` -> `Add` -> `Auto` tab
+
+its will auto download reporter and create linux service in your machine. so its need root permission.
+
+### Uninstall
+
+if you wanna uninstall reporter service, you can use this command like:
+```bash
+curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
+``` 
+
+The main change is to append `-s uninstall` to your install command.
+
+## Kubernetes
+
+If your servers are running in a Kubernetes cluster, you can deploy the reporter as a DaemonSet so each node reports metrics automatically. See [Deploy Reporter as DaemonSet](./kubernetes/reporter-daemonset.md) for details.
+
+## Q&A
+
+### How to check tianji reporter service log?
+
+If you install with auto install script, tianji will help you install a service which named `tianji-reporter` in your linux machine.
+
+You can use this command to check tianji reporter log:
+
+```bash
+journalctl -fu tianji-reporter.service
+```
+
+### Not found your machine in server tab even report show success
+
+Maybe your tianji is behind a reverse proxy for example `nginx`.
+
+Please make sure your reverse proxy add websocket support
+
+## Why my machine is always offline?
+
+Please check your server datetime.
+
+
+===== FILE: docs/special-thanks.md =====
+
+# Special thanks
+
+## Open source project
+
+Tianji is very inspired by those project, thanks for your contributions to the open source community.
+
+I also loves those project. Salute to these excellent projects!
+
+- [umami](https://github.com/umami-software/umami)
+- [uptime kuma](https://github.com/louislam/uptime-kuma)
+
+
+===== FILE: docs/telemetry/intro.md =====
+
+# Introduce
 
 ## Background
 
-The Tianji project was born from developers' dissatisfaction with existing monitoring tools. Market tools are either too simple or too complex and expensive, with few tools covering multiple dimensions like server monitoring, user behavior analysis, and application performance tracking. Against this background, Tianji emerged to create an open-source, lightweight yet comprehensive monitoring and telemetry platform.
+As content creators, we often publish our articles on various third-party platforms. However, for those of us who are serious about our content, publishing is just the beginning. We need to continuously monitor our articles' readership over time. Unfortunately, our data collection capabilities are limited to what each platform offers, which heavily depends on the platform's own capabilities. Moreover, when we distribute the same content across different platforms, the readership and visitation data are completely isolated.
 
-As an open-source project, Tianji adheres to the design philosophy of "Simple to Use, Powerful Features, Privacy First" and is committed to providing developers with a one-stop monitoring solution. We believe that through Tianji, every developer can easily build their own monitoring system, detect and solve problems in time, and continuously optimize product experience.
+As a developer, I create many software applications. However, once I release these applications, I often lose control over them. For example, after releasing a command-line program, I have no way of knowing how users are interacting with it or even how many users are using my application. Similarly, when developing an open-source application, in the past, I could only gauge interest through GitHub stars, leaving me in the dark about actual usage.
 
-## Feature Categories
+Therefore, we need a simple solution that collects minimal information, respecting personal privacy and other restrictions. This solution is telemetry.
 
-### [Server Monitoring](https://tianji.msgbyte.com/docs/monitor/custom-script)
+## Telemetry
 
-Server monitoring is one of Tianji's core functions, providing comprehensive server status and performance metric monitoring capabilities. Through simple configuration, you can monitor key metrics like CPU usage, memory consumption, disk space, and network traffic in real-time. The system supports custom monitoring scripts, allowing you to monitor any metrics based on specific needs. When server anomalies occur, Tianji immediately sends alerts through preset notification channels, ensuring you can respond and resolve issues promptly, effectively improving system reliability and stability.
+In the field of computing, telemetry is a common technology that involves the minimal and anonymous reporting of information to accommodate privacy concerns while still meeting the basic analytical needs of content creators.
 
-### [Event Tracking](https://tianji.msgbyte.com/docs/events/track)
+For example, React's Next.js framework collects information using telemetry: [API Reference: Next.js CLI | Next.js (nextjs.org)](https://nextjs.org/docs/app/api-reference/next-cli#telemetry)
 
-The event tracking feature allows you to understand deeply how users interact with your application. By integrating Tianji's event tracking SDK, you can record user behavior data such as clicks, page visits, and feature usage. The platform provides intuitive data visualization interfaces to help you analyze user behavior patterns, identify key conversion paths, and discover potential user experience issues. These insights can guide product decisions, optimize user interfaces, improve user satisfaction and retention rates, and provide data support for business growth.
+Alternatively, by embedding a 1px-sized blank transparent pixel image in an article, it's possible to collect visitor data on websites over which we have no control. Modern browsers and most websites block the insertion of custom scripts due to potential security risks. However, an image appears much more harmless by comparison. Almost all websites allow the loading of third-party images, making telemetry feasible.
 
-### [Application Telemetry](https://tianji.msgbyte.com/docs/telemetry/intro)
+## What Information Can We Collect Through an Image?
 
-The application telemetry module focuses on collecting and analyzing application runtime performance data. It monitors key metrics like application response time, error rates, and resource consumption, helping developers identify performance bottlenecks and potential issues. By integrating Tianji's telemetry SDK, you can obtain detailed application runtime logs, exception reports, and performance analysis to understand how your application performs in different environments. This data is crucial for continuously optimizing application performance, improving user experience, and reducing operational costs - essential tools for developing high-quality applications.
+Surprisingly, receiving a single image request allows us to collect more information than one might expect.
 
-### [Status Page](https://tianji.msgbyte.com/docs/server-status/server-status-page)
+By analyzing network requests, we can obtain the user's IP address, visit time, referrer, and device type. This enables us to analyze traffic patterns, such as peak readership times and trends, demographic distribution, and traffic granularity across different platforms. This information is particularly valuable for marketing and promotional activities.
 
-The status page feature allows you to create public service status pages to show your service's operational status to users. This transparent communication channel can display real-time service availability, planned maintenance times, and historical event records. When service interruptions or performance degradation occur, the status page automatically updates to inform users of the current situation and estimated recovery time. This transparency helps build user trust, reduce support requests, and demonstrate your commitment to service quality. The recently added custom domain support allows you to showcase status pages using your own brand domain.
+![](/img/telemetry/1.png)
 
-### [Notification System](https://tianji.msgbyte.com/docs/notification/webhook)
+## How Can We Implement Telemetry?
 
-The notification system is an essential component of the Tianji platform, ensuring you're promptly informed of system anomalies. When server anomalies, application errors, or performance degradation are detected, the notification system sends alerts through various channels, including email, Webhook, and Slack. You can configure different notification rules based on event types and severity levels to ensure important alerts aren't missed. The notification system supports custom message templates and escalation strategies, helping teams establish efficient problem response processes to minimize service interruption impact on users.
+Telemetry is a straightforward technology that essentially requires an endpoint to receive internet requests. Due to its simplicity, there are few dedicated tools for this purpose. Many may not consider analytics important, or they might be deterred by the initial barriers. However, the demand for such functionality is clear.
 
-## User Value
+Developing a telemetry solution is simple. You just need to create a project, set up a route, collect information from the request body, and return a blank image.
 
-The Tianji platform provides significant value to users, helping them address various challenges in monitoring and analytics. First, it integrates multiple monitoring functions into one, eliminating the complexity and cost of using and maintaining multiple tools. Users can monitor server status, user behavior, and application performance simultaneously on a single platform, gaining a comprehensive system view.
+Here's an example using Node.js:
 
-Second, Tianji's open-source nature provides high flexibility and customizability. Users can adjust and extend platform features according to their needs and even contribute code to improve the platform. This openness ensures the platform can adapt to various use cases and business requirements.
+```jsx
+router.get(
+  '/telemetry.gif',
+  async (req, res) => {
+    const ip = req.ip;
+    const referer = req.header['referer'];
+    const userAgent = req.headers['user-agent'];
+    
+    // Store it in your database
+    
+    const blankGifBuffer = Buffer.from(
+      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      'base64'
+    );
+    res.header('Content-Type', 'image/gif').send(blankGifBuffer);
+  }
+);
+```
 
-Third, Tianji emphasizes data privacy and security. As a self-hosted solution, users have complete control over their data without worrying about sensitive information leaking to third parties. This is particularly important for applications handling user data and can help enterprises comply with data protection regulations like GDPR.
+If you prefer not to develop your own solution, I recommend Tianji. As an open-source project offering **Website Analytics**, **Uptime Monitoring**, and **Server Status**, Tianji has recently introduced a telemetry feature to assist content creators in reporting telemetry, thereby facilitating better data collection. Most importantly, being open-source means you have control over your data and can aggregate traffic from multiple platforms in one place, avoiding the fragmentation of viewing the same information in different locations.
 
-Finally, Tianji's real-time monitoring and alert system helps users quickly detect and resolve issues, reducing service downtime and improving system reliability. This not only enhances user experience but also reduces operational costs, creating real business value.
+![](/img/telemetry/2.png)
 
-## Latest Updates
+GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
-### [Custom Domain Support](https://tianji.msgbyte.com/docs/server-status/server-status-page)
+Official Website: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
 
-We recently added custom domain support for status pages, allowing you to showcase service status pages using your own brand domain. This update significantly enhances the professionalism and brand consistency of status pages, making them a natural extension of your brand image. The setup process is simple and intuitive - just add corresponding DNS records and configure the domain in the Tianji platform. Custom domain support is an important step in responding to user needs, aimed at providing more professional and customized service status display solutions for enterprise users.
 
-### [Documentation and Website Access](https://tianji.msgbyte.com/docs)
+===== FILE: docs/telemetry/params.md =====
 
-To improve user experience and convenience, we've added direct access to documentation and the official website in the application. This update allows users to easily consult documentation for help or visit the official website for latest updates while using the Tianji platform. The documentation system has been comprehensively optimized, providing more detailed guides, tutorials, and API references to help users fully utilize all Tianji features. Additionally, we've added rich examples and best practices to help new users get started quickly while providing advanced tips for experienced users.
+# Parameters
+
+Here is some example for how to use and config with telemetry image.
+
+All is optional. its will improve your usage in different place.
+
+| name | description |
+| -------- | --------- |
+| url | default will get referrer url which auto generate by browser, but in some website will dont allow carry this header, so you have to bring it by your self. if Tianji cannot get url in any where, system will ignore and not record this visit |
+| name | define telemetry event name, its can be use for distinguish different event but in same telemetry record. |
+| title | **[Badge ONLY]**, define badge title |
+| start | **[Badge ONLY]**, define badge start count number |
+| fullNum | **[Badge ONLY]**, define badge will show full number, default is abbreviated digits(for example: `12345` and `12.3k`) |
+
+## How to use
+
+Its easy to carry params on url
+
+for example:
+
+```
+https://tianji.example.com/telemetry/<workspaceId>/<telemetryId>/badge.svg?name=myEvent&url=https://google.com&title=My+Counter&start=100000&fullNum=true
+```
+
+If you dont familiar with this, you can check wiki page about this: [https://en.wikipedia.org/wiki/Query_string](https://en.wikipedia.org/wiki/Query_string)
+
+
+===== FILE: docs/website/framework/docusaurus.md =====
+
+# Use in Docusaurus
+
+In `docusaurus.config.js`:
+
+```js
+/** @type {import('@docusaurus/types').Config} */
+const config = {
+  // ...
+
+  scripts: [
+    {
+      src: 'https://<your domain>/tracker.js',
+      async: true,
+      defer: true,
+      'data-website-id': '<your-website-id>',
+    },
+  ],
+};
+
+module.exports = config;
+```
+
+
+===== FILE: docs/website/framework/install-in-traefik-with-plugin.md =====
+
+# Install in Traefik with plugin
+
+Tianji provides a Traefik plugin that allows you to easily integrate Tianji website analytics functionality into your Traefik proxy.
+
+## Plugin Overview
+
+[traefik-tianji-plugin](https://github.com/msgbyte/traefik-tianji-plugin) is a Traefik middleware plugin specifically developed for Tianji that can automatically inject the Tianji tracking script into your website without modifying your website code to start collecting visitor data.
+
+## Installing the Plugin
+
+### 1. Add Plugin in Static Configuration
+
+First, you need to add the plugin reference in Traefik's static configuration. The plugin version number references the git tag.
+
+#### YAML Configuration
+
+Add the following to your `traefik.yml` or static configuration file:
+
+```yaml
+experimental:
+  plugins:
+    traefik-tianji-plugin:
+      moduleName: "github.com/msgbyte/traefik-tianji-plugin"
+      version: "v0.2.1"
+```
+
+#### TOML Configuration
+
+```toml
+[experimental.plugins.traefik-tianji-plugin]
+  moduleName = "github.com/msgbyte/traefik-tianji-plugin"
+  version = "v0.2.1"
+```
+
+#### Command Line
+
+```bash
+--experimental.plugins.traefik-tianji-plugin.modulename=github.com/msgbyte/traefik-tianji-plugin
+--experimental.plugins.traefik-tianji-plugin.version=v0.2.1
+```
+
+### 2. Configure Middleware
+
+After installing the plugin, you need to configure the middleware in the dynamic configuration.
+
+#### YAML Dynamic Configuration
+
+In your `config.yml` or dynamic configuration file:
+
+```yaml
+http:
+  middlewares:
+    my-tianji-middleware:
+      plugin:
+        traefik-tianji-plugin:
+          tianjiHost: "https://tianji.your-domain.com"
+          websiteId: "your-website-id"
+```
+
+#### TOML Dynamic Configuration
+
+```toml
+[http.middlewares.my-tianji-middleware.plugin.traefik-tianji-plugin]
+  tianjiHost = "https://tianji.your-domain.com"
+  websiteId = "your-website-id"
+```
+
+#### Docker Compose Labels
+
+```yaml
+version: '3.7'
+services:
+  my-app:
+    image: nginx:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-app.rule=Host(`my-app.local`)"
+      - "traefik.http.routers.my-app.middlewares=my-tianji-middleware"
+      - "traefik.http.middlewares.my-tianji-middleware.plugin.traefik-tianji-plugin.tianjiHost=https://tianji.your-domain.com"
+      - "traefik.http.middlewares.my-tianji-middleware.plugin.traefik-tianji-plugin.websiteId=your-website-id"
+```
+
+## Configuration Parameters
+
+### Required Parameters
+
+- **tianjiHost**: The complete URL of your Tianji server
+  - Example: `https://tianji.your-domain.com`
+  - If using the official hosted service: `https://app-tianji.msgbyte.com`
+
+- **websiteId**: The website ID created in Tianji
+  - Can be found in the website settings of your Tianji admin panel
+
+### Optional Parameters
+
+The plugin also supports other configuration parameters to customize behavior. For specific parameters, please refer to the [GitHub repository documentation](https://github.com/msgbyte/traefik-tianji-plugin).
+
+## Using the Middleware
+
+After configuration, you need to use this middleware in your router:
+
+### YAML Configuration
+
+```yaml
+http:
+  routers:
+    my-app:
+      rule: "Host(`my-app.local`)"
+      middlewares:
+        - "my-tianji-middleware"
+      service: "my-app-service"
+```
+
+### Docker Compose Labels
+
+```yaml
+labels:
+  - "traefik.http.routers.my-app.middlewares=my-tianji-middleware"
+```
+
+## How It Works
+
+1. When requests pass through the Traefik proxy, the plugin checks the response content
+2. If the response is HTML content, the plugin automatically injects the Tianji tracking script
+3. The script starts collecting visitor data and sends it to the Tianji server when the page loads
+
+## Important Notes
+
+- Ensure that the Tianji server address is accessible from client browsers
+- The website ID must be valid, otherwise data cannot be collected properly
+- The plugin only takes effect when the response content type is HTML
+- It's recommended to use the latest version of the plugin for optimal performance and features
+
+## Reference
+
+- [Plugin Source Code](https://github.com/msgbyte/traefik-tianji-plugin)
+- [Traefik Plugin Documentation](https://doc.traefik.io/traefik/plugins/)
+
+
+===== FILE: docs/website/track-script.md =====
+
+# Tracker Script
+
+## Installation
+
+To track website events, you just need inject a simple script(< 2 KB) into your website.
+
+the script look like below:
+
+```html
+<script async defer src="https://<your-self-hosted-domain>/tracker.js" data-website-id="xxxxxxxxxxxxx"></script>
+```
+
+you can get this script code from your **Tianji** website list
+
+## Report Event
+
+**Tianji** provide a simple way to report user click event, its easy to help you track which action user like and often to use.
+
+This is a very common method in website analysis. You can use it quickly get it by using **Tianji**.
+
+After you inject script code into your website, you just need add a `data-tianji-event` in dom attribute.
+
+for example:
+
+```html
+<button data-tianji-event="submit-login-form">Login</button>
+```
+
+Now, when user click this button, your dashboard will receive new event
+
+## Modify default script name
+
+> This feature available on v1.7.4+
+
+You can use environment `CUSTOM_TRACKER_SCRIPT_NAME` when you start it
+
+for example:
+```
+CUSTOM_TRACKER_SCRIPT_NAME="my-tracker.js"
+```
+
+then you can visit your tracker script with `"https://<your-self-hosted-domain>/my-tracker.js"`
+
+This is to help you avoid some ad-blockers.
+
+You do not need the `.js` suffix. It can be any path you choose, even you can use as `CUSTOM_TRACKER_SCRIPT_NAME="this/is/very/long/path"`
+
+## Tracking Specified Domains Only
+
+Generally the tracker will report all events wherever your site is running. But sometimes we need to ignore events like `localhost`.
+
+Tianji provides an attribute of the tracker script to do that.
+
+You can add `data-domains` into your script. The value should be your root domains to track. Use `,` to separate multiple domains.
+
+```html
+<script async defer src="https://<your-self-hosted-domain>/tracker.js" data-website-id="xxxxxxxxxxxxx" data-domains="website.com,www.website.com"></script>
+```
+
+Then you can just see the events from these domains.
+
+
+===== FILE: src/pages/markdown-page.md =====
+
+# Markdown page example
+
+You don't need React to write simple standalone pages.
+
+
+===== FILE: src/pages/private-policy.md =====
+
+# Tianji Privacy Policy
+
+> Last updated August 26, 2024
+
+This privacy notice for `tianji.msgbye.com` ("we," "us," or "our") explains how and why we collect, store, use, and/or share ("process") your personal information when you use our services ("Services"). This includes actions like:
+
+- Visiting our website at `msgbye.com`, or any other website of ours that links to this privacy notice.
+- Interacting with us in other related ways, such as during sales, marketing activities, or events.
+
+If you have any questions or concerns about our privacy practices, reading this privacy notice will help you understand your rights and choices. If you disagree with our policies and practices, please refrain from using our services. For any further questions or concerns, contact us at `moonrailgun@gmail.com`.
+
+## Personal Data We Collect
+
+### Information You Provide
+
+We collect the personal data you voluntarily provide when you register for our Services, express interest in obtaining information about us or our products and Services, participate in activities on the Services, or contact us directly.
+
+The personal data we collect may include, but is not limited to:
+
+- Email addresses
+- Usernames
+- Passwords
+
+We encrypt sensitive information, such as passwords, to protect your data even if our database is compromised.
+
+## Personal Data We Obtain From Third Parties
+
+### Single Sign-On
+
+If you sign up for our website `tianji.msgbye.com` through Google, you authorize us to collect authentication information, including your username, encrypted access credentials, and any other personal data available through your third-party application account.
+
+## How We Use Your Personal Data
+
+We use your personal data to:
+
+- **Provide, Improve, and Develop the Platform**: We process your data primarily to ensure the proper functioning of our website. We may also use your data to improve our website and offer you the best possible experience. Specifically, we:
+  - Operate and maintain your `tianji.msgbye.com` account, allowing you to access and use the Platform. Your email address and password are used to identify you when you log in.
+  
+- **Maintain a Safe and Secure Environment**: We process your data to enhance the security of our Platform, ensuring a safe experience for all users.
+
+## How We Share Your Personal Data
+
+We do not sell your personal data to external parties.
+
+- **Through Your Profile**: Any personal data you choose to disclose in your public profile on `tianji.msgbye.com` will be visible to other users. They may view your profile information and interact with any public prompts you share.
+  
+- **Compliance with Laws**: We may disclose your personal data to courts, law enforcement agencies, or government authorities if required to:
+  - Comply with legal obligations or processes.
+  - Respond to claims against `tianji.msgbye.com`.
+  - Address verified requests related to criminal investigations or alleged illegal activities.
+  - Enforce our Terms of Use and other agreements.
+  - Protect the rights, property, or personal safety of `tianji.msgbye.com`, its employees, and the public.
+
+## Information Security
+
+`tianji.msgbye.com` implements technical, administrative, and physical safeguards designed to prevent unauthorized access, use, or disclosure of the personal data we collect or store. These measures are intended to ensure a level of security appropriate to the risk involved. We regularly monitor our systems for vulnerabilities and potential attacks. However, no internet transmission is completely secure, so you provide personal data at your own discretion and risk.
+
+## Contact Information
+
+For questions or complaints about this Privacy Policy or our practices, please contact us by email at `moonrailgun@gmail.com`.
+

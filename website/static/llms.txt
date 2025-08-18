@@ -1,20 +1,41 @@
-# Tianji
+# Tianji Documentation Index
 
-> A modern open-source monitoring and telemetry platform that helps you monitor server status in real-time, track user events, and gain application insights
+This file lists documentation titles with absolute URLs.
 
-## Core Features
-- [Server Monitoring](https://tianji.msgbyte.com/docs/monitor/custom-script): Real-time monitoring of server status and performance metrics
-- [Event Tracking](https://tianji.msgbyte.com/docs/events/track): Track and analyze user behavior and application events
-- [Application Telemetry](https://tianji.msgbyte.com/docs/telemetry/intro): Collect application runtime data and performance metrics
-- [Status Page](https://tianji.msgbyte.com/docs/server-status/server-status-page): Create public service status pages
-- [Notification System](https://tianji.msgbyte.com/docs/notification/webhook): Timely notifications for abnormal situations
+================================================================================
 
-## Common Resources
-- [Installation Guide](https://tianji.msgbyte.com/docs/install/manual): Quick deployment of Tianji platform
-- [Development Documentation](https://tianji.msgbyte.com/docs/dev/prepare): API and integration guide for developers
-- [Environment Configuration](https://tianji.msgbyte.com/docs/environment): Configure Tianji runtime environment
-- [Website Tracking](https://tianji.msgbyte.com/docs/website/track-script): Integrate website visit tracking functionality
-
-## Latest Updates
-- [Custom Domain Support](https://tianji.msgbyte.com/docs/server-status/server-status-page): Added custom domain support for status pages, updated April 2024
-- [Documentation and Website Entry](https://tianji.msgbyte.com/docs): Added documentation and website entry in application, updated September 2024
+Authentication - https://tianji.dev/docs/api/authentication
+API Getting Started - https://tianji.dev/docs/api/getting-started
+OpenAPI SDK Usage Guide - https://tianji.dev/docs/api/openapi-sdk
+Application Tracking - https://tianji.dev/docs/application/tracking
+Prepare To Develop - https://tianji.dev/docs/dev/prepare
+Environment - https://tianji.dev/docs/environment
+Event Tracking - https://tianji.dev/docs/events/track
+Channels - https://tianji.dev/docs/feed/channels
+Integrations - https://tianji.dev/docs/feed/integrations
+Feed overview - https://tianji.dev/docs/feed/intro
+Integration with Sentry - https://tianji.dev/docs/feed/sentry
+State (ongoing incidents) - https://tianji.dev/docs/feed/state
+Docker Container Monitoring Configuration - https://tianji.dev/docs/install/docker-monitoring
+Environment Variables - https://tianji.dev/docs/install/environment
+Install in Helm - https://tianji.dev/docs/install/kubernetes/helm
+Install without docker - https://tianji.dev/docs/install/manual
+Install in aaPanel - https://tianji.dev/docs/install/other/install-in-aapanel
+Telemetry - https://tianji.dev/docs/install/telemetry
+Troubleshooting - https://tianji.dev/docs/install/troubleshooting
+Introduction - https://tianji.dev/docs/intro
+Integration with MCP - https://tianji.dev/docs/mcp/mcp
+Custom Script - https://tianji.dev/docs/monitor/custom-script
+Push Monitor - https://tianji.dev/docs/monitor/push-monitor
+Webhook - https://tianji.dev/docs/notification/webhook
+Deploy Reporter as DaemonSet - https://tianji.dev/docs/server-status/kubernetes/reporter-daemonset
+Server Status Page - https://tianji.dev/docs/server-status/server-status-page
+Server Status Reporter - https://tianji.dev/docs/server-status/server-status-reporter
+Special thanks - https://tianji.dev/docs/special-thanks
+Introduce - https://tianji.dev/docs/telemetry/intro
+Parameters - https://tianji.dev/docs/telemetry/params
+Use in Docusaurus - https://tianji.dev/docs/website/framework/docusaurus
+Install in Traefik with plugin - https://tianji.dev/docs/website/framework/install-in-traefik-with-plugin
+Tracker Script - https://tianji.dev/docs/website/track-script
+Markdown page example - https://tianji.dev/markdown-page
+Tianji Private Policy - https://tianji.dev/private-policy
