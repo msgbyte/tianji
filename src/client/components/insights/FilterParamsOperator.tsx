@@ -67,7 +67,7 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
         return dateOperators;
       }
 
-      return {} as any;
+      return stringOperators as any; // fallback to string operators
     }, [info.type]);
 
     return (
