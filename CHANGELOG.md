@@ -1,5 +1,20 @@
 
 
+## [1.24.16](https://github.com/msgbyte/tianji/compare/v1.24.15...v1.24.16) (2025-08-18)
+
+### Features
+
+* add warehouse sql page ([1b250f5](https://github.com/msgbyte/tianji/commit/1b250f5023e73979149249d1834b3b85f0146934))
+
+### Bug Fixes
+
+* fix a bug which will cause loop fetch for survey ([cb9688c](https://github.com/msgbyte/tianji/commit/cb9688c1b5ae7ada9a7a423f2992824b22cf06b7))
+* update fallback in FilterParamsOperator to return string operators ([35b3411](https://github.com/msgbyte/tianji/commit/35b3411ad618d466470b16ee985a1ba1e46ffbbd))
+
+### Document
+
+* add new blog post ([108b38d](https://github.com/msgbyte/tianji/commit/108b38d99f4e7bd882e9cbf8bf51b69e06a5d55a))
+
 ## [1.24.15](https://github.com/msgbyte/tianji/compare/v1.24.14...v1.24.15) (2025-08-16)
 
 ### Features
