@@ -1,3 +1,5 @@
+import jsonExport from 'jsonexport/dist';
+
 /**
  * A shortcut for executing directly in the component: stopPropagation
  */
@@ -29,4 +31,12 @@ export function downloadCSV(csv: string, filename: string): void {
     fakeLink.setAttribute('download', `${filename}.csv`);
     fakeLink.click();
   }
+}
+
+export async function downloadCSVJson(
+  json: any,
+  filename: string
+): Promise<void> {
+  const csv = await jsonExport(json);
+  downloadCSV(csv, filename);
 }

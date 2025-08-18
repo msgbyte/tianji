@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { createColumnHelper, DataTable } from '../DataTable';
-import { get, mapValues, reverse, sum } from 'lodash-es';
+import { get, reverse, sum } from 'lodash-es';
 import { useTranslation } from '@i18next-toolkit/react';
 import { DateUnit, GroupInfo, MetricsInfo } from '@tianji/shared';
 import { formatNumber } from '@/utils/common';
 import { getShortTextByUnit } from '@/utils/date';
+import { Button } from '@/components/ui/button';
+import { downloadCSVJson } from '@/utils/dom';
 
 const columnHelper = createColumnHelper<any>();
 
@@ -91,13 +93,24 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
   });
 
   return (
-    <DataTable
-      columnPinning={{
-        left: ['name', ...props.groups.map((item) => item.value), 'average'],
-      }}
-      columns={columns}
-      data={tableData}
-    />
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-end px-1">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => downloadCSVJson(tableData, 'insights-table')}
+        >
+          {t('Download CSV')}
+        </Button>
+      </div>
+      <DataTable
+        columnPinning={{
+          left: ['name', ...props.groups.map((item) => item.value), 'average'],
+        }}
+        columns={columns}
+        data={tableData}
+      />
+    </div>
   );
 });
 TableView.displayName = 'TableView';
