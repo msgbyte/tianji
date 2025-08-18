@@ -21,7 +21,7 @@
     "dayjs": "^1.11.9"
   },
   "devDependencies": {
-    "tsup": "^8.2.3",
+    "tsup": "^8.5.0",
     "typescript": "5.7.2",
     "vitest": "~3.0.8"
   }
