@@ -99,6 +99,10 @@ export const MultiSelectPopover: React.FC<MultiSelectPopoverProps> = (
     );
   }, [filteredOptions, selectedValues]);
 
+  const shouldShowSpecify = useMemo(() => {
+    return allowCustomInput && searchText.trim().length > 0;
+  }, [allowCustomInput, searchText]);
+
   const handleOptionToggle = (value: string) => {
     if (singleSelect) {
       onValueChange([value]);
@@ -212,9 +216,7 @@ export const MultiSelectPopover: React.FC<MultiSelectPopoverProps> = (
               </div>
             )}
 
-            {allowCustomInput &&
-            filteredOptions.length === 0 &&
-            searchText.trim().length !== 0 ? (
+            {shouldShowSpecify && (
               <div className="space-y-1">
                 <div
                   className="hover:bg-accent flex cursor-pointer items-center space-x-2 rounded-sm px-2 py-2"
@@ -229,7 +231,9 @@ export const MultiSelectPopover: React.FC<MultiSelectPopoverProps> = (
                   </span>
                 </div>
               </div>
-            ) : filteredOptions.length === 0 ? (
+            )}
+
+            {filteredOptions.length === 0 ? (
               <div className="text-muted-foreground py-6 text-center text-sm">
                 {t('No options found')}
               </div>

@@ -51,12 +51,9 @@ export const DropdownSelect = <T extends BasicListItem>(
   // Check if we should show the specify option
   const shouldShowSpecify = useMemo(() => {
     return (
-      allowCustomInput &&
-      props.filterText &&
-      props.filterText.trim().length > 0 &&
-      filteredList.length === 0
+      allowCustomInput && props.filterText && props.filterText.trim().length > 0
     );
-  }, [allowCustomInput, props.filterText, filteredList.length]);
+  }, [allowCustomInput, props.filterText]);
 
   const handleSpecifySelect = () => {
     if (shouldShowSpecify) {
@@ -100,7 +97,7 @@ export const DropdownSelect = <T extends BasicListItem>(
           <div>{props.dropdownHeader}</div>
 
           <ScrollArea className="flex-1">
-            {shouldShowSpecify ? (
+            {shouldShowSpecify && (
               <div
                 className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all"
                 onClick={handleSpecifySelect}
@@ -109,7 +106,9 @@ export const DropdownSelect = <T extends BasicListItem>(
                   {t('Specify')}: <strong>{props.filterText!.trim()}</strong>
                 </span>
               </div>
-            ) : filteredList.length === 0 ? (
+            )}
+
+            {filteredList.length === 0 ? (
               <div className="mt-4 text-center opacity-80">
                 {props.filterText
                   ? t('No items match your search.')

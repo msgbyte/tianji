@@ -41,7 +41,7 @@ export const BreakdownParamsBlock: React.FC<BreakdownParamsBlockProps> =
             props.onSelect({
               ...props.info,
               value: name,
-              type: item.type,
+              type: item.type ?? 'string',
             });
           }}
           onSelectEmpty={props.onDelete}

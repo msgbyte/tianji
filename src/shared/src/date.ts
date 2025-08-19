@@ -101,3 +101,30 @@ export function getDateArray<T extends { date: string }>(
 
   return arr;
 }
+
+/**
+ * Convert a number to a letter
+ *
+ * @example
+ * numberToLetter(1) => 'A'
+ * numberToLetter(2) => 'B'
+ * numberToLetter(26) => 'Z'
+ * numberToLetter(27) => 'AA'
+ * numberToLetter(28) => 'AB'
+ * numberToLetter(52) => 'AZ'
+ * numberToLetter(53) => 'BA'
+ */
+export function numberToLetter(number: number) {
+  if (number < 1) {
+    number = 1;
+  }
+
+  let result = [];
+  while (number > 0) {
+    number -= 1;
+    result.push(String.fromCharCode(65 + (number % 26)));
+    number = Math.floor(number / 26);
+  }
+
+  return result.reverse().join('');
+}

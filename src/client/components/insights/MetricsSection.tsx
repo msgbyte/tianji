@@ -7,6 +7,8 @@ import { sumBy } from 'lodash-es';
 import { LuPlus } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 
+const defaultMetrics = [{ name: '$all_event', count: 0 }];
+
 export const MetricsSection: React.FC = React.memo(() => {
   const workspaceId = useCurrentWorkspaceId();
   const insightId = useInsightsStore((state) => state.insightId);
@@ -17,24 +19,25 @@ export const MetricsSection: React.FC = React.memo(() => {
   const removeMetrics = useInsightsStore((state) => state.removeMetrics);
   const { t } = useTranslation();
 
-  const { data: allEvents = [] } = trpc.insights.eventNames.useQuery(
-    {
-      workspaceId,
-      insightId,
-      insightType,
-    },
-    {
-      enabled: Boolean(insightId),
-      select(data) {
-        return [{ name: '$all_event', count: sumBy(data, 'count') }, ...data];
+  const { data: allEvents = defaultMetrics } =
+    trpc.insights.eventNames.useQuery(
+      {
+        workspaceId,
+        insightId,
+        insightType,
       },
-      trpc: {
-        context: {
-          skipBatch: true,
+      {
+        enabled: Boolean(insightId),
+        select(data) {
+          return [{ name: '$all_event', count: sumBy(data, 'count') }, ...data];
         },
-      },
-    }
-  );
+        trpc: {
+          context: {
+            skipBatch: true,
+          },
+        },
+      }
+    );
 
   return (
     <div>

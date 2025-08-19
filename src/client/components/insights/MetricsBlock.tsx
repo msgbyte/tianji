@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '../ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
-import { formatNumber, numberToLetter } from '@/utils/common';
+import { formatNumber } from '@/utils/common';
 import {
   LuEllipsisVertical,
   LuMousePointerClick,
@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { DropdownSelect } from './DropdownSelect';
-import { MetricsInfo } from '@tianji/shared';
+import { MetricsInfo, numberToLetter } from '@tianji/shared';
 
 interface MetricsBlockProps {
   index: number;
