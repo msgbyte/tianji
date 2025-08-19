@@ -26,6 +26,7 @@ const warehouseLongTableInsightsApplicationSchema = z.object({
   eventTable: z.object({
     name: z.string(),
     eventNameField: z.string(),
+    sessionIdField: z.string().optional(),
     createdAtField: z.string(),
     createdAtFieldType: dateTypeSchema.default('timestampMs'),
     dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type

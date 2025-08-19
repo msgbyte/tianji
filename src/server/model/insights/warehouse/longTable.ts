@@ -267,6 +267,19 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
         }
 
         return sql`sum(case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+      } else if (item.math === 'sessions') {
+        const sessionIdField = eventTable.sessionIdField;
+        if (!sessionIdField) {
+          throw new Error(
+            'sessions metric requires `sessionIdField` to be configured in warehouse application eventTable'
+          );
+        }
+
+        if (item.name === '$all_event') {
+          return sql`count(distinct "${raw(eventTable.name)}"."${raw(sessionIdField)}") as "$all_event"`;
+        }
+
+        return sql`count(distinct case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN "${raw(eventTable.name)}"."${raw(sessionIdField)}" ELSE null END) as ${raw(`"${item.name}"`)}`;
       }
 
       return null;
