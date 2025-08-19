@@ -20,6 +20,7 @@ interface InsightsState {
   currentDateUnit: DateUnit;
   currentChartType: TimeEventChartType;
   reset: () => void;
+  setInsightTarget: (id: string, type: InsightType) => void;
   setMetrics: (index: number, info: MetricsInfo) => void;
   addMetrics: () => void;
   removeMetrics: (index: number) => void;
@@ -41,9 +42,9 @@ export const useInsightsStore = create<InsightsState>()(
       (set) => ({
         insightId: '',
         insightType: 'website',
-        currentMetrics: [null],
-        currentFilters: [null],
-        currentGroups: [null],
+        currentMetrics: [],
+        currentFilters: [],
+        currentGroups: [],
         currentDateKey: '30D',
         currentDateRange: [
           dayjs().subtract(30, 'day').startOf('day').toDate(),
@@ -53,10 +54,11 @@ export const useInsightsStore = create<InsightsState>()(
         currentChartType: 'line',
         reset: () => {
           set(() => ({
-            selectedWebsiteId: '',
-            currentMetrics: [null],
-            currentFilters: [null],
-            currentGroups: [null],
+            insightId: '',
+            insightType: 'website',
+            currentMetrics: [],
+            currentFilters: [],
+            currentGroups: [],
             currentDateKey: '30D',
             currentDateRange: [
               dayjs().subtract(30, 'day').startOf('day').toDate(),
@@ -65,6 +67,15 @@ export const useInsightsStore = create<InsightsState>()(
             currentDateUnit: 'day',
             currentChartType: 'line',
           }));
+        },
+        setInsightTarget: (id: string, type: InsightType) => {
+          set((state) => {
+            state.insightId = id;
+            state.insightType = type;
+            state.currentMetrics = [null];
+            state.currentFilters = [null];
+            state.currentGroups = [null];
+          });
         },
         setMetrics: (index, info) => {
           set((state) => {

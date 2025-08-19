@@ -40,6 +40,7 @@ function PageComponent() {
 
   const insightId = useInsightsStore((state) => state.insightId);
   const insightType = useInsightsStore((state) => state.insightType);
+  const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
   const currentFilters = useInsightsStore((state) => state.currentFilters);
   const setFilter = useInsightsStore((state) => state.setFilter);
   const addFilter = useInsightsStore((state) => state.addFilter);
@@ -49,16 +50,14 @@ function PageComponent() {
   const { data: warehouseApplicationIds = [] } =
     trpc.insights.warehouseApplications.useQuery({ workspaceId });
 
-  const handleValueChange = useEvent((value: string) => {
-    const type = surveys.some((item) => item.id === value)
+  const handleValueChange = useEvent((insightId: string) => {
+    const insightType = surveys.some((item) => item.id === insightId)
       ? 'survey'
-      : warehouseApplicationIds.some((item) => item === value)
+      : warehouseApplicationIds.some((item) => item === insightId)
         ? 'warehouse'
         : 'website';
-    useInsightsStore.setState({
-      insightId: value,
-      insightType: type,
-    });
+
+    setInsightTarget(insightId, insightType);
   });
 
   return (
