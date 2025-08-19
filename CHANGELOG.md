@@ -1,5 +1,23 @@
 
 
+## [1.24.18](https://github.com/msgbyte/tianji/compare/v1.24.17...v1.24.18) (2025-08-19)
+
+### Features
+
+* add optional session id for long table ([5ba38da](https://github.com/msgbyte/tianji/commit/5ba38da21c588dcf3b02bbb2e6ce9295b5736308))
+* add title for survey download button which can improve survey usage ([15515a8](https://github.com/msgbyte/tianji/commit/15515a8282cb646b7b6950c0a755dd47cc9623f1))
+
+### Document
+
+* update robots.txt content ([eeb241c](https://github.com/msgbyte/tianji/commit/eeb241c29d0538aa205e7ddcf2e4631ebd34d690))
+
+### Others
+
+* add fallback operator to support custom field ([5238b36](https://github.com/msgbyte/tianji/commit/5238b3642c12971dccb79d0f88d75ae7cf9d4976))
+* improve type handling and simplify conditionals in insights components ([badf59d](https://github.com/msgbyte/tianji/commit/badf59d58977ba6f315ba40306e62537dc09fa4a))
+* reset insight params after change insight target ([9e01059](https://github.com/msgbyte/tianji/commit/9e01059d33c7bdfc0ef0c613dd65d1b818a631be))
+* upgrade version of dev dependency to resolve vulnerabilities ([9d022fb](https://github.com/msgbyte/tianji/commit/9d022fb896c6f72d60f958c6abbcf9484a56e733))
+
 ## [1.24.17](https://github.com/msgbyte/tianji/compare/v1.24.16...v1.24.17) (2025-08-18)
 
 ### Features
