@@ -79,7 +79,7 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
             props.onSelect({
               value: null,
               ...props.info,
-              operator: defaultOperators[item.type],
+              operator: defaultOperators[item.type] ?? 'equals',
               type: item.type,
               name: name,
             });
