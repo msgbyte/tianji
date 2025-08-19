@@ -135,7 +135,10 @@ export const SurveyDownloadBtn: React.FC<SurveyDownloadBtnProps> = React.memo(
           <DialogFooter className="sm:items-center sm:justify-between">
             <div className="w-full sm:w-[120px]">
               {typeof downloadProgress === 'number' && (
-                <Progress value={downloadProgress} />
+                <Progress
+                  value={downloadProgress * 100}
+                  title={`${Number((downloadProgress * 100).toFixed(2))}%`}
+                />
               )}
             </div>
             <Button
