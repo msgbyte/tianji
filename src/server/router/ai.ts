@@ -1,8 +1,19 @@
 import { Router } from 'express';
 import { env } from '../utils/env.js';
 import { createOpenAI } from '@ai-sdk/openai';
-import { convertToModelMessages, stepCountIs, streamText, UIMessage } from 'ai';
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  pipeUIMessageStreamToResponse,
+  stepCountIs,
+  streamText,
+  UIMessage,
+} from 'ai';
 import z from 'zod';
+import {
+  warehouseAISystemPrompt,
+  warehouseAITools,
+} from '../model/insights/warehouse/ai.js';
 
 export const aiRouter = Router();
 
@@ -22,7 +33,13 @@ aiRouter.post('/:workspaceId/chat', async (req, res) => {
   const model = openai(env.openai.modelName);
   const result = streamText({
     model,
-    messages: convertToModelMessages(messages),
+    messages: [
+      {
+        role: 'system',
+        content: warehouseAISystemPrompt,
+      },
+      ...convertToModelMessages(messages),
+    ],
     stopWhen: stepCountIs(5),
     tools: {
       // server-side tool with execute function:
@@ -49,6 +66,7 @@ aiRouter.post('/:workspaceId/chat', async (req, res) => {
           'Get the user location. Always ask for confirmation before using this tool.',
         inputSchema: z.object({}),
       },
+      ...warehouseAITools,
     },
   });
 

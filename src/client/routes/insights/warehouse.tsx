@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { CommonHeader } from '@/components/CommonHeader';
@@ -22,7 +22,10 @@ import {
   LuChartLine,
   LuHash,
   LuTag,
+  LuCircleAlert,
+  LuCircleStop,
 } from 'react-icons/lu';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,58 +41,92 @@ import {
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai';
 import { useEvent } from '@/hooks/useEvent';
-
-type AskForConfirmationInput = { message: string };
-type WeatherInformationInput = { city: string };
-
-function isAskForConfirmationInput(
-  input: unknown
-): input is AskForConfirmationInput {
-  return (
-    typeof input === 'object' &&
-    input !== null &&
-    typeof (input as any).message === 'string'
-  );
-}
-
-function isWeatherInformationInput(
-  input: unknown
-): input is WeatherInformationInput {
-  return (
-    typeof input === 'object' &&
-    input !== null &&
-    typeof (input as any).city === 'string'
-  );
-}
+import { useMemo, useReducer, useState } from 'react';
+import { AIResponseItem } from '@/components/ai/AIResponseItem';
+import { sleep } from '@tianji/shared';
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import { formatNumber, generateRandomString } from '@/utils/common';
+import { AIResponseMessages } from '@/components/ai/AIResponseMessages';
 
 export const Route = createFileRoute('/insights/warehouse')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });
 
+const suggestions = [
+  t('Please help me generate the revenue data for the past week'),
+];
+
 function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const [input, setInput] = React.useState('');
+  const [input, setInput] = useState('');
+  const [id, refreshId] = useReducer(
+    () => generateRandomString(14),
+    '',
+    () => generateRandomString(14)
+  );
+  const [usage, setUsage] = useState<{
+    cachedInputTokens: number;
+    inputTokens: number;
+    outputTokens: number;
+    reasoningTokens: number;
+    totalTokens: number;
+  } | null>(null);
 
-  const { messages, sendMessage, status, addToolResult } = useChat({
-    transport: new DefaultChatTransport({
-      api: `/api/ai/${workspaceId}/chat`,
-    }),
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-    async onToolCall({ toolCall }) {
-      if (toolCall.toolName === 'getLocation') {
-        const cities = ['New York', 'Los Angeles', 'Chicago', 'San Francisco'];
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: `/api/ai/${workspaceId}/chat`,
+      }),
+    [workspaceId]
+  );
 
-        // No await - avoids potential deadlocks
-        addToolResult({
-          tool: 'getLocation',
-          toolCallId: toolCall.toolCallId,
-          output: cities[Math.floor(Math.random() * cities.length)],
-        });
-      }
-    },
-  });
+  const { messages, sendMessage, stop, status, error, addToolResult } = useChat(
+    {
+      id,
+      transport,
+      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+      async onToolCall({ toolCall }) {
+        if (toolCall.toolName === 'getLocation') {
+          const cities = [
+            'New York',
+            'Los Angeles',
+            'Chicago',
+            'San Francisco',
+          ];
+
+          await sleep(2000);
+
+          addToolResult({
+            tool: 'getLocation',
+            toolCallId: toolCall.toolCallId,
+            output: cities[Math.floor(Math.random() * cities.length)],
+          });
+        }
+
+        if (toolCall.toolName === 'createCharts') {
+          console.log('createCharts', toolCall);
+          addToolResult({
+            tool: 'createCharts',
+            toolCallId: toolCall.toolCallId,
+            output: 'Query created',
+          });
+        }
+      },
+      onData(data) {
+        if (data.type === 'data-usage') {
+          setUsage(data.data as any);
+        }
+      },
+    }
+  );
 
   const handleSend = useEvent(async () => {
     if (!input.trim()) {
@@ -100,6 +137,19 @@ function PageComponent() {
       text: input.trim(),
     });
     setInput('');
+  });
+
+  const handleStop = useEvent(() => {
+    stop();
+  });
+
+  const handleSuggestionClick = useEvent((suggestion: string) => {
+    sendMessage({ text: suggestion });
+  });
+
+  const handleReset = useEvent(() => {
+    refreshId();
+    setUsage(null);
   });
 
   return (
@@ -168,7 +218,7 @@ function PageComponent() {
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel
-              defaultSize={35}
+              defaultSize={50}
               minSize={25}
               maxSize={55}
               className="border-l border-zinc-200 dark:border-zinc-800"
@@ -212,187 +262,69 @@ function PageComponent() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button size="sm" variant="secondary">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => refreshId()}
+                    >
                       {t('New chat')}
                     </Button>
                   </div>
                 </div>
                 <div className="border-t border-zinc-200 dark:border-zinc-800" />
                 <ScrollArea className="flex-1">
-                  <div className="space-y-3 p-3">
-                    {messages.map((m) => (
-                      <div
-                        key={m.id}
-                        className={
-                          m.role === 'user'
-                            ? 'flex justify-end'
-                            : 'flex justify-start'
-                        }
-                      >
-                        <div
-                          className={
-                            m.role === 'user'
-                              ? 'max-w-[85%] rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white dark:bg-zinc-50 dark:text-zinc-900'
-                              : 'max-w-[85%] rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50'
-                          }
-                        >
-                          {m.parts.map((part) => {
-                            switch (part.type) {
-                              // render text parts as simple text:
-                              case 'text':
-                                return part.text;
+                  <Conversation>
+                    <ConversationContent>
+                      <AIResponseMessages
+                        messages={messages}
+                        status={status}
+                        onAddToolResult={addToolResult}
+                      />
+                    </ConversationContent>
+                    <ConversationScrollButton />
+                  </Conversation>
 
-                              // for tool parts, use the typed tool part names:
-                              case 'tool-askForConfirmation': {
-                                const callId = part.toolCallId;
-
-                                switch (part.state) {
-                                  case 'input-streaming':
-                                    return (
-                                      <div key={callId}>
-                                        Loading confirmation request...
-                                      </div>
-                                    );
-                                  case 'input-available':
-                                    return (
-                                      <div key={callId}>
-                                        {isAskForConfirmationInput(part.input)
-                                          ? part.input.message
-                                          : null}
-                                        <div className="mt-2 flex items-center gap-2">
-                                          <Button
-                                            size="sm"
-                                            onClick={() =>
-                                              addToolResult({
-                                                tool: 'askForConfirmation',
-                                                toolCallId: callId,
-                                                output: 'Yes, confirmed.',
-                                              })
-                                            }
-                                          >
-                                            Yes
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                              addToolResult({
-                                                tool: 'askForConfirmation',
-                                                toolCallId: callId,
-                                                output: 'No, denied',
-                                              })
-                                            }
-                                          >
-                                            No
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    );
-                                  case 'output-available':
-                                    return (
-                                      <div key={callId}>
-                                        Location access allowed:{' '}
-                                        {String(part.output)}
-                                      </div>
-                                    );
-                                  case 'output-error':
-                                    return (
-                                      <div key={callId}>
-                                        Error: {String(part.errorText)}
-                                      </div>
-                                    );
-                                }
-                                break;
-                              }
-
-                              case 'tool-getLocation': {
-                                const callId = part.toolCallId;
-
-                                switch (part.state) {
-                                  case 'input-streaming':
-                                    return (
-                                      <div key={callId}>
-                                        Preparing location request...
-                                      </div>
-                                    );
-                                  case 'input-available':
-                                    return (
-                                      <div key={callId}>
-                                        Getting location...
-                                      </div>
-                                    );
-                                  case 'output-available':
-                                    return (
-                                      <div key={callId}>
-                                        Location: {String(part.output)}
-                                      </div>
-                                    );
-                                  case 'output-error':
-                                    return (
-                                      <div key={callId}>
-                                        Error getting location:{' '}
-                                        {String(part.errorText)}
-                                      </div>
-                                    );
-                                }
-                                break;
-                              }
-
-                              case 'tool-getWeatherInformation': {
-                                const callId = part.toolCallId;
-
-                                switch (part.state) {
-                                  // example of pre-rendering streaming tool inputs:
-                                  case 'input-streaming':
-                                    return (
-                                      <pre key={callId}>
-                                        {JSON.stringify(part, null, 2)}
-                                      </pre>
-                                    );
-                                  case 'input-available':
-                                    return (
-                                      <div key={callId}>
-                                        Getting weather information for{' '}
-                                        {isWeatherInformationInput(part.input)
-                                          ? part.input.city
-                                          : ''}
-                                        ...
-                                      </div>
-                                    );
-                                  case 'output-available':
-                                    return (
-                                      <div key={callId}>
-                                        Weather in{' '}
-                                        {isWeatherInformationInput(part.input)
-                                          ? part.input.city
-                                          : ''}
-                                        : {String(part.output)}
-                                      </div>
-                                    );
-                                  case 'output-error':
-                                    return (
-                                      <div key={callId}>
-                                        Error getting weather for{' '}
-                                        {isWeatherInformationInput(part.input)
-                                          ? part.input.city
-                                          : ''}
-                                        : {String(part.errorText)}
-                                      </div>
-                                    );
-                                }
-                                break;
-                              }
-                            }
-                          })}
+                  {error && (
+                    <div className="p-3">
+                      <Alert variant="destructive">
+                        <LuCircleAlert className="h-4 w-4" />
+                        <AlertTitle>{t('An error occurred.')}</AlertTitle>
+                        <AlertDescription>{String(error)}</AlertDescription>
+                        <div className="mt-2 flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleReset()}
+                          >
+                            {t('Retry')}
+                          </Button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      </Alert>
+                    </div>
+                  )}
+
+                  {usage && status === 'ready' && (
+                    <div className="px-4 py-1 text-right text-xs text-opacity-40">
+                      {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
+                      tokens used
+                    </div>
+                  )}
                 </ScrollArea>
+
+                <Suggestions className="p-3">
+                  {suggestions.map((suggestion) => (
+                    <Suggestion
+                      key={suggestion}
+                      onClick={handleSuggestionClick}
+                      suggestion={suggestion}
+                    />
+                  ))}
+                </Suggestions>
                 <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
                   <div className="flex items-center gap-2">
                     <Input
                       placeholder={t('Type a message...')}
+                      disabled={status !== 'ready'}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -402,16 +334,16 @@ function PageComponent() {
                         }
                       }}
                     />
-                    <Button
-                      size="sm"
-                      Icon={LuSend}
-                      iconType="right"
-                      onClick={handleSend}
-                      loading={status === 'streaming'}
-                      disabled={status !== 'ready'}
-                    >
-                      {t('Send')}
-                    </Button>
+
+                    {status === 'ready' || status === 'error' ? (
+                      <Button size="icon" Icon={LuSend} onClick={handleSend} />
+                    ) : (
+                      <Button
+                        size="icon"
+                        Icon={LuCircleStop}
+                        onClick={handleStop}
+                      />
+                    )}
                   </div>
                   <div className="text-muted-foreground mt-1 text-[11px]">
                     {t('Press ⌘ Enter to send')}
