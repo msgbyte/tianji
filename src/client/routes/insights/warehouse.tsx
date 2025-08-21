@@ -24,6 +24,7 @@ import {
   LuTag,
   LuCircleAlert,
   LuCircleStop,
+  LuTrash2,
 } from 'react-icons/lu';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -34,7 +35,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import * as React from 'react';
 import { useChat } from '@ai-sdk/react';
 import {
   DefaultChatTransport,
@@ -42,7 +42,6 @@ import {
 } from 'ai';
 import { useEvent } from '@/hooks/useEvent';
 import { useMemo, useReducer, useState } from 'react';
-import { AIResponseItem } from '@/components/ai/AIResponseItem';
 import { sleep } from '@tianji/shared';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import {
@@ -50,9 +49,10 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
-import { Message, MessageContent } from '@/components/ai-elements/message';
 import { formatNumber, generateRandomString } from '@/utils/common';
 import { AIResponseMessages } from '@/components/ai/AIResponseMessages';
+import { WarehouseChartBlock } from '@/components/insights/WarehouseChartBlock';
+import { TimeEventChartType } from '@/components/chart/TimeEventChart';
 
 export const Route = createFileRoute('/insights/warehouse')({
   beforeLoad: routeAuthBeforeLoad,
@@ -79,6 +79,16 @@ function PageComponent() {
     reasoningTokens: number;
     totalTokens: number;
   } | null>(null);
+
+  // local chart blocks state
+  const [chartBlocks, setChartBlocks] = useState<
+    Array<{
+      id: string;
+      title: string;
+      data: Array<Record<string, any>>;
+      type: TimeEventChartType;
+    }>
+  >([]);
 
   const transport = useMemo(
     () =>
@@ -112,12 +122,38 @@ function PageComponent() {
         }
 
         if (toolCall.toolName === 'createCharts') {
-          console.log('createCharts', toolCall);
-          addToolResult({
-            tool: 'createCharts',
-            toolCallId: toolCall.toolCallId,
-            output: 'Query created',
-          });
+          try {
+            const input = toolCall.input as {
+              data?: Array<Record<string, any>>;
+              title?: string;
+              type?: TimeEventChartType;
+            };
+            const data = Array.isArray(input.data) ? input.data : [];
+            const title =
+              typeof input.title === 'string' ? input.title : 'Chart';
+            const type = typeof input.type === 'string' ? input.type : 'line';
+
+            if (data.length === 0) {
+              throw new Error('No data provided');
+            }
+
+            setChartBlocks((prev) => [
+              { id: generateRandomString(8), title, data, type },
+              ...prev,
+            ]);
+
+            addToolResult({
+              tool: 'createCharts',
+              toolCallId: toolCall.toolCallId,
+              output: 'Chart created',
+            });
+          } catch (e) {
+            addToolResult({
+              tool: 'createCharts',
+              toolCallId: toolCall.toolCallId,
+              error: String(e),
+            } as any);
+          }
         }
       },
       onData(data) {
@@ -167,51 +203,40 @@ function PageComponent() {
       >
         <div className="h-full">
           <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={65} minSize={40}>
+            <ResizablePanel defaultSize={50} minSize={35}>
               <div className="flex h-full flex-col">
                 <div className="flex h-[44px] items-center justify-between px-3">
                   <div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
                     {t('AI Results')}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" Icon={LuPlus}>
-                      {t('New insight')}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      Icon={LuTrash2}
+                      onClick={() => setChartBlocks([])}
+                    >
+                      {t('Clear All')}
                     </Button>
                   </div>
                 </div>
                 <div className="border-t border-zinc-200 dark:border-zinc-800" />
                 <ScrollArea className="flex-1">
                   <div className="space-y-3 p-4">
-                    <div className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-                      <div className="text-sm font-semibold">
-                        {t('Overview')}
-                      </div>
-                      <div className="text-muted-foreground mt-1 text-sm">
-                        {t(
-                          'A high-level summary of recent insights and detected anomalies will appear here.'
-                        )}
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-                      <div className="text-sm font-semibold">
-                        {t('Key Metrics')}
-                      </div>
-                      <div className="text-muted-foreground mt-1 text-sm">
-                        {t(
-                          'Metrics, charts and AI-generated highlights will be displayed in this section.'
-                        )}
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-                      <div className="text-sm font-semibold">
-                        {t('Recommendations')}
-                      </div>
-                      <div className="text-muted-foreground mt-1 text-sm">
-                        {t(
-                          'Actionable suggestions based on your data will be listed here.'
-                        )}
-                      </div>
-                    </div>
+                    {chartBlocks.map((block) => (
+                      <WarehouseChartBlock
+                        key={block.id}
+                        id={block.id}
+                        title={block.title}
+                        data={block.data}
+                        chartType={block.type}
+                        onDelete={(id) =>
+                          setChartBlocks((prev) =>
+                            prev.filter((b) => b.id !== id)
+                          )
+                        }
+                      />
+                    ))}
                   </div>
                 </ScrollArea>
               </div>
@@ -303,7 +328,7 @@ function PageComponent() {
                     </div>
                   )}
 
-                  {usage && status === 'ready' && (
+                  {usage && status === 'ready' && messages.length > 0 && (
                     <div className="px-4 py-1 text-right text-xs text-opacity-40">
                       {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
                       tokens used
