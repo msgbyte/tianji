@@ -1,31 +1,31 @@
 import { Router } from 'express';
 import { env } from '../utils/env.js';
 import { createOpenAI } from '@ai-sdk/openai';
-import {
-  convertToModelMessages,
-  createUIMessageStream,
-  pipeUIMessageStreamToResponse,
-  stepCountIs,
-  streamText,
-  UIMessage,
-} from 'ai';
+import { convertToModelMessages, stepCountIs, streamText, UIMessage } from 'ai';
 import z from 'zod';
 import {
   warehouseAISystemPrompt,
   warehouseAITools,
 } from '../model/insights/warehouse/ai.js';
+import { auth } from '../middleware/authjs.js';
+import { INIT_ADMIN_USER_ID } from '../utils/const.js';
 
-export const aiRouter = Router();
+export const insightsRouter = Router();
 
 const openai = createOpenAI({
   baseURL: env.openai.baseUrl,
   apiKey: env.openai.apiKey,
 });
 
-aiRouter.post('/:workspaceId/chat', async (req, res) => {
+insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   if (!env.isDev || !env.openai.enable) {
     // only for dev now, and require shared OpenAI enabled
     res.status(404).end();
+    return;
+  }
+
+  if (req.user?.id !== INIT_ADMIN_USER_ID) {
+    res.status(401).end('This feature is only for admin user');
     return;
   }
 

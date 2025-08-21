@@ -27,7 +27,7 @@ import { billingRouter } from './router/billing.js';
 import { aiGatewayRouter } from './router/aiGateway.js';
 import { pushRouter } from './router/push.js';
 import { workerRouter } from './router/worker.js';
-import { aiRouter } from './router/ai.js';
+import { insightsRouter } from './router/insights.js';
 
 const app = express();
 
@@ -62,7 +62,7 @@ app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
 app.use('/api/application', applicationRouter);
 app.use('/api/ai', aiGatewayRouter);
-app.use('/api/ai', aiRouter);
+app.use('/api/insights', insightsRouter);
 app.use('/api/billing', billingRouter);
 app.use('/api/push', pushRouter);
 app.use('/api/worker', workerRouter);

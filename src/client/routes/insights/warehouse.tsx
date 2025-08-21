@@ -83,7 +83,7 @@ function PageComponent() {
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        api: `/api/ai/${workspaceId}/chat`,
+        api: `/api/insights/${workspaceId}/chat`,
       }),
     [workspaceId]
   );

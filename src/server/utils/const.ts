@@ -2,6 +2,7 @@
  * This is the initial workspace id for the admin user.
  */
 export const INIT_WORKSPACE_ID = 'clnzoxcy10001vy2ohi4obbi0';
+export const INIT_ADMIN_USER_ID = 'clnzoxcy00000vy2ork8praw0';
 
 export const COLLECTION_TYPE = {
   event: 'event',

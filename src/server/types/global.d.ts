@@ -12,6 +12,7 @@ declare global {
 
     interface Request {
       rawBody: unknown;
+      user?: User;
     }
   }
 
