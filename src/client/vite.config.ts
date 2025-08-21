@@ -40,7 +40,7 @@ export default defineConfig({
       '/lh': {
         target: 'http://localhost:12345',
       },
-      '/api/ai/': {
+      '/api/insights/': {
         target: 'http://localhost:12345',
       },
       '/api/auth/': {

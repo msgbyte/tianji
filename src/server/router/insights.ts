@@ -20,7 +20,7 @@ const openai = createOpenAI({
 insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   if (!env.isDev || !env.openai.enable) {
     // only for dev now, and require shared OpenAI enabled
-    res.status(404).end();
+    res.status(404).end('This feature is only for dev or not enabled');
     return;
   }
 
@@ -70,5 +70,17 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
     },
   });
 
-  result.pipeUIMessageStreamToResponse(res);
+  result.pipeUIMessageStreamToResponse(res, {
+    async onFinish() {
+      try {
+        const usage = await result.totalUsage;
+        res.write(
+          `data: ${JSON.stringify({ type: 'data-usage', data: usage })}\n\n`
+        );
+        if (res.flush) {
+          res.flush();
+        }
+      } catch {}
+    },
+  });
 });
