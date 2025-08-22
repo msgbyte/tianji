@@ -3,19 +3,11 @@ import { env } from '../../../utils/env.js';
 import { getWarehouseConnection } from './utils.js';
 import z from 'zod';
 import { logger } from '../../../utils/logger.js';
-
-export interface WarehouseTableColumnMeta {
-  field: string;
-  type: string;
-  allowNull: boolean;
-  key: string | null;
-  default: string | number | null;
-  extra: string | null;
-}
+import { get } from 'lodash-es';
 
 export interface WarehouseTableMeta {
-  table: string;
-  columns: WarehouseTableColumnMeta[];
+  tableName: string;
+  createTableSql: string;
 }
 
 const cachedWarehouseTables = new Map<string, WarehouseTableMeta[]>();
@@ -31,7 +23,9 @@ export async function getWarehouseTables(
   }
 
   const connection = getWarehouseConnection(url);
-  const [res, fields] = await connection.query('SHOW TABLES');
+  const [res, fields] = await connection.query(
+    `SHOW TABLES WHERE Table_type = 'BASE TABLE';`
+  );
 
   if (fields.length > 1) {
     throw new Error('Multiple tables found, not supported yet.');
@@ -43,22 +37,14 @@ export async function getWarehouseTables(
 
   const tables = await Promise.all<WarehouseTableMeta>(
     tableNames.map(async (table) => {
-      const [res] = await connection.query(`SHOW COLUMNS FROM ${table}`);
+      const [res] = await connection.query(`SHOW CREATE TABLE ${table}`);
+
+      const tableName = get(res, [0, 'Table']);
+      const createTableSql = get(res, [0, 'Create Table']);
 
       return {
-        table,
-        columns: Array.from<Record<string, string>>(res as any).map(
-          (row): WarehouseTableColumnMeta => {
-            return {
-              field: row['Field'],
-              type: row['Type'],
-              allowNull: row['Null'] === 'YES' ? true : false,
-              key: (row['Key'] ?? null) as string | null,
-              default: (row['Default'] ?? null) as string | number | null,
-              extra: (row['Extra'] ?? null) as string | null,
-            };
-          }
-        ),
+        tableName: tableName as string,
+        createTableSql: createTableSql as string,
       };
     })
   );
@@ -71,7 +57,7 @@ export async function getWarehouseTable(
   tableName: string
 ): Promise<WarehouseTableMeta | undefined> {
   const tables = await getWarehouseTables();
-  return tables.find((table) => table.table === tableName);
+  return tables.find((table) => table.tableName === tableName);
 }
 
 export const warehouseAITools: ToolSet = {

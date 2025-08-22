@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getWarehouseTables } from './ai.js';
 import { env } from '../../../utils/env.js';
 
