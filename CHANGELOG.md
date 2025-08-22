@@ -1,5 +1,11 @@
 
 
+## [1.24.20](https://github.com/msgbyte/tianji/compare/v1.24.19...v1.24.20) (2025-08-22)
+
+### Features
+
+* add Carousel and HoverCard components for enhanced UI interactions ([38db0cb](https://github.com/msgbyte/tianji/commit/38db0cbff0888bca2b40b0d85120d83457df44f4))
+
 ## [1.24.19](https://github.com/msgbyte/tianji/compare/v1.24.18...v1.24.19) (2025-08-22)
 
 ### Features
