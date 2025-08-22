@@ -223,20 +223,47 @@ function PageComponent() {
                 <div className="border-t border-zinc-200 dark:border-zinc-800" />
                 <ScrollArea className="flex-1">
                   <div className="space-y-3 p-4">
-                    {chartBlocks.map((block) => (
-                      <WarehouseChartBlock
-                        key={block.id}
-                        id={block.id}
-                        title={block.title}
-                        data={block.data}
-                        chartType={block.type}
-                        onDelete={(id) =>
-                          setChartBlocks((prev) =>
-                            prev.filter((b) => b.id !== id)
-                          )
-                        }
-                      />
-                    ))}
+                    {chartBlocks.length === 0 ? (
+                      <div className="flex h-[280px] flex-col items-center justify-center rounded-md border-zinc-200 text-center text-sm text-zinc-500 dark:border-zinc-800">
+                        <div className="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                          {t('No charts yet')}
+                        </div>
+                        <div className="max-w-[520px] px-6">
+                          {t(
+                            'Use the chat on the right to generate charts or insights.'
+                          )}
+                        </div>
+
+                        {messages.length === 0 && (
+                          <div className="mt-3">
+                            <Button
+                              size="sm"
+                              Icon={LuPlus}
+                              onClick={() =>
+                                sendMessage({ text: suggestions[0] })
+                              }
+                            >
+                              {t('Try example')}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      chartBlocks.map((block) => (
+                        <WarehouseChartBlock
+                          key={block.id}
+                          id={block.id}
+                          title={block.title}
+                          data={block.data}
+                          chartType={block.type}
+                          onDelete={(id) =>
+                            setChartBlocks((prev) =>
+                              prev.filter((b) => b.id !== id)
+                            )
+                          }
+                        />
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
               </div>
