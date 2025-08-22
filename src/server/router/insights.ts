@@ -71,6 +71,7 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   });
 
   result.pipeUIMessageStreamToResponse(res, {
+    sendReasoning: true,
     async onFinish() {
       try {
         const usage = await result.totalUsage;
