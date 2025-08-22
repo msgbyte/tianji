@@ -7,7 +7,7 @@ import {
 } from '../trpc.js';
 import {
   clearOfflineServerStatus,
-  getServerStatusHistory,
+  getPublicServerStatusHistory,
   getServerMapFromCache,
 } from '../../model/serverStatus.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
@@ -57,7 +57,17 @@ export const serverStatusRouter = router({
       const filteredServerMap: Record<string, any> = {};
       serverNames.forEach((name) => {
         if (serverMap[name]) {
-          filteredServerMap[name] = serverMap[name];
+          const { secret, ...rest } = serverMap[name];
+          const {
+            top_cpu_processes,
+            top_memory_processes,
+            docker,
+            ...restPayload
+          } = rest.payload;
+          filteredServerMap[name] = {
+            ...rest,
+            payload: restPayload,
+          };
         }
       });
 
@@ -84,6 +94,6 @@ export const serverStatusRouter = router({
     )
     .query(async ({ input }) => {
       const { workspaceId, name } = input;
-      return getServerStatusHistory(workspaceId, name);
+      return getPublicServerStatusHistory(workspaceId, name);
     }),
 });

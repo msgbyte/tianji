@@ -7,6 +7,7 @@ export interface ServerStatusInfo {
   timeout: number;
   updatedAt: number;
   payload: ServerStatusInfoPayload & ServerStatusRequestContext;
+  secret?: string; // optional secret
 }
 
 export interface ServerStatusInfoPayload {
