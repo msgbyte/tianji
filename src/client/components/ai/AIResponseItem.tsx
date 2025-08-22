@@ -23,6 +23,7 @@ import {
   ReasoningContent,
   ReasoningTrigger,
 } from '../ai-elements/reasoning';
+import { get, map } from 'lodash-es';
 
 type AskForConfirmationInput = { message: string };
 type WeatherInformationInput = { city: string };
@@ -161,7 +162,13 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
           <ToolContent>
             <ToolInput input={part.input} />
             <ToolOutput
-              output={<Response>{JSON.stringify(part.output)}</Response>}
+              output={
+                <Response>
+                  {map(part.output as any, (item) =>
+                    get(item, 'tableName')
+                  ).join('\n')}
+                </Response>
+              }
               errorText={part.errorText}
             />
           </ToolContent>
@@ -191,7 +198,15 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
           <ToolContent>
             <ToolInput input={part.input} />
             <ToolOutput
-              output={<Response>{JSON.stringify(part.output)}</Response>}
+              output={
+                <Response>
+                  {Array.isArray(part.output)
+                    ? part.output
+                        .map((item) => `- ${JSON.stringify(item)}`)
+                        .join('\n')
+                    : JSON.stringify(part.output)}
+                </Response>
+              }
               errorText={part.errorText}
             />
           </ToolContent>
