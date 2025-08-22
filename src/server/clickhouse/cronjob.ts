@@ -261,7 +261,15 @@ async function syncTable(tableConfig: (typeof TABLES_TO_SYNC)[0]) {
 }
 
 // Main sync function
+let isSyncing = false;
 export async function syncPostgresToClickHouse() {
+  if (isSyncing) {
+    logger.info('PostgreSQL to ClickHouse sync is already running');
+    return;
+  }
+
+  isSyncing = true;
+
   logger.info('Starting PostgreSQL to ClickHouse sync');
 
   try {
@@ -278,6 +286,8 @@ export async function syncPostgresToClickHouse() {
   } catch (err) {
     logger.error('PostgreSQL to ClickHouse sync failed:', err);
     return false;
+  } finally {
+    isSyncing = false;
   }
 }
 
