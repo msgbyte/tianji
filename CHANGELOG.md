@@ -1,5 +1,28 @@
 
 
+## [1.24.19](https://github.com/msgbyte/tianji/compare/v1.24.18...v1.24.19) (2025-08-22)
+
+### Features
+
+* add ai-elements ui components ([ff183c0](https://github.com/msgbyte/tianji/commit/ff183c0e2e86f75e49eb151afb74c8b9b80a0471))
+* add basic ai charts analyze and add rich display support for render ([a309bc9](https://github.com/msgbyte/tianji/commit/a309bc931878c529cf89afe39f43dc40ba980a21))
+* add empty state for insight warehouse ([20b5c24](https://github.com/msgbyte/tianji/commit/20b5c24b6afe3468a6a22b9b36929172621f6739))
+* add WarehouseChartBlock component for visualizing warehouse data and integrate it into the insights page ([e06e6f9](https://github.com/msgbyte/tianji/commit/e06e6f9f65cdbc0e53ad62b2a20473e78edd2a55))
+* update API route from /api/ai/ to /api/insights/ and enhance error response for development mode ([198dd1c](https://github.com/msgbyte/tianji/commit/198dd1caf1562965498457b47234c0d0d9e8e3fc))
+* update API routes for insights and add authentication middleware ([57baa63](https://github.com/msgbyte/tianji/commit/57baa6300ca08df1d24ae7ad79ab9bbe3395a096))
+
+### Bug Fixes
+
+* resolve some clickhouse instance not support transaction issue ([5dd56cf](https://github.com/msgbyte/tianji/commit/5dd56cf87e799bfcd89bbac8d4414eb53db3f1da))
+
+### Others
+
+* add sync controller ([419761c](https://github.com/msgbyte/tianji/commit/419761ce63c196c54700ea0a1f378a3ff6637198))
+* add translation ([15ff07f](https://github.com/msgbyte/tianji/commit/15ff07f4f323286876075ee02e2893160ce84c05))
+* clean up imports and improve class order in message components; add sleep utility function ([38d48a1](https://github.com/msgbyte/tianji/commit/38d48a19ad944ea064a19115ded65967abce5ca1))
+* improve display for result ([169f031](https://github.com/msgbyte/tianji/commit/169f0317fe7e30936db62ef65b7eaee6a033daae))
+* improve table context ([27de587](https://github.com/msgbyte/tianji/commit/27de587810613cd6d100bdd32c5439cb7e642a77))
+
 ## [1.24.18](https://github.com/msgbyte/tianji/compare/v1.24.17...v1.24.18) (2025-08-19)
 
 ### Features
