@@ -1,5 +1,16 @@
 
 
+## [1.24.21](https://github.com/msgbyte/tianji/compare/v1.24.20...v1.24.21) (2025-08-24)
+
+### Features
+
+* **reporter:** add silent mode to suppress logs for cleaner output ([1d15ce4](https://github.com/msgbyte/tianji/commit/1d15ce4db78d2f0260054d77536308d306366f3b))
+
+### Others
+
+* add send reasoning ([b4cc15e](https://github.com/msgbyte/tianji/commit/b4cc15eee80ef888843f5301be8f95ee12077bc3))
+* update cronjob sync batch size ([b5877c0](https://github.com/msgbyte/tianji/commit/b5877c076a3585906100625ca493382fae3c322d))
+
 ## [1.24.20](https://github.com/msgbyte/tianji/compare/v1.24.19...v1.24.20) (2025-08-22)
 
 ### Features
