@@ -7,7 +7,7 @@ pnpm start:docker &
 sleep 10
 
 # Start reporter with default workspace
-/usr/local/bin/tianji-reporter --url "http://localhost:12345" --workspace "clnzoxcy10001vy2ohi4obbi0" --name "tianji-container" > /dev/null &
+/usr/local/bin/tianji-reporter --url "http://localhost:12345" --workspace "clnzoxcy10001vy2ohi4obbi0" --name "tianji-container" --silent > /dev/null &
 
 # Wait for any process to exit
 wait -n
