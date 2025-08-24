@@ -1,5 +1,11 @@
 
 
+## [1.24.22](https://github.com/msgbyte/tianji/compare/v1.24.21...v1.24.22) (2025-08-24)
+
+### Others
+
+* update default tianji container reporter mode to silent mode ([ca76a4f](https://github.com/msgbyte/tianji/commit/ca76a4f30f873c62aefa8ef49d505981568061ee))
+
 ## [1.24.21](https://github.com/msgbyte/tianji/compare/v1.24.20...v1.24.21) (2025-08-24)
 
 ### Features
