@@ -80,7 +80,7 @@ export function initCronjob() {
     monthlyJob.nextRun()?.toISOString()
   );
 
-  if (env.clickhouse.enable && !env.clickhouse.disableSync) {
+  if (env.clickhouse.enable && env.clickhouse.sync.enable) {
     const clickHouseSyncJob = initClickHouseSyncCronjob();
 
     logger.info(

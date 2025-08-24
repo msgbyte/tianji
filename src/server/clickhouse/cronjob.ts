@@ -183,7 +183,7 @@ async function syncTable(tableConfig: (typeof TABLES_TO_SYNC)[0]) {
     }
 
     // Get data from PostgreSQL in batches
-    const batchSize = 1000;
+    const batchSize = env.clickhouse.sync.batchSize;
     let hasMore = true;
     let lastId: string | null = null;
     let latestTimestamp: string | null = null;
@@ -240,17 +240,16 @@ async function syncTable(tableConfig: (typeof TABLES_TO_SYNC)[0]) {
         latestTimestamp = data[data.length - 1][timestampField];
 
         logger.info(`Synced ${data.length} rows to ${chTable}`);
+
+        if (latestTimestamp) {
+          await updateSyncState(pgTable, latestTimestamp);
+        }
       }
 
       // If we got less than the batch size, we're done
       if (data.length < batchSize) {
         hasMore = false;
       }
-    }
-
-    // Update sync state if we processed any data
-    if (latestTimestamp) {
-      await updateSyncState(pgTable, latestTimestamp);
     }
 
     return true;

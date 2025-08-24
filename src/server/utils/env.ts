@@ -89,11 +89,15 @@ export const env = {
   },
   clickhouse: {
     enable: Boolean(process.env.CLICKHOUSE_URL),
-    disableSync: checkEnvTrusty(process.env.CLICKHOUSE_DISABLE_SYNC),
     url: process.env.CLICKHOUSE_URL,
     username: process.env.CLICKHOUSE_USER,
     password: process.env.CLICKHOUSE_PASSWORD,
     database: process.env.CLICKHOUSE_DATABASE,
+    sync: {
+      enable: !checkEnvTrusty(process.env.CLICKHOUSE_DISABLE_SYNC),
+      batchSize:
+        parseInt(process.env.CLICKHOUSE_SYNC_BATCH_SIZE || '10000') || 10000,
+    },
     // Fallback configuration
     fallback: {
       enableFallback: checkEnvTrusty(
