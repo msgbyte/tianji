@@ -1,10 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { t, useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { CommonHeader } from '@/components/CommonHeader';
 import { Layout } from '@/components/layout';
 import { useCurrentWorkspaceId } from '@/store/user';
+import { trpc } from '@/api/trpc';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -12,29 +13,9 @@ import {
 } from '@/components/ui/resizable';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  LuPlus,
-  LuSend,
-  LuLink,
-  LuPaperclip,
-  LuDatabase,
-  LuChartLine,
-  LuHash,
-  LuTag,
-  LuCircleAlert,
-  LuCircleStop,
-  LuTrash2,
-} from 'react-icons/lu';
+import { LuPlus, LuDatabase, LuCircleAlert, LuTrash2 } from 'react-icons/lu';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { useChat } from '@ai-sdk/react';
 import {
   DefaultChatTransport,
@@ -53,8 +34,28 @@ import { formatNumber, generateRandomString } from '@/utils/common';
 import { AIResponseMessages } from '@/components/ai/AIResponseMessages';
 import { WarehouseChartBlock } from '@/components/insights/WarehouseChartBlock';
 import { TimeEventChartType } from '@/components/chart/TimeEventChart';
+import {
+  PromptInput,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 
-export const Route = createFileRoute('/insights/warehouse')({
+export const Route = createFileRoute('/insights/warehouse/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });
@@ -67,6 +68,17 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const [input, setInput] = useState('');
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const { data: databases } = trpc.insights.warehouse.database.list.useQuery({
+    workspaceId,
+  });
+  const { data: tables } = trpc.insights.warehouse.table.list.useQuery({
+    workspaceId,
+  });
+  const [selectedScopes, setSelectedScopes] = useState<
+    Array<{ type: 'database' | 'table'; id: string; name: string }>
+  >([]);
   const [id, refreshId] = useReducer(
     () => generateRandomString(14),
     '',
@@ -164,23 +176,33 @@ function PageComponent() {
     }
   );
 
-  const handleSend = useEvent(async () => {
+  const handleSend = useEvent(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (!input.trim()) {
       return;
     }
 
-    await sendMessage({
-      text: input.trim(),
-    });
+    await handleSendWithScopes(input.trim());
+
     setInput('');
+  });
+
+  const handleSendWithScopes = useEvent(async (text: string) => {
+    await sendMessage({
+      text,
+      metadata: {
+        scopes: selectedScopes,
+      },
+    });
   });
 
   const handleStop = useEvent(() => {
     stop();
   });
 
-  const handleSuggestionClick = useEvent((suggestion: string) => {
-    sendMessage({ text: suggestion });
+  const handleSuggestionClick = useEvent(async (suggestion: string) => {
+    await handleSendWithScopes(suggestion);
   });
 
   const handleReset = useEvent(() => {
@@ -197,6 +219,20 @@ function PageComponent() {
               <div className="flex items-center gap-2">
                 <div>{t('Warehouse')}</div>
               </div>
+            }
+            actions={
+              <Button
+                size="sm"
+                variant="default"
+                Icon={LuDatabase}
+                onClick={() => {
+                  navigate({
+                    to: '/insights/warehouse/connections',
+                  });
+                }}
+              >
+                {t('Connections')}
+              </Button>
             }
           />
         }
@@ -240,7 +276,7 @@ function PageComponent() {
                               size="sm"
                               Icon={LuPlus}
                               onClick={() =>
-                                sendMessage({ text: suggestions[0] })
+                                handleSendWithScopes(suggestions[0])
                               }
                             >
                               {t('Try example')}
@@ -281,42 +317,9 @@ function PageComponent() {
                     {t('Chat')}
                   </div>
                   <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="ghost" Icon={LuLink}>
-                          {t('Link')}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>
-                          {t('Associate extra content')}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <LuPaperclip className="mr-2 h-4 w-4" />
-                          {t('Attach file...')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <LuDatabase className="mr-2 h-4 w-4" />
-                          {t('Link dataset...')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <LuChartLine className="mr-2 h-4 w-4" />
-                          {t('Link chart...')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <LuHash className="mr-2 h-4 w-4" />
-                          {t('Link event by ID...')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <LuTag className="mr-2 h-4 w-4" />
-                          {t('Add tag...')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                     <Button
                       size="sm"
-                      variant="secondary"
+                      variant="outline"
                       onClick={() => refreshId()}
                     >
                       {t('New chat')}
@@ -363,7 +366,7 @@ function PageComponent() {
                   )}
                 </ScrollArea>
 
-                <Suggestions className="p-3">
+                <Suggestions className="p-3 pb-0">
                   {suggestions.map((suggestion) => (
                     <Suggestion
                       key={suggestion}
@@ -372,34 +375,151 @@ function PageComponent() {
                     />
                   ))}
                 </Suggestions>
-                <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder={t('Type a message...')}
-                      disabled={status !== 'ready'}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                    />
-
-                    {status === 'ready' || status === 'error' ? (
-                      <Button size="icon" Icon={LuSend} onClick={handleSend} />
-                    ) : (
-                      <Button
-                        size="icon"
-                        Icon={LuCircleStop}
-                        onClick={handleStop}
-                      />
+                <div className="p-3">
+                  <div className="mb-2">
+                    {selectedScopes.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {selectedScopes.map((s) => (
+                          <Badge
+                            key={`${s.type}-${s.id}`}
+                            variant="secondary"
+                            className="gap-1"
+                          >
+                            {s.type === 'database' ? t('DB') : t('Table')}:{' '}
+                            {s.name}
+                            <button
+                              type="button"
+                              className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                              onClick={() =>
+                                setSelectedScopes((prev) =>
+                                  prev.filter(
+                                    (p) => !(p.type === s.type && p.id === s.id)
+                                  )
+                                )
+                              }
+                              aria-label={t('Remove')}
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </div>
-                  <div className="text-muted-foreground mt-1 text-[11px]">
-                    {t('Press ⌘ Enter to send')}
-                  </div>
+
+                  <PromptInput onSubmit={handleSend}>
+                    <PromptInputTextarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                    />
+                    <PromptInputToolbar>
+                      <PromptInputTools>
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              Icon={LuDatabase}
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-[420px] p-0"
+                            align="start"
+                          >
+                            <Command>
+                              <CommandInput placeholder="Filter status..." />
+                              <CommandList>
+                                <CommandEmpty>
+                                  {t('No connection found')}
+                                </CommandEmpty>
+                                <CommandGroup heading={t('Databases')}>
+                                  {databases?.map((db) => (
+                                    <CommandItem
+                                      key={db.id}
+                                      value={db.id}
+                                      keywords={[db.name]}
+                                      onSelect={() => {
+                                        setSelectedScopes((prev) => {
+                                          const isChecked = prev.some(
+                                            (p) =>
+                                              p.type === 'database' &&
+                                              p.id === db.id
+                                          );
+                                          if (isChecked) {
+                                            return prev.filter(
+                                              (p) =>
+                                                !(
+                                                  p.type === 'database' &&
+                                                  p.id === db.id
+                                                )
+                                            );
+                                          } else {
+                                            return [
+                                              ...prev,
+                                              {
+                                                type: 'database',
+                                                id: db.id,
+                                                name: db.name,
+                                              },
+                                            ];
+                                          }
+                                        });
+                                        setOpen(false);
+                                      }}
+                                    >
+                                      {db.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+
+                                <CommandGroup heading={t('Tables')}>
+                                  {tables?.map((tb) => (
+                                    <CommandItem
+                                      key={tb.id}
+                                      value={tb.id}
+                                      keywords={[tb.name]}
+                                      onSelect={() => {
+                                        setSelectedScopes((prev) => {
+                                          const isChecked = prev.some(
+                                            (p) =>
+                                              p.type === 'table' &&
+                                              p.id === tb.id
+                                          );
+
+                                          if (isChecked) {
+                                            return prev.filter(
+                                              (p) =>
+                                                !(
+                                                  p.type === 'table' &&
+                                                  p.id === tb.id
+                                                )
+                                            );
+                                          } else {
+                                            return [
+                                              ...prev,
+                                              {
+                                                type: 'table',
+                                                id: tb.id,
+                                                name: tb.name,
+                                              },
+                                            ];
+                                          }
+                                        });
+                                        setOpen(false);
+                                      }}
+                                    >
+                                      {tb.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </PromptInputTools>
+                      <PromptInputSubmit disabled={!input} status={status} />
+                    </PromptInputToolbar>
+                  </PromptInput>
                 </div>
               </div>
             </ResizablePanel>
