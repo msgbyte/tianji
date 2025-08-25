@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteWarehouseCohorts, RelatedWarehouseCohortsModelSchema } from "./index.js"
+import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteWarehouseCohorts, RelatedWarehouseCohortsModelSchema, CompleteWarehouseDatabase, RelatedWarehouseDatabaseModelSchema, CompleteWarehouseDatabaseTable, RelatedWarehouseDatabaseTableModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -42,6 +42,8 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   workspaceInvitation: CompleteWorkspaceInvitation[]
   functionWorkers: CompleteFunctionWorker[]
   warehouseCohorts: CompleteWarehouseCohorts[]
+  warehouseDatabase: CompleteWarehouseDatabase[]
+  WarehouseDatabaseTable: CompleteWarehouseDatabaseTable[]
 }
 
 /**
@@ -65,4 +67,6 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   workspaceInvitation: RelatedWorkspaceInvitationModelSchema.array(),
   functionWorkers: RelatedFunctionWorkerModelSchema.array(),
   warehouseCohorts: RelatedWarehouseCohortsModelSchema.array(),
+  warehouseDatabase: RelatedWarehouseDatabaseModelSchema.array(),
+  WarehouseDatabaseTable: RelatedWarehouseDatabaseTableModelSchema.array(),
 }))

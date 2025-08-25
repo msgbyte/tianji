@@ -114,13 +114,15 @@ model Workspace {
   telemetryList      Telemetry[]
 
   // for user currentWorkspace
-  workspaceDailyUsage WorkspaceDailyUsage[]
-  workspaceAuditLog   WorkspaceAuditLog[]
-  surveys             Survey[]
-  feedChannels        FeedChannel[]
-  workspaceInvitation WorkspaceInvitation[]
-  functionWorkers     FunctionWorker[]
-  warehouseCohorts    WarehouseCohorts[]
+  workspaceDailyUsage    WorkspaceDailyUsage[]
+  workspaceAuditLog      WorkspaceAuditLog[]
+  surveys                Survey[]
+  feedChannels           FeedChannel[]
+  workspaceInvitation    WorkspaceInvitation[]
+  functionWorkers        FunctionWorker[]
+  warehouseCohorts       WarehouseCohorts[]
+  warehouseDatabase      WarehouseDatabase[]
+  warehouseDatabaseTable WarehouseDatabaseTable[]
 }
 
 model WorkspacesOnUsers {
@@ -638,24 +640,24 @@ model Notification {
 }
 
 model Monitor {
-  id           String   @id() @default(cuid()) @db.VarChar(30)
-  workspaceId  String   @db.VarChar(30)
-  name         String   @db.VarChar(100)
-  type         String   @db.VarChar(100)
-  active       Boolean  @default(true) @db.Boolean
-  interval     Int      @default(20) @db.Integer
-  maxRetries   Int      @default(0) @db.Integer
+  id                  String   @id() @default(cuid()) @db.VarChar(30)
+  workspaceId         String   @db.VarChar(30)
+  name                String   @db.VarChar(100)
+  type                String   @db.VarChar(100)
+  active              Boolean  @default(true) @db.Boolean
+  interval            Int      @default(20) @db.Integer
+  maxRetries          Int      @default(0) @db.Integer
   // TODO
   // retryInterval Int       @default(0) @db.Integer
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
-  payload      Json     @db.Json
-  trendingMode Boolean  @default(false) @db.Boolean
-  recentError  String?
+  payload             Json     @db.Json
+  trendingMode        Boolean  @default(false) @db.Boolean
+  recentError         String?
   upMessageTemplate   String?  @db.VarChar(500) // template for UP notification
   downMessageTemplate String?  @db.VarChar(500) // template for DOWN notification
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  createdAt           DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
 
@@ -1011,4 +1013,39 @@ model WarehouseCohorts {
 
   @@index([workspaceId])
   @@index([createdAt])
+}
+
+model WarehouseDatabase {
+  id            String @id @default(cuid()) @db.VarChar(30)
+  workspaceId   String @db.VarChar(30)
+  name          String @db.VarChar(255)
+  description   String @default("")
+  connectionUri String
+  dbDriver      String @default("mysql")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace              Workspace                @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  WarehouseDatabaseTable WarehouseDatabaseTable[]
+
+  @@index([workspaceId])
+}
+
+model WarehouseDatabaseTable {
+  id          String @id @default(cuid()) @db.VarChar(30)
+  workspaceId String @db.VarChar(30)
+  databaseId  String @db.VarChar(30)
+  name        String @db.VarChar(255)
+  description String @default("") // description which only display for user
+  ddl         String @default("") // Data Definition Language
+  prompt      String @default("") // prompt which used to provide to AI
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  database  WarehouseDatabase @relation(fields: [databaseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([workspaceId])
 }
