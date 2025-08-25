@@ -1,64 +1,13 @@
 import { tool, ToolSet } from 'ai';
 import { env } from '../../../utils/env.js';
-import { getWarehouseConnection } from './utils.js';
+import {
+  getWarehouseConnection,
+  getWarehouseTable,
+  getWarehouseTables,
+} from './utils.js';
 import z from 'zod';
 import { logger } from '../../../utils/logger.js';
-import { get } from 'lodash-es';
-
-export interface WarehouseTableMeta {
-  tableName: string;
-  createTableSql: string;
-}
-
-const cachedWarehouseTables = new Map<string, WarehouseTableMeta[]>();
-export async function getWarehouseTables(
-  url = env.insights.warehouse.url
-): Promise<WarehouseTableMeta[]> {
-  if (!url) {
-    throw new Error('Warehouse url is not set');
-  }
-
-  if (cachedWarehouseTables.has(url)) {
-    return cachedWarehouseTables.get(url)!;
-  }
-
-  const connection = getWarehouseConnection(url);
-  const [res, fields] = await connection.query(
-    `SHOW TABLES WHERE Table_type = 'BASE TABLE';`
-  );
-
-  if (fields.length > 1) {
-    throw new Error('Multiple tables found, not supported yet.');
-  }
-
-  const tableNames = Array.from<Record<string, string>>(res as any).map(
-    (row) => row[fields[0].name]
-  );
-
-  const tables = await Promise.all<WarehouseTableMeta>(
-    tableNames.map(async (table) => {
-      const [res] = await connection.query(`SHOW CREATE TABLE ${table}`);
-
-      const tableName = get(res, [0, 'Table']);
-      const createTableSql = get(res, [0, 'Create Table']);
-
-      return {
-        tableName: tableName as string,
-        createTableSql: createTableSql as string,
-      };
-    })
-  );
-
-  cachedWarehouseTables.set(url, tables);
-
-  return tables;
-}
-export async function getWarehouseTable(
-  tableName: string
-): Promise<WarehouseTableMeta | undefined> {
-  const tables = await getWarehouseTables();
-  return tables.find((table) => table.tableName === tableName);
-}
+import { omit } from 'lodash-es';
 
 export const warehouseAITools: ToolSet = {
   getWarehouseTables: tool({
@@ -91,11 +40,11 @@ export const warehouseAITools: ToolSet = {
     execute: async ({ sql }) => {
       const connection = getWarehouseConnection(env.insights.warehouse.url);
 
-      logger.log('[queryWarehouse]', sql);
+      logger.info('[queryWarehouse]:' + sql);
 
       const [res] = await connection.query(sql);
 
-      logger.log('[queryWarehouse] result', res);
+      logger.info('[queryWarehouse] result:' + JSON.stringify(res));
 
       return res;
     },
@@ -118,16 +67,20 @@ export const warehouseAITools: ToolSet = {
   }),
 };
 
-export const warehouseAISystemPrompt = `
+export const warehouseAISystemPrompt = ({
+  needGetContext,
+}: {
+  needGetContext: boolean;
+}) => `
 You are a helpful assistant that can help with tasks related to the warehouse.
 You can use the following tools to help the user:
-${JSON.stringify(Object.keys(warehouseAITools))}
+${JSON.stringify(needGetContext ? Object.keys(warehouseAITools) : omit(Object.keys(warehouseAITools), ['getWarehouseTables', 'getWarehouseTable']))}
 
 The user is a business owner who is interested in analyzing their warehouse data.
 
 ## Rules
 
-- Always start by ensuring you know the table and column structure. If the structure is not available in context, call getWarehouseTables or getWarehouseTable first.
+${needGetContext ? '- Always start by ensuring you know the table and column structure. If the structure is not available in context, call getWarehouseTables or getWarehouseTable first.' : ''}
 - When generating SQL:
   - Only use safe, read-only SELECT queries. Never use INSERT/UPDATE/DELETE/TRUNCATE/DROP/ALTER.
   - Select a single date-like column and alias it as date (for example: ... AS date).
@@ -135,6 +88,7 @@ The user is a business owner who is interested in analyzing their warehouse data
   - Return aggregated numeric columns for chart series, avoid returning too many columns (prefer 1-5 series).
   - Keep rows to a reasonable amount (prefer <= 200 rows) unless the user asks otherwise.
   - If the user requests a time range, filter using the chosen date column.
+  - If no time range is specified, default to the last 7 days using the chosen date column.
 - After generating SQL, execute it with queryWarehouse.
 - If the query returns data, call createCharts to visualize the results. The input requirements are strict:
   - data: an array of objects with a required date field (string, prefer ISO 8601 or YYYY-MM-DD) and one or more numeric fields for series values.

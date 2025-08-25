@@ -24,6 +24,7 @@ import {
   insightsWideTableWarehouseFilterParams,
 } from '../../../model/insights/warehouse/wideTable.js';
 import { insightCohortsRouter } from './cohorts.js';
+import { warehouseRouter } from './warehouse.js';
 
 export const insightsRouter = router({
   query: workspaceProcedure
@@ -296,4 +297,5 @@ export const insightsRouter = router({
     }
   ),
   cohorts: insightCohortsRouter,
+  warehouse: warehouseRouter,
 });

@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import { env } from '../utils/env.js';
 import { createOpenAI } from '@ai-sdk/openai';
-import { convertToModelMessages, stepCountIs, streamText, UIMessage } from 'ai';
+import {
+  convertToModelMessages,
+  ModelMessage,
+  stepCountIs,
+  streamText,
+  UIMessage,
+} from 'ai';
 import z from 'zod';
 import {
   warehouseAISystemPrompt,
@@ -9,6 +15,12 @@ import {
 } from '../model/insights/warehouse/ai.js';
 import { auth } from '../middleware/authjs.js';
 import { INIT_ADMIN_USER_ID } from '../utils/const.js';
+import { get, last } from 'lodash-es';
+import { getWarehouseScopes } from '../model/insights/warehouse/utils.js';
+
+interface WarehouseChatMetadata {
+  scopes: Array<{ type: 'database' | 'table'; id: string; name: string }>;
+}
 
 export const insightsRouter = Router();
 
@@ -30,16 +42,44 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   }
 
   const { messages } = req.body as { messages: Array<Omit<UIMessage, 'id'>> };
+  const workspaceId = req.params.workspaceId;
   const model = openai(env.openai.modelName);
-  const result = streamText({
-    model,
-    messages: [
+  const metadata = last(messages)?.metadata as WarehouseChatMetadata;
+  const scopes = get(metadata, 'scopes', []);
+
+  const inputMessages: ModelMessage[] = [];
+
+  if (Array.isArray(scopes) && scopes.length > 0) {
+    const tables = await getWarehouseScopes(workspaceId, scopes);
+
+    inputMessages.push(
       {
         role: 'system',
-        content: warehouseAISystemPrompt,
+        content: warehouseAISystemPrompt({ needGetContext: false }),
       },
-      ...convertToModelMessages(messages),
-    ],
+      {
+        role: 'assistant',
+        content: `Current Database tables structure is:\n${tables
+          .map((t) =>
+            JSON.stringify({
+              name: t.name,
+              prompt: t.prompt,
+              ddl: t.ddl,
+            })
+          )
+          .join('\n')}`,
+      }
+    );
+  } else {
+    inputMessages.push({
+      role: 'system',
+      content: warehouseAISystemPrompt({ needGetContext: true }),
+    });
+  }
+
+  const result = streamText({
+    model,
+    messages: [...inputMessages, ...convertToModelMessages(messages)],
     stopWhen: stepCountIs(5),
     tools: {
       // server-side tool with execute function:

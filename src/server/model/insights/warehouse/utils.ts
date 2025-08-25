@@ -1,7 +1,14 @@
 import { z } from 'zod';
-import { createPool, Pool } from 'mysql2/promise';
+import { createPool, Pool, createConnection } from 'mysql2/promise';
 import { env } from '../../../utils/env.js';
-import { Prisma } from '@prisma/client';
+import { Prisma, WarehouseDatabaseTable } from '@prisma/client';
+import { flatten, get, uniqBy } from 'lodash-es';
+import { prisma } from '../../_client.js';
+
+export interface WarehouseTableMeta {
+  tableName: string;
+  ddl: string;
+}
 
 // MySQL date formats for different time units
 export const MYSQL_DATE_FORMATS = {
@@ -136,4 +143,131 @@ export async function executeWarehouseQuery(
   );
 
   return rows as any[];
+}
+
+/**
+ * Ping the warehouse connection by URL (or default env url).
+ * Returns true if the connection is healthy.
+ */
+export async function pingWarehouse(
+  url = env.insights.warehouse.url
+): Promise<boolean> {
+  if (!url) return false;
+  const conn = await createConnection(url);
+  try {
+    await conn.query('SELECT 1');
+    return true;
+  } catch (error) {
+    return false;
+  } finally {
+    try {
+      await conn?.end();
+    } catch {}
+  }
+}
+
+const cachedWarehouseTables = new Map<string, WarehouseTableMeta[]>();
+export async function getWarehouseTables(
+  url = env.insights.warehouse.url
+): Promise<WarehouseTableMeta[]> {
+  if (!url) {
+    throw new Error('Warehouse url is not set');
+  }
+
+  if (cachedWarehouseTables.has(url)) {
+    return cachedWarehouseTables.get(url)!;
+  }
+
+  const connection = getWarehouseConnection(url);
+  const [res, fields] = await connection.query(
+    `SHOW TABLES WHERE Table_type = 'BASE TABLE';`
+  );
+
+  if (fields.length > 1) {
+    throw new Error('Multiple tables found, not supported yet.');
+  }
+
+  const tableNames = Array.from<Record<string, string>>(res as any).map(
+    (row) => row[fields[0].name]
+  );
+
+  const tables = await Promise.all<WarehouseTableMeta>(
+    tableNames.map(async (table) => {
+      const [res] = await connection.query(`SHOW CREATE TABLE ${table}`);
+
+      const tableName = get(res, [0, 'Table']);
+      const ddl = get(res, [0, 'Create Table']);
+
+      return {
+        tableName: tableName as string,
+        ddl: ddl as string,
+      };
+    })
+  );
+
+  cachedWarehouseTables.set(url, tables);
+
+  return tables;
+}
+export async function getWarehouseTable(
+  tableName: string
+): Promise<WarehouseTableMeta | undefined> {
+  const tables = await getWarehouseTables();
+  return tables.find((table) => table.tableName === tableName);
+}
+
+async function getWarehouseScopeDatabase(
+  workspaceId: string,
+  databaseId: string
+): Promise<WarehouseDatabaseTable[]> {
+  return await prisma.warehouseDatabaseTable.findMany({
+    where: {
+      workspaceId: workspaceId,
+      databaseId: databaseId,
+    },
+  });
+}
+
+async function getWarehouseScopeDatabaseTable(
+  workspaceId: string,
+  tableId: string
+): Promise<WarehouseDatabaseTable | null> {
+  return await prisma.warehouseDatabaseTable.findFirst({
+    where: {
+      workspaceId: workspaceId,
+      id: tableId,
+    },
+  });
+}
+
+export async function getWarehouseScopes(
+  workspaceId: string,
+  scopes: Array<{ type: 'database' | 'table'; id: string; name: string }>
+): Promise<WarehouseDatabaseTable[]> {
+  const tables = flatten(
+    await Promise.all(
+      scopes.map(async (scope) => {
+        if (scope.type === 'database') {
+          const tables = await getWarehouseScopeDatabase(workspaceId, scope.id);
+          return tables;
+        }
+
+        if (scope.type === 'table') {
+          const table = await getWarehouseScopeDatabaseTable(
+            workspaceId,
+            scope.id
+          );
+          if (table) {
+            return [table];
+          }
+
+          return [];
+        }
+
+        return [];
+      })
+    )
+  );
+
+  return uniqBy(tables, 'id');
 }
