@@ -53,7 +53,6 @@ import { Route as SettingsApiKeyImport } from './routes/settings/apiKey'
 import { Route as PageAddImport } from './routes/page/add'
 import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
-import { Route as InsightsWarehouseImport } from './routes/insights/warehouse'
 import { Route as InsightsEventsImport } from './routes/insights/events'
 import { Route as InsightsCohortsImport } from './routes/insights/cohorts'
 import { Route as FeedPlaygroundImport } from './routes/feed_/playground'
@@ -66,6 +65,7 @@ import { Route as WorkerWorkerIdIndexImport } from './routes/worker/$workerId/in
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
+import { Route as InsightsWarehouseIndexImport } from './routes/insights/warehouse/index'
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
 import { Route as ApplicationApplicationIdIndexImport } from './routes/application/$applicationId/index'
 import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
@@ -78,6 +78,9 @@ import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
 import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
+import { Route as InsightsWarehouseConnectionsIndexImport } from './routes/insights/warehouse/connections/index'
+import { Route as InsightsWarehouseConnectionsCreateImport } from './routes/insights/warehouse/connections/create'
+import { Route as InsightsWarehouseConnectionsConnectionIdTableImport } from './routes/insights/warehouse/connections/$connectionId/table'
 
 // Create/Update Routes
 
@@ -291,11 +294,6 @@ const MonitorAddRoute = MonitorAddImport.update({
   getParentRoute: () => MonitorRoute,
 } as any)
 
-const InsightsWarehouseRoute = InsightsWarehouseImport.update({
-  path: '/insights/warehouse',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const InsightsEventsRoute = InsightsEventsImport.update({
   path: '/insights/events',
   getParentRoute: () => rootRoute,
@@ -354,6 +352,11 @@ const SurveySurveyIdIndexRoute = SurveySurveyIdIndexImport.update({
 const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
   path: '/$monitorId/',
   getParentRoute: () => MonitorRoute,
+} as any)
+
+const InsightsWarehouseIndexRoute = InsightsWarehouseIndexImport.update({
+  path: '/insights/warehouse/',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const FeedChannelIdIndexRoute = FeedChannelIdIndexImport.update({
@@ -419,6 +422,24 @@ const AiGatewayGatewayIdEditRoute = AiGatewayGatewayIdEditImport.update({
   path: '/$gatewayId/edit',
   getParentRoute: () => AiGatewayRoute,
 } as any)
+
+const InsightsWarehouseConnectionsIndexRoute =
+  InsightsWarehouseConnectionsIndexImport.update({
+    path: '/insights/warehouse/connections/',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InsightsWarehouseConnectionsCreateRoute =
+  InsightsWarehouseConnectionsCreateImport.update({
+    path: '/insights/warehouse/connections/create',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const InsightsWarehouseConnectionsConnectionIdTableRoute =
+  InsightsWarehouseConnectionsConnectionIdTableImport.update({
+    path: '/insights/warehouse/connections/$connectionId/table',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -518,10 +539,6 @@ declare module '@tanstack/react-router' {
     }
     '/insights/events': {
       preLoaderRoute: typeof InsightsEventsImport
-      parentRoute: typeof rootRoute
-    }
-    '/insights/warehouse': {
-      preLoaderRoute: typeof InsightsWarehouseImport
       parentRoute: typeof rootRoute
     }
     '/monitor/add': {
@@ -676,6 +693,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedChannelIdIndexImport
       parentRoute: typeof FeedImport
     }
+    '/insights/warehouse/': {
+      preLoaderRoute: typeof InsightsWarehouseIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/monitor/$monitorId/': {
       preLoaderRoute: typeof MonitorMonitorIdIndexImport
       parentRoute: typeof MonitorImport
@@ -691,6 +712,18 @@ declare module '@tanstack/react-router' {
     '/worker/$workerId/': {
       preLoaderRoute: typeof WorkerWorkerIdIndexImport
       parentRoute: typeof WorkerImport
+    }
+    '/insights/warehouse/connections/create': {
+      preLoaderRoute: typeof InsightsWarehouseConnectionsCreateImport
+      parentRoute: typeof rootRoute
+    }
+    '/insights/warehouse/connections/': {
+      preLoaderRoute: typeof InsightsWarehouseConnectionsIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/insights/warehouse/connections/$connectionId/table': {
+      preLoaderRoute: typeof InsightsWarehouseConnectionsConnectionIdTableImport
+      parentRoute: typeof rootRoute
     }
   }
 }
@@ -766,11 +799,14 @@ export const routeTree = rootRoute.addChildren([
   FeedPlaygroundRoute,
   InsightsCohortsRoute,
   InsightsEventsRoute,
-  InsightsWarehouseRoute,
   StatusSlugRoute,
   InsightsIndexRoute,
   InvitationAcceptTokenRoute,
   WebsiteVisitorMapWebsiteIdRoute,
+  InsightsWarehouseIndexRoute,
+  InsightsWarehouseConnectionsCreateRoute,
+  InsightsWarehouseConnectionsIndexRoute,
+  InsightsWarehouseConnectionsConnectionIdTableRoute,
 ])
 
 /* prettier-ignore-end */
