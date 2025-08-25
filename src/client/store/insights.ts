@@ -72,9 +72,9 @@ export const useInsightsStore = create<InsightsState>()(
           set((state) => {
             state.insightId = id;
             state.insightType = type;
-            state.currentMetrics = [null];
-            state.currentFilters = [null];
-            state.currentGroups = [null];
+            state.currentMetrics = [];
+            state.currentFilters = [];
+            state.currentGroups = [];
           });
         },
         setMetrics: (index, info) => {

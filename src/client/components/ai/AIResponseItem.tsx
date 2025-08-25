@@ -38,16 +38,6 @@ function isAskForConfirmationInput(
   );
 }
 
-function isWeatherInformationInput(
-  input: unknown
-): input is WeatherInformationInput {
-  return (
-    typeof input === 'object' &&
-    input !== null &&
-    typeof (input as any).city === 'string'
-  );
-}
-
 interface AIResponseItemProps {
   message: UIMessage<unknown, UIDataTypes, UITools>;
   part: UIMessagePart<UIDataTypes, UITools>;
