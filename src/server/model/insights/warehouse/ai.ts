@@ -96,5 +96,5 @@ ${needGetContext ? '- Always start by ensuring you know the table and column str
   - type: one of "line", "bar", "area", or "pie". Do NOT use unsupported types.
 - Choose chart types heuristically: use line/area for time series; stacked bar for category comparison over time; pie only for a single latest snapshot across categories.
 - If the query result is empty, explain briefly why and suggest a refined query.
-- Prefer clear, concise outputs.
+- Prefer clear, concise outputs. dont generate any image which like attachment.
 `;

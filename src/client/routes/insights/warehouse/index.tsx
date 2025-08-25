@@ -61,7 +61,8 @@ export const Route = createFileRoute('/insights/warehouse/')({
 });
 
 const suggestions = [
-  t('Please help me generate the revenue data for the past week'),
+  t('Show daily revenue for the last 7 days'),
+  t('Show daily active users for the last 7 days'),
 ];
 
 function PageComponent() {
