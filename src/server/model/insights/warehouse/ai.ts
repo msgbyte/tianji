@@ -9,12 +9,12 @@ import z from 'zod';
 import { logger } from '../../../utils/logger.js';
 import { omit } from 'lodash-es';
 
-export const warehouseAITools: ToolSet = {
+export const createWarehouseAITools = (connectionUrl?: string): ToolSet => ({
   getWarehouseTables: tool({
     description: 'Get the warehouse tables',
     inputSchema: z.object({}),
     execute: async () => {
-      return await getWarehouseTables();
+      return await getWarehouseTables(connectionUrl);
     },
   }),
   getWarehouseTable: tool({
@@ -25,7 +25,7 @@ export const warehouseAITools: ToolSet = {
         .describe('The name of the table to get the description of'),
     }),
     execute: async ({ tableName }) => {
-      return await getWarehouseTable(tableName);
+      return await getWarehouseTable(tableName, connectionUrl);
     },
   }),
   queryWarehouse: tool({
@@ -38,7 +38,9 @@ export const warehouseAITools: ToolSet = {
         ),
     }),
     execute: async ({ sql }) => {
-      const connection = getWarehouseConnection(env.insights.warehouse.url);
+      const connection = getWarehouseConnection(
+        connectionUrl || env.insights.warehouse.url
+      );
 
       logger.info('[queryWarehouse]:' + sql);
 
@@ -65,16 +67,23 @@ export const warehouseAITools: ToolSet = {
       title: z.string().describe('The title of the chart'),
     }),
   }),
-};
+});
+
+// Default tools for backward compatibility
+export const warehouseAITools = createWarehouseAITools();
 
 export const warehouseAISystemPrompt = ({
   needGetContext,
+  tools,
 }: {
   needGetContext: boolean;
-}) => `
+  tools?: ToolSet;
+}) => {
+  const toolSet = tools || warehouseAITools;
+  return `
 You are a helpful assistant that can help with tasks related to the warehouse.
 You can use the following tools to help the user:
-${JSON.stringify(needGetContext ? Object.keys(warehouseAITools) : omit(Object.keys(warehouseAITools), ['getWarehouseTables', 'getWarehouseTable']))}
+${JSON.stringify(needGetContext ? Object.keys(toolSet) : omit(Object.keys(toolSet), ['getWarehouseTables', 'getWarehouseTable']))}
 
 The user is a business owner who is interested in analyzing their warehouse data.
 
@@ -98,3 +107,4 @@ ${needGetContext ? '- Always start by ensuring you know the table and column str
 - If the query result is empty, explain briefly why and suggest a refined query.
 - Prefer clear, concise outputs. dont generate any image which like attachment.
 `;
+};

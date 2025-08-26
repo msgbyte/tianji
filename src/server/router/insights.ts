@@ -12,14 +12,21 @@ import z from 'zod';
 import {
   warehouseAISystemPrompt,
   warehouseAITools,
+  createWarehouseAITools,
 } from '../model/insights/warehouse/ai.js';
 import { auth } from '../middleware/authjs.js';
 import { INIT_ADMIN_USER_ID } from '../utils/const.js';
 import { get, last } from 'lodash-es';
 import { getWarehouseScopes } from '../model/insights/warehouse/utils.js';
+import { prisma } from '../model/_client.js';
 
 interface WarehouseChatMetadata {
-  scopes: Array<{ type: 'database' | 'table'; id: string; name: string }>;
+  scopes: Array<{
+    type: 'database' | 'table';
+    id: string;
+    name: string;
+    databaseId?: string; // For table type
+  }>;
 }
 
 export const insightsRouter = Router();
@@ -48,14 +55,59 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   const scopes = get(metadata, 'scopes', []);
 
   const inputMessages: ModelMessage[] = [];
+  let databaseConnectionUrl: string | undefined;
 
+  // Extract database connection URL from scopes
   if (Array.isArray(scopes) && scopes.length > 0) {
+    // Extract unique database IDs from scopes
+    const databaseIds = new Set<string>();
+
+    for (const scope of scopes) {
+      if (scope.type === 'database') {
+        databaseIds.add(scope.id);
+      } else if (scope.type === 'table' && scope.databaseId) {
+        databaseIds.add(scope.databaseId);
+      }
+    }
+
+    // Ensure we only have one database
+    if (databaseIds.size !== 1) {
+      res.status(400).end('Cannot query across multiple databases');
+      return;
+    }
+
+    // Get the database connection URL
+    const databaseId = Array.from(databaseIds)[0];
+    const database = await prisma.warehouseDatabase.findUnique({
+      where: { id: databaseId },
+      select: { connectionUri: true },
+    });
+
+    if (!database || !database.connectionUri) {
+      res.status(400).end('Database connection not found');
+      return;
+    }
+
+    databaseConnectionUrl = database.connectionUri;
+  }
+
+  // Create AI tools with the specific database connection URL
+  const aiTools = databaseConnectionUrl
+    ? createWarehouseAITools(databaseConnectionUrl)
+    : warehouseAITools;
+
+  // Prepare input messages
+  if (Array.isArray(scopes) && scopes.length > 0) {
+    // Get table metadata
     const tables = await getWarehouseScopes(workspaceId, scopes);
 
     inputMessages.push(
       {
         role: 'system',
-        content: warehouseAISystemPrompt({ needGetContext: false }),
+        content: warehouseAISystemPrompt({
+          needGetContext: false,
+          tools: aiTools,
+        }),
       },
       {
         role: 'assistant',
@@ -73,7 +125,10 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   } else {
     inputMessages.push({
       role: 'system',
-      content: warehouseAISystemPrompt({ needGetContext: true }),
+      content: warehouseAISystemPrompt({
+        needGetContext: true,
+        tools: aiTools,
+      }),
     });
   }
 
@@ -106,7 +161,7 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
           'Get the user location. Always ask for confirmation before using this tool.',
         inputSchema: z.object({}),
       },
-      ...warehouseAITools,
+      ...aiTools,
     },
   });
 

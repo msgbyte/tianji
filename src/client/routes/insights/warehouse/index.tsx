@@ -22,7 +22,7 @@ import {
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai';
 import { useEvent } from '@/hooks/useEvent';
-import { useMemo, useReducer, useState } from 'react';
+import { useMemo, useReducer, useState, useEffect } from 'react';
 import { sleep } from '@tianji/shared';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import {
@@ -54,6 +54,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/insights/warehouse/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -78,7 +79,12 @@ function PageComponent() {
     workspaceId,
   });
   const [selectedScopes, setSelectedScopes] = useState<
-    Array<{ type: 'database' | 'table'; id: string; name: string }>
+    Array<{
+      type: 'database' | 'table';
+      id: string;
+      name: string;
+      databaseId?: string;
+    }>
   >([]);
   const [id, refreshId] = useReducer(
     () => generateRandomString(14),
@@ -102,6 +108,44 @@ function PageComponent() {
       type: TimeEventChartType;
     }>
   >([]);
+
+  // Initialize with first database if available
+  useEffect(() => {
+    if (databases && databases.length > 0 && selectedScopes.length === 0) {
+      const firstDb = databases[0];
+      setSelectedScopes([
+        {
+          type: 'database',
+          id: firstDb.id,
+          name: firstDb.name,
+        },
+      ]);
+    }
+  }, [databases]);
+
+  // Check if selected scopes span multiple databases
+  const crossDatabaseCheck = useMemo(() => {
+    const databaseIds = new Set<string>();
+
+    // Add directly selected databases
+    selectedScopes.forEach((scope) => {
+      if (scope.type === 'database') {
+        databaseIds.add(scope.id);
+      }
+    });
+
+    // Add databases from selected tables
+    selectedScopes.forEach((scope) => {
+      if (scope.type === 'table' && scope.databaseId) {
+        databaseIds.add(scope.databaseId);
+      }
+    });
+
+    return {
+      isMultiDatabase: databaseIds.size > 1,
+      databaseCount: databaseIds.size,
+    };
+  }, [selectedScopes]);
 
   const transport = useMemo(
     () =>
@@ -180,7 +224,12 @@ function PageComponent() {
   const handleSend = useEvent(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!input.trim()) {
+    if (!input.trim() || crossDatabaseCheck.databaseCount === 0) {
+      toast.warning(
+        crossDatabaseCheck.isMultiDatabase
+          ? t('Please select tables from a single database')
+          : t('Please configure a database first')
+      );
       return;
     }
 
@@ -377,6 +426,30 @@ function PageComponent() {
                   ))}
                 </Suggestions>
                 <div className="p-3">
+                  {crossDatabaseCheck.databaseCount === 0 && (
+                    <Alert className="mb-3">
+                      <LuCircleAlert className="h-4 w-4" />
+                      <AlertTitle>{t('No databases configured')}</AlertTitle>
+                      <AlertDescription>
+                        {t('Please configure a database connection first.')}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {crossDatabaseCheck.isMultiDatabase && (
+                    <Alert variant="destructive" className="mb-3">
+                      <LuCircleAlert className="h-4 w-4" />
+                      <AlertTitle>
+                        {t('Cross-database query disabled')}
+                      </AlertTitle>
+                      <AlertDescription>
+                        {t(
+                          'Cannot query across multiple databases simultaneously.'
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   <div className="mb-2">
                     {selectedScopes.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5">
@@ -412,6 +485,14 @@ function PageComponent() {
                     <PromptInputTextarea
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
+                      disabled={crossDatabaseCheck.databaseCount === 0}
+                      placeholder={
+                        crossDatabaseCheck.databaseCount > 1
+                          ? t('Please select tables from a single database')
+                          : crossDatabaseCheck.databaseCount === 0
+                            ? t('Please configure a database first')
+                            : ''
+                      }
                     />
                     <PromptInputToolbar>
                       <PromptInputTools>
@@ -502,6 +583,7 @@ function PageComponent() {
                                                 type: 'table',
                                                 id: tb.id,
                                                 name: tb.name,
+                                                databaseId: tb.databaseId,
                                               },
                                             ];
                                           }
@@ -518,7 +600,12 @@ function PageComponent() {
                           </PopoverContent>
                         </Popover>
                       </PromptInputTools>
-                      <PromptInputSubmit disabled={!input} status={status} />
+                      <PromptInputSubmit
+                        disabled={
+                          !input || crossDatabaseCheck.databaseCount === 0
+                        }
+                        status={status}
+                      />
                     </PromptInputToolbar>
                   </PromptInput>
                 </div>

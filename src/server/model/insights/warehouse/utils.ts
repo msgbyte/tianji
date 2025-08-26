@@ -210,9 +210,10 @@ export async function getWarehouseTables(
   return tables;
 }
 export async function getWarehouseTable(
-  tableName: string
+  tableName: string,
+  url = env.insights.warehouse.url
 ): Promise<WarehouseTableMeta | undefined> {
-  const tables = await getWarehouseTables();
+  const tables = await getWarehouseTables(url);
   return tables.find((table) => table.tableName === tableName);
 }
 
