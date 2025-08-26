@@ -145,6 +145,7 @@ export const warehouseRouter = router({
       .input(
         z.object({
           id: z.string().optional(),
+          databaseId: z.string(),
           name: z.string(),
           description: z.string().optional().default(''),
           ddl: z.string().optional().default(''),
@@ -168,6 +169,7 @@ export const warehouseRouter = router({
           const res = await prisma.warehouseDatabaseTable.create({
             data: {
               workspaceId: input.workspaceId,
+              databaseId: input.databaseId,
               name: input.name,
               description: input.description ?? '',
               ddl: input.ddl ?? '',

@@ -69,7 +69,7 @@ function PageComponent() {
   const navigate = useNavigate();
   const workspaceId = useCurrentWorkspaceId();
   const hasAdminPermission = useHasAdminPermission();
-  const connectionId = Route.useParams().connectionId as string;
+  const { connectionId } = Route.useParams();
 
   const {
     data: tables = [],
@@ -135,6 +135,7 @@ function PageComponent() {
     await upsertMutation.mutateAsync({
       workspaceId,
       id: values.id,
+      databaseId: connectionId,
       name: values.name,
       description: values.description ?? '',
       ddl: values.ddl ?? '',
