@@ -1,5 +1,23 @@
 
 
+## [1.24.23](https://github.com/msgbyte/tianji/compare/v1.24.22...v1.24.23) (2025-08-26)
+
+### Features
+
+* add insights warehouse scope select feature ([0a8ab92](https://github.com/msgbyte/tianji/commit/0a8ab927a64b9b77f84edddda6ec435713c05c34))
+* add Turkish (tr) localization ([#218](https://github.com/msgbyte/tianji/issues/218)) ([1c011cb](https://github.com/msgbyte/tianji/commit/1c011cbf2ee6fcadc3741b5551d1c8fa9a294d8b))
+* add WarehouseDatabase and WarehouseDatabaseTable models ([a1f353e](https://github.com/msgbyte/tianji/commit/a1f353ee1f3768218c214eb5f825c9b8bffd72d4))
+* enhance warehouse insights functionality with new connection management and table synchronization features ([2d1178f](https://github.com/msgbyte/tianji/commit/2d1178fd110cd79f06411b63738da65d2e54b892))
+* implement insights warehouse connection management and table editing features ([7034348](https://github.com/msgbyte/tianji/commit/70343487819571440279b8f1eceb7c29f3f7fc09))
+
+### Others
+
+* remove unused code ([039ccbe](https://github.com/msgbyte/tianji/commit/039ccbe5bfd07f18b73a49bed13fc4f0c35fba53))
+* translation ([ece4e9f](https://github.com/msgbyte/tianji/commit/ece4e9f843548bfbc5174e70d9647e3d87f7b550))
+* update prompt and suggestions ([38ac73a](https://github.com/msgbyte/tianji/commit/38ac73a73cbe326efb1e1639bbf31bf5701cdc15))
+* update prompt of warehouse ai insight ([bc90a75](https://github.com/msgbyte/tianji/commit/bc90a75524e41b0aaac7883fca0b1f8302fcc3e9))
+* update translation ([e419c76](https://github.com/msgbyte/tianji/commit/e419c76794d58116e77bcab88fb4731e71cac1c8))
+
 ## [1.24.22](https://github.com/msgbyte/tianji/compare/v1.24.21...v1.24.22) (2025-08-24)
 
 ### Others
