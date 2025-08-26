@@ -33,6 +33,10 @@ export const languages = [
     label: '简体中文',
     key: 'zh-CN',
   },
+  {
+    label: 'Türkçe',
+    key: 'tr-TR',
+  },
 ];
 
 export function initI18N() {
