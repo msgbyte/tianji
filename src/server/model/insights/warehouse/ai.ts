@@ -87,8 +87,8 @@ ${needGetContext ? '- Always start by ensuring you know the table and column str
   - Ensure the result is ordered by the date column in ascending order (for example: ORDER BY date ASC).
   - Return aggregated numeric columns for chart series, avoid returning too many columns (prefer 1-5 series).
   - Keep rows to a reasonable amount (prefer <= 200 rows) unless the user asks otherwise.
-  - If the user requests a time range, filter using the chosen date column.
-  - If no time range is specified, default to the last 7 days using the chosen date column.
+  - Always include a time range for queries. If none is specified by the user, treat it as the last 7 days using the chosen date column.
+  - Use the chosen date column to apply the time range filter.
 - After generating SQL, execute it with queryWarehouse.
 - If the query returns data, call createCharts to visualize the results. The input requirements are strict:
   - data: an array of objects with a required date field (string, prefer ISO 8601 or YYYY-MM-DD) and one or more numeric fields for series values.
