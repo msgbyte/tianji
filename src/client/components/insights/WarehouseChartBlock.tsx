@@ -41,7 +41,10 @@ export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
     const [showTable, setShowTable] = useState(false);
 
     const keys = useMemo(() => {
-      if (!props.data || props.data.length === 0) return [] as string[];
+      if (!props.data || props.data.length === 0) {
+        return [] as string[];
+      }
+
       return Array.from(
         new Set(
           props.data
@@ -52,7 +55,10 @@ export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
     }, [props.data]);
 
     const chartData = useMemo(() => {
-      if (!props.data || props.data.length === 0) return [] as any[];
+      if (!props.data || props.data.length === 0) {
+        return [] as any[];
+      }
+
       return props.data.map((row) => {
         const date = String(row.date ?? '');
         const item: any = { date };

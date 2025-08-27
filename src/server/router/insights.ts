@@ -37,9 +37,13 @@ const openai = createOpenAI({
 });
 
 insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
-  if (!env.isDev || !env.openai.enable) {
+  if (!env.insights.warehouse.enable || !env.openai.enable) {
     // only for dev now, and require shared OpenAI enabled
-    res.status(404).end('This feature is only for dev or not enabled');
+    res
+      .status(401)
+      .end(
+        'This feature is not enabled, both need enabled openai and warehouse to use this feature'
+      );
     return;
   }
 
