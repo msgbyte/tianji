@@ -123,17 +123,17 @@ function PageComponent() {
     }
   }, [databases]);
 
-  // Check if selected scopes span multiple databases
-  const crossDatabaseCheck = useMemo(() => {
-    const databaseIds = new Set<string>();
+  // Check database availability and cross-database conflicts
+  const databaseStatus = useMemo(() => {
+    const hasNoDatabases = !databases || databases.length === 0;
 
+    const databaseIds = new Set<string>();
     // Add directly selected databases
     selectedScopes.forEach((scope) => {
       if (scope.type === 'database') {
         databaseIds.add(scope.id);
       }
     });
-
     // Add databases from selected tables
     selectedScopes.forEach((scope) => {
       if (scope.type === 'table' && scope.databaseId) {
@@ -141,11 +141,17 @@ function PageComponent() {
       }
     });
 
+    const isMultiDatabase = databaseIds.size > 1;
+    const hasNoActiveScopes = databaseIds.size === 0;
+    const isDisabled = hasNoDatabases || hasNoActiveScopes || isMultiDatabase;
+
     return {
-      isMultiDatabase: databaseIds.size > 1,
-      databaseCount: databaseIds.size,
+      hasNoDatabases,
+      isMultiDatabase,
+      hasNoActiveScopes,
+      isDisabled,
     };
-  }, [selectedScopes]);
+  }, [databases, selectedScopes]);
 
   const transport = useMemo(
     () =>
@@ -224,17 +230,18 @@ function PageComponent() {
   const handleSend = useEvent(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!input.trim() || crossDatabaseCheck.databaseCount === 0) {
-      toast.warning(
-        crossDatabaseCheck.isMultiDatabase
+    if (!input.trim() || databaseStatus.isDisabled) {
+      const message = databaseStatus.hasNoDatabases
+        ? t('Please configure a database first')
+        : databaseStatus.isMultiDatabase
           ? t('Please select tables from a single database')
-          : t('Please configure a database first')
-      );
+          : t('Please configure a database first');
+
+      toast.warning(message);
       return;
     }
 
     await handleSendWithScopes(input.trim());
-
     setInput('');
   });
 
@@ -247,8 +254,8 @@ function PageComponent() {
     });
   });
 
-  const handleStop = useEvent(() => {
-    stop();
+  const handleNavigateToConnections = useEvent(() => {
+    navigate({ to: '/insights/warehouse/connections' });
   });
 
   const handleSuggestionClick = useEvent(async (suggestion: string) => {
@@ -275,11 +282,7 @@ function PageComponent() {
                 size="sm"
                 variant="default"
                 Icon={LuDatabase}
-                onClick={() => {
-                  navigate({
-                    to: '/insights/warehouse/connections',
-                  });
-                }}
+                onClick={handleNavigateToConnections}
               >
                 {t('Connections')}
               </Button>
@@ -416,27 +419,55 @@ function PageComponent() {
                   )}
                 </ScrollArea>
 
-                <Suggestions className="p-3 pb-0">
-                  {suggestions.map((suggestion) => (
-                    <Suggestion
-                      key={suggestion}
-                      onClick={handleSuggestionClick}
-                      suggestion={suggestion}
-                    />
-                  ))}
-                </Suggestions>
+                {!databaseStatus.isDisabled && (
+                  <Suggestions className="p-3 pb-0">
+                    {suggestions.map((suggestion) => (
+                      <Suggestion
+                        key={suggestion}
+                        onClick={handleSuggestionClick}
+                        suggestion={suggestion}
+                      />
+                    ))}
+                  </Suggestions>
+                )}
+
                 <div className="p-3">
-                  {crossDatabaseCheck.databaseCount === 0 && (
+                  {databaseStatus.hasNoDatabases && (
                     <Alert className="mb-3">
                       <LuCircleAlert className="h-4 w-4" />
                       <AlertTitle>{t('No databases configured')}</AlertTitle>
                       <AlertDescription>
-                        {t('Please configure a database connection first.')}
+                        <div>
+                          {t('Please configure a database connection first.')}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-2"
+                          onClick={handleNavigateToConnections}
+                        >
+                          {t('Configure Database')}
+                        </Button>
                       </AlertDescription>
                     </Alert>
                   )}
 
-                  {crossDatabaseCheck.isMultiDatabase && (
+                  {!databaseStatus.hasNoDatabases &&
+                    databaseStatus.hasNoActiveScopes && (
+                      <Alert className="mb-3">
+                        <LuCircleAlert className="h-4 w-4" />
+                        <AlertTitle>
+                          {t('No database or table selected')}
+                        </AlertTitle>
+                        <AlertDescription>
+                          {t(
+                            'Please select a database or table to start querying.'
+                          )}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                  {databaseStatus.isMultiDatabase && (
                     <Alert variant="destructive" className="mb-3">
                       <LuCircleAlert className="h-4 w-4" />
                       <AlertTitle>
@@ -485,12 +516,12 @@ function PageComponent() {
                     <PromptInputTextarea
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      disabled={crossDatabaseCheck.databaseCount === 0}
+                      disabled={databaseStatus.isDisabled}
                       placeholder={
-                        crossDatabaseCheck.databaseCount > 1
-                          ? t('Please select tables from a single database')
-                          : crossDatabaseCheck.databaseCount === 0
-                            ? t('Please configure a database first')
+                        databaseStatus.hasNoDatabases
+                          ? t('Please configure a database first')
+                          : databaseStatus.isMultiDatabase
+                            ? t('Please select tables from a single database')
                             : ''
                       }
                     />
@@ -601,9 +632,7 @@ function PageComponent() {
                         </Popover>
                       </PromptInputTools>
                       <PromptInputSubmit
-                        disabled={
-                          !input || crossDatabaseCheck.databaseCount === 0
-                        }
+                        disabled={!input || databaseStatus.isDisabled}
                         status={status}
                       />
                     </PromptInputToolbar>
