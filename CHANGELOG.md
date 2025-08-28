@@ -1,5 +1,18 @@
 
 
+## [1.24.24](https://github.com/msgbyte/tianji/compare/v1.24.23...v1.24.24) (2025-08-28)
+
+### Features
+
+* enhance warehouse AI tools with database connection handling ([2fba864](https://github.com/msgbyte/tianji/commit/2fba8645e2ba7cea614dfe69fa46615c73d0f444))
+
+### Others
+
+* add ui testing ([4f8672c](https://github.com/msgbyte/tianji/commit/4f8672c82dc86af116f53b49bd1f422aa6237e33))
+* allow non-dev mode can use insight chat endpoint ([f3ec5a0](https://github.com/msgbyte/tianji/commit/f3ec5a00c5965ca93dda0bf399d434623eb7d4e7))
+* improve database status handling in insights warehouse page ([3a56d15](https://github.com/msgbyte/tianji/commit/3a56d150e7e955104d9dd234e6a4e0c21940d1e7))
+* update model price ([5fcd1fe](https://github.com/msgbyte/tianji/commit/5fcd1fed758d2c4ec68ff2a065a88074aa15867d))
+
 ## [1.24.23](https://github.com/msgbyte/tianji/compare/v1.24.22...v1.24.23) (2025-08-26)
 
 ### Features
