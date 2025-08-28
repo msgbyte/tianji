@@ -1,4 +1,5 @@
 import React from 'react';
+import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
@@ -239,6 +240,34 @@ export default function Home(): JSX.Element {
       title={`Tianji = Website Analytics + Uptime Monitor + Server Status`}
       description={siteConfig.tagline}
     >
+      <Head>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'Organization',
+                name: 'Tianji',
+                url: 'https://tianji.dev',
+                logo: 'https://tianji.dev/img/logo.svg',
+                sameAs: [
+                  'https://github.com/msgbyte/tianji',
+                  'https://twitter.com/moonrailgun',
+                  'https://discord.gg/8Vv47wAEej',
+                ],
+              },
+              {
+                '@type': 'SoftwareApplication',
+                name: 'Tianji',
+                applicationCategory: 'BusinessApplication',
+                operatingSystem: 'Any',
+                offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+                url: 'https://tianji.dev',
+              },
+            ],
+          })}
+        </script>
+      </Head>
       <div className="relative z-0 bg-black">
         <HomepageHeaderLight />
 

@@ -90,6 +90,10 @@ const config: Config = {
           'opensource, free, tianji, umami, uptime, kuma, website, analysis, monitor, serverstatus, status page, docker',
       },
       { name: 'twitter:card', content: 'summary_large_image' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:site_name', content: 'Tianji' },
+      { name: 'twitter:site', content: '@moonrailgun' },
+      { name: 'twitter:creator', content: '@moonrailgun' },
     ],
     colorMode: {
       defaultMode: 'dark',
