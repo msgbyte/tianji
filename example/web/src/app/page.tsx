@@ -938,15 +938,6 @@ export default function Home() {
             <p className="mb-2">
               Built with ❤️ using Tianji Analytics Platform
             </p>
-            <div className="flex items-center justify-center gap-4 text-sm">
-              <span>Next.js</span>
-              <span className="h-1 w-1 rounded-full bg-white/40"></span>
-              <span>React</span>
-              <span className="h-1 w-1 rounded-full bg-white/40"></span>
-              <span>Tailwind CSS</span>
-              <span className="h-1 w-1 rounded-full bg-white/40"></span>
-              <span>Radix UI</span>
-            </div>
           </div>
         </div>
       </div>
