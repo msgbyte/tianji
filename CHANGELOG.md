@@ -1,5 +1,11 @@
 
 
+## [1.24.26](https://github.com/msgbyte/tianji/compare/v1.24.25...v1.24.26) (2025-08-29)
+
+### Features
+
+* website session info support clickhouse query ([0cd5714](https://github.com/msgbyte/tianji/commit/0cd5714fefe9a9420502c86aae625580aef7c76d))
+
 ## [1.24.25](https://github.com/msgbyte/tianji/compare/v1.24.24...v1.24.25) (2025-08-29)
 
 ### Features
