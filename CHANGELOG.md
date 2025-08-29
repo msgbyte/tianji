@@ -1,5 +1,22 @@
 
 
+## [1.24.25](https://github.com/msgbyte/tianji/compare/v1.24.24...v1.24.25) (2025-08-29)
+
+### Features
+
+* add alias support for insight ([79f156d](https://github.com/msgbyte/tianji/commit/79f156dbf798dcf9f791510be80f7932732056fa))
+
+### Document
+
+* add new blog ([1918605](https://github.com/msgbyte/tianji/commit/1918605e25f53be94201aeb489c9daf2c8fc85f3))
+* improve seo info ([2d21a87](https://github.com/msgbyte/tianji/commit/2d21a87420b319872ebabde195fa9f0014ac7883))
+
+### Others
+
+* remove unused footer ([6c3baf8](https://github.com/msgbyte/tianji/commit/6c3baf8b326b2a99c5f741bb65ef0b79e7c5abf2))
+* update query structure in WebsiteOverview component for insights ([ea72bb1](https://github.com/msgbyte/tianji/commit/ea72bb11f3b88aebec58fb580db8bee17089e206))
+* update SQL query handling in InsightsSqlBuilder and WebsiteInsightsSqlBuilder ([7dc952a](https://github.com/msgbyte/tianji/commit/7dc952a295db3d47aa24cbc7fa79a8cd8a0ded15))
+
 ## [1.24.24](https://github.com/msgbyte/tianji/compare/v1.24.23...v1.24.24) (2025-08-28)
 
 ### Features
