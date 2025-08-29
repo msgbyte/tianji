@@ -22,8 +22,12 @@ import {
   getDateQuery,
   getTimestampIntervalQuery,
   parseWebsiteFilters,
+  unwrapSQL,
 } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { env } from '../../utils/env.js';
+import { clickhouse } from '../../clickhouse/index.js';
+import { clickhouseHealthManager } from '../../clickhouse/health.js';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -329,6 +333,54 @@ export async function getWebsiteSessionMetrics(
   );
   const includeCountry = column === 'city' || column === 'subdivision1';
 
+  if (env.clickhouse.enable && clickhouseHealthManager.isClickHouseHealthy()) {
+    try {
+      const chFilter = unwrapSQL(filterQuery)
+        .replace(/\"WebsiteEvent\"\./g, '')
+        .replace(/\"WebsiteSession\"\./g, '')
+        .replace(/\"/g, '')
+        .replace(/::[a-zA-Z]+/g, '');
+
+      const chJoin =
+        joinSession === Prisma.empty
+          ? ''
+          : 'INNER JOIN WebsiteSession ON WebsiteEvent.sessionId = WebsiteSession.id';
+      const chCountrySelect = includeCountry ? ', country' : '';
+      const chGroupByExtra = includeCountry ? ', country' : '';
+
+      const chQuery = `
+        select ${column} as x, uniqExact(sessionId) as y${chCountrySelect}
+        from WebsiteEvent
+        ${chJoin}
+        where websiteId = {websiteId:String}
+          and createdAt between toDateTime({start:String}, 'UTC') and toDateTime({end:String}, 'UTC')
+          and eventType = {eventType:UInt64}
+          ${chFilter}
+        group by ${column}${chGroupByExtra}
+        order by y desc
+        limit 100
+      `;
+
+      const result = await clickhouse.query({
+        query: chQuery,
+        query_params: {
+          websiteId,
+          start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
+          end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
+          eventType: EVENT_TYPE.pageView,
+        },
+      });
+      const json = await result.json<any>();
+      const rows = (json?.data ?? []) as { x: string; y: number }[];
+      return rows.map((r) => ({ x: String(r.x), y: Number(r.y) || 0 }));
+    } catch (error) {
+      logger.warn(
+        `ClickHouse getWebsiteSessionMetrics failed, falling back to PostgreSQL: ${error}`
+      );
+      clickhouseHealthManager.forceHealthCheck().catch(() => {});
+    }
+  }
+
   return prisma.$queryRaw`select
       ${Prisma.sql([`"${column}"`])} x,
       count(distinct "WebsiteEvent"."sessionId") y
@@ -366,6 +418,60 @@ export async function getWebsitePageviewMetrics(
   let excludeDomain = Prisma.empty;
   if (column === 'referrerDomain') {
     excludeDomain = Prisma.sql`and ("WebsiteEvent"."referrerDomain" != ${params.websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`;
+  }
+
+  // ClickHouse fast path: only on WebsiteEvent without session join
+  if (env.clickhouse.enable && clickhouseHealthManager.isClickHouseHealthy()) {
+    try {
+      const chFilter = unwrapSQL(filterQuery)
+        .replace(/\"WebsiteEvent\"\./g, '')
+        .replace(/\"WebsiteSession\"\./g, '')
+        .replace(/\"/g, '')
+        .replace(/::[a-zA-Z]+/g, '');
+
+      const chExclude =
+        column === 'referrerDomain'
+          ? `and (referrerDomain != {websiteDomain:String} or referrerDomain is null)`
+          : '';
+
+      const chJoin =
+        joinSession === Prisma.empty
+          ? ''
+          : 'INNER JOIN WebsiteSession ON WebsiteEvent.sessionId = WebsiteSession.id';
+
+      const chQuery = `
+        select ${column} as x, count(*) as y
+        from WebsiteEvent
+        ${chJoin}
+        where websiteId = {websiteId:String}
+          and createdAt between toDateTime({start:String}, 'UTC') and toDateTime({end:String}, 'UTC')
+          and eventType = {eventType:UInt64}
+          ${chExclude}
+          ${chFilter}
+        group by ${column}
+        order by y desc
+        limit 100
+      `;
+
+      const result = await clickhouse.query({
+        query: chQuery,
+        query_params: {
+          websiteId,
+          websiteDomain: params.websiteDomain,
+          start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
+          end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
+          eventType,
+        },
+      });
+      const json = await result.json<any>();
+      const rows = (json?.data ?? []) as { x: string; y: number }[];
+      return rows.map((r) => ({ x: String(r.x), y: Number(r.y) || 0 }));
+    } catch (error) {
+      logger.warn(
+        `ClickHouse getWebsitePageviewMetrics failed, falling back to PostgreSQL: ${error}`
+      );
+      clickhouseHealthManager.forceHealthCheck().catch(() => {});
+    }
   }
 
   return prisma.$queryRaw`
@@ -453,6 +559,84 @@ export async function getWorkspaceWebsiteStats(
     }
   );
 
+  // Prefer ClickHouse when enabled and healthy; translate filterQuery for CH; require no session join
+  if (
+    env.clickhouse.enable &&
+    clickhouseHealthManager.isClickHouseHealthy() &&
+    joinSession === Prisma.empty
+  ) {
+    try {
+      const chFilter = unwrapSQL(filterQuery)
+        .replace(/\"WebsiteEvent\"\./g, '')
+        .replace(/\"WebsiteSession\"\./g, '')
+        .replace(/\"Website\"\./g, '')
+        .replace(/\"/g, '')
+        .replace(/::[a-zA-Z]+/g, '');
+
+      const chQuery = `
+        select
+          sum(t.c) as pageviews,
+          uniqExact(t.sessionId) as uniques,
+          sum(if(t.c = 1, 1, 0)) as bounces,
+          sum(t.time) as totaltime
+        from (
+          select
+            sessionId,
+            toStartOfHour(createdAt) as bucket,
+            count(*) as c,
+            dateDiff('second', min(createdAt), max(createdAt)) as time
+          from WebsiteEvent
+          where websiteId = {websiteId:String}
+            and createdAt between toDateTime({start:String}, 'UTC') and toDateTime({end:String}, 'UTC')
+            and eventType = {eventType:UInt64}
+            ${chFilter}
+          group by sessionId, bucket
+        ) as t
+      `;
+
+      const result = await clickhouse.query({
+        query: chQuery,
+        query_params: {
+          websiteId: params.websiteId,
+          start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
+          end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
+          eventType: EVENT_TYPE.pageView,
+        },
+      });
+      const json = await result.json<any>();
+      const rows = (json?.data ?? []) as {
+        pageviews: number;
+        uniques: number;
+        bounces: number;
+        totaltime: number;
+      }[];
+
+      const row = rows?.[0] ?? {
+        pageviews: 0,
+        uniques: 0,
+        bounces: 0,
+        totaltime: 0,
+      };
+
+      // Keep the same shape as PostgreSQL: an array with one row
+      return [
+        {
+          pageviews: Number(row.pageviews) || 0,
+          uniques: Number(row.uniques) || 0,
+          bounces: Number(row.bounces) || 0,
+          totaltime: Number(row.totaltime) || 0,
+        },
+      ];
+    } catch (error) {
+      logger.warn(
+        `ClickHouse getWorkspaceWebsiteStats failed, falling back to PostgreSQL: ${error}`
+      );
+      // Force health re-check; ignore error
+      clickhouseHealthManager.forceHealthCheck().catch(() => {});
+    }
+  }
+
+  // PostgreSQL fallback (or when extra filters are present)
   return prisma.$queryRaw`
     select
       sum(t.c) as "pageviews",
