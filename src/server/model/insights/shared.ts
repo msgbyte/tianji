@@ -359,18 +359,20 @@ export abstract class InsightsSqlBuilder {
         const queryParams: Record<string, any> = {};
         const query = sql.sql.replace(/\?/g, () => {
           const fieldName = `field${index}`;
-          queryParams[fieldName] = values[index];
+          const value = values[index];
+          queryParams[fieldName] = value;
 
-          const type = typeof values[index];
+          let placeholder = `{${fieldName}:String}`;
+          const type = typeof value;
           if (type === 'number') {
-            return `{${fieldName}:UInt64}`;
+            placeholder = `{${fieldName}:UInt64}`;
           } else if (type === 'boolean') {
-            return `{${fieldName}:UInt8}`;
+            placeholder = `{${fieldName}:UInt8}`;
           }
 
           index++;
 
-          return `{${fieldName}:String}`;
+          return placeholder;
         });
 
         if (env.debugInsights) {
@@ -395,8 +397,10 @@ export abstract class InsightsSqlBuilder {
           // Ignore health check failure as we're already in fallback handling
         });
 
-        // Execute PostgreSQL query
-        return await prisma.$queryRaw(sql);
+        // Rebuild SQL for PostgreSQL and execute
+        this.useClickhouse = false;
+        const pgSql = this.build();
+        return await prisma.$queryRaw(pgSql);
       }
     } else {
       return await prisma.$queryRaw(sql);

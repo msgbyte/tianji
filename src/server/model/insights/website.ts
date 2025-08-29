@@ -204,8 +204,10 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
           // Ignore health check failure as we're already in fallback handling
         });
 
-        // Execute PostgreSQL query, same code with below
-        const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(allEventsSql);
+        // Rebuild PostgreSQL SQL and execute
+        this.useClickhouse = false;
+        const pgSql = this.buildFetchEventsQuery(cursor);
+        const allEvents = await prisma.$queryRaw<WebsiteEvent[]>(pgSql);
 
         const allEventProperties = await prisma.websiteEventData.findMany({
           where: {
