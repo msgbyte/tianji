@@ -35,28 +35,48 @@ export const WebsiteOverview: React.FC<{
     data: chartData = [],
     isLoading: isLoadingPageview,
     refetch: refetchPageview,
-  } = trpc.website.pageviews.useQuery(
+  } = trpc.insights.query.useQuery(
     {
       workspaceId: website.workspaceId,
-      websiteId: website.id,
-      startAt: startDate.valueOf(),
-      endAt: endDate.valueOf(),
-      unit,
-      timezone: getUserTimezone(),
+      insightId: website.id,
+      insightType: 'website',
+      metrics: [
+        { name: '$page_view', math: 'events', alias: 'A' },
+        { name: '$page_view', math: 'sessions', alias: 'B' },
+      ],
+      filters: [],
+      groups: [],
+      time: {
+        startAt: startDate.valueOf(),
+        endAt: endDate.valueOf(),
+        unit,
+        timezone: getUserTimezone(),
+      },
     },
     {
       select(data) {
-        const pageviews = data.pageviews ?? [];
-        const sessions = data.sessions ?? [];
+        const pvSeries = data?.[0]?.data ?? [];
+        const uvSeries = data?.[1]?.data ?? [];
 
-        const pageviewsArr = getDateArray(pageviews, startDate, endDate, unit);
-        const sessionsArr = getDateArray(sessions, startDate, endDate, unit);
+        const pvMap = new Map<string, number>(
+          pvSeries.map((d) => [d.date, Number(d.value) || 0])
+        );
+        const uvMap = new Map<string, number>(
+          uvSeries.map((d) => [d.date, Number(d.value) || 0])
+        );
 
-        return pageviewsArr.map((item, i) => ({
-          pv: item.y,
-          uv: sessionsArr[i]?.y ?? 0,
-          date: item.x,
+        const dates: string[] = pvSeries.map((d) => d.date);
+
+        return dates.map((date) => ({
+          pv: pvMap.get(date) ?? 0,
+          uv: uvMap.get(date) ?? 0,
+          date,
         }));
+      },
+      trpc: {
+        context: {
+          skipBatch: true,
+        },
       },
     }
   );
@@ -65,14 +85,23 @@ export const WebsiteOverview: React.FC<{
     data: stats,
     isLoading: isLoadingStats,
     refetch: refetchStats,
-  } = trpc.website.stats.useQuery({
-    workspaceId: website.workspaceId,
-    websiteId: website.id,
-    startAt: startDate.unix() * 1000,
-    endAt: endDate.unix() * 1000,
-    timezone: getUserTimezone(),
-    unit,
-  });
+  } = trpc.website.stats.useQuery(
+    {
+      workspaceId: website.workspaceId,
+      websiteId: website.id,
+      startAt: startDate.unix() * 1000,
+      endAt: endDate.unix() * 1000,
+      timezone: getUserTimezone(),
+      unit,
+    },
+    {
+      trpc: {
+        context: {
+          skipBatch: true,
+        },
+      },
+    }
+  );
 
   const handleRefresh = useEvent(async () => {
     refresh();
