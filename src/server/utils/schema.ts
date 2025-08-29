@@ -60,6 +60,7 @@ export const insightsQuerySchema = z.object({
     z.object({
       name: z.string(),
       math: z.enum(['events', 'sessions']).default('events'),
+      alias: z.string().optional(),
     })
   ),
   filters: z.array(FilterInfoSchema).default([]),

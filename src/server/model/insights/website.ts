@@ -21,26 +21,27 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     const { metrics } = this.query;
 
     return metrics.map((item) => {
+      const alias = item.alias ?? item.name;
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as "$all_event"`;
+          return sql`count(1) as ${raw(`"${alias}"`)}`;
         }
 
         if (item.name === '$page_view') {
-          return sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as "$page_view"`;
+          return sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+        return sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return sql`count(distinct "sessionId") as "$all_event"`;
+          return sql`count(distinct "sessionId") as ${raw(`"${alias}"`)}`;
         }
 
         if (item.name === '$page_view') {
-          return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as "$page_view"`;
+          return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${raw(`"${item.name}"`)}`;
+        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${raw(`"${alias}"`)}`;
       }
 
       return null;

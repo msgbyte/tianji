@@ -44,13 +44,14 @@ export function processGroupedTimeSeriesData(
         result.push(
           ...allGroupValue.map((gv) => ({
             name: m.name,
+            alias: m.alias,
             [g.value]: gv,
             data: getDateArray(
               data
                 .filter((item) => get(item, `%${g.value}`) === gv)
                 .map((item) => {
                   return {
-                    value: Number(get(item, m.name)),
+                    value: Number(get(item, m.alias ?? m.name)),
                     date: String(item.date),
                   };
                 }),
@@ -65,10 +66,11 @@ export function processGroupedTimeSeriesData(
     } else {
       result.push({
         name: m.name,
+        alias: m.alias,
         data: getDateArray(
           data.map((item) => {
             return {
-              value: Number(get(item, m.name)),
+              value: Number(get(item, m.alias ?? m.name)),
               date: String(item.date),
             };
           }),

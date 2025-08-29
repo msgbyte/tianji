@@ -1,6 +1,7 @@
 export interface MetricsInfo {
   name: string;
   math: 'events' | 'sessions';
+  alias?: string;
 }
 
 export type FilterInfoValue = string | number | string[] | number[];
