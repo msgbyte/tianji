@@ -112,7 +112,6 @@ function MonitorDetailComponent() {
         <MonitorInfo monitorId={monitor.id} />
       </ScrollArea>
 
-      {/* Push使用说明模态框 */}
       {monitor.type === 'push' && (
         <PushMonitorUsageModal
           monitorId={monitorId}

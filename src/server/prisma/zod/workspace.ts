@@ -43,7 +43,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   functionWorkers: CompleteFunctionWorker[]
   warehouseCohorts: CompleteWarehouseCohorts[]
   warehouseDatabase: CompleteWarehouseDatabase[]
-  WarehouseDatabaseTable: CompleteWarehouseDatabaseTable[]
+  warehouseDatabaseTable: CompleteWarehouseDatabaseTable[]
 }
 
 /**
@@ -68,5 +68,5 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   functionWorkers: RelatedFunctionWorkerModelSchema.array(),
   warehouseCohorts: RelatedWarehouseCohortsModelSchema.array(),
   warehouseDatabase: RelatedWarehouseDatabaseModelSchema.array(),
-  WarehouseDatabaseTable: RelatedWarehouseDatabaseTableModelSchema.array(),
+  warehouseDatabaseTable: RelatedWarehouseDatabaseTableModelSchema.array(),
 }))

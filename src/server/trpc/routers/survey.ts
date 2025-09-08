@@ -347,6 +347,51 @@ export const surveyRouter = router({
 
       return res;
     }),
+  duplicate: workspaceAdminProcedure
+    .meta(
+      buildSurveyOpenapi({
+        method: 'POST',
+        path: '/{surveyId}/duplicate',
+      })
+    )
+    .input(
+      z.object({
+        surveyId: z.string(),
+        name: z.string(),
+      })
+    )
+    .output(SurveyModelSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, surveyId, name } = input;
+
+      // Get the original survey
+      const originalSurvey = await prisma.survey.findUnique({
+        where: {
+          id: surveyId,
+          workspaceId,
+        },
+      });
+
+      if (!originalSurvey) {
+        throw new Error('Survey not found');
+      }
+
+      // Create a duplicate survey with new name
+      const duplicatedSurvey = await prisma.survey.create({
+        data: {
+          workspaceId,
+          name,
+          payload: originalSurvey.payload,
+          feedChannelIds: originalSurvey.feedChannelIds,
+          feedTemplate: originalSurvey.feedTemplate,
+          webhookUrl: originalSurvey.webhookUrl,
+          // Reset suggestion categories for the new survey
+          recentSuggestionCategory: [],
+        },
+      });
+
+      return duplicatedSurvey;
+    }),
   resultList: workspaceProcedure
     .meta(
       buildSurveyOpenapi({

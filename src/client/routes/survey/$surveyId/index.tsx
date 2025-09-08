@@ -12,7 +12,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEvent } from '@/hooks/useEvent';
 import { AlertConfirm } from '@/components/AlertConfirm';
-import { LuPencil, LuTrash } from 'react-icons/lu';
+import { LuCopy, LuEllipsisVertical, LuPencil, LuTrash } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createColumnHelper } from '@/components/DataTable';
@@ -45,6 +45,22 @@ import { SurveyCategoryChart } from '@/components/survey/SurveyCategoryChart';
 import { useSurveyListColumns } from '@/components/survey/useSurveyListColumns';
 import { useSocketSubscribe } from '@/api/socketio';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export const Route = createFileRoute('/survey/$surveyId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -96,9 +112,16 @@ function PageComponent() {
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
+  const duplicateMutation = trpc.survey.duplicate.useMutation({
+    onSuccess: defaultSuccessHandler,
+    onError: defaultErrorHandler,
+  });
   const trpcUtils = trpc.useUtils();
   const navigate = useNavigate();
   const { askAIQuestion } = useAIAction();
+
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [duplicateName, setDuplicateName] = useState('');
 
   const { selectedIndex, setSelectedIndex, columns } =
     useSurveyListColumns(surveyId);
@@ -148,6 +171,39 @@ function PageComponent() {
     });
   });
 
+  const handleDuplicate = useEvent(async () => {
+    if (!duplicateName.trim()) {
+      toast.error(t('Please enter a name for the duplicated survey'));
+      return;
+    }
+
+    try {
+      const newSurvey = await duplicateMutation.mutateAsync({
+        workspaceId,
+        surveyId,
+        name: duplicateName.trim(),
+      });
+
+      trpcUtils.survey.all.refetch();
+      setDuplicateModalOpen(false);
+      setDuplicateName('');
+
+      navigate({
+        to: '/survey/$surveyId',
+        params: {
+          surveyId: newSurvey.id,
+        },
+      });
+    } catch (error) {
+      // Error handling is done by the mutation's onError
+    }
+  });
+
+  const handleOpenDuplicateModal = useEvent(() => {
+    setDuplicateName(info?.name ? `${info.name} - Copy` : 'New Survey');
+    setDuplicateModalOpen(true);
+  });
+
   return (
     <CommonWrapper
       header={
@@ -156,36 +212,60 @@ function PageComponent() {
           actions={
             <div className="space-x-2">
               {hasAdminPermission && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  Icon={LuPencil}
-                  onClick={() =>
-                    navigate({
-                      to: '/survey/$surveyId/edit',
-                      params: {
-                        surveyId,
-                      },
-                    })
-                  }
-                />
-              )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild={true}
+                    className="cursor-pointer"
+                  >
+                    <Button variant="outline" size="icon" className="shrink-0">
+                      <LuEllipsisVertical />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-              {hasAdminPermission && (
-                <AlertConfirm
-                  title={t('Confirm to delete this survey?')}
-                  description={t(
-                    'Survey name: {{name}} | data count: {{num}}',
-                    {
-                      name: info?.name ?? '',
-                      num: count ?? 0,
-                    }
-                  )}
-                  content={t('It will permanently delete the relevant data')}
-                  onConfirm={handleDelete}
-                >
-                  <Button variant="outline" size="icon" Icon={LuTrash} />
-                </AlertConfirm>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        navigate({
+                          to: '/survey/$surveyId/edit',
+                          params: {
+                            surveyId,
+                          },
+                        })
+                      }
+                    >
+                      <LuPencil className="mr-2" />
+                      {t('Edit')}
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem onClick={handleOpenDuplicateModal}>
+                      <LuCopy className="mr-2" />
+                      {t('Duplicate')}
+                    </DropdownMenuItem>
+
+                    <AlertConfirm
+                      title={t('Confirm to delete this survey?')}
+                      description={t(
+                        'Survey name: {{name}} | data count: {{num}}',
+                        {
+                          name: info?.name ?? '',
+                          num: count ?? 0,
+                        }
+                      )}
+                      content={t(
+                        'It will permanently delete the relevant data'
+                      )}
+                      onConfirm={handleDelete}
+                    >
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="text-red-600 data-[highlighted]:!bg-red-50 data-[highlighted]:!text-red-700"
+                      >
+                        <LuTrash className="mr-2" />
+                        {t('Delete')}
+                      </DropdownMenuItem>
+                    </AlertConfirm>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           }
@@ -346,6 +426,57 @@ function PageComponent() {
             </SheetFooter>
           </SheetContent>
         </Sheet>
+
+        {/* Duplicate Dialog */}
+        <Dialog
+          open={duplicateModalOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDuplicateModalOpen(false);
+              setDuplicateName('');
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t('Duplicate Survey')}</DialogTitle>
+              <DialogDescription>
+                {t('Create a copy of this survey with the same configuration.')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="survey-name" className="text-right">
+                  {t('Survey Name')}
+                </Label>
+                <Input
+                  id="survey-name"
+                  value={duplicateName}
+                  onChange={(e) => setDuplicateName(e.target.value)}
+                  placeholder={t('Enter name for the duplicated survey')}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDuplicateModalOpen(false);
+                  setDuplicateName('');
+                }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                onClick={handleDuplicate}
+                loading={duplicateMutation.isPending}
+              >
+                {t('Duplicate')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </CommonWrapper>
   );
