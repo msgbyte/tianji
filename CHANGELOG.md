@@ -1,5 +1,25 @@
 
 
+## [1.24.27](https://github.com/msgbyte/tianji/compare/v1.24.26...v1.24.27) (2025-09-08)
+
+### Features
+
+* add aiTranslation field for survey insight ([b2b7ee7](https://github.com/msgbyte/tianji/commit/b2b7ee7bec61c18dd13f6a015d8cd3ce059c5382))
+* add duplicate feature in survey ([c00ff7a](https://github.com/msgbyte/tianji/commit/c00ff7a0ea43857f3f222d7912cd2cdbe4e5856d))
+
+### Bug Fixes
+
+* fix a bug which in list and not list in insight not work ([09f5aea](https://github.com/msgbyte/tianji/commit/09f5aeaee14539ef57d8fcc992f723f4a1650f41))
+
+### Document
+
+* add blog post on privacy-first website analytics with Tianji ([7ccab50](https://github.com/msgbyte/tianji/commit/7ccab50913449fca7655e3f016d5459030bfc679))
+
+### Others
+
+* add blog ([ad115f3](https://github.com/msgbyte/tianji/commit/ad115f30dbbcadc1a8266bcd05f944f193712377))
+* update clickhouse sync cronjob ([bbf865a](https://github.com/msgbyte/tianji/commit/bbf865a59c90357f6e42e4ff50b055c2f4d0b203))
+
 ## [1.24.26](https://github.com/msgbyte/tianji/compare/v1.24.25...v1.24.26) (2025-08-29)
 
 ### Features
