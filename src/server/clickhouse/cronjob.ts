@@ -293,7 +293,7 @@ export async function syncPostgresToClickHouse() {
 // Initialize cronjob
 export function initClickHouseSyncCronjob() {
   // Run every hour
-  const job = Cron(env.isDev ? '* * * * *' : '0 * * * *', async () => {
+  const job = Cron(env.isDev ? '* * * * *' : '0/20 * * * *', async () => {
     try {
       await syncPostgresToClickHouse();
     } catch (err) {
