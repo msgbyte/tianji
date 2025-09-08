@@ -3,6 +3,7 @@
 exports[`processGroupedTimeSeriesData > simple test case 1`] = `
 [
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -41,6 +42,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -79,6 +81,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -117,6 +120,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -155,6 +159,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -193,6 +198,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -231,6 +237,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -269,6 +276,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -307,6 +315,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -345,6 +354,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
     "name": "$all_event",
   },
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-04-27 00:00:00",
@@ -388,6 +398,7 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
 exports[`processGroupedTimeSeriesData > simple test case 2 1`] = `
 [
   {
+    "alias": undefined,
     "data": [
       {
         "date": "2025-07-17 00:00:00",

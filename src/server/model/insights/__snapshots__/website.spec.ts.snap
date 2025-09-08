@@ -2,56 +2,70 @@
 
 exports[`WebsiteInsightsSqlBuilder > combined filters and groups > sql with filters and groups 1`] = `
 "select
-      to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , "WebsiteEventData"."stringValue" as "%browser" , count(1) as "$all_event"
-    from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."numberValue" = '1' AND "WebsiteEventData"."eventKey" = 'browser'
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
-    group by 1 , 2"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "WebsiteEventData"."stringValue" as "%browser" , count(1) as "$all_event"
+      from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."numberValue" = '1' AND "WebsiteEventData"."eventKey" = 'browser'
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
+      group by 1 , 2
+      order by 1 desc
+      limit 1000"
 `;
 
 exports[`WebsiteInsightsSqlBuilder > date type filters > sql with date filters 1`] = `
 "select
-      to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , count(1) as "$all_event"
-    from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."dateValue" BETWEEN '2025-02-10T16:00:00.000Z' AND '2025-03-13T15:59:59.999Z'
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
-    group by 1"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+      from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."dateValue" BETWEEN '2025-02-10T16:00:00.000Z' AND '2025-03-13T15:59:59.999Z'
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
+      group by 1
+      order by 1 desc
+      limit 1000"
 `;
 
 exports[`WebsiteInsightsSqlBuilder > different metrics > sql with different metrics 1`] = `
 "select
-      to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = '1' THEN 1 ELSE 0 END) as "$page_view" , sum(case WHEN "WebsiteEvent"."eventName" = 'click' THEN 1 ELSE 0 END) as "click" , count(distinct "sessionId") as "$all_event"
-    from "WebsiteEvent" 
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("WebsiteEvent"."eventType" = '1' OR "WebsiteEvent"."eventName" = 'click' OR 1 = 1)
-    group by 1"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = '1' THEN 1 ELSE 0 END) as "$page_view" , sum(case WHEN "WebsiteEvent"."eventName" = 'click' THEN 1 ELSE 0 END) as "click" , count(distinct "sessionId") as "$all_event"
+      from "WebsiteEvent" 
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("WebsiteEvent"."eventType" = '1' OR "WebsiteEvent"."eventName" = 'click' OR 1 = 1)
+      group by 1
+      order by 1 desc
+      limit 1000"
 `;
 
 exports[`WebsiteInsightsSqlBuilder > different time units > sql with month time unit 1`] = `
 "select
-      to_char(date_trunc('month', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-01') date , count(1) as "$all_event"
-    from "WebsiteEvent" 
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
-    group by 1"
+        to_char(date_trunc('month', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-01') date , count(1) as "$all_event"
+      from "WebsiteEvent" 
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
+      group by 1
+      order by 1 desc
+      limit 1000"
 `;
 
 exports[`WebsiteInsightsSqlBuilder > groups > sql 1`] = `
 "select
-      to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , "WebsiteEventData"."numberValue" as "%number" , count(1) as "$all_event"
-    from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."eventKey" = 'number'
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
-    group by 1 , 2"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "WebsiteEventData"."numberValue" as "%number" , count(1) as "$all_event"
+      from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."eventKey" = 'number'
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
+      group by 1 , 2
+      order by 1 desc
+      limit 1000"
 `;
 
 exports[`WebsiteInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
 "select
-      to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , "WebsiteEventData"."numberValue" != '1' as "%number|not equals|1" , count(1) as "$all_event"
-    from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."eventKey" = 'number'
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
-    group by 1 , 2"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "WebsiteEventData"."numberValue" != '1' as "%number|not equals|1" , count(1) as "$all_event"
+      from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."eventKey" = 'number'
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
+      group by 1 , 2
+      order by 1 desc
+      limit 1000"
 `;
 
 exports[`WebsiteInsightsSqlBuilder > with filters > sql with filters 1`] = `
 "select
-      to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'Asia/Shanghai'), 'YYYY-MM-DD') date , count(1) as "$all_event"
-    from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."stringValue" = 'US' AND "WebsiteEventData"."numberValue" > '18'
-    where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
-    group by 1"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+      from "WebsiteEvent" INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId" AND "WebsiteEventData"."stringValue" = 'US' AND "WebsiteEventData"."numberValue" > '18'
+      where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
+      group by 1
+      order by 1 desc
+      limit 1000"
 `;

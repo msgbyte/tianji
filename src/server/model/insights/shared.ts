@@ -189,10 +189,10 @@ export abstract class InsightsSqlBuilder {
       return sql`${valueField} != ${castToNumber(value)}`;
     }
     if (operator === 'in list' && Array.isArray(value)) {
-      return sql`${valueField} IN (${value.join(',')})`;
+      return sql`${valueField} IN (${Prisma.join(value, ' , ')})`;
     }
     if (operator === 'not in list' && Array.isArray(value)) {
-      return sql`${valueField} NOT IN (${value.join(',')})`;
+      return sql`${valueField} NOT IN (${Prisma.join(value, ' , ')})`;
     }
     if (operator === 'greater than') {
       return sql`${valueField} > ${castToNumber(value)}`;
@@ -234,7 +234,7 @@ export abstract class InsightsSqlBuilder {
       return sql`${valueField} IN (${Prisma.join(value, ' , ')})`;
     }
     if (operator === 'not in list' && Array.isArray(value)) {
-      return sql`${valueField} NOT IN (${value.join(',')})`;
+      return sql`${valueField} NOT IN (${Prisma.join(value, ' , ')})`;
     }
 
     return sql`1 = 1`;
