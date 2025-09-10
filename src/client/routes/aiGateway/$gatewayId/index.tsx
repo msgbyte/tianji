@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
-import { AIGatewayPricingBtn } from '@/components/aiGateway/AIGatewayPricingBtn';
 import { useState, useRef } from 'react';
 import { SearchInput } from '@/components/ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -84,8 +83,6 @@ function PageComponent() {
           title={gateway.name}
           actions={
             <div className="space-x-2">
-              <AIGatewayPricingBtn />
-
               <AIGatewayCodeExampleBtn gatewayId={gatewayId} />
 
               {hasAdminPermission && (

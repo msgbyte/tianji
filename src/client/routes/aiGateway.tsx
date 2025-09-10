@@ -18,6 +18,7 @@ import { LuPlus } from 'react-icons/lu';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useMemo } from 'react';
 import { AIGatewaySparkline } from '@/components/aiGateway/AIGatewaySparkline';
+import { AIGatewayPricingBtn } from '@/components/aiGateway/AIGatewayPricingBtn';
 
 export const Route = createFileRoute('/aiGateway')({
   beforeLoad: routeAuthBeforeLoad,
@@ -76,6 +77,8 @@ function AIGatewayComponent() {
               title={t('AI Gateway')}
               actions={
                 <div className="space-x-2">
+                  <AIGatewayPricingBtn />
+
                   {hasAdminPermission && (
                     <Button
                       className={cn(
