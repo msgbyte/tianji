@@ -66,7 +66,7 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
         },
         openrouter: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openrouter',
-          defaultModel: 'openai/gpt-4o-mini',
+          defaultModel: 'openai/gpt-4o',
           description: t('OpenRouter API compatible'),
           label: 'OpenRouter API',
         },

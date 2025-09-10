@@ -23,10 +23,12 @@ export interface CommonListItem {
 interface CommonListProps {
   isLoading?: boolean;
   hasSearch?: boolean;
+  direction?: 'horizontal' | 'vertical';
   items: CommonListItem[];
   emptyDescription?: React.ReactNode;
 }
 export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
+  const { direction = 'vertical' } = props;
   const { location } = useRouterState();
   const navigate = useNavigate();
 
@@ -100,23 +102,43 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                   });
                 }}
               >
-                <div className="flex w-full items-center justify-between gap-1">
-                  <div className="overflow-hidden text-ellipsis font-semibold">
-                    {item.title}
+                <div
+                  className={cn(
+                    'flex w-full gap-2',
+                    direction === 'vertical' && 'flex-col'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'flex items-center justify-between gap-1',
+                      direction === 'vertical' && 'w-full',
+                      direction === 'horizontal' &&
+                        'flex-1 overflow-hidden text-ellipsis'
+                    )}
+                  >
+                    <div className="overflow-hidden text-ellipsis font-semibold">
+                      {item.title}
+                    </div>
+
+                    {item.number && item.number > 0 && (
+                      <span className="opacity-60" title={String(item.number)}>
+                        {formatNumber(item.number)}
+                      </span>
+                    )}
                   </div>
 
-                  {item.number && item.number > 0 && (
-                    <span className="opacity-60" title={String(item.number)}>
-                      {formatNumber(item.number)}
-                    </span>
+                  {item.content && (
+                    <div
+                      className={cn(
+                        'text-muted-foreground line-clamp-2 text-xs',
+                        direction === 'vertical' && 'w-full',
+                        direction === 'horizontal' && 'flex-shrink-0'
+                      )}
+                    >
+                      {item.content}
+                    </div>
                   )}
                 </div>
-
-                {item.content && (
-                  <div className="text-muted-foreground line-clamp-2 w-full text-xs">
-                    {item.content}
-                  </div>
-                )}
 
                 {Array.isArray(item.tags) && item.tags.length > 0 ? (
                   <div className="flex items-center gap-2">

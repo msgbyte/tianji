@@ -16,6 +16,8 @@ import {
 } from '@tanstack/react-router';
 import { LuPlus } from 'react-icons/lu';
 import { useDataReady } from '@/hooks/useDataReady';
+import { useMemo } from 'react';
+import { AIGatewaySparkline } from '@/components/aiGateway/AIGatewaySparkline';
 
 export const Route = createFileRoute('/aiGateway')({
   beforeLoad: routeAuthBeforeLoad,
@@ -34,14 +36,16 @@ function AIGatewayComponent() {
     select: (state) => state.location.pathname,
   });
 
-  const items: CommonListItem[] =
-    data.length > 0
+  const items: CommonListItem[] = useMemo(() => {
+    return data.length > 0
       ? data.map((item) => ({
           id: item.id,
           title: item.name,
           href: `/aiGateway/${item.id}`,
+          content: <AIGatewaySparkline gatewayId={item.id} />,
         }))
       : [];
+  }, [data]);
 
   const handleClickAdd = useEvent(() => {
     navigate({
@@ -92,6 +96,7 @@ function AIGatewayComponent() {
           <CommonList
             hasSearch={true}
             items={items}
+            direction="horizontal"
             isLoading={isLoading}
             emptyDescription={t(
               'No AI Gateway has been added yet. You can create one to integrate with external AI services.'
