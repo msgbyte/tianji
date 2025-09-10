@@ -1,5 +1,11 @@
 
 
+## [1.24.29](https://github.com/msgbyte/tianji/compare/v1.24.28...v1.24.29) (2025-09-11)
+
+### Bug Fixes
+
+* fix image problem ([df8b8cf](https://github.com/msgbyte/tianji/commit/df8b8cf7f6c55d9c937332f193e23d2c05c44dd7))
+
 ## [1.24.28](https://github.com/msgbyte/tianji/compare/v1.24.27...v1.24.28) (2025-09-10)
 
 ### Features
