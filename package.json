@@ -20,7 +20,7 @@
     "build:server": "cd src/server && pnpm build",
     "build:tracker": "tsx scripts/build-tracker.ts",
     "build:geo": "tsx scripts/build-geo.ts",
-    "build:llm": "tsx scripts/fetch-llm-model.ts",
+    "build:llm": "tsx scripts/fetch-llm-model.ts && tsx scripts/fetch-llm-model-v2.ts",
     "build:openapi": "tsx --tsconfig ./tsconfig.base.json ./scripts/build-openapi-schema.ts && cd packages/client-sdk && pnpm generate:client",
     "check:type": "pnpm -r check:type",
     "release": "release-it",

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import OpenAI from 'openai';
 import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
 import {
-  getLLMCostDecimal,
+  getLLMCostDecimalV2,
   getLLMCostDecimalWithCustomPrice,
 } from '../utils/llm.js';
 import { get } from 'lodash-es';
@@ -39,6 +39,7 @@ const openaiRequestSchema = z
 
 interface OpenaiHandlerOptions {
   baseUrl?: string;
+  modelProvider?: string;
   modelPriceName?: (model: string) => string;
   isCustomRoute?: boolean;
 }
@@ -107,6 +108,7 @@ export function buildOpenAIHandler(
         apiKey: modelApiKey,
         baseURL: baseUrl,
       });
+      const modelProvider = options.modelProvider ?? 'openai';
       const modelPriceName = options.modelPriceName
         ? options.modelPriceName(modelName)
         : modelName;
@@ -163,7 +165,12 @@ export function buildOpenAIHandler(
                   customInputPrice,
                   customOutputPrice
                 )
-              : getLLMCostDecimal(modelPriceName, inputToken, outputToken);
+              : getLLMCostDecimalV2(
+                  modelProvider,
+                  modelPriceName,
+                  inputToken,
+                  outputToken
+                );
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -212,7 +219,12 @@ export function buildOpenAIHandler(
                   customInputPrice,
                   customOutputPrice
                 )
-              : getLLMCostDecimal(modelPriceName, inputToken, outputToken);
+              : getLLMCostDecimalV2(
+                  modelProvider,
+                  modelPriceName,
+                  inputToken,
+                  outputToken
+                );
 
           await prisma.aIGatewayLogs.update({
             where: {
