@@ -1,5 +1,20 @@
 
 
+## [1.24.28](https://github.com/msgbyte/tianji/compare/v1.24.27...v1.24.28) (2025-09-10)
+
+### Features
+
+* add AIGatewayPricingBtn and AIGatewayPricingModal components for model pricing display ([c5cb8ba](https://github.com/msgbyte/tianji/commit/c5cb8ba6f698038bbaeb008060e99576a113fa42))
+* add AIGatewaySparkline component in aigateway list ([426fa82](https://github.com/msgbyte/tianji/commit/426fa822c0784080e54976971aebacaa99f68327))
+* add sparkline component ([a5f41db](https://github.com/msgbyte/tianji/commit/a5f41db20f7e6aead9323e1a0aa02c7c204f3f52))
+* add v2 llm model price list which can improve price usage with more models ([2c0b498](https://github.com/msgbyte/tianji/commit/2c0b498c583d76fcacf27bcac3d31778d57241dd))
+
+### Others
+
+* add storybook support ([7273155](https://github.com/msgbyte/tianji/commit/727315567408ce98ce71fd2a3deb2cdd6dffdf7b))
+* translation and change ai price button position ([dea798a](https://github.com/msgbyte/tianji/commit/dea798a353061f60f408792889887615cf63c90e))
+* update model prices ([74bd53b](https://github.com/msgbyte/tianji/commit/74bd53bccba9ac627966b4cb628e3707eb645b9a))
+
 ## [1.24.27](https://github.com/msgbyte/tianji/compare/v1.24.26...v1.24.27) (2025-09-08)
 
 ### Features
