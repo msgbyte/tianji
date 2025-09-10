@@ -13,7 +13,9 @@
     "translation:scan": "i18next-toolkit scan",
     "translation:translate": "i18next-toolkit translate",
     "test": "vitest",
-    "knip": "knip"
+    "knip": "knip",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",
@@ -119,7 +121,13 @@
   },
   "devDependencies": {
     "@auth/core": "0.34.1",
+    "@chromatic-com/storybook": "^4.1.1",
     "@i18next-toolkit/cli": "^1.5.0",
+    "@storybook/addon-a11y": "^9.1.5",
+    "@storybook/addon-docs": "^9.1.5",
+    "@storybook/addon-onboarding": "^9.1.5",
+    "@storybook/addon-vitest": "^9.1.5",
+    "@storybook/react-vite": "^9.1.5",
     "@tanstack/router-vite-plugin": "1.20.5",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
@@ -149,10 +157,13 @@
     "less": "^4.2.2",
     "postcss": "^8.5.3",
     "shadcn": "^2.3.0",
+    "storybook": "^9.1.5",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.7.2",
     "vite": "^5.4.14",
-    "vitest": "~3.0.8"
+    "vitest": "~3.0.8",
+    "@vitest/browser": "3.0.8",
+    "playwright": "^1.55.0"
   }
 }
