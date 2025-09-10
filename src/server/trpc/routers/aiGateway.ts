@@ -13,8 +13,14 @@ import { prisma } from '../../model/_client.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { clearGatewayInfoCache } from '../../model/aiGateway.js';
-import modelPricingData from '../../utils/model_prices_and_context_window_v2.json' assert { type: 'json' };
 import { logger } from '../../utils/logger.js';
+
+const modelPricingData = await import(
+  '../../utils/model_prices_and_context_window_v2.json',
+  {
+    with: { type: 'json' },
+  }
+).then((res) => res.default);
 
 const aiGatewayCreateSchema = z.object({
   name: z.string().max(100),
