@@ -123,6 +123,8 @@ model Workspace {
   warehouseCohorts       WarehouseCohorts[]
   warehouseDatabase      WarehouseDatabase[]
   warehouseDatabaseTable WarehouseDatabaseTable[]
+  aiGateways             AIGateway[]
+  aiGatewayQuotaAlerts   AIGatewayQuotaAlert[]
 }
 
 model WorkspacesOnUsers {
@@ -633,8 +635,9 @@ model Notification {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  monitors     Monitor[]
-  feedChannels FeedChannel[]
+  monitors             Monitor[]
+  feedChannels         FeedChannel[]
+  aiGatewayQuotaAlerts AIGatewayQuotaAlert[]
 
   @@index([workspaceId])
 }
@@ -920,7 +923,9 @@ model AIGateway {
   createdAt              DateTime @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime @updatedAt @db.Timestamptz(6)
 
-  aiGatewayLogs AIGatewayLogs[]
+  aiGatewayLogs        AIGatewayLogs[]
+  aiGatewayQuotaAlerts AIGatewayQuotaAlert[]
+  workspace            Workspace             @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }
 
 enum AIGatewayLogsStatus {
@@ -952,6 +957,30 @@ model AIGatewayLogs {
 
   @@index([gatewayId])
   @@index([createdAt])
+}
+
+model AIGatewayQuotaAlert {
+  id                String    @id @default(cuid()) @db.VarChar(30)
+  workspaceId       String    @db.VarChar(30)
+  gatewayId         String    @db.VarChar(30)
+  dailyQuota        Decimal   @default(0.0) @db.Decimal(30, 13) // unit: usd
+  enabled           Boolean   @default(true) @db.Boolean
+  notificationId    String?   @db.VarChar(30)
+  lastAlertSentAt   DateTime? @db.Timestamptz(6)
+  alertLevel80Sent  Boolean   @default(false) @db.Boolean // 80% alert sent
+  alertLevel100Sent Boolean   @default(false) @db.Boolean // 100% alert sent
+  alertLevel150Sent Boolean   @default(false) @db.Boolean // 150% alert sent
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
+
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  aiGateway    AIGateway     @relation(fields: [gatewayId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  notification Notification? @relation(fields: [notificationId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+
+  @@unique([workspaceId, gatewayId])
+  @@index([workspaceId])
+  @@index([gatewayId])
+  @@index([enabled])
 }
 
 model FunctionWorker {

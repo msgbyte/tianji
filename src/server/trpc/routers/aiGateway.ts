@@ -13,6 +13,7 @@ import { prisma } from '../../model/_client.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { clearGatewayInfoCache } from '../../model/aiGateway.js';
+import { clearQuotaAlertCacheForGateway } from '../../model/aiGateway/quotaAlert.js';
 import { logger } from '../../utils/logger.js';
 
 const modelPricingData = await import(
@@ -425,6 +426,147 @@ export const aiGatewayRouter = router({
         return { providers: [] };
       }
     }),
+  quotaAlert: {
+    get: workspaceProcedure
+      .meta(
+        buildAIGatewayOpenapi({
+          method: 'GET',
+          path: '/quota-alert',
+        })
+      )
+      .input(
+        z.object({
+          gatewayId: z.string(),
+        })
+      )
+      .output(
+        z
+          .object({
+            id: z.string(),
+            dailyQuota: z.number(),
+            enabled: z.boolean(),
+            notificationId: z.string().nullable(),
+            lastAlertSentAt: z.date().nullable(),
+            alertLevel80Sent: z.boolean(),
+            alertLevel100Sent: z.boolean(),
+            alertLevel150Sent: z.boolean(),
+          })
+          .nullable()
+      )
+      .query(async ({ input }) => {
+        const { workspaceId, gatewayId } = input;
+
+        const quotaAlert = await prisma.aIGatewayQuotaAlert.findFirst({
+          where: {
+            workspaceId,
+            gatewayId,
+          },
+        });
+
+        if (!quotaAlert) {
+          return null;
+        }
+
+        return {
+          id: quotaAlert.id,
+          dailyQuota: Number(quotaAlert.dailyQuota),
+          enabled: quotaAlert.enabled,
+          notificationId: quotaAlert.notificationId,
+          lastAlertSentAt: quotaAlert.lastAlertSentAt,
+          alertLevel80Sent: quotaAlert.alertLevel80Sent,
+          alertLevel100Sent: quotaAlert.alertLevel100Sent,
+          alertLevel150Sent: quotaAlert.alertLevel150Sent,
+        };
+      }),
+
+    upsert: workspaceAdminProcedure
+      .meta(
+        buildAIGatewayOpenapi({
+          method: 'POST',
+          path: '/quota-alert/upsert',
+        })
+      )
+      .input(
+        z.object({
+          gatewayId: z.string(),
+          dailyQuota: z.number().min(0),
+          enabled: z.boolean(),
+          notificationId: z.string().nullable(),
+        })
+      )
+      .output(
+        z.object({
+          id: z.string(),
+          dailyQuota: z.number(),
+          enabled: z.boolean(),
+          notificationId: z.string().nullable(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { workspaceId, gatewayId, dailyQuota, enabled, notificationId } =
+          input;
+
+        const quotaAlert = await prisma.aIGatewayQuotaAlert.upsert({
+          where: {
+            workspaceId_gatewayId: {
+              workspaceId,
+              gatewayId,
+            },
+          },
+          create: {
+            workspaceId,
+            gatewayId,
+            dailyQuota,
+            enabled,
+            notificationId,
+          },
+          update: {
+            dailyQuota,
+            enabled,
+            notificationId,
+          },
+        });
+
+        // Clear cache after updating quota alert settings
+        clearQuotaAlertCacheForGateway(workspaceId, gatewayId);
+
+        return {
+          id: quotaAlert.id,
+          dailyQuota: Number(quotaAlert.dailyQuota),
+          enabled: quotaAlert.enabled,
+          notificationId: quotaAlert.notificationId,
+        };
+      }),
+
+    delete: workspaceAdminProcedure
+      .meta(
+        buildAIGatewayOpenapi({
+          method: 'DELETE',
+          path: '/quota-alert/delete',
+        })
+      )
+      .input(
+        z.object({
+          gatewayId: z.string(),
+        })
+      )
+      .output(z.boolean())
+      .mutation(async ({ input }) => {
+        const { workspaceId, gatewayId } = input;
+
+        await prisma.aIGatewayQuotaAlert.deleteMany({
+          where: {
+            workspaceId,
+            gatewayId,
+          },
+        });
+
+        // Clear cache after deleting quota alert
+        clearQuotaAlertCacheForGateway(workspaceId, gatewayId);
+
+        return true;
+      }),
+  },
 });
 
 function buildAIGatewayOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {

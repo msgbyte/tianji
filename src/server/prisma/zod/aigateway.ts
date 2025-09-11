@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteAIGatewayLogs, RelatedAIGatewayLogsModelSchema } from "./index.js"
+import { CompleteAIGatewayLogs, RelatedAIGatewayLogsModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
 
 export const AIGatewayModelSchema = z.object({
   id: z.string(),
@@ -17,6 +17,8 @@ export const AIGatewayModelSchema = z.object({
 
 export interface CompleteAIGateway extends z.infer<typeof AIGatewayModelSchema> {
   aiGatewayLogs: CompleteAIGatewayLogs[]
+  aiGatewayQuotaAlerts: CompleteAIGatewayQuotaAlert[]
+  workspace: CompleteWorkspace
 }
 
 /**
@@ -26,4 +28,6 @@ export interface CompleteAIGateway extends z.infer<typeof AIGatewayModelSchema> 
  */
 export const RelatedAIGatewayModelSchema: z.ZodSchema<CompleteAIGateway> = z.lazy(() => AIGatewayModelSchema.extend({
   aiGatewayLogs: RelatedAIGatewayLogsModelSchema.array(),
+  aiGatewayQuotaAlerts: RelatedAIGatewayQuotaAlertModelSchema.array(),
+  workspace: RelatedWorkspaceModelSchema,
 }))

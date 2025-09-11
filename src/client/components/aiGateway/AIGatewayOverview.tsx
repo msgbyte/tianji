@@ -17,6 +17,8 @@ import { getDateArray } from '@tianji/shared';
 import colors from 'tailwindcss/colors';
 import { getUserTimezone } from '@/api/model/user';
 import { AIGatewaySummaryStats } from './AIGatewaySummaryStats';
+import { AIGatewayQuotaStatus } from './AIGatewayQuotaStatus';
+import { AIGatewayQuotaAlertModal } from './AIGatewayQuotaAlertModal';
 import { LoadingView } from '../LoadingView';
 
 interface AIGatewayOverviewProps {
@@ -31,6 +33,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
     const [type, setType] = useState<
       '$all_event' | 'inputToken' | 'outputToken' | 'price'
     >('price');
+    const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
 
     const { data = [], isLoading } = trpc.insights.query.useQuery(
       {
@@ -118,29 +121,53 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
 
         <AIGatewaySummaryStats gatewayId={props.gatewayId} />
 
-        <div className="rounded-md shadow">
-          <div className="mb-4 flex items-center justify-end">
-            <Select value={type} onValueChange={(val) => setType(val as any)}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="$all_event">{t('Count')}</SelectItem>
-                <SelectItem value="inputToken">{t('Input Token')}</SelectItem>
-                <SelectItem value="outputToken">{t('Output Token')}</SelectItem>
-                <SelectItem value="price">{t('Price')}</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <div className="rounded-md shadow">
+              <div className="mb-4 flex items-center justify-end">
+                <Select
+                  value={type}
+                  onValueChange={(val) => setType(val as any)}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="$all_event">{t('Count')}</SelectItem>
+                    <SelectItem value="inputToken">
+                      {t('Input Token')}
+                    </SelectItem>
+                    <SelectItem value="outputToken">
+                      {t('Output Token')}
+                    </SelectItem>
+                    <SelectItem value="price">{t('Price')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <TimeEventChart
+                data={data}
+                unit={unit}
+                chartConfig={chartConfig}
+                chartType="area"
+                valueFormatter={valueFormatter}
+              />
+            </div>
           </div>
 
-          <TimeEventChart
-            data={data}
-            unit={unit}
-            chartConfig={chartConfig}
-            chartType="area"
-            valueFormatter={valueFormatter}
-          />
+          <div className="lg:col-span-1">
+            <AIGatewayQuotaStatus
+              gatewayId={props.gatewayId}
+              onOpenQuotaSettings={() => setIsQuotaModalOpen(true)}
+            />
+          </div>
         </div>
+
+        <AIGatewayQuotaAlertModal
+          isOpen={isQuotaModalOpen}
+          onClose={() => setIsQuotaModalOpen(false)}
+          gatewayId={props.gatewayId}
+        />
       </LoadingView>
     );
   }

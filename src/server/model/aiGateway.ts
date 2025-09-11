@@ -11,6 +11,8 @@ import {
 } from '../utils/llm.js';
 import { get } from 'lodash-es';
 import { verifyUserApiKey } from '../model/user.js';
+import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
+import { logger } from '../utils/logger.js';
 
 export const { get: getGatewayInfoCache, del: clearGatewayInfoCache } =
   buildQueryWithCache(async (workspaceId: string, gatewayId: string) => {
@@ -186,6 +188,13 @@ export function buildOpenAIHandler(
               responsePayload: { content: outputContent },
             },
           });
+
+          // Check quota alert after successful request
+          checkQuotaAlert(workspaceId, gatewayId, Number(price)).catch(
+            (error) => {
+              logger.error('Error checking quota alert:', error);
+            }
+          );
         });
       } else {
         // Handle normal response
@@ -239,6 +248,13 @@ export function buildOpenAIHandler(
               responsePayload: { ...response },
             },
           });
+
+          // Check quota alert after successful request
+          checkQuotaAlert(workspaceId, gatewayId, Number(price)).catch(
+            (error) => {
+              logger.error('Error checking quota alert:', error);
+            }
+          );
         });
       }
     } catch (error) {
