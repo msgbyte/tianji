@@ -73,6 +73,11 @@ export const AIGatewaySparkline: React.FC<{ gatewayId: string }> = React.memo(
           );
         },
         refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+        trpc: {
+          context: {
+            skipBatch: true,
+          },
+        },
       }
     );
 
