@@ -17,8 +17,8 @@ import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { AlertCircle, DollarSign } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { NotificationPicker } from '../notification/NotificationPicker';
 import { AlertConfirm } from '@/components/AlertConfirm';
+import { NotificationPickerV2 } from '../notification/NotificationPickerV2';
 
 interface AIGatewayQuotaAlertModalProps {
   isOpen: boolean;
@@ -89,7 +89,7 @@ export const AIGatewayQuotaAlertModal: React.FC<
       gatewayId,
       dailyQuota: quota,
       enabled,
-      notificationId: notificationId,
+      notificationId: notificationId ?? null,
     });
     trpcUtils.aiGateway.quotaAlert.get.invalidate({
       workspaceId,
@@ -173,14 +173,12 @@ export const AIGatewayQuotaAlertModal: React.FC<
                 <Label htmlFor="notification" className="text-sm font-medium">
                   {t('Notification Channel')}
                 </Label>
-                <NotificationPicker
-                  value={notificationId as any}
-                  onChange={setNotificationId as any}
+                <NotificationPickerV2
+                  value={notificationId}
+                  onValueChange={setNotificationId}
                   disabled={!enabled}
                   placeholder={t('Select notification channel')}
-                  allowClear={true}
                   className="w-full"
-                  getPopupContainer={() => containerRef.current!}
                 />
                 <p className="text-muted-foreground text-xs">
                   {t('Choose a notification channel to receive quota alerts')}
