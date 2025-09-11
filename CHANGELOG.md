@@ -1,5 +1,18 @@
 
 
+## [1.25.0](https://github.com/msgbyte/tianji/compare/v1.24.29...v1.25.0) (2025-09-11)
+
+### Features
+
+* add AIGateway quota alert ([1948b42](https://github.com/msgbyte/tianji/commit/1948b42b4c70ba6f45fafff88a1c39d7a4e565ac))
+* add NotificationPickerV2 and ColorTagV2 ([1a4de44](https://github.com/msgbyte/tianji/commit/1a4de44ba0ef443393e7788172687ac3a917c717))
+
+### Others
+
+* improve fetch logic to avoid block ([fe77fad](https://github.com/msgbyte/tianji/commit/fe77fad6028d7e9e7a85c2bb42ea1c2e177c0229))
+* remove unused cronjob ([8150656](https://github.com/msgbyte/tianji/commit/815065677bae971c5980546d788177c6c6d0637e))
+* replace Spin component with LoadingView for better loading state management ([f1892dd](https://github.com/msgbyte/tianji/commit/f1892dd4102ade6f28e803e8398d83ef596ae195))
+
 ## [1.24.29](https://github.com/msgbyte/tianji/compare/v1.24.28...v1.24.29) (2025-09-11)
 
 ### Bug Fixes
