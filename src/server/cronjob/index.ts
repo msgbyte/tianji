@@ -11,7 +11,6 @@ import {
   dailyUpdateApplicationStoreInfo,
   statDailyUsage,
 } from './daily.js';
-import { checkAIGatewayQuotaAlerts } from './aigatewayQuotaAlert.js';
 import { resetDailyAlertFlags } from '../model/aiGateway/quotaAlert.js';
 import { checkFeedEventsNotify } from './shared.js';
 import { promCronCounter } from '../utils/prometheus/client.js';
@@ -31,7 +30,6 @@ export function initCronjob() {
         dailyHTTPCertCheckNotify().catch(logger.error),
         dailyUpdateApplicationStoreInfo().catch(logger.error),
         checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
-        checkAIGatewayQuotaAlerts().catch(logger.error),
         resetDailyAlertFlags().catch(logger.error),
       ]);
 
