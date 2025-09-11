@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { TimeEventChart } from '../chart/TimeEventChart';
-import { Spin } from 'antd';
 import {
   Select,
   SelectContent,
@@ -18,6 +17,7 @@ import { getDateArray } from '@tianji/shared';
 import colors from 'tailwindcss/colors';
 import { getUserTimezone } from '@/api/model/user';
 import { AIGatewaySummaryStats } from './AIGatewaySummaryStats';
+import { LoadingView } from '../LoadingView';
 
 interface AIGatewayOverviewProps {
   gatewayId: string;
@@ -110,9 +110,9 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
     }, [type]);
 
     return (
-      <Spin spinning={isLoading}>
+      <LoadingView isLoading={isLoading}>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold">{t('AIGateway Statistics')}</h2>
+          <h2 className="text-xl font-bold">{t('Statistics')}</h2>
           <DateFilter />
         </div>
 
@@ -141,7 +141,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
             valueFormatter={valueFormatter}
           />
         </div>
-      </Spin>
+      </LoadingView>
     );
   }
 );

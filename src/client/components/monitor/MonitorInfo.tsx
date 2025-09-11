@@ -1,4 +1,4 @@
-import { Card, Dropdown, Space, Spin, Modal } from 'antd';
+import { Card, Dropdown, Space, Modal } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { trpc } from '../../api/trpc';
@@ -23,6 +23,7 @@ import { useMonitorAction } from './useMonitorAction';
 import { Button } from '../ui/button';
 import { MonitorPushStatus } from './MonitorPushStatus';
 import { MonitorHTTPTiming } from './MonitorHTTPTiming';
+import { LoadingView } from '../LoadingView';
 
 interface MonitorInfoProps {
   monitorId: string;
@@ -69,7 +70,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
   return (
     <div className="h-full w-full overflow-auto">
-      <Spin spinning={isLoading}>
+      <LoadingView isLoading={isLoading}>
         <Space className="w-full" direction="vertical">
           <div className="flex flex-col-reverse sm:flex-row sm:justify-between">
             <Space direction="vertical">
@@ -262,7 +263,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
 
           <MonitorEventList monitorId={monitorId} />
         </Space>
-      </Spin>
+      </LoadingView>
     </div>
   );
 });

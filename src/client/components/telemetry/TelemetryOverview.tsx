@@ -1,4 +1,4 @@
-import { Button, message, Spin, Switch } from 'antd';
+import { Button, message, Switch } from 'antd';
 import React from 'react';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
@@ -11,6 +11,7 @@ import { getUserTimezone } from '../../api/model/user';
 import { useGlobalStateStore } from '../../store/global';
 import { useTranslation } from '@i18next-toolkit/react';
 import { TimeEventChart } from '../chart/TimeEventChart';
+import { LoadingView } from '../LoadingView';
 
 export const TelemetryOverview: React.FC<{
   workspaceId: string;
@@ -84,7 +85,7 @@ export const TelemetryOverview: React.FC<{
   const loading = isLoadingPageview || isLoadingStats;
 
   return (
-    <Spin spinning={loading}>
+    <LoadingView isLoading={loading}>
       <div className="flex">
         <div className="flex flex-1 items-center text-2xl font-bold">
           <span className="mr-2">{info?.name}</span>
@@ -126,7 +127,7 @@ export const TelemetryOverview: React.FC<{
       <div>
         <TimeEventChart data={chartData} unit={unit} />
       </div>
-    </Spin>
+    </LoadingView>
   );
 });
 TelemetryOverview.displayName = 'TelemetryOverview';

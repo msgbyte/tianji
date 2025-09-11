@@ -1,11 +1,11 @@
 import React from 'react';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
-import { Spin } from 'antd';
 import { Card } from '../ui/card';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
 import { getUserTimezone } from '@/api/model/user';
+import { LoadingView } from '../LoadingView';
 
 interface AIGatewaySummaryStatsProps {
   gatewayId: string;
@@ -63,7 +63,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
     );
 
     return (
-      <Spin spinning={isLoading}>
+      <LoadingView isLoading={isLoading}>
         <div className="mb-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {summaryData.map((metric) => {
@@ -102,7 +102,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
             })}
           </div>
         </div>
-      </Spin>
+      </LoadingView>
     );
   });
 
