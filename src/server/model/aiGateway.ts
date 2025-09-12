@@ -1,7 +1,7 @@
 import { buildQueryWithCache } from '../cache/index.js';
 import { prisma } from './_client.js';
 import { type RequestHandler } from 'express';
-import { calcOpenAIToken } from '../model/openai.js';
+import { calcMessagesToken, calcOpenAIToken } from '../model/openai.js';
 import { z } from 'zod';
 import OpenAI from 'openai';
 import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
@@ -81,19 +81,13 @@ export function buildOpenAIHandler(
     const start = Date.now();
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
-      // Calculate input tokens for all messages
-      const inputTokenArr = await Promise.all(
-        messages.map((msg) => calcOpenAIToken(String(msg.content), modelName))
-      );
-      let inputToken = inputTokenArr.reduce((sum, val) => sum + val, 0);
-
       const _log = await prisma.aIGatewayLogs.create({
         data: {
           workspaceId,
           gatewayId,
           modelName,
           stream,
-          inputToken,
+          inputToken: -1,
           outputToken: -1,
           duration: -1,
           ttft: -1,
@@ -136,6 +130,11 @@ export function buildOpenAIHandler(
 
         let outputContent = '';
         let ttft = -1;
+        let usage: OpenAI.Completions.CompletionUsage = {
+          prompt_tokens: 0,
+          completion_tokens: 0,
+          total_tokens: 0,
+        };
         let responseModelName = modelName; // real model name which returned from remote. its will be some changed because of the model alias.
         for await (const chunk of stream) {
           responseModelName = chunk.model;
@@ -146,6 +145,10 @@ export function buildOpenAIHandler(
           outputContent += content;
           res.write(`data: ${JSON.stringify(chunk)}\n\n`);
 
+          if (chunk.usage) {
+            usage = chunk.usage; // try to get usage from chunk
+          }
+
           if (res.flush) {
             res.flush();
           }
@@ -155,8 +158,14 @@ export function buildOpenAIHandler(
         res.end();
         const duration = Date.now() - start;
 
-        logP.then(async ({ id: logId, inputToken }) => {
-          const outputToken = await calcOpenAIToken(outputContent, modelName);
+        logP.then(async ({ id: logId }) => {
+          const inputToken =
+            usage.prompt_tokens ??
+            (await calcMessagesToken(messages, modelName));
+
+          const outputToken =
+            usage.completion_tokens ??
+            (await calcOpenAIToken(outputContent, modelName));
 
           // Use custom price if available, otherwise use default pricing
           const customInputPrice = gatewayInfo?.customModelInputPrice;
@@ -183,11 +192,12 @@ export function buildOpenAIHandler(
             data: {
               status: AIGatewayLogsStatus.Success,
               modelName: responseModelName,
+              inputToken,
               outputToken,
               duration,
               ttft,
               price,
-              responsePayload: { content: outputContent },
+              responsePayload: { content: outputContent, usage },
             },
           });
 
@@ -210,8 +220,12 @@ export function buildOpenAIHandler(
         res.json(response);
         const duration = Date.now() - start;
 
-        logP.then(async ({ id: logId, inputToken }) => {
+        logP.then(async ({ id: logId }) => {
           const content = get(response, ['choices', 0, 'message', 'content']);
+
+          const inputToken: number =
+            response.usage?.prompt_tokens ??
+            (await calcMessagesToken(messages, modelName));
 
           const outputToken =
             response.usage?.completion_tokens ??
@@ -243,6 +257,7 @@ export function buildOpenAIHandler(
             },
             data: {
               status: AIGatewayLogsStatus.Success,
+              inputToken,
               outputToken,
               duration,
               modelName: responseModelName,

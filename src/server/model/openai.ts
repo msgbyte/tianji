@@ -368,6 +368,52 @@ export async function groupByTokenSize<T>(
 }
 
 /**
+ * Calculate total token count for an array of messages following OpenAI's official counting method
+ * This function accounts for the additional tokens used in chat completion format:
+ * - Each message has 3 tokens overhead
+ * - Each "name" field adds 1 token
+ * - The entire conversation has 3 tokens overhead at the end
+ *
+ * Based on OpenAI's official tiktoken examples
+ *
+ * @param messages Array of message objects with role and content
+ * @param model The model to use for token calculation (defaults to configured model)
+ * @returns Promise that resolves to the total token count
+ */
+export async function calcMessagesToken(
+  messages: ChatCompletionMessageParam[],
+  model = modelName
+): Promise<number> {
+  const tokensPerMessage = 3; // Each message overhead
+  const tokensPerName = 1; // If name field exists
+  const conversationOverhead = 3; // Conversation end overhead
+
+  let totalTokens = conversationOverhead;
+
+  // Calculate tokens for each message
+  for (const message of messages) {
+    totalTokens += tokensPerMessage;
+
+    // Calculate tokens for each field in the message
+    for (const [key, value] of Object.entries(message)) {
+      if (value) {
+        const content =
+          typeof value === 'string' ? value : JSON.stringify(value);
+        const tokens = await calcOpenAIToken(content, model);
+        totalTokens += tokens;
+
+        // Add extra token if this is a name field
+        if (key === 'name') {
+          totalTokens += tokensPerName;
+        }
+      }
+    }
+  }
+
+  return totalTokens;
+}
+
+/**
  * Synchronous version of groupByTokenSize for backward compatibility
  * Note: This uses the synchronous token calculation
  *

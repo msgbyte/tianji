@@ -4,9 +4,11 @@ import {
   getOpenAIClient,
   groupByTokenSize,
   ensureJSONOutput,
+  calcMessagesToken,
 } from './openai.js';
 import OpenAI from 'openai';
 import { mapValues } from 'lodash-es';
+import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 
 const functions = {
   getCurrentDate: {
@@ -79,9 +81,9 @@ describe.runIf(env.openai.apiKey)('openai', () => {
 });
 
 describe('groupByTokenSize', () => {
-  test('simple', () => {
+  test('simple', async () => {
     expect(
-      groupByTokenSize(
+      await groupByTokenSize(
         [
           { content: 'foooooo' },
           { content: 'foooooo' },
@@ -460,5 +462,22 @@ describe('ensureJSONOutput', () => {
       expect(result).not.toBeNull();
       expect(result).toEqual(expectObj);
     });
+  });
+});
+
+describe('calcMessagesToken', () => {
+  test('should calculate token correctly', async () => {
+    const messages: ChatCompletionMessageParam[] = [
+      {
+        role: 'system',
+        content: 'You are an AI assistant',
+      },
+      {
+        role: 'user',
+        content: 'Hello',
+      },
+    ];
+    const token = await calcMessagesToken(messages);
+    expect(token).toBe(17);
   });
 });
