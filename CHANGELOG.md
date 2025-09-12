@@ -1,5 +1,11 @@
 
 
+## [1.25.4](https://github.com/msgbyte/tianji/compare/v1.25.3...v1.25.4) (2025-09-12)
+
+### Features
+
+* improve algorithm of calc prompt token and prefer to use response token result rather than calc by self ([988caed](https://github.com/msgbyte/tianji/commit/988caed8733cbb2227a30d37de6b481edb84c823))
+
 ## [1.25.3](https://github.com/msgbyte/tianji/compare/v1.25.2...v1.25.3) (2025-09-12)
 
 ### Others
