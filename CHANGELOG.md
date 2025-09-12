@@ -1,5 +1,15 @@
 
 
+## [1.25.5](https://github.com/msgbyte/tianji/compare/v1.25.4...v1.25.5) (2025-09-12)
+
+### Bug Fixes
+
+* resolve ai gateway log infinite fetch issue ([810789e](https://github.com/msgbyte/tianji/commit/810789e1169c4bd42a04bde029cb660200d088ac))
+
+### Others
+
+* improve refresh function which improve performance for infinite list ([ad38950](https://github.com/msgbyte/tianji/commit/ad38950caa226e40b62c87ea732467acc59b05d2))
+
 ## [1.25.4](https://github.com/msgbyte/tianji/compare/v1.25.3...v1.25.4) (2025-09-12)
 
 ### Features
