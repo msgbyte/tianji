@@ -80,7 +80,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
     };
 
     return (
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <VirtualizedInfiniteDataTable
           columns={columns}
           data={flatData}
