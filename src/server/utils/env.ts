@@ -55,11 +55,16 @@ export const env = {
     },
   },
   db: {
+    url: process.env.DATABASE_URL,
     debug: checkEnvTrusty(process.env.DB_DEBUG),
     transactionOptions: {
       maxWait: Number(process.env.PRISMA_TRANSACTION_MAX_WAIT) || 2000,
       timeout: Number(process.env.PRISMA_TRANSACTION_TIMEOUT) || 5000,
     },
+  },
+  cache: {
+    memoryOnly: checkEnvTrusty(process.env.CACHE_MEMORY_ONLY),
+    redisUrl: process.env.REDIS_URL,
   },
   smtp: {
     enable: Boolean(process.env.EMAIL_SERVER && process.env.EMAIL_FROM),

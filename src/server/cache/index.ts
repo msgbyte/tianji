@@ -1,15 +1,32 @@
-import { caching, MemoryCache } from 'cache-manager';
 import { uniqueId } from 'lodash-es';
+import Keyv, { type KeyvStoreAdapter } from 'keyv';
+import KeyvRedis from '@keyv/redis';
+import KeyvPostgres from '@keyv/postgres';
+import { env } from '../utils/env.js';
 
-let _cacheManager: MemoryCache;
+let _cacheManager: Keyv;
 export async function getCacheManager() {
   if (_cacheManager) {
     return _cacheManager;
   }
 
-  const cacheManager = await caching('memory', {
-    max: 100,
-    ttl: 10 * 60 * 1000 /*milliseconds*/,
+  let store: KeyvStoreAdapter | undefined = undefined;
+  if (!env.cache.memoryOnly) {
+    store = env.cache.redisUrl
+      ? new KeyvRedis({
+          url: env.cache.redisUrl,
+        })
+      : new KeyvPostgres({
+          uri: env.db.url,
+          schema: 'cache',
+          table: 'cache',
+        });
+  }
+
+  const cacheManager = new Keyv({
+    store,
+    ttl: 10 * 60 * 1000,
+    namespace: 'tianji-cache',
   });
 
   _cacheManager = cacheManager;
