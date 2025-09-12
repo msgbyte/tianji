@@ -186,13 +186,13 @@ interface ManualRefreshButtonProps {
 
 function ManualRefreshButton({ gatewayId, logId }: ManualRefreshButtonProps) {
   const workspaceId = useCurrentWorkspaceId();
-  const utils = trpc.useUtils();
+  const trpcUtils = trpc.useUtils();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useEvent(async () => {
     setIsRefreshing(true);
     try {
-      await utils.aiGateway.logs.refetch({
+      await trpcUtils.aiGateway.logs.reset({
         workspaceId,
         gatewayId,
         logId,
@@ -218,13 +218,13 @@ function RealtimeUpdateButton({ gatewayId, logId }: RealtimeUpdateButtonProps) {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const [isRealtime, setIsRealtime] = useState(false);
-  const utils = trpc.useUtils();
+  const trpcUtils = trpc.useUtils();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useWatch([isRealtime, gatewayId, logId], () => {
     if (isRealtime) {
       timerRef.current = setInterval(() => {
-        utils.aiGateway.logs.invalidate({
+        trpcUtils.aiGateway.logs.reset({
           workspaceId,
           gatewayId,
           logId,
