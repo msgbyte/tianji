@@ -1,5 +1,11 @@
 
 
+## [1.25.2](https://github.com/msgbyte/tianji/compare/v1.25.1...v1.25.2) (2025-09-12)
+
+### Others
+
+* fix ci issue ([8f8a573](https://github.com/msgbyte/tianji/commit/8f8a5736246e4359c286c953b5fd6f8cf5582131))
+
 ## [1.25.1](https://github.com/msgbyte/tianji/compare/v1.25.0...v1.25.1) (2025-09-12)
 
 ### Features
