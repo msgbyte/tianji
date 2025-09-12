@@ -13,6 +13,7 @@ import type {
 } from 'openai/resources/chat/completions.mjs';
 import { createAuditLog } from './auditLog.js';
 import { logger } from '../utils/logger.js';
+import { createSingletonTaskQueue } from '../utils/taskQueue.js';
 
 export const modelName = env.openai.modelName ?? 'gpt-4o';
 
@@ -206,18 +207,80 @@ export function ensureJSONOutput(content: string): Record<string, any> | null {
   return null;
 }
 
-export function calcOpenAIToken(message: string, model = modelName): number {
-  let encoder: Tiktoken;
+// Create a singleton task queue for token calculation to limit concurrent operations
+const tokenCalcQueue = createSingletonTaskQueue<
+  { message: string; model: string },
+  number
+>('openai-token-calc', {
+  concurrency: env.openai.tokenCalcConcurrency,
+  onTaskStart: (taskId) => {
+    logger.debug(`[OpenAI Token Calc] Starting task ${taskId}`);
+  },
+  onTaskComplete: (taskId, result) => {
+    logger.debug(
+      `[OpenAI Token Calc] Completed task ${taskId}, tokens: ${result}`
+    );
+  },
+  onTaskError: (taskId, error) => {
+    logger.error(`[OpenAI Token Calc] Error in task ${taskId}:`, error);
+  },
+});
+
+/**
+ * Calculate OpenAI token count for a message using tiktoken
+ * This function uses a task queue to limit concurrent operations to 5
+ * to prevent high CPU usage when many token calculations are requested simultaneously
+ *
+ * @param message The message to calculate tokens for
+ * @param model The model to use for token calculation (defaults to configured model)
+ * @returns Promise that resolves to the token count
+ */
+export function calcOpenAIToken(
+  message: string,
+  model = modelName
+): Promise<number> {
+  return tokenCalcQueue.enqueue(
+    () => {
+      return new Promise<number>((resolve, reject) => {
+        try {
+          const count = calcOpenAITokenSync(message, model);
+          resolve(count);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+    { message, model }
+  );
+}
+
+/**
+ * Synchronous version of calcOpenAIToken for backward compatibility
+ * Note: This bypasses the queue and should be used sparingly
+ *
+ * @param message The message to calculate tokens for
+ * @param model The model to use for token calculation
+ * @returns The token count
+ * @deprecated Use calcOpenAIToken instead for better performance control
+ */
+export function calcOpenAITokenSync(
+  message: string,
+  model = modelName
+): number {
+  let encoder: Tiktoken | undefined;
+
   try {
-    encoder = encoding_for_model(model as TiktokenModel);
-  } catch {
-    encoder = encoding_for_model('gpt-4o');
+    try {
+      encoder = encoding_for_model(model as TiktokenModel);
+    } catch {
+      encoder = encoding_for_model('gpt-4o');
+    }
+    const count = encoder.encode(message).length;
+
+    return count;
+  } finally {
+    encoder?.free();
   }
-  const count = encoder.encode(message).length;
-
-  encoder.free();
-
-  return count;
 }
 
 export function fixJsonQuotes(input: string) {
@@ -280,7 +343,41 @@ export function fixJsonQuotes(input: string) {
   return output;
 }
 
-export function groupByTokenSize<T>(
+export async function groupByTokenSize<T>(
+  arr: T[],
+  selector: (item: T) => string,
+  maxToken: number
+): Promise<T[][]> {
+  const groups: T[][] = [[]];
+
+  let currentToken = 0;
+  for (const item of arr) {
+    const token = await calcOpenAIToken(selector(item));
+
+    if (currentToken + token > maxToken) {
+      groups.push([]);
+      currentToken = 0;
+    }
+
+    currentToken += token;
+
+    groups[groups.length - 1].push(item);
+  }
+
+  return groups;
+}
+
+/**
+ * Synchronous version of groupByTokenSize for backward compatibility
+ * Note: This uses the synchronous token calculation
+ *
+ * @param arr Array of items to group
+ * @param selector Function to extract string from each item
+ * @param maxToken Maximum tokens per group
+ * @returns Array of groups
+ * @deprecated Use groupByTokenSize instead for better performance control
+ */
+export function groupByTokenSizeSync<T>(
   arr: T[],
   selector: (item: T) => string,
   maxToken: number
@@ -289,7 +386,7 @@ export function groupByTokenSize<T>(
 
   let currentToken = 0;
   for (const item of arr) {
-    const token = calcOpenAIToken(selector(item));
+    const token = calcOpenAITokenSync(selector(item));
 
     if (currentToken + token > maxToken) {
       groups.push([]);

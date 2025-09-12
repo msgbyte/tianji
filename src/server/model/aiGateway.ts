@@ -81,9 +81,11 @@ export function buildOpenAIHandler(
     const start = Date.now();
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
-      const inputToken = messages.reduce((acc, msg) => {
-        return acc + calcOpenAIToken(String(msg.content), modelName);
-      }, 0);
+      // Calculate input tokens for all messages
+      const inputTokenArr = await Promise.all(
+        messages.map((msg) => calcOpenAIToken(String(msg.content), modelName))
+      );
+      let inputToken = inputTokenArr.reduce((sum, val) => sum + val, 0);
 
       const _log = await prisma.aIGatewayLogs.create({
         data: {
@@ -154,7 +156,7 @@ export function buildOpenAIHandler(
         const duration = Date.now() - start;
 
         logP.then(async ({ id: logId, inputToken }) => {
-          const outputToken = calcOpenAIToken(outputContent, modelName);
+          const outputToken = await calcOpenAIToken(outputContent, modelName);
 
           // Use custom price if available, otherwise use default pricing
           const customInputPrice = gatewayInfo?.customModelInputPrice;
@@ -214,7 +216,7 @@ export function buildOpenAIHandler(
           const outputToken =
             response.usage?.completion_tokens ??
             (typeof content === 'string'
-              ? calcOpenAIToken(content, modelName)
+              ? await calcOpenAIToken(content, modelName)
               : 0);
 
           // Use custom price if available, otherwise use default pricing

@@ -70,9 +70,10 @@ export const aiRouter = router({
         { role: 'user', content: question },
       ];
 
-      const inputToken = sum(
+      const inputTokens = await Promise.all(
         messages.map((m) => calcOpenAIToken(String(m.content)))
       );
+      const inputToken = sum(inputTokens);
 
       const stream = await getOpenAIClient().chat.completions.create({
         model: modelName,
@@ -89,7 +90,7 @@ export const aiRouter = router({
         };
       }
 
-      const outputToken = calcOpenAIToken(result);
+      const outputToken = await calcOpenAIToken(result);
 
       const credit = tokenCreditFactor * (inputToken + outputToken);
 

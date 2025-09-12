@@ -86,6 +86,9 @@ export const env = {
     baseUrl: process.env.SHARED_OPENAI_BASE_URL,
     apiKey: process.env.SHARED_OPENAI_API_KEY,
     modelName: process.env.SHARED_OPENAI_MODEL_NAME ?? 'gpt-4o',
+    tokenCalcConcurrency: Number(
+      process.env.SHARED_OPENAI_TOKEN_CALC_CONCURRENCY || '5'
+    ),
   },
   clickhouse: {
     enable: Boolean(process.env.CLICKHOUSE_URL),

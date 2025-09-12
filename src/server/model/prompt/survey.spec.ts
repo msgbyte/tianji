@@ -5,7 +5,7 @@ import {
   buildSurveyTranslationPrompt,
 } from './survey.js';
 import {
-  calcOpenAIToken,
+  calcOpenAITokenSync,
   ensureJSONOutput,
   getOpenAIClient,
   modelName,
@@ -15,7 +15,7 @@ describe('buildSurveyClassifyPrompt', () => {
   test('prompt token', () => {
     const { prompt } = buildSurveyClassifyPrompt([], []);
 
-    expect(calcOpenAIToken(prompt)).toBe(basicSurveyClassifyPromptToken);
+    expect(calcOpenAITokenSync(prompt)).toBe(basicSurveyClassifyPromptToken);
   });
 
   test.runIf(Boolean(process.env.TEST_SURVEY_PROMPT))(
