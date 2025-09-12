@@ -52,20 +52,23 @@ export const QUOTA_ALERT_LEVELS: QuotaAlertLevel[] = [
 ];
 
 // Cache for quota alert settings (5 minutes TTL)
-const { get: getQuotaAlertCache, del: clearQuotaAlertCache } =
-  buildQueryWithCache(async (workspaceId: string, gatewayId: string) => {
-    return await prisma.aIGatewayQuotaAlert.findFirst({
-      where: {
-        workspaceId,
-        gatewayId,
-        enabled: true,
-      },
-      include: {
-        aiGateway: true,
-        notification: true,
-      },
-    });
+const {
+  get: getQuotaAlertCache,
+  del: clearQuotaAlertCache,
+  update: updateQuotaAlertCache,
+} = buildQueryWithCache(async (workspaceId: string, gatewayId: string) => {
+  return await prisma.aIGatewayQuotaAlert.findFirst({
+    where: {
+      workspaceId,
+      gatewayId,
+      enabled: true,
+    },
+    include: {
+      aiGateway: true,
+      notification: true,
+    },
   });
+});
 
 /**
  * Clear quota alert cache for a specific gateway
@@ -193,12 +196,8 @@ export async function checkQuotaAlert(
             type: quotaAlert.notification?.type ?? '',
             payload: quotaAlert.notification?.payload ?? {},
           },
-          alertLevel.title,
+          `${alertLevel.title} - ${quotaAlert.aiGateway.name}`,
           [
-            token.title(
-              `${alertLevel.title} - ${quotaAlert.aiGateway.name}`,
-              2
-            ),
             token.paragraph(`Gateway: ${quotaAlert.aiGateway.name}`),
             token.paragraph(`Today's Usage Cost: $${totalCost.toFixed(4)}`),
             token.paragraph(`Quota Set: $${dailyQuota.toFixed(4)}`),
@@ -219,6 +218,16 @@ export async function checkQuotaAlert(
             alertTime: dayjs().toISOString(),
           }
         );
+
+        // local update quota alert cache to avoid high concurrency issue
+        await updateQuotaAlertCache(
+          workspaceId,
+          gatewayId
+        )({
+          ...quotaAlert,
+          [alertLevel.field]: true,
+          lastAlertSentAt: new Date(),
+        });
 
         // Update alert sent status
         await prisma.aIGatewayQuotaAlert.update({

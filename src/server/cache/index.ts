@@ -44,6 +44,15 @@ export function buildQueryWithCache<T, Args extends any[]>(
     return realValue;
   };
 
+  const update = (...args: Args) => {
+    const key = [id, ...args.map((a) => JSON.stringify(a))].join('|');
+
+    return async (value: T) => {
+      const cacheManager = await getCacheManager();
+      await cacheManager.set(key, JSON.stringify(value));
+    };
+  };
+
   const del = async (...args: Args) => {
     const cacheManager = await getCacheManager();
     const key = [id, ...args.map((a) => JSON.stringify(a))].join('|');
@@ -51,5 +60,5 @@ export function buildQueryWithCache<T, Args extends any[]>(
     await cacheManager.del(key);
   };
 
-  return { get, del };
+  return { get, del, update };
 }
