@@ -306,8 +306,8 @@ export async function resetDailyAlertFlags(): Promise<void> {
         yesterday
       );
 
-      await cacheManager.del(todayCacheKey);
-      await cacheManager.del(yesterdayCacheKey);
+      await cacheManager.delete(todayCacheKey);
+      await cacheManager.delete(yesterdayCacheKey);
     }
 
     logger.info(

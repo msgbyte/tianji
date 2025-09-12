@@ -74,7 +74,7 @@ export function buildQueryWithCache<T, Args extends any[]>(
     const cacheManager = await getCacheManager();
     const key = [id, ...args.map((a) => JSON.stringify(a))].join('|');
 
-    await cacheManager.del(key);
+    await cacheManager.delete(key);
   };
 
   return { get, del, update };
