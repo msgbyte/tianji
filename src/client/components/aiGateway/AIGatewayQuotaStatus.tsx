@@ -9,6 +9,7 @@ import { LoadingView } from '@/components/LoadingView';
 import { DollarSign, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
 import dayjs from 'dayjs';
 import { cn } from '@/utils/style';
+import { getUserTimezone } from '@/api/model/user';
 
 interface AIGatewayQuotaStatusProps {
   gatewayId: string;
@@ -36,7 +37,7 @@ export const AIGatewayQuotaStatus: React.FC<AIGatewayQuotaStatusProps> = ({
           startAt: dayjs().startOf('day').valueOf(),
           endAt: dayjs().endOf('day').valueOf(),
           unit: 'day',
-          timezone: 'UTC',
+          timezone: getUserTimezone(),
         },
       },
       {
