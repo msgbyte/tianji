@@ -8,7 +8,8 @@ import {
 } from './openai.js';
 import OpenAI from 'openai';
 import { mapValues } from 'lodash-es';
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+// @ts-ignore
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions.mjs';
 
 const functions = {
   getCurrentDate: {
