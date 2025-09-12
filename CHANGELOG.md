@@ -1,5 +1,18 @@
 
 
+## [1.25.1](https://github.com/msgbyte/tianji/compare/v1.25.0...v1.25.1) (2025-09-12)
+
+### Features
+
+* add keyv cache manager support which can make sure cache can be use in multi-node ([4b20d32](https://github.com/msgbyte/tianji/commit/4b20d32e7161f1dbba406d46bd183f6d6dd44b3f))
+* add update function to cache management for quota alerts ([53e32f4](https://github.com/msgbyte/tianji/commit/53e32f487ab9162bd6bda76ebc7627bb58c77fc4))
+* implement token calculation queue to optimize performance and prevent high CPU usage ([0df31eb](https://github.com/msgbyte/tianji/commit/0df31ebad6a983d0441cc351d2bc6e24a7e89a03))
+
+### Others
+
+* update cost calc timezone ([46fb8d2](https://github.com/msgbyte/tianji/commit/46fb8d28b67b4a268155643aaef961d77b4869b2))
+* update translation ([bbcc720](https://github.com/msgbyte/tianji/commit/bbcc7202ebd996b5cfdc273fc4459e4019fffd5c))
+
 ## [1.25.0](https://github.com/msgbyte/tianji/compare/v1.24.29...v1.25.0) (2025-09-11)
 
 ### Features
