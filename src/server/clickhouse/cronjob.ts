@@ -4,6 +4,7 @@ import { prisma } from '../model/_client.js';
 import { logger } from '../utils/logger.js';
 import dayjs from 'dayjs';
 import { env } from '../utils/env.js';
+import { withDistributedLock } from '../cache/index.js';
 
 // Tables to sync from PostgreSQL to ClickHouse
 const TABLES_TO_SYNC = [
@@ -259,35 +260,56 @@ async function syncTable(tableConfig: (typeof TABLES_TO_SYNC)[0]) {
   }
 }
 
-// Main sync function
 let isSyncing = false;
 export async function syncPostgresToClickHouse() {
   if (isSyncing) {
-    logger.info('PostgreSQL to ClickHouse sync is already running');
-    return;
-  }
-
-  isSyncing = true;
-
-  logger.info('Starting PostgreSQL to ClickHouse sync');
-
-  try {
-    // Initialize sync state table
-    await initSyncStateTable();
-
-    // Sync each table
-    for (const tableConfig of TABLES_TO_SYNC) {
-      await syncTable(tableConfig);
-    }
-
-    logger.info('PostgreSQL to ClickHouse sync completed successfully');
-    return true;
-  } catch (err) {
-    logger.error('PostgreSQL to ClickHouse sync failed:', err);
+    logger.info(
+      'PostgreSQL to ClickHouse sync is already running on this instance'
+    );
     return false;
-  } finally {
-    isSyncing = false;
   }
+
+  const result = await withDistributedLock(
+    'tianji-clickhouse-sync',
+    async () => {
+      // Set local sync state
+      isSyncing = true;
+
+      try {
+        logger.info('Starting PostgreSQL to ClickHouse sync');
+
+        // Initialize sync state table
+        await initSyncStateTable();
+
+        // Sync each table
+        for (const tableConfig of TABLES_TO_SYNC) {
+          await syncTable(tableConfig);
+        }
+
+        logger.info('PostgreSQL to ClickHouse sync completed successfully');
+        return true;
+      } catch (err) {
+        logger.error('PostgreSQL to ClickHouse sync failed:', err);
+        throw err;
+      } finally {
+        // Always reset local sync state
+        isSyncing = false;
+      }
+    },
+    {
+      timeout: 1 * 60 * 60 * 1000, // 1 hour timeout for sync job
+      skipOnFailure: true,
+    }
+  );
+
+  if (result === null) {
+    logger.info(
+      'PostgreSQL to ClickHouse sync skipped - already running on another instance'
+    );
+    return false;
+  }
+
+  return result;
 }
 
 // Initialize cronjob
