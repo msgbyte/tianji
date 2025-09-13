@@ -79,3 +79,12 @@ export function buildQueryWithCache<T, Args extends any[]>(
 
   return { get, del, update };
 }
+
+// Export distributed lock functionality
+export {
+  DistributedLock,
+  distributedLock,
+  withDistributedLock,
+  type DistributedLockOptions,
+  type LockResult,
+} from './distributedLock.js';
