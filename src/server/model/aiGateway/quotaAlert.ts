@@ -3,6 +3,7 @@ import { sendNotification } from '../notification/index.js';
 import { token } from '../notification/token/index.js';
 import { logger } from '../../utils/logger.js';
 import { buildQueryWithCache, getCacheManager } from '../../cache/index.js';
+import { withDistributedLock } from '../../cache/distributedLock.js';
 import dayjs from 'dayjs';
 
 /**
@@ -185,66 +186,75 @@ export async function checkQuotaAlert(
       const alreadySent = quotaAlert[alertLevel.field];
 
       if (shouldAlert && !alreadySent) {
-        logger.info(
-          `[checkQuotaAlert] Sending ${alertLevel.level}% alert for gateway ${gatewayId}`
-        );
+        await withDistributedLock(
+          `quota-alert-notification:${workspaceId}:${gatewayId}:${alertLevel.level}`,
+          async () => {
+            logger.info(
+              `[checkQuotaAlert] Sending ${alertLevel.level}% alert for gateway ${gatewayId}`
+            );
 
-        // Send notification
-        await sendNotification(
-          {
-            name: quotaAlert.notification?.name ?? '',
-            type: quotaAlert.notification?.type ?? '',
-            payload: quotaAlert.notification?.payload ?? {},
+            // Send notification
+            await sendNotification(
+              {
+                name: quotaAlert.notification?.name ?? '',
+                type: quotaAlert.notification?.type ?? '',
+                payload: quotaAlert.notification?.payload ?? {},
+              },
+              `${alertLevel.title} - ${quotaAlert.aiGateway.name}`,
+              [
+                token.paragraph(`Gateway: ${quotaAlert.aiGateway.name}`),
+                token.paragraph(`Today's Usage Cost: $${totalCost.toFixed(4)}`),
+                token.paragraph(`Quota Set: $${dailyQuota.toFixed(4)}`),
+                token.paragraph(`Usage Percentage: ${percentage.toFixed(1)}%`),
+                token.paragraph(
+                  `Alert Time: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
+                ),
+                token.newline(),
+                token.text(getAlertMessage(alertLevel.level, percentage)),
+              ],
+              {
+                gatewayId: quotaAlert.gatewayId,
+                gatewayName: quotaAlert.aiGateway.name,
+                dailyCost: totalCost,
+                dailyQuota,
+                percentage,
+                alertLevel: alertLevel.level,
+                alertTime: dayjs().toISOString(),
+              }
+            );
+
+            // local update quota alert cache to avoid high concurrency issue
+            await updateQuotaAlertCache(
+              workspaceId,
+              gatewayId
+            )({
+              ...quotaAlert,
+              [alertLevel.field]: true,
+              lastAlertSentAt: new Date(),
+            });
+
+            // Update alert sent status
+            await prisma.aIGatewayQuotaAlert.update({
+              where: {
+                id: quotaAlert.id,
+              },
+              data: {
+                [alertLevel.field]: true,
+                lastAlertSentAt: new Date(),
+              },
+            });
+
+            // Clear cache after updating alert status
+            clearQuotaAlertCache(workspaceId, gatewayId);
+
+            logger.info(
+              `[checkQuotaAlert] ${alertLevel.level}% alert sent for gateway ${gatewayId}`
+            );
           },
-          `${alertLevel.title} - ${quotaAlert.aiGateway.name}`,
-          [
-            token.paragraph(`Gateway: ${quotaAlert.aiGateway.name}`),
-            token.paragraph(`Today's Usage Cost: $${totalCost.toFixed(4)}`),
-            token.paragraph(`Quota Set: $${dailyQuota.toFixed(4)}`),
-            token.paragraph(`Usage Percentage: ${percentage.toFixed(1)}%`),
-            token.paragraph(
-              `Alert Time: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
-            ),
-            token.newline(),
-            token.text(getAlertMessage(alertLevel.level, percentage)),
-          ],
           {
-            gatewayId: quotaAlert.gatewayId,
-            gatewayName: quotaAlert.aiGateway.name,
-            dailyCost: totalCost,
-            dailyQuota,
-            percentage,
-            alertLevel: alertLevel.level,
-            alertTime: dayjs().toISOString(),
+            timeout: 30_000, // 30 seconds timeout
+            skipOnFailure: true, // Skip if another process is already sending the alert
           }
-        );
-
-        // local update quota alert cache to avoid high concurrency issue
-        await updateQuotaAlertCache(
-          workspaceId,
-          gatewayId
-        )({
-          ...quotaAlert,
-          [alertLevel.field]: true,
-          lastAlertSentAt: new Date(),
-        });
-
-        // Update alert sent status
-        await prisma.aIGatewayQuotaAlert.update({
-          where: {
-            id: quotaAlert.id,
-          },
-          data: {
-            [alertLevel.field]: true,
-            lastAlertSentAt: new Date(),
-          },
-        });
-
-        // Clear cache after updating alert status
-        clearQuotaAlertCache(workspaceId, gatewayId);
-
-        logger.info(
-          `[checkQuotaAlert] ${alertLevel.level}% alert sent for gateway ${gatewayId}`
         );
       }
     }
