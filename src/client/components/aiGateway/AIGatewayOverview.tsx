@@ -20,6 +20,9 @@ import { AIGatewaySummaryStats } from './AIGatewaySummaryStats';
 import { AIGatewayQuotaStatus } from './AIGatewayQuotaStatus';
 import { AIGatewayQuotaAlertModal } from './AIGatewayQuotaAlertModal';
 import { LoadingView } from '../LoadingView';
+import { Button } from '../ui/button';
+import { LuRefreshCw } from 'react-icons/lu';
+import { useEvent } from '@/hooks/useEvent';
 
 interface AIGatewayOverviewProps {
   gatewayId: string;
@@ -112,11 +115,30 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
       };
     }, [type]);
 
+    const trpcUtils = trpc.useUtils();
+    const handleRefresh = useEvent(async () => {
+      trpcUtils.insights.query.reset({
+        workspaceId,
+        insightId: props.gatewayId,
+        insightType: 'aigateway',
+      } as any); // use partial type to avoid reset more info.
+    });
+
     return (
       <LoadingView isLoading={isLoading}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold">{t('Statistics')}</h2>
-          <DateFilter />
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={handleRefresh}
+              title={t('Refresh')}
+            >
+              <LuRefreshCw className="h-4 w-4" />
+            </Button>
+            <DateFilter />
+          </div>
         </div>
 
         <AIGatewaySummaryStats gatewayId={props.gatewayId} />
