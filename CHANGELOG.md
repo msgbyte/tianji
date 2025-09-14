@@ -1,5 +1,11 @@
 
 
+## [1.25.7](https://github.com/msgbyte/tianji/compare/v1.25.6...v1.25.7) (2025-09-14)
+
+### Features
+
+* add lock to reduce notification ([49c6e77](https://github.com/msgbyte/tianji/commit/49c6e774b6fc6e9e09fed01b7cdd1927353f4e50))
+
 ## [1.25.6](https://github.com/msgbyte/tianji/compare/v1.25.5...v1.25.6) (2025-09-14)
 
 ### Features
