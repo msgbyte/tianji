@@ -81,4 +81,7 @@ RUN rm -rf ./reporter
 
 EXPOSE 12345
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:12345/health || exit 1
+
 CMD ["/usr/local/bin/start-tianji-container.sh"]
