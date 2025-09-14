@@ -1,5 +1,12 @@
 
 
+## [1.25.6](https://github.com/msgbyte/tianji/compare/v1.25.5...v1.25.6) (2025-09-14)
+
+### Features
+
+* add distributed lock implementation for managing concurrent tasks ([764cfaa](https://github.com/msgbyte/tianji/commit/764cfaa88ac1599fa6c1a4ab8eb0c947a1ecb387))
+* enhance PostgreSQL to ClickHouse sync with distributed locking mechanism ([b3f3373](https://github.com/msgbyte/tianji/commit/b3f33732ca1b4d8497061ddccccfce5c4903adbd))
+
 ## [1.25.5](https://github.com/msgbyte/tianji/compare/v1.25.4...v1.25.5) (2025-09-12)
 
 ### Bug Fixes
