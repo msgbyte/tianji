@@ -1,5 +1,15 @@
 
 
+## [1.25.8](https://github.com/msgbyte/tianji/compare/v1.25.7...v1.25.8) (2025-09-14)
+
+### Features
+
+* add refresh feature in aigateway overview which can easy update info without web refresh ([2062adc](https://github.com/msgbyte/tianji/commit/2062adc35ef875e32024790c07c3ba8372c86f30))
+
+### Others
+
+* add health check and improve health endpoint ([7b049c9](https://github.com/msgbyte/tianji/commit/7b049c94b015e68eaa9e5c6205cb234609249c33))
+
 ## [1.25.7](https://github.com/msgbyte/tianji/compare/v1.25.6...v1.25.7) (2025-09-14)
 
 ### Features
