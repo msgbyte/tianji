@@ -1,5 +1,18 @@
 
 
+## [1.25.9](https://github.com/msgbyte/tianji/compare/v1.25.8...v1.25.9) (2025-09-15)
+
+### Features
+
+* add json editor and warehouse config ([d841396](https://github.com/msgbyte/tianji/commit/d8413963c250586a734407732ed3f3e9aeeee0c8))
+* add warehouse query support with workspace level config ([ef5a852](https://github.com/msgbyte/tianji/commit/ef5a852331560444204654b8c4eddd43ab95c312))
+* add workspace config ([f64c984](https://github.com/msgbyte/tianji/commit/f64c984759bda51338133cb4e2bc1c9e2f5b1a7e))
+* refactor workspace config handling and expose schemas for insights applications ([eba3bf5](https://github.com/msgbyte/tianji/commit/eba3bf5732875fcd1c28f1b20e607de199c4c277))
+
+### Others
+
+* upgrade @modelcontextprotocol/inspector version to resolve CVE issue [#222](https://github.com/msgbyte/tianji/issues/222) ([664b0c0](https://github.com/msgbyte/tianji/commit/664b0c0bd80f2a27004458214cec48d316840779))
+
 ## [1.25.8](https://github.com/msgbyte/tianji/compare/v1.25.7...v1.25.8) (2025-09-14)
 
 ### Features
