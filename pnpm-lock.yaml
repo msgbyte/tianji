@@ -13,6 +13,7 @@ overrides:
   '@types/react-dom': 18.2.21
   dayjs: 1.11.10
   esbuild: 0.25.5
+  monaco-editor: 0.53.0
   postman-code-generators: 1.8.0
   cross-spawn: 7.0.6
   '@types/cross-spawn': 6.0.6
@@ -303,7 +304,7 @@ importers:
         version: 5.16.4(react@18.2.0)
       '@monaco-editor/react':
         specifier: ^4.7.0
-        version: 4.7.0(monaco-editor@0.46.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 4.7.0(monaco-editor@0.53.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.6
         version: 1.1.6(@types/react-dom@18.2.21)(@types/react@18.2.78)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -469,6 +470,9 @@ importers:
       millify:
         specifier: ^6.1.0
         version: 6.1.0
+      monaco-editor:
+        specifier: 0.53.0
+        version: 0.53.0
       next-themes:
         specifier: ^0.2.1
         version: 0.2.1(next@15.1.4(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -4000,7 +4004,7 @@ packages:
   '@monaco-editor/react@4.7.0':
     resolution: {integrity: sha512-cyzXQCtO47ydzxpQtCGSQGOC8Gk3ZUeBXFAxD+CWXYFo5OqZyZUonFl0DwUlTyAfRHntBfw2p3w4s9R6oe1eCA==}
     peerDependencies:
-      monaco-editor: '>= 0.25.0 < 1'
+      monaco-editor: 0.53.0
       react: 18.2.0
       react-dom: 18.2.0
 
@@ -6996,6 +7000,9 @@ packages:
 
   '@types/triple-beam@1.3.5':
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
+
+  '@types/trusted-types@1.0.6':
+    resolution: {integrity: sha512-230RC8sFeHoT6sSUlRO6a8cAnclO06eeiq1QDfiv2FGCLWFvvERWgwIQD4FWqD9A69BN7Lzee4OXwoMVnnsWDw==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -12768,11 +12775,8 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
-  monaco-editor@0.31.1:
-    resolution: {integrity: sha512-FYPwxGZAeP6mRRyrr5XTGHD9gRXVjy7GUzF4IPChnyt3fS5WrNxIkS8DNujWf6EQy0Zlzpxw8oTVE+mWI2/D1Q==}
-
-  monaco-editor@0.46.0:
-    resolution: {integrity: sha512-ADwtLIIww+9FKybWscd7OCfm9odsFYHImBRI1v9AviGce55QY8raT+9ihH8jX/E/e6QVSGM+pKj4jSUSRmALNQ==}
+  monaco-editor@0.53.0:
+    resolution: {integrity: sha512-0WNThgC6CMWNXXBxTbaYYcunj08iB5rnx4/G56UOPeL9UVIUGGHA1GR0EWIh9Ebabj7NpCRawQ5b0hfN1jQmYQ==}
 
   morgan@1.10.0:
     resolution: {integrity: sha512-AbegBVI4sh6El+1gNwvD5YIck7nSA36weD7xvIxG4in80j/UoK8AEGaWnnz8v1GxonMCltmlNs5ZKbGvl9b1XQ==}
@@ -21978,17 +21982,10 @@ snapshots:
     dependencies:
       state-local: 1.0.7
 
-  '@monaco-editor/react@4.7.0(monaco-editor@0.31.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@monaco-editor/react@4.7.0(monaco-editor@0.53.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@monaco-editor/loader': 1.5.0
-      monaco-editor: 0.31.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-
-  '@monaco-editor/react@4.7.0(monaco-editor@0.46.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
-    dependencies:
-      '@monaco-editor/loader': 1.5.0
-      monaco-editor: 0.46.0
+      monaco-editor: 0.53.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
@@ -25819,6 +25816,8 @@ snapshots:
 
   '@types/triple-beam@1.3.5': {}
 
+  '@types/trusted-types@1.0.6': {}
+
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
@@ -28545,7 +28544,7 @@ snapshots:
     dependencies:
       '@docusaurus/theme-common': 3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.0.1(@types/react@18.2.78)(react@18.2.0))(eslint@9.18.0(jiti@2.4.2))(lightningcss@1.27.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.7.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@mdx-js/react': 3.0.1(@types/react@18.2.78)(react@18.2.0)
-      '@monaco-editor/react': 4.7.0(monaco-editor@0.31.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@monaco-editor/react': 4.7.0(monaco-editor@0.53.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@reduxjs/toolkit': 1.9.7(react-redux@7.2.9(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react@18.2.0)
       buffer: 6.0.3
       clsx: 1.2.1
@@ -28554,7 +28553,7 @@ snapshots:
       immer: 9.0.21
       lodash: 4.17.21
       marked: 11.2.0
-      monaco-editor: 0.31.1
+      monaco-editor: 0.53.0
       postman-code-generators: 1.8.0
       postman-collection: 4.5.0
       prism-react-renderer: 2.4.0(react@18.2.0)
@@ -33365,9 +33364,9 @@ snapshots:
   moment@2.30.1:
     optional: true
 
-  monaco-editor@0.31.1: {}
-
-  monaco-editor@0.46.0: {}
+  monaco-editor@0.53.0:
+    dependencies:
+      '@types/trusted-types': 1.0.6
 
   morgan@1.10.0:
     dependencies:

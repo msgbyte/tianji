@@ -3,6 +3,7 @@ import { CommonList } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Layout } from '@/components/layout';
 import { useGlobalConfig } from '@/hooks/useConfig';
+import { isDev } from '@/utils/env';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
@@ -41,6 +42,11 @@ function PageComponent() {
       id: 'workspace',
       title: t('Workspace'),
       href: '/settings/workspace',
+    },
+    isDev && {
+      id: 'warehouse',
+      title: t('Warehouse'),
+      href: '/settings/warehouse',
     },
     {
       id: 'apiKey',

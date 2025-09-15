@@ -61,6 +61,7 @@
       "@types/react-dom": "18.2.21",
       "dayjs": "1.11.10",
       "esbuild": "0.25.5",
+      "monaco-editor": "0.53.0",
       "postman-code-generators": "1.8.0",
       "cross-spawn": "7.0.6",
       "@types/cross-spawn": "6.0.6",

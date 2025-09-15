@@ -44,6 +44,7 @@ import { Route as TelemetryTelemetryIdImport } from './routes/telemetry/$telemet
 import { Route as SurveyAddImport } from './routes/survey/add'
 import { Route as StatusSlugImport } from './routes/status/$slug'
 import { Route as SettingsWorkspaceImport } from './routes/settings/workspace'
+import { Route as SettingsWarehouseImport } from './routes/settings/warehouse'
 import { Route as SettingsUsageImport } from './routes/settings/usage'
 import { Route as SettingsProfileImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsImport } from './routes/settings/notifications'
@@ -246,6 +247,11 @@ const StatusSlugRoute = StatusSlugImport.update({
 
 const SettingsWorkspaceRoute = SettingsWorkspaceImport.update({
   path: '/workspace',
+  getParentRoute: () => SettingsRoute,
+} as any)
+
+const SettingsWarehouseRoute = SettingsWarehouseImport.update({
+  path: '/warehouse',
   getParentRoute: () => SettingsRoute,
 } as any)
 
@@ -577,6 +583,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsUsageImport
       parentRoute: typeof SettingsImport
     }
+    '/settings/warehouse': {
+      preLoaderRoute: typeof SettingsWarehouseImport
+      parentRoute: typeof SettingsImport
+    }
     '/settings/workspace': {
       preLoaderRoute: typeof SettingsWorkspaceImport
       parentRoute: typeof SettingsImport
@@ -770,6 +780,7 @@ export const routeTree = rootRoute.addChildren([
     SettingsNotificationsRoute,
     SettingsProfileRoute,
     SettingsUsageRoute,
+    SettingsWarehouseRoute,
     SettingsWorkspaceRoute,
   ]),
   SurveyRoute.addChildren([
