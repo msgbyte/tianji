@@ -59,6 +59,14 @@ export type WarehouseInsightsApplication = z.infer<
   typeof warehouseInsightsApplicationSchema
 >;
 
+export const warehouseConfigSchema = z.object({
+  enabled: z.boolean(),
+  defaultDatabaseUrl: z.string().optional(),
+  applications: z.array(warehouseInsightsApplicationSchema).default([]),
+});
+
+export type WarehouseConfig = z.infer<typeof warehouseConfigSchema>;
+
 // Convert Zod schema to JSON Schema for Monaco Editor
 export function getWarehouseConfigJsonSchema() {
   return {
@@ -67,6 +75,11 @@ export function getWarehouseConfigJsonSchema() {
       enabled: {
         type: 'boolean',
         description: 'Enable warehouse functionality',
+      },
+      defaultDatabaseUrl: {
+        type: 'string',
+        description:
+          'Default database connection URL for all applications (optional)',
       },
       applications: {
         type: 'array',
@@ -261,12 +274,14 @@ export function getWarehouseConfigJsonSchema() {
 // Default warehouse config
 export const defaultWarehouseConfig = {
   enabled: false,
+  defaultDatabaseUrl: undefined as string | undefined,
   applications: [] as WarehouseInsightsApplication[],
 };
 
 // Example warehouse config for documentation
 export const exampleWarehouseConfig = {
   enabled: true,
+  defaultDatabaseUrl: 'mysql://root:password@localhost:3306/default_db',
   applications: [
     {
       name: 'Analytics App',
@@ -323,6 +338,13 @@ export function validateWarehouseConfig(config: any): {
 
     if (typeof config.enabled !== 'boolean') {
       errors.push('enabled must be a boolean');
+    }
+
+    if (
+      config.defaultDatabaseUrl !== undefined &&
+      typeof config.defaultDatabaseUrl !== 'string'
+    ) {
+      errors.push('defaultDatabaseUrl must be a string if provided');
     }
 
     if (config.applications && Array.isArray(config.applications)) {

@@ -1,16 +1,19 @@
 import { buildQueryWithCache } from '../../cache/index.js';
 import { prisma } from '../_client.js';
+import { clearWarehouseApplicationsCache } from '../insights/warehouse/utils.js';
 
 const { get: getWorkspaceConfig, del: clearWorkspaceConfigCache } =
   buildQueryWithCache(async (workspaceId: string, key: string) => {
-    return prisma.workspaceConfig.findUnique({
-      where: {
-        workspaceId_key: {
-          workspaceId,
-          key,
+    return prisma.workspaceConfig
+      .findUnique({
+        where: {
+          workspaceId_key: {
+            workspaceId,
+            key,
+          },
         },
-      },
-    });
+      })
+      .then((config) => config?.value);
   });
 
 export { getWorkspaceConfig };
@@ -39,6 +42,10 @@ export async function setWorkspaceConfig(
   });
 
   clearWorkspaceConfigCache(workspaceId, key);
+
+  if (key === 'warehouse') {
+    clearWarehouseApplicationsCache(workspaceId);
+  }
 
   return config;
 }

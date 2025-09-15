@@ -66,7 +66,7 @@ function PageComponent() {
   // Initialize warehouse config when data loads
   useEffect(() => {
     if (warehouseConfig) {
-      setWarehouseConfigJson(JSON.stringify(warehouseConfig.value, null, 2));
+      setWarehouseConfigJson(JSON.stringify(warehouseConfig, null, 2));
     } else {
       setWarehouseConfigJson(JSON.stringify(defaultWarehouseConfig, null, 2));
     }
@@ -101,7 +101,7 @@ function PageComponent() {
     }
   };
 
-  const currentWarehouseEnabled = warehouseConfig?.value?.enabled || false;
+  const currentWarehouseEnabled = warehouseConfig?.enabled || false;
 
   if (!hasAdminPermission) {
     return (
@@ -183,7 +183,7 @@ function PageComponent() {
                   <div className="bg-card rounded-lg border p-4">
                     <p className="block font-semibold">{t('Applications')}</p>
                     <h3 className="mb-0 text-2xl font-bold">
-                      {warehouseConfig?.value?.applications?.length || 0}
+                      {warehouseConfig?.applications?.length || 0}
                     </h3>
                     <p className="text-muted-foreground text-sm">
                       {t('Configured applications')}
@@ -195,7 +195,7 @@ function PageComponent() {
                       {t('Long Table Apps')}
                     </p>
                     <h3 className="mb-0 text-2xl font-bold">
-                      {warehouseConfig?.value?.applications?.filter(
+                      {warehouseConfig?.applications?.filter(
                         (app: any) => app.type === 'longTable'
                       )?.length || 0}
                     </h3>
@@ -209,7 +209,7 @@ function PageComponent() {
                       {t('Wide Table Apps')}
                     </p>
                     <h3 className="mb-0 text-2xl font-bold">
-                      {warehouseConfig?.value?.applications?.filter(
+                      {warehouseConfig?.applications?.filter(
                         (app: any) => app.type === 'wideTable'
                       )?.length || 0}
                     </h3>

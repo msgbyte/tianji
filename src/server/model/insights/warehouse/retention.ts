@@ -6,19 +6,20 @@ import {
 import dayjs from 'dayjs';
 import { env } from '../../../utils/env.js';
 
-export function buildRetentionQuery(
+export async function buildRetentionQuery(
   workspaceId: string,
   warehouseWideApplicationId: string,
   startAt: number,
   endAt: number
-): Prisma.Sql {
+): Promise<Prisma.Sql> {
   const { sql, raw } = Prisma;
   const userApplicationId = env.insights.warehouse.retention.userApplicationId;
 
   // Only support wideTable application for retention
-  const app = findWarehouseApplication(warehouseWideApplicationId) as
-    | WarehouseWideTableInsightsApplication
-    | undefined;
+  const app = (await findWarehouseApplication(
+    workspaceId,
+    warehouseWideApplicationId
+  )) as WarehouseWideTableInsightsApplication | undefined;
 
   if (!app || app.type !== 'wideTable') {
     throw new Error(
@@ -35,9 +36,10 @@ export function buildRetentionQuery(
       'env.insights.warehouse.retention.userApplicationId is not set'
     );
   }
-  const userApp = findWarehouseApplication(userApplicationId) as
-    | WarehouseWideTableInsightsApplication
-    | undefined;
+  const userApp = (await findWarehouseApplication(
+    workspaceId,
+    userApplicationId
+  )) as WarehouseWideTableInsightsApplication | undefined;
   if (!userApp || userApp.type !== 'wideTable') {
     throw new Error(
       `User application for retention must be a wideTable, got: ${userApp?.type ?? 'unknown'}`

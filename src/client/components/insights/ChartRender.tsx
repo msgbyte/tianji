@@ -15,8 +15,9 @@ import {
   ResizablePanelGroup,
 } from '../ui/resizable';
 import { ScrollArea } from '../ui/scroll-area';
-import { Empty } from 'antd';
+import { Empty, Alert } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
+import { toast } from 'sonner';
 import { DelayRender } from '../DelayRender';
 import { SearchLoadingView } from '../loading/Searching';
 import { get, groupBy, merge, omit, values } from 'lodash-es';
@@ -75,7 +76,12 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     [dateRange, dateUnit]
   );
 
-  const { data = [], isFetching } = trpc.insights.query.useQuery(
+  const {
+    data = [],
+    isFetching,
+    error,
+    isError,
+  } = trpc.insights.query.useQuery(
     {
       workspaceId,
       insightId: props.insightId,
@@ -110,6 +116,18 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
       console.log(`Insights query completed in ${Math.round(duration)}ms`);
     }
   }, [isFetching]);
+
+  // Handle query errors with toast
+  useEffect(() => {
+    if (isError && error) {
+      const errorMessage = error.message || t('Failed to load data');
+      toast.error(t('Query Error'), {
+        description: errorMessage,
+        duration: 5000,
+      });
+      console.error('Insights query error:', error);
+    }
+  }, [isError, error, t]);
 
   const chartData = useMemo(() => {
     const res: { date: string }[] = [];
@@ -234,6 +252,11 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
           <>
             <span>{t('Querying...')}</span>
             <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+          </>
+        ) : isError ? (
+          <>
+            <span className="text-red-500">{t('Query failed')}</span>
+            <div className="h-2 w-2 rounded-full bg-red-500" />
           </>
         ) : queryDuration !== null ? (
           <>

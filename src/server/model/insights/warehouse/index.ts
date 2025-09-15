@@ -4,11 +4,14 @@ import { WarehouseLongTableInsightsSqlBuilder } from './longTable.js';
 import { findWarehouseApplication } from './utils.js';
 import { WarehouseWideTableInsightsSqlBuilder } from './wideTable.js';
 
-export function queryWarehouseEvents(
+export async function queryWarehouseEvents(
   query: z.infer<typeof insightsQueryEventsSchema>,
   context: { timezone: string }
 ) {
-  const application = findWarehouseApplication(query.insightId);
+  const application = await findWarehouseApplication(
+    query.workspaceId,
+    query.insightId
+  );
 
   if (application?.type === 'wideTable') {
     const builder = new WarehouseWideTableInsightsSqlBuilder(query, context);

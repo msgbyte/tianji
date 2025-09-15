@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createPool, Pool, createConnection } from 'mysql2/promise';
 import { env } from '../../../utils/env.js';
-import { Prisma, WarehouseDatabaseTable } from '@prisma/client';
+import { WarehouseDatabaseTable } from '@prisma/client';
 import { flatten, get, uniqBy } from 'lodash-es';
 import { prisma } from '../../_client.js';
 import {
@@ -10,6 +10,7 @@ import {
   warehouseWideTableInsightsApplicationSchema,
 } from '@tianji/shared';
 import { getWorkspaceConfig } from '../../workspace/config.js';
+import { INIT_WORKSPACE_ID } from '../../../utils/const.js';
 
 export interface WarehouseTableMeta {
   tableName: string;
@@ -44,27 +45,87 @@ export type WarehouseWideTableInsightsApplication = z.infer<
   typeof warehouseWideTableInsightsApplicationSchema
 >;
 
-let applications: WarehouseInsightsApplication[] | null = null;
-export function getWarehouseApplications() {
-  if (!applications) {
+// Cache for warehouse applications to reduce repeated database queries
+const warehouseApplicationsCache = new Map<
+  string,
+  {
+    applications: WarehouseInsightsApplication[];
+    timestamp: number;
+  }
+>();
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export async function getWarehouseApplications(
+  workspaceId: string
+): Promise<WarehouseInsightsApplication[]> {
+  // Check cache first
+  const cached = warehouseApplicationsCache.get(workspaceId);
+  const now = Date.now();
+
+  if (cached && now - cached.timestamp < CACHE_TTL) {
+    return cached.applications;
+  }
+
+  let applications: WarehouseInsightsApplication[];
+
+  if (
+    workspaceId === INIT_WORKSPACE_ID &&
+    env.insights.warehouse.applicationsJson
+  ) {
     applications = warehouseInsightsApplicationSchema
       .array()
       .parse(JSON.parse(env.insights.warehouse.applicationsJson || '[]'));
+  } else {
+    const config = await getWorkspaceConfig(workspaceId, 'warehouse');
+    if (!config) {
+      return [];
+    }
+
+    const enable = get(config, 'enabled', true);
+    if (!enable) {
+      return [];
+    }
+
+    const defaultDatabaseUrl = get(config, 'defaultDatabaseUrl', undefined);
+
+    applications = get(config, 'applications', []).map(
+      (app: WarehouseInsightsApplication) => ({
+        ...app,
+        databaseUrl: app.databaseUrl || defaultDatabaseUrl,
+      })
+    );
   }
+
+  // Cache the result
+  warehouseApplicationsCache.set(workspaceId, {
+    applications,
+    timestamp: now,
+  });
 
   return applications;
 }
 
-export function findWarehouseApplication(name: string) {
-  return getWarehouseApplications().find((app) => app.name === name);
+export function findWarehouseApplication(
+  workspaceId: string,
+  name: string
+): Promise<WarehouseInsightsApplication | undefined> {
+  return getWarehouseApplications(workspaceId).then((apps) =>
+    apps.find((app) => app.name === name)
+  );
+}
+
+// Helper function to clear cache when warehouse config is updated
+export function clearWarehouseApplicationsCache(workspaceId?: string): void {
+  if (workspaceId) {
+    warehouseApplicationsCache.delete(workspaceId);
+  } else {
+    warehouseApplicationsCache.clear();
+  }
 }
 
 const connections = new Map<string, Pool>();
 export function getWarehouseConnection(url = env.insights.warehouse.url) {
-  if (!env.insights.warehouse.enable) {
-    throw new Error('Warehouse is not enabled');
-  }
-
   if (!url) {
     throw new Error('Warehouse url is not set');
   }
@@ -76,31 +137,6 @@ export function getWarehouseConnection(url = env.insights.warehouse.url) {
   }
 
   return connection;
-}
-
-/**
- * Execute a data warehouse query
- * @param applicationId Application ID
- * @param sql Query SQL
- * @returns Query result
- */
-export async function executeWarehouseQuery(
-  applicationId: string,
-  sql: Prisma.Sql
-): Promise<any[]> {
-  const application = findWarehouseApplication(applicationId);
-  if (!application) {
-    throw new Error(`Application ${applicationId} not found`);
-  }
-
-  const connection = getWarehouseConnection(application.databaseUrl);
-
-  const [rows] = await connection.query(
-    sql.sql.replaceAll('"', '`'), // avoid mysql and pg sql syntax error about double quote
-    sql.values
-  );
-
-  return rows as any[];
 }
 
 /**

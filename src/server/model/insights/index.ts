@@ -14,7 +14,7 @@ import { findWarehouseApplication } from './warehouse/utils.js';
 import { insightsWideTableWarehouse } from './warehouse/wideTable.js';
 import { queryWarehouseEvents } from './warehouse/index.js';
 
-export function queryInsight(
+export async function queryInsight(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
@@ -33,7 +33,11 @@ export function queryInsight(
   }
 
   if (insightType === 'warehouse' && query.workspaceId === INIT_WORKSPACE_ID) {
-    const application = findWarehouseApplication(query.insightId);
+    const application = await findWarehouseApplication(
+      query.workspaceId,
+      query.insightId
+    );
+
     if (application?.type === 'wideTable') {
       return insightsWideTableWarehouse(query, context);
     }
@@ -93,7 +97,7 @@ export async function queryEvents(
     });
   }
 
-  if (insightType === 'warehouse' && query.workspaceId === INIT_WORKSPACE_ID) {
+  if (insightType === 'warehouse') {
     return queryWarehouseEvents(query, context);
   }
 

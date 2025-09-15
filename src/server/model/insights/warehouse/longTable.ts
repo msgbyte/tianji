@@ -21,10 +21,19 @@ import {
 const { sql, raw } = Prisma;
 
 export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
-  getApplication(): WarehouseLongTableInsightsApplication {
-    const name = this.query.insightId;
+  private application?: WarehouseLongTableInsightsApplication;
+  private initialized = false;
 
-    const application = getWarehouseApplications().find(
+  async initialize(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    const name = this.query.insightId;
+    const workspaceId = this.query.workspaceId;
+
+    const applications = await getWarehouseApplications(workspaceId);
+    const application = applications.find(
       (app) => app.name === name && app.type === 'longTable'
     ) as WarehouseLongTableInsightsApplication;
 
@@ -32,7 +41,17 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       throw new Error(`Application ${name} not found`);
     }
 
-    return application;
+    this.application = application;
+    this.initialized = true;
+  }
+
+  getApplication(): WarehouseLongTableInsightsApplication {
+    if (!this.initialized || !this.application) {
+      throw new Error(
+        'WarehouseLongTableInsightsSqlBuilder must be initialized first'
+      );
+    }
+    return this.application;
   }
 
   private enableDateBasedOptimizedEventTable() {
@@ -439,6 +458,7 @@ export async function insightsLongTableWarehouse(
   context: { timezone: string }
 ) {
   const builder = new WarehouseLongTableInsightsSqlBuilder(query, context);
+  await builder.initialize();
   const sql = builder.build();
 
   const data = await builder.executeQuery(sql);
@@ -449,17 +469,19 @@ export async function insightsLongTableWarehouse(
 }
 
 export async function insightsLongTableWarehouseEvents(
-  applicationId: string
+  applicationId: string,
+  workspaceId: string
 ): Promise<string[]> {
-  const application = getWarehouseApplications().find(
+  const applications = await getWarehouseApplications(workspaceId);
+  const application = applications.find(
     (app) => app.name === applicationId && app.type === 'longTable'
   ) as WarehouseLongTableInsightsApplication;
-  const connection = getWarehouseConnection(application.databaseUrl);
 
   if (!application) {
     throw new Error(`Event table not found for application ${applicationId}`);
   }
 
+  const connection = getWarehouseConnection(application.databaseUrl);
   const eventTable = application.eventTable;
 
   const [rows] = await connection.query(`
@@ -479,17 +501,19 @@ LIMIT 100;`);
 }
 
 export async function insightsLongTableWarehouseFilterParams(
-  applicationId: string
+  applicationId: string,
+  workspaceId: string
 ): Promise<string[]> {
-  const application = getWarehouseApplications().find(
+  const applications = await getWarehouseApplications(workspaceId);
+  const application = applications.find(
     (app) => app.name === applicationId && app.type === 'longTable'
   ) as WarehouseLongTableInsightsApplication;
-  const connection = getWarehouseConnection(application.databaseUrl);
 
   if (!application) {
     throw new Error(`Event table not found for application ${applicationId}`);
   }
 
+  const connection = getWarehouseConnection(application.databaseUrl);
   const eventParametersTable = application.eventParametersTable;
 
   const [rows] = await connection.query(`

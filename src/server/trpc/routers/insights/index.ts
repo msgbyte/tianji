@@ -30,7 +30,7 @@ export const insightsRouter = router({
   query: workspaceProcedure
     .input(insightsQuerySchema)
     .query(async ({ input, ctx }) => {
-      return queryInsight(input, {
+      return await queryInsight(input, {
         timezone: ctx.timezone,
       });
     }),
@@ -81,13 +81,22 @@ export const insightsRouter = router({
       }
 
       if (insightType === 'warehouse') {
-        const application = findWarehouseApplication(insightId);
+        const application = await findWarehouseApplication(
+          input.workspaceId,
+          insightId
+        );
         let events: string[] = [];
         console.log('application', application);
         if (application?.type === 'wideTable') {
-          events = await insightsWideTableWarehouseEvents(insightId);
+          events = await insightsWideTableWarehouseEvents(
+            insightId,
+            input.workspaceId
+          );
         } else {
-          events = await insightsLongTableWarehouseEvents(insightId);
+          events = await insightsLongTableWarehouseEvents(
+            insightId,
+            input.workspaceId
+          );
         }
 
         return events.map((item) => ({
@@ -158,12 +167,21 @@ export const insightsRouter = router({
 
         return [...payloadFields, ...builtinFields];
       } else if (insightType === 'warehouse') {
-        const application = findWarehouseApplication(insightId);
+        const application = await findWarehouseApplication(
+          input.workspaceId,
+          insightId
+        );
         let params: string[] = [];
         if (application?.type === 'wideTable') {
-          params = await insightsWideTableWarehouseFilterParams(insightId);
+          params = await insightsWideTableWarehouseFilterParams(
+            insightId,
+            input.workspaceId
+          );
         } else {
-          params = await insightsLongTableWarehouseFilterParams(insightId);
+          params = await insightsLongTableWarehouseFilterParams(
+            insightId,
+            input.workspaceId
+          );
         }
 
         return params.map((item) => ({
@@ -283,7 +301,8 @@ export const insightsRouter = router({
       return [];
     }
 
-    return getWarehouseApplications().map((a) => a.name);
+    const applications = await getWarehouseApplications(input.workspaceId);
+    return applications.map((a) => a.name);
   }),
   warehouseApplicationsWideTable: workspaceProcedure.query(
     async ({ input }) => {
@@ -291,7 +310,8 @@ export const insightsRouter = router({
         return [];
       }
 
-      return getWarehouseApplications()
+      const applications = await getWarehouseApplications(input.workspaceId);
+      return applications
         .filter((a) => a.type === 'wideTable')
         .map((a) => a.name);
     }
