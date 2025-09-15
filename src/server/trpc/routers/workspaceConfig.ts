@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { router, workspaceAdminProcedure } from '../trpc.js';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '../../model/_client.js';
+import {
+  getWorkspaceConfig,
+  setWorkspaceConfig,
+} from '../../model/workspace/config.js';
 
 export const workspaceConfigRouter = router({
   // Get a specific config by key
@@ -13,14 +17,7 @@ export const workspaceConfigRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const config = await prisma.workspaceConfig.findUnique({
-        where: {
-          workspaceId_key: {
-            workspaceId: input.workspaceId,
-            key: input.key,
-          },
-        },
-      });
+      const config = await getWorkspaceConfig(input.workspaceId, input.key);
 
       return config;
     }),
@@ -37,23 +34,7 @@ export const workspaceConfigRouter = router({
     .mutation(async ({ input }) => {
       const { workspaceId, key, value } = input;
 
-      const config = await prisma.workspaceConfig.upsert({
-        where: {
-          workspaceId_key: {
-            workspaceId,
-            key,
-          },
-        },
-        update: {
-          value,
-          updatedAt: new Date(),
-        },
-        create: {
-          workspaceId,
-          key,
-          value,
-        },
-      });
+      const config = await setWorkspaceConfig(workspaceId, key, value);
 
       return config;
     }),

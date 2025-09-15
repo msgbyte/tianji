@@ -4,6 +4,12 @@ import { env } from '../../../utils/env.js';
 import { Prisma, WarehouseDatabaseTable } from '@prisma/client';
 import { flatten, get, uniqBy } from 'lodash-es';
 import { prisma } from '../../_client.js';
+import {
+  warehouseInsightsApplicationSchema,
+  warehouseLongTableInsightsApplicationSchema,
+  warehouseWideTableInsightsApplicationSchema,
+} from '@tianji/shared';
+import { getWorkspaceConfig } from '../../workspace/config.js';
 
 export interface WarehouseTableMeta {
   tableName: string;
@@ -24,54 +30,6 @@ export const dateTypeSchema = z.enum([
   'timestampMs', // for example: 1739203200000
   'date', // for example: 2025-08-01
   'datetime', // for example: 2025-08-01 00:00:00
-]);
-
-const warehouseLongTableInsightsApplicationSchema = z.object({
-  databaseUrl: z.string().optional(),
-  name: z.string(),
-  type: z.literal('longTable'), // long table
-  eventTable: z.object({
-    name: z.string(),
-    eventNameField: z.string(),
-    sessionIdField: z.string().optional(),
-    createdAtField: z.string(),
-    createdAtFieldType: dateTypeSchema.default('timestampMs'),
-    dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type
-  }),
-  eventParametersTable: z.object({
-    name: z.string(),
-    eventNameField: z.string(),
-    paramsNameField: z.string(),
-    paramsValueField: z.string(),
-    paramsValueNumberField: z.string().optional(),
-    paramsValueStringField: z.string().optional(),
-    paramsValueDateField: z.string().optional(),
-    createdAtField: z.string(),
-    createdAtFieldType: dateTypeSchema.default('timestampMs'),
-    dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type
-  }),
-});
-
-const warehouseWideTableInsightsApplicationSchema = z.object({
-  databaseUrl: z.string().optional(),
-  name: z.string(),
-  type: z.literal('wideTable'), // wide table
-  tableName: z.string(),
-  fields: z.array(
-    z.object({
-      name: z.string(),
-      type: z.string().default('string'),
-    })
-  ),
-  distinctField: z.string(),
-  createdAtField: z.string(),
-  createdAtFieldType: dateTypeSchema.default('timestampMs'),
-  dateBasedCreatedAtField: z.string().optional(), // for improve performance, treat as date type
-});
-
-export const warehouseInsightsApplicationSchema = z.union([
-  warehouseLongTableInsightsApplicationSchema,
-  warehouseWideTableInsightsApplicationSchema,
 ]);
 
 export type WarehouseInsightsApplication = z.infer<

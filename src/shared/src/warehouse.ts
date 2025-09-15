@@ -7,7 +7,7 @@ export const dateTypeSchema = z.enum([
   'datetime', // for example: 2025-08-01 00:00:00
 ]);
 
-const warehouseLongTableInsightsApplicationSchema = z.object({
+export const warehouseLongTableInsightsApplicationSchema = z.object({
   databaseUrl: z.string().optional(),
   name: z.string(),
   type: z.literal('longTable'), // long table
@@ -33,7 +33,7 @@ const warehouseLongTableInsightsApplicationSchema = z.object({
   }),
 });
 
-const warehouseWideTableInsightsApplicationSchema = z.object({
+export const warehouseWideTableInsightsApplicationSchema = z.object({
   databaseUrl: z.string().optional(),
   name: z.string(),
   type: z.literal('wideTable'), // wide table
