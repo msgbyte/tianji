@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteWarehouseCohorts, RelatedWarehouseCohortsModelSchema, CompleteWarehouseDatabase, RelatedWarehouseDatabaseModelSchema, CompleteWarehouseDatabaseTable, RelatedWarehouseDatabaseTableModelSchema, CompleteAIGateway, RelatedAIGatewayModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema } from "./index.js"
+import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteWarehouseCohorts, RelatedWarehouseCohortsModelSchema, CompleteWarehouseDatabase, RelatedWarehouseDatabaseModelSchema, CompleteWarehouseDatabaseTable, RelatedWarehouseDatabaseTableModelSchema, CompleteAIGateway, RelatedAIGatewayModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspaceConfig, RelatedWorkspaceConfigModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -46,6 +46,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   warehouseDatabaseTable: CompleteWarehouseDatabaseTable[]
   aiGateways: CompleteAIGateway[]
   aiGatewayQuotaAlerts: CompleteAIGatewayQuotaAlert[]
+  workspaceConfigs: CompleteWorkspaceConfig[]
 }
 
 /**
@@ -73,4 +74,5 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   warehouseDatabaseTable: RelatedWarehouseDatabaseTableModelSchema.array(),
   aiGateways: RelatedAIGatewayModelSchema.array(),
   aiGatewayQuotaAlerts: RelatedAIGatewayQuotaAlertModelSchema.array(),
+  workspaceConfigs: RelatedWorkspaceConfigModelSchema.array(),
 }))

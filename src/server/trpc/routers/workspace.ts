@@ -18,7 +18,7 @@ import { Prisma } from '@prisma/client';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { getServerCount } from '../../model/serverStatus.js';
-import { ROLES, slugRegex } from '@tianji/shared';
+import { ROLES } from '@tianji/shared';
 import {
   createUserSelect,
   joinWorkspace,
@@ -34,6 +34,7 @@ import {
   createWorkspaceInvitation,
   sendInvitationEmail,
 } from '../../model/invitation.js';
+import { workspaceConfigRouter } from './workspaceConfig.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -590,6 +591,7 @@ export const workspaceRouter = router({
         },
       });
     }),
+  config: workspaceConfigRouter,
 });
 
 function buildWorkspaceOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {

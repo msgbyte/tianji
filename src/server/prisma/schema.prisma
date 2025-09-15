@@ -125,6 +125,7 @@ model Workspace {
   warehouseDatabaseTable WarehouseDatabaseTable[]
   aiGateways             AIGateway[]
   aiGatewayQuotaAlerts   AIGatewayQuotaAlert[]
+  workspaceConfigs       WorkspaceConfig[]
 }
 
 model WorkspacesOnUsers {
@@ -1076,5 +1077,21 @@ model WarehouseDatabaseTable {
   workspace Workspace         @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   database  WarehouseDatabase @relation(fields: [databaseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
+  @@index([workspaceId])
+}
+
+model WorkspaceConfig {
+  id          String @id @default(cuid()) @db.VarChar(30)
+  workspaceId String @db.VarChar(30)
+  key         String @db.VarChar(255)
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  value       Json   @db.Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([workspaceId, key])
   @@index([workspaceId])
 }
