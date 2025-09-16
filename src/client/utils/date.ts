@@ -85,14 +85,20 @@ function formatOffset(offset: number) {
 export function getTimezoneList() {
   const timezones = Intl.supportedValuesOf('timeZone');
 
-  return timezones.map((timezone) => {
-    const offset = dayjs().tz(timezone).utcOffset();
+  return [
+    {
+      label: 'UTC',
+      value: 'utc',
+    },
+    ...timezones.map((timezone) => {
+      const offset = dayjs().tz(timezone).utcOffset();
 
-    return {
-      label: `${timezone} (${formatOffset(offset)})`,
-      value: timezone,
-    };
-  });
+      return {
+        label: `${timezone} (${formatOffset(offset)})`,
+        value: timezone,
+      };
+    }),
+  ];
 }
 
 export function getShortTextByUnit(date: dayjs.ConfigType, dateUnit: DateUnit) {

@@ -169,7 +169,7 @@ function PageComponent() {
                 <div className="flex-1">{t('Timezone')}</div>
                 <div>
                   <Select
-                    value={settings['timezone'] ?? dayjs.tz.guess()}
+                    value={settings['timezone'] ?? 'utc'}
                     onValueChange={(value) =>
                       handleUpdateSettings('timezone', value)
                     }
