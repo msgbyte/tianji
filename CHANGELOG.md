@@ -1,5 +1,11 @@
 
 
+## [1.25.11](https://github.com/msgbyte/tianji/compare/v1.25.10...v1.25.11) (2025-09-16)
+
+### Others
+
+* add openrouter price support, improve calc price more precision ([f5881ae](https://github.com/msgbyte/tianji/commit/f5881aebc1586b28d76ec8db6fc30bee07d21c39))
+
 ## [1.25.10](https://github.com/msgbyte/tianji/compare/v1.25.9...v1.25.10) (2025-09-16)
 
 ### Others
