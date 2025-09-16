@@ -5,8 +5,8 @@ import dayjs from 'dayjs';
 
 describe('retention', () => {
   describe('buildRetentionQuery', () => {
-    it('base', () => {
-      const query = buildRetentionQuery(
+    it('base', async () => {
+      const query = await buildRetentionQuery(
         '1',
         'wide_table_test',
         dayjs('2025-07-15').valueOf(),
