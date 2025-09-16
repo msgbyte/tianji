@@ -1,6 +1,7 @@
 import { prisma } from './_client.js';
 import { parseWebsiteFilters } from '../utils/prisma.js';
 import { DEFAULT_RESET_DATE } from '../utils/const.js';
+import { buildQueryWithCache } from '../cache/index.js';
 
 export async function getWorkspaceUser(workspaceId: string, userId: string) {
   const info = await prisma.workspacesOnUsers.findFirst({
@@ -137,3 +138,14 @@ export async function getWorkspaceServiceCount(workspaceId: string) {
     aiGateway,
   };
 }
+
+export const { get: getWorkspaceSettings, del: clearWorkspaceSettingsCache } =
+  buildQueryWithCache(async (workspaceId: string) => {
+    const workspace = await prisma.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+    });
+
+    return workspace?.settings ?? {};
+  });

@@ -28,7 +28,10 @@ import { WorkspacesOnUsersModelSchema } from '../../prisma/zod/workspacesonusers
 import { monitorManager } from '../../model/monitor/index.js';
 import { get, merge } from 'lodash-es';
 import { promWorkspaceCounter } from '../../utils/prometheus/client.js';
-import { getWorkspaceServiceCount } from '../../model/workspace.js';
+import {
+  clearWorkspaceSettingsCache,
+  getWorkspaceServiceCount,
+} from '../../model/workspace.js';
 import {
   acceptInvitation,
   createWorkspaceInvitation,
@@ -288,6 +291,8 @@ export const workspaceRouter = router({
         // should be restart all monitor
         monitorManager.restartWithWorkspaceId(workspaceId);
       }
+
+      clearWorkspaceSettingsCache(workspaceId);
 
       return res;
     }),

@@ -5,6 +5,8 @@ import { logger } from '../../utils/logger.js';
 import { buildQueryWithCache, getCacheManager } from '../../cache/index.js';
 import { withDistributedLock } from '../../cache/distributedLock.js';
 import dayjs from 'dayjs';
+import { getWorkspaceSettings } from '../workspace.js';
+import { get } from 'lodash-es';
 
 /**
  * Generate daily cost cache key
@@ -193,6 +195,9 @@ export async function checkQuotaAlert(
               `[checkQuotaAlert] Sending ${alertLevel.level}% alert for gateway ${gatewayId}`
             );
 
+            const workspaceSettings = await getWorkspaceSettings(workspaceId);
+            const timezone = get(workspaceSettings, 'timezone', 'utc');
+
             // Send notification
             await sendNotification(
               {
@@ -210,7 +215,7 @@ export async function checkQuotaAlert(
                 token.text(`Usage Percentage: ${percentage.toFixed(1)}%`),
                 token.newline(),
                 token.paragraph(
-                  `Alert Time: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
+                  `Alert Time: ${dayjs().tz(timezone).format('YYYY-MM-DD HH:mm:ss (z)')}`
                 ),
                 token.paragraph(getAlertMessage(alertLevel.level, percentage)),
               ],
