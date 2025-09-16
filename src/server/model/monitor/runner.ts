@@ -184,13 +184,15 @@ export class MonitorRunner {
     );
   }
 
+  getCurrentTime(): string {
+    return dayjs().tz(this.getTimezone()).format('YYYY-MM-DD HH:mm:ss (z)');
+  }
+
   private buildUpNotification(): { title: string; content: string } {
     const monitor = this.monitor as MonitorWithNotification & {
       upMessageTemplate?: string | null;
     };
-    const currentTime = dayjs()
-      .tz(this.getTimezone())
-      .format('YYYY-MM-DD HH:mm:ss (z)');
+    const currentTime = this.getCurrentTime();
 
     const templateVars = {
       monitorName: monitor.name,
@@ -231,9 +233,7 @@ export class MonitorRunner {
     const monitor = this.monitor as MonitorWithNotification & {
       downMessageTemplate?: string | null;
     };
-    const currentTime = dayjs()
-      .tz(this.getTimezone())
-      .format('YYYY-MM-DD HH:mm:ss (z)');
+    const currentTime = this.getCurrentTime();
 
     const templateVars = {
       monitorName: monitor.name,

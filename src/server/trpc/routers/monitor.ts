@@ -283,6 +283,7 @@ export const monitorRouter = router({
       await runner.notify('Test title', [
         token.paragraph('Test content'),
         token.paragraph(`Send from monitor: ${runner.monitor.name}`),
+        token.paragraph(`Date: ${runner.getCurrentTime()}`),
       ]);
     }),
   triggerMonitor: workspaceProcedure
