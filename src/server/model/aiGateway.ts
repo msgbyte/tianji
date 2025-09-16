@@ -8,6 +8,7 @@ import { AIGatewayLogs, AIGatewayLogsStatus } from '@prisma/client';
 import {
   getLLMCostDecimalV2,
   getLLMCostDecimalWithCustomPrice,
+  getOpenRouterCostDecimal,
 } from '../utils/llm.js';
 import { get } from 'lodash-es';
 import { verifyUserApiKey } from '../model/user.js';
@@ -135,6 +136,7 @@ export function buildOpenAIHandler(
           completion_tokens: 0,
           total_tokens: 0,
         };
+        let openrouterProviderName = ''; // only for open router, as for different openrouter provider, its will have different price.
         let responseModelName = modelName; // real model name which returned from remote. its will be some changed because of the model alias.
         for await (const chunk of stream) {
           responseModelName = chunk.model;
@@ -149,6 +151,10 @@ export function buildOpenAIHandler(
             usage = chunk.usage; // try to get usage from chunk
           }
 
+          if ('provider' in chunk) {
+            openrouterProviderName = String(chunk.provider);
+          }
+
           if (res.flush) {
             res.flush();
           }
@@ -159,31 +165,37 @@ export function buildOpenAIHandler(
         const duration = Date.now() - start;
 
         logP.then(async ({ id: logId }) => {
-          const inputToken =
-            usage.prompt_tokens ??
-            (await calcMessagesToken(messages, modelName));
-
-          const outputToken =
+          const [inputToken, outputToken] = await Promise.all([
+            usage.prompt_tokens ?? calcMessagesToken(messages, modelName),
             usage.completion_tokens ??
-            (await calcOpenAIToken(outputContent, modelName));
+              calcOpenAIToken(outputContent, modelName),
+          ]);
 
           // Use custom price if available, otherwise use default pricing
           const customInputPrice = gatewayInfo?.customModelInputPrice;
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+
           const price =
-            options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? getLLMCostDecimalWithCustomPrice(
-                  inputToken,
-                  outputToken,
-                  customInputPrice,
-                  customOutputPrice
-                )
-              : getLLMCostDecimalV2(
-                  modelProvider,
+            modelProvider === 'openrouter' && Boolean(openrouterProviderName)
+              ? await getOpenRouterCostDecimal(
                   modelPriceName,
+                  openrouterProviderName,
                   inputToken,
                   outputToken
-                );
+                )
+              : options.isCustomRoute && (customInputPrice || customOutputPrice)
+                ? getLLMCostDecimalWithCustomPrice(
+                    inputToken,
+                    outputToken,
+                    customInputPrice,
+                    customOutputPrice
+                  )
+                : getLLMCostDecimalV2(
+                    modelProvider,
+                    modelPriceName,
+                    inputToken,
+                    outputToken
+                  );
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -197,7 +209,11 @@ export function buildOpenAIHandler(
               duration,
               ttft,
               price,
-              responsePayload: { content: outputContent, usage },
+              responsePayload: {
+                content: outputContent,
+                usage,
+                provider: openrouterProviderName,
+              },
             },
           });
 
@@ -216,6 +232,7 @@ export function buildOpenAIHandler(
         });
 
         const responseModelName = response.model ?? modelName;
+        const openrouterProviderName = get(response, 'provider', '');
 
         res.json(response);
         const duration = Date.now() - start;
@@ -237,19 +254,26 @@ export function buildOpenAIHandler(
           const customInputPrice = gatewayInfo?.customModelInputPrice;
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
           const price =
-            options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? getLLMCostDecimalWithCustomPrice(
-                  inputToken,
-                  outputToken,
-                  customInputPrice,
-                  customOutputPrice
-                )
-              : getLLMCostDecimalV2(
-                  modelProvider,
+            modelProvider === 'openrouter' && Boolean(openrouterProviderName)
+              ? await getOpenRouterCostDecimal(
                   modelPriceName,
+                  openrouterProviderName,
                   inputToken,
                   outputToken
-                );
+                )
+              : options.isCustomRoute && (customInputPrice || customOutputPrice)
+                ? getLLMCostDecimalWithCustomPrice(
+                    inputToken,
+                    outputToken,
+                    customInputPrice,
+                    customOutputPrice
+                  )
+                : getLLMCostDecimalV2(
+                    modelProvider,
+                    modelPriceName,
+                    inputToken,
+                    outputToken
+                  );
 
           await prisma.aIGatewayLogs.update({
             where: {

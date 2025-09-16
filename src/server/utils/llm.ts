@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import axios from 'axios';
 
 const contextWindows = await import('./model_prices_and_context_window.json', {
   with: { type: 'json' },
@@ -106,3 +107,108 @@ export function getLLMCostDecimalWithCustomPrice(
       : new Prisma.Decimal(0)
   );
 }
+
+//#region open router
+export interface OpenRouterPricing {
+  prompt: string;
+  completion: string;
+  request: string;
+  image: string;
+  image_output: string;
+  web_search: string;
+  internal_reasoning: string;
+  input_cache_read?: string;
+  discount: number;
+}
+
+export interface OpenRouterArchitecture {
+  tokenizer: string;
+  instruct_type: string | null;
+  modality: string;
+  input_modalities: string[];
+  output_modalities: string[];
+}
+
+export interface OpenRouterEndpoint {
+  name: string;
+  model_name: string;
+  context_length: number;
+  pricing: OpenRouterPricing;
+  provider_name: string;
+  tag: string;
+  quantization: string | null;
+  max_completion_tokens: number | null;
+  max_prompt_tokens: number | null;
+  supported_parameters: string[];
+  status: number;
+  uptime_last_30m: number | null;
+  supports_implicit_caching: boolean;
+}
+
+export interface OpenRouterModelData {
+  id: string;
+  name: string;
+  created: number;
+  description: string;
+  architecture: OpenRouterArchitecture;
+  endpoints: OpenRouterEndpoint[];
+}
+
+export interface OpenRouterResponse {
+  data: OpenRouterModelData;
+}
+
+const openRouterRequestCache = new Map<string, Promise<OpenRouterResponse>>();
+function fetchOpenrouterEndpoints(model: string): Promise<OpenRouterResponse> {
+  if (openRouterRequestCache.has(model)) {
+    return openRouterRequestCache.get(model)!;
+  }
+
+  const promise = axios
+    .get(`https://openrouter.ai/api/v1/models/${model}/endpoints`)
+    .then((res) => {
+      return res.data;
+    })
+    .catch((error) => {
+      openRouterRequestCache.delete(model); // remove cache its fetch failed
+
+      throw error;
+    });
+  openRouterRequestCache.set(model, promise);
+
+  return promise;
+}
+export async function getOpenRouterPrice(
+  model: string,
+  openrouterProviderName: string
+) {
+  const endpoints = await fetchOpenrouterEndpoints(model);
+
+  const endpoint = endpoints.data.endpoints.find(
+    (endpoint) => endpoint.provider_name === openrouterProviderName
+  );
+
+  if (!endpoint) {
+    return { input: new Prisma.Decimal(0), output: new Prisma.Decimal(0) };
+  }
+
+  return {
+    input: new Prisma.Decimal(endpoint.pricing.prompt),
+    output: new Prisma.Decimal(endpoint.pricing.completion),
+  };
+}
+
+export async function getOpenRouterCostDecimal(
+  model: string,
+  openrouterProviderName: string,
+  inputToken: number,
+  outputToken: number
+) {
+  const { input, output } = await getOpenRouterPrice(
+    model,
+    openrouterProviderName
+  );
+
+  return input.mul(inputToken).add(output.mul(outputToken));
+}
+// endregion
