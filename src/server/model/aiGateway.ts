@@ -240,15 +240,14 @@ export function buildOpenAIHandler(
         logP.then(async ({ id: logId }) => {
           const content = get(response, ['choices', 0, 'message', 'content']);
 
-          const inputToken: number =
+          const [inputToken, outputToken] = await Promise.all([
             response.usage?.prompt_tokens ??
-            (await calcMessagesToken(messages, modelName));
-
-          const outputToken =
+              calcMessagesToken(messages, modelName),
             response.usage?.completion_tokens ??
-            (typeof content === 'string'
-              ? await calcOpenAIToken(content, modelName)
-              : 0);
+              (typeof content === 'string'
+                ? calcOpenAIToken(content, modelName)
+                : Promise.resolve(0)),
+          ]);
 
           // Use custom price if available, otherwise use default pricing
           const customInputPrice = gatewayInfo?.customModelInputPrice;

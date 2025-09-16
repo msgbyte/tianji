@@ -203,14 +203,16 @@ export async function checkQuotaAlert(
               `${alertLevel.title} - ${quotaAlert.aiGateway.name}`,
               [
                 token.paragraph(`Gateway: ${quotaAlert.aiGateway.name}`),
-                token.paragraph(`Today's Usage Cost: $${totalCost.toFixed(4)}`),
-                token.paragraph(`Quota Set: $${dailyQuota.toFixed(4)}`),
-                token.paragraph(`Usage Percentage: ${percentage.toFixed(1)}%`),
+                token.text(`Today's Usage Cost: $${totalCost.toFixed(4)}`),
+                token.newline(),
+                token.text(`Quota Set: $${dailyQuota.toFixed(4)}`),
+                token.newline(),
+                token.text(`Usage Percentage: ${percentage.toFixed(1)}%`),
+                token.newline(),
                 token.paragraph(
                   `Alert Time: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
                 ),
-                token.newline(),
-                token.text(getAlertMessage(alertLevel.level, percentage)),
+                token.paragraph(getAlertMessage(alertLevel.level, percentage)),
               ],
               {
                 gatewayId: quotaAlert.gatewayId,
