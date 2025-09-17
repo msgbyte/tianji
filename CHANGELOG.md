@@ -1,5 +1,11 @@
 
 
+## [1.25.13](https://github.com/msgbyte/tianji/compare/v1.25.12...v1.25.13) (2025-09-17)
+
+### Features
+
+* enhance AIGateway analytics with detailed metrics and improved naming conventions ([2878777](https://github.com/msgbyte/tianji/commit/2878777bacbc7b80a3796544f28ffc57e239a602))
+
 ## [1.25.12](https://github.com/msgbyte/tianji/compare/v1.25.11...v1.25.12) (2025-09-17)
 
 ### Features
