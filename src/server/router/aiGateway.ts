@@ -31,6 +31,16 @@ aiGatewayRouter.post(
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
+    header: (req) => {
+      return {
+        'HTTP-Referer': req.headers['HTTP-Referer']
+          ? String(req.headers['HTTP-Referer'])
+          : 'https://tianji.dev/',
+        'X-Title': req.headers['X-Title']
+          ? String(req.headers['X-Title'])
+          : 'Tianji',
+      };
+    },
   })
 );
 
@@ -70,6 +80,16 @@ aiGatewayRouter.post(
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
+    header: (req) => {
+      return {
+        'HTTP-Referer': req.headers['HTTP-Referer']
+          ? String(req.headers['HTTP-Referer'])
+          : 'https://tianji.dev/',
+        'X-Title': req.headers['X-Title']
+          ? String(req.headers['X-Title'])
+          : 'Tianji',
+      };
+    },
   })
 );
 

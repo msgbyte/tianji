@@ -1,6 +1,6 @@
 import { buildQueryWithCache } from '../cache/index.js';
 import { prisma } from './_client.js';
-import { type RequestHandler } from 'express';
+import { type RequestHandler, type Request } from 'express';
 import { calcMessagesToken, calcOpenAIToken } from '../model/openai.js';
 import { z } from 'zod';
 import OpenAI from 'openai';
@@ -45,6 +45,7 @@ interface OpenaiHandlerOptions {
   modelProvider?: string;
   modelPriceName?: (model: string) => string;
   isCustomRoute?: boolean;
+  header?: (req: Request) => Record<string, string>;
 }
 
 export function buildOpenAIHandler(
@@ -106,6 +107,7 @@ export function buildOpenAIHandler(
       const openai = new OpenAI({
         apiKey: modelApiKey,
         baseURL: baseUrl,
+        defaultHeaders: options.header?.(req),
       });
       const modelProvider = options.modelProvider ?? 'openai';
       const modelPriceName = options.modelPriceName
