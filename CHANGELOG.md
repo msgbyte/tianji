@@ -1,5 +1,22 @@
 
 
+## [1.25.12](https://github.com/msgbyte/tianji/compare/v1.25.11...v1.25.12) (2025-09-17)
+
+### Features
+
+* add ai gateway analytics ([78559d7](https://github.com/msgbyte/tianji/commit/78559d7c536753243e1f354d2a0c65eb8bdabf45))
+
+### Bug Fixes
+
+* fix timezone config in monitor feature not work issue ([1cd0245](https://github.com/msgbyte/tianji/commit/1cd024530943610f9a8a8af4b65c67de8cc1db0b))
+
+### Others
+
+* changed correct timezone display in settings ([9a62f86](https://github.com/msgbyte/tianji/commit/9a62f86f20465d70e5aa4b0620ae230cc0a76502))
+* improve calc token usage and improve quota alert formatting ([ef9984c](https://github.com/msgbyte/tianji/commit/ef9984c9ddd5885e1160b8b648ab2c301800f0fc))
+* quota alert support correct time display for timezone with workspace config ([842f83a](https://github.com/msgbyte/tianji/commit/842f83a468d0012454dad5acd77783efaa6089e0))
+* update translation ([9cca1a7](https://github.com/msgbyte/tianji/commit/9cca1a70ada680b372a04bfb515098fb26e015ad))
+
 ## [1.25.11](https://github.com/msgbyte/tianji/compare/v1.25.10...v1.25.11) (2025-09-16)
 
 ### Others
