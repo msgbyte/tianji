@@ -1,5 +1,11 @@
 
 
+## [1.25.14](https://github.com/msgbyte/tianji/compare/v1.25.13...v1.25.14) (2025-09-17)
+
+### Others
+
+* add openrouter ranker for tianji ([98e239b](https://github.com/msgbyte/tianji/commit/98e239b06277c940cb9dcdba201ba437f88f60cf))
+
 ## [1.25.13](https://github.com/msgbyte/tianji/compare/v1.25.12...v1.25.13) (2025-09-17)
 
 ### Features
