@@ -1,6 +1,6 @@
 export interface MetricsInfo {
   name: string;
-  math: 'events' | 'sessions';
+  math: 'events' | 'sessions' | 'p50' | 'p90' | 'p95' | 'p99' | 'avg';
   alias?: string;
 }
 

@@ -15,6 +15,8 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
   buildSelectQueryArr() {
     const { metrics } = this.query;
     return metrics.map((item) => {
+      const alias = item.alias ?? item.name;
+
       if (item.math === 'events') {
         if (item.name === '$all_event') {
           return sql`count(1) as "$all_event"`;
@@ -26,13 +28,18 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
             item.name
           )
         ) {
-          return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${item.name}"`)}`;
+          return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
         }
       } else if (item.math === 'sessions') {
         // AIGatewayLogs has no concept of sessions, but can be grouped by gatewayId
         if (item.name === '$all_event') {
-          return sql`count(distinct "gatewayId") as "$all_event"`;
+          return sql`count(distinct "gatewayId") as ${raw(`"${alias}"`)}`;
         }
+      } else if (item.math === 'avg') {
+        return sql`AVG("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
+      } else if (item.math.startsWith('p')) {
+        const percentile = Number(item.math.replace('p', '')) / 100;
+        return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${raw(`"${item.name}"`)}) AS ${raw(`"${alias}"`)}`;
       }
 
       return null;

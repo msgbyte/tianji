@@ -77,6 +77,7 @@ export const InsightQueryChart: React.FC<InsightQueryChartProps> = React.memo(
       chartData,
       chartConfig: processedChartConfig,
       simpleData,
+      isMultiSeries,
     } = useInsightsData({
       data: rawData as InsightsRawData[],
       groups,
@@ -84,8 +85,8 @@ export const InsightQueryChart: React.FC<InsightQueryChartProps> = React.memo(
       valueProcessor,
     });
 
-    // Use simple data for backward compatibility when no groups
-    const data = groups.length === 0 ? simpleData : chartData;
+    // Use simple data for backward compatibility when it's a single series
+    const data = !isMultiSeries ? simpleData : chartData;
     const defaultChartConfig = useTimeEventChartConfig(data);
 
     return (

@@ -88,9 +88,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Response Duration (Total)')}</CardTitle>
+                  <CardTitle>{t('Response Time Percentiles')}</CardTitle>
                   <p className="text-muted-foreground text-sm">
-                    {t('Total response time across all requests over time')}
+                    {t(
+                      'Duration percentiles (P50, P90, P99) showing response time distribution over time'
+                    )}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -99,7 +101,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     workspaceId={workspaceId}
                     insightId={gatewayId}
                     insightType="aigateway"
-                    metrics={[{ name: 'duration', math: 'events' }]}
+                    metrics={[
+                      { name: 'duration', math: 'p50', alias: 'p50' },
+                      { name: 'duration', math: 'p90', alias: 'p90' },
+                      { name: 'duration', math: 'p99', alias: 'p99' },
+                    ]}
                     filters={[]}
                     groups={[]}
                     time={timeConfig}
@@ -110,9 +116,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
 
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Time to First Token (Total)')}</CardTitle>
+                  <CardTitle>{t('First Token Response Time')}</CardTitle>
                   <p className="text-muted-foreground text-sm">
-                    {t('Total TTFT across all requests over time')}
+                    {t(
+                      'TTFT percentiles (P50, P90, P99) showing time to first token distribution over time'
+                    )}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -121,7 +129,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     workspaceId={workspaceId}
                     insightId={gatewayId}
                     insightType="aigateway"
-                    metrics={[{ name: 'ttft', math: 'events' }]}
+                    metrics={[
+                      { name: 'ttft', math: 'p50', alias: 'p50' },
+                      { name: 'ttft', math: 'p90', alias: 'p90' },
+                      { name: 'ttft', math: 'p99', alias: 'p99' },
+                    ]}
                     filters={[]}
                     groups={[]}
                     time={timeConfig}
@@ -135,9 +147,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
             {/* Performance by Model */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('Performance by Model')}</CardTitle>
+                <CardTitle>{t('Model Performance Comparison')}</CardTitle>
                 <p className="text-muted-foreground text-sm">
-                  {t('Compare response times across different models')}
+                  {t(
+                    'Average response time (duration) comparison across different AI models'
+                  )}
                 </p>
               </CardHeader>
               <CardContent>
@@ -146,7 +160,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   workspaceId={workspaceId}
                   insightId={gatewayId}
                   insightType="aigateway"
-                  metrics={[{ name: 'duration', math: 'events' }]}
+                  metrics={[{ name: 'duration', math: 'avg' }]}
                   filters={[]}
                   groups={[{ value: 'modelName', type: 'string' }]}
                   time={timeConfig}
@@ -159,9 +173,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Request Count vs Duration')}</CardTitle>
+                  <CardTitle>{t('Request Volume Over Time')}</CardTitle>
                   <p className="text-muted-foreground text-sm">
-                    {t('Distribution of requests by response time ranges')}
+                    {t(
+                      'Total number of events (all API requests) processed over time'
+                    )}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -181,9 +197,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
 
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Streaming vs Non-Streaming')}</CardTitle>
+                  <CardTitle>{t('Response Time by Streaming Mode')}</CardTitle>
                   <p className="text-muted-foreground text-sm">
-                    {t('Performance comparison by streaming mode')}
+                    {t(
+                      'Average response time (duration) comparison between streaming and non-streaming requests'
+                    )}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -192,7 +210,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     workspaceId={workspaceId}
                     insightId={gatewayId}
                     insightType="aigateway"
-                    metrics={[{ name: 'duration', math: 'events' }]}
+                    metrics={[{ name: 'duration', math: 'avg' }]}
                     filters={[]}
                     groups={[{ value: 'stream', type: 'boolean' }]}
                     time={timeConfig}
@@ -207,7 +225,12 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
           <TabsContent value="models" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>{t('Model Usage Distribution')}</CardTitle>
+                <CardTitle>{t('Model Usage Statistics')}</CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  {t(
+                    'Total event count (request volume) distribution across different AI models'
+                  )}
+                </p>
               </CardHeader>
               <CardContent>
                 <InsightQueryChart
@@ -230,9 +253,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Request Status Distribution')}</CardTitle>
+                  <CardTitle>{t('Success vs Failure Rate')}</CardTitle>
                   <p className="text-muted-foreground text-sm">
-                    {t('Overall distribution of successful vs failed requests')}
+                    {t(
+                      'Event count distribution grouped by request status (Success/Failed)'
+                    )}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -252,9 +277,9 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
 
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('Error Rate Over Time')}</CardTitle>
+                  <CardTitle>{t('Failed Requests Trend')}</CardTitle>
                   <p className="text-muted-foreground text-sm">
-                    {t('Failed requests trend over the selected time period')}
+                    {t('Number of events with Failed status over time')}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -283,9 +308,9 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
             {/* Success Rate Over Time */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('Success Rate Over Time')}</CardTitle>
+                <CardTitle>{t('Successful Requests Trend')}</CardTitle>
                 <p className="text-muted-foreground text-sm">
-                  {t('Successful requests trend over the selected time period')}
+                  {t('Number of events with Success status over time')}
                 </p>
               </CardHeader>
               <CardContent>
@@ -313,9 +338,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
             {/* Error Distribution by Model */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('Error Distribution by Model')}</CardTitle>
+                <CardTitle>{t('Failure Analysis by Model')}</CardTitle>
                 <p className="text-muted-foreground text-sm">
-                  {t('Which models have the highest error rates')}
+                  {t(
+                    'Failed events count breakdown grouped by different AI models'
+                  )}
                 </p>
               </CardHeader>
               <CardContent>

@@ -59,7 +59,9 @@ export const insightsQuerySchema = z.object({
   metrics: z.array(
     z.object({
       name: z.string(),
-      math: z.enum(['events', 'sessions']).default('events'),
+      math: z
+        .enum(['events', 'sessions', 'avg', 'p50', 'p90', 'p95', 'p99'])
+        .default('events'),
       alias: z.string().optional(),
     })
   ),
