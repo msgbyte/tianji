@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import React, { useMemo, useEffect, useRef } from 'react';
 import { TimeEventChart } from '../chart/TimeEventChart';
 import { useInsightsStore } from '@/store/insights';
-import { pickColorWithNum } from '@/utils/color';
 import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
 import { FilterInfo, GroupInfo, MetricsInfo } from '@tianji/shared';
@@ -15,12 +14,12 @@ import {
   ResizablePanelGroup,
 } from '../ui/resizable';
 import { ScrollArea } from '../ui/scroll-area';
-import { Empty, Alert } from 'antd';
+import { Empty } from 'antd';
 import { useTranslation } from '@i18next-toolkit/react';
 import { toast } from 'sonner';
 import { DelayRender } from '../DelayRender';
 import { SearchLoadingView } from '../loading/Searching';
-import { get, groupBy, merge, omit, values } from 'lodash-es';
+import { useInsightsData } from '@/hooks/useInsightsData';
 import { ChartTypeSelection } from './ChartTypeSelection';
 import { useWatch } from '@/hooks/useWatch';
 import { getUserTimezone } from '@/api/model/user';
@@ -129,54 +128,11 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     }
   }, [isError, error, t]);
 
-  const chartData = useMemo(() => {
-    const res: { date: string }[] = [];
-    if (!data || data.length === 0) {
-      return [];
-    }
-
-    const dates = data[0].data.map((item) => item.date);
-
-    dates.map((date) => {
-      data.forEach((item) => {
-        const value = item.data.find((d) => d.date === date)?.value ?? 0;
-        let name = item.name;
-
-        if (groups.length > 0) {
-          name +=
-            '-' +
-            groups
-              .map((group) => {
-                return get(item, group.value);
-              })
-              .join('-');
-        }
-
-        res.push({
-          date,
-          [name]: value,
-        });
-      });
-    });
-
-    return values(groupBy(res, 'date')).map((list) => (merge as any)(...list));
-  }, [data]);
-
-  const chartConfig = useMemo(() => {
-    if (chartData.length === 0) {
-      return {};
-    }
-
-    return Object.keys(omit(chartData[0], 'date')).reduce((prev, curr, i) => {
-      return {
-        ...prev,
-        [curr]: {
-          label: curr,
-          color: pickColorWithNum(i),
-        },
-      };
-    }, {});
-  }, [chartData]);
+  const { chartData, chartConfig } = useInsightsData({
+    data,
+    groups,
+    time,
+  });
 
   let mainEl = null;
   if (isFetching) {

@@ -246,7 +246,9 @@ export const TimeEventChart: React.FC<{
 });
 TimeEventChart.displayName = 'TimeEventChart';
 
-export function useTimeEventChartConfig(chartData: TimeEventChartData[]) {
+export function useTimeEventChartConfig(
+  chartData: TimeEventChartData[]
+): ChartConfig {
   const chartConfig = useMemo(() => {
     if (chartData.length === 0) {
       return {};

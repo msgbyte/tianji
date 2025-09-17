@@ -21,8 +21,11 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         }
 
         // For standard fields, directly count
-        // TODO: maybe use other math functions
-        if (['inputToken', 'outputToken', 'price'].includes(item.name)) {
+        if (
+          ['inputToken', 'outputToken', 'price', 'duration', 'ttft'].includes(
+            item.name
+          )
+        ) {
           return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${item.name}"`)}`;
         }
       } else if (item.math === 'sessions') {
@@ -34,6 +37,42 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
 
       return null;
     });
+  }
+
+  buildGroupSelectQueryArr() {
+    const { groups } = this.query;
+    let groupSelectQueryArr: Prisma.Sql[] = [];
+
+    if (groups.length > 0) {
+      for (const g of groups) {
+        if (!g.customGroups) {
+          // Handle different field types for grouping
+          let groupField: Prisma.Sql;
+          if (g.value === 'status') {
+            // Cast enum to text for grouping
+            groupField = sql`"AIGatewayLogs"."status"::text`;
+          } else {
+            // String fields (modelName, gatewayId, etc.)
+            groupField = sql`"AIGatewayLogs"."${raw(g.value)}"`;
+          }
+
+          groupSelectQueryArr.push(sql`${groupField} as "%${raw(g.value)}"`);
+        } else if (g.customGroups && g.customGroups.length > 0) {
+          for (const cg of g.customGroups) {
+            groupSelectQueryArr.push(
+              sql`${this.buildFilterQueryOperator(
+                g.value,
+                g.type,
+                cg.filterOperator,
+                cg.filterValue
+              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+            );
+          }
+        }
+      }
+    }
+
+    return groupSelectQueryArr;
   }
 
   buildWhereQueryArr() {
@@ -78,7 +117,16 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         'price',
       ].includes(name)
     ) {
-      const valueField = sql`"AIGatewayLogs"."${raw(name)}"${type === 'number' ? Prisma.empty : type === 'boolean' ? Prisma.empty : Prisma.empty}`;
+      // Special handling for enum fields that need type casting
+      let valueField: Prisma.Sql;
+      if (name === 'status') {
+        // Cast enum to text for comparison
+        valueField = sql`"AIGatewayLogs"."status"::text`;
+      } else {
+        // String fields
+        valueField = sql`"AIGatewayLogs"."${raw(name)}"`;
+      }
+
       return this.buildCommonFilterQueryOperator(
         type,
         operator,

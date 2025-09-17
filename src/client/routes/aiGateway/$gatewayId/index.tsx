@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
+import { AIGatewayAnalytics } from '@/components/aiGateway/AIGatewayAnalytics';
 import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
 import { useState, useRef } from 'react';
 import { SearchInput } from '@/components/ui/input';
@@ -124,6 +125,7 @@ function PageComponent() {
         >
           <TabsList>
             <TabsTrigger value="overview">{t('Overview')}</TabsTrigger>
+            <TabsTrigger value="analytics">{t('Analytics')}</TabsTrigger>
             <TabsTrigger value="logs">{t('Logs')}</TabsTrigger>
           </TabsList>
 
@@ -133,6 +135,15 @@ function PageComponent() {
           >
             <div className="flex h-full w-full flex-col overflow-auto rounded-lg border p-4">
               <AIGatewayOverview gatewayId={gatewayId} />
+            </div>
+          </TabsContent>
+
+          <TabsContent
+            value="analytics"
+            className="mt-4 w-full flex-1 space-y-4 overflow-hidden"
+          >
+            <div className="flex h-full w-full flex-col overflow-auto rounded-lg border p-4">
+              <AIGatewayAnalytics gatewayId={gatewayId} />
             </div>
           </TabsContent>
 

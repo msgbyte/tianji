@@ -171,7 +171,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
                 data={data}
                 unit={unit}
                 chartConfig={chartConfig}
-                chartType="area"
+                chartType="bar"
                 valueFormatter={valueFormatter}
               />
             </div>
