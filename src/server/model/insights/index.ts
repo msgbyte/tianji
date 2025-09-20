@@ -18,7 +18,11 @@ export async function queryInsight(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
-  const { insightType } = query;
+  const { insightType, metrics } = query;
+
+  if (metrics.length === 0) {
+    return [];
+  }
 
   if (insightType === 'website') {
     return insightsWebsite(query, context);

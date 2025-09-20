@@ -80,6 +80,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     isFetching,
     error,
     isError,
+    status,
   } = trpc.insights.query.useQuery(
     {
       workspaceId,
@@ -91,6 +92,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
       time,
     },
     {
+      enabled: !!metrics.length,
       trpc: {
         context: {
           skipBatch: true,
@@ -214,7 +216,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
             <span className="text-red-500">{t('Query failed')}</span>
             <div className="h-2 w-2 rounded-full bg-red-500" />
           </>
-        ) : queryDuration !== null ? (
+        ) : queryDuration !== null && status !== 'pending' ? (
           <>
             <span>
               {t('Query completed in {{duration}}', {
@@ -223,7 +225,9 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
             </span>
             <div className="h-2 w-2 rounded-full bg-green-500" />
           </>
-        ) : null}
+        ) : (
+          <div className="h-5" />
+        )}
       </div>
 
       {mainEl}
