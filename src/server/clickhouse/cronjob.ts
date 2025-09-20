@@ -315,13 +315,16 @@ export async function syncPostgresToClickHouse() {
 // Initialize cronjob
 export function initClickHouseSyncCronjob() {
   // Run every hour
-  const job = Cron(env.isDev ? '* * * * *' : '0/20 * * * *', async () => {
-    try {
-      await syncPostgresToClickHouse();
-    } catch (err) {
-      logger.error('Scheduled PostgreSQL to ClickHouse sync failed:', err);
+  const job = Cron(
+    env.clickhouse.debug ? '* * * * *' : '0/20 * * * *',
+    async () => {
+      try {
+        await syncPostgresToClickHouse();
+      } catch (err) {
+        logger.error('Scheduled PostgreSQL to ClickHouse sync failed:', err);
+      }
     }
-  });
+  );
 
   logger.info(
     'ClickHouse sync job will start at:',
