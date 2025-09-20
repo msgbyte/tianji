@@ -86,7 +86,6 @@ export const insightsRouter = router({
           insightId
         );
         let events: string[] = [];
-        console.log('application', application);
         if (application?.type === 'wideTable') {
           events = await insightsWideTableWarehouseEvents(
             insightId,

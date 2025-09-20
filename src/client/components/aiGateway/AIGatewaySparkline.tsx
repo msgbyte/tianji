@@ -83,7 +83,7 @@ export const AIGatewaySparkline: React.FC<{ gatewayId: string }> = React.memo(
 
     if (isLoading) {
       return (
-        <div className="flex h-10 w-20 items-center justify-center">
+        <div className="flex h-6 w-20 items-center justify-center">
           <span className="text-muted-foreground text-xs">Loading...</span>
         </div>
       );
@@ -91,7 +91,7 @@ export const AIGatewaySparkline: React.FC<{ gatewayId: string }> = React.memo(
 
     if (!data || data.length === 0) {
       return (
-        <div className="flex h-10 w-20 items-center justify-center">
+        <div className="flex h-6 w-20 items-center justify-center">
           <span className="text-muted-foreground text-xs">No data</span>
         </div>
       );
