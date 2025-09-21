@@ -8,6 +8,7 @@ import { AdapterUser } from '@auth/core/adapters';
 import { md5, sha256 } from '../utils/common.js';
 import { logger } from '../utils/logger.js';
 import { promUserCounter } from '../utils/prometheus/client.js';
+import { env } from '../utils/env.js';
 
 async function hashPassword(password: string) {
   return await bcryptjs.hash(password, 10);
@@ -107,11 +108,32 @@ export async function createUser(username: string, password: string) {
   }
 
   const user = await prisma.$transaction(async (p) => {
-    const newWorkspace = await p.workspace.create({
-      data: {
-        name: username + "'s Personal Workspace",
-      },
-    });
+    let workspaceId: string;
+    let workspaceRole: ROLES;
+
+    // Check if registerAutoJoinWorkspaceId is configured
+    if (env.registerAutoJoinWorkspaceId) {
+      // Verify the workspace exists
+      const targetWorkspace = await p.workspace.findUnique({
+        where: { id: env.registerAutoJoinWorkspaceId },
+      });
+
+      if (!targetWorkspace) {
+        throw new Error('Auto-join workspace not found');
+      }
+
+      workspaceId = env.registerAutoJoinWorkspaceId;
+      workspaceRole = ROLES.readOnly; // Default role for auto-joined users
+    } else {
+      // Create personal workspace as before
+      const newWorkspace = await p.workspace.create({
+        data: {
+          name: username + "'s Personal Workspace",
+        },
+      });
+      workspaceId = newWorkspace.id;
+      workspaceRole = ROLES.owner;
+    }
 
     const user = await p.user.create({
       data: {
@@ -121,12 +143,12 @@ export async function createUser(username: string, password: string) {
         workspaces: {
           create: [
             {
-              role: ROLES.owner,
-              workspaceId: newWorkspace.id,
+              role: workspaceRole,
+              workspaceId: workspaceId,
             },
           ],
         },
-        currentWorkspaceId: newWorkspace.id,
+        currentWorkspaceId: workspaceId,
       },
       select: createUserSelect,
     });
@@ -151,11 +173,32 @@ export async function createUserWithAuthjs(data: Omit<AdapterUser, 'id'>) {
   }
 
   const user = await prisma.$transaction(async (p) => {
-    const newWorkspace = await p.workspace.create({
-      data: {
-        name: data.name ?? data.email,
-      },
-    });
+    let workspaceId: string;
+    let workspaceRole: ROLES;
+
+    // Check if registerAutoJoinWorkspaceId is configured
+    if (env.registerAutoJoinWorkspaceId) {
+      // Verify the workspace exists
+      const targetWorkspace = await p.workspace.findUnique({
+        where: { id: env.registerAutoJoinWorkspaceId },
+      });
+
+      if (!targetWorkspace) {
+        throw new Error('Auto-join workspace not found');
+      }
+
+      workspaceId = env.registerAutoJoinWorkspaceId;
+      workspaceRole = ROLES.readOnly; // Default role for auto-joined users
+    } else {
+      // Create personal workspace as before
+      const newWorkspace = await p.workspace.create({
+        data: {
+          name: data.name ?? data.email,
+        },
+      });
+      workspaceId = newWorkspace.id;
+      workspaceRole = ROLES.owner;
+    }
 
     const user = await p.user.create({
       data: {
@@ -169,12 +212,12 @@ export async function createUserWithAuthjs(data: Omit<AdapterUser, 'id'>) {
         workspaces: {
           create: [
             {
-              role: ROLES.owner,
-              workspaceId: newWorkspace.id,
+              role: workspaceRole,
+              workspaceId: workspaceId,
             },
           ],
         },
-        currentWorkspaceId: newWorkspace.id,
+        currentWorkspaceId: workspaceId,
       },
       select: createUserSelect,
     });
