@@ -48,6 +48,7 @@ export const env = {
     custom: {
       // Reference: https://authjs.dev/guides/configuring-oauth-providers
       name: process.env.AUTH_CUSTOM_NAME || 'Custom',
+      icon: process.env.AUTH_CUSTOM_ICON,
       type: process.env.AUTH_CUSTOM_TYPE || 'oidc', // or oauth
       issuer: process.env.AUTH_CUSTOM_ISSUER,
       clientId: process.env.AUTH_CUSTOM_ID,

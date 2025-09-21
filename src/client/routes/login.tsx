@@ -63,7 +63,8 @@ function LoginComponent() {
       }
     }
   );
-  const { allowRegister, authProvider } = useGlobalConfig();
+  const { allowRegister, authProvider, customAuthProviderIcon } =
+    useGlobalConfig();
 
   const mainAuthProvider = authProvider.includes('email') ? (
     <Form
@@ -85,7 +86,7 @@ function LoginComponent() {
         </Button>
       </Form.Item>
     </Form>
-  ) : (
+  ) : authProvider.includes('account') ? (
     <Form
       layout="vertical"
       disabled={isAccountLoading}
@@ -134,7 +135,7 @@ function LoginComponent() {
         </Form.Item>
       )}
     </Form>
-  );
+  ) : null;
 
   const extraAuthProviderEl = compact([
     authProvider.includes('github') && (
@@ -152,7 +153,11 @@ function LoginComponent() {
         className="h-12 w-12 p-3"
         onClick={() => loginWithOAuth('custom', search.redirect)}
       >
-        <LuLayers size={24} />
+        {customAuthProviderIcon ? (
+          <img src={customAuthProviderIcon} className="h-6 w-6" />
+        ) : (
+          <LuLayers size={24} />
+        )}
       </Button>
     ),
   ]);
@@ -173,7 +178,11 @@ function LoginComponent() {
 
         {extraAuthProviderEl.length > 0 && (
           <>
-            <Divider>{t('Or')}</Divider>
+            {mainAuthProvider ? (
+              <Divider>{t('Or')}</Divider>
+            ) : (
+              <Divider>{t('Use Third Party Auth to Login')}</Divider>
+            )}
 
             <div className="flex justify-center gap-2">
               {extraAuthProviderEl}
