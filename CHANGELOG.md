@@ -1,5 +1,26 @@
 
 
+## [1.26.0](https://github.com/msgbyte/tianji/compare/v1.25.14...v1.26.0) (2025-09-21)
+
+### Features
+
+* add custom auth icon support ([303372e](https://github.com/msgbyte/tianji/commit/303372ee20d7a2b76636cbf42ae1d5cd90426749))
+* add debug option for ClickHouse sync cronjob ([3e64174](https://github.com/msgbyte/tianji/commit/3e6417480863b3596ed0e7b9a8549a4ecf5b53cb))
+* add DotPatternBackground component and theme support in register route ([edc1a6d](https://github.com/msgbyte/tianji/commit/edc1a6d54087c3446021bd3278e0ae6f23ce8542))
+* add redis adaptar for socket.io ([2202931](https://github.com/msgbyte/tianji/commit/2202931b9193d5a5a7cb6c88ef0bab3db543e478))
+* add REGISTER_AUTO_JOIN_WORKSPACE_ID env for auto join workspace with new user ([9ad13fc](https://github.com/msgbyte/tianji/commit/9ad13fc5a7c8461ec6bfe09b0d98dbe42d6a1496))
+* enhance ChartRender component with metrics validation and improved query handling ([7422450](https://github.com/msgbyte/tianji/commit/742245042e658254c450ee4c067d5b2287330a05))
+
+### Bug Fixes
+
+* fix style issue for ai gateway sparkline ([8d97872](https://github.com/msgbyte/tianji/commit/8d97872f15660a63fffc405b450b98c46924137e))
+
+### Others
+
+* fix ci issue ([c634185](https://github.com/msgbyte/tianji/commit/c6341851f0c6167a0d9f1c1f266b27290c673cd6))
+* update tianji favicon icon ([ac1628a](https://github.com/msgbyte/tianji/commit/ac1628a9ef652bef8132848425884c32b986a207))
+* update translation ([a149b02](https://github.com/msgbyte/tianji/commit/a149b02ced177c5ff2b55f7c75660f048e14ba79))
+
 ## [1.25.14](https://github.com/msgbyte/tianji/compare/v1.25.13...v1.25.14) (2025-09-17)
 
 ### Others
