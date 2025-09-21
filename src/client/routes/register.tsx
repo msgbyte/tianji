@@ -7,6 +7,8 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/api/authjs/useAuth';
+import { DotPatternBackground } from '@/components/DotPatternBackground';
+import { useTheme } from '@/store/settings';
 
 export const Route = createFileRoute('/register')({
   component: RegisterComponent,
@@ -15,6 +17,7 @@ export const Route = createFileRoute('/register')({
 function RegisterComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const { loginWithPassword } = useAuth();
   const mutation = trpc.user.register.useMutation();
@@ -36,7 +39,9 @@ function RegisterComponent() {
   });
 
   return (
-    <div className="flex h-full w-full items-center justify-center dark:bg-zinc-900">
+    <div className="flex h-full w-full items-center justify-center">
+      {theme === 'dark' && <DotPatternBackground />}
+
       <div className="w-80 -translate-y-1/4">
         <div className="text-center">
           <img className="m-auto h-24 w-24  " src="/icon.svg" />
