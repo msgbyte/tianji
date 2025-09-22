@@ -1,5 +1,15 @@
 
 
+## [1.26.1](https://github.com/msgbyte/tianji/compare/v1.26.0...v1.26.1) (2025-09-22)
+
+### Bug Fixes
+
+* fix field error issue for warehouse long table ([47016b0](https://github.com/msgbyte/tianji/commit/47016b022302403a1ebe262f4054f3b3f1f4cedc))
+
+### Others
+
+* update default desktop panel layout size ([d9c1688](https://github.com/msgbyte/tianji/commit/d9c1688fe926c70375f1d2f63e3d69838ef78927))
+
 ## [1.26.0](https://github.com/msgbyte/tianji/compare/v1.25.14...v1.26.0) (2025-09-21)
 
 ### Features
