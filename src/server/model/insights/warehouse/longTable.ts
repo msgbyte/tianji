@@ -355,7 +355,7 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       if (groups.length > 0) {
         const groupConditions = groups.map(
           (g) =>
-            sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.eventNameField)}" = ${g.value}`
+            sql`"${raw(eventParametersTable.name)}"."${raw(eventParametersTable.paramsNameField)}" = ${g.value}`
         );
         innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
           groupConditions,
