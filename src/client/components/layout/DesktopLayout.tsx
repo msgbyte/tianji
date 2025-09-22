@@ -33,7 +33,7 @@ import { FreeTierTip } from '../FreeTierTip';
 import { DevContainer } from '../DevContainer';
 import { AIPanel } from '../ai/AIPanel';
 
-const defaultLayout: [number, number, number] = [265, 440, 655];
+const defaultLayout: [number, number, number] = [15, 25, 60];
 
 export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
   const [layout = defaultLayout, setLayout] = useLocalStorageState(
@@ -205,7 +205,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
         {props.list && (
           <>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={layout[1]} minSize={25}>
+            <ResizablePanel defaultSize={layout[1]} minSize={20}>
               <div className="h-full overflow-hidden">{props.list}</div>
             </ResizablePanel>
           </>
