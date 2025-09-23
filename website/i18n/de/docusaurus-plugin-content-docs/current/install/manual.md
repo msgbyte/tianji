@@ -40,7 +40,7 @@ JWT_SECRET="ersetzen-durch-einen-zufälligen-string"
 
 Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist, und denken Sie daran, die Datenbank vorher zu erstellen.
 
-Weitere Umgebungsvariablen finden Sie in diesem Dokument [environment](../environment.md)
+Weitere Umgebungsvariablen finden Sie in diesem Dokument [environment](./environment.md)
 
 > Falls möglich, stellen Sie sicher, dass Ihre Kodierung en_US.utf8 ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
 

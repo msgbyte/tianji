@@ -40,7 +40,7 @@ JWT_SECRET="replace-me-with-a-random-string"
 
 Make sure your database url is correct. and dont remember create database before.
 
-For more environment can check this document [environment](../environment.md)
+For more environment can check this document [environment](./environment.md)
 
 > if you can, better to make sure your encoding is en_US.utf8, for example: `createdb -E UTF8 -l en_US.utf8 tianji`
 

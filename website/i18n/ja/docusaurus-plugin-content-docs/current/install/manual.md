@@ -40,7 +40,7 @@ JWT_SECRET="replace-me-with-a-random-string"
 
 データベースのURLが正しいことを確認し、データベースを事前に作成することを忘れないでください。
 
-詳細な環境設定については、このドキュメントを参照してください [environment](../environment.md)
+詳細な環境設定については、このドキュメントを参照してください [environment](./environment.md)
 
 > 可能であれば、エンコーディングがen_US.utf8であることを確認してください。例：`createdb -E UTF8 -l en_US.utf8 tianji`
 

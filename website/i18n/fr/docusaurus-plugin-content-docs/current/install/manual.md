@@ -40,7 +40,7 @@ JWT_SECRET="remplacez-moi-par-une-chaîne-aléatoire"
 
 Assurez-vous que votre URL de base de données est correcte. Et n'oubliez pas de créer la base de données avant.
 
-Pour plus d'environnements, consultez ce document [environnement](../environment.md)
+Pour plus d'environnements, consultez ce document [environnement](./environment.md)
 
 > Si possible, assurez-vous que votre encodage est en_US.utf8, par exemple : `createdb -E UTF8 -l en_US.utf8 tianji`
 

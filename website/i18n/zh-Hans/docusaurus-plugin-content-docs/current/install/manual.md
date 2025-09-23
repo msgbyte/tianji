@@ -40,7 +40,7 @@ JWT_SECRET="replace-me-with-a-random-string"
 
 确保你的数据库 URL 是正确的，并且在之前创建了数据库。
 
-更多环境变量可以查看此文档 [environment](../environment.md)
+更多环境变量可以查看此文档 [environment](./environment.md)
 
 > 如果可以，最好确保你的编码是 en_US.utf8，例如：`createdb -E UTF8 -l en_US.utf8 tianji`
 

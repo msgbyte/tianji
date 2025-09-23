@@ -144,7 +144,7 @@ API keys can only access workspaces that the user belongs to. If you need to acc
 ```json
 {
   "error": {
-    "code": "FORBIDDEN", 
+    "code": "FORBIDDEN",
     "message": "Insufficient access"
   }
 }
@@ -276,11 +276,11 @@ initOpenapiSDK('https://your-tianji-domain.com', {
 async function getSystemConfig() {
   try {
     const config = await openApiClient.GlobalService.globalConfig();
-    
+
     console.log('Allow registration:', config.allowRegister);
     console.log('AI features enabled:', config.enableAI);
     console.log('Billing enabled:', config.enableBilling);
-    
+
     return config;
   } catch (error) {
     console.error('Failed to get system configuration:', error);
@@ -464,7 +464,7 @@ ALLOW_OPENAPI=true
 
 ## Prepare Database struct
 
-Now you can visit database, and you can visit 
+Now you can visit database, and you can visit
 
 ```bash
 cd src/server && pnpm db:migrate:apply
@@ -518,7 +518,7 @@ initTianjiTracker({
   url: backendUrl,
   websiteId,
 });
-    
+
 reportEvent('Demo Event', {
   foo: 'bar',
 });
@@ -935,7 +935,7 @@ Now you can search tianji with `helm search` command.
 helm search repo tianji
 ```
 
-## Install 
+## Install
 
 Then, feel free to install with one command:
 
@@ -986,7 +986,7 @@ JWT_SECRET="replace-me-with-a-random-string"
 
 Make sure your database url is correct. and dont remember create database before.
 
-For more environment can check this document [environment](../environment.md)
+For more environment can check this document [environment](./environment.md)
 
 > if you can, better to make sure your encoding is en_US.utf8, for example: `createdb -E UTF8 -l en_US.utf8 tianji`
 
@@ -1080,8 +1080,8 @@ you can fill the form quickly to install.
 
 and only just need to wait for a moment. then you can open your own Tianji in your browser.
 
-> Url: `http://<your-ip>:12345`  
-> Default username: `admin`  
+> Url: `http://<your-ip>:12345`
+> Default username: `admin`
 > Default password: `admin`
 
 
@@ -1089,17 +1089,17 @@ and only just need to wait for a moment. then you can open your own Tianji in yo
 
 # Telemetry
 
-## About Anonymous Telemetry  
+## About Anonymous Telemetry
 
-To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.  
+To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.
 
-We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:  
+We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:
 
-- **Completely Anonymous**: We do not collect any personally identifiable information or service content.  
-- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.  
-- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.  
+- **Completely Anonymous**: We do not collect any personally identifiable information or service content.
+- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.
+- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.
 
-Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:  
+Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:
 
 ```bash
 DISABLE_ANONYMOUS_TELEMETRY=1
@@ -1501,8 +1501,8 @@ done
 // Send heartbeat every 60 seconds
 setInterval(async () => {
   try {
-    await fetch('https://tianji.example.com/api/push/<your-push-token>', { 
-      method: 'POST' 
+    await fetch('https://tianji.example.com/api/push/<your-push-token>', {
+      method: 'POST'
     });
     console.log('Heartbeat sent successfully');
   } catch (error) {
@@ -1564,7 +1564,7 @@ class ServiceMonitor:
     def __init__(self, push_url):
         self.push_url = push_url
         self.running = True
-        
+
     def start_heartbeat(self):
         def heartbeat_loop():
             while self.running:
@@ -1573,7 +1573,7 @@ class ServiceMonitor:
                     time.sleep(30)  # Send every 30 seconds
                 except Exception as e:
                     print(f"Heartbeat failed: {e}")
-        
+
         thread = threading.Thread(target=heartbeat_loop)
         thread.daemon = True
         thread.start()
@@ -1601,7 +1601,7 @@ def sync_data():
     try:
         # Your data sync logic here
         result = perform_data_sync()
-        
+
         if result.success:
             requests.post(
                 'https://tianji.example.com/api/push/<your-push-token>',
@@ -1814,7 +1814,7 @@ its will auto download reporter and create linux service in your machine. so its
 if you wanna uninstall reporter service, you can use this command like:
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
-``` 
+```
 
 The main change is to append `-s uninstall` to your install command.
 
@@ -1902,9 +1902,9 @@ router.get(
     const ip = req.ip;
     const referer = req.header['referer'];
     const userAgent = req.headers['user-agent'];
-    
+
     // Store it in your database
-    
+
     const blankGifBuffer = Buffer.from(
       'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
       'base64'
@@ -1918,7 +1918,7 @@ If you prefer not to develop your own solution, I recommend Tianji. As an open-s
 
 ![](/img/telemetry/2.png)
 
-GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
+GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
 
 Official Website: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
 
@@ -2228,7 +2228,7 @@ We use your personal data to:
 
 - **Provide, Improve, and Develop the Platform**: We process your data primarily to ensure the proper functioning of our website. We may also use your data to improve our website and offer you the best possible experience. Specifically, we:
   - Operate and maintain your `tianji.msgbye.com` account, allowing you to access and use the Platform. Your email address and password are used to identify you when you log in.
-  
+
 - **Maintain a Safe and Secure Environment**: We process your data to enhance the security of our Platform, ensuring a safe experience for all users.
 
 ## How We Share Your Personal Data
@@ -2236,7 +2236,7 @@ We use your personal data to:
 We do not sell your personal data to external parties.
 
 - **Through Your Profile**: Any personal data you choose to disclose in your public profile on `tianji.msgbye.com` will be visible to other users. They may view your profile information and interact with any public prompts you share.
-  
+
 - **Compliance with Laws**: We may disclose your personal data to courts, law enforcement agencies, or government authorities if required to:
   - Comply with legal obligations or processes.
   - Respond to claims against `tianji.msgbye.com`.
@@ -2251,4 +2251,3 @@ We do not sell your personal data to external parties.
 ## Contact Information
 
 For questions or complaints about this Privacy Policy or our practices, please contact us by email at `moonrailgun@gmail.com`.
-
