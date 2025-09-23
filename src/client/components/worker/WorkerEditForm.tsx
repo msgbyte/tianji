@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { fetchValidator, ValidatorFn } from '../CodeEditor/validator/fetch';
 
 const formSchema = z
   .object({
@@ -66,6 +67,8 @@ interface WorkerEditFormProps {
   defaultValues?: Partial<WorkerEditFormValues>;
   onSubmit: (values: WorkerEditFormValues) => Promise<void>;
 }
+
+const codeValidator: ValidatorFn[] = [fetchValidator];
 
 export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
   (props) => {
@@ -180,9 +183,10 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                     </FormLabel>
                     <FormControl>
                       <CodeEditor
-                        height={400}
+                        height={680}
                         value={field.value}
                         onChange={field.onChange}
+                        codeValidator={codeValidator}
                       />
                     </FormControl>
                     <FormDescription>
@@ -306,6 +310,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
               height="100%"
               value={form.watch('code')}
               onChange={(value) => form.setValue('code', value)}
+              codeValidator={codeValidator}
             />
           </FullscreenModal>
 
