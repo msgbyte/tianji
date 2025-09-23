@@ -82,6 +82,7 @@ function PageComponent() {
   const [activePreviewParams, setActivePreviewParams] = useState<UrlParam[]>([
     { key: '', value: '' },
   ]);
+  const trpcUtils = trpc.useUtils();
 
   const {
     data: worker,
@@ -136,12 +137,15 @@ function PageComponent() {
   });
 
   const handleDelete = useEvent(async () => {
-    if (!worker) return;
+    if (!worker) {
+      return;
+    }
 
     await deleteMutation.mutateAsync({
       workspaceId,
       workerId: worker.id,
     });
+    trpcUtils.worker.all.invalidate();
 
     navigate({
       to: '/worker',
