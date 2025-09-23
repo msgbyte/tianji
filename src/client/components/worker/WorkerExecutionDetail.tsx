@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -6,6 +6,7 @@ import { SheetDataSection } from '@/components/ui/sheet';
 import dayjs from 'dayjs';
 import { cn } from '@/utils/style';
 import { formatDate } from '@/utils/date';
+import { DataRender } from '../DataRender';
 
 interface WorkerExecutionDetailProps {
   vertical?: boolean;
@@ -26,17 +27,6 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
   React.memo((props) => {
     const { vertical = false, execution } = props;
     const { t } = useTranslation();
-
-    const response = useMemo<string>(() => {
-      try {
-        if (typeof execution.responsePayload === 'string') {
-          return execution.responsePayload;
-        }
-        return JSON.stringify(execution.responsePayload as any, null, 2);
-      } catch {
-        return '[Invalid JSON]';
-      }
-    }, [execution.responsePayload]);
 
     return (
       <ScrollArea className="h-full">
@@ -85,8 +75,8 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
           {execution.responsePayload !== null &&
             execution.responsePayload !== undefined && (
               <SheetDataSection label={t('Response')}>
-                <div className="bg-muted mt-1 max-h-[400px] overflow-auto rounded-md p-3">
-                  <code className="text-sm">{response}</code>
+                <div className="mt-1 max-h-[400px] overflow-auto rounded-md bg-gray-100 p-3 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                  <DataRender type="json" value={execution.responsePayload} />
                 </div>
               </SheetDataSection>
             )}
@@ -103,7 +93,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
             Array.isArray(execution.logs) &&
             execution.logs.length > 0 && (
               <SheetDataSection label={t('Logs')}>
-                <ScrollArea className="mt-1 h-32 rounded-md bg-gray-900 text-gray-100">
+                <ScrollArea className="mt-1 max-h-96 min-h-32 rounded-md bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                   <div className="px-3 py-2">
                     {execution.logs.map((log, index) => (
                       <div
@@ -111,13 +101,29 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
                         className="hover:bg-muted p-1 font-mono text-sm"
                       >
                         {Array.isArray(log) ? (
-                          <div className="flex items-center space-x-2">
-                            <Badge>{log[0]}</Badge>
-                            <span className="opacity-60">
-                              {formatDate(log[1])}
-                            </span>
-                            <span>{log[2]}</span>
-                          </div>
+                          vertical ? (
+                            <div className="flex flex-col">
+                              <div className="flex items-center space-x-2">
+                                <Badge>{log[0]}</Badge>
+                                <span className="opacity-60">
+                                  {formatDate(log[1])}
+                                </span>
+                              </div>
+                              <span>
+                                <DataRender type="json" value={log[2]} />
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <Badge>{log[0]}</Badge>
+                              <span className="opacity-60">
+                                {formatDate(log[1])}
+                              </span>
+                              <span>
+                                <DataRender type="json" value={log[2]} />
+                              </span>
+                            </div>
+                          )
                         ) : (
                           String(log)
                         )}

@@ -17,6 +17,14 @@ export const DataRender: React.FC<DataRenderProps> = React.memo((props) => {
     }
   }
 
+  if (props.type === 'json') {
+    if (typeof props.value === 'object') {
+      return <pre>{JSON.stringify(props.value, null, 2)}</pre>;
+    } else {
+      return <span>{String(props.value)}</span>;
+    }
+  }
+
   return <span>{String(props.value)}</span>;
 });
 DataRender.displayName = 'DataRender';
