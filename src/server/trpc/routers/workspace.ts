@@ -521,6 +521,7 @@ export const workspaceRouter = router({
         survey: z.number(),
         feed: z.number(),
         aiGateway: z.number(),
+        functionWorker: z.number(),
       })
     )
     .query(async ({ input }) => {
@@ -540,6 +541,7 @@ export const workspaceRouter = router({
         survey,
         feed,
         aiGateway,
+        functionWorker,
       } = serviceCount;
 
       return {
@@ -552,6 +554,7 @@ export const workspaceRouter = router({
         survey,
         feed,
         aiGateway,
+        functionWorker,
       };
     }),
   /**

@@ -84,6 +84,7 @@ export async function getWorkspaceServiceCount(workspaceId: string) {
     survey,
     feed,
     aiGateway,
+    functionWorker,
   ] = await Promise.all([
     prisma.website.count({
       where: {
@@ -125,6 +126,11 @@ export async function getWorkspaceServiceCount(workspaceId: string) {
         workspaceId,
       },
     }),
+    prisma.functionWorker.count({
+      where: {
+        workspaceId,
+      },
+    }),
   ]);
 
   return {
@@ -136,6 +142,7 @@ export async function getWorkspaceServiceCount(workspaceId: string) {
     survey,
     feed,
     aiGateway,
+    functionWorker,
   };
 }
 

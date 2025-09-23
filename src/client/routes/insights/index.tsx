@@ -74,22 +74,29 @@ function PageComponent() {
                     <SelectValue placeholder={t('Please select target')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>{t('Websites')}</SelectLabel>
-                      {websites.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel>{t('Surveys')}</SelectLabel>
-                      {surveys.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
+                    {websites.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>{t('Websites')}</SelectLabel>
+
+                        {websites.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+
+                    {surveys.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>{t('Surveys')}</SelectLabel>
+                        {surveys.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+
                     {warehouseApplicationIds.length > 0 && (
                       <SelectGroup>
                         <SelectLabel>{t('Warehouse')}</SelectLabel>

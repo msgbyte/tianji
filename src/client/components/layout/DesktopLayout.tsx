@@ -9,6 +9,7 @@ import {
   LuWifi,
   LuTabletSmartphone,
   LuBrainCircuit,
+  LuSquareFunction,
 } from 'react-icons/lu';
 import {
   ResizableHandle,
@@ -32,6 +33,8 @@ import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
 import { FreeTierTip } from '../FreeTierTip';
 import { DevContainer } from '../DevContainer';
 import { AIPanel } from '../ai/AIPanel';
+import { compact } from 'lodash-es';
+import { useGlobalConfig } from '@/hooks/useConfig';
 
 const defaultLayout: [number, number, number] = [15, 25, 60];
 
@@ -56,6 +59,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
     }
   );
   const { t } = useTranslation();
+  const { alphaMode, enableFunctionWorker } = useGlobalConfig();
 
   const navbar = (
     <>
@@ -89,7 +93,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
 
       <Nav
         isCollapsed={isCollapsed}
-        links={[
+        links={compact([
           {
             title: t('Website'),
             label: String(serviceCount?.website ?? ''),
@@ -144,7 +148,14 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             icon: LuBrainCircuit,
             to: '/aiGateway',
           },
-        ]}
+          alphaMode &&
+            enableFunctionWorker && {
+              title: t('Function'),
+              label: String(serviceCount?.functionWorker ?? ''),
+              icon: LuSquareFunction,
+              to: '/worker',
+            },
+        ])}
       />
 
       <Separator />
