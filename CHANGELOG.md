@@ -1,5 +1,25 @@
 
 
+## [1.26.2](https://github.com/msgbyte/tianji/compare/v1.26.1...v1.26.2) (2025-09-23)
+
+### Features
+
+* add code validator for function worker ([d1bb53b](https://github.com/msgbyte/tianji/commit/d1bb53b991d096835df79b7b0557c8bd4da5f7a1))
+* add function worker entry and service count ([0c0da21](https://github.com/msgbyte/tianji/commit/0c0da219bcbb4a5f30ebe07d8270d1daf746097a))
+
+### Bug Fixes
+
+* ensure worker deletion handles null worker case and invalidate cache ([4a410c8](https://github.com/msgbyte/tianji/commit/4a410c83ba4a918416fbb5a2f8621d79fb9dda3c))
+* fix crash when open worker detail for some case ([27f7068](https://github.com/msgbyte/tianji/commit/27f70684099d5ed9e018378fe24677bc2de7869f))
+
+### Document
+
+* update environment document ([afc93e9](https://github.com/msgbyte/tianji/commit/afc93e973cb9d952349bfb89fb9dbf855c720fd0))
+
+### Others
+
+* update translations ([7307e8a](https://github.com/msgbyte/tianji/commit/7307e8a3504d3f5430f7d65f48defa10b113d641))
+
 ## [1.26.1](https://github.com/msgbyte/tianji/compare/v1.26.0...v1.26.1) (2025-09-22)
 
 ### Bug Fixes
