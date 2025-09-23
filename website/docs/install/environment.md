@@ -18,6 +18,16 @@ Tianji supports various environment variables to customize its behavior. You can
 | `DISABLE_AUTO_CLEAR` | Disable automatic data cleanup | `false` | `true` |
 | `DISABLE_ACCESS_LOGS` | Disable access logs | `false` | `true` |
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
+| `ALPHA_MODE` | Enable alpha features | `false` | `true` |
+| `ENABLE_FUNCTION_WORKER` | Enable function worker | `false` | `true` |
+| `REGISTER_AUTO_JOIN_WORKSPACE_ID` | Auto-join workspace ID for new users | - | `workspace-id-123` |
+
+## Cache Configuration
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `CACHE_MEMORY_ONLY` | Use memory-only caching | `false` | `true` |
+| `REDIS_URL` | Redis connection URL | - | `redis://localhost:6379` |
 
 ## Authentication
 
@@ -26,6 +36,7 @@ Tianji supports various environment variables to customize its behavior. You can
 | `DISABLE_ACCOUNT` | Disable account-based authentication | `false` | `true` |
 | `AUTH_SECRET` | Authentication secret | MD5 of JWT secret | `your-auth-secret` |
 | `AUTH_RESTRICT_EMAIL` | Restrict registration to specific email domains | - | `@example.com` |
+| `AUTH_USE_SECURE_COOKIES` | Use secure cookies for authentication | `false` | `true` |
 
 ### Email Authentication and Email Invitation
 
@@ -65,7 +76,36 @@ Tianji supports various environment variables to customize its behavior. You can
 | `SHARED_OPENAI_API_KEY` | OpenAI API key | - | `your-openai-api-key` |
 | `SHARED_OPENAI_BASE_URL` | Custom OpenAI API URL | - | `https://api.openai.com/v1` |
 | `SHARED_OPENAI_MODEL_NAME` | OpenAI model to use | `gpt-4o` | `gpt-3.5-turbo` |
+| `SHARED_OPENAI_TOKEN_CALC_CONCURRENCY` | Token calculation concurrency | `5` | `10` |
 | `DEBUG_AI_FEATURE` | Debug AI features | `false` | `true` |
+
+## ClickHouse Configuration
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `CLICKHOUSE_URL` | ClickHouse database URL | - | `http://localhost:8123` |
+| `CLICKHOUSE_USER` | ClickHouse username | - | `default` |
+| `CLICKHOUSE_PASSWORD` | ClickHouse password | - | `your-password` |
+| `CLICKHOUSE_DATABASE` | ClickHouse database name | - | `tianji` |
+| `CLICKHOUSE_DEBUG` | Enable ClickHouse debugging | `false` | `true` |
+| `CLICKHOUSE_DISABLE_SYNC` | Disable ClickHouse synchronization | `false` | `true` |
+| `CLICKHOUSE_SYNC_BATCH_SIZE` | Synchronization batch size | `10000` | `5000` |
+| `CLICKHOUSE_ENABLE_FALLBACK` | Enable ClickHouse fallback | `true` | `false` |
+| `CLICKHOUSE_HEALTH_CHECK_INTERVAL` | Health check interval (ms) | `30000` | `60000` |
+| `CLICKHOUSE_MAX_CONSECUTIVE_FAILURES` | Maximum consecutive failures | `3` | `5` |
+| `CLICKHOUSE_RETRY_INTERVAL` | Retry interval (ms) | `5000` | `10000` |
+
+## Billing System (LemonSqueezy)
+
+| Variable | Description | Default | Example |
+| --- | --- | --- | --- |
+| `ENABLE_BILLING` | Enable billing functionality | `false` | `true` |
+| `LEMON_SQUEEZY_SIGNATURE_SECRET` | LemonSqueezy webhook signature secret | - | `your-signature-secret` |
+| `LEMON_SQUEEZY_API_KEY` | LemonSqueezy API key | - | `your-api-key` |
+| `LEMON_SQUEEZY_STORE_ID` | LemonSqueezy store ID | - | `your-store-id` |
+| `LEMON_SQUEEZY_SUBSCRIPTION_FREE_ID` | Free tier subscription variant ID | - | `free-variant-id` |
+| `LEMON_SQUEEZY_SUBSCRIPTION_PRO_ID` | Pro tier subscription variant ID | - | `pro-variant-id` |
+| `LEMON_SQUEEZY_SUBSCRIPTION_TEAM_ID` | Team tier subscription variant ID | - | `team-variant-id` |
 
 ## Sandbox Configuration
 
