@@ -32,6 +32,7 @@ import { LuEllipsisVertical } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { useSocketConnected } from '@/api/socketio';
 import { cn } from '@/utils/style';
+import { recordEvent } from '@/utils/tracker';
 
 interface UserConfigProps {
   isCollapsed: boolean;
@@ -69,6 +70,12 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
     });
   });
 
+  const handleOpenChange = useEvent((open) => {
+    if (open) {
+      recordEvent('user_config_menu_open');
+    }
+  });
+
   const nickname = userInfo?.nickname ?? userInfo?.username ?? '';
 
   const avatar = (
@@ -103,7 +110,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
 
   return (
     <div className="flex items-center gap-2 p-2">
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={handleOpenChange}>
         {props.isCollapsed ? (
           <>
             <DropdownMenuTrigger asChild={true} className="cursor-pointer">

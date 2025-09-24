@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { trpc } from '../../../api/trpc';
 import { useAllowEdit } from './useAllowEdit';
 import {
@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/utils/style';
 import { StatusPageBody } from './Body';
+import { recordEvent } from '@/utils/tracker';
 
 interface MonitorStatusPageProps {
   slug: string;
@@ -93,6 +94,12 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
         }
       }
     );
+
+    useEffect(() => {
+      recordEvent('status_page_view', {
+        slug,
+      });
+    }, []);
 
     const editBtn = (
       <Sheet open={editMode} onOpenChange={setEditMode}>

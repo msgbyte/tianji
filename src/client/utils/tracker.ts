@@ -1,5 +1,10 @@
 import { getGlobalConfig } from '@/hooks/useConfig';
-import { initWebsiteTracking, reportWebsiteEvent } from 'tianji-client-sdk';
+import { version } from '@/utils/env';
+import {
+  identifyWebsiteUser,
+  initWebsiteTracking,
+  reportWebsiteEvent,
+} from 'tianji-client-react';
 
 let initialized = false;
 function ensureInitialized() {
@@ -13,6 +18,9 @@ function ensureInitialized() {
         serverUrl: config.observability.tianji.baseUrl,
         websiteId: config.observability.tianji.websiteId,
       });
+      identifyWebsiteUser({
+        version: version,
+      });
       initialized = true;
     }
   }
@@ -25,4 +33,13 @@ export function recordEvent(eventName: string, data?: Record<string, any>) {
   }
 
   reportWebsiteEvent(eventName, data);
+}
+
+export function identifyUser(data: Record<string, any>) {
+  ensureInitialized();
+  if (!initialized) {
+    return;
+  }
+
+  identifyWebsiteUser(data);
 }
