@@ -11,7 +11,7 @@ export const CommonHeader: React.FC<CommonHeaderProps> = React.memo((props) => {
   return (
     <div className="flex w-full items-center">
       <div className="flex flex-1 flex-shrink items-center overflow-hidden">
-        <h1 className="overflow-hidden text-ellipsis whitespace-nowrap text-xl font-bold">
+        <h1 className="flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-xl font-bold">
           {props.title}
         </h1>
 
