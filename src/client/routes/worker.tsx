@@ -44,8 +44,13 @@ function PageComponent() {
   useDataReady(
     () => data.length > 0,
     () => {
-      if (pathname === Route.fullPath) {
-        window.location.href = `/worker/${data[0].id}`;
+      if (pathname === Route.fullPath && data[0].id) {
+        navigate({
+          to: '/worker/$workerId',
+          params: {
+            workerId: data[0].id,
+          },
+        });
       }
     }
   );
