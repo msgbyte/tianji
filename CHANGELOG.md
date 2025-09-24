@@ -1,5 +1,22 @@
 
 
+## [1.26.3](https://github.com/msgbyte/tianji/compare/v1.26.2...v1.26.3) (2025-09-24)
+
+### Features
+
+* add observability configuration and event tracker ([768a145](https://github.com/msgbyte/tianji/commit/768a14584dbd2593b7c3a9efa737bb2054bea826))
+
+### Bug Fixes
+
+* fix a issue when open function page will crash total page ([de58aca](https://github.com/msgbyte/tianji/commit/de58acaec48e5731842eaa4c419bf1fe10523ae1))
+* replace ScrollArea with div in WorkerExecutionDetail for better layout ([755dfac](https://github.com/msgbyte/tianji/commit/755dface0eaf3b3bcb8a7824298b6ec4eb7d3ba5))
+
+### Others
+
+* add more event tracking ([872611e](https://github.com/msgbyte/tianji/commit/872611ebce53f8e3ff771ccaf62a0aea05f713a9))
+* adjust header title styling for better layout ([f622569](https://github.com/msgbyte/tianji/commit/f62256900b45b23cf3bbadf4cd078c626b9190de))
+* fix broken link ([06bda72](https://github.com/msgbyte/tianji/commit/06bda72a0969a2679ede1e4db889b4a59009bbd0))
+
 ## [1.26.2](https://github.com/msgbyte/tianji/compare/v1.26.1...v1.26.2) (2025-09-23)
 
 ### Features
