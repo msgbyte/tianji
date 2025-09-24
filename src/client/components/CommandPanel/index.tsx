@@ -33,6 +33,8 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { CommandType, useCommandPanelStore } from './store';
+import { recordEvent } from '@/utils/tracker';
+import { useWatch } from '@/hooks/useWatch';
 
 interface CommandPanelProps {
   isCollapsed: boolean;
@@ -46,6 +48,12 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
     () => Object.entries(commands),
     [commands]
   );
+
+  useWatch([open], () => {
+    if (open) {
+      recordEvent('command_panel_open');
+    }
+  });
 
   const handleJump = useEvent((options: NavigateOptions) => {
     return () => {
@@ -63,7 +71,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
     };
 
     document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    return () => {
+      document.removeEventListener('keydown', down);
+    };
   }, []);
 
   return (

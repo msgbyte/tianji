@@ -85,6 +85,12 @@ export const env = {
       },
     },
   },
+  observability: {
+    tianji: {
+      baseUrl: process.env.OBSERVABILITY_TIANJI_BASE_URL,
+      websiteId: process.env.OBSERVABILITY_TIANJI_WEBSITE_ID,
+    },
+  },
   openai: {
     // This only work on tianji internal usage, which call ai feature by tianji.
     // add `SHARED_` prefix to avoid exposing to other OpenAI instances.

@@ -14,7 +14,15 @@ const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   enableBilling: false,
   enableAI: false,
   enableFunctionWorker: false,
+  observability: {
+    tianji: {
+      baseUrl: undefined,
+      websiteId: undefined,
+    },
+  },
 };
+
+let _config = defaultGlobalConfig;
 
 const callAnonymousTelemetry = once(() => {
   fetch(anonymousTelemetryUrl);
@@ -36,6 +44,7 @@ export function useGlobalConfig(): AppRouterOutput['global']['config'] {
   useWatch([data], () => {
     if (data) {
       setConfig(data);
+      _config = data;
     }
 
     if (!inited) {
@@ -48,4 +57,8 @@ export function useGlobalConfig(): AppRouterOutput['global']['config'] {
   });
 
   return config ?? data ?? defaultGlobalConfig;
+}
+
+export function getGlobalConfig() {
+  return _config;
 }

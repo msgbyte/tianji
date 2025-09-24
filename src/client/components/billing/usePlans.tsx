@@ -14,6 +14,7 @@ import {
 import { Button } from '../ui/button';
 import { cn } from '@/utils/style';
 import { appendUrlQueryParams } from '@/utils/url';
+import { recordEvent } from '@/utils/tracker';
 
 export interface UsePlanOptions {
   currentTier: 'FREE' | 'PRO' | 'TEAM' | 'UNLIMITED' | undefined;
@@ -34,6 +35,10 @@ export function usePlans(options: UsePlanOptions) {
 
   const handleCheckoutSubscribe = useEvent(
     async (tier: 'free' | 'pro' | 'team') => {
+      recordEvent('billing_checkout_subscribe', {
+        tier,
+      });
+
       if (alreadySubscribed) {
         await changePlanMutation.mutateAsync({
           workspaceId,

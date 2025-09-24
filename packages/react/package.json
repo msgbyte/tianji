@@ -1,6 +1,6 @@
 {
   "name": "tianji-client-react",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "",
   "main": "lib/index.js",
   "scripts": {

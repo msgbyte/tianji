@@ -31,6 +31,12 @@ export const globalRouter = router({
         enableBilling: z.boolean(),
         enableAI: z.boolean(),
         enableFunctionWorker: z.boolean(),
+        observability: z.object({
+          tianji: z.object({
+            baseUrl: z.string().optional(),
+            websiteId: z.string().optional(),
+          }),
+        }),
       })
     )
     .query(async () => {
@@ -49,6 +55,7 @@ export const globalRouter = router({
         enableBilling: env.billing.enable,
         enableAI: env.openai.enable,
         enableFunctionWorker: env.enableFunctionWorker,
+        observability: env.observability,
       };
     }),
 });
