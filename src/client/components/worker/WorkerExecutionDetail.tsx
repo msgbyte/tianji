@@ -93,7 +93,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
             Array.isArray(execution.logs) &&
             execution.logs.length > 0 && (
               <SheetDataSection label={t('Logs')}>
-                <ScrollArea className="mt-1 max-h-96 min-h-32 rounded-md bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                <div className="mt-1 min-h-32 rounded-md bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                   <div className="px-3 py-2">
                     {execution.logs.map((log, index) => (
                       <div
@@ -130,7 +130,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
                       </div>
                     ))}
                   </div>
-                </ScrollArea>
+                </div>
               </SheetDataSection>
             )}
         </div>
