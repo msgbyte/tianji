@@ -17,7 +17,10 @@ import {
   listCreditPacks,
   SubscriptionTierType,
 } from '../../model/billing/index.js';
-import { getWorkspaceCredit } from '../../model/billing/credit.js';
+import {
+  getWorkspaceCredit,
+  getWorkspaceCreditBills,
+} from '../../model/billing/credit.js';
 import { LemonSqueezySubscriptionModelSchema } from '../../prisma/zod/lemonsqueezysubscription.js';
 import {
   getWorkspaceTier,
@@ -26,6 +29,7 @@ import {
 import { getTierLimit, TierLimitSchema } from '../../model/billing/limit.js';
 import { WorkspaceSubscriptionTier } from '@prisma/client';
 import { env } from '../../utils/env.js';
+import { WorkspaceBillModelSchema } from '../../prisma/zod/workspacebill.js';
 
 export const billingRouter = router({
   usage: workspaceProcedure
@@ -184,6 +188,40 @@ export const billingRouter = router({
       const credit = await getWorkspaceCredit(workspaceId);
 
       return { credit };
+    }),
+  creditBills: workspaceProcedure
+    .meta(
+      buildBillingOpenapi({
+        method: 'GET',
+        path: '/credit/bills',
+        description: 'list workspace credit bills',
+      })
+    )
+    .input(
+      z.object({
+        workspaceId: z.string().cuid2(),
+        page: z.number().int().min(1).default(1),
+        pageSize: z.number().int().min(1).max(100).default(10),
+      })
+    )
+    .output(
+      z.object({
+        list: WorkspaceBillModelSchema.pick({
+          id: true,
+          workspaceId: true,
+          type: true,
+          amount: true,
+          createdAt: true,
+        }).array(),
+        total: z.number(),
+        page: z.number(),
+        pageSize: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { workspaceId, page, pageSize } = input;
+
+      return getWorkspaceCreditBills(workspaceId, { page, pageSize });
     }),
   creditPacks: workspaceProcedure
     .meta(

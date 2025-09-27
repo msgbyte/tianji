@@ -1,6 +1,7 @@
 import retry from 'async-retry';
 import { prisma } from '../_client.js';
 import { getWorkspaceTier } from './workspace.js';
+import { Prisma } from '@prisma/client';
 
 export const tokenCreditFactor = 1.5;
 
@@ -17,6 +18,56 @@ export async function getWorkspaceCredit(workspaceId: string): Promise<number> {
   });
 
   return workspace?.credit ?? 0;
+}
+
+const billSelect = {
+  id: true,
+  workspaceId: true,
+  type: true,
+  amount: true,
+  createdAt: true,
+} as const;
+
+export async function getWorkspaceCreditBills(
+  workspaceId: string,
+  options?: {
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<{
+  list: Prisma.WorkspaceBillGetPayload<{ select: typeof billSelect }>[];
+  total: number;
+  page: number;
+  pageSize: number;
+}> {
+  const page = options?.page ?? 1;
+  const pageSize = options?.pageSize ?? 10;
+
+  const [list, total] = await Promise.all([
+    prisma.workspaceBill.findMany({
+      where: {
+        workspaceId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      select: billSelect,
+    }),
+    prisma.workspaceBill.count({
+      where: {
+        workspaceId,
+      },
+    }),
+  ]);
+
+  return {
+    list,
+    total,
+    page,
+    pageSize,
+  };
 }
 
 export async function checkCredit(workspaceId: string) {

@@ -48,7 +48,6 @@ import { Route as SettingsWarehouseImport } from './routes/settings/warehouse'
 import { Route as SettingsUsageImport } from './routes/settings/usage'
 import { Route as SettingsProfileImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsImport } from './routes/settings/notifications'
-import { Route as SettingsBillingImport } from './routes/settings/billing'
 import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as SettingsApiKeyImport } from './routes/settings/apiKey'
 import { Route as PageAddImport } from './routes/page/add'
@@ -65,6 +64,7 @@ import { Route as AiGatewayAddImport } from './routes/aiGateway/add'
 import { Route as WorkerWorkerIdIndexImport } from './routes/worker/$workerId/index'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
+import { Route as SettingsBillingIndexImport } from './routes/settings/billing/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as InsightsWarehouseIndexImport } from './routes/insights/warehouse/index'
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
@@ -74,6 +74,7 @@ import { Route as WorkerWorkerIdEditImport } from './routes/worker/$workerId/edi
 import { Route as WebsiteVisitorMapWebsiteIdImport } from './routes/website_/visitor-map/$websiteId'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
+import { Route as SettingsBillingHistoryImport } from './routes/settings/billing/history'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
@@ -270,11 +271,6 @@ const SettingsNotificationsRoute = SettingsNotificationsImport.update({
   getParentRoute: () => SettingsRoute,
 } as any)
 
-const SettingsBillingRoute = SettingsBillingImport.update({
-  path: '/billing',
-  getParentRoute: () => SettingsRoute,
-} as any)
-
 const SettingsAuditLogRoute = SettingsAuditLogImport.update({
   path: '/auditLog',
   getParentRoute: () => SettingsRoute,
@@ -355,6 +351,11 @@ const SurveySurveyIdIndexRoute = SurveySurveyIdIndexImport.update({
   getParentRoute: () => SurveyRoute,
 } as any)
 
+const SettingsBillingIndexRoute = SettingsBillingIndexImport.update({
+  path: '/billing/',
+  getParentRoute: () => SettingsRoute,
+} as any)
+
 const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
   path: '/$monitorId/',
   getParentRoute: () => MonitorRoute,
@@ -401,6 +402,11 @@ const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
 const SurveySurveyIdEditRoute = SurveySurveyIdEditImport.update({
   path: '/$surveyId/edit',
   getParentRoute: () => SurveyRoute,
+} as any)
+
+const SettingsBillingHistoryRoute = SettingsBillingHistoryImport.update({
+  path: '/billing/history',
+  getParentRoute: () => SettingsRoute,
 } as any)
 
 const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
@@ -567,10 +573,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAuditLogImport
       parentRoute: typeof SettingsImport
     }
-    '/settings/billing': {
-      preLoaderRoute: typeof SettingsBillingImport
-      parentRoute: typeof SettingsImport
-    }
     '/settings/notifications': {
       preLoaderRoute: typeof SettingsNotificationsImport
       parentRoute: typeof SettingsImport
@@ -675,6 +677,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorMonitorIdEditImport
       parentRoute: typeof MonitorImport
     }
+    '/settings/billing/history': {
+      preLoaderRoute: typeof SettingsBillingHistoryImport
+      parentRoute: typeof SettingsImport
+    }
     '/survey/$surveyId/edit': {
       preLoaderRoute: typeof SurveySurveyIdEditImport
       parentRoute: typeof SurveyImport
@@ -710,6 +716,10 @@ declare module '@tanstack/react-router' {
     '/monitor/$monitorId/': {
       preLoaderRoute: typeof MonitorMonitorIdIndexImport
       parentRoute: typeof MonitorImport
+    }
+    '/settings/billing/': {
+      preLoaderRoute: typeof SettingsBillingIndexImport
+      parentRoute: typeof SettingsImport
     }
     '/survey/$surveyId/': {
       preLoaderRoute: typeof SurveySurveyIdIndexImport
@@ -776,12 +786,13 @@ export const routeTree = rootRoute.addChildren([
   SettingsRoute.addChildren([
     SettingsApiKeyRoute,
     SettingsAuditLogRoute,
-    SettingsBillingRoute,
     SettingsNotificationsRoute,
     SettingsProfileRoute,
     SettingsUsageRoute,
     SettingsWarehouseRoute,
     SettingsWorkspaceRoute,
+    SettingsBillingHistoryRoute,
+    SettingsBillingIndexRoute,
   ]),
   SurveyRoute.addChildren([
     SurveyAddRoute,

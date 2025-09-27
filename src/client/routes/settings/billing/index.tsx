@@ -17,10 +17,10 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { useGlobalConfig } from '@/hooks/useConfig';
-import { trpc } from '../../api/trpc';
-import { useCurrentWorkspaceId } from '../../store/user';
+import { trpc } from '../../../api/trpc';
+import { useCurrentWorkspaceId } from '../../../store/user';
 
-export const Route = createFileRoute('/settings/billing')({
+export const Route = createFileRoute('/settings/billing/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });

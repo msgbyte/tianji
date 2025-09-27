@@ -1,11 +1,14 @@
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuCoins } from 'react-icons/lu';
+import { LuCoins, LuHistory } from 'react-icons/lu';
+import React from 'react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { TipIcon } from '@/components/TipIcon';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { trpc } from '@/api/trpc';
-import React from 'react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from '@tanstack/react-router';
 
 interface CreditBalanceCardProps {
   className?: string;
@@ -16,6 +19,7 @@ export const CreditBalanceCard: React.FC<CreditBalanceCardProps> = React.memo(
   ({ className, refetchInterval }: CreditBalanceCardProps) => {
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
+    const navigate = useNavigate();
 
     const { data, isLoading } = trpc.billing.credit.useQuery(
       {
@@ -41,6 +45,14 @@ export const CreditBalanceCard: React.FC<CreditBalanceCardProps> = React.memo(
               )}
             />
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate({ to: '/settings/billing/history' })}
+          >
+            <LuHistory className="mr-2 h-4 w-4" />
+            {t('History')}
+          </Button>
         </CardHeader>
         <CardContent>
           {isLoading ? (
