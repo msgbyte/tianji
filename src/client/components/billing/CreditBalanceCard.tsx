@@ -49,7 +49,9 @@ export const CreditBalanceCard: React.FC<CreditBalanceCardProps> = React.memo(
               {t('Loading...')}
             </div>
           ) : (
-            <div className="text-2xl font-semibold">{data?.credit ?? 0}</div>
+            <div className="text-2xl font-semibold">
+              {Number(data?.credit ?? 0).toLocaleString()}
+            </div>
           )}
         </CardContent>
       </Card>
