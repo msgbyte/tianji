@@ -33,7 +33,7 @@
     "@clickhouse/client": "^1.11.0",
     "@keyv/postgres": "^2.1.7",
     "@keyv/redis": "^5.1.2",
-    "@lemonsqueezy/lemonsqueezy.js": "^3.3.1",
+    "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.14.0",
     "@socket.io/redis-adapter": "^8.3.0",

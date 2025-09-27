@@ -1,20 +1,24 @@
-import { routeAuthBeforeLoad } from '@/utils/route';
+import { useMemo } from 'react';
+import { get } from 'lodash-es';
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
+import { LuCheck, LuRefreshCw } from 'react-icons/lu';
+
+import { routeAuthBeforeLoad } from '@/utils/route';
+import { getUrlQueryParams } from '@/utils/url';
+import { cn } from '@/utils/style';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { CommonHeader } from '@/components/CommonHeader';
+import { CreditBalanceCard } from '@/components/billing/CreditBalanceCard';
+import { CreditRecharge } from '@/components/billing/CreditRecharge';
+import { SubscriptionSelection } from '@/components/billing/SubscriptionSelection';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useEventWithLoading } from '@/hooks/useEvent';
+import { useGlobalConfig } from '@/hooks/useConfig';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
-import { CommonHeader } from '@/components/CommonHeader';
-import { Button } from '@/components/ui/button';
-import { useEventWithLoading } from '@/hooks/useEvent';
-import { SubscriptionSelection } from '@/components/billing/SubscriptionSelection';
-import { LuCheck, LuRefreshCw } from 'react-icons/lu';
-import { cn } from '@/utils/style';
-import { useMemo } from 'react';
-import { getUrlQueryParams } from '@/utils/url';
-import { get } from 'lodash-es';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export const Route = createFileRoute('/settings/billing')({
   beforeLoad: routeAuthBeforeLoad,
@@ -39,6 +43,8 @@ function PageComponent() {
       }
     );
 
+  const { enableAI } = useGlobalConfig();
+
   const {
     data,
     refetch: refetchCurrendSubscription,
@@ -47,11 +53,15 @@ function PageComponent() {
     workspaceId,
   });
 
+  const creditRefetchInterval = isRechargeCallback ? 5000 : undefined;
+  const trpcUtils = trpc.useUtils();
+
   const [handleRefresh, isRefreshing] = useEventWithLoading(async () => {
     await Promise.all([
       // refresh all info
       refetchCurrendSubscription(),
       refetchCurrendTier(),
+      trpcUtils.billing.credit.invalidate({ workspaceId }),
     ]);
 
     setTimeout(() => {
@@ -59,6 +69,7 @@ function PageComponent() {
         // refresh all info
         refetchCurrendSubscription(),
         refetchCurrendTier(),
+        trpcUtils.billing.credit.invalidate({ workspaceId }),
       ]);
     }, 5000);
   });
@@ -89,13 +100,22 @@ function PageComponent() {
               <LuCheck className="h-4 w-4" />
               <AlertTitle>{t('Subscription Recharge Successful')}</AlertTitle>
               <AlertDescription>
-                {t('It will take effect in a few minutes.')}
+                {t('It maybe take effect in a few minutes.')}
               </AlertDescription>
             </Alert>
           )}
 
+          {enableAI && (
+            <CreditBalanceCard
+              className="mb-2"
+              refetchInterval={creditRefetchInterval}
+            />
+          )}
+
           {isInitialLoading === false && (
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-6">
+              {enableAI && <CreditRecharge onSuccess={handleRefresh} />}
+
               <SubscriptionSelection
                 currentTier={currentTier}
                 alreadySubscribed={

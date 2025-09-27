@@ -3,8 +3,10 @@ import crypto from 'crypto';
 import { env } from '../utils/env.js';
 import { get } from 'lodash-es';
 import {
+  addCredit,
   checkIsValidProduct,
   getTierEnumByVariantId,
+  listCreditPacks,
   updateWorkspaceSubscription,
 } from '../model/billing/index.js';
 import { prisma } from '../model/_client.js';
@@ -26,6 +28,7 @@ billingRouter.post(
 
     const eventName = get(body, 'meta.event_name');
     const workspaceId = get(body, 'meta.custom_data.workspace_id');
+    const userId = get(body, 'meta.custom_data.user_id');
 
     await prisma.lemonSqueezyWebhookEvent.create({
       data: {
@@ -86,6 +89,41 @@ billingRouter.post(
           ? WorkspaceSubscriptionTier.FREE
           : getTierEnumByVariantId(variantId)
       );
+    } else if (eventName === 'order_created') {
+      const packId = get(body, 'meta.custom_data.pack_id');
+      const packCurrency = get(body, 'meta.custom_data.currency');
+      const orderStatus = get(body, 'data.attributes.status');
+      const variantId = String(
+        get(body, 'data.attributes.first_order_item.variant_id')
+      );
+      const totalAmount = Number(get(body, 'data.attributes.total'));
+
+      if (!packId) {
+        throw new Error('Credit pack id not found.');
+      }
+
+      if (orderStatus !== 'paid') {
+        res.status(200).send('OK');
+        return;
+      }
+
+      const packs = await listCreditPacks();
+      const matchedPack = packs.find((pack) => pack.variantId === variantId);
+
+      if (!matchedPack) {
+        throw new Error(`Unknown credit pack variant: ${variantId}`);
+      }
+
+      await addCredit(workspaceId, matchedPack.credit, {
+        source: 'lemonsqueezy',
+        orderId: String(get(body, 'data.id')),
+        packId,
+        variantId,
+        price: totalAmount / 100,
+        currency: matchedPack.currency ?? packCurrency,
+        workspaceId,
+        userId,
+      });
     }
 
     res.status(200).send('OK');

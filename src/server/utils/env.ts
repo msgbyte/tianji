@@ -83,6 +83,10 @@ export const env = {
         pro: process.env.LEMON_SQUEEZY_SUBSCRIPTION_PRO_ID ?? '',
         team: process.env.LEMON_SQUEEZY_SUBSCRIPTION_TEAM_ID ?? '',
       },
+      credit: {
+        packs: process.env.LEMON_SQUEEZY_CREDIT_PACKS,
+        currency: process.env.LEMON_SQUEEZY_CREDIT_DEFAULT_CURRENCY ?? 'USD',
+      },
     },
   },
   observability: {

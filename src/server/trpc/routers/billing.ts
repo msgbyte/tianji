@@ -12,9 +12,12 @@ import {
   cancelSubscription,
   changeSubscription,
   createCheckoutBilling,
+  createCreditCheckout,
   getTierNameByvariantId,
+  listCreditPacks,
   SubscriptionTierType,
 } from '../../model/billing/index.js';
+import { getWorkspaceCredit } from '../../model/billing/credit.js';
 import { LemonSqueezySubscriptionModelSchema } from '../../prisma/zod/lemonsqueezysubscription.js';
 import {
   getWorkspaceTier,
@@ -22,6 +25,7 @@ import {
 } from '../../model/billing/workspace.js';
 import { getTierLimit, TierLimitSchema } from '../../model/billing/limit.js';
 import { WorkspaceSubscriptionTier } from '@prisma/client';
+import { env } from '../../utils/env.js';
 
 export const billingRouter = router({
   usage: workspaceProcedure
@@ -161,6 +165,81 @@ export const billingRouter = router({
       const subscription = await cancelSubscription(workspaceId);
 
       return subscription.id;
+    }),
+  credit: workspaceProcedure
+    .meta(
+      buildBillingOpenapi({
+        method: 'GET',
+        path: '/credit',
+        description: 'get workspace credit balance',
+      })
+    )
+    .output(
+      z.object({
+        credit: z.number(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { workspaceId } = input;
+      const credit = await getWorkspaceCredit(workspaceId);
+
+      return { credit };
+    }),
+  creditPacks: workspaceProcedure
+    .meta(
+      buildBillingOpenapi({
+        method: 'GET',
+        path: '/credit/packs',
+        description: 'list available credit packs',
+      })
+    )
+    .output(
+      z
+        .object({
+          id: z.string(),
+          name: z.string(),
+          variantId: z.string(),
+          credit: z.number(),
+          price: z.number(),
+          currency: z.string(),
+        })
+        .array()
+    )
+    .query(async () => {
+      const packs = await listCreditPacks();
+
+      return packs.map((pack) => ({
+        ...pack,
+        currency: pack.currency ?? env.billing.lemonSqueezy.credit.currency,
+      }));
+    }),
+  creditCheckout: workspaceOwnerProcedure
+    .meta(
+      buildBillingOpenapi({
+        method: 'POST',
+        path: '/credit/checkout',
+        description: 'create credit checkout session',
+      })
+    )
+    .input(
+      z.object({
+        packId: z.string(),
+        redirectUrl: z.string().optional(),
+      })
+    )
+    .output(z.object({ url: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { workspaceId } = input;
+      const userId = ctx.user.id;
+
+      const checkout = await createCreditCheckout(
+        workspaceId,
+        userId,
+        input.packId,
+        input.redirectUrl
+      );
+
+      return { url: checkout.attributes.url };
     }),
 });
 

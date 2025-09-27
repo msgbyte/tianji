@@ -6,6 +6,19 @@ export const tokenCreditFactor = 1.5;
 
 export type CreditType = 'ai' | 'recharge' | 'bouns';
 
+export async function getWorkspaceCredit(workspaceId: string): Promise<number> {
+  const workspace = await prisma.workspace.findUnique({
+    where: {
+      id: workspaceId,
+    },
+    select: {
+      credit: true,
+    },
+  });
+
+  return workspace?.credit ?? 0;
+}
+
 export async function checkCredit(workspaceId: string) {
   const res = await prisma.workspace.findFirst({
     where: {
@@ -30,7 +43,7 @@ export async function checkCredit(workspaceId: string) {
 export async function costCredit(
   workspaceId: string,
   credit: number,
-  type: string,
+  type: CreditType,
   meta?: Record<string, any>
 ): Promise<number> {
   return retry(
@@ -65,4 +78,40 @@ export async function costCredit(
       retries: 3,
     }
   );
+}
+
+export async function addCredit(
+  workspaceId: string,
+  credit: number,
+  meta?: Record<string, any>
+) {
+  if (credit <= 0) {
+    throw new Error('Credit should be greater than zero');
+  }
+
+  const [res] = await prisma.$transaction([
+    prisma.workspace.update({
+      where: {
+        id: workspaceId,
+      },
+      data: {
+        credit: {
+          increment: credit,
+        },
+      },
+      select: {
+        credit: true,
+      },
+    }),
+    prisma.workspaceBill.create({
+      data: {
+        workspaceId,
+        type: 'recharge',
+        amount: credit,
+        meta,
+      },
+    }),
+  ]);
+
+  return res.credit;
 }

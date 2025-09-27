@@ -8,6 +8,9 @@ import { env } from '../../utils/env.js';
 import { prisma } from '../_client.js';
 import { WorkspaceSubscriptionTier } from '@prisma/client';
 import { checkWorkspaceUsageAndUpdateStatus } from './workspace.js';
+import { CreditPackDefinition, parseCreditPacks } from './utils.js';
+
+export { addCredit } from './credit.js';
 
 export const billingAvailable = Boolean(env.billing.lemonSqueezy.apiKey);
 
@@ -122,6 +125,72 @@ export async function createCheckoutBilling(
   const checkoutData = checkout.data.data;
 
   return checkoutData;
+}
+
+export async function createCreditCheckout(
+  workspaceId: string,
+  userId: string,
+  packId: string,
+  redirectUrl?: string
+) {
+  const packs = await listCreditPacks();
+  if (!packs || packs.length === 0) {
+    throw new Error('Credit packs not configured');
+  }
+
+  const targetPack = packs.find((pack) => pack.id === packId);
+  if (!targetPack) {
+    throw new Error('Credit pack not found');
+  }
+
+  const userInfo = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!userInfo) {
+    throw new Error('User not found');
+  }
+
+  const checkout = await createCheckout(
+    env.billing.lemonSqueezy.storeId,
+    targetPack.variantId,
+    {
+      checkoutData: {
+        name: userInfo.nickname ?? undefined,
+        email: userInfo.email ?? undefined,
+        custom: {
+          userId,
+          workspaceId,
+          packId,
+        },
+      },
+      productOptions: {
+        redirectUrl,
+      },
+    }
+  );
+
+  if (checkout.error) {
+    throw checkout.error;
+  }
+
+  return checkout.data.data;
+}
+
+export async function listCreditPacks(): Promise<CreditPackDefinition[]> {
+  if (!billingAvailable) {
+    return [];
+  }
+
+  const creditConfig = env.billing.lemonSqueezy.credit;
+  const packs = parseCreditPacks(creditConfig.packs);
+  if (!packs || packs.length === 0) {
+    return [];
+  }
+
+  return packs;
 }
 
 export async function updateWorkspaceSubscription(
