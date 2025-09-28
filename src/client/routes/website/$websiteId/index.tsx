@@ -11,6 +11,7 @@ import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
+import { WebsiteEventAnalysis } from '@/components/website/WebsiteEventAnalysis';
 import { WebsiteSimpleMap } from '@/components/website/WebsiteSimpleMap';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
@@ -210,6 +211,12 @@ function PageComponent() {
                 </Button>
               </div>
             </DevContainer>
+          </Card.Grid>
+          <Card.Grid
+            hoverable={false}
+            className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-2/3"
+          >
+            <WebsiteEventAnalysis websiteId={websiteId} />
           </Card.Grid>
         </Card>
       </ScrollArea>
