@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema } from "./index.js"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema } from "./index.js"
 
 export const FunctionWorkerModelSchema = z.object({
   id: z.string(),
@@ -8,6 +8,7 @@ export const FunctionWorkerModelSchema = z.object({
   name: z.string(),
   description: z.string().nullish(),
   code: z.string(),
+  revision: z.number().int(),
   active: z.boolean(),
   enableCron: z.boolean(),
   cronExpression: z.string().nullish(),
@@ -18,6 +19,7 @@ export const FunctionWorkerModelSchema = z.object({
 export interface CompleteFunctionWorker extends z.infer<typeof FunctionWorkerModelSchema> {
   workspace: CompleteWorkspace
   executions: CompleteFunctionWorkerExecution[]
+  revisions: CompleteFunctionWorkerRevision[]
 }
 
 /**
@@ -28,4 +30,5 @@ export interface CompleteFunctionWorker extends z.infer<typeof FunctionWorkerMod
 export const RelatedFunctionWorkerModelSchema: z.ZodSchema<CompleteFunctionWorker> = z.lazy(() => FunctionWorkerModelSchema.extend({
   workspace: RelatedWorkspaceModelSchema,
   executions: RelatedFunctionWorkerExecutionModelSchema.array(),
+  revisions: RelatedFunctionWorkerRevisionModelSchema.array(),
 }))

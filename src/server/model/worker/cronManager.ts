@@ -24,21 +24,68 @@ export class WorkerCronManager {
     const { id, workspaceId, ...others } = data;
 
     if (id) {
-      // update
-      worker = await prisma.functionWorker.update({
+      const existingWorker = await prisma.functionWorker.findUnique({
         where: {
           id,
           workspaceId,
         },
-        data: others,
       });
+
+      if (!existingWorker) {
+        throw new Error('Worker not found');
+      }
+
+      const shouldCreateRevision =
+        others.code !== undefined && others.code !== existingWorker.code;
+
+      const updateResult = await prisma.$transaction(async (tx) => {
+        const nextRevision = shouldCreateRevision
+          ? existingWorker.revision + 1
+          : existingWorker.revision;
+
+        const updatedWorker = await tx.functionWorker.update({
+          where: {
+            id,
+            workspaceId,
+          },
+          data: {
+            ...others,
+            revision: nextRevision,
+          },
+        });
+
+        if (shouldCreateRevision) {
+          await tx.functionWorkerRevision.create({
+            data: {
+              workerId: updatedWorker.id,
+              revision: updatedWorker.revision,
+              code: updatedWorker.code,
+            },
+          });
+        }
+        return updatedWorker;
+      });
+
+      worker = updateResult;
     } else {
-      // create
-      worker = await prisma.functionWorker.create({
-        data: {
-          ...others,
-          workspaceId,
-        },
+      worker = await prisma.$transaction(async (tx) => {
+        const createdWorker = await tx.functionWorker.create({
+          data: {
+            ...others,
+            revision: 1,
+            workspaceId,
+          },
+        });
+
+        await tx.functionWorkerRevision.create({
+          data: {
+            workerId: createdWorker.id,
+            revision: createdWorker.revision,
+            code: createdWorker.code,
+          },
+        });
+
+        return createdWorker;
       });
     }
 

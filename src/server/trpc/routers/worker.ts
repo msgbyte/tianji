@@ -5,7 +5,10 @@ import {
 } from '../trpc.js';
 import { prisma } from '../../model/_client.js';
 import { z } from 'zod';
-import { FunctionWorkerModelSchema } from '../../prisma/zod/index.js';
+import {
+  FunctionWorkerModelSchema,
+  FunctionWorkerRevisionModelSchema,
+} from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
 import { execWorker } from '../../model/worker/index.js';
 import {
@@ -407,5 +410,38 @@ export const workerRouter = router({
       const execution = await execWorker(code);
 
       return execution;
+    }),
+
+  getRevisions: workspaceProcedure
+    .input(
+      z.object({
+        workerId: z.string().cuid2(),
+      })
+    )
+    .output(z.array(FunctionWorkerRevisionModelSchema))
+    .query(async ({ input }) => {
+      const { workerId, workspaceId } = input;
+
+      const worker = await prisma.functionWorker.findUnique({
+        where: {
+          id: workerId,
+          workspaceId,
+        },
+      });
+
+      if (!worker) {
+        throw new Error('Worker not found');
+      }
+
+      const revisions = await prisma.functionWorkerRevision.findMany({
+        where: {
+          workerId,
+        },
+        orderBy: {
+          revision: 'desc',
+        },
+      });
+
+      return revisions;
     }),
 });

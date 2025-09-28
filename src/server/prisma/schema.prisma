@@ -990,6 +990,7 @@ model FunctionWorker {
   name           String
   description    String?
   code           String
+  revision       Int      @default(1)
   active         Boolean  @default(true)
   enableCron     Boolean  @default(false) // Enable cron scheduling
   cronExpression String? // Cron expression for scheduled execution
@@ -999,6 +1000,7 @@ model FunctionWorker {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   executions FunctionWorkerExecution[]
+  revisions  FunctionWorkerRevision[]
 
   @@index([workspaceId])
 }
@@ -1028,6 +1030,19 @@ model FunctionWorkerExecution {
   worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([workerId])
+}
+
+model FunctionWorkerRevision {
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  workerId  String   @db.VarChar(30)
+  revision  Int
+  code      String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([workerId, revision])
+  @@index([workerId, createdAt])
 }
 
 model WarehouseCohorts {

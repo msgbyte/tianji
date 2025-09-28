@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
@@ -33,7 +33,6 @@ import {
   LuExternalLink,
   LuCopy,
 } from 'react-icons/lu';
-import { useState } from 'react';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
@@ -57,6 +56,7 @@ import {
   type UrlParam,
 } from '@/components/worker/UrlParamsInput';
 import { toast } from 'sonner';
+import { WorkerRevisionsSection } from '@/components/worker/WorkerRevisionsSection';
 
 export const Route = createFileRoute('/worker/$workerId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -300,6 +300,7 @@ function PageComponent() {
         <Tabs defaultValue="code" className="flex h-full flex-col space-y-4">
           <TabsList className="self-start">
             <TabsTrigger value="code">{t('Code')}</TabsTrigger>
+            <TabsTrigger value="revisions">{t('Revisions')}</TabsTrigger>
             <TabsTrigger value="executions">{t('Executions')}</TabsTrigger>
             <TabsTrigger value="stats">{t('Statistics')}</TabsTrigger>
           </TabsList>
@@ -315,7 +316,7 @@ function PageComponent() {
                     readOnly={true}
                     height={'100%'}
                     value={worker.code}
-                    onChange={() => {}} // Read-only
+                    onChange={() => {}}
                   />
                 </CardContent>
               </Card>
@@ -404,6 +405,13 @@ function PageComponent() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="revisions" className="space-y-4">
+            <WorkerRevisionsSection
+              workspaceId={workspaceId}
+              workerId={workerId}
+            />
           </TabsContent>
 
           <TabsContent value="executions" className="space-y-4">

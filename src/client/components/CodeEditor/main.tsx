@@ -11,10 +11,15 @@ interface CodeEditorProps {
   readOnly?: boolean;
   onChange?: (code: string) => void;
   codeValidator?: ValidatorFn[];
+  language?: string;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
-  const { readOnly = false, codeValidator = [] } = props;
+  const {
+    readOnly = false,
+    codeValidator = [],
+    language = 'typescript',
+  } = props;
   const colorScheme = useSettingsStore((state) => state.colorScheme);
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
   const editorRef = useRef<any>(null);
@@ -94,7 +99,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
     <Editor
       height={props.height}
       theme={theme}
-      defaultLanguage="typescript"
+      defaultLanguage={language}
       value={props.value}
       options={{
         tabSize: 2,
