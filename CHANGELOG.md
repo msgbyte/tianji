@@ -1,5 +1,12 @@
 
 
+## [1.27.1](https://github.com/msgbyte/tianji/compare/v1.27.0...v1.27.1) (2025-09-28)
+
+### Features
+
+* add function worker revision ([bf2a800](https://github.com/msgbyte/tianji/commit/bf2a800f3a68a7a27f879d12715fe1bddcf7f32a))
+* add tabs for subscription and credit recharge in billing settings ([1953b09](https://github.com/msgbyte/tianji/commit/1953b09ae46653f9926b70caaeefd81378283574))
+
 ## [1.27.0](https://github.com/msgbyte/tianji/compare/v1.26.4...v1.27.0) (2025-09-28)
 
 ## [1.26.4](https://github.com/msgbyte/tianji/compare/v1.26.3...v1.26.4) (2025-09-28)
