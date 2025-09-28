@@ -15,6 +15,7 @@ import { SubscriptionSelection } from '@/components/billing/SubscriptionSelectio
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { trpc } from '../../../api/trpc';
@@ -113,17 +114,38 @@ function PageComponent() {
           )}
 
           {isInitialLoading === false && (
-            <div className="flex flex-col gap-6">
-              {enableAI && <CreditRecharge onSuccess={handleRefresh} />}
+            <Tabs defaultValue="subscription" className="flex flex-col gap-4">
+              <TabsList className="w-fit">
+                {enableAI && (
+                  <TabsTrigger value="recharge">
+                    {t('Purchase Credits')}
+                  </TabsTrigger>
+                )}
 
-              <SubscriptionSelection
-                currentTier={currentTier}
-                alreadySubscribed={
-                  Boolean(data) && data?.status !== 'cancelled'
-                }
-                onRefresh={handleRefresh}
-              />
-            </div>
+                <TabsTrigger value="subscription">
+                  {t('Subscription Plan')}
+                </TabsTrigger>
+              </TabsList>
+
+              {enableAI && (
+                <TabsContent
+                  value="recharge"
+                  className="mt-2 flex flex-col gap-6"
+                >
+                  <CreditRecharge onSuccess={handleRefresh} />
+                </TabsContent>
+              )}
+
+              <TabsContent value="subscription" className="mt-2">
+                <SubscriptionSelection
+                  currentTier={currentTier}
+                  alreadySubscribed={
+                    Boolean(data) && data?.status !== 'cancelled'
+                  }
+                  onRefresh={handleRefresh}
+                />
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </ScrollArea>
