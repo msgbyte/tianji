@@ -1,5 +1,18 @@
 
 
+## [1.26.4](https://github.com/msgbyte/tianji/compare/v1.26.3...v1.26.4) (2025-09-28)
+
+### Features
+
+* add credit balance and recharge feature for billing ([7f7d2a7](https://github.com/msgbyte/tianji/commit/7f7d2a728f2ae7a2e86bf1200c322c6970dfda14))
+* add credit history page ([d75e791](https://github.com/msgbyte/tianji/commit/d75e791d325b55d49710ae467e51c7e5622fe0d5))
+* add WebsiteEventAnalysis component to display event metrics ([b89ec22](https://github.com/msgbyte/tianji/commit/b89ec2284b96a727189b669ee9bc234f07334b65))
+
+### Others
+
+* improve display for credit balance ([54967e5](https://github.com/msgbyte/tianji/commit/54967e5526c727e08803410117ea3b07f5ac8b5c))
+* update translation ([fe98ea6](https://github.com/msgbyte/tianji/commit/fe98ea6900d72b33cd9a0397169eaf558a76fd4d))
+
 ## [1.26.3](https://github.com/msgbyte/tianji/compare/v1.26.2...v1.26.3) (2025-09-24)
 
 ### Features
