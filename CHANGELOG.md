@@ -1,5 +1,7 @@
 
 
+## [1.27.0](https://github.com/msgbyte/tianji/compare/v1.26.4...v1.27.0) (2025-09-28)
+
 ## [1.26.4](https://github.com/msgbyte/tianji/compare/v1.26.3...v1.26.4) (2025-09-28)
 
 ### Features
