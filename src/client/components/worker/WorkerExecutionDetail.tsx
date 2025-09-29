@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { cn } from '@/utils/style';
 import { formatDate } from '@/utils/date';
 import { DataRender } from '../DataRender';
+import { drop } from 'lodash-es';
 
 interface WorkerExecutionDetailProps {
   vertical?: boolean;
@@ -120,17 +121,31 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
                                 </span>
                               </div>
                               <span>
-                                <DataRender type="json" value={log[2]} />
+                                {drop(log, 2).map((item, i) => (
+                                  <DataRender
+                                    key={i}
+                                    className="mr-1 inline"
+                                    type="json"
+                                    value={item}
+                                  />
+                                ))}
                               </span>
                             </div>
                           ) : (
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-baseline space-x-2">
                               <Badge>{log[0]}</Badge>
                               <span className="opacity-60">
                                 {formatDate(log[1])}
                               </span>
                               <span>
-                                <DataRender type="json" value={log[2]} />
+                                {drop(log, 2).map((item, i) => (
+                                  <DataRender
+                                    key={i}
+                                    className="mr-1 inline"
+                                    type="json"
+                                    value={item}
+                                  />
+                                ))}
                               </span>
                             </div>
                           )
