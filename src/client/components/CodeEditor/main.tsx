@@ -46,6 +46,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
       sandboxGlobal,
       'global.ts'
     );
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(
+      sandboxGlobal,
+      'ts:global.d.ts'
+    );
 
     const validateAndReport = () => {
       const model = editor.getModel();
@@ -92,6 +96,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
     monaco.languages.typescript.javascriptDefaults.addExtraLib(
       sandboxGlobal,
       'global.ts'
+    );
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(
+      sandboxGlobal,
+      'ts:global.d.ts'
     );
   });
 

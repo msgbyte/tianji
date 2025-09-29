@@ -14,7 +14,7 @@ interface AxiosConfig {
     | 'unlink' | 'UNLINK';
   baseURL?: string;
   headers?: Record<string, string>;
-  params?: any;
+  params?: Record<string, string | number | boolean | undefined | null>;
   data?: any;
   timeout?: number;
   withCredentials?: boolean;
@@ -50,5 +50,7 @@ interface RequestReturn {
   status: number;
 }
 
-const request = async (config: AxiosConfig): Promise<RequestReturn> => {}
+declare function request(config: AxiosConfig): Promise<RequestReturn>;
+
+const request = async (config: AxiosConfig): Promise<RequestReturn> => {};
 `;
