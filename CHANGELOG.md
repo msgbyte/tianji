@@ -1,5 +1,20 @@
 
 
+## [1.27.2](https://github.com/msgbyte/tianji/compare/v1.27.1...v1.27.2) (2025-09-29)
+
+### Features
+
+* add multi console log item support ([e1b599d](https://github.com/msgbyte/tianji/commit/e1b599d9bc13ded28bf9516f6e570857d0b9a606))
+* worker add request payload ([eb77559](https://github.com/msgbyte/tianji/commit/eb77559f8b0145241ff7dc69f1f44c5799471a76))
+
+### Bug Fixes
+
+* fix type error for request function ([bd3f72e](https://github.com/msgbyte/tianji/commit/bd3f72e70f93e1ec60e45212e86ff29868076f15))
+
+### Others
+
+* change order of worker ([50621e3](https://github.com/msgbyte/tianji/commit/50621e3814d8c31806067ac2c430acbe007e8da6))
+
 ## [1.27.1](https://github.com/msgbyte/tianji/compare/v1.27.0...v1.27.1) (2025-09-28)
 
 ### Features
