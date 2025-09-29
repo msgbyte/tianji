@@ -17,6 +17,7 @@ interface WorkerExecutionDetailProps {
     memoryUsed?: number | null;
     cpuTime?: number | null;
     createdAt: string;
+    requestPayload?: unknown;
     error?: string | null;
     responsePayload?: unknown;
     logs?: (string | number)[][] | null;
@@ -71,6 +72,15 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
               {dayjs(execution.createdAt).format('YYYY-MM-DD HH:mm:ss')}
             </SheetDataSection>
           </div>
+
+          {execution.requestPayload !== null &&
+            execution.requestPayload !== undefined && (
+              <SheetDataSection label={t('Request')}>
+                <div className="mt-1 max-h-[400px] overflow-auto rounded-md bg-gray-100 p-3 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                  <DataRender type="json" value={execution.requestPayload} />
+                </div>
+              </SheetDataSection>
+            )}
 
           {execution.responsePayload !== null &&
             execution.responsePayload !== undefined && (
