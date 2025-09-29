@@ -300,8 +300,8 @@ function PageComponent() {
         <Tabs defaultValue="code" className="flex h-full flex-col space-y-4">
           <TabsList className="self-start">
             <TabsTrigger value="code">{t('Code')}</TabsTrigger>
-            <TabsTrigger value="revisions">{t('Revisions')}</TabsTrigger>
             <TabsTrigger value="executions">{t('Executions')}</TabsTrigger>
+            <TabsTrigger value="revisions">{t('Revisions')}</TabsTrigger>
             <TabsTrigger value="stats">{t('Statistics')}</TabsTrigger>
           </TabsList>
 
@@ -407,13 +407,6 @@ function PageComponent() {
             </div>
           </TabsContent>
 
-          <TabsContent value="revisions" className="space-y-4">
-            <WorkerRevisionsSection
-              workspaceId={workspaceId}
-              workerId={workerId}
-            />
-          </TabsContent>
-
           <TabsContent value="executions" className="space-y-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -511,6 +504,13 @@ function PageComponent() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="revisions" className="space-y-4">
+            <WorkerRevisionsSection
+              workspaceId={workspaceId}
+              workerId={workerId}
+            />
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-4">
