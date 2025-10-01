@@ -1,3 +1,5 @@
+import { TRPCError } from '@trpc/server';
+import { createId } from '@paralleldrive/cuid2';
 import { z } from 'zod';
 import {
   OpenApiMetaInfo,
@@ -22,6 +24,12 @@ import { delFeedEventNotifyCache } from '../../../model/feed/shared.js';
 import { getWorkspaceTierLimit } from '../../../model/billing/limit.js';
 import { isWorkspacePaused } from '../../../model/billing/workspace.js';
 import { feedStateRouter } from './state.js';
+
+const PublicFeedChannelSchema = FeedChannelModelSchema.pick({
+  id: true,
+  name: true,
+  publicShareId: true,
+});
 
 export const feedRouter = router({
   channels: workspaceProcedure
@@ -229,6 +237,109 @@ export const feedRouter = router({
         nextCursor,
       };
     }),
+  fetchPublicEventsByCursor: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'GET',
+        path: '/public/{shareId}/events',
+        description: 'Fetch public feed channel events by shareId',
+      })
+    )
+    .input(
+      z.object({
+        shareId: z.string(),
+        limit: z.number().min(1).max(100).default(50),
+        cursor: z.string().optional(),
+      })
+    )
+    .output(
+      z.object({
+        items: z.array(FeedEventModelSchema),
+        nextCursor: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { shareId, limit, cursor } = input;
+
+      const channel = await prisma.feedChannel.findFirst({
+        where: {
+          publicShareId: shareId,
+        },
+      });
+
+      if (!channel) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Channel not found',
+        });
+      }
+
+      const { items, nextCursor } = await fetchDataByCursor(prisma.feedEvent, {
+        where: {
+          channelId: channel.id,
+          archived: false,
+        },
+        select: {
+          id: true,
+          channelId: true,
+          createdAt: true,
+          updatedAt: true,
+          eventName: true,
+          eventContent: true,
+          tags: true,
+          source: true,
+          senderId: true,
+          senderName: true,
+          url: true,
+          important: true,
+          archived: true,
+        },
+        limit,
+        cursor,
+      });
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
+  getChannelByShareId: publicProcedure
+    .meta(
+      buildFeedPublicOpenapi({
+        method: 'GET',
+        path: '/public/{shareId}/info',
+        description: 'Fetch public feed channel info by shareId',
+      })
+    )
+    .input(
+      z.object({
+        shareId: z.string(),
+      })
+    )
+    .output(PublicFeedChannelSchema)
+    .query(async ({ input }) => {
+      const { shareId } = input;
+
+      const channel = await prisma.feedChannel.findFirst({
+        where: {
+          publicShareId: shareId,
+        },
+        select: {
+          id: true,
+          name: true,
+          publicShareId: true,
+        },
+      });
+
+      if (!channel?.publicShareId) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Channel not found',
+        });
+      }
+
+      return channel;
+    }),
   createChannel: workspaceAdminProcedure
     .meta(
       buildFeedOpenapi({
@@ -276,6 +387,7 @@ export const feedRouter = router({
           workspaceId,
           name,
           notifyFrequency,
+          publicShareId: createId(),
           notifications: {
             connect: notificationIds.map((id) => ({ id })),
           },
@@ -293,6 +405,78 @@ export const feedRouter = router({
         ...channel,
         notificationIds: channel?.notifications.map((n) => n.id),
       };
+    }),
+  refreshPublicShareId: workspaceAdminProcedure
+    .meta(
+      buildFeedOpenapi({
+        method: 'POST',
+        path: '/{channelId}/refreshPublicShare',
+        description: 'Regenerate public share id for feed channel',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        publicShareId: z.string().nullable(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { channelId, workspaceId } = input;
+
+      const channel = await prisma.feedChannel.update({
+        where: {
+          workspaceId,
+          id: channelId,
+        },
+        data: {
+          publicShareId: createId(),
+        },
+        select: {
+          publicShareId: true,
+        },
+      });
+
+      return channel;
+    }),
+  disablePublicShareId: workspaceAdminProcedure
+    .meta(
+      buildFeedOpenapi({
+        method: 'POST',
+        path: '/{channelId}/disablePublicShare',
+        description: 'Disable public share for feed channel',
+      })
+    )
+    .input(
+      z.object({
+        channelId: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        publicShareId: z.string().nullable(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { channelId, workspaceId } = input;
+
+      const channel = await prisma.feedChannel.update({
+        where: {
+          workspaceId,
+          id: channelId,
+        },
+        data: {
+          publicShareId: null,
+        },
+        select: {
+          publicShareId: true,
+        },
+      });
+
+      return channel;
     }),
   deleteChannel: workspaceAdminProcedure
     .meta(

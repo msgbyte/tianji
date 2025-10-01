@@ -18,6 +18,7 @@ import {
   LuPencil,
   LuTrash,
   LuWebhook,
+  LuShare2,
 } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { FeedApiGuide } from '@/components/feed/FeedApiGuide';
@@ -31,6 +32,13 @@ import { get, reverse } from 'lodash-es';
 import { FeedArchivePageButton } from '@/components/feed/FeedArchivePageButton';
 import { toast } from 'sonner';
 import { FeedStateList } from '@/components/feed/FeedStateList';
+import copy from 'copy-to-clipboard';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export const Route = createFileRoute('/feed/$channelId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -129,19 +137,53 @@ function PageComponent() {
               <FeedArchivePageButton channelId={channelId} />
 
               {hasAdminPermission && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  Icon={LuPencil}
-                  onClick={() =>
-                    navigate({
-                      to: '/feed/$channelId/edit',
-                      params: {
-                        channelId,
-                      },
-                    })
-                  }
-                />
+                <>
+                  {info?.publicShareId ? (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      Icon={LuShare2}
+                      onClick={() => {
+                        copy(
+                          `${window.location.origin}/feed/public/${info.publicShareId}`
+                        );
+                        toast.success(
+                          t('Public share link copied to clipboard')
+                        );
+                      }}
+                    />
+                  ) : (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger className="cursor-not-allowed">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            Icon={LuShare2}
+                            disabled
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {t('Public share is disabled for this feed')}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    Icon={LuPencil}
+                    onClick={() =>
+                      navigate({
+                        to: '/feed/$channelId/edit',
+                        params: {
+                          channelId,
+                        },
+                      })
+                    }
+                  />
+                </>
               )}
 
               {hasAdminPermission && (

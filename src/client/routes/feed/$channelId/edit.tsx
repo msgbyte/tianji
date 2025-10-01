@@ -28,6 +28,16 @@ function PageComponent() {
   const mutation = trpc.feed.updateChannelInfo.useMutation({
     onError: defaultErrorHandler,
   });
+  const refreshPublicShareMutation = trpc.feed.refreshPublicShareId.useMutation(
+    {
+      onError: defaultErrorHandler,
+    }
+  );
+  const disablePublicShareMutation = trpc.feed.disablePublicShareId.useMutation(
+    {
+      onError: defaultErrorHandler,
+    }
+  );
   const { data: channel, isLoading } = trpc.feed.channelInfo.useQuery({
     workspaceId,
     channelId,
@@ -83,6 +93,30 @@ function PageComponent() {
     }
   });
 
+  const handleRefreshPublicShare = useEvent(async () => {
+    const res = await refreshPublicShareMutation.mutateAsync({
+      workspaceId,
+      channelId,
+    });
+    await trpcUtils.feed.channelInfo.invalidate({
+      workspaceId,
+      channelId,
+    });
+    return res.publicShareId;
+  });
+
+  const handleDisablePublicShare = useEvent(async () => {
+    const res = await disablePublicShareMutation.mutateAsync({
+      workspaceId,
+      channelId,
+    });
+    await trpcUtils.feed.channelInfo.invalidate({
+      workspaceId,
+      channelId,
+    });
+    return res.publicShareId;
+  });
+
   if (isLoading) {
     return <Loading />;
   }
@@ -101,6 +135,8 @@ function PageComponent() {
             <FeedChannelEditForm
               defaultValues={channel}
               onSubmit={handleSubmit}
+              onRefreshPublicShare={handleRefreshPublicShare}
+              onDisablePublicShare={handleDisablePublicShare}
             />
           </CardContent>
         </Card>

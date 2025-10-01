@@ -47,8 +47,8 @@ export interface SocketEventMap {
   >;
 }
 
-export const socketEventBus = new EventEmitter<SocketEventMap>();
-export const subscribeEventBus = new EventEmitter<SubscribeEventMap>();
+export const socketEventBus = new EventEmitter<SocketEventMap>(); // for system
+export const subscribeEventBus = new EventEmitter<SubscribeEventMap>(); // for business
 
 type SubscribeInitializerFn<
   T extends keyof SubscribeEventMap = keyof SubscribeEventMap,

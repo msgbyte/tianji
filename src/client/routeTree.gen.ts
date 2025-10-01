@@ -77,6 +77,7 @@ import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edi
 import { Route as SettingsBillingHistoryImport } from './routes/settings/billing/history'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
+import { Route as FeedPublicShareIdImport } from './routes/feed_/public/$shareId'
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
 import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
@@ -419,6 +420,11 @@ const InvitationAcceptTokenRoute = InvitationAcceptTokenImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const FeedPublicShareIdRoute = FeedPublicShareIdImport.update({
+  path: '/feed/public/$shareId',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const FeedChannelIdEditRoute = FeedChannelIdEditImport.update({
   path: '/$channelId/edit',
   getParentRoute: () => FeedRoute,
@@ -669,6 +675,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedChannelIdEditImport
       parentRoute: typeof FeedImport
     }
+    '/feed/public/$shareId': {
+      preLoaderRoute: typeof FeedPublicShareIdImport
+      parentRoute: typeof rootRoute
+    }
     '/invitation/accept/$token': {
       preLoaderRoute: typeof InvitationAcceptTokenImport
       parentRoute: typeof rootRoute
@@ -823,6 +833,7 @@ export const routeTree = rootRoute.addChildren([
   InsightsEventsRoute,
   StatusSlugRoute,
   InsightsIndexRoute,
+  FeedPublicShareIdRoute,
   InvitationAcceptTokenRoute,
   WebsiteVisitorMapWebsiteIdRoute,
   InsightsWarehouseIndexRoute,

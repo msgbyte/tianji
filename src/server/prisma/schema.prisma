@@ -846,6 +846,7 @@ model FeedChannel {
   name             String
   webhookSignature String                     @default("") @db.VarChar(100)
   notifyFrequency  FeedChannelNotifyFrequency @default(day)
+  publicShareId    String?                    @unique @db.VarChar(30)
   createdAt        DateTime                   @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime                   @updatedAt @db.Timestamptz(6)
 

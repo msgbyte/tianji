@@ -9,6 +9,7 @@ export const FeedChannelModelSchema = z.object({
   name: z.string(),
   webhookSignature: z.string(),
   notifyFrequency: z.nativeEnum(FeedChannelNotifyFrequency),
+  publicShareId: z.string().nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
