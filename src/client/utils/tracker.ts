@@ -3,6 +3,7 @@ import { version } from '@/utils/env';
 import {
   identifyWebsiteUser,
   initWebsiteTracking,
+  trackPageView,
   reportWebsiteEvent,
 } from 'tianji-client-react';
 
@@ -24,6 +25,18 @@ function ensureInitialized() {
       initialized = true;
     }
   }
+}
+
+export function recordPageView(
+  url: string = window.location.pathname,
+  title: string = document.title
+) {
+  ensureInitialized();
+  if (!initialized) {
+    return;
+  }
+
+  trackPageView(url, title);
 }
 
 export function recordEvent(eventName: string, data?: Record<string, any>) {
