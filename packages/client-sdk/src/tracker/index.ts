@@ -3,10 +3,16 @@ import { IdentifyPayload } from '../types';
 import {
   identifyWebsiteUser,
   initWebsiteTracking,
+  trackPageView,
   reportWebsiteEvent,
 } from './pure';
 
-export { identifyWebsiteUser, initWebsiteTracking, reportWebsiteEvent };
+export {
+  identifyWebsiteUser,
+  initWebsiteTracking,
+  trackPageView,
+  reportWebsiteEvent,
+};
 
 interface InjectTrackerOptions {
   /**
