@@ -1,5 +1,11 @@
 
 
+## [1.27.4](https://github.com/msgbyte/tianji/compare/v1.27.3...v1.27.4) (2025-10-03)
+
+### Others
+
+* fix ci problem ([033c425](https://github.com/msgbyte/tianji/commit/033c4257130dc35ccb2b90d35c1b677b74ba4e85))
+
 ## [1.27.3](https://github.com/msgbyte/tianji/compare/v1.27.2...v1.27.3) (2025-10-03)
 
 ### Features
