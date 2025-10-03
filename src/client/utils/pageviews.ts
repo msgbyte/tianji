@@ -66,7 +66,7 @@ export function fillPageviewsTrend(
     start = end.subtract(span, config.unit);
   }
 
-  const result: TrendPoint[] = [];
+  const result: TimeEventChartData[] = [];
   for (let i = 0; i <= span; i++) {
     const current = start.add(i, config.unit);
     const key = current.valueOf();
