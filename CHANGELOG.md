@@ -1,5 +1,18 @@
 
 
+## [1.27.3](https://github.com/msgbyte/tianji/compare/v1.27.2...v1.27.3) (2025-10-03)
+
+### Features
+
+* add pageview tracker for tianji self ([9103ba5](https://github.com/msgbyte/tianji/commit/9103ba51b6aff6946156f593431b8654645fb4bc))
+* add public share feature for feed channels ([47c890e](https://github.com/msgbyte/tianji/commit/47c890eb2f63911ae2698ed4e7e779d72cb1a6c2))
+* add website share feature which can share info to public ([36b521e](https://github.com/msgbyte/tianji/commit/36b521eb8c8c4fcb8a5d56812351474f9cc5f8d1))
+* sdk add trackPageView function ([5b30e8d](https://github.com/msgbyte/tianji/commit/5b30e8dffedda78ed28af607ed5b00bd01c87a76))
+
+### Others
+
+* update translation ([74f575b](https://github.com/msgbyte/tianji/commit/74f575b4f832ea5d781ecdfd36379e114bf849b4))
+
 ## [1.27.2](https://github.com/msgbyte/tianji/compare/v1.27.1...v1.27.2) (2025-09-29)
 
 ### Features
