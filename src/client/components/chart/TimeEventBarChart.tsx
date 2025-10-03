@@ -26,6 +26,8 @@ export const TimeEventBarChart: React.FC<{
   isTrendingMode?: boolean;
   showDifference?: boolean;
   valueFormatter?: (value: number) => string;
+  xAxisLabelFormatter?: (value: string) => string;
+  tooltipLabelFormatter?: (value: string) => string;
 }> = React.memo((props) => {
   const {
     className,
@@ -37,6 +39,8 @@ export const TimeEventBarChart: React.FC<{
     isTrendingMode = false,
     showDifference = false,
     valueFormatter,
+    xAxisLabelFormatter,
+    tooltipLabelFormatter,
   } = props;
   const { colors } = useTheme();
   const [selectedItem, setSelectedItem] = useState<string[]>(() =>
@@ -48,7 +52,11 @@ export const TimeEventBarChart: React.FC<{
       <BarChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
         <XAxis
           dataKey="date"
-          tickFormatter={(text) => formatDateWithUnit(text, unit)}
+          tickFormatter={(text) =>
+            xAxisLabelFormatter
+              ? xAxisLabelFormatter(String(text))
+              : formatDateWithUnit(text, unit)
+          }
         />
         <YAxis
           mirror
@@ -76,7 +84,11 @@ export const TimeEventBarChart: React.FC<{
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(label) => formatDateWithUnit(label, unit)}
+              labelFormatter={(label) =>
+                tooltipLabelFormatter
+                  ? tooltipLabelFormatter(String(label))
+                  : formatDateWithUnit(label, unit)
+              }
               valueFormatter={valueFormatter}
               formatter={
                 showDifference

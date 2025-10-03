@@ -21,7 +21,10 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Card } from 'antd';
-import { LuCompass, LuSettings } from 'react-icons/lu';
+import { LuCompass, LuSettings, LuShare2 } from 'react-icons/lu';
+import copy from 'copy-to-clipboard';
+import { toast } from 'sonner';
+import { useMemo } from 'react';
 
 export const Route = createFileRoute('/website/$websiteId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -39,6 +42,20 @@ function PageComponent() {
   const { startDate, endDate } = useGlobalRangeDate();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+
+  const shareLink = useMemo(() => {
+    if (!website?.shareId) {
+      return '';
+    }
+
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    if (origin) {
+      return `${origin}/website/public/${website.shareId}`;
+    }
+
+    return `/website/public/${website.shareId}`;
+  }, [website?.shareId]);
 
   if (!websiteId) {
     return <ErrorTip />;
@@ -80,6 +97,19 @@ function PageComponent() {
               )}
 
               <WebsiteLighthouseBtn websiteId={website.id} />
+
+              {website.shareId && (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  Icon={LuShare2}
+                  onClick={() => {
+                    copy(shareLink);
+                    toast.success(t('Public share link copied to clipboard'));
+                  }}
+                  aria-label={t('Public share link copied to clipboard')}
+                />
+              )}
 
               <WebsiteCodeBtn websiteId={website.id} />
             </div>

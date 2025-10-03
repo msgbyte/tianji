@@ -21,7 +21,16 @@ export async function createContext({ req }: CreateExpressContextOptions) {
   const language =
     get(languageParse(req.headers['accept-language']), [0, 'code']) ?? 'en';
 
-  return { token, timezone, language, req };
+  let origin = '';
+  if (req.headers['origin']) {
+    origin = String(req.headers['origin']);
+  } else if (req.headers['x-forwarded-proto'] && req.headers['host']) {
+    origin = `${req.headers['x-forwarded-proto']}://${req.headers['host']}`;
+  } else if (req.headers['host']) {
+    origin = `${req.protocol}://${req.headers['host']}`;
+  }
+
+  return { token, timezone, language, req, origin };
 }
 
 type Context = Awaited<ReturnType<typeof createContext>>;

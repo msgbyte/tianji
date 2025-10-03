@@ -54,6 +54,8 @@ export const TimeEventChart: React.FC<{
   isTrendingMode?: boolean;
   showDifference?: boolean;
   valueFormatter?: (value: number) => string;
+  xAxisLabelFormatter?: (value: string) => string;
+  tooltipLabelFormatter?: (value: string) => string;
 }> = React.memo((props) => {
   const {
     className,
@@ -64,6 +66,8 @@ export const TimeEventChart: React.FC<{
     isTrendingMode = false,
     showDifference = false,
     yAxisDomain,
+    xAxisLabelFormatter,
+    tooltipLabelFormatter,
   } = props;
   const { colors } = useTheme();
   const [calcStrokeDasharray, strokes] = useStrokeDasharray({});
@@ -103,6 +107,8 @@ export const TimeEventChart: React.FC<{
         isTrendingMode={isTrendingMode}
         showDifference={showDifference}
         valueFormatter={props.valueFormatter}
+        xAxisLabelFormatter={xAxisLabelFormatter}
+        tooltipLabelFormatter={tooltipLabelFormatter}
       />
     );
   }
@@ -143,7 +149,11 @@ export const TimeEventChart: React.FC<{
 
         <XAxis
           dataKey="date"
-          tickFormatter={(text) => formatDateWithUnit(text, props.unit)}
+          tickFormatter={(text) =>
+            xAxisLabelFormatter
+              ? xAxisLabelFormatter(String(text))
+              : formatDateWithUnit(text, props.unit)
+          }
         />
         <YAxis
           mirror
@@ -171,7 +181,11 @@ export const TimeEventChart: React.FC<{
         <ChartTooltip
           content={
             <ChartTooltipContent
-              labelFormatter={(label) => formatDateWithUnit(label, props.unit)}
+              labelFormatter={(label) =>
+                tooltipLabelFormatter
+                  ? tooltipLabelFormatter(String(label))
+                  : formatDateWithUnit(label, props.unit)
+              }
               valueFormatter={props.valueFormatter}
               formatter={
                 showDifference

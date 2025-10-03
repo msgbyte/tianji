@@ -32,18 +32,39 @@ import {
   websiteStatsSchema,
 } from '../../model/_schema/filter.js';
 import dayjs from 'dayjs';
-import { fetchDataByCursor, WebsiteQueryFilters } from '../../utils/prisma.js';
+import {
+  fetchDataByCursor,
+  POSTGRESQL_DATE_FORMATS,
+  WebsiteQueryFilters,
+} from '../../utils/prisma.js';
 import { WebsiteLighthouseReportStatus } from '@prisma/client';
 import { WebsiteLighthouseReportModelSchema } from '../../prisma/zod/websitelighthousereport.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { sendBuildLighthouseMessageQueue } from '../../mq/producer.js';
 import { getWorkspaceTierLimit } from '../../model/billing/limit.js';
+import { TRPCError } from '@trpc/server';
+import { createId } from '@paralleldrive/cuid2';
+import { WebsiteModelSchema } from '../../prisma/zod/website.js';
+import { getWebsiteInfoPublic } from '../../model/website/public.js';
+import { getWebsitePublicStats } from '../../model/website/public.js';
 
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
   z.string().max(500).regex(hostnameRegex),
   z.string().max(500).ip(),
 ]);
+const metricsTypeSchema = z.enum([
+  'url',
+  'language',
+  'referrer',
+  'title',
+  'browser',
+  'os',
+  'device',
+  'country',
+  'event',
+]);
+const publicRangeSchema = z.enum(['realtime', '24h', '7d', '30d', '90d']);
 
 export const websiteRouter = router({
   onlineCount: workspaceProcedure
@@ -294,13 +315,11 @@ export const websiteRouter = router({
 
       return res
         .filter((item) => item.longitude !== null && item.latitude !== null)
-        .map((item) => {
-          return {
-            longitude: item.longitude!,
-            latitude: item.latitude!,
-            count: item._count._all,
-          };
-        });
+        .map((item) => ({
+          longitude: item.longitude!,
+          latitude: item.latitude!,
+          count: item._count._all,
+        }));
     }),
   pageviews: workspaceProcedure
     .meta(
@@ -461,22 +480,19 @@ export const websiteRouter = router({
         const data = await getWebsiteSessionMetrics(websiteId, column, filters);
 
         if (type === 'language') {
-          const combined: Record<string, any> = {};
+          const combined: Record<string, { x: string; y: number }> = {};
 
           for (const { x, y } of data) {
             const key = String(x).toLowerCase().split('-')[0];
 
-            if (combined[key] === undefined) {
-              combined[key] = { x: key, y };
+            if (!combined[key]) {
+              combined[key] = { x: key, y: Number(y) };
             } else {
-              combined[key].y += y;
+              combined[key].y += Number(y);
             }
           }
 
-          return Object.values(combined).map((d) => ({
-            x: d.x,
-            y: Number(d.y),
-          }));
+          return Object.values(combined);
         }
 
         return data.map((d) => ({ x: d.x, y: Number(d.y) }));
@@ -521,6 +537,7 @@ export const websiteRouter = router({
           },
         }),
       ]);
+
       if (
         limit.maxWebsiteCount !== -1 &&
         websiteCount >= limit.maxWebsiteCount
@@ -565,7 +582,6 @@ export const websiteRouter = router({
 
       return website;
     }),
-
   updateInfo: workspaceAdminProcedure
     .meta(
       buildWebsiteOpenapi({
@@ -716,6 +732,292 @@ export const websiteRouter = router({
         return {};
       }
     }),
+
+  // public
+  getPublicInfoByShareId: publicProcedure
+    .meta(
+      buildWebsitePublicOpenapi({
+        method: 'GET',
+        path: '/{shareId}/info',
+      })
+    )
+    .input(
+      z.object({
+        shareId: z.string(),
+      })
+    )
+    .output(
+      WebsiteModelSchema.pick({
+        id: true,
+        name: true,
+        domain: true,
+        shareId: true,
+        createdAt: true,
+        updatedAt: true,
+      })
+    )
+    .query(async ({ input }) => {
+      const website = await getWebsiteInfoPublic(input.shareId);
+
+      if (!website) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Website not found',
+        });
+      }
+
+      return website;
+    }),
+  getPublicStatsByShareId: publicProcedure
+    .meta(
+      buildWebsitePublicOpenapi({
+        method: 'GET',
+        path: '/{shareId}/stats',
+      })
+    )
+    .input(
+      z.object({
+        shareId: z.string(),
+        range: z.enum(['realtime', '24h', '7d', '30d', '90d']).default('24h'),
+      })
+    )
+    .output(
+      z.object({
+        pageviews: z.object({ value: z.number(), prev: z.number() }),
+        visitors: z.object({ value: z.number(), prev: z.number() }),
+        bounce_rate: z.object({ value: z.number(), prev: z.number() }),
+        average_visit_duration: z.object({
+          value: z.number(),
+          prev: z.number(),
+        }),
+        pageviews_trend: z.array(
+          z.object({
+            date: z.string(),
+            value: z.number(),
+          })
+        ),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const website = await getWebsiteInfoPublic(input.shareId);
+
+      if (!website) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Website not found',
+        });
+      }
+
+      const { currentRange, previousRange } = getRangeByPreset(
+        input.range,
+        ctx.timezone
+      );
+
+      return getWebsitePublicStats({
+        websiteId: website.id,
+        startAt: currentRange.startAt,
+        endAt: currentRange.endAt,
+        prevStartAt: previousRange.startAt,
+        prevEndAt: previousRange.endAt,
+        timezone: ctx.timezone,
+        unit: currentRange.unit as keyof typeof POSTGRESQL_DATE_FORMATS,
+      });
+    }),
+  getPublicMetricsByShareId: publicProcedure
+    .meta(
+      buildWebsitePublicOpenapi({
+        method: 'GET',
+        path: '/{shareId}/metrics',
+      })
+    )
+    .input(
+      z.object({
+        shareId: z.string(),
+        type: metricsTypeSchema,
+        range: publicRangeSchema.default('24h'),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          x: z.string().nullable(),
+          y: z.number(),
+          ratio: z.number(),
+        })
+      )
+    )
+    .query(async ({ input, ctx }) => {
+      const website = await getWebsiteInfoPublic(input.shareId);
+
+      if (!website) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Website not found',
+        });
+      }
+
+      const { currentRange } = getRangeByPreset(input.range, ctx.timezone);
+      const filters: WebsiteQueryFilters = {
+        startDate: new Date(currentRange.startAt),
+        endDate: new Date(currentRange.endAt),
+        timezone: ctx.timezone,
+      };
+
+      const column = FILTER_COLUMNS[input.type] || input.type;
+
+      if (SESSION_COLUMNS.includes(input.type)) {
+        const data = await getWebsiteSessionMetrics(
+          website.id,
+          column,
+          filters
+        );
+
+        const total = data.reduce((acc, item) => acc + Number(item.y) || 0, 0);
+
+        if (input.type === 'language') {
+          const combined: Record<string, { x: string; y: number }> = {};
+
+          for (const { x, y } of data) {
+            const key = String(x ?? '')
+              .toLowerCase()
+              .split('-')[0];
+
+            if (!combined[key]) {
+              combined[key] = { x: key, y: Number(y) };
+            } else {
+              combined[key].y += Number(y);
+            }
+          }
+
+          return Object.values(combined).map((item) => ({
+            x: item.x,
+            y: item.y,
+            ratio: total > 0 ? item.y / total : 0,
+          }));
+        }
+
+        return data.map((d) => ({
+          x: d.x,
+          y: Number(d.y),
+          ratio: total > 0 ? Number(d.y) / total : 0,
+        }));
+      }
+
+      if (EVENT_COLUMNS.includes(input.type)) {
+        const data = await getWebsitePageviewMetrics(
+          website.id,
+          column,
+          filters
+        );
+        const total = data.reduce((acc, item) => acc + Number(item.y) || 0, 0);
+
+        return data.map((d) => ({
+          x: d.x,
+          y: Number(d.y),
+          ratio: total > 0 ? Number(d.y) / total : 0,
+        }));
+      }
+
+      if (input.type === 'url') {
+        const data = await getWebsitePageviewMetrics(
+          website.id,
+          column,
+          filters
+        );
+        const total = data.reduce((acc, item) => acc + Number(item.y) || 0, 0);
+
+        return data.map((d) => ({
+          x: d.x,
+          y: Number(d.y),
+          ratio: total > 0 ? Number(d.y) / total : 0,
+        }));
+      }
+
+      return [];
+    }),
+  createOrEnableShare: workspaceAdminProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'POST',
+        path: '/share/enable',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string().cuid2(),
+      })
+    )
+    .output(
+      z.object({
+        shareUrl: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const website = await prisma.website.findFirst({
+        where: {
+          id: input.websiteId,
+          workspaceId: input.workspaceId,
+          deletedAt: null,
+        },
+        select: {
+          shareId: true,
+        },
+      });
+
+      if (!website) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Website not found',
+        });
+      }
+
+      const shareId = website.shareId ?? createId();
+
+      if (!website.shareId) {
+        await prisma.website.update({
+          where: {
+            id: input.websiteId,
+          },
+          data: {
+            shareId,
+          },
+        });
+      }
+
+      return {
+        shareUrl: buildWebsitePublicUrl(ctx.origin, shareId),
+      };
+    }),
+  disableShare: workspaceAdminProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'POST',
+        path: '/share/disable',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string().cuid2(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.literal(true),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await prisma.website.update({
+        where: {
+          id: input.websiteId,
+          workspaceId: input.workspaceId,
+        },
+        data: {
+          shareId: null,
+        },
+      });
+
+      return { success: true };
+    }),
 });
 
 function buildWebsiteOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
@@ -727,4 +1029,63 @@ function buildWebsiteOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
       path: `/workspace/{workspaceId}/website/{websiteId}${meta.path}`,
     },
   };
+}
+
+function buildWebsitePublicOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.WEBSITE],
+      protect: false,
+      ...meta,
+      path: `/website/public${meta.path}`,
+    },
+  };
+}
+
+function getRangeByPreset(range: string, timezone: string) {
+  const now = dayjs().tz(timezone);
+  if (range === 'realtime') {
+    const end = now.endOf('minute').valueOf();
+    const start = now.subtract(1, 'hour').startOf('minute').valueOf();
+    return buildRange(start, end, 'minute');
+  }
+  if (range === '24h') {
+    const end = now.endOf('hour').valueOf();
+    const start = now.subtract(24, 'hour').startOf('hour').valueOf();
+    return buildRange(start, end, 'hour');
+  }
+  if (range === '7d') {
+    const end = now.endOf('day').valueOf();
+    const start = now.subtract(7, 'day').startOf('day').valueOf();
+    return buildRange(start, end, 'day');
+  }
+  if (range === '30d') {
+    const end = now.endOf('day').valueOf();
+    const start = now.subtract(30, 'day').startOf('day').valueOf();
+    return buildRange(start, end, 'day');
+  }
+
+  const end = now.endOf('day').valueOf();
+  const start = now.subtract(90, 'day').startOf('day').valueOf();
+  return buildRange(start, end, 'day');
+}
+
+function buildRange(startAt: number, endAt: number, unit: string) {
+  const diff = endAt - startAt;
+  return {
+    currentRange: {
+      startAt,
+      endAt,
+      unit,
+    },
+    previousRange: {
+      startAt: startAt - diff,
+      endAt: endAt - diff,
+      unit,
+    },
+  };
+}
+
+function buildWebsitePublicUrl(origin: string, shareId: string) {
+  return `${origin}/website/public/${shareId}`;
 }

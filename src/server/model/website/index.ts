@@ -504,7 +504,7 @@ export async function getWorkspaceWebsitePageview(
     }
   );
 
-  return prisma.$queryRaw`
+  return prisma.$queryRaw<{ x: string; y: number }[]>`
     select
       ${getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} x,
       count(1) y

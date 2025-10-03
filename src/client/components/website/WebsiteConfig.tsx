@@ -1,5 +1,5 @@
 import { Form, Input, message } from 'antd';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useRequest } from '../../hooks/useRequest';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { ErrorTip } from '../ErrorTip';
@@ -19,6 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { AlertConfirm } from '../AlertConfirm';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
+import { toast } from 'sonner';
+import copy from 'copy-to-clipboard';
+import { LuShare2, LuTrash } from 'react-icons/lu';
 
 export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
   (props) => {
@@ -38,6 +41,12 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
       onError: defaultErrorHandler,
     });
     const deleteMutation = trpc.website.delete.useMutation({
+      onError: defaultErrorHandler,
+    });
+    const enableShareMutation = trpc.website.createOrEnableShare.useMutation({
+      onError: defaultErrorHandler,
+    });
+    const disableShareMutation = trpc.website.disableShare.useMutation({
       onError: defaultErrorHandler,
     });
 
@@ -77,6 +86,40 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
         to: '/website',
       });
     });
+
+    const handleEnableShare = useEvent(async () => {
+      const res = await enableShareMutation.mutateAsync({
+        workspaceId,
+        websiteId,
+      });
+
+      copy(res.shareUrl);
+      toast.success(t('Public share link copied to clipboard'));
+
+      await trpcUtils.website.info.refetch({ workspaceId, websiteId });
+    });
+
+    const handleDisableShare = useEvent(async () => {
+      await disableShareMutation.mutateAsync({ workspaceId, websiteId });
+
+      toast.success(t('Disable Public Share'));
+      await trpcUtils.website.info.refetch({ workspaceId, websiteId });
+    });
+
+    const shareUrl = useMemo(() => {
+      if (!website?.shareId) {
+        return '';
+      }
+
+      const origin =
+        typeof window !== 'undefined' ? window.location.origin : '';
+
+      if (origin) {
+        return `${origin}/website/public/${website.shareId}`;
+      }
+
+      return `/website/public/${website.shareId}`;
+    }, [website?.shareId]);
 
     if (!workspaceId) {
       return <NoWorkspaceTip />;
@@ -154,6 +197,65 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
             <TabsContent value="data">
               <Card>
                 <CardHeader className="text-lg font-bold">
+                  {t('Public Share')}
+                </CardHeader>
+                <CardContent>
+                  {website.shareId ? (
+                    <div className="space-y-4">
+                      <div className="break-all font-mono text-sm">
+                        {shareUrl}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          Icon={LuShare2}
+                          onClick={() => {
+                            const origin =
+                              typeof window !== 'undefined'
+                                ? window.location.origin
+                                : '';
+                            const valueToCopy =
+                              shareUrl.startsWith('http') || !origin
+                                ? shareUrl
+                                : `${origin}${shareUrl}`;
+
+                            copy(valueToCopy);
+                            toast.success(
+                              t('Public share link copied to clipboard')
+                            );
+                          }}
+                          aria-label={t(
+                            'Public share link copied to clipboard'
+                          )}
+                        >
+                          {t('Copy Link')}
+                        </Button>
+
+                        <Button
+                          variant="destructive"
+                          loading={disableShareMutation.isPending}
+                          onClick={handleDisableShare}
+                        >
+                          {t('Disable Public Share')}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      Icon={LuShare2}
+                      loading={enableShareMutation.isPending}
+                      onClick={handleEnableShare}
+                    >
+                      {t('Enable Public Share')}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="mt-4">
+                <CardHeader className="text-lg font-bold">
                   {t('Danger Zone')}
                 </CardHeader>
                 <CardContent>
@@ -162,7 +264,7 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
                       title={t('Delete Website') + ' ' + website.name}
                       onConfirm={() => handleDeleteWebsite()}
                     >
-                      <Button variant="destructive">
+                      <Button variant="destructive" Icon={LuTrash}>
                         {t('Delete Website')}
                       </Button>
                     </AlertConfirm>

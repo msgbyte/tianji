@@ -72,6 +72,7 @@ import { Route as ApplicationApplicationIdIndexImport } from './routes/applicati
 import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
 import { Route as WorkerWorkerIdEditImport } from './routes/worker/$workerId/edit'
 import { Route as WebsiteVisitorMapWebsiteIdImport } from './routes/website_/visitor-map/$websiteId'
+import { Route as WebsitePublicShareIdImport } from './routes/website_/public/$shareId'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as SettingsBillingHistoryImport } from './routes/settings/billing/history'
@@ -395,6 +396,11 @@ const WebsiteVisitorMapWebsiteIdRoute = WebsiteVisitorMapWebsiteIdImport.update(
   } as any,
 )
 
+const WebsitePublicShareIdRoute = WebsitePublicShareIdImport.update({
+  path: '/website/public/$shareId',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
   path: '/$websiteId/config',
   getParentRoute: () => WebsiteRoute,
@@ -699,6 +705,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WebsiteWebsiteIdConfigImport
       parentRoute: typeof WebsiteImport
     }
+    '/website/public/$shareId': {
+      preLoaderRoute: typeof WebsitePublicShareIdImport
+      parentRoute: typeof rootRoute
+    }
     '/website/visitor-map/$websiteId': {
       preLoaderRoute: typeof WebsiteVisitorMapWebsiteIdImport
       parentRoute: typeof rootRoute
@@ -835,6 +845,7 @@ export const routeTree = rootRoute.addChildren([
   InsightsIndexRoute,
   FeedPublicShareIdRoute,
   InvitationAcceptTokenRoute,
+  WebsitePublicShareIdRoute,
   WebsiteVisitorMapWebsiteIdRoute,
   InsightsWarehouseIndexRoute,
   InsightsWarehouseConnectionsCreateRoute,

@@ -24,8 +24,12 @@ export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 const url = '/trpc';
 
 function headers() {
+  const timezone = getUserTimezone();
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
   return {
-    timezone: getUserTimezone(),
+    timezone,
+    origin,
   };
 }
 
