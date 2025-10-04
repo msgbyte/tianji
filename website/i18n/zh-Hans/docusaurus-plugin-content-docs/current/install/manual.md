@@ -13,7 +13,7 @@ _i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
 你需要：
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 9.x（9.7.1 更好）
+- [pnpm](https://pnpm.io/) 10.x（10.17.1 更好）
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - 用于在后台运行 Tianji

@@ -11,7 +11,7 @@ RUN cd reporter && CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-
 # The current Chromium version in Alpine 3.20 is causing timeout issues with Puppeteer. Downgrading to Alpine 3.19 fixes the issue. See #11640, #12637, #12189
 FROM node:22.14.0-alpine3.20 AS base
 
-RUN npm install -g pnpm@9.7.1
+RUN npm install -g pnpm@10.17.1
 
 # For apprise
 RUN apk add --update --no-cache python3 py3-pip g++ make
