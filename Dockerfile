@@ -17,7 +17,7 @@ RUN npm install -g pnpm@9.7.1
 RUN apk add --update --no-cache python3 py3-pip g++ make
 
 # For puppeteer
-RUN apk upgrade --no-cache --available \
+RUN apk upgrade --no-cache --available glib \
     && apk add --no-cache \
       chromium-swiftshader \
       ttf-freefont \
