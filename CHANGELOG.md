@@ -1,5 +1,13 @@
 
 
+## [1.27.5](https://github.com/msgbyte/tianji/compare/v1.27.4...v1.27.5) (2025-10-04)
+
+### Others
+
+* add glib which can resolve docker scout issue ([687bb7c](https://github.com/msgbyte/tianji/commit/687bb7c9348e0173b849d237d2e9875f1fee3b6d))
+* upgrade report docker lib version ([e21a436](https://github.com/msgbyte/tianji/commit/e21a43680eedb3d7c61fbb294870e1b58a359189))
+* upgrade zeromq version ([df62b53](https://github.com/msgbyte/tianji/commit/df62b533476f5ec3a36116ee6e621791c7939048))
+
 ## [1.27.4](https://github.com/msgbyte/tianji/compare/v1.27.3...v1.27.4) (2025-10-03)
 
 ### Others
