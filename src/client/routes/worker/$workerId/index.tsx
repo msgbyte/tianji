@@ -20,8 +20,8 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { CodeEditor } from '@/components/CodeEditor';
-
 import { trpc } from '@/api/trpc';
+import { cn } from '@/utils/style';
 import { defaultErrorHandler } from '@/api/trpc';
 import {
   LuPlay,
@@ -32,7 +32,10 @@ import {
   LuRefreshCw,
   LuExternalLink,
   LuCopy,
+  LuMinimize2,
+  LuMaximize2,
 } from 'react-icons/lu';
+import { useLocalStorageState } from 'ahooks';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
@@ -82,6 +85,10 @@ function PageComponent() {
   const [activePreviewParams, setActivePreviewParams] = useState<UrlParam[]>([
     { key: '', value: '' },
   ]);
+  const [isPreviewCollapsed = false, setPreviewCollapsed] =
+    useLocalStorageState<boolean>(`worker-preview-collapsed-${workerId}`, {
+      defaultValue: false,
+    });
   const trpcUtils = trpc.useUtils();
 
   const {
@@ -187,6 +194,10 @@ function PageComponent() {
     setActivePreviewParams([...previewParams]);
     setIsLoadingPreview(true);
     setPreviewKey((prev) => prev + 1);
+  });
+
+  const handleTogglePreviewCollapse = useEvent(() => {
+    setPreviewCollapsed((prev) => !prev);
   });
 
   const handlePreviewLoad = useEvent(() => {
@@ -306,10 +317,29 @@ function PageComponent() {
           </TabsList>
 
           <TabsContent value="code" className="flex flex-1 flex-col space-y-4">
-            <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+            <div
+              className={cn('grid flex-1 grid-cols-1 gap-4', {
+                'lg:grid-cols-2': !isPreviewCollapsed,
+              })}
+            >
               <Card className="flex flex-col">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <CardTitle>{t('Worker Code')}</CardTitle>
+                  <SimpleTooltip
+                    content={
+                      isPreviewCollapsed
+                        ? t('Expand Preview')
+                        : t('Collapse Preview')
+                    }
+                  >
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      Icon={isPreviewCollapsed ? LuMinimize2 : LuMaximize2}
+                      onClick={handleTogglePreviewCollapse}
+                      className="h-8 w-8"
+                    />
+                  </SimpleTooltip>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <CodeEditor
@@ -321,89 +351,95 @@ function PageComponent() {
                 </CardContent>
               </Card>
 
-              <Card className="flex flex-col">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle>{t('Preview')}</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <SimpleTooltip content={t('Copy API URL')}>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        Icon={LuCopy}
-                        onClick={handleCopyUrl}
-                        className="h-8 w-8"
-                      />
-                    </SimpleTooltip>
-                    <SimpleTooltip content={t('Open in New Window')}>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        Icon={LuExternalLink}
-                        onClick={handleOpenInNewWindow}
-                        disabled={!worker.active}
-                        className="h-8 w-8"
-                      />
-                    </SimpleTooltip>
-                    <SimpleTooltip content={t('Execute Preview')}>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        Icon={LuPlay}
-                        onClick={handleExecutePreview}
-                        loading={isLoadingPreview}
-                        disabled={!worker.active}
-                        className="h-8 w-8"
-                      />
-                    </SimpleTooltip>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col">
-                  <UrlParamsInput
-                    params={previewParams}
-                    onChange={setPreviewParams}
-                  />
-
-                  {previewKey > 0 ? (
-                    <div className="flex h-full flex-1 flex-col space-y-4">
-                      <p className="text-muted-foreground text-sm">
-                        {t('Live preview of the worker API endpoint:')}
-                      </p>
-                      <div className="relative h-full flex-1 rounded-md border bg-white">
-                        {isLoadingPreview && (
-                          <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
-                            <div className="flex items-center space-x-2">
-                              <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
-                              <span className="text-sm">{t('Loading...')}</span>
-                            </div>
-                          </div>
-                        )}
-                        <iframe
-                          key={previewKey}
-                          src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}${getQueryString(activePreviewParams) ? `?${getQueryString(activePreviewParams)}` : ''}`}
-                          className="h-full w-full rounded-md"
-                          title="Worker Preview"
-                          sandbox="allow-same-origin allow-scripts"
-                          onLoad={handlePreviewLoad}
+              {!isPreviewCollapsed && (
+                <Card className="flex flex-col">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <CardTitle>{t('Preview')}</CardTitle>
+                    <div className="flex items-center space-x-2">
+                      <SimpleTooltip content={t('Copy API URL')}>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          Icon={LuCopy}
+                          onClick={handleCopyUrl}
+                          className="h-8 w-8"
                         />
-                      </div>
+                      </SimpleTooltip>
+                      <SimpleTooltip content={t('Open in New Window')}>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          Icon={LuExternalLink}
+                          onClick={handleOpenInNewWindow}
+                          disabled={!worker.active}
+                          className="h-8 w-8"
+                        />
+                      </SimpleTooltip>
+                      <SimpleTooltip content={t('Execute Preview')}>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          Icon={LuPlay}
+                          onClick={handleExecutePreview}
+                          loading={isLoadingPreview}
+                          disabled={!worker.active}
+                          className="h-8 w-8"
+                        />
+                      </SimpleTooltip>
                     </div>
-                  ) : (
-                    <div className="text-muted-foreground flex h-[400px] items-center justify-center">
-                      <div className="space-y-2 text-center">
-                        <LuPlay className="mx-auto h-12 w-12" />
-                        <p>
-                          {t('Click "Execute Preview" to see the live result')}
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col">
+                    <UrlParamsInput
+                      params={previewParams}
+                      onChange={setPreviewParams}
+                    />
+
+                    {previewKey > 0 ? (
+                      <div className="flex h-full flex-1 flex-col space-y-4">
+                        <p className="text-muted-foreground text-sm">
+                          {t('Live preview of the worker API endpoint:')}
                         </p>
-                        {!worker.active && (
-                          <p className="text-sm text-orange-500">
-                            {t('Worker must be active to preview')}
-                          </p>
-                        )}
+                        <div className="relative h-full flex-1 rounded-md border bg-white">
+                          {isLoadingPreview && (
+                            <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
+                              <div className="flex items-center space-x-2">
+                                <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
+                                <span className="text-sm">
+                                  {t('Loading...')}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          <iframe
+                            key={previewKey}
+                            src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}${getQueryString(activePreviewParams) ? `?${getQueryString(activePreviewParams)}` : ''}`}
+                            className="h-full w-full rounded-md"
+                            title="Worker Preview"
+                            sandbox="allow-same-origin allow-scripts"
+                            onLoad={handlePreviewLoad}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    ) : (
+                      <div className="text-muted-foreground flex h-[400px] items-center justify-center">
+                        <div className="space-y-2 text-center">
+                          <LuPlay className="mx-auto h-12 w-12" />
+                          <p>
+                            {t(
+                              'Click "Execute Preview" to see the live result'
+                            )}
+                          </p>
+                          {!worker.active && (
+                            <p className="text-sm text-orange-500">
+                              {t('Worker must be active to preview')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
