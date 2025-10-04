@@ -296,7 +296,7 @@ func GetDockerStat() ([]DockerDataPayload, error) {
 		buf.ReadFrom(containerStats.Body)
 		newStr := buf.String()
 
-		v := dockerTypes.StatsJSON{}
+		v := dockerContainer.StatsResponse{}
 		jsoniter.Unmarshal([]byte(newStr), &v)
 
 		var cpuPercent float64
@@ -444,7 +444,7 @@ func getTopMemoryProcesses(n int) []ProcessInfo {
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L175
  */
-func calculateCPUPercentUnix(v *dockerTypes.StatsJSON) float64 {
+func calculateCPUPercentUnix(v *dockerContainer.StatsResponse) float64 {
 	previousCPU := v.PreCPUStats.CPUUsage.TotalUsage
 	previousSystem := v.PreCPUStats.SystemUsage
 	cpuPercent := 0.0
@@ -462,7 +462,7 @@ func calculateCPUPercentUnix(v *dockerTypes.StatsJSON) float64 {
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L190
  */
-func calculateCPUPercentWindows(v *dockerTypes.StatsJSON) float64 {
+func calculateCPUPercentWindows(v *dockerContainer.StatsResponse) float64 {
 	// Max number of 100ns intervals between the previous time read and now
 	possIntervals := uint64(v.Read.Sub(v.PreRead).Nanoseconds()) // Start with number of ns intervals
 	possIntervals /= 100                                         // Convert to number of 100ns intervals
@@ -481,7 +481,7 @@ func calculateCPUPercentWindows(v *dockerTypes.StatsJSON) float64 {
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L206
  */
-func calculateBlockIO(blkio dockerTypes.BlkioStats) (blkRead uint64, blkWrite uint64) {
+func calculateBlockIO(blkio dockerContainer.BlkioStats) (blkRead uint64, blkWrite uint64) {
 	for _, bioEntry := range blkio.IoServiceBytesRecursive {
 		switch strings.ToLower(bioEntry.Op) {
 		case "read":
@@ -496,7 +496,7 @@ func calculateBlockIO(blkio dockerTypes.BlkioStats) (blkRead uint64, blkWrite ui
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L218
  */
-func calculateNetwork(network map[string]dockerTypes.NetworkStats) (float64, float64) {
+func calculateNetwork(network map[string]dockerContainer.NetworkStats) (float64, float64) {
 	var rx, tx float64
 
 	for _, v := range network {
