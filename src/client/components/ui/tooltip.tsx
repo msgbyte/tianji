@@ -25,16 +25,16 @@ const TooltipContent = React.forwardRef<
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
+interface SimpleTooltipProps {
+  children: React.ReactNode;
+  content: React.ReactNode;
+  tooltipProps?: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>;
+}
+
 export const SimpleTooltip = React.memo(
-  ({
-    children,
-    content,
-  }: {
-    children: React.ReactNode;
-    content: React.ReactNode;
-  }) => {
+  ({ children, content, tooltipProps }: SimpleTooltipProps) => {
     return (
-      <Tooltip>
+      <Tooltip {...tooltipProps}>
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent>{content}</TooltipContent>
       </Tooltip>

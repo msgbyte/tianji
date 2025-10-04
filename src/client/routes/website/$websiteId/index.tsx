@@ -25,6 +25,7 @@ import { LuCompass, LuSettings, LuShare2 } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
+import { SimpleTooltip } from '@/components/ui/tooltip';
 
 export const Route = createFileRoute('/website/$websiteId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -109,6 +110,31 @@ function PageComponent() {
                   }}
                   aria-label={t('Public share link copied to clipboard')}
                 />
+              )}
+
+              {website.shareId ? (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  Icon={LuShare2}
+                  onClick={() => {
+                    copy(shareLink);
+                    toast.success(t('Public share link copied to clipboard'));
+                  }}
+                  aria-label={t('Public share link copied to clipboard')}
+                />
+              ) : (
+                <SimpleTooltip
+                  content={t('Public share is disabled for this website')}
+                  tooltipProps={{ delayDuration: 0 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    Icon={LuShare2}
+                    disabled
+                  />
+                </SimpleTooltip>
               )}
 
               <WebsiteCodeBtn websiteId={website.id} />

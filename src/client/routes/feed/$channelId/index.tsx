@@ -34,6 +34,7 @@ import { toast } from 'sonner';
 import { FeedStateList } from '@/components/feed/FeedStateList';
 import copy from 'copy-to-clipboard';
 import {
+  SimpleTooltip,
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -153,21 +154,17 @@ function PageComponent() {
                       }}
                     />
                   ) : (
-                    <TooltipProvider delayDuration={0}>
-                      <Tooltip>
-                        <TooltipTrigger className="cursor-not-allowed">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            Icon={LuShare2}
-                            disabled
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          {t('Public share is disabled for this feed')}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <SimpleTooltip
+                      content={t('Public share is disabled for this feed')}
+                      tooltipProps={{ delayDuration: 0 }}
+                    >
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        Icon={LuShare2}
+                        disabled
+                      />
+                    </SimpleTooltip>
                   )}
 
                   <Button
