@@ -1,5 +1,21 @@
 
 
+## [1.27.6](https://github.com/msgbyte/tianji/compare/v1.27.5...v1.27.6) (2025-10-05)
+
+### Features
+
+* add preview collapse button in worker page ([67ae4f0](https://github.com/msgbyte/tianji/commit/67ae4f092933a73310ec49f6b224e5e9a1d7ee41))
+* add tooltip for website share feature when feed is disabled ([6f18466](https://github.com/msgbyte/tianji/commit/6f184662a2fab0bf7e0793993891ccdacb2b4551))
+
+### Document
+
+* add blog ([e103dc5](https://github.com/msgbyte/tianji/commit/e103dc596c9833d459619eab21ccb85f33cd6338))
+
+### Others
+
+* update translation ([ba11c97](https://github.com/msgbyte/tianji/commit/ba11c97c350dc0b97a29dcf01c630882404dd3f7))
+* upgrade pnpm version to 10.17.1 across the project ([0803aae](https://github.com/msgbyte/tianji/commit/0803aae4a0095021d669d067b8d65a439ea36141))
+
 ## [1.27.5](https://github.com/msgbyte/tianji/compare/v1.27.4...v1.27.5) (2025-10-04)
 
 ### Others
