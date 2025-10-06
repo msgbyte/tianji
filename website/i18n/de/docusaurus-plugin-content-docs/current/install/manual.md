@@ -1,23 +1,23 @@
 ---
 sidebar_position: 1
-_i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
+_i18n_hash: 94d2e9b28e14ee0258d96bc450acf5f6
 ---
 # Installation ohne Docker
 
 Die Verwendung von Docker zur Installation von `Tianji` ist der beste Weg, da Sie sich keine Gedanken über Umgebungsprobleme machen müssen.
 
-Wenn Ihr Server jedoch keine Dockerisierung unterstützt, können Sie versuchen, die Installation manuell durchzuführen.
+Wenn Ihr Server jedoch kein Docker unterstützt, können Sie versuchen, es manuell zu installieren.
 
-## Voraussetzungen
+## Anforderungen
 
 Sie benötigen:
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 10.x (10.17.1 besser)
+- [pnpm](https://pnpm.io/) 10.x (besser 10.17.1)
 - [Git](https://git-scm.com/downloads)
-- [postgresql](https://www.postgresql.org/)
-- [pm2](https://pm2.keymetrics.io/) - Zum Ausführen von Tianji im Hintergrund
-- [apprise](https://github.com/caronc/apprise) - optional, falls Sie es für Benachrichtigungen benötigen
+- [PostgreSQL](https://www.postgresql.org/)
+- [pm2](https://pm2.keymetrics.io/) - Um Tianji im Hintergrund auszuführen
+- [Apprise](https://github.com/caronc/apprise) - optional, falls Sie Benachrichtigungen benötigen
 
 ## Code klonen und bauen
 
@@ -31,25 +31,25 @@ pnpm build
 
 ## Umgebungsdatei vorbereiten
 
-Erstellen Sie eine `.env`-Datei in `src/server`
+Erstellen Sie eine `.env` Datei in `src/server`
 
 ```ini
 DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
-JWT_SECRET="ersetzen-durch-einen-zufälligen-string"
+JWT_SECRET="ersetzen-sie-mich-durch-einen-beliebigen-string"
 ```
 
-Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist, und denken Sie daran, die Datenbank vorher zu erstellen.
+Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist, und vergessen Sie nicht, die Datenbank vorher zu erstellen.
 
-Weitere Umgebungsvariablen finden Sie in diesem Dokument [environment](./environment.md)
+Weitere Umgebungen finden Sie in diesem Dokument [environment](./environment.md)
 
-> Falls möglich, stellen Sie sicher, dass Ihre Kodierung en_US.utf8 ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
+> Wenn Sie können, ist es besser sicherzustellen, dass Ihr Encoding en_US.utf8 ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
 
-## Server starten
+## Server ausführen
 
 ```bash
 npm install pm2 -g && pm2 install pm2-logrotate
 
-# Datenbankmigration initialisieren
+# DB-Migration initialisieren
 cd src/server
 pnpm db:migrate:apply
 
@@ -57,12 +57,12 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-Standardmäßig wird `Tianji` auf `http://localhost:12345` ausgeführt.
+Standardmäßig läuft `Tianji` auf `http://localhost:12345`.
 
-## Code auf eine neue Version aktualisieren
+## Code auf neue Version aktualisieren
 
 ```bash
-# Neue Release/Tags auschecken
+# Neuen Release/Tags auschecken
 cd tianji
 git fetch --tags
 git checkout -q <version>
@@ -73,7 +73,7 @@ pnpm install
 # Projekt bauen
 pnpm build
 
-# Datenbankmigrationen ausführen
+# DB-Migrationen durchführen
 cd src/server
 pnpm db:migrate:apply
 
@@ -85,17 +85,17 @@ pm2 restart tianji
 
 ## Installation von `isolated-vm` fehlgeschlagen
 
-Wenn Sie Python 3.12 verwenden, wird möglicherweise ein Fehler wie dieser gemeldet:
+Wenn Sie Python 3.12 verwenden, wird ein Fehler wie folgt angezeigt:
 
 ```
 ModuleNotFoundError: No module named 'distutils'
 ```
 
-Dies liegt daran, dass Python 3.12 `distutils` aus den integrierten Modulen entfernt hat. Jetzt gibt es eine gute Lösung dafür.
+Das liegt daran, dass Python 3.12 `distutils` aus dem eingebauten Modul entfernt hat. Jetzt haben wir eine gute Lösung dafür.
 
-Sie können das Problem beheben, indem Sie Ihre Python-Version von 3.12 auf 3.9 wechseln.
+Sie können Ihre Python-Version von 3.12 auf 3.9 ändern, um das Problem zu lösen.
 
-### Wie man es in mit brew verwaltetem Python behebt
+### Wie man es mit einem von Brew verwalteten Python löst
 
 ```bash
 brew install python@3.9
@@ -103,4 +103,4 @@ rm /opt/homebrew/bin/python3
 ln -sf /opt/homebrew/bin/python3 /opt/homebrew/bin/python3.9
 ```
 
-Danach können Sie die Version mit `python3 --version` überprüfen.
+Dann können Sie die Version mit `python3 --version` überprüfen.

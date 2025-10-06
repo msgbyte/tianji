@@ -1,25 +1,25 @@
 ---
 sidebar_position: 1
-_i18n_hash: 7b72ca055d015393e7ca37eb45f7a74b
+_i18n_hash: 94d2e9b28e14ee0258d96bc450acf5f6
 ---
-# 非Docker環境でのインストール
+# Dockerを使用せずにインストール
 
-Dockerを使用して`Tianji`をインストールするのが最善の方法で、環境問題を考慮する必要がありません。
+`Tianji`をインストールするにはDockerを使用するのが最適な方法ですが、環境問題を考慮する必要はありません。
 
-しかし、サーバーがDockerをサポートしていない場合は、手動でインストールすることができます。
+しかし、サーバーがDockerをサポートしていない場合は、手動でインストールを試みることができます。
 
-## 要件
+## 必要条件
 
-以下が必要です：
+以下が必要です:
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 10.x（10.17.1が望ましい）
+- [pnpm](https://pnpm.io/) 10.x（10.17.1推奨）
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - Tianjiをバックグラウンドで実行するため
-- [apprise](https://github.com/caronc/apprise) - オプション、通知が必要な場合
+- [apprise](https://github.com/caronc/apprise) - 通知が必要な場合はオプション
 
-## コードのクローンとビルド
+## コードをクローンしてビルド
 
 ```bash
 git clone https://github.com/msgbyte/tianji.git
@@ -31,29 +31,29 @@ pnpm build
 
 ## 環境ファイルの準備
 
-`src/server`に`.env`ファイルを作成します。
+`src/server`に`.env`ファイルを作成
 
 ```ini
 DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
 JWT_SECRET="replace-me-with-a-random-string"
 ```
 
-データベースのURLが正しいことを確認し、データベースを事前に作成することを忘れないでください。
+データベースのURLが正しいことを確認してください。また、データベースを事前に作成することを忘れないでください。
 
-詳細な環境設定については、このドキュメントを参照してください [environment](./environment.md)
+より詳細な環境に関しては、このドキュメントを確認してください [environment](./environment.md)
 
-> 可能であれば、エンコーディングがen_US.utf8であることを確認してください。例：`createdb -E UTF8 -l en_US.utf8 tianji`
+> 可能であれば、エンコーディングがen_US.utf8であることを確認するのが望ましいです。例えば: `createdb -E UTF8 -l en_US.utf8 tianji`
 
-## サーバーの実行
+## サーバーを実行
 
 ```bash
 npm install pm2 -g && pm2 install pm2-logrotate
 
-# データベースのマイグレーションを初期化
+# データベースの移行を初期化
 cd src/server
 pnpm db:migrate:apply
 
-# サーバーの起動
+# サーバーを起動
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
@@ -67,35 +67,35 @@ cd tianji
 git fetch --tags
 git checkout -q <version>
 
-# 依存関係の更新
+# 依存関係を更新
 pnpm install
 
-# プロジェクトのビルド
+# プロジェクトをビルド
 pnpm build
 
-# データベースのマイグレーションを実行
+# データベースの移行を実行
 cd src/server
 pnpm db:migrate:apply
 
-# サーバーの再起動
+# サーバーを再起動
 pm2 restart tianji
 ```
 
 # よくある質問
 
-## `isolated-vm`のインストールに失敗する
+## `isolated-vm`のインストールが失敗する
 
-Python 3.12を使用している場合、以下のようなエラーが発生することがあります：
+Python 3.12を使用している場合、以下のようなエラーが報告されます:
 
 ```
 ModuleNotFoundError: No module named 'distutils'
 ```
 
-これは、Python 3.12が`distutils`を組み込みモジュールから削除したためです。現在、この問題に対する良い解決策があります。
+これは、Python 3.12から`distutils`がビルトインモジュールから削除されたためです。現在、解決策があります。
 
 Pythonのバージョンを3.12から3.9に切り替えることで解決できます。
 
-### brewで管理されているPythonでの解決方法
+### brew管理のPythonでの解決方法
 
 ```bash
 brew install python@3.9

@@ -1,0 +1,38 @@
+{
+  "title": {
+    "message": "Tianji",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Tianji Logo",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Docs": {
+    "message": "Dokumen",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Pricing": {
+    "message": "Penetapan harga",
+    "description": "Navbar item with label Pricing"
+  },
+  "item.label.Changelog": {
+    "message": "Log Perubahan",
+    "description": "Navbar item with label Changelog"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Cloud": {
+    "message": "Awan",
+    "description": "Navbar item with label Cloud"
+  },
+  "item.label.Discord": {
+    "message": "Discord",
+    "description": "Navbar item with label Discord"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

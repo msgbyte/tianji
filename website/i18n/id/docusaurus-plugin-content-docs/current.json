@@ -1,0 +1,62 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Install": {
+    "message": "Memasang",
+    "description": "The label for category Install in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Kubernetes": {
+    "message": "Kubernetes",
+    "description": "The label for category Kubernetes in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Other Ways": {
+    "message": "Cara Lain",
+    "description": "The label for category Other Ways in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Website": {
+    "message": "Situs web",
+    "description": "The label for category Website in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Framework": {
+    "message": "Kerangka kerja",
+    "description": "The label for category Framework in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Events": {
+    "message": "Acara",
+    "description": "The label for category Events in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Application": {
+    "message": "Aplikasi",
+    "description": "The label for category Application in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Monitor": {
+    "message": "Monitor",
+    "description": "The label for category Monitor in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Notification": {
+    "message": "Pemberitahuan",
+    "description": "The label for category Notification in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.API": {
+    "message": "API",
+    "description": "The label for category API in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Server Status": {
+    "message": "Status Server",
+    "description": "The label for category Server Status in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Telemetry": {
+    "message": "Telemetri",
+    "description": "The label for category Telemetry in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Feed": {
+    "message": "Umpan",
+    "description": "The label for category Feed in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Develop": {
+    "message": "Mengembangkan",
+    "description": "The label for category Develop in sidebar tutorialSidebar"
+  }
+}
