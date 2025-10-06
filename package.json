@@ -72,7 +72,7 @@
     },
     "patchedDependencies": {
       "zod-prisma@0.5.4": "patches/zod-prisma@0.5.4.patch",
-      "@docusaurus/plugin-sitemap": "patches/@docusaurus__plugin-sitemap.patch"
+      "@docusaurus/plugin-sitemap@3.7.0": "patches/@docusaurus__plugin-sitemap.patch"
     }
   }
 }

@@ -23,7 +23,7 @@ overrides:
   zod: 3.25.76
 
 patchedDependencies:
-  '@docusaurus/plugin-sitemap':
+  '@docusaurus/plugin-sitemap@3.7.0':
     hash: 33d887dba6d98e6b4235b0fcbd9d185cef65df1dc54aeff3e3cfc613546b5fa8
     path: patches/@docusaurus__plugin-sitemap.patch
   zod-prisma@0.5.4:
