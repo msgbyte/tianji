@@ -1,5 +1,19 @@
 
 
+## [1.27.7](https://github.com/msgbyte/tianji/compare/v1.27.6...v1.27.7) (2025-10-08)
+
+### Features
+
+* add id language support ([d95435a](https://github.com/msgbyte/tianji/commit/d95435a4aa99d6af281eb21e6659a930968ef386))
+
+### Document
+
+* add id language support ([1003668](https://github.com/msgbyte/tianji/commit/10036687a5d7f271810eddadb6c9412d31b3c79c))
+
+### Others
+
+* update patched dependency version ([0587fb0](https://github.com/msgbyte/tianji/commit/0587fb04c1de9fc8f46b56c2beeb7d83283a1c5b))
+
 ## [1.27.6](https://github.com/msgbyte/tianji/compare/v1.27.5...v1.27.6) (2025-10-05)
 
 ### Features
