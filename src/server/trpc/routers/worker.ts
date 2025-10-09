@@ -252,7 +252,9 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const execution = await execWorker(worker.code, workerId);
+      const execution = await execWorker(worker.code, workerId, undefined, {
+        type: 'manual',
+      });
 
       await createAuditLog({
         workspaceId,
@@ -407,7 +409,9 @@ export const workerRouter = router({
         throw new Error('Function worker is not enabled');
       }
 
-      const execution = await execWorker(code);
+      const execution = await execWorker(code, undefined, undefined, {
+        type: 'test',
+      });
 
       return execution;
     }),

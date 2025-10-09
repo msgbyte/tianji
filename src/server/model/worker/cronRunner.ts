@@ -35,7 +35,9 @@ export class WorkerCronRunner {
       );
 
       // Execute the worker
-      const result = await execWorker(worker.code, worker.id);
+      const result = await execWorker(worker.code, worker.id, undefined, {
+        type: 'cron',
+      });
 
       logger.info(
         `[Worker Cron] Worker ${worker.name}(${worker.id}) executed successfully`

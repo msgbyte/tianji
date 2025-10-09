@@ -42,6 +42,18 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
+    const tsDefaults = monaco.languages.typescript.typescriptDefaults;
+    tsDefaults.setCompilerOptions({
+      ...tsDefaults.getCompilerOptions(),
+      lib: ['es2021'],
+    });
+
+    const jsDefaults = monaco.languages.typescript.javascriptDefaults;
+    jsDefaults.setCompilerOptions({
+      ...jsDefaults.getCompilerOptions(),
+      lib: ['es2021'],
+    });
+
     monaco.languages.typescript.javascriptDefaults.addExtraLib(
       sandboxGlobal,
       'global.ts'

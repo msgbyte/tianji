@@ -50,7 +50,27 @@ interface RequestReturn {
   status: number;
 }
 
+interface FetchContext {
+  type: 'http' | 'cron' | 'manual' | 'test';
+  request?: {
+    method: string;
+    url: string;
+    headers: Record<string, string>;
+  };
+}
+
+interface Console {
+  log(...data: any[]): void;
+  info(...data: any[]): void;
+  warn(...data: any[]): void;
+  error(...data: any[]): void;
+}
+
+declare const console: Console;
+
 declare function request(config: AxiosConfig): Promise<RequestReturn>;
 
 const request = async (config: AxiosConfig): Promise<RequestReturn> => {};
+
+declare function fetch(params: Record<string, any>, ctx: FetchContext): Promise<string>;
 `;

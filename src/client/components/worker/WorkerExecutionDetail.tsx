@@ -120,7 +120,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
                                   {formatDate(log[1])}
                                 </span>
                               </div>
-                              <span>
+                              <span className="overflow-x-auto">
                                 {drop(log, 2).map((item, i) => (
                                   <DataRender
                                     key={i}
@@ -137,7 +137,7 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
                               <span className="opacity-60">
                                 {formatDate(log[1])}
                               </span>
-                              <span>
+                              <span className="overflow-x-auto">
                                 {drop(log, 2).map((item, i) => (
                                   <DataRender
                                     key={i}

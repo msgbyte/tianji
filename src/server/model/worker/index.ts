@@ -9,18 +9,20 @@ import { isPlainObject } from 'lodash-es';
 export async function execWorker(
   code: string,
   workerId?: string,
-  requestPayload?: Record<string, any>
+  requestPayload?: Record<string, any>,
+  context?: Record<string, any>
 ) {
   const requestPayloadString = isPlainObject(requestPayload)
     ? JSON.stringify(requestPayload)
     : '{}';
+  const contextString = isPlainObject(context) ? JSON.stringify(context) : '{}';
 
   try {
     const { isolate, logger, result, usage } = await runCodeInIVM(`
       (async () => {
         ${code}
 
-        return typeof fetch === 'function' ? fetch(${requestPayloadString}) : 'fetch is not defined';
+        return typeof fetch === 'function' ? fetch(${requestPayloadString}, ${contextString}) : 'fetch is not defined';
       })()
     `);
 
