@@ -3,6 +3,7 @@ import { publicProcedure, router } from '../trpc.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { env } from '../../utils/env.js';
 import dayjs from 'dayjs';
+import { Cron } from 'croner';
 
 export const globalRouter = router({
   config: publicProcedure
@@ -56,6 +57,30 @@ export const globalRouter = router({
         enableAI: env.openai.enable,
         enableFunctionWorker: env.enableFunctionWorker,
         observability: env.observability,
+      };
+    }),
+  previewCron: publicProcedure
+    .input(
+      z.object({
+        cronExpression: z.string(),
+        count: z.number().default(5),
+      })
+    )
+    .output(
+      z.object({
+        nextRuns: z.string().array(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { cronExpression, count } = input;
+
+      const cron = new Cron(cronExpression, {
+        timezone: ctx.timezone,
+        paused: true,
+      });
+
+      return {
+        nextRuns: cron.nextRuns(count).map((run) => run.toISOString()),
       };
     }),
 });

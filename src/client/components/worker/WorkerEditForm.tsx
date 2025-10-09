@@ -18,10 +18,10 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
 import { FullscreenModal } from '@/components/ui/fullscreen-modal';
-import { LuMaximize2, LuPlay, LuClock } from 'react-icons/lu';
+import { LuMaximize2, LuPlay, LuClock, LuTriangleAlert } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -33,6 +33,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { fetchValidator, ValidatorFn } from '../CodeEditor/validator/fetch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Spinner } from '../ui/spinner';
+import { useCronPreview } from './useCronPreview';
 
 const formSchema = z
   .object({
@@ -78,14 +81,6 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
     const [testResult, setTestResult] = useState<any>(null);
     const [showTestResult, setShowTestResult] = useState(false);
 
-    const testCodeMutation = trpc.worker.testCode.useMutation({
-      onError: defaultErrorHandler,
-      onSuccess: (result) => {
-        setTestResult(result);
-        setShowTestResult(true);
-      },
-    });
-
     const form = useForm<WorkerEditFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -99,8 +94,39 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
       },
     });
 
+    const enableCron = form.watch('enableCron');
+    const cronExpressionValue = form.watch('cronExpression');
+
+    const {
+      previewTimes: cronPreviewTimes,
+      error: cronPreviewError,
+      isLoading: isCronPreviewLoading,
+      validate: validateCronPreview,
+    } = useCronPreview({
+      cronExpression: cronExpressionValue,
+      enabled: enableCron,
+      onInvalidExpression: () => {
+        form.setError('cronExpression', {
+          type: 'manual',
+          message: t('Please input cron expression'),
+        });
+      },
+    });
+
+    const testCodeMutation = trpc.worker.testCode.useMutation({
+      onError: defaultErrorHandler,
+      onSuccess: (result) => {
+        setTestResult(result);
+        setShowTestResult(true);
+      },
+    });
+
     const [handleSubmit, isLoading] = useEventWithLoading(
       async (values: WorkerEditFormValues) => {
+        if (enableCron) {
+          await validateCronPreview();
+        }
+
         await props.onSubmit(values);
       }
     );
@@ -223,7 +249,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                   )}
                 />
 
-                {form.watch('enableCron') && (
+                {enableCron && (
                   <FormField
                     control={form.control}
                     name="cronExpression"
@@ -284,6 +310,55 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                             </div>
                           </div>
                         </FormDescription>
+
+                        <div className="flex items-center justify-between pt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={validateCronPreview}
+                            disabled={isCronPreviewLoading}
+                          >
+                            {t('Validate and Preview')}
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {isCronPreviewLoading && <Spinner />}
+
+                          {cronPreviewError && (
+                            <Alert
+                              variant="destructive"
+                              className="flex items-start gap-2"
+                            >
+                              <LuTriangleAlert className="mt-1 h-4 w-4" />
+                              <AlertDescription>
+                                {cronPreviewError}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+
+                          {!cronPreviewError && cronPreviewTimes.length > 0 && (
+                            <Alert className="flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <LuClock className="h-4 w-4" />
+                                <span className="font-medium">
+                                  {t('Upcoming scheduled run times')}
+                                </span>
+                              </div>
+                              <AlertDescription>
+                                <ul className="space-y-1 text-sm">
+                                  {cronPreviewTimes.map((time) => (
+                                    <li key={time} className="font-mono">
+                                      {time}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </div>
+
                         <FormMessage />
                       </FormItem>
                     )}
