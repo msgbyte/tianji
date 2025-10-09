@@ -39,6 +39,7 @@ import { useLocalStorageState } from 'ahooks';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
+import { MarkdownViewer } from '@/components/MarkdownEditor';
 import {
   Dialog,
   DialogContent,
@@ -259,7 +260,6 @@ function PageComponent() {
               )}
             </div>
           }
-          desc={worker.description || undefined}
           actions={
             <div className="flex items-center space-x-2">
               {hasAdminPermission && (
@@ -317,6 +317,20 @@ function PageComponent() {
           </TabsList>
 
           <TabsContent value="code" className="flex flex-1 flex-col space-y-4">
+            {worker.description && (
+              <Card>
+                <CardHeader className="space-y-1">
+                  <CardTitle>{t('Description')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MarkdownViewer
+                    className="overflow-auto"
+                    value={worker.description}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             <div
               className={cn('grid flex-1 grid-cols-1 gap-4', {
                 'lg:grid-cols-2': !isPreviewCollapsed,
