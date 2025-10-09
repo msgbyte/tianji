@@ -13,7 +13,7 @@ _i18n_hash: 94d2e9b28e14ee0258d96bc450acf5f6
 以下が必要です:
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 10.x（10.17.1推奨）
+- [pnpm](https://pnpm.io/) 9.x（9.7.1が望ましい）
 - [Git](https://git-scm.com/downloads)
 - [postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - Tianjiをバックグラウンドで実行するため

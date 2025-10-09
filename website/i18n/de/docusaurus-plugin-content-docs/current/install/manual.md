@@ -13,7 +13,7 @@ Wenn Ihr Server jedoch kein Docker unterstützt, können Sie versuchen, es manue
 Sie benötigen:
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 10.x (besser 10.17.1)
+- [pnpm](https://pnpm.io/) 9.x (9.7.1 besser)
 - [Git](https://git-scm.com/downloads)
 - [PostgreSQL](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - Um Tianji im Hintergrund auszuführen

@@ -1,7 +1,7 @@
 # Contributor Guide
 
 ## Development Tips
-- Install Node.js 22.14.0+ and pnpm 10.17.1.
+- Install Node.js 22.14.0+ and pnpm 9.7.1.
 - Run `pnpm install` in the repo root to bootstrap all workspace packages.
 - Use `pnpm dev` to start the server and client concurrently for local development.
 - Run `pnpm build` to generate production assets.
