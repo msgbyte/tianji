@@ -1,5 +1,15 @@
 
 
+## [1.27.8](https://github.com/msgbyte/tianji/compare/v1.27.7...v1.27.8) (2025-10-09)
+
+### Features
+
+* add worker runtime context ([7527fdc](https://github.com/msgbyte/tianji/commit/7527fdcfec4ee330d9bd858f62216493d7c4c2df))
+
+### Others
+
+* upgrade isolated-vm version ([eb542b5](https://github.com/msgbyte/tianji/commit/eb542b538eba1900bdb40c892b02a82dee577fa4))
+
 ## [1.27.7](https://github.com/msgbyte/tianji/compare/v1.27.6...v1.27.7) (2025-10-08)
 
 ### Features
