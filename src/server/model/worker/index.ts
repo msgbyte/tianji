@@ -2,6 +2,7 @@ import { FunctionWorkerExecutionStatus } from '@prisma/client';
 import { runCodeInIVM } from '../../utils/vm/index.js';
 import { prisma } from '../_client.js';
 import { isPlainObject } from 'lodash-es';
+import { logger } from '../../utils/logger.js';
 
 /**
  * execute a worker code in isolated-vm
@@ -52,6 +53,7 @@ export async function execWorker(
 
     return payload;
   } catch (e) {
+    logger.error('execWorker error:', e);
     const payload = {
       workerId: workerId || '',
       status: FunctionWorkerExecutionStatus.Failed,

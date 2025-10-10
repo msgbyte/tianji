@@ -835,8 +835,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       isolated-vm:
-        specifier: 6.0.1
-        version: 6.0.1
+        specifier: 5.0.4
+        version: 5.0.4
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -11492,9 +11492,9 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
 
-  isolated-vm@6.0.1:
-    resolution: {integrity: sha512-rcnfMOYIbRdChFnQbMYsSx/cSfmLJRiw+MlPyz6WdwhaPDB/mfib0pSK+D2COW+KNZKGOGeW6a+qVksL6+X/Bg==}
-    engines: {node: '>=22.0.0'}
+  isolated-vm@5.0.4:
+    resolution: {integrity: sha512-RYUf/JC4ldWz/oi2BVs8a1XIprQ71q6eQPBwySaF5Apu0KMyf2gIpElbCyPh2OEmRT+FYw1GOKSdkv7jw2KLxw==}
+    engines: {node: '>=18.0.0'}
 
   isstream@0.1.2:
     resolution: {integrity: sha512-Yljz7ffyPbrLpLngrMtZ7NduUgVvi6wG9RJ9IUcyCd59YQ911PBJphODUcbOVbqYfxe1wuYf/LJ8PauMRwsM/g==}
@@ -31428,7 +31428,7 @@ snapshots:
 
   isobject@3.0.1: {}
 
-  isolated-vm@6.0.1:
+  isolated-vm@5.0.4:
     dependencies:
       prebuild-install: 7.1.3
 
