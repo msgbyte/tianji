@@ -213,6 +213,20 @@ function HomepageFooter() {
         />
       </div>
 
+      <div className="mt-4 opacity-80">
+        <a
+          href="https://turbo0.com/item/tianji"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://img.turbo0.com/badge-listed-dark.svg"
+            alt="Listed on Turbo0"
+            style={{ height: 54, width: 'auto' }}
+          />
+        </a>
+      </div>
+
       <div className="mb-8 mt-12 text-4xl font-bold">
         And connect with Tianji's real user from all over the world
       </div>
