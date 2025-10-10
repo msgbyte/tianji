@@ -1,5 +1,24 @@
 
 
+## [1.27.9](https://github.com/msgbyte/tianji/compare/v1.27.8...v1.27.9) (2025-10-10)
+
+### Features
+
+* add cron preview feature to WorkerEditForm ([76f18ff](https://github.com/msgbyte/tianji/commit/76f18ffe277711363d718fc7c0efb6b9a427e8d5))
+* improve description display for function worker ([d7d4776](https://github.com/msgbyte/tianji/commit/d7d477685287d5d707bc1ab1a21076da129237d6))
+
+### Bug Fixes
+
+* fix worker runner issue problem ([c10917c](https://github.com/msgbyte/tianji/commit/c10917c66910e180f9939a03e315648d58f60cba))
+
+### Document
+
+* add badge on turbo0 ([9719ea9](https://github.com/msgbyte/tianji/commit/9719ea938cb9955d2bebfe4dce798da79afd8dac))
+
+### Others
+
+* change endpoint place ([af168af](https://github.com/msgbyte/tianji/commit/af168af7bc3d2a785fc5ad40381fb7474afcb4a6))
+
 ## [1.27.8](https://github.com/msgbyte/tianji/compare/v1.27.7...v1.27.8) (2025-10-09)
 
 ### Features
