@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { trpc } from '@/api/trpc';
 import { useEvent } from '@/hooks/useEvent';
+import { useCurrentWorkspaceId } from '@/store/user';
 
 interface UseCronPreviewOptions {
   cronExpression?: string;
@@ -25,8 +26,9 @@ export function useCronPreview({
 }: UseCronPreviewOptions): UseCronPreviewResult {
   const [previewTimes, setPreviewTimes] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const workspaceId = useCurrentWorkspaceId();
 
-  const cronPreviewMutation = trpc.global.previewCron.useMutation({
+  const cronPreviewMutation = trpc.workspace.previewCron.useMutation({
     onSuccess: (data) => {
       const runs = (data.nextRuns ?? []).map((run) =>
         dayjs(run).format('YYYY-MM-DD HH:mm:ss (z)')
@@ -70,6 +72,7 @@ export function useCronPreview({
     }
 
     await cronPreviewMutation.mutateAsync({
+      workspaceId,
       cronExpression: expression,
       count,
     });

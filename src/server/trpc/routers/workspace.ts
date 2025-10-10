@@ -38,6 +38,7 @@ import {
   sendInvitationEmail,
 } from '../../model/invitation.js';
 import { workspaceConfigRouter } from './workspaceConfig.js';
+import Cron from 'croner';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -599,6 +600,40 @@ export const workspaceRouter = router({
         },
       });
     }),
+  previewCron: workspaceProcedure
+    .input(
+      z.object({
+        cronExpression: z.string(),
+        count: z.number().default(5),
+      })
+    )
+    .output(
+      z.object({
+        nextRuns: z.string().array(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { workspaceId, cronExpression, count } = input;
+
+      const workspace = await prisma.workspace.findUniqueOrThrow({
+        where: {
+          id: workspaceId,
+        },
+      });
+
+      const timezone =
+        get(workspace, ['settings', 'timezone']) || ctx.timezone || 'utc';
+
+      const cron = new Cron(cronExpression, {
+        timezone,
+        paused: true,
+      });
+
+      return {
+        nextRuns: cron.nextRuns(count).map((run) => run.toISOString()),
+      };
+    }),
+
   config: workspaceConfigRouter,
 });
 
