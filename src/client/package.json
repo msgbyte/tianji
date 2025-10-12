@@ -63,6 +63,7 @@
     "@trpc/react-query": "11.0.0-rc.648",
     "ahooks": "^3.8.4",
     "ai": "^5.0.15",
+    "allotment": "^1.20.4",
     "antd": "^5.24.3",
     "array-move": "^3.0.1",
     "axios": "1.7.7",

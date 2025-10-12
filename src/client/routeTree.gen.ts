@@ -70,6 +70,7 @@ import { Route as InsightsWarehouseIndexImport } from './routes/insights/warehou
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
 import { Route as ApplicationApplicationIdIndexImport } from './routes/application/$applicationId/index'
 import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
+import { Route as WorkerWorkerIdEditorImport } from './routes/worker_/$workerId/editor'
 import { Route as WorkerWorkerIdEditImport } from './routes/worker/$workerId/edit'
 import { Route as WebsiteVisitorMapWebsiteIdImport } from './routes/website_/visitor-map/$websiteId'
 import { Route as WebsitePublicShareIdImport } from './routes/website_/public/$shareId'
@@ -382,6 +383,11 @@ const ApplicationApplicationIdIndexRoute =
 const AiGatewayGatewayIdIndexRoute = AiGatewayGatewayIdIndexImport.update({
   path: '/$gatewayId/',
   getParentRoute: () => AiGatewayRoute,
+} as any)
+
+const WorkerWorkerIdEditorRoute = WorkerWorkerIdEditorImport.update({
+  path: '/worker/$workerId/editor',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const WorkerWorkerIdEditRoute = WorkerWorkerIdEditImport.update({
@@ -717,6 +723,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkerWorkerIdEditImport
       parentRoute: typeof WorkerImport
     }
+    '/worker/$workerId/editor': {
+      preLoaderRoute: typeof WorkerWorkerIdEditorImport
+      parentRoute: typeof rootRoute
+    }
     '/aiGateway/$gatewayId/': {
       preLoaderRoute: typeof AiGatewayGatewayIdIndexImport
       parentRoute: typeof AiGatewayImport
@@ -847,6 +857,7 @@ export const routeTree = rootRoute.addChildren([
   InvitationAcceptTokenRoute,
   WebsitePublicShareIdRoute,
   WebsiteVisitorMapWebsiteIdRoute,
+  WorkerWorkerIdEditorRoute,
   InsightsWarehouseIndexRoute,
   InsightsWarehouseConnectionsCreateRoute,
   InsightsWarehouseConnectionsIndexRoute,

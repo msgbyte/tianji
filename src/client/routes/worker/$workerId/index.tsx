@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
@@ -11,14 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SimpleTooltip } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
+import { PaginationControls } from '@/components/PaginationControls';
 import { CodeEditor } from '@/components/CodeEditor';
 import { trpc } from '@/api/trpc';
 import { cn } from '@/utils/style';
@@ -28,10 +21,7 @@ import {
   LuPencil,
   LuTrash,
   LuActivity,
-  LuGlobe,
   LuRefreshCw,
-  LuExternalLink,
-  LuCopy,
   LuMinimize2,
   LuMaximize2,
 } from 'react-icons/lu';
@@ -54,12 +44,7 @@ import {
 } from '@/components/ui/sheet';
 import { WorkerExecutionsTable } from '@/components/worker/WorkerExecutionsTable';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
-import {
-  UrlParamsInput,
-  getQueryString,
-  type UrlParam,
-} from '@/components/worker/UrlParamsInput';
-import { toast } from 'sonner';
+import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
 import { WorkerRevisionsSection } from '@/components/worker/WorkerRevisionsSection';
 
 export const Route = createFileRoute('/worker/$workerId/')({
@@ -78,14 +63,6 @@ function PageComponent() {
   const [selectedExecutionIndex, setSelectedExecutionIndex] = useState(-1);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
-  const [previewKey, setPreviewKey] = useState(0);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [previewParams, setPreviewParams] = useState<UrlParam[]>([
-    { key: '', value: '' },
-  ]);
-  const [activePreviewParams, setActivePreviewParams] = useState<UrlParam[]>([
-    { key: '', value: '' },
-  ]);
   const [isPreviewCollapsed = false, setPreviewCollapsed] =
     useLocalStorageState<boolean>(`worker-preview-collapsed-${workerId}`, {
       defaultValue: false,
@@ -191,44 +168,8 @@ function PageComponent() {
     setSelectedExecutionIndex(index);
   });
 
-  const handleExecutePreview = useEvent(() => {
-    setActivePreviewParams([...previewParams]);
-    setIsLoadingPreview(true);
-    setPreviewKey((prev) => prev + 1);
-  });
-
   const handleTogglePreviewCollapse = useEvent(() => {
     setPreviewCollapsed((prev) => !prev);
-  });
-
-  const handlePreviewLoad = useEvent(() => {
-    setIsLoadingPreview(false);
-  });
-
-  const handleOpenInNewWindow = useEvent(() => {
-    const baseUrl = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
-    const queryString = getQueryString(previewParams);
-    const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  });
-
-  const handleCopyUrl = useEvent(async () => {
-    const baseUrl = `${window.location.origin}/api/worker/${workspaceId}/${workerId}`;
-    const queryString = getQueryString(previewParams);
-    const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t('API endpoint URL copied to clipboard'));
-    } catch (error) {
-      // Fallback for browsers that don't support clipboard API
-      const textArea = document.createElement('textarea');
-      textArea.value = url;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      toast.success(t('API endpoint URL copied to clipboard'));
-    }
   });
 
   if (isLoading) {
@@ -366,93 +307,13 @@ function PageComponent() {
               </Card>
 
               {!isPreviewCollapsed && (
-                <Card className="flex flex-col">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                    <CardTitle>{t('Preview')}</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <SimpleTooltip content={t('Copy API URL')}>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          Icon={LuCopy}
-                          onClick={handleCopyUrl}
-                          className="h-8 w-8"
-                        />
-                      </SimpleTooltip>
-                      <SimpleTooltip content={t('Open in New Window')}>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          Icon={LuExternalLink}
-                          onClick={handleOpenInNewWindow}
-                          disabled={!worker.active}
-                          className="h-8 w-8"
-                        />
-                      </SimpleTooltip>
-                      <SimpleTooltip content={t('Execute Preview')}>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          Icon={LuPlay}
-                          onClick={handleExecutePreview}
-                          loading={isLoadingPreview}
-                          disabled={!worker.active}
-                          className="h-8 w-8"
-                        />
-                      </SimpleTooltip>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col">
-                    <UrlParamsInput
-                      params={previewParams}
-                      onChange={setPreviewParams}
-                    />
-
-                    {previewKey > 0 ? (
-                      <div className="flex h-full flex-1 flex-col space-y-4">
-                        <p className="text-muted-foreground text-sm">
-                          {t('Live preview of the worker API endpoint:')}
-                        </p>
-                        <div className="relative h-full flex-1 rounded-md border bg-white">
-                          {isLoadingPreview && (
-                            <div className="bg-background/80 absolute inset-0 z-10 flex items-center justify-center rounded-md backdrop-blur-sm">
-                              <div className="flex items-center space-x-2">
-                                <div className="border-primary h-4 w-4 animate-spin rounded-full border-b-2" />
-                                <span className="text-sm">
-                                  {t('Loading...')}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                          <iframe
-                            key={previewKey}
-                            src={`${window.location.origin}/api/worker/${workspaceId}/${workerId}${getQueryString(activePreviewParams) ? `?${getQueryString(activePreviewParams)}` : ''}`}
-                            className="h-full w-full rounded-md"
-                            title="Worker Preview"
-                            sandbox="allow-same-origin allow-scripts"
-                            onLoad={handlePreviewLoad}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-muted-foreground flex h-[400px] items-center justify-center">
-                        <div className="space-y-2 text-center">
-                          <LuPlay className="mx-auto h-12 w-12" />
-                          <p>
-                            {t(
-                              'Click "Execute Preview" to see the live result'
-                            )}
-                          </p>
-                          {!worker.active && (
-                            <p className="text-sm text-orange-500">
-                              {t('Worker must be active to preview')}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <WorkerApiPreview
+                  workspaceId={workspaceId}
+                  workerId={workerId}
+                  isActive={worker.active}
+                  variant="card"
+                  className="flex flex-col"
+                />
               )}
             </div>
           </TabsContent>
@@ -484,73 +345,12 @@ function PageComponent() {
                 </div>
 
                 {pagination && pagination.totalPages > 1 && (
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (currentPage > 1) {
-                              setCurrentPage(currentPage - 1);
-                            }
-                          }}
-                          className={
-                            currentPage <= 1
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
-                          }
-                        />
-                      </PaginationItem>
-
-                      {Array.from(
-                        { length: pagination.totalPages },
-                        (_, i) => i + 1
-                      )
-                        .filter(
-                          (page) =>
-                            page === 1 ||
-                            page === pagination.totalPages ||
-                            Math.abs(page - currentPage) <= 1
-                        )
-                        .map((page, index, array) => (
-                          <React.Fragment key={page}>
-                            {index > 0 && array[index - 1] !== page - 1 && (
-                              <PaginationItem>
-                                <span className="px-3 py-2">...</span>
-                              </PaginationItem>
-                            )}
-                            <PaginationItem>
-                              <PaginationLink
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setCurrentPage(page);
-                                }}
-                                isActive={currentPage === page}
-                                className="cursor-pointer"
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          </React.Fragment>
-                        ))}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (currentPage < pagination.totalPages) {
-                              setCurrentPage(currentPage + 1);
-                            }
-                          }}
-                          className={
-                            currentPage >= pagination.totalPages
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                  <PaginationControls
+                    page={currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={setCurrentPage}
+                    disabled={isLoadingExecutions}
+                  />
                 )}
               </CardContent>
             </Card>

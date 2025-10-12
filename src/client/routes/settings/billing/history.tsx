@@ -27,13 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
+import { PaginationControls } from '@/components/PaginationControls';
 
 export const Route = createFileRoute('/settings/billing/history')({
   beforeLoad: routeAuthBeforeLoad,
@@ -163,7 +157,7 @@ function PageComponent() {
           )}
 
           {total > 0 && (
-            <Pagination className="justify-between">
+            <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
               <div className="text-muted-foreground text-sm">
                 {t('Page {{page}} of {{total}} • Total {{count}} records', {
                   page,
@@ -171,43 +165,13 @@ function PageComponent() {
                   count: total,
                 })}
               </div>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      if (!hasPrevPage || isFetching) {
-                        return;
-                      }
-                      setPage((prev) => Math.max(prev - 1, 1));
-                    }}
-                    className={cn(
-                      !hasPrevPage || isFetching
-                        ? 'pointer-events-none opacity-50'
-                        : ''
-                    )}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      if (!hasNextPage || isFetching) {
-                        return;
-                      }
-                      setPage((prev) => prev + 1);
-                    }}
-                    className={cn(
-                      !hasNextPage || isFetching
-                        ? 'pointer-events-none opacity-50'
-                        : ''
-                    )}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+              <PaginationControls
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                disabled={isFetching}
+              />
+            </div>
           )}
         </div>
       </ScrollArea>
