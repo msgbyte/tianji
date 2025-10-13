@@ -3,7 +3,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { CommonHeader } from '@/components/CommonHeader';
-import { Layout } from '@/components/layout';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -171,182 +170,178 @@ function PageComponent() {
   }, [hasAdminPermission, loadingWideApps, wideTableAppIds.length]);
 
   return (
-    <Layout>
-      <CommonWrapper
-        header={
-          <CommonHeader
-            title={t('Cohorts')}
-            actions={headerActions}
-            tip={
-              <div className="flex items-center gap-2">
-                <LuInfo />
-                <span>
-                  {t(
-                    'Only warehouse application with type "wideTable" supports cohorts.'
-                  )}
-                </span>
-              </div>
-            }
-          />
-        }
-      >
-        <ScrollArea className="h-full overflow-hidden p-4">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="text-muted-foreground min-w-36 text-sm">
-              {t('Application')}
+    <CommonWrapper
+      header={
+        <CommonHeader
+          title={t('Cohorts')}
+          actions={headerActions}
+          tip={
+            <div className="flex items-center gap-2">
+              <LuInfo />
+              <span>
+                {t(
+                  'Only warehouse application with type "wideTable" supports cohorts.'
+                )}
+              </span>
             </div>
-            <Select
-              value={selectedAppId}
-              onValueChange={(v) => setSelectedAppId(v)}
-              disabled={loadingApps}
-            >
-              <SelectTrigger className="w-[320px]">
-                <SelectValue placeholder={t('Select application')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>{t('Warehouse Applications')}</SelectLabel>
-                  {warehouseApplicationIds.map((id) => (
-                    <SelectItem key={id} value={id}>
-                      {id}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+          }
+        />
+      }
+    >
+      <ScrollArea className="h-full overflow-hidden p-4">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="text-muted-foreground min-w-36 text-sm">
+            {t('Application')}
           </div>
+          <Select
+            value={selectedAppId}
+            onValueChange={(v) => setSelectedAppId(v)}
+            disabled={loadingApps}
+          >
+            <SelectTrigger className="w-[320px]">
+              <SelectValue placeholder={t('Select application')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>{t('Warehouse Applications')}</SelectLabel>
+                {warehouseApplicationIds.map((id) => (
+                  <SelectItem key={id} value={id}>
+                    {id}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <List
-            bordered
-            loading={isLoading}
-            dataSource={(cohorts as unknown as CohortItem[]) ?? []}
-            locale={{ emptyText: t('No data') as unknown as string }}
-            renderItem={(item: CohortItem) => (
-              <List.Item
-                actions={compact([
-                  hasAdminPermission && (
-                    <Button
-                      key="edit"
-                      variant="default"
-                      Icon={LuFilePen}
-                      onClick={() => handleOpenModal(item)}
-                    >
-                      {t('Edit')}
+        <List
+          bordered
+          loading={isLoading}
+          dataSource={(cohorts as unknown as CohortItem[]) ?? []}
+          locale={{ emptyText: t('No data') as unknown as string }}
+          renderItem={(item: CohortItem) => (
+            <List.Item
+              actions={compact([
+                hasAdminPermission && (
+                  <Button
+                    key="edit"
+                    variant="default"
+                    Icon={LuFilePen}
+                    onClick={() => handleOpenModal(item)}
+                  >
+                    {t('Edit')}
+                  </Button>
+                ),
+                hasAdminPermission && (
+                  <AlertConfirm
+                    key="delete"
+                    title={t('Is delete this item?')}
+                    onConfirm={() => handleDelete(item.id)}
+                  >
+                    <Button variant="destructive" size="icon">
+                      <LuTrash2 />
                     </Button>
-                  ),
-                  hasAdminPermission && (
-                    <AlertConfirm
-                      key="delete"
-                      title={t('Is delete this item?')}
-                      onConfirm={() => handleDelete(item.id)}
-                    >
-                      <Button variant="destructive" size="icon">
-                        <LuTrash2 />
-                      </Button>
-                    </AlertConfirm>
-                  ),
-                ])}
-              >
-                <List.Item.Meta
-                  title={item.name}
-                  description={
-                    <div className="text-muted-foreground text-xs">
-                      {item.warehouseApplicationId}
-                    </div>
+                  </AlertConfirm>
+                ),
+              ])}
+            >
+              <List.Item.Meta
+                title={item.name}
+                description={
+                  <div className="text-muted-foreground text-xs">
+                    {item.warehouseApplicationId}
+                  </div>
+                }
+              />
+            </List.Item>
+          )}
+        />
+
+        <Dialog
+          open={open}
+          onOpenChange={(v) => (!v ? handleCloseModal() : setOpen(v))}
+        >
+          <DialogContent className="z-40" overlayClassName="z-40">
+            <DialogHeader>
+              <DialogTitle>
+                {editingFormData?.id ? t('Edit cohort') : t('New cohort')}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t('Application')}</Label>
+                <Select
+                  value={editingFormData?.warehouseApplicationId ?? ''}
+                  onValueChange={(v) => {
+                    setEditingFormData((prev) =>
+                      prev ? { ...prev, warehouseApplicationId: v } : prev
+                    );
+                  }}
+                  disabled={Boolean(editingFormData?.id) || loadingWideApps}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('Select application')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>{t('Warehouse Applications')}</SelectLabel>
+                      {wideTableAppIds.map((id) => (
+                        <SelectItem key={id} value={id}>
+                          {id}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('Name')}</Label>
+                <Input
+                  value={editingFormData?.name ?? ''}
+                  onChange={(e) =>
+                    setEditingFormData((prev) =>
+                      prev ? { ...prev, name: e.target.value } : prev
+                    )
                   }
                 />
-              </List.Item>
-            )}
-          />
-
-          <Dialog
-            open={open}
-            onOpenChange={(v) => (!v ? handleCloseModal() : setOpen(v))}
-          >
-            <DialogContent className="z-40" overlayClassName="z-40">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingFormData?.id ? t('Edit cohort') : t('New cohort')}
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t('Application')}</Label>
-                  <Select
-                    value={editingFormData?.warehouseApplicationId ?? ''}
-                    onValueChange={(v) => {
-                      setEditingFormData((prev) =>
-                        prev ? { ...prev, warehouseApplicationId: v } : prev
-                      );
-                    }}
-                    disabled={Boolean(editingFormData?.id) || loadingWideApps}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('Select application')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>{t('Warehouse Applications')}</SelectLabel>
-                        {wideTableAppIds.map((id) => (
-                          <SelectItem key={id} value={id}>
-                            {id}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('Name')}</Label>
-                  <Input
-                    value={editingFormData?.name ?? ''}
-                    onChange={(e) =>
-                      setEditingFormData((prev) =>
-                        prev ? { ...prev, name: e.target.value } : prev
-                      )
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t('Filter')}</Label>
-                  <div className="overflow-hidden">
-                    <FilterSection
-                      direction="horizontal"
-                      insightId={editingFormData?.warehouseApplicationId ?? ''}
-                      insightType={'warehouse'}
-                      filters={filters}
-                      onSetFilter={(index, info) => {
-                        setFilters((prev) => {
-                          const next = [...prev];
-                          next[index] = info;
-                          return next;
-                        });
-                      }}
-                      onAddFilter={() => {
-                        setFilters((prev) => [...prev, null]);
-                      }}
-                      onRemoveFilter={(index) => {
-                        setFilters((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
-                      }}
-                    />
-                  </div>
-                </div>
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={handleCloseModal}>
-                  {t('Cancel')}
-                </Button>
-                <Button onClick={handleSubmit}>{t('Confirm')}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </ScrollArea>
-      </CommonWrapper>
-    </Layout>
+              <div className="space-y-2">
+                <Label>{t('Filter')}</Label>
+                <div className="overflow-hidden">
+                  <FilterSection
+                    direction="horizontal"
+                    insightId={editingFormData?.warehouseApplicationId ?? ''}
+                    insightType={'warehouse'}
+                    filters={filters}
+                    onSetFilter={(index, info) => {
+                      setFilters((prev) => {
+                        const next = [...prev];
+                        next[index] = info;
+                        return next;
+                      });
+                    }}
+                    onAddFilter={() => {
+                      setFilters((prev) => [...prev, null]);
+                    }}
+                    onRemoveFilter={(index) => {
+                      setFilters((prev) => prev.filter((_, i) => i !== index));
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCloseModal}>
+                {t('Cancel')}
+              </Button>
+              <Button onClick={handleSubmit}>{t('Confirm')}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </ScrollArea>
+    </CommonWrapper>
   );
 }

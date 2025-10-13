@@ -23,6 +23,7 @@ import { Route as PlaygroundImport } from './routes/playground'
 import { Route as PageImport } from './routes/page'
 import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
+import { Route as InsightsImport } from './routes/insights'
 import { Route as FeedImport } from './routes/feed'
 import { Route as ApplicationImport } from './routes/application'
 import { Route as AiGatewayImport } from './routes/aiGateway'
@@ -149,6 +150,11 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const InsightsRoute = InsightsImport.update({
+  path: '/insights',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const FeedRoute = FeedImport.update({
   path: '/feed',
   getParentRoute: () => rootRoute,
@@ -195,8 +201,8 @@ const MonitorIndexRoute = MonitorIndexImport.update({
 } as any)
 
 const InsightsIndexRoute = InsightsIndexImport.update({
-  path: '/insights/',
-  getParentRoute: () => rootRoute,
+  path: '/',
+  getParentRoute: () => InsightsRoute,
 } as any)
 
 const FeedIndexRoute = FeedIndexImport.update({
@@ -300,13 +306,13 @@ const MonitorAddRoute = MonitorAddImport.update({
 } as any)
 
 const InsightsEventsRoute = InsightsEventsImport.update({
-  path: '/insights/events',
-  getParentRoute: () => rootRoute,
+  path: '/events',
+  getParentRoute: () => InsightsRoute,
 } as any)
 
 const InsightsCohortsRoute = InsightsCohortsImport.update({
-  path: '/insights/cohorts',
-  getParentRoute: () => rootRoute,
+  path: '/cohorts',
+  getParentRoute: () => InsightsRoute,
 } as any)
 
 const FeedPlaygroundRoute = FeedPlaygroundImport.update({
@@ -365,8 +371,8 @@ const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
 } as any)
 
 const InsightsWarehouseIndexRoute = InsightsWarehouseIndexImport.update({
-  path: '/insights/warehouse/',
-  getParentRoute: () => rootRoute,
+  path: '/warehouse/',
+  getParentRoute: () => InsightsRoute,
 } as any)
 
 const FeedChannelIdIndexRoute = FeedChannelIdIndexImport.update({
@@ -455,20 +461,20 @@ const AiGatewayGatewayIdEditRoute = AiGatewayGatewayIdEditImport.update({
 
 const InsightsWarehouseConnectionsIndexRoute =
   InsightsWarehouseConnectionsIndexImport.update({
-    path: '/insights/warehouse/connections/',
-    getParentRoute: () => rootRoute,
+    path: '/warehouse/connections/',
+    getParentRoute: () => InsightsRoute,
   } as any)
 
 const InsightsWarehouseConnectionsCreateRoute =
   InsightsWarehouseConnectionsCreateImport.update({
-    path: '/insights/warehouse/connections/create',
-    getParentRoute: () => rootRoute,
+    path: '/warehouse/connections/create',
+    getParentRoute: () => InsightsRoute,
   } as any)
 
 const InsightsWarehouseConnectionsConnectionIdTableRoute =
   InsightsWarehouseConnectionsConnectionIdTableImport.update({
-    path: '/insights/warehouse/connections/$connectionId/table',
-    getParentRoute: () => rootRoute,
+    path: '/warehouse/connections/$connectionId/table',
+    getParentRoute: () => InsightsRoute,
   } as any)
 
 // Populate the FileRoutesByPath interface
@@ -489,6 +495,10 @@ declare module '@tanstack/react-router' {
     }
     '/feed': {
       preLoaderRoute: typeof FeedImport
+      parentRoute: typeof rootRoute
+    }
+    '/insights': {
+      preLoaderRoute: typeof InsightsImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -565,11 +575,11 @@ declare module '@tanstack/react-router' {
     }
     '/insights/cohorts': {
       preLoaderRoute: typeof InsightsCohortsImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
     '/insights/events': {
       preLoaderRoute: typeof InsightsEventsImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
     '/monitor/add': {
       preLoaderRoute: typeof MonitorAddImport
@@ -653,7 +663,7 @@ declare module '@tanstack/react-router' {
     }
     '/insights/': {
       preLoaderRoute: typeof InsightsIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
     '/monitor/': {
       preLoaderRoute: typeof MonitorIndexImport
@@ -741,7 +751,7 @@ declare module '@tanstack/react-router' {
     }
     '/insights/warehouse/': {
       preLoaderRoute: typeof InsightsWarehouseIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
     '/monitor/$monitorId/': {
       preLoaderRoute: typeof MonitorMonitorIdIndexImport
@@ -765,15 +775,15 @@ declare module '@tanstack/react-router' {
     }
     '/insights/warehouse/connections/create': {
       preLoaderRoute: typeof InsightsWarehouseConnectionsCreateImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
     '/insights/warehouse/connections/': {
       preLoaderRoute: typeof InsightsWarehouseConnectionsIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
     '/insights/warehouse/connections/$connectionId/table': {
       preLoaderRoute: typeof InsightsWarehouseConnectionsConnectionIdTableImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof InsightsImport
     }
   }
 }
@@ -801,6 +811,15 @@ export const routeTree = rootRoute.addChildren([
     FeedIndexRoute,
     FeedChannelIdEditRoute,
     FeedChannelIdIndexRoute,
+  ]),
+  InsightsRoute.addChildren([
+    InsightsCohortsRoute,
+    InsightsEventsRoute,
+    InsightsIndexRoute,
+    InsightsWarehouseIndexRoute,
+    InsightsWarehouseConnectionsCreateRoute,
+    InsightsWarehouseConnectionsIndexRoute,
+    InsightsWarehouseConnectionsConnectionIdTableRoute,
   ]),
   LoginRoute,
   MonitorRoute.addChildren([
@@ -849,19 +868,12 @@ export const routeTree = rootRoute.addChildren([
     WorkerWorkerIdIndexRoute,
   ]),
   FeedPlaygroundRoute,
-  InsightsCohortsRoute,
-  InsightsEventsRoute,
   StatusSlugRoute,
-  InsightsIndexRoute,
   FeedPublicShareIdRoute,
   InvitationAcceptTokenRoute,
   WebsitePublicShareIdRoute,
   WebsiteVisitorMapWebsiteIdRoute,
   WorkerWorkerIdEditorRoute,
-  InsightsWarehouseIndexRoute,
-  InsightsWarehouseConnectionsCreateRoute,
-  InsightsWarehouseConnectionsIndexRoute,
-  InsightsWarehouseConnectionsConnectionIdTableRoute,
 ])
 
 /* prettier-ignore-end */

@@ -3,7 +3,6 @@ import { t, useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { CommonHeader } from '@/components/CommonHeader';
-import { Layout } from '@/components/layout';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { trpc } from '@/api/trpc';
 import {
@@ -268,381 +267,373 @@ function PageComponent() {
   });
 
   return (
-    <Layout>
-      <CommonWrapper
-        header={
-          <CommonHeader
-            title={
-              <div className="flex items-center gap-2">
-                <div>{t('Warehouse')}</div>
-              </div>
-            }
-            actions={
-              <Button
-                size="sm"
-                variant="default"
-                Icon={LuDatabase}
-                onClick={handleNavigateToConnections}
-              >
-                {t('Connections')}
-              </Button>
-            }
-          />
-        }
-      >
-        <div className="h-full">
-          <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={50} minSize={35}>
-              <div className="flex h-full flex-col">
-                <div className="flex h-[44px] items-center justify-between px-3">
-                  <div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                    {t('AI Results')}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      Icon={LuTrash2}
-                      onClick={() => setChartBlocks([])}
-                    >
-                      {t('Clear All')}
-                    </Button>
-                  </div>
+    <CommonWrapper
+      header={
+        <CommonHeader
+          title={
+            <div className="flex items-center gap-2">
+              <div>{t('Warehouse')}</div>
+            </div>
+          }
+          actions={
+            <Button
+              size="sm"
+              variant="default"
+              Icon={LuDatabase}
+              onClick={handleNavigateToConnections}
+            >
+              {t('Connections')}
+            </Button>
+          }
+        />
+      }
+    >
+      <div className="h-full">
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel defaultSize={50} minSize={35}>
+            <div className="flex h-full flex-col">
+              <div className="flex h-[44px] items-center justify-between px-3">
+                <div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                  {t('AI Results')}
                 </div>
-                <div className="border-t border-zinc-200 dark:border-zinc-800" />
-                <ScrollArea className="flex-1">
-                  <div className="space-y-3 p-4">
-                    {chartBlocks.length === 0 ? (
-                      <div className="flex h-[280px] flex-col items-center justify-center rounded-md border-zinc-200 text-center text-sm text-zinc-500 dark:border-zinc-800">
-                        <div className="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                          {t('No charts yet')}
-                        </div>
-                        <div className="max-w-[520px] px-6">
-                          {t(
-                            'Use the chat on the right to generate charts or insights.'
-                          )}
-                        </div>
-
-                        {messages.length === 0 && (
-                          <div className="mt-3">
-                            <Button
-                              size="sm"
-                              Icon={LuPlus}
-                              onClick={() =>
-                                handleSendWithScopes(suggestions[0])
-                              }
-                            >
-                              {t('Try example')}
-                            </Button>
-                          </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    Icon={LuTrash2}
+                    onClick={() => setChartBlocks([])}
+                  >
+                    {t('Clear All')}
+                  </Button>
+                </div>
+              </div>
+              <div className="border-t border-zinc-200 dark:border-zinc-800" />
+              <ScrollArea className="flex-1">
+                <div className="space-y-3 p-4">
+                  {chartBlocks.length === 0 ? (
+                    <div className="flex h-[280px] flex-col items-center justify-center rounded-md border-zinc-200 text-center text-sm text-zinc-500 dark:border-zinc-800">
+                      <div className="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                        {t('No charts yet')}
+                      </div>
+                      <div className="max-w-[520px] px-6">
+                        {t(
+                          'Use the chat on the right to generate charts or insights.'
                         )}
                       </div>
-                    ) : (
-                      chartBlocks.map((block) => (
-                        <WarehouseChartBlock
-                          key={block.id}
-                          id={block.id}
-                          title={block.title}
-                          data={block.data}
-                          chartType={block.type}
-                          onDelete={(id) =>
-                            setChartBlocks((prev) =>
-                              prev.filter((b) => b.id !== id)
-                            )
-                          }
-                        />
-                      ))
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel
-              defaultSize={50}
-              minSize={25}
-              maxSize={55}
-              className="border-l border-zinc-200 dark:border-zinc-800"
-            >
-              <div className="flex h-full flex-col">
-                <div className="flex h-[44px] items-center justify-between px-3">
-                  <div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                    {t('Chat')}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => refreshId()}
-                    >
-                      {t('New chat')}
-                    </Button>
-                  </div>
-                </div>
-                <div className="border-t border-zinc-200 dark:border-zinc-800" />
-                <ScrollArea className="flex-1">
-                  <Conversation>
-                    <ConversationContent>
-                      <AIResponseMessages
-                        messages={messages}
-                        status={status}
-                        onAddToolResult={addToolResult}
-                      />
-                    </ConversationContent>
-                    <ConversationScrollButton />
-                  </Conversation>
 
-                  {error && (
-                    <div className="p-3">
-                      <Alert variant="destructive">
-                        <LuCircleAlert className="h-4 w-4" />
-                        <AlertTitle>{t('An error occurred.')}</AlertTitle>
-                        <AlertDescription>{String(error)}</AlertDescription>
-                        <div className="mt-2 flex items-center gap-2">
+                      {messages.length === 0 && (
+                        <div className="mt-3">
                           <Button
                             size="sm"
-                            variant="destructive"
-                            onClick={() => handleReset()}
+                            Icon={LuPlus}
+                            onClick={() => handleSendWithScopes(suggestions[0])}
                           >
-                            {t('Retry')}
+                            {t('Try example')}
                           </Button>
                         </div>
-                      </Alert>
+                      )}
                     </div>
-                  )}
-
-                  {usage && status === 'ready' && messages.length > 0 && (
-                    <div className="px-4 py-1 text-right text-xs text-opacity-40">
-                      {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
-                      tokens used
-                    </div>
-                  )}
-                </ScrollArea>
-
-                {!databaseStatus.isDisabled && (
-                  <Suggestions className="p-3 pb-0">
-                    {suggestions.map((suggestion) => (
-                      <Suggestion
-                        key={suggestion}
-                        onClick={handleSuggestionClick}
-                        suggestion={suggestion}
+                  ) : (
+                    chartBlocks.map((block) => (
+                      <WarehouseChartBlock
+                        key={block.id}
+                        id={block.id}
+                        title={block.title}
+                        data={block.data}
+                        chartType={block.type}
+                        onDelete={(id) =>
+                          setChartBlocks((prev) =>
+                            prev.filter((b) => b.id !== id)
+                          )
+                        }
                       />
-                    ))}
-                  </Suggestions>
-                )}
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel
+            defaultSize={50}
+            minSize={25}
+            maxSize={55}
+            className="border-l border-zinc-200 dark:border-zinc-800"
+          >
+            <div className="flex h-full flex-col">
+              <div className="flex h-[44px] items-center justify-between px-3">
+                <div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                  {t('Chat')}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => refreshId()}
+                  >
+                    {t('New chat')}
+                  </Button>
+                </div>
+              </div>
+              <div className="border-t border-zinc-200 dark:border-zinc-800" />
+              <ScrollArea className="flex-1">
+                <Conversation>
+                  <ConversationContent>
+                    <AIResponseMessages
+                      messages={messages}
+                      status={status}
+                      onAddToolResult={addToolResult}
+                    />
+                  </ConversationContent>
+                  <ConversationScrollButton />
+                </Conversation>
 
-                <div className="p-3">
-                  {databaseStatus.hasNoDatabases && (
-                    <Alert className="mb-3">
+                {error && (
+                  <div className="p-3">
+                    <Alert variant="destructive">
                       <LuCircleAlert className="h-4 w-4" />
-                      <AlertTitle>{t('No databases configured')}</AlertTitle>
-                      <AlertDescription>
-                        <div>
-                          {t('Please configure a database connection first.')}
-                        </div>
+                      <AlertTitle>{t('An error occurred.')}</AlertTitle>
+                      <AlertDescription>{String(error)}</AlertDescription>
+                      <div className="mt-2 flex items-center gap-2">
                         <Button
                           size="sm"
-                          variant="outline"
-                          className="mt-2"
-                          onClick={handleNavigateToConnections}
+                          variant="destructive"
+                          onClick={() => handleReset()}
                         >
-                          {t('Configure Database')}
+                          {t('Retry')}
                         </Button>
-                      </AlertDescription>
+                      </div>
                     </Alert>
-                  )}
+                  </div>
+                )}
 
-                  {!databaseStatus.hasNoDatabases &&
-                    databaseStatus.hasNoActiveScopes && (
-                      <Alert className="mb-3">
-                        <LuCircleAlert className="h-4 w-4" />
-                        <AlertTitle>
-                          {t('No database or table selected')}
-                        </AlertTitle>
-                        <AlertDescription>
-                          {t(
-                            'Please select a database or table to start querying.'
-                          )}
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                {usage && status === 'ready' && messages.length > 0 && (
+                  <div className="px-4 py-1 text-right text-xs text-opacity-40">
+                    {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
+                    tokens used
+                  </div>
+                )}
+              </ScrollArea>
 
-                  {databaseStatus.isMultiDatabase && (
-                    <Alert variant="destructive" className="mb-3">
+              {!databaseStatus.isDisabled && (
+                <Suggestions className="p-3 pb-0">
+                  {suggestions.map((suggestion) => (
+                    <Suggestion
+                      key={suggestion}
+                      onClick={handleSuggestionClick}
+                      suggestion={suggestion}
+                    />
+                  ))}
+                </Suggestions>
+              )}
+
+              <div className="p-3">
+                {databaseStatus.hasNoDatabases && (
+                  <Alert className="mb-3">
+                    <LuCircleAlert className="h-4 w-4" />
+                    <AlertTitle>{t('No databases configured')}</AlertTitle>
+                    <AlertDescription>
+                      <div>
+                        {t('Please configure a database connection first.')}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-2"
+                        onClick={handleNavigateToConnections}
+                      >
+                        {t('Configure Database')}
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {!databaseStatus.hasNoDatabases &&
+                  databaseStatus.hasNoActiveScopes && (
+                    <Alert className="mb-3">
                       <LuCircleAlert className="h-4 w-4" />
                       <AlertTitle>
-                        {t('Cross-database query disabled')}
+                        {t('No database or table selected')}
                       </AlertTitle>
                       <AlertDescription>
                         {t(
-                          'Cannot query across multiple databases simultaneously.'
+                          'Please select a database or table to start querying.'
                         )}
                       </AlertDescription>
                     </Alert>
                   )}
 
-                  <div className="mb-2">
-                    {selectedScopes.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {selectedScopes.map((s) => (
-                          <Badge
-                            key={`${s.type}-${s.id}`}
-                            variant="secondary"
-                            className="gap-1"
-                          >
-                            {s.type === 'database' ? t('DB') : t('Table')}:{' '}
-                            {s.name}
-                            <button
-                              type="button"
-                              className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                              onClick={() =>
-                                setSelectedScopes((prev) =>
-                                  prev.filter(
-                                    (p) => !(p.type === s.type && p.id === s.id)
-                                  )
+                {databaseStatus.isMultiDatabase && (
+                  <Alert variant="destructive" className="mb-3">
+                    <LuCircleAlert className="h-4 w-4" />
+                    <AlertTitle>
+                      {t('Cross-database query disabled')}
+                    </AlertTitle>
+                    <AlertDescription>
+                      {t(
+                        'Cannot query across multiple databases simultaneously.'
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="mb-2">
+                  {selectedScopes.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {selectedScopes.map((s) => (
+                        <Badge
+                          key={`${s.type}-${s.id}`}
+                          variant="secondary"
+                          className="gap-1"
+                        >
+                          {s.type === 'database' ? t('DB') : t('Table')}:{' '}
+                          {s.name}
+                          <button
+                            type="button"
+                            className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                            onClick={() =>
+                              setSelectedScopes((prev) =>
+                                prev.filter(
+                                  (p) => !(p.type === s.type && p.id === s.id)
                                 )
-                              }
-                              aria-label={t('Remove')}
-                            >
-                              ×
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <PromptInput onSubmit={handleSend}>
-                    <PromptInputTextarea
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      disabled={databaseStatus.isDisabled}
-                      placeholder={
-                        databaseStatus.hasNoDatabases
-                          ? t('Please configure a database first')
-                          : databaseStatus.isMultiDatabase
-                            ? t('Please select tables from a single database')
-                            : ''
-                      }
-                    />
-                    <PromptInputToolbar>
-                      <PromptInputTools>
-                        <Popover open={open} onOpenChange={setOpen}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              Icon={LuDatabase}
-                            />
-                          </PopoverTrigger>
-                          <PopoverContent
-                            className="w-[420px] p-0"
-                            align="start"
+                              )
+                            }
+                            aria-label={t('Remove')}
                           >
-                            <Command>
-                              <CommandInput placeholder="Filter status..." />
-                              <CommandList>
-                                <CommandEmpty>
-                                  {t('No connection found')}
-                                </CommandEmpty>
-                                <CommandGroup heading={t('Databases')}>
-                                  {databases?.map((db) => (
-                                    <CommandItem
-                                      key={db.id}
-                                      value={db.id}
-                                      keywords={[db.name]}
-                                      onSelect={() => {
-                                        setSelectedScopes((prev) => {
-                                          const isChecked = prev.some(
-                                            (p) =>
-                                              p.type === 'database' &&
-                                              p.id === db.id
-                                          );
-                                          if (isChecked) {
-                                            return prev.filter(
-                                              (p) =>
-                                                !(
-                                                  p.type === 'database' &&
-                                                  p.id === db.id
-                                                )
-                                            );
-                                          } else {
-                                            return [
-                                              ...prev,
-                                              {
-                                                type: 'database',
-                                                id: db.id,
-                                                name: db.name,
-                                              },
-                                            ];
-                                          }
-                                        });
-                                        setOpen(false);
-                                      }}
-                                    >
-                                      {db.name}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-
-                                <CommandGroup heading={t('Tables')}>
-                                  {tables?.map((tb) => (
-                                    <CommandItem
-                                      key={tb.id}
-                                      value={tb.id}
-                                      keywords={[tb.name]}
-                                      onSelect={() => {
-                                        setSelectedScopes((prev) => {
-                                          const isChecked = prev.some(
-                                            (p) =>
-                                              p.type === 'table' &&
-                                              p.id === tb.id
-                                          );
-
-                                          if (isChecked) {
-                                            return prev.filter(
-                                              (p) =>
-                                                !(
-                                                  p.type === 'table' &&
-                                                  p.id === tb.id
-                                                )
-                                            );
-                                          } else {
-                                            return [
-                                              ...prev,
-                                              {
-                                                type: 'table',
-                                                id: tb.id,
-                                                name: tb.name,
-                                                databaseId: tb.databaseId,
-                                              },
-                                            ];
-                                          }
-                                        });
-                                        setOpen(false);
-                                      }}
-                                    >
-                                      {tb.name}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </PromptInputTools>
-                      <PromptInputSubmit
-                        disabled={!input || databaseStatus.isDisabled}
-                        status={status}
-                      />
-                    </PromptInputToolbar>
-                  </PromptInput>
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
+
+                <PromptInput onSubmit={handleSend}>
+                  <PromptInputTextarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    disabled={databaseStatus.isDisabled}
+                    placeholder={
+                      databaseStatus.hasNoDatabases
+                        ? t('Please configure a database first')
+                        : databaseStatus.isMultiDatabase
+                          ? t('Please select tables from a single database')
+                          : ''
+                    }
+                  />
+                  <PromptInputToolbar>
+                    <PromptInputTools>
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            Icon={LuDatabase}
+                          />
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[420px] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Filter status..." />
+                            <CommandList>
+                              <CommandEmpty>
+                                {t('No connection found')}
+                              </CommandEmpty>
+                              <CommandGroup heading={t('Databases')}>
+                                {databases?.map((db) => (
+                                  <CommandItem
+                                    key={db.id}
+                                    value={db.id}
+                                    keywords={[db.name]}
+                                    onSelect={() => {
+                                      setSelectedScopes((prev) => {
+                                        const isChecked = prev.some(
+                                          (p) =>
+                                            p.type === 'database' &&
+                                            p.id === db.id
+                                        );
+                                        if (isChecked) {
+                                          return prev.filter(
+                                            (p) =>
+                                              !(
+                                                p.type === 'database' &&
+                                                p.id === db.id
+                                              )
+                                          );
+                                        } else {
+                                          return [
+                                            ...prev,
+                                            {
+                                              type: 'database',
+                                              id: db.id,
+                                              name: db.name,
+                                            },
+                                          ];
+                                        }
+                                      });
+                                      setOpen(false);
+                                    }}
+                                  >
+                                    {db.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+
+                              <CommandGroup heading={t('Tables')}>
+                                {tables?.map((tb) => (
+                                  <CommandItem
+                                    key={tb.id}
+                                    value={tb.id}
+                                    keywords={[tb.name]}
+                                    onSelect={() => {
+                                      setSelectedScopes((prev) => {
+                                        const isChecked = prev.some(
+                                          (p) =>
+                                            p.type === 'table' && p.id === tb.id
+                                        );
+
+                                        if (isChecked) {
+                                          return prev.filter(
+                                            (p) =>
+                                              !(
+                                                p.type === 'table' &&
+                                                p.id === tb.id
+                                              )
+                                          );
+                                        } else {
+                                          return [
+                                            ...prev,
+                                            {
+                                              type: 'table',
+                                              id: tb.id,
+                                              name: tb.name,
+                                              databaseId: tb.databaseId,
+                                            },
+                                          ];
+                                        }
+                                      });
+                                      setOpen(false);
+                                    }}
+                                  >
+                                    {tb.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </PromptInputTools>
+                    <PromptInputSubmit
+                      disabled={!input || databaseStatus.isDisabled}
+                      status={status}
+                    />
+                  </PromptInputToolbar>
+                </PromptInput>
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      </CommonWrapper>
-    </Layout>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    </CommonWrapper>
   );
 }

@@ -4,7 +4,6 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { CommonHeader } from '@/components/CommonHeader';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Layout } from '@/components/layout';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -61,100 +60,98 @@ function PageComponent() {
   });
 
   return (
-    <Layout>
-      <CommonWrapper
-        header={
-          <CommonHeader
-            title={
-              <div className="flex items-center gap-2">
-                <div>{t('Insights')}</div>
+    <CommonWrapper
+      header={
+        <CommonHeader
+          title={
+            <div className="flex items-center gap-2">
+              <div>{t('Insights')}</div>
 
-                <Select value={insightId} onValueChange={handleValueChange}>
-                  <SelectTrigger className="w-[240px]">
-                    <SelectValue placeholder={t('Please select target')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {websites.length > 0 && (
-                      <SelectGroup>
-                        <SelectLabel>{t('Websites')}</SelectLabel>
+              <Select value={insightId} onValueChange={handleValueChange}>
+                <SelectTrigger className="w-[240px]">
+                  <SelectValue placeholder={t('Please select target')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {websites.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>{t('Websites')}</SelectLabel>
 
-                        {websites.map((item) => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    )}
+                      {websites.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
 
-                    {surveys.length > 0 && (
-                      <SelectGroup>
-                        <SelectLabel>{t('Surveys')}</SelectLabel>
-                        {surveys.map((item) => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    )}
+                  {surveys.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>{t('Surveys')}</SelectLabel>
+                      {surveys.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
 
-                    {warehouseApplicationIds.length > 0 && (
-                      <SelectGroup>
-                        <SelectLabel>{t('Warehouse')}</SelectLabel>
-                        {warehouseApplicationIds.map((item) => (
-                          <SelectItem key={item} value={item}>
-                            {item}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            }
-          />
-        }
+                  {warehouseApplicationIds.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>{t('Warehouse')}</SelectLabel>
+                      {warehouseApplicationIds.map((item) => (
+                        <SelectItem key={item} value={item}>
+                          {item}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          }
+        />
+      }
+    >
+      <ResizablePanelGroup
+        className="flex-1 items-stretch"
+        direction="horizontal"
       >
-        <ResizablePanelGroup
-          className="flex-1 items-stretch"
-          direction="horizontal"
-        >
-          <ResizablePanel collapsedSize={1} className={cn('flex flex-col')}>
-            {insightId ? (
-              <ChartRender insightId={insightId} insightType={insightType} />
-            ) : (
-              <div className="mt-4 text-center opacity-80">
-                {t('Please select target first')}
-              </div>
-            )}
-          </ResizablePanel>
+        <ResizablePanel collapsedSize={1} className={cn('flex flex-col')}>
+          {insightId ? (
+            <ChartRender insightId={insightId} insightType={insightType} />
+          ) : (
+            <div className="mt-4 text-center opacity-80">
+              {t('Please select target first')}
+            </div>
+          )}
+        </ResizablePanel>
 
-          <ResizableHandle withHandle />
+        <ResizableHandle withHandle />
 
-          <ResizablePanel defaultSize={30}>
-            {insightId ? (
-              <ScrollArea className="h-full overflow-hidden p-4">
-                <div className="flex flex-col space-y-8">
-                  <MetricsSection />
-                  <FilterSection
-                    direction="vertical"
-                    insightId={insightId}
-                    insightType={insightType}
-                    filters={currentFilters}
-                    onSetFilter={setFilter}
-                    onAddFilter={addFilter}
-                    onRemoveFilter={removeFilter}
-                  />
-                  <BreakdownSection />
-                </div>
-              </ScrollArea>
-            ) : (
-              <div className="mt-4 text-center opacity-80">
-                {t('Please select target first')}
+        <ResizablePanel defaultSize={30}>
+          {insightId ? (
+            <ScrollArea className="h-full overflow-hidden p-4">
+              <div className="flex flex-col space-y-8">
+                <MetricsSection />
+                <FilterSection
+                  direction="vertical"
+                  insightId={insightId}
+                  insightType={insightType}
+                  filters={currentFilters}
+                  onSetFilter={setFilter}
+                  onAddFilter={addFilter}
+                  onRemoveFilter={removeFilter}
+                />
+                <BreakdownSection />
               </div>
-            )}
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </CommonWrapper>
-    </Layout>
+            </ScrollArea>
+          ) : (
+            <div className="mt-4 text-center opacity-80">
+              {t('Please select target first')}
+            </div>
+          )}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </CommonWrapper>
   );
 }

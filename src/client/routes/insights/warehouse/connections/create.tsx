@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Layout } from '@/components/layout';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { CommonHeader } from '@/components/CommonHeader';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -68,128 +67,124 @@ function PageComponent() {
   };
 
   return (
-    <Layout>
-      <CommonWrapper header={<CommonHeader title={t('Create connection')} />}>
-        <ScrollArea className="h-full overflow-hidden p-4">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="mx-auto w-full max-w-3xl space-y-4"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('Basic info')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Name')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('Please enter a name for display')}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+    <CommonWrapper header={<CommonHeader title={t('Create connection')} />}>
+      <ScrollArea className="h-full overflow-hidden p-4">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mx-auto w-full max-w-3xl space-y-4"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Basic info')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Name')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('Please enter a name for display')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel optional={true}>
-                          {t('Description')}
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            rows={4}
-                            placeholder={t(
-                              'Please enter a description which only for display'
-                            )}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel optional={true}>{t('Description')}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={4}
+                          placeholder={t(
+                            'Please enter a description which only for display'
+                          )}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('Integration type')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="dbDriver"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Radio.Group
-                            value={field.value}
-                            onChange={(e) => field.onChange(e.target.value)}
-                          >
-                            <Space direction="vertical">
-                              <Radio value={'mysql'}>MySQL</Radio>
-                            </Space>
-                          </Radio.Group>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Integration type')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="dbDriver"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Radio.Group
+                          value={field.value}
+                          onChange={(e) => field.onChange(e.target.value)}
+                        >
+                          <Space direction="vertical">
+                            <Radio value={'mysql'}>MySQL</Radio>
+                          </Space>
+                        </Radio.Group>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('Connection')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="connectionUri"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Connection')}</FormLabel>
-                        <FormControl>
-                          <ConnectionStringEditor
-                            driver={form.watch('dbDriver')}
-                            value={field.value}
-                            onChange={(v) => field.onChange(v)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Connection')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="connectionUri"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Connection')}</FormLabel>
+                      <FormControl>
+                        <ConnectionStringEditor
+                          driver={form.watch('dbDriver')}
+                          value={field.value}
+                          onChange={(v) => field.onChange(v)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
 
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate({ to: '../' })}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button type="submit" loading={form.formState.isSubmitting}>
-                  {t('Create')}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </ScrollArea>
-      </CommonWrapper>
-    </Layout>
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate({ to: '../' })}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button type="submit" loading={form.formState.isSubmitting}>
+                {t('Create')}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </ScrollArea>
+    </CommonWrapper>
   );
 }

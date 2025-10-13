@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Layout } from '@/components/layout';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { CommonHeader } from '@/components/CommonHeader';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -177,196 +176,186 @@ function PageComponent() {
   }, [hasAdminPermission]);
 
   return (
-    <Layout>
-      <CommonWrapper
-        header={
-          <CommonHeader title={t('Database Tables')} actions={headerActions} />
-        }
-      >
-        <ScrollArea className="h-full overflow-hidden p-4">
-          <div className="mb-3 flex items-center justify-between gap-2 p-1">
-            <Button
-              variant="ghost"
-              Icon={LuArrowLeft}
-              onClick={() =>
-                navigate({ to: '/insights/warehouse/connections' })
-              }
-            >
-              {t('Back')}
-            </Button>
-            <div className="flex items-center gap-2">
-              <Input
-                className="w-96"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder={t('Filter tables by name or description')}
-              />
-            </div>
-          </div>
-          {isLoading ? (
-            <div className="p-4 text-sm text-zinc-500">{t('Loading...')}</div>
-          ) : tables.length === 0 ? (
-            <div className="m-2 rounded-md border border-dashed border-zinc-200 p-8 text-center text-sm text-zinc-500 dark:border-zinc-800">
-              {t('No data')}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-              {(tables || [])
-                .filter((item) => {
-                  const k = keyword.trim().toLowerCase();
-                  if (!k) return true;
-                  return (
-                    item.name.toLowerCase().includes(k) ||
-                    (item.description || '').toLowerCase().includes(k)
-                  );
-                })
-                .map((item) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
-                      <CardTitle className="truncate text-base">
-                        {item.name}
-                      </CardTitle>
-                      {hasAdminPermission && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            Icon={LuFilePen}
-                            onClick={() => handleOpenEdit(item)}
-                          >
-                            {t('Edit')}
-                          </Button>
-                          <AlertConfirm
-                            title={t('Is delete this item?')}
-                            onConfirm={() => handleDelete(item.id)}
-                          >
-                            <Button variant="destructive" size="icon">
-                              <LuTrash2 />
-                            </Button>
-                          </AlertConfirm>
-                        </div>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-2 p-4 pt-0">
-                      {item.description && (
-                        <div className="text-muted-foreground line-clamp-2 text-sm">
-                          {item.description}
-                        </div>
-                      )}
-                      <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                        <div className="line-clamp-3 whitespace-pre-wrap">
-                          {item.ddl || t('No DDL saved')}
-                        </div>
-                      </div>
-                      {item.updatedAt && (
-                        <div className="text-muted-foreground text-[11px]">
-                          {t('Updated at')}:{' '}
-                          {new Date(item.updatedAt).toLocaleString()}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-            </div>
-          )}
-
-          <Dialog
-            open={open}
-            onOpenChange={(v) => (!v ? handleClose() : setOpen(v))}
+    <CommonWrapper
+      header={
+        <CommonHeader title={t('Database Tables')} actions={headerActions} />
+      }
+    >
+      <ScrollArea className="h-full overflow-hidden p-4">
+        <div className="mb-3 flex items-center justify-between gap-2 p-1">
+          <Button
+            variant="ghost"
+            Icon={LuArrowLeft}
+            onClick={() => navigate({ to: '/insights/warehouse/connections' })}
           >
-            <DialogContent className="z-40" overlayClassName="z-40">
-              <DialogHeader>
-                <DialogTitle>
-                  {editing ? t('Edit table') : t('New table')}
-                </DialogTitle>
-              </DialogHeader>
-
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Name')}</FormLabel>
-                        <FormControl>
-                          <Input disabled={true} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+            {t('Back')}
+          </Button>
+          <div className="flex items-center gap-2">
+            <Input
+              className="w-96"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder={t('Filter tables by name or description')}
+            />
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="p-4 text-sm text-zinc-500">{t('Loading...')}</div>
+        ) : tables.length === 0 ? (
+          <div className="m-2 rounded-md border border-dashed border-zinc-200 p-8 text-center text-sm text-zinc-500 dark:border-zinc-800">
+            {t('No data')}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
+            {(tables || [])
+              .filter((item) => {
+                const k = keyword.trim().toLowerCase();
+                if (!k) return true;
+                return (
+                  item.name.toLowerCase().includes(k) ||
+                  (item.description || '').toLowerCase().includes(k)
+                );
+              })
+              .map((item) => (
+                <Card key={item.id} className="overflow-hidden">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+                    <CardTitle className="truncate text-base">
+                      {item.name}
+                    </CardTitle>
+                    {hasAdminPermission && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          Icon={LuFilePen}
+                          onClick={() => handleOpenEdit(item)}
+                        >
+                          {t('Edit')}
+                        </Button>
+                        <AlertConfirm
+                          title={t('Is delete this item?')}
+                          onConfirm={() => handleDelete(item.id)}
+                        >
+                          <Button variant="destructive" size="icon">
+                            <LuTrash2 />
+                          </Button>
+                        </AlertConfirm>
+                      </div>
                     )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel optional={true}>
-                          {t('Description')}
-                        </FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  </CardHeader>
+                  <CardContent className="space-y-2 p-4 pt-0">
+                    {item.description && (
+                      <div className="text-muted-foreground line-clamp-2 text-sm">
+                        {item.description}
+                      </div>
                     )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="ddl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel optional={true}>{t('DDL')}</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            rows={6}
-                            className="font-mono"
-                            disabled={true}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                    <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                      <div className="line-clamp-3 whitespace-pre-wrap">
+                        {item.ddl || t('No DDL saved')}
+                      </div>
+                    </div>
+                    {item.updatedAt && (
+                      <div className="text-muted-foreground text-[11px]">
+                        {t('Updated at')}:{' '}
+                        {new Date(item.updatedAt).toLocaleString()}
+                      </div>
                     )}
-                  />
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        )}
 
-                  <FormField
-                    control={form.control}
-                    name="prompt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel optional={true}>{t('Prompt')}</FormLabel>
-                        <FormControl>
-                          <Textarea rows={4} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+        <Dialog
+          open={open}
+          onOpenChange={(v) => (!v ? handleClose() : setOpen(v))}
+        >
+          <DialogContent className="z-40" overlayClassName="z-40">
+            <DialogHeader>
+              <DialogTitle>
+                {editing ? t('Edit table') : t('New table')}
+              </DialogTitle>
+            </DialogHeader>
 
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleClose}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button type="submit" loading={form.formState.isSubmitting}>
-                      {t('Confirm')}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </ScrollArea>
-      </CommonWrapper>
-    </Layout>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Name')}</FormLabel>
+                      <FormControl>
+                        <Input disabled={true} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel optional={true}>{t('Description')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="ddl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel optional={true}>{t('DDL')}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={6}
+                          className="font-mono"
+                          disabled={true}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="prompt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel optional={true}>{t('Prompt')}</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={handleClose}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button type="submit" loading={form.formState.isSubmitting}>
+                    {t('Confirm')}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </ScrollArea>
+    </CommonWrapper>
   );
 }
