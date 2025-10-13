@@ -24,6 +24,7 @@ import {
   LuRefreshCw,
   LuMinimize2,
   LuMaximize2,
+  LuCodeXml,
 } from 'react-icons/lu';
 import { useLocalStorageState } from 'ahooks';
 import { AlertConfirm } from '@/components/AlertConfirm';
@@ -172,6 +173,13 @@ function PageComponent() {
     setPreviewCollapsed((prev) => !prev);
   });
 
+  const handleNavigateToEditor = useEvent(() => {
+    navigate({
+      to: '/worker/$workerId/editor',
+      params: { workerId },
+    });
+  });
+
   if (isLoading) {
     return <Loading />;
   }
@@ -280,21 +288,32 @@ function PageComponent() {
               <Card className="flex flex-col">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <CardTitle>{t('Worker Code')}</CardTitle>
-                  <SimpleTooltip
-                    content={
-                      isPreviewCollapsed
-                        ? t('Expand Preview')
-                        : t('Collapse Preview')
-                    }
-                  >
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      Icon={isPreviewCollapsed ? LuMinimize2 : LuMaximize2}
-                      onClick={handleTogglePreviewCollapse}
-                      className="h-8 w-8"
-                    />
-                  </SimpleTooltip>
+                  <div className="flex items-center gap-2">
+                    <SimpleTooltip content={t('Open in Editor')}>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        Icon={LuCodeXml}
+                        onClick={handleNavigateToEditor}
+                        className="h-8 w-8"
+                      />
+                    </SimpleTooltip>
+                    <SimpleTooltip
+                      content={
+                        isPreviewCollapsed
+                          ? t('Expand Preview')
+                          : t('Collapse Preview')
+                      }
+                    >
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        Icon={isPreviewCollapsed ? LuMinimize2 : LuMaximize2}
+                        onClick={handleTogglePreviewCollapse}
+                        className="h-8 w-8"
+                      />
+                    </SimpleTooltip>
+                  </div>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <CodeEditor
