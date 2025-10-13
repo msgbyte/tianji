@@ -4,6 +4,7 @@ import { execWorker } from '../model/worker/index.js';
 import { prisma } from '../model/_client.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../utils/env.js';
+import { FunctionWorkerVisibility } from '@prisma/client';
 
 export const workerRouter = Router();
 
@@ -47,6 +48,13 @@ workerRouter.all(
         return res.status(400).json({
           success: false,
           error: 'Worker is not active',
+        });
+      }
+
+      if (worker.visibility === FunctionWorkerVisibility.Private) {
+        return res.status(403).json({
+          success: false,
+          error: 'Worker is private',
         });
       }
 

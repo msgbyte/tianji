@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LuX } from 'react-icons/lu';
 import qs from 'qs';
+import { useEvent } from '@/hooks/useEvent';
 
 export interface UrlParam {
   key: string;
@@ -25,15 +26,12 @@ export const UrlParamsInput: React.FC<UrlParamsInputProps> = ({
   const { t } = useTranslation();
 
   // Helper function to remove parameter row
-  const removeParamRow = useCallback(
-    (index: number) => {
-      onChange(params.filter((_, i) => i !== index));
-    },
-    [params, onChange]
-  );
+  const removeParamRow = useEvent((index: number) => {
+    onChange(params.filter((_, i) => i !== index));
+  });
 
   // Helper function to update parameter
-  const updateParam = useCallback(
+  const updateParam = useEvent(
     (index: number, field: 'key' | 'value', value: string) => {
       const newParams = params.map((param, i) =>
         i === index ? { ...param, [field]: value } : param
@@ -62,8 +60,7 @@ export const UrlParamsInput: React.FC<UrlParamsInputProps> = ({
       if (shouldAddNewRow) {
         onChange([...newParams, { key: '', value: '' }]);
       }
-    },
-    [params, onChange]
+    }
   );
 
   return (
@@ -106,7 +103,7 @@ export const UrlParamsInput: React.FC<UrlParamsInputProps> = ({
   );
 };
 
-export const getQueryString = (params: UrlParam[]): string => {
+export function getQueryString(params: UrlParam[]): string {
   const validParams = params.filter((p) => p.key.trim() && p.value.trim());
   if (validParams.length === 0) return '';
 
@@ -120,4 +117,4 @@ export const getQueryString = (params: UrlParam[]): string => {
   );
 
   return qs.stringify(queryObject);
-};
+}

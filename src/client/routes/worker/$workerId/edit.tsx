@@ -79,6 +79,7 @@ function PageComponent() {
             active: worker.active,
             enableCron: worker.enableCron || false,
             cronExpression: worker.cronExpression || '',
+            visibility: worker.visibility || 'Public',
           }}
           onSubmit={handleSubmit}
         />

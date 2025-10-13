@@ -45,6 +45,7 @@ const formSchema = z
     active: z.boolean().default(true),
     enableCron: z.boolean().default(false),
     cronExpression: z.string().optional(),
+    visibility: z.enum(['Public', 'Private']).default('Public'),
   })
   .refine(
     (data) => {
@@ -90,6 +91,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
         active: true,
         enableCron: false,
         cronExpression: '',
+        visibility: 'Public',
         ...props.defaultValues,
       },
     });
@@ -221,6 +223,33 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                       )}
                     </FormDescription>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="visibility"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        {t('Private Worker')}
+                      </FormLabel>
+                      <FormDescription>
+                        {t(
+                          'When enabled, this worker can only be accessed by workspace members. Public workers can be accessed by anyone with the link.'
+                        )}
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value === 'Private'}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked ? 'Private' : 'Public')
+                        }
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />

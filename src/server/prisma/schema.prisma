@@ -985,18 +985,24 @@ model AIGatewayQuotaAlert {
   @@index([enabled])
 }
 
+enum FunctionWorkerVisibility {
+  Public
+  Private
+}
+
 model FunctionWorker {
-  id             String   @id @default(cuid()) @db.VarChar(30)
-  workspaceId    String   @db.VarChar(30)
+  id             String                   @id @default(cuid()) @db.VarChar(30)
+  workspaceId    String                   @db.VarChar(30)
   name           String
   description    String?
   code           String
-  revision       Int      @default(1)
-  active         Boolean  @default(true)
-  enableCron     Boolean  @default(false) // Enable cron scheduling
+  revision       Int                      @default(1)
+  active         Boolean                  @default(true)
+  enableCron     Boolean                  @default(false) // Enable cron scheduling
   cronExpression String? // Cron expression for scheduled execution
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+  visibility     FunctionWorkerVisibility @default(Public)
+  createdAt      DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                 @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -1097,12 +1103,12 @@ model WarehouseDatabaseTable {
 }
 
 model WorkspaceConfig {
-  id          String @id @default(cuid()) @db.VarChar(30)
-  workspaceId String @db.VarChar(30)
-  key         String @db.VarChar(255)
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  key         String   @db.VarChar(255)
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
-  value       Json   @db.Json
+  value       Json     @db.Json
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 

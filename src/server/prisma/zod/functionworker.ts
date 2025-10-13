@@ -1,5 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
+import { FunctionWorkerVisibility } from "@prisma/client"
 import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema } from "./index.js"
 
 export const FunctionWorkerModelSchema = z.object({
@@ -12,6 +13,7 @@ export const FunctionWorkerModelSchema = z.object({
   active: z.boolean(),
   enableCron: z.boolean(),
   cronExpression: z.string().nullish(),
+  visibility: z.nativeEnum(FunctionWorkerVisibility),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
