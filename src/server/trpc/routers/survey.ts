@@ -392,6 +392,33 @@ export const surveyRouter = router({
 
       return duplicatedSurvey;
     }),
+  getResult: workspaceProcedure
+    .meta(
+      buildSurveyOpenapi({
+        method: 'GET',
+        path: '/result/{resultId}',
+      })
+    )
+    .input(
+      z.object({
+        resultId: z.string(),
+      })
+    )
+    .output(SurveyResultModelSchema.nullable())
+    .query(async ({ input }) => {
+      const { workspaceId, resultId } = input;
+
+      const result = await prisma.surveyResult.findUnique({
+        where: {
+          id: resultId,
+          survey: {
+            workspaceId,
+          },
+        },
+      });
+
+      return result;
+    }),
   resultList: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
