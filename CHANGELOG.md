@@ -1,5 +1,23 @@
 
 
+## [1.27.12](https://github.com/msgbyte/tianji/compare/v1.27.11...v1.27.12) (2025-10-14)
+
+### Features
+
+* add shortlink feature ([2fa9ea8](https://github.com/msgbyte/tianji/commit/2fa9ea858ce8154861f6c6c213e9330e2f88b37e))
+
+### Bug Fixes
+
+* fix crash for insights context ([e854ec6](https://github.com/msgbyte/tianji/commit/e854ec6bbea7a153c2e4307767bf08ab52ea2c25))
+
+### Document
+
+* update openapi overview description ([ca6077e](https://github.com/msgbyte/tianji/commit/ca6077efc23a7f6aef366f2e2a27e31ecb36612d))
+
+### Others
+
+* update translation ([5c78c38](https://github.com/msgbyte/tianji/commit/5c78c38e42d27c3572a3a7f7aecff6135b3386d5))
+
 ## [1.27.11](https://github.com/msgbyte/tianji/compare/v1.27.10...v1.27.11) (2025-10-14)
 
 ### Bug Fixes
