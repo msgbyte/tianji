@@ -1,5 +1,21 @@
 
 
+## [1.27.10](https://github.com/msgbyte/tianji/compare/v1.27.9...v1.27.10) (2025-10-14)
+
+### Features
+
+* add full screen worker editor ([97db785](https://github.com/msgbyte/tianji/commit/97db7851e61f695cb331944f16ab131b60102df2))
+* add get result endpoint which can get survey result by result id ([016bb26](https://github.com/msgbyte/tianji/commit/016bb2644fae77dd0d872de45eedcc7cae70675a))
+* add worker code editor entry ([54b119d](https://github.com/msgbyte/tianji/commit/54b119dff0e503d2b9f24701bcac5edf54dc7ee9))
+* add worker visibility ([5129825](https://github.com/msgbyte/tianji/commit/51298250c4767e206740f520678f14f171cf6754))
+
+### Others
+
+* add backup script ([714f088](https://github.com/msgbyte/tianji/commit/714f0883e683829b011c42fc1e59667a26167ac4))
+* add context scope for insight feature ([18c8b66](https://github.com/msgbyte/tianji/commit/18c8b66d3e1437080ff0be93ad4f4073a096d75d))
+* improve performance of work exec ([122a13e](https://github.com/msgbyte/tianji/commit/122a13e56795f18017490ee505bc04da9dfa45cc))
+* update translation ([ea33bf7](https://github.com/msgbyte/tianji/commit/ea33bf7ae124638ba8b590008f2fb2fdd75cb2f6))
+
 ## [1.27.9](https://github.com/msgbyte/tianji/compare/v1.27.8...v1.27.9) (2025-10-10)
 
 ### Features
