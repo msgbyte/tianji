@@ -54,6 +54,7 @@ function PageComponent() {
   const dateRange = useInsightsStore((state) => state.currentDateRange);
   const setDateKey = useInsightsStore((state) => state.setCurrentDateKey);
   const setDateRange = useInsightsStore((state) => state.setCurrentDateRange);
+  const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
 
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
   const { data: warehouseApplicationIds = [] } =
@@ -69,10 +70,7 @@ function PageComponent() {
       type = 'warehouse';
     }
 
-    useInsightsStore.setState({
-      insightId: value,
-      insightType: type,
-    });
+    setInsightTarget(value, type);
   });
 
   // Query params for trpc

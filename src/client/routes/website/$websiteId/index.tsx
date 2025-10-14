@@ -43,6 +43,8 @@ function PageComponent() {
   const { startDate, endDate } = useGlobalRangeDate();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const resetInsightsStore = useInsightsStore((state) => state.reset);
+  const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
 
   const shareLink = useMemo(() => {
     if (!website?.shareId) {
@@ -254,10 +256,8 @@ function PageComponent() {
                   variant="outline"
                   Icon={LuCompass}
                   onClick={() => {
-                    useInsightsStore.getState().reset();
-                    useInsightsStore.setState({
-                      insightId: websiteId,
-                    });
+                    resetInsightsStore();
+                    setInsightTarget(websiteId, 'website');
                     navigate({
                       to: '/insights',
                     });
