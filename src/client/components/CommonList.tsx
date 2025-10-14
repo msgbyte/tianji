@@ -16,7 +16,7 @@ export interface CommonListItem {
   title: string;
   number?: number;
   content?: React.ReactNode;
-  tags?: string[];
+  tags?: (string | React.ReactElement)[];
   href: string;
 }
 
@@ -142,11 +142,18 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
 
                 {Array.isArray(item.tags) && item.tags.length > 0 ? (
                   <div className="flex items-center gap-2">
-                    {item.tags.map((tag) => (
-                      <Badge key={tag} variant={getBadgeVariantFromLabel(tag)}>
-                        {tag}
-                      </Badge>
-                    ))}
+                    {item.tags.map((tag) =>
+                      React.isValidElement(tag) ? (
+                        tag
+                      ) : (
+                        <Badge
+                          key={String(tag)}
+                          variant={getBadgeVariantFromLabel(String(tag))}
+                        >
+                          {tag}
+                        </Badge>
+                      )
+                    )}
                   </div>
                 ) : null}
               </button>
@@ -159,17 +166,14 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
 });
 CommonList.displayName = 'CommonList';
 
-/**
- * TODO
- */
 function getBadgeVariantFromLabel(
   label: string
 ): ComponentProps<typeof Badge>['variant'] {
-  if (['work'].includes(label.toLowerCase())) {
+  if (['work'].includes(String(label).toLowerCase())) {
     return 'default';
   }
 
-  if (['personal'].includes(label.toLowerCase())) {
+  if (['personal'].includes(String(label).toLowerCase())) {
     return 'outline';
   }
 

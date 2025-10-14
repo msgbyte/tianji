@@ -126,6 +126,7 @@ model Workspace {
   aiGateways             AIGateway[]
   aiGatewayQuotaAlerts   AIGatewayQuotaAlert[]
   workspaceConfigs       WorkspaceConfig[]
+  shortLinks             ShortLink[]
 }
 
 model WorkspacesOnUsers {
@@ -1116,4 +1117,50 @@ model WorkspaceConfig {
 
   @@unique([workspaceId, key])
   @@index([workspaceId])
+}
+
+model ShortLink {
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  workspaceId String    @db.VarChar(30)
+  code        String    @unique @db.VarChar(50) // Short code, globally unique
+  originalUrl String    @db.VarChar(2000) // Original URL
+  title       String?   @db.VarChar(200) // Optional title
+  description String?   @db.VarChar(500) // Optional description
+  enabled     Boolean   @default(true) // Whether the link is enabled
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+
+  workspace Workspace         @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  accesses  ShortLinkAccess[]
+
+  @@index([workspaceId])
+  @@index([code])
+  @@index([enabled])
+}
+
+model ShortLinkAccess {
+  id             String   @id @default(cuid()) @db.VarChar(30)
+  shortLinkId    String   @db.VarChar(30)
+  ip             String?  @db.VarChar(45)
+  country        String?  @db.Char(2)
+  subdivision1   String?  @db.VarChar(20)
+  subdivision2   String?  @db.VarChar(50)
+  city           String?  @db.VarChar(50)
+  longitude      Float?
+  latitude       Float?
+  accuracyRadius Int?
+  browser        String?  @db.VarChar(20)
+  os             String?  @db.VarChar(20)
+  device         String?  @db.VarChar(20)
+  language       String?  @db.VarChar(35)
+  referrer       String?  @db.VarChar(500)
+  userAgent      String?  @db.VarChar(500)
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  shortLink ShortLink @relation(fields: [shortLinkId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([shortLinkId])
+  @@index([createdAt])
+  @@index([shortLinkId, createdAt])
 }

@@ -7,6 +7,7 @@ import {
   LuEllipsisVertical,
   LuServer,
   LuWifi,
+  LuLink,
 } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 import { IconType } from 'react-icons';
@@ -87,6 +88,12 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
                   title={t('Feed')}
                   icon={LuSquareActivity}
                   to="/feed"
+                  extraModal={true}
+                />
+                <MobileNavItem
+                  title={t('Short Link')}
+                  icon={LuLink}
+                  to="/shortlink"
                   extraModal={true}
                 />
               </div>

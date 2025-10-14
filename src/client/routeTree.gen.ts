@@ -16,6 +16,7 @@ import { Route as WebsiteImport } from './routes/website'
 import { Route as TelemetryImport } from './routes/telemetry'
 import { Route as SwitchWorkspaceImport } from './routes/switchWorkspace'
 import { Route as SurveyImport } from './routes/survey'
+import { Route as ShortlinkImport } from './routes/shortlink'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ServerImport } from './routes/server'
 import { Route as RegisterImport } from './routes/register'
@@ -31,6 +32,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as WorkerIndexImport } from './routes/worker/index'
 import { Route as TelemetryIndexImport } from './routes/telemetry/index'
 import { Route as SurveyIndexImport } from './routes/survey/index'
+import { Route as ShortlinkIndexImport } from './routes/shortlink/index'
 import { Route as PageIndexImport } from './routes/page/index'
 import { Route as MonitorIndexImport } from './routes/monitor/index'
 import { Route as InsightsIndexImport } from './routes/insights/index'
@@ -44,6 +46,7 @@ import { Route as TelemetryAddImport } from './routes/telemetry/add'
 import { Route as TelemetryTelemetryIdImport } from './routes/telemetry/$telemetryId'
 import { Route as SurveyAddImport } from './routes/survey/add'
 import { Route as StatusSlugImport } from './routes/status/$slug'
+import { Route as ShortlinkAddImport } from './routes/shortlink/add'
 import { Route as SettingsWorkspaceImport } from './routes/settings/workspace'
 import { Route as SettingsWarehouseImport } from './routes/settings/warehouse'
 import { Route as SettingsUsageImport } from './routes/settings/usage'
@@ -65,6 +68,7 @@ import { Route as AiGatewayAddImport } from './routes/aiGateway/add'
 import { Route as WorkerWorkerIdIndexImport } from './routes/worker/$workerId/index'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
+import { Route as ShortlinkShortLinkIdIndexImport } from './routes/shortlink/$shortLinkId/index'
 import { Route as SettingsBillingIndexImport } from './routes/settings/billing/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as InsightsWarehouseIndexImport } from './routes/insights/warehouse/index'
@@ -77,6 +81,7 @@ import { Route as WebsiteVisitorMapWebsiteIdImport } from './routes/website_/vis
 import { Route as WebsitePublicShareIdImport } from './routes/website_/public/$shareId'
 import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$websiteId/config'
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
+import { Route as ShortlinkShortLinkIdEditImport } from './routes/shortlink/$shortLinkId/edit'
 import { Route as SettingsBillingHistoryImport } from './routes/settings/billing/history'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
@@ -112,6 +117,11 @@ const SwitchWorkspaceRoute = SwitchWorkspaceImport.update({
 
 const SurveyRoute = SurveyImport.update({
   path: '/survey',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ShortlinkRoute = ShortlinkImport.update({
+  path: '/shortlink',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -190,6 +200,11 @@ const SurveyIndexRoute = SurveyIndexImport.update({
   getParentRoute: () => SurveyRoute,
 } as any)
 
+const ShortlinkIndexRoute = ShortlinkIndexImport.update({
+  path: '/',
+  getParentRoute: () => ShortlinkRoute,
+} as any)
+
 const PageIndexRoute = PageIndexImport.update({
   path: '/',
   getParentRoute: () => PageRoute,
@@ -253,6 +268,11 @@ const SurveyAddRoute = SurveyAddImport.update({
 const StatusSlugRoute = StatusSlugImport.update({
   path: '/status/$slug',
   getParentRoute: () => rootRoute,
+} as any)
+
+const ShortlinkAddRoute = ShortlinkAddImport.update({
+  path: '/add',
+  getParentRoute: () => ShortlinkRoute,
 } as any)
 
 const SettingsWorkspaceRoute = SettingsWorkspaceImport.update({
@@ -360,6 +380,11 @@ const SurveySurveyIdIndexRoute = SurveySurveyIdIndexImport.update({
   getParentRoute: () => SurveyRoute,
 } as any)
 
+const ShortlinkShortLinkIdIndexRoute = ShortlinkShortLinkIdIndexImport.update({
+  path: '/$shortLinkId/',
+  getParentRoute: () => ShortlinkRoute,
+} as any)
+
 const SettingsBillingIndexRoute = SettingsBillingIndexImport.update({
   path: '/billing/',
   getParentRoute: () => SettingsRoute,
@@ -421,6 +446,11 @@ const WebsiteWebsiteIdConfigRoute = WebsiteWebsiteIdConfigImport.update({
 const SurveySurveyIdEditRoute = SurveySurveyIdEditImport.update({
   path: '/$surveyId/edit',
   getParentRoute: () => SurveyRoute,
+} as any)
+
+const ShortlinkShortLinkIdEditRoute = ShortlinkShortLinkIdEditImport.update({
+  path: '/$shortLinkId/edit',
+  getParentRoute: () => ShortlinkRoute,
 } as any)
 
 const SettingsBillingHistoryRoute = SettingsBillingHistoryImport.update({
@@ -529,6 +559,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
+    '/shortlink': {
+      preLoaderRoute: typeof ShortlinkImport
+      parentRoute: typeof rootRoute
+    }
     '/survey': {
       preLoaderRoute: typeof SurveyImport
       parentRoute: typeof rootRoute
@@ -621,6 +655,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsWorkspaceImport
       parentRoute: typeof SettingsImport
     }
+    '/shortlink/add': {
+      preLoaderRoute: typeof ShortlinkAddImport
+      parentRoute: typeof ShortlinkImport
+    }
     '/status/$slug': {
       preLoaderRoute: typeof StatusSlugImport
       parentRoute: typeof rootRoute
@@ -673,6 +711,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageIndexImport
       parentRoute: typeof PageImport
     }
+    '/shortlink/': {
+      preLoaderRoute: typeof ShortlinkIndexImport
+      parentRoute: typeof ShortlinkImport
+    }
     '/survey/': {
       preLoaderRoute: typeof SurveyIndexImport
       parentRoute: typeof SurveyImport
@@ -712,6 +754,10 @@ declare module '@tanstack/react-router' {
     '/settings/billing/history': {
       preLoaderRoute: typeof SettingsBillingHistoryImport
       parentRoute: typeof SettingsImport
+    }
+    '/shortlink/$shortLinkId/edit': {
+      preLoaderRoute: typeof ShortlinkShortLinkIdEditImport
+      parentRoute: typeof ShortlinkImport
     }
     '/survey/$surveyId/edit': {
       preLoaderRoute: typeof SurveySurveyIdEditImport
@@ -760,6 +806,10 @@ declare module '@tanstack/react-router' {
     '/settings/billing/': {
       preLoaderRoute: typeof SettingsBillingIndexImport
       parentRoute: typeof SettingsImport
+    }
+    '/shortlink/$shortLinkId/': {
+      preLoaderRoute: typeof ShortlinkShortLinkIdIndexImport
+      parentRoute: typeof ShortlinkImport
     }
     '/survey/$surveyId/': {
       preLoaderRoute: typeof SurveySurveyIdIndexImport
@@ -842,6 +892,12 @@ export const routeTree = rootRoute.addChildren([
     SettingsWorkspaceRoute,
     SettingsBillingHistoryRoute,
     SettingsBillingIndexRoute,
+  ]),
+  ShortlinkRoute.addChildren([
+    ShortlinkAddRoute,
+    ShortlinkIndexRoute,
+    ShortlinkShortLinkIdEditRoute,
+    ShortlinkShortLinkIdIndexRoute,
   ]),
   SurveyRoute.addChildren([
     SurveyAddRoute,

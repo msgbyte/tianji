@@ -10,6 +10,7 @@ import {
   LuTabletSmartphone,
   LuBrainCircuit,
   LuSquareFunction,
+  LuLink,
 } from 'react-icons/lu';
 import {
   ResizableHandle,
@@ -141,6 +142,12 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             label: String(serviceCount?.feed ?? ''),
             icon: LuSquareActivity,
             to: '/feed',
+          },
+          {
+            title: t('Short Link'),
+            label: String(serviceCount?.shortLink ?? ''),
+            icon: LuLink,
+            to: '/shortlink',
           },
           {
             title: t('AI Gateway'),

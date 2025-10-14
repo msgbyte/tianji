@@ -16,6 +16,7 @@ import { insightsRouter } from './insights/index.js';
 import { applicationRouter } from './application.js';
 import { aiGatewayRouter } from './aiGateway.js';
 import { workerRouter } from './worker.js';
+import { shortlinkRouter } from './shortlink.js';
 
 export const appRouter = router({
   ai: aiRouter,
@@ -35,6 +36,7 @@ export const appRouter = router({
   billing: billingRouter,
   feed: feedRouter,
   worker: workerRouter,
+  shortlink: shortlinkRouter,
 });
 
 export type AppRouter = typeof appRouter;

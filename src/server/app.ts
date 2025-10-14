@@ -28,6 +28,7 @@ import { aiGatewayRouter } from './router/aiGateway.js';
 import { pushRouter } from './router/push.js';
 import { workerRouter } from './router/worker.js';
 import { insightsRouter } from './router/insights.js';
+import { shortlinkRouter } from './router/shortlink.js';
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use(
 );
 
 app.use('/health', healthRouter);
+app.use('/s', shortlinkRouter);
 app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
 app.use('/api/application', applicationRouter);
