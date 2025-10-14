@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { param, validate } from '../middleware/validate.js';
-import { execWorker } from '../model/worker/index.js';
-import { prisma } from '../model/_client.js';
+import { execWorker, getWorker } from '../model/worker/index.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../utils/env.js';
 import { FunctionWorkerVisibility } from '@prisma/client';
@@ -29,13 +28,7 @@ workerRouter.all(
         ...req.body,
       };
 
-      // Verify worker exists and belongs to workspace
-      const worker = await prisma.functionWorker.findUnique({
-        where: {
-          id: workerId,
-          workspaceId,
-        },
-      });
+      const worker = await getWorker(workerId, workspaceId);
 
       if (!worker) {
         return res.status(404).json({
@@ -76,9 +69,11 @@ workerRouter.all(
       const response = execution.responsePayload;
 
       if (typeof response === 'object') {
-        res.json(response);
+        res.status(200).json(response);
+      } else if (typeof response === 'number') {
+        res.status(200).send(String(response));
       } else {
-        res.send(response);
+        res.status(200).send(response);
       }
     } catch (error) {
       logger.error('Worker execution error:', error);

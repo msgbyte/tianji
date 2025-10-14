@@ -2,6 +2,7 @@ import { FunctionWorker } from '@prisma/client';
 import { prisma } from '../_client.js';
 import { WorkerCronRunner } from './cronRunner.js';
 import { logger } from '../../utils/logger.js';
+import { delWorkerCache } from './index.js';
 
 export type WorkerCronUpsertData = Pick<
   FunctionWorker,
@@ -53,6 +54,8 @@ export class WorkerCronManager {
             revision: nextRevision,
           },
         });
+
+        delWorkerCache(id, workspaceId);
 
         if (shouldCreateRevision) {
           await tx.functionWorkerRevision.create({
@@ -111,12 +114,16 @@ export class WorkerCronManager {
       delete this.workerRunners[workerId];
     }
 
-    return prisma.functionWorker.delete({
+    const res = await prisma.functionWorker.delete({
       where: {
         workspaceId,
         id: workerId,
       },
     });
+
+    delWorkerCache(workerId, workspaceId);
+
+    return res;
   }
 
   /**

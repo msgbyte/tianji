@@ -3,6 +3,20 @@ import { runCodeInIVM } from '../../utils/vm/index.js';
 import { prisma } from '../_client.js';
 import { isPlainObject } from 'lodash-es';
 import { logger } from '../../utils/logger.js';
+import { buildQueryWithCache } from '../../cache/index.js';
+
+export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
+  async (workerId: string, workspaceId: string) => {
+    const worker = await prisma.functionWorker.findUnique({
+      where: {
+        id: workerId,
+        workspaceId,
+      },
+    });
+
+    return worker;
+  }
+);
 
 /**
  * execute a worker code in isolated-vm

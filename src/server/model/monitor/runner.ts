@@ -27,6 +27,9 @@ export class MonitorRunner {
     public monitor: MonitorWithNotification
   ) {}
 
+  /**
+   * Notice: Here is a issue which when workspace changed timezone and its will not effect immediately.
+   */
   getTimezone(): string {
     return get(this.workspace, ['settings', 'timezone']) || 'utc';
   }
