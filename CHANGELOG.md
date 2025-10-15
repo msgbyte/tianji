@@ -1,5 +1,21 @@
 
 
+## [1.28.0](https://github.com/msgbyte/tianji/compare/v1.27.12...v1.28.0) (2025-10-15)
+
+### Features
+
+* add datakey parse support which can improve display for share query params ([dee32ae](https://github.com/msgbyte/tianji/commit/dee32aef32d9fd776a8219f48197c2000f2e2c3c))
+* add insight share feature ([e371612](https://github.com/msgbyte/tianji/commit/e37161205377d264e0a2d7654d932ee2ed47ba85))
+
+### Document
+
+* add more info for survey openapi endpoint ([f8fe355](https://github.com/msgbyte/tianji/commit/f8fe35577e64a2a32453157a6c78dc1a42597e7c))
+
+### Others
+
+* improve query performance for worker stats ([1510218](https://github.com/msgbyte/tianji/commit/1510218a96d478cbbb5c8117e179a6d2b9a0f252))
+* upgrade zod to v4 and trpc to v11 ([955fd53](https://github.com/msgbyte/tianji/commit/955fd53a962a9f174081e7fc775dd4d3d82eba11))
+
 ## [1.27.12](https://github.com/msgbyte/tianji/compare/v1.27.11...v1.27.12) (2025-10-14)
 
 ### Features
