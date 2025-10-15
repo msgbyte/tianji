@@ -345,54 +345,38 @@ export const workerRouter = router({
       const since = new Date();
       since.setDate(since.getDate() - days);
 
-      const executions = await prisma.functionWorkerExecution.findMany({
-        where: {
-          workerId,
-          createdAt: {
-            gte: since,
-          },
-        },
-      });
+      // Use single SQL query for all statistics
+      const stats = await prisma.$queryRaw<
+        Array<{
+          totalExecutions: bigint;
+          successExecutions: bigint;
+          failedExecutions: bigint;
+          avgDuration: number | null;
+          avgMemoryUsed: number | null;
+          avgCpuTime: number | null;
+        }>
+      >`
+        SELECT
+          COUNT(*)::int as "totalExecutions",
+          COUNT(CASE WHEN status = 'Success' THEN 1 END)::int as "successExecutions",
+          COUNT(CASE WHEN status = 'Failed' THEN 1 END)::int as "failedExecutions",
+          AVG(duration) as "avgDuration",
+          AVG("memoryUsed") as "avgMemoryUsed",
+          AVG("cpuTime") as "avgCpuTime"
+        FROM "FunctionWorkerExecution"
+        WHERE "workerId" = ${workerId}
+          AND "createdAt" >= ${since}
+      `;
 
-      const totalExecutions = executions.length;
-      const successExecutions = executions.filter(
-        (e) => e.status === FunctionWorkerExecutionStatus.Success
-      ).length;
-      const failedExecutions = executions.filter(
-        (e) => e.status === FunctionWorkerExecutionStatus.Failed
-      ).length;
-
-      const durations = executions
-        .filter((e) => e.duration !== null)
-        .map((e) => e.duration!);
-      const avgDuration =
-        durations.length > 0
-          ? durations.reduce((sum, d) => sum + d, 0) / durations.length
-          : null;
-
-      const memoryUsages = executions
-        .filter((e) => e.memoryUsed !== null)
-        .map((e) => e.memoryUsed!);
-      const avgMemoryUsed =
-        memoryUsages.length > 0
-          ? memoryUsages.reduce((sum, m) => sum + m, 0) / memoryUsages.length
-          : null;
-
-      const cpuTimes = executions
-        .filter((e) => e.cpuTime !== null)
-        .map((e) => e.cpuTime!);
-      const avgCpuTime =
-        cpuTimes.length > 0
-          ? cpuTimes.reduce((sum, c) => sum + c, 0) / cpuTimes.length
-          : null;
+      const result = stats[0];
 
       return {
-        totalExecutions,
-        successExecutions,
-        failedExecutions,
-        avgDuration,
-        avgMemoryUsed,
-        avgCpuTime,
+        totalExecutions: Number(result.totalExecutions),
+        successExecutions: Number(result.successExecutions),
+        failedExecutions: Number(result.failedExecutions),
+        avgDuration: result.avgDuration,
+        avgMemoryUsed: result.avgMemoryUsed,
+        avgCpuTime: result.avgCpuTime,
       };
     }),
   testCode: workspaceAdminProcedure

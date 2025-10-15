@@ -96,11 +96,20 @@ function PageComponent() {
   const selectedExecution =
     selectedExecutionIndex >= 0 ? executions[selectedExecutionIndex] : null;
 
-  const { data: stats } = trpc.worker.getExecutionStats.useQuery({
-    workspaceId,
-    workerId,
-    days: 7,
-  });
+  const { data: stats } = trpc.worker.getExecutionStats.useQuery(
+    {
+      workspaceId,
+      workerId,
+      days: 7,
+    },
+    {
+      trpc: {
+        context: {
+          skipBatch: true,
+        },
+      },
+    }
+  );
 
   const deleteMutation = trpc.worker.delete.useMutation({
     onError: defaultErrorHandler,
