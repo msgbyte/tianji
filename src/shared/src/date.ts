@@ -80,23 +80,19 @@ export function getDateArray<T extends { date: string }>(
   const { diff, add, normalize } = createDateUnitFn(unit, timezone);
   const n = diff(endDate, startDate) + 1;
 
-  function findData(date: dayjs.Dayjs) {
-    const target = data.find((item) => {
-      if (timezone) {
-        return normalize(dayjs.tz(item.date, timezone)).unix() === date.unix();
-      } else {
-        return normalize(dayjs(item.date)).unix() === date.unix();
-      }
-    });
-
-    return { ...defaultItem, ...target };
-  }
+  const dataMap = new Map<number, T>();
+  data.forEach((item) => {
+    const timestamp = timezone
+      ? normalize(dayjs.tz(item.date, timezone)).valueOf()
+      : normalize(dayjs(item.date)).valueOf();
+    dataMap.set(timestamp, item);
+  });
 
   for (let i = 0; i < n; i++) {
     const t = normalize(add(startDate, i));
-    const item = findData(t);
+    const target = dataMap.get(t.valueOf());
 
-    arr.push({ ...item, date: formatDate(t, timezone) } as T);
+    arr.push({ ...defaultItem, ...target, date: formatDate(t, timezone) } as T);
   }
 
   return arr;
