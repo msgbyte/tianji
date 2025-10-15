@@ -31,6 +31,7 @@ export const surveyRouter = router({
   all: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Get all surveys',
         method: 'GET',
         path: '/all',
       })
@@ -53,6 +54,7 @@ export const surveyRouter = router({
   get: publicProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Get a specific survey by ID',
         method: 'GET',
         path: '/{surveyId}/get',
       })
@@ -79,6 +81,7 @@ export const surveyRouter = router({
   count: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Get the total count of survey results',
         method: 'GET',
         path: '/{surveyId}/count',
       })
@@ -103,6 +106,7 @@ export const surveyRouter = router({
   allResultCount: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Get result counts for all surveys in the workspace',
         method: 'GET',
         path: '/allResultCount',
       })
@@ -125,6 +129,7 @@ export const surveyRouter = router({
   submit: publicProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Submit survey responses',
         method: 'POST',
         path: '/{surveyId}/submit',
       })
@@ -136,7 +141,7 @@ export const surveyRouter = router({
         payload: z.record(z.string(), z.any()),
       })
     )
-    .output(z.string())
+    .output(z.literal('success'))
     .mutation(async ({ input, ctx }) => {
       const { req } = ctx;
       const { workspaceId, surveyId, payload } = input;
@@ -235,11 +240,13 @@ export const surveyRouter = router({
           }
         });
 
-      return 'success';
+      return 'success' as const;
     }),
   create: workspaceAdminProcedure
     .meta(
       buildSurveyOpenapi({
+        description:
+          'Create a new survey with payload, feed channels and webhook configuration',
         method: 'POST',
         path: '/create',
       })
@@ -280,6 +287,7 @@ export const surveyRouter = router({
   update: workspaceAdminProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Update an existing survey configuration',
         method: 'PATCH',
         path: '/{surveyId}/update',
       })
@@ -325,6 +333,7 @@ export const surveyRouter = router({
   delete: workspaceAdminProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Delete a survey permanently',
         method: 'DELETE',
         path: '/{surveyId}/delete',
       })
@@ -350,6 +359,7 @@ export const surveyRouter = router({
   duplicate: workspaceAdminProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Duplicate an existing survey with a new name',
         method: 'POST',
         path: '/{surveyId}/duplicate',
       })
@@ -395,6 +405,7 @@ export const surveyRouter = router({
   getResult: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Get a specific survey result by result ID',
         method: 'GET',
         path: '/result/{resultId}',
       })
@@ -422,6 +433,8 @@ export const surveyRouter = router({
   resultList: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description:
+          'Get paginated list of survey results with optional date range and filters',
         method: 'GET',
         path: '/{surveyId}/result/list',
       })
@@ -476,6 +489,7 @@ export const surveyRouter = router({
   stats: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description: 'Get survey submission statistics grouped by date',
         method: 'GET',
         path: '/{surveyId}/stats',
       })
@@ -520,6 +534,8 @@ export const surveyRouter = router({
   aiCategoryList: workspaceProcedure
     .meta(
       buildSurveyOpenapi({
+        description:
+          'Get AI-categorized survey results with counts for each category',
         method: 'GET',
         path: '/{surveyId}/aiCategoryList',
       })
