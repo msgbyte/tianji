@@ -6,8 +6,15 @@ import { immer } from 'zustand/middleware/immer';
 import { DateUnit } from '@tianji/shared';
 import { TimeEventChartType } from '../components/chart/TimeEventChart';
 import dayjs from 'dayjs';
-import { createContext, PropsWithChildren, useContext, useRef } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useRef,
+  useEffect,
+} from 'react';
 import React from 'react';
+import { deserializeInsightsState } from '../utils/insights';
 
 export type InsightType = 'website' | 'survey' | 'aigateway' | 'warehouse';
 
@@ -162,9 +169,43 @@ const InsightsStoreContext = createContext<InsightsStoreContextType | null>(
 export const InsightsStoreProvider: React.FC<PropsWithChildren> = React.memo(
   ({ children }) => {
     const storeRef = useRef<InsightsStoreContextType | null>(null);
+    const parentContext = useContext(InsightsStoreContext);
+    const isInitializedRef = useRef(false);
+
     if (storeRef.current === null) {
       storeRef.current = createInsightsStore();
     }
+
+    useEffect(() => {
+      // Only restore state from URL if there's no parent context (top-level provider)
+      // and we haven't initialized yet
+      if (!parentContext && !isInitializedRef.current && storeRef.current) {
+        isInitializedRef.current = true;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const stateParam = urlParams.get('query');
+
+        if (stateParam) {
+          const restoredState = deserializeInsightsState(stateParam);
+
+          if (restoredState) {
+            // Apply restored state to the store
+            storeRef.current.setState((currentState) => ({
+              ...currentState,
+              ...restoredState,
+            }));
+
+            // Clean up the state parameter from URL after restoring
+            urlParams.delete('query');
+            const newUrl =
+              window.location.pathname +
+              (urlParams.toString() ? `?${urlParams.toString()}` : '') +
+              window.location.hash;
+            window.history.replaceState({}, '', newUrl);
+          }
+        }
+      }
+    }, [parentContext]);
 
     return (
       <InsightsStoreContext.Provider value={storeRef.current}>

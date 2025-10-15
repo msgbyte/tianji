@@ -27,6 +27,12 @@ import { ChartRender } from '@/components/insights/ChartRender';
 import { FilterSection } from '@/components/insights/FilterSection';
 import { useEvent } from '@/hooks/useEvent';
 import { BreakdownSection } from '@/components/insights/BreakdownSection';
+import { Button } from '@/components/ui/button';
+import { LuShare2 } from 'react-icons/lu';
+import { serializeInsightsState } from '@/utils/insights';
+import copy from 'copy-to-clipboard';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/insights/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -41,6 +47,12 @@ function PageComponent() {
   const insightType = useInsightsStore((state) => state.insightType);
   const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
   const currentFilters = useInsightsStore((state) => state.currentFilters);
+  const currentMetrics = useInsightsStore((state) => state.currentMetrics);
+  const currentGroups = useInsightsStore((state) => state.currentGroups);
+  const currentDateKey = useInsightsStore((state) => state.currentDateKey);
+  const currentDateRange = useInsightsStore((state) => state.currentDateRange);
+  const currentDateUnit = useInsightsStore((state) => state.currentDateUnit);
+  const currentChartType = useInsightsStore((state) => state.currentChartType);
   const setFilter = useInsightsStore((state) => state.setFilter);
   const addFilter = useInsightsStore((state) => state.addFilter);
   const removeFilter = useInsightsStore((state) => state.removeFilter);
@@ -48,6 +60,9 @@ function PageComponent() {
   const { data: surveys = [] } = trpc.survey.all.useQuery({ workspaceId });
   const { data: warehouseApplicationIds = [] } =
     trpc.insights.warehouseApplications.useQuery({ workspaceId });
+
+  const [isSharing, setIsSharing] = useState(false);
+  const createShortLinkMutation = trpc.shortlink.create.useMutation();
 
   const handleValueChange = useEvent((insightId: string) => {
     const insightType = surveys.some((item) => item.id === insightId)
@@ -57,6 +72,52 @@ function PageComponent() {
         : 'website';
 
     setInsightTarget(insightId, insightType);
+  });
+
+  const handleShare = useEvent(async () => {
+    if (!insightId) {
+      return;
+    }
+
+    setIsSharing(true);
+    try {
+      // Serialize current insights state
+      const serializedState = serializeInsightsState({
+        insightId,
+        insightType,
+        currentMetrics,
+        currentFilters,
+        currentGroups,
+        currentDateKey,
+        currentDateRange,
+        currentDateUnit,
+        currentChartType,
+      });
+
+      // Build full URL with state parameter
+      const origin =
+        typeof window !== 'undefined' ? window.location.origin : '';
+      const fullUrl = `${origin}/insights?query=${encodeURIComponent(serializedState)}`;
+
+      // Create short link
+      const shortLink = await createShortLinkMutation.mutateAsync({
+        workspaceId,
+        originalUrl: fullUrl,
+        title: `Insights: ${insightId}`,
+      });
+
+      // Build short link URL
+      const shortUrl = `${origin}/s/${shortLink.code}`;
+
+      // Copy to clipboard
+      copy(shortUrl);
+      toast.success(t('Share link copied to clipboard'));
+    } catch (error) {
+      console.error('Failed to create share link:', error);
+      toast.error(t('Failed to create share link'));
+    } finally {
+      setIsSharing(false);
+    }
   });
 
   return (
@@ -107,6 +168,18 @@ function PageComponent() {
                   )}
                 </SelectContent>
               </Select>
+
+              {insightId && (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={handleShare}
+                  disabled={isSharing}
+                  aria-label={t('Share')}
+                >
+                  <LuShare2 />
+                </Button>
+              )}
             </div>
           }
         />
