@@ -94,7 +94,7 @@ function PageComponent() {
         currentChartType,
       });
 
-      // Build full URL with state parameter
+      // Build full URL with query parameter
       const origin =
         typeof window !== 'undefined' ? window.location.origin : '';
       const fullUrl = `${origin}/insights?query=${encodeURIComponent(serializedState)}`;

@@ -1,8 +1,8 @@
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
-import dayjs from 'dayjs';
 import React, { PropsWithChildren, useState } from 'react';
 import { DatePicker, DatePickerRange } from '../DatePicker';
+import { dateKeyToDateRange } from '@/utils/insights';
 
 interface DateRangeSelectionProps {
   value: string;
@@ -16,8 +16,11 @@ export const DateRangeSelection: React.FC<DateRangeSelectionProps> = React.memo(
       DatePickerRange | undefined
     >(undefined);
 
-    const handleChange = (val: string, dateRange: [Date, Date]) => {
-      onChange(val, dateRange);
+    const handleDateKeyClick = (dateKey: string) => {
+      const dateRange = dateKeyToDateRange(dateKey);
+      if (dateRange) {
+        onChange(dateKey, dateRange);
+      }
     };
 
     return (
@@ -33,95 +36,55 @@ export const DateRangeSelection: React.FC<DateRangeSelectionProps> = React.memo(
             onChange={(value) => {
               setCustomDateRange(value);
               if (value?.from && value.to) {
-                handleChange('custom', [value.from, value.to]);
+                onChange('custom', [value.from, value.to]);
               }
             }}
           />
           <DateRangeSelectionItem
             selected={value === 'today'}
-            onClick={() =>
-              onChange('today', [
-                dayjs().startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('today')}
           >
             {t('Today')}
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === 'yesterday'}
-            onClick={() =>
-              onChange('yesterday', [
-                dayjs().subtract(1, 'day').startOf('day').toDate(),
-                dayjs().subtract(1, 'day').endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('yesterday')}
           >
             {t('Yesterday')}
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === '3D'}
-            onClick={() =>
-              onChange('3D', [
-                dayjs().subtract(3, 'day').startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('3D')}
           >
             3D
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === '7D'}
-            onClick={() =>
-              onChange('7D', [
-                dayjs().subtract(7, 'day').startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('7D')}
           >
             7D
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === '30D'}
-            onClick={() =>
-              onChange('30D', [
-                dayjs().subtract(30, 'day').startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('30D')}
           >
             30D
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === '3M'}
-            onClick={() =>
-              onChange('3M', [
-                dayjs().subtract(3, 'month').startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('3M')}
           >
             3M
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === '6M'}
-            onClick={() =>
-              onChange('6M', [
-                dayjs().subtract(6, 'month').startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('6M')}
           >
             6M
           </DateRangeSelectionItem>
           <DateRangeSelectionItem
             selected={value === '12M'}
-            onClick={() =>
-              onChange('12M', [
-                dayjs().subtract(12, 'month').startOf('day').toDate(),
-                dayjs().endOf('day').toDate(),
-              ])
-            }
+            onClick={() => handleDateKeyClick('12M')}
           >
             12M
           </DateRangeSelectionItem>
