@@ -1,4 +1,4 @@
-import { AppRouterInput, AppRouterOutput, trpcClientProxy } from '@/api/trpc';
+import { AppRouterInput, trpcClient } from '@/api/trpc';
 import { last } from 'lodash-es';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -37,7 +37,8 @@ export const useAIStore = create<AIStoreState>()(
       set({
         isBusy: true,
       });
-      const iterable = (await trpcClientProxy.ai.ask.query(
+
+      const iterable = (await trpcClient.ai.ask.query(
         {
           workspaceId,
           question,

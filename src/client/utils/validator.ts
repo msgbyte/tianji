@@ -10,7 +10,7 @@ type Validator = (
 
 export const hostnameValidator: Validator = (rule, value, callback) => {
   try {
-    z.union([z.string().ip(), z.string().regex(hostnameRegex)]).parse(value);
+    z.union([z.ipv4(), z.ipv6(), z.string().regex(hostnameRegex)]).parse(value);
     callback();
   } catch (err) {
     callback('Not valid host, it should be ip or hostname');

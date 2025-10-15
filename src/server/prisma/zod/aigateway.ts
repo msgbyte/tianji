@@ -1,6 +1,21 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
+import { Decimal } from "decimal.js"
 import { CompleteAIGatewayLogs, RelatedAIGatewayLogsModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
+
+// Helper schema for Decimal fields
+z
+  .instanceof(Decimal)
+  .or(z.string())
+  .or(z.number())
+  .refine((value) => {
+    try {
+      return new Decimal(value)
+    } catch (error) {
+      return false
+    }
+  })
+  .transform((value) => new Decimal(value))
 
 export const AIGatewayModelSchema = z.object({
   id: z.string(),

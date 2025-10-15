@@ -68,7 +68,7 @@ export const trpcClient = trpc.createClient({
   ],
 });
 
-export const trpcClientProxy = createTRPCClientProxy<AppRouter>(trpcClient);
+// export const trpcClientProxy = createTRPCClientProxy<AppRouter>(trpcClient);
 
 /**
  * @usage

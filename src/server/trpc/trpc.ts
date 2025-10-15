@@ -137,7 +137,7 @@ export const systemAdminProcedure = t.procedure.use(prom).use(isSystemAdmin);
 export const workspaceProcedure = publicProcedure
   .input(
     z.object({
-      workspaceId: z.string().cuid2(),
+      workspaceId: z.cuid2(),
     })
   )
   .use(createWorkspacePermissionMiddleware());
@@ -145,7 +145,7 @@ export const workspaceProcedure = publicProcedure
 export const workspaceAdminProcedure = publicProcedure
   .input(
     z.object({
-      workspaceId: z.string().cuid2(),
+      workspaceId: z.cuid2(),
     })
   )
   .use(createWorkspacePermissionMiddleware([ROLES.owner, ROLES.admin]));
@@ -153,7 +153,7 @@ export const workspaceAdminProcedure = publicProcedure
 export const workspaceOwnerProcedure = publicProcedure
   .input(
     z.object({
-      workspaceId: z.string().cuid2(),
+      workspaceId: z.cuid2(),
     })
   )
   .use(createWorkspacePermissionMiddleware([ROLES.owner]));

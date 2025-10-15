@@ -39,7 +39,6 @@ export const feedRouter = router({
         path: '/channels',
       })
     )
-    .input(z.object({}))
     .output(
       z.array(
         FeedChannelModelSchema.merge(

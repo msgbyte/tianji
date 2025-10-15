@@ -51,7 +51,7 @@ import { getWebsitePublicStats } from '../../model/website/public.js';
 const websiteNameSchema = z.string().max(100);
 const websiteDomainSchema = z.union([
   z.string().max(500).regex(hostnameRegex),
-  z.string().max(500).ip(),
+  z.union([z.ipv4().max(500), z.ipv6().max(500)]),
 ]);
 const metricsTypeSchema = z.enum([
   'url',

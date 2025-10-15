@@ -1,5 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
+import { Decimal } from "decimal.js"
 import { AIGatewayLogsStatus } from "@prisma/client"
 import { CompleteAIGateway, RelatedAIGatewayModelSchema } from "./index.js"
 
@@ -7,7 +8,21 @@ import { CompleteAIGateway, RelatedAIGatewayModelSchema } from "./index.js"
 type Literal = boolean | number | string
 type Json = Literal | { [key: string]: Json } | Json[]
 const literalSchema = z.union([z.string(), z.number(), z.boolean()])
-const jsonSchema: z.ZodSchema<Json> = z.lazy(() => z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)]))
+const jsonSchema: z.ZodSchema<Json> = z.lazy(() => z.union([literalSchema, z.array(jsonSchema), z.record(z.string(), jsonSchema)]))
+
+// Helper schema for Decimal fields
+z
+  .instanceof(Decimal)
+  .or(z.string())
+  .or(z.number())
+  .refine((value) => {
+    try {
+      return new Decimal(value)
+    } catch (error) {
+      return false
+    }
+  })
+  .transform((value) => new Decimal(value))
 
 export const AIGatewayLogsModelSchema = z.object({
   id: z.string(),

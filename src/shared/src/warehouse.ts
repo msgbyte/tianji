@@ -353,11 +353,7 @@ export function validateWarehouseConfig(config: any): {
           warehouseInsightsApplicationSchema.parse(app);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            error.errors.forEach((err) => {
-              errors.push(
-                `Application ${index}: ${err.path.join('.')} - ${err.message}`
-              );
-            });
+            errors.push(`Application ${index}: ${error.message}`);
           }
         }
       });

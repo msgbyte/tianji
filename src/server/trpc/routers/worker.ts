@@ -21,7 +21,6 @@ import { workerCronManager } from '../../model/worker/manager.js';
 export const workerRouter = router({
   // Get all workers in workspace
   all: workspaceProcedure
-    .input(z.object({}))
     .output(z.array(FunctionWorkerModelSchema))
     .query(async ({ input }) => {
       const { workspaceId } = input;
@@ -42,7 +41,7 @@ export const workerRouter = router({
   get: workspaceProcedure
     .input(
       z.object({
-        workerId: z.string().cuid2(),
+        workerId: z.cuid2(),
       })
     )
     .output(FunctionWorkerModelSchema.nullable())
@@ -63,7 +62,7 @@ export const workerRouter = router({
   upsert: workspaceAdminProcedure
     .input(
       z.object({
-        id: z.string().cuid2().optional(),
+        id: z.cuid2().optional(),
         name: z.string().min(1, 'Name is required'),
         description: z.string().optional(),
         code: z.string().min(1, 'Code is required'),
@@ -150,7 +149,7 @@ export const workerRouter = router({
   delete: workspaceAdminProcedure
     .input(
       z.object({
-        workerId: z.string().cuid2(),
+        workerId: z.cuid2(),
       })
     )
     .output(FunctionWorkerModelSchema)
@@ -230,7 +229,7 @@ export const workerRouter = router({
   execute: workspaceProcedure
     .input(
       z.object({
-        workerId: z.string().cuid2(),
+        workerId: z.cuid2(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -269,7 +268,7 @@ export const workerRouter = router({
   getExecutions: workspaceProcedure
     .input(
       z.object({
-        workerId: z.string().cuid2(),
+        workerId: z.cuid2(),
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(20),
       })
@@ -324,7 +323,7 @@ export const workerRouter = router({
   getExecutionStats: workspaceProcedure
     .input(
       z.object({
-        workerId: z.string().cuid2(),
+        workerId: z.cuid2(),
         days: z.number().min(1).max(90).default(7),
       })
     )

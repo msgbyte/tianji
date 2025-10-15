@@ -29,7 +29,7 @@ export const Route = createFileRoute('/website/add')({
 
 const addFormSchema = z.object({
   name: z.string(),
-  domain: z.union([z.string().ip(), z.string().regex(hostnameRegex)]),
+  domain: z.union([z.ipv4(), z.ipv6(), z.string().regex(hostnameRegex)]),
 });
 
 function WebsiteAddComponent() {

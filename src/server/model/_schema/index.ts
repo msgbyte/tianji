@@ -4,7 +4,7 @@ import { MonitorModelSchema } from '../../prisma/zod/index.js';
 // Match prisma `JsonValue`
 export const jsonFieldSchema = z.union([
   z.null(),
-  z.record(z.any()),
+  z.record(z.string(), z.any()),
   z.array(z.any()),
   z.string(),
   z.boolean(),
