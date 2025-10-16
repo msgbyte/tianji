@@ -24,6 +24,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
+import dayjs from 'dayjs';
 
 import 'allotment/dist/style.css';
 
@@ -230,7 +231,7 @@ function PageComponent() {
 
               <div className="text-muted-foreground text-xs">
                 {t('Last updated at {{time}}', {
-                  time: new Date(worker.updatedAt).toLocaleString(),
+                  time: dayjs(worker.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
                 })}
               </div>
             </div>
