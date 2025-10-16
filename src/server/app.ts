@@ -46,7 +46,11 @@ app.use(
 if (!env.disableAccessLogs && process.env.NODE_ENV !== 'test') {
   app.use(morgan('tiny'));
 }
-app.use(cors());
+app.use(
+  cors({
+    origin: env.publicUrl ? env.publicUrl : '*',
+  })
+);
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');

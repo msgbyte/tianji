@@ -129,6 +129,19 @@ export function generateSMTPHTML(
             </td>
           </tr>
 
+          ${
+            env.publicUrl
+              ? `
+          <tr>
+            <td align="center" style="padding-top: 12px;">
+              <p style="font-size: 13px; color: #94a3b8; margin: 0; padding: 0;">
+                Message sent from ${env.publicUrl}
+              </p>
+            </td>
+          </tr>`
+              : ''
+          }
+
           <tr>
             <td style="padding: 32px 0;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">

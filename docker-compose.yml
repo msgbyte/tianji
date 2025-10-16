@@ -12,6 +12,7 @@ services:
       JWT_SECRET: replace-me-with-a-random-string
       ALLOW_REGISTER: "false"
       ALLOW_OPENAPI: "true"
+      PUBLIC_URL: "" # for example: https://app.tianji.dev
     depends_on:
       - postgres
     restart: always

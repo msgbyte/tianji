@@ -55,6 +55,7 @@ export const env = {
       clientSecret: process.env.AUTH_CUSTOM_SECRET,
     },
   },
+  publicUrl: process.env.PUBLIC_URL || undefined, // for example: https://app.tianji.com
   db: {
     url: process.env.DATABASE_URL,
     debug: checkEnvTrusty(process.env.DB_DEBUG),
