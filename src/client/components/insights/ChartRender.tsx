@@ -59,8 +59,20 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
     return end.diff(start, 'day') <= 1;
   }, [dateRange]);
 
+  const allowHour = useMemo(() => {
+    const start = dayjs(dateRange[0]);
+    const end = dayjs(dateRange[1]);
+    return end.diff(start, 'day') <= 31;
+  }, [dateRange]);
+
   useWatch([allowMinute, dateUnit], () => {
     if (!allowMinute && dateUnit === 'minute') {
+      setDateUnit('day');
+    }
+  });
+
+  useWatch([allowHour, dateUnit], () => {
+    if (!allowHour && ['hour', 'minute'].includes(dateUnit)) {
       setDateUnit('day');
     }
   });
@@ -197,6 +209,7 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
         <div className="flex gap-2">
           <DateUnitSelection
             allowMinute={allowMinute}
+            allowHour={allowHour}
             value={dateUnit}
             onChange={setDateUnit}
           />

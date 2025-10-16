@@ -11,12 +11,13 @@ import { useTranslation } from '@i18next-toolkit/react';
 
 interface DateRangeSelectionProps {
   allowMinute: boolean;
+  allowHour: boolean;
   value: DateUnit;
   onChange: (val: DateUnit) => void;
 }
 export const DateUnitSelection: React.FC<DateRangeSelectionProps> = React.memo(
   (props) => {
-    const { allowMinute, value, onChange } = props;
+    const { allowMinute, allowHour, value, onChange } = props;
     const { t } = useTranslation();
 
     return (
@@ -28,7 +29,9 @@ export const DateUnitSelection: React.FC<DateRangeSelectionProps> = React.memo(
           <SelectItem value="minute" disabled={!allowMinute}>
             {t('Minute')}
           </SelectItem>
-          <SelectItem value="hour">{t('Hour')}</SelectItem>
+          <SelectItem value="hour" disabled={!allowHour}>
+            {t('Hour')}
+          </SelectItem>
           <SelectItem value="day">{t('Day')}</SelectItem>
           <SelectItem value="month">{t('Month')}</SelectItem>
           <SelectItem value="year">{t('Year')}</SelectItem>
