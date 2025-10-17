@@ -63,6 +63,11 @@ const metricsTypeSchema = z.enum([
   'device',
   'country',
   'event',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
 ]);
 const publicRangeSchema = z.enum(['realtime', '24h', '7d', '30d', '90d']);
 
@@ -399,17 +404,7 @@ export const websiteRouter = router({
     .input(
       z.object({
         websiteId: z.string(),
-        type: z.enum([
-          'url',
-          'language',
-          'referrer',
-          'title',
-          'browser',
-          'os',
-          'device',
-          'country',
-          'event',
-        ]),
+        type: metricsTypeSchema,
         startAt: z.number(),
         endAt: z.number(),
         url: z.string().optional(),
@@ -423,6 +418,11 @@ export const websiteRouter = router({
         city: z.string().optional(),
         language: z.string().optional(),
         event: z.string().optional(),
+        utm_source: z.string().optional(),
+        utm_medium: z.string().optional(),
+        utm_campaign: z.string().optional(),
+        utm_term: z.string().optional(),
+        utm_content: z.string().optional(),
       })
     )
     .output(

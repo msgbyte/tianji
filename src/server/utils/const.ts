@@ -63,7 +63,18 @@ export const DATA_TYPE = {
   array: 5,
 } as const;
 
-export const EVENT_COLUMNS = ['url', 'referrer', 'title', 'query', 'event'];
+export const EVENT_COLUMNS = [
+  'url',
+  'referrer',
+  'title',
+  'query',
+  'event',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+];
 
 export const SESSION_COLUMNS = [
   'browser',
@@ -106,6 +117,11 @@ export const FILTER_COLUMNS = {
   city: 'city',
   language: 'language',
   event: 'eventName',
+  utm_source: 'utmSource',
+  utm_medium: 'utmMedium',
+  utm_campaign: 'utmCampaign',
+  utm_term: 'utmTerm',
+  utm_content: 'utmContent',
 };
 
 export const DEFAULT_RESET_DATE = '2000-01-01';

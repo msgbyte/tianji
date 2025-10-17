@@ -6,6 +6,11 @@ import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { Button } from '@/components/ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
@@ -21,7 +26,7 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Card } from 'antd';
-import { LuCompass, LuSettings, LuShare2 } from 'react-icons/lu';
+import { LuChevronDown, LuCompass, LuSettings, LuShare2 } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
@@ -238,6 +243,54 @@ function PageComponent() {
               <WebsiteVisitorMapBtn websiteId={websiteId} />
             </div>
           </Card.Grid>
+
+          {/* UTM Analytics Section - Collapsible */}
+          <Card.Grid hoverable={false} className="!w-full">
+            <Collapsible defaultOpen={false}>
+              <CollapsibleTrigger className="group w-full" asChild>
+                <div className="flex cursor-pointer items-center justify-between transition-colors hover:opacity-80">
+                  <h3 className="text-lg font-semibold">
+                    {t('UTM Analytics')}
+                  </h3>
+                  <LuChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="min-h-[400px]">
+                    <WebsiteMetricsTable
+                      websiteId={websiteId}
+                      type="utm_source"
+                      title={[t('Source'), t('Views')]}
+                      startAt={startAt}
+                      endAt={endAt}
+                    />
+                  </div>
+
+                  <div className="min-h-[400px]">
+                    <WebsiteMetricsTable
+                      websiteId={websiteId}
+                      type="utm_medium"
+                      title={[t('Medium'), t('Views')]}
+                      startAt={startAt}
+                      endAt={endAt}
+                    />
+                  </div>
+
+                  <div className="min-h-[400px]">
+                    <WebsiteMetricsTable
+                      websiteId={websiteId}
+                      type="utm_campaign"
+                      title={[t('Campaign'), t('Views')]}
+                      startAt={startAt}
+                      endAt={endAt}
+                    />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card.Grid>
+
           <Card.Grid
             hoverable={false}
             className="!w-full sm:min-h-[470px] sm:!w-1/2 md:!w-1/3"

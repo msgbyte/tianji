@@ -204,6 +204,11 @@ export async function saveWebsiteEvent(data: {
   pageTitle?: string;
   eventName?: string;
   eventData?: any;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
 }) {
   const {
     websiteId,
@@ -213,6 +218,11 @@ export async function saveWebsiteEvent(data: {
     referrerPath,
     referrerQuery,
     referrerDomain,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmTerm,
+    utmContent,
     eventName,
     eventData,
     pageTitle,
@@ -227,6 +237,11 @@ export async function saveWebsiteEvent(data: {
       referrerPath: referrerPath?.substring(0, URL_LENGTH),
       referrerQuery: referrerQuery?.substring(0, URL_LENGTH),
       referrerDomain: referrerDomain?.substring(0, URL_LENGTH),
+      utmSource: utmSource?.substring(0, 100),
+      utmMedium: utmMedium?.substring(0, 100),
+      utmCampaign: utmCampaign?.substring(0, 100),
+      utmTerm: utmTerm?.substring(0, 100),
+      utmContent: utmContent?.substring(0, 100),
       pageTitle,
       eventType: eventName ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView,
       eventName: eventName ? eventName?.substring(0, EVENT_NAME_LENGTH) : null,

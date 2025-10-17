@@ -56,6 +56,17 @@ async function processEvent(type: string, payload: any, session: any) {
       urlPath = urlPath.replace(/.+\/$/, '');
     }
 
+    // Parse UTM parameters from URL query string
+    let utmSource, utmMedium, utmCampaign, utmTerm, utmContent;
+    if (urlQuery) {
+      const params = new URLSearchParams(urlQuery);
+      utmSource = params.get('utm_source') || undefined;
+      utmMedium = params.get('utm_medium') || undefined;
+      utmCampaign = params.get('utm_campaign') || undefined;
+      utmTerm = params.get('utm_term') || undefined;
+      utmContent = params.get('utm_content') || undefined;
+    }
+
     await saveWebsiteEvent({
       urlPath,
       urlQuery,
@@ -65,6 +76,11 @@ async function processEvent(type: string, payload: any, session: any) {
       pageTitle,
       eventName,
       eventData,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmTerm,
+      utmContent,
       ...session,
       sessionId: session.id,
     });

@@ -34,7 +34,7 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 - [x] openapi
 - [x] website
 - [x] team collaboration
-- [ ] utm track
+- [x] utm track
 - [x] waitlist
 - [x] survey
   - [ ] survey page

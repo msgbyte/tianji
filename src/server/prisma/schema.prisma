@@ -313,6 +313,11 @@ model WebsiteEvent {
   referrerPath   String?  @db.VarChar(500)
   referrerQuery  String?  @db.VarChar(500)
   referrerDomain String?  @db.VarChar(500)
+  utmSource      String?  @db.VarChar(100)
+  utmMedium      String?  @db.VarChar(100)
+  utmCampaign    String?  @db.VarChar(100)
+  utmTerm        String?  @db.VarChar(100)
+  utmContent     String?  @db.VarChar(100)
   pageTitle      String?  @db.VarChar(500)
   eventType      Int      @default(1) @db.Integer // 1 is view, 2 is click event
   eventName      String?  @db.VarChar(50)
@@ -331,6 +336,9 @@ model WebsiteEvent {
   @@index([websiteId, createdAt, pageTitle])
   @@index([websiteId, createdAt, eventName])
   @@index([websiteId, sessionId, createdAt])
+  @@index([websiteId, createdAt, utmSource])
+  @@index([websiteId, createdAt, utmMedium])
+  @@index([websiteId, createdAt, utmCampaign])
 }
 
 model WebsiteEventData {
