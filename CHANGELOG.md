@@ -1,5 +1,21 @@
 
 
+## [1.29.0](https://github.com/msgbyte/tianji/compare/v1.28.0...v1.29.0) (2025-10-17)
+
+### Features
+
+* add public url environment ([928f756](https://github.com/msgbyte/tianji/commit/928f7565d2c5221214d84f79e15558d42eb7ee26))
+* add utm support ([3c2190a](https://github.com/msgbyte/tianji/commit/3c2190af63301d1c45ef354c15497b9cf3178f21))
+
+### Bug Fixes
+
+* fix date message display issue ([81f3ba1](https://github.com/msgbyte/tianji/commit/81f3ba139bfaba95dcf6b6ead0e42eee93ee9a0a))
+
+### Others
+
+* add hour level disable for long date range ([c8579e9](https://github.com/msgbyte/tianji/commit/c8579e9a5d582321de7df9380504812392f2baca))
+* optimize date lookup performance by using a Map for O(1) access, reduces time complexity from O(n×m) to O(n+m) ([511050e](https://github.com/msgbyte/tianji/commit/511050edc19db4097036b5f2b59ee166192198ed))
+
 ## [1.28.0](https://github.com/msgbyte/tianji/compare/v1.27.12...v1.28.0) (2025-10-15)
 
 ### Features
