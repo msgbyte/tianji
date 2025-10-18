@@ -123,7 +123,7 @@ export const WebsiteOverview: React.FC<{
 
           {website.monitorId && (
             <Link
-              className="cursor-pointer"
+              className="w-20 cursor-pointer"
               to="/monitor/$monitorId"
               params={{ monitorId: website.monitorId }}
             >
