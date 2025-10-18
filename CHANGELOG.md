@@ -1,5 +1,16 @@
 
 
+## [1.29.1](https://github.com/msgbyte/tianji/compare/v1.29.0...v1.29.1) (2025-10-18)
+
+### Bug Fixes
+
+* [#230](https://github.com/msgbyte/tianji/issues/230) fix a issue which monitor bar not disable after health bar refactor ([123ae28](https://github.com/msgbyte/tianji/commit/123ae289a7e97569fabb8c9b40eed9779d1c8c82))
+* fix a bug which monitor can not unselect when update website info ([f424a32](https://github.com/msgbyte/tianji/commit/f424a3285ff2cc7249f0a7c1580d4b4314230b45))
+
+### Others
+
+* update clickhouse migration sql for utm ([8ba5acf](https://github.com/msgbyte/tianji/commit/8ba5acfa98a221c1625373dc08dcfe7947635831))
+
 ## [1.29.0](https://github.com/msgbyte/tianji/compare/v1.28.0...v1.29.0) (2025-10-17)
 
 ### Features
