@@ -57,7 +57,7 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
           websiteId,
           name: values.name,
           domain: values.domain,
-          monitorId: values.monitorId,
+          monitorId: values.monitorId ?? null,
         });
 
         trpcUtils.website.info.refetch({
