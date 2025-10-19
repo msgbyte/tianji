@@ -21,6 +21,7 @@ overrides:
   tar-fs@3: 3.0.10
   typescript: 5.7.2
   zod: 4.1.12
+  '@i18next-toolkit/cli>zod': 3.25.76
   zod-openapi: 5.4.3
 
 patchedDependencies:
@@ -17981,6 +17982,9 @@ packages:
     peerDependencies:
       zod: 4.1.12
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
   zod@4.1.12:
     resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
 
@@ -21479,10 +21483,10 @@ snapshots:
       fs-extra: 11.3.0
       inquirer: 8.2.6
       lodash: 4.17.21
-      openai: 4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@4.1.12)
+      openai: 4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.25.76)
       proxy-agent: 6.5.0
       yargs: 17.7.2
-      zod: 4.1.12
+      zod: 3.25.76
     transitivePeerDependencies:
       - buffer
       - encoding
@@ -33982,6 +33986,21 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
+  openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@3.25.76):
+    dependencies:
+      '@types/node': 22.13.11
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0(encoding@0.1.13)
+    optionalDependencies:
+      ws: 8.18.1
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - encoding
+
   openai@4.87.3(encoding@0.1.13)(ws@8.18.1)(zod@4.1.12):
     dependencies:
       '@types/node': 22.13.11
@@ -39768,6 +39787,8 @@ snapshots:
   zod-validation-error@3.4.1(zod@4.1.12):
     dependencies:
       zod: 4.1.12
+
+  zod@3.25.76: {}
 
   zod@4.1.12: {}
 
