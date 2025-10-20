@@ -2,6 +2,7 @@ import { prisma } from './_client.js';
 import { nanoid } from 'nanoid';
 import { getRequestInfo } from '../utils/detect.js';
 import { IncomingMessage } from 'http';
+import { ShortLinkType } from '@prisma/client';
 
 /**
  * Create a short link
@@ -10,10 +11,11 @@ export async function createShortLink(params: {
   workspaceId: string;
   originalUrl: string;
   code?: string; // Optional custom code
+  type?: ShortLinkType;
   title?: string;
   description?: string;
 }) {
-  const { workspaceId, originalUrl, code, title, description } = params;
+  const { workspaceId, originalUrl, code, type, title, description } = params;
 
   const shortCode = code || nanoid(10);
 
@@ -34,6 +36,7 @@ export async function createShortLink(params: {
       originalUrl,
       title,
       description,
+      type,
       enabled: true,
     },
   });

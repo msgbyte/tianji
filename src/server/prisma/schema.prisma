@@ -1127,17 +1127,23 @@ model WorkspaceConfig {
   @@index([workspaceId])
 }
 
+enum ShortLinkType {
+  Builtin
+  Manual
+}
+
 model ShortLink {
-  id          String    @id @default(cuid()) @db.VarChar(30)
-  workspaceId String    @db.VarChar(30)
-  code        String    @unique @db.VarChar(50) // Short code, globally unique
-  originalUrl String    @db.VarChar(2000) // Original URL
-  title       String?   @db.VarChar(200) // Optional title
-  description String?   @db.VarChar(500) // Optional description
-  enabled     Boolean   @default(true) // Whether the link is enabled
-  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
-  deletedAt   DateTime? @db.Timestamptz(6)
+  id          String        @id @default(cuid()) @db.VarChar(30)
+  workspaceId String        @db.VarChar(30)
+  code        String        @unique @db.VarChar(50) // Short code, globally unique
+  originalUrl String        @db.VarChar(2000) // Original URL
+  title       String?       @db.VarChar(200) // Optional title
+  description String?       @db.VarChar(500) // Optional description
+  type        ShortLinkType @default(Manual) // Link type: builtin or manual
+  enabled     Boolean       @default(true) // Whether the link is enabled
+  createdAt   DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime?     @db.Timestamptz(6)
 
   workspace Workspace         @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   accesses  ShortLinkAccess[]

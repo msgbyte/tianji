@@ -96,8 +96,8 @@ export function serializeInsightsState(query: {
     currentGroups: query.currentGroups.filter((g) => g !== null),
     currentDateKey: query.currentDateKey,
     currentDateRange: [
-      query.currentDateRange[0].getTime(),
-      query.currentDateRange[1].getTime(),
+      new Date(query.currentDateRange[0]).getTime(),
+      new Date(query.currentDateRange[1]).getTime(),
     ],
     currentDateUnit: query.currentDateUnit,
     currentChartType: query.currentChartType,

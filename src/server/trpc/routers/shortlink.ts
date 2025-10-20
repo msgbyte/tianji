@@ -14,6 +14,7 @@ import {
 } from '../../model/shortlink.js';
 import { ShortLinkModelSchema } from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
+import { ShortLinkType } from '@prisma/client';
 
 export const shortlinkRouter = router({
   /**
@@ -53,11 +54,13 @@ export const shortlinkRouter = router({
         code: z.string().max(50).optional(),
         title: z.string().max(200).optional(),
         description: z.string().max(500).optional(),
+        type: z.nativeEnum(ShortLinkType).optional(),
       })
     )
     .output(ShortLinkModelSchema)
     .mutation(async ({ input }) => {
-      const { workspaceId, originalUrl, code, title, description } = input;
+      const { workspaceId, originalUrl, code, title, description, type } =
+        input;
 
       const shortLink = await createShortLink({
         workspaceId,
@@ -65,6 +68,7 @@ export const shortlinkRouter = router({
         code,
         title,
         description,
+        type,
       });
 
       await createAuditLog({

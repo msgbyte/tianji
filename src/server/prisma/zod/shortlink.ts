@@ -1,5 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
+import { ShortLinkType } from "@prisma/client"
 import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteShortLinkAccess, RelatedShortLinkAccessModelSchema } from "./index.js"
 
 export const ShortLinkModelSchema = z.object({
@@ -9,6 +10,7 @@ export const ShortLinkModelSchema = z.object({
   originalUrl: z.string(),
   title: z.string().nullish(),
   description: z.string().nullish(),
+  type: z.nativeEnum(ShortLinkType),
   enabled: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),

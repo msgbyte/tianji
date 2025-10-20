@@ -104,6 +104,7 @@ function PageComponent() {
         workspaceId,
         originalUrl: fullUrl,
         title: `Insights: ${insightId}`,
+        type: 'Builtin',
       });
 
       // Build short link URL
