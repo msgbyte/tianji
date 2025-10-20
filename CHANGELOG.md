@@ -1,5 +1,19 @@
 
 
+## [1.29.2](https://github.com/msgbyte/tianji/compare/v1.29.1...v1.29.2) (2025-10-20)
+
+### Bug Fixes
+
+* fix version issue for zod version incorrect ([7f3a41b](https://github.com/msgbyte/tianji/commit/7f3a41b37a66ad72ea401f8350699467eecce94b))
+
+### Document
+
+* add blog ([c9815b0](https://github.com/msgbyte/tianji/commit/c9815b03f4c778b5fd2564111ef2e0b5cf5f4048))
+
+### Others
+
+* add clickhouse migrate on db migrate script ([d03167a](https://github.com/msgbyte/tianji/commit/d03167abfd88dab9ddcbe31627c88d1c92c78f94))
+
 ## [1.29.1](https://github.com/msgbyte/tianji/compare/v1.29.0...v1.29.1) (2025-10-18)
 
 ### Bug Fixes
