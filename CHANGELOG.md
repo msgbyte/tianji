@@ -1,5 +1,22 @@
 
 
+## [1.30.0](https://github.com/msgbyte/tianji/compare/v1.29.2...v1.30.0) (2025-10-21)
+
+### Features
+
+* add NavigationBlocker component to prevent navigation on unsaved changes ([ad28a51](https://github.com/msgbyte/tianji/commit/ad28a51ef174f86b9684716c78b02eb4468b0fb7))
+* add public page for survey ([2243915](https://github.com/msgbyte/tianji/commit/2243915b24dc0523bcd5ca3cea74da3c0d48f11d))
+* add ShortLinkType enum and update short link creation to support type ([2e02a98](https://github.com/msgbyte/tianji/commit/2e02a98cd2ef0b4ea7978d012bd2ca01e545a0f5))
+
+### Bug Fixes
+
+* fix a bug which telemetry not work in some case ([f55a07c](https://github.com/msgbyte/tianji/commit/f55a07cc32f30bff73e38901d9fea71ba39f2e04))
+
+### Others
+
+* refactor default color theme usage ([91e11fe](https://github.com/msgbyte/tianji/commit/91e11fe99d09a6731fb57f63c00e27c0e1334a0c))
+* update translation ([0c8ad6e](https://github.com/msgbyte/tianji/commit/0c8ad6e1d5a4f1ca0f46a9564b6bde055789262f))
+
 ## [1.29.2](https://github.com/msgbyte/tianji/compare/v1.29.1...v1.29.2) (2025-10-20)
 
 ### Bug Fixes
