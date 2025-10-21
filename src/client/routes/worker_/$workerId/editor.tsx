@@ -10,12 +10,13 @@ import { CodeEditor } from '@/components/CodeEditor';
 import { WorkerExecutionsTable } from '@/components/worker/WorkerExecutionsTable';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
 import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
+import { NavigationBlocker } from '@/components/NavigationBlocker';
 import { AppRouterOutput, trpc } from '@/api/trpc';
 import { useEvent } from '@/hooks/useEvent';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { LuActivity, LuArrowLeft, LuRefreshCw, LuSave } from 'react-icons/lu';
+import { LuActivity, LuArrowLeft, LuRefreshCw, LuRocket } from 'react-icons/lu';
 import { Allotment } from 'allotment';
 import {
   Sheet,
@@ -77,17 +78,6 @@ function PageComponent() {
     pageSize,
   });
 
-  const executeMutation = trpc.worker.execute.useMutation({
-    onError: (error) => {
-      toast.error(error.message);
-    },
-    onSuccess: () => {
-      toast.success(t('Execution started'));
-      refetchExecutions();
-      refetchWorker();
-    },
-  });
-
   const updateMutation = trpc.worker.upsert.useMutation({
     onError: (error) => {
       toast.error(error.message);
@@ -127,17 +117,9 @@ function PageComponent() {
     if (!worker) {
       return false;
     }
+
     return code !== worker.code;
   }, [code, worker]);
-
-  const handleExecute = useEvent(async () => {
-    if (!worker) return;
-
-    await executeMutation.mutateAsync({
-      workspaceId,
-      workerId: worker.id,
-    });
-  });
 
   const handleSave = useEvent(async () => {
     if (!worker || !hasAdminPermission || !isCodeDirty) {
@@ -206,6 +188,8 @@ function PageComponent() {
 
   return (
     <CommonWrapper>
+      <NavigationBlocker when={isCodeDirty} />
+
       <div className="bg-background flex h-screen flex-col overflow-hidden">
         <div className="border-b px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -251,10 +235,10 @@ function PageComponent() {
                   size="sm"
                   onClick={handleSave}
                   loading={updateMutation.isPending}
-                  Icon={LuSave}
+                  Icon={LuRocket}
                   disabled={!isCodeDirty || updateMutation.isPending}
                 >
-                  {t('Save')}
+                  {t('Deploy')}
                 </Button>
               )}
             </div>
