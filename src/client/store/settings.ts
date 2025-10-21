@@ -18,7 +18,7 @@ export const useSettingsStore = create<SettingsState>()(
   )
 );
 
-export function useColorSchema() {
+export function useThemeInit() {
   const colorScheme = useSettingsStore((state) => state.colorScheme);
 
   useEffect(() => {
@@ -56,4 +56,10 @@ export function useTheme(): 'light' | 'dark' {
   });
 
   return theme;
+}
+
+export function updateColorScheme(colorScheme: 'light' | 'dark' | 'system') {
+  useSettingsStore.setState({
+    colorScheme,
+  });
 }

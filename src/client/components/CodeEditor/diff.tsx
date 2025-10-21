@@ -3,7 +3,7 @@ import {
   DiffEditor as MonacoDiffEditorComponent,
   DiffEditorProps as MonacoDiffEditorProps,
 } from '@monaco-editor/react';
-import { useSettingsStore } from '../../store/settings';
+import { useTheme } from '../../store/settings';
 
 export interface CodeDiffEditorProps
   extends Omit<
@@ -25,8 +25,8 @@ export const CodeDiffEditor: React.FC<CodeDiffEditorProps> = React.memo(
     options,
     ...rest
   }) => {
-    const colorScheme = useSettingsStore((state) => state.colorScheme);
-    const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
+    const colorTheme = useTheme();
+    const theme = colorTheme === 'dark' ? 'vs-dark' : 'light';
 
     const computedOptions = useMemo(
       () => ({

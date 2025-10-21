@@ -15,7 +15,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { useEvent } from '@/hooks/useEvent';
-import { useSettingsStore } from '@/store/settings';
+import { updateColorScheme, useSettingsStore } from '@/store/settings';
 import {
   setUserInfo,
   useCurrentWorkspace,
@@ -65,9 +65,7 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
   const socketConnected = useSocketConnected();
 
   const handleChangeColorSchema = useEvent((colorScheme) => {
-    useSettingsStore.setState({
-      colorScheme,
-    });
+    updateColorScheme(colorScheme);
   });
 
   const handleOpenChange = useEvent((open) => {
@@ -203,6 +201,9 @@ export const UserConfig: React.FC<UserConfigProps> = React.memo((props) => {
                   value={colorScheme}
                   onValueChange={handleChangeColorSchema}
                 >
+                  <DropdownMenuRadioItem value={'system'}>
+                    {t('System')}
+                  </DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value={'dark'}>
                     {t('Dark')}
                   </DropdownMenuRadioItem>

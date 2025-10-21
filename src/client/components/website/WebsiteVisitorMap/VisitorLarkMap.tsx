@@ -8,7 +8,7 @@ import {
 import React, { useMemo } from 'react';
 import { AppRouterOutput } from '../../../api/trpc';
 import { useGlobalConfig } from '../../../hooks/useConfig';
-import { useSettingsStore } from '../../../store/settings';
+import { useTheme } from '../../../store/settings';
 import { mapCenter } from './utils';
 
 const layerOptions: Omit<PointLayerProps, 'source'> = {
@@ -32,7 +32,7 @@ const layerOptions: Omit<PointLayerProps, 'source'> = {
 
 function useMapConfig(mapType: 'Mapbox' | 'Gaode' = 'Mapbox'): LarkMapProps {
   const { amapToken, mapboxToken } = useGlobalConfig();
-  const colorScheme = useSettingsStore((state) => state.colorScheme);
+  const colorScheme = useTheme();
 
   const baseOption: LarkMapProps['mapOptions'] = {
     center: [mapCenter.lng, mapCenter.lat],

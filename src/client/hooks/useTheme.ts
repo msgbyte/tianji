@@ -1,4 +1,4 @@
-import { useColorSchema } from '@/store/settings';
+import { useTheme as useSettingsTheme } from '@/store/settings';
 import { theme, ThemeConfig } from 'antd';
 import { useEffect, useMemo } from 'react';
 import { colord } from 'colord';
@@ -116,7 +116,7 @@ export function useTheme() {
 }
 
 export function useAntdTheme(): ThemeConfig {
-  const colorScheme = useColorSchema();
+  const colorScheme = useSettingsTheme();
   const algorithm =
     colorScheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm;
 

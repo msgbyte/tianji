@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Editor, { OnMount } from '@monaco-editor/react';
-import { useSettingsStore } from '@/store/settings';
+import { useTheme } from '@/store/settings';
 import { useEvent } from '@/hooks/useEvent';
 
 interface MonacoJsonEditorProps {
@@ -22,7 +22,7 @@ export const JsonEditor: React.FC<MonacoJsonEditorProps> = ({
 }) => {
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
-  const colorScheme = useSettingsStore((state) => state.colorScheme);
+  const colorScheme = useTheme();
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {

@@ -1,6 +1,6 @@
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
 import React, { useRef } from 'react';
-import { useSettingsStore } from '../../store/settings';
+import { useTheme } from '../../store/settings';
 import { useEvent } from '../../hooks/useEvent';
 import { sandboxGlobal } from './lib/sandbox';
 import { ValidatorFn } from './validator/fetch';
@@ -20,7 +20,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
     codeValidator = [],
     language = 'typescript',
   } = props;
-  const colorScheme = useSettingsStore((state) => state.colorScheme);
+  const colorScheme = useTheme();
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<Monaco | null>(null);
