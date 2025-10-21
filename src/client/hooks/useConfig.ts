@@ -48,11 +48,13 @@ export function useGlobalConfig(): AppRouterOutput['global']['config'] {
     }
 
     if (!inited) {
-      if (!!data && data.disableAnonymousTelemetry !== true) {
-        callAnonymousTelemetry();
-      }
+      if (!!data) {
+        if (data.disableAnonymousTelemetry !== true) {
+          callAnonymousTelemetry();
+        }
 
-      inited = true;
+        inited = true;
+      }
     }
   });
 
