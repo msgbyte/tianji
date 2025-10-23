@@ -217,8 +217,10 @@ function TianjiPrismaAdapter(
   const p = prisma as PrismaClient;
 
   return {
-    // We need to let Prisma generate the ID because our default UUID is incompatible with MongoDB
     createUser: async ({ id: _id, ...data }) => {
+      if (!data.email) {
+        data.email = `${_id}@auth.tianji.com`;
+      }
       const user = await createUserWithAuthjs(data);
 
       return toAdapterUser(user);

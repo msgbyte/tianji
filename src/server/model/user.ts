@@ -202,7 +202,7 @@ export async function createUserWithAuthjs(data: Omit<AdapterUser, 'id'>) {
 
     const user = await p.user.create({
       data: {
-        username: data.email,
+        username: data.email ?? data.name ?? '',
         nickname: data.name,
         password: await hashPassword(md5(String(Date.now()))),
         email: data.email,
