@@ -62,6 +62,13 @@ export async function initTianjiTracker(options: InjectTrackerOptions) {
     websiteId: options.websiteId,
   });
 
+  const tianji = (window as any).tianji;
+  if (tianji) {
+    // if tianji is already initialized, skip
+    console.warn('Tianji is already initialized, skipping initialization.');
+    return;
+  }
+
   if (options.autoTrack === false) {
     attrs['data-auto-track'] = 'false';
   }
