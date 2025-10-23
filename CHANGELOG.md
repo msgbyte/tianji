@@ -1,5 +1,15 @@
 
 
+## [1.30.1](https://github.com/msgbyte/tianji/compare/v1.30.0...v1.30.1) (2025-10-23)
+
+### Bug Fixes
+
+* fix a issue which oauth not have email handle ([99a009c](https://github.com/msgbyte/tianji/commit/99a009c67bb309c13178b025cd66d8f9b44a0329))
+
+### Others
+
+* skip if tianji already init ([e209a84](https://github.com/msgbyte/tianji/commit/e209a84fae780eb260a6ad991a8245593df410aa))
+
 ## [1.30.0](https://github.com/msgbyte/tianji/compare/v1.29.2...v1.30.0) (2025-10-21)
 
 ### Features
