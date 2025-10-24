@@ -18,26 +18,28 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
   buildSelectQueryArr() {
     const { metrics } = this.query;
     return metrics.map((item) => {
+      const alias = item.alias ?? item.name;
+
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as "$all_event"`;
+          return sql`count(1) as ${raw(`"${alias}"`)}`;
         }
 
         if (insightsSurveyBuiltinFields.includes(item.name)) {
-          return sql`sum(case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+          return sql`sum(case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`sum(case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+        return sql`sum(case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return sql`count(distinct "sessionId") as "$all_event"`;
+          return sql`count(distinct "sessionId") as ${raw(`"${alias}"`)}`;
         }
 
         if (insightsSurveyBuiltinFields.includes(item.name)) {
-          return sql`count(distinct case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+          return sql`count(distinct case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+        return sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${alias}"`)}`;
       }
 
       return null;
