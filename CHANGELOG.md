@@ -1,5 +1,16 @@
 
 
+## [1.30.2](https://github.com/msgbyte/tianji/compare/v1.30.1...v1.30.2) (2025-10-24)
+
+### Bug Fixes
+
+* fix a bug which monitor not have lock and will call many times in multi-node case ([70d8059](https://github.com/msgbyte/tianji/commit/70d80592b041131ce8b9876706811e2508b31800))
+* fix insights fetch same column name not work in clickhouse and improve display for insight metric ([900224b](https://github.com/msgbyte/tianji/commit/900224b5944b69bff716b17f871ab79c6b61a148))
+
+### Others
+
+* update worker editor default template ([d7e0905](https://github.com/msgbyte/tianji/commit/d7e0905bc6a71f84b33ed93de438378ae031d891))
+
 ## [1.30.1](https://github.com/msgbyte/tianji/compare/v1.30.0...v1.30.1) (2025-10-23)
 
 ### Bug Fixes
