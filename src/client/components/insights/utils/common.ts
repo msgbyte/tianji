@@ -1,4 +1,5 @@
-import { FilterInfoValue } from '@tianji/shared';
+import { t } from '@i18next-toolkit/react';
+import { FilterInfoValue, MetricsInfo, numberToLetter } from '@tianji/shared';
 
 /**
  * check if the value is valid for filter
@@ -25,4 +26,23 @@ export function isValidFilterValue(value: FilterInfoValue) {
   }
 
   return false;
+}
+
+export function getMetricLabel(metricName: string) {
+  if (metricName === '$all_event') {
+    return t('All Events');
+  }
+  if (metricName === '$page_view') {
+    return t('Page View');
+  }
+
+  return metricName;
+}
+
+export function getMetricAlias(metric: MetricsInfo, index: number) {
+  if (metric.alias) {
+    return metric.alias;
+  }
+
+  return `${numberToLetter(index + 1)}.${getMetricLabel(metric.name)}`;
 }

@@ -24,6 +24,7 @@ import { ChartTypeSelection } from './ChartTypeSelection';
 import { useWatch } from '@/hooks/useWatch';
 import { getUserTimezone } from '@/api/model/user';
 import prettyMilliseconds from 'pretty-ms';
+import { getMetricAlias } from './utils/common';
 
 interface ChartRenderProps {
   insightId: string;
@@ -98,7 +99,10 @@ export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
       workspaceId,
       insightId: props.insightId,
       insightType: props.insightType,
-      metrics,
+      metrics: metrics.map((m, i) => ({
+        ...m,
+        alias: getMetricAlias(m, i),
+      })),
       filters,
       groups,
       time,

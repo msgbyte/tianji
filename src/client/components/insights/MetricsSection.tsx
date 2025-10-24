@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { MetricsBlock } from './MetricsBlock';
 import { useInsightsStore } from '@/store/insights';
 import { trpc } from '@/api/trpc';
@@ -6,6 +6,7 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import { sumBy } from 'lodash-es';
 import { LuPlus } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
+import { getMetricLabel } from './utils/common';
 
 const defaultMetrics = [{ name: '$all_event', count: 0 }];
 
@@ -39,6 +40,14 @@ export const MetricsSection: React.FC = React.memo(() => {
       }
     );
 
+  const list = useMemo(() => {
+    return allEvents.map((event) => ({
+      name: event.name,
+      label: getMetricLabel(event.name),
+      count: event.count,
+    }));
+  }, [allEvents]);
+
   return (
     <div>
       <div
@@ -58,7 +67,7 @@ export const MetricsSection: React.FC = React.memo(() => {
           <MetricsBlock
             key={i}
             index={i}
-            list={allEvents}
+            list={list}
             info={metric}
             onSelect={(info) => setMetrics(i, info)}
             onDelete={() => removeMetrics(i)}

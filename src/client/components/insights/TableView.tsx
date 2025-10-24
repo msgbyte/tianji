@@ -30,9 +30,13 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
   const dates = props.data[0].data.map((item) => item.date);
 
   const columns = [
-    columnHelper.accessor('name', {
+    columnHelper.display({
+      id: 'name',
       header: t('Event'),
       size: 150,
+      cell(props) {
+        return props.row.original.alias ?? props.row.original.name;
+      },
     }),
     ...props.groups.map((g) => {
       return columnHelper.accessor(g.value, {

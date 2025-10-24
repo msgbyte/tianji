@@ -17,10 +17,11 @@ import {
 } from '../ui/dropdown-menu';
 import { DropdownSelect } from './DropdownSelect';
 import { MetricsInfo, numberToLetter } from '@tianji/shared';
+import { getMetricLabel } from './utils/common';
 
 interface MetricsBlockProps {
   index: number;
-  list: { name: string; count: number }[];
+  list: { name: string; label?: string; count: number }[];
   info: MetricsInfo | null;
   onSelect: (info: MetricsInfo) => void;
   onDelete: () => void;
@@ -76,7 +77,9 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
         renderItem={(item) => (
           <>
             <LuMousePointerClick className="shrink-0" />
-            <span className="overflow-hidden text-ellipsis">{item.name}</span>
+            <span className="overflow-hidden text-ellipsis">
+              {item.label ?? item.name}
+            </span>
             {typeof item.count === 'number' && item.count > 0 && (
               <span className="text-xs opacity-40">
                 ({formatNumber(item.count)})
@@ -91,7 +94,9 @@ export const MetricsBlock: React.FC<MetricsBlockProps> = React.memo((props) => {
               <div className="h-4 w-4 rounded bg-white bg-opacity-20 text-center text-xs">
                 {numberToLetter(props.index + 1)}
               </div>
-              <span>{props.info?.name ?? <>&nbsp;</>}</span>
+              <span>
+                {getMetricLabel(props.info?.name ?? '') ?? <>&nbsp;</>}
+              </span>
             </div>
           </PopoverTrigger>
 
