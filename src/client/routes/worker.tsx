@@ -1,6 +1,6 @@
 import { trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
-import { CommonList } from '@/components/CommonList';
+import { CommonList, CommonListItem } from '@/components/CommonList';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout';
@@ -16,6 +16,8 @@ import {
 import { LuPlus } from 'react-icons/lu';
 import { useEvent } from '@/hooks/useEvent';
 import { useDataReady } from '@/hooks/useDataReady';
+import { useMemo } from 'react';
+import { WorkerSparkline } from '@/components/worker/WorkerSparkline';
 
 export const Route = createFileRoute('/worker')({
   beforeLoad: routeAuthBeforeLoad,
@@ -34,12 +36,16 @@ function PageComponent() {
   });
   const hasAdminPermission = useHasAdminPermission();
 
-  const items = data.map((item) => ({
-    id: item.id,
-    title: item.name,
-    content: item.description || '',
-    href: `/worker/${item.id}`,
-  }));
+  const items: CommonListItem[] = useMemo(() => {
+    return data.length > 0
+      ? data.map((item) => ({
+          id: item.id,
+          title: item.name,
+          href: `/worker/${item.id}`,
+          content: <WorkerSparkline workerId={item.id} />,
+        }))
+      : [];
+  }, [data]);
 
   useDataReady(
     () => data.length > 0,
@@ -88,6 +94,7 @@ function PageComponent() {
           <CommonList
             hasSearch={true}
             items={items}
+            direction="horizontal"
             isLoading={isLoading}
             emptyDescription={t(
               'No function workers yet. Create one to run JavaScript code in an isolated environment.'

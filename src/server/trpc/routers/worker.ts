@@ -379,6 +379,58 @@ export const workerRouter = router({
         avgCpuTime: result.avgCpuTime,
       };
     }),
+
+  // Get execution trend for sparkline (last 24 hours, grouped by hour)
+  getExecutionTrend: workspaceProcedure
+    .input(
+      z.object({
+        workerId: z.cuid2(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { workerId, workspaceId } = input;
+
+      // Verify worker exists and belongs to workspace
+      const worker = await prisma.functionWorker.findUnique({
+        where: {
+          id: workerId,
+          workspaceId,
+        },
+      });
+
+      if (!worker) {
+        throw new Error('Worker not found');
+      }
+
+      // Calculate time range for last 24 hours
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setHours(startDate.getHours() - 24);
+
+      // Query execution counts grouped by hour
+      const trendData = await prisma.$queryRaw<
+        Array<{
+          hour: Date;
+          count: bigint;
+        }>
+      >`
+        SELECT
+          DATE_TRUNC('hour', "createdAt") as hour,
+          COUNT(*)::int as count
+        FROM "FunctionWorkerExecution"
+        WHERE "workerId" = ${workerId}
+          AND "createdAt" >= ${startDate}
+          AND "createdAt" <= ${endDate}
+        GROUP BY DATE_TRUNC('hour', "createdAt")
+        ORDER BY hour ASC
+      `;
+
+      // Convert to the format expected by frontend
+      return trendData.map((item) => ({
+        date: item.hour.toISOString(),
+        value: Number(item.count),
+      }));
+    }),
   testCode: workspaceAdminProcedure
     .input(
       z.object({
