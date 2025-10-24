@@ -1,5 +1,17 @@
 
 
+## [1.30.3](https://github.com/msgbyte/tianji/compare/v1.30.2...v1.30.3) (2025-10-24)
+
+### Features
+
+* add survey insight query alias support ([ec7b8e0](https://github.com/msgbyte/tianji/commit/ec7b8e0743ec88520cd498491d886d2de6d13476))
+* add WorkerSparkline ([0f6e728](https://github.com/msgbyte/tianji/commit/0f6e728ad97fd98db35b193684697ad6a59c8b29))
+
+### Document
+
+* add summaries to various API endpoints for improved documentation ([e835a00](https://github.com/msgbyte/tianji/commit/e835a00c25e361e64e2a5a34801e5cacaef7fa47))
+* update openapi.json ([586441e](https://github.com/msgbyte/tianji/commit/586441ef60bf24a5aa77dc2ccc83b38c050b4bd9))
+
 ## [1.30.2](https://github.com/msgbyte/tianji/compare/v1.30.1...v1.30.2) (2025-10-24)
 
 ### Bug Fixes
