@@ -243,11 +243,11 @@ export class DistributedLock {
     }
 
     try {
-      logger.info(
+      logger.debug(
         `[DistributedLock] Executing function with lock: ${lockName}`
       );
       const result = await fn();
-      logger.info(
+      logger.debug(
         `[DistributedLock] Function completed successfully with lock: ${lockName}`
       );
       return result;

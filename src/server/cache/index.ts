@@ -24,7 +24,7 @@ export async function getCacheManager() {
   }
 
   const cacheManager = new Keyv({
-    store,
+    store: store ?? new Map(),
     ttl: 10 * 60 * 1000,
     namespace: 'tianji-cache',
   });
