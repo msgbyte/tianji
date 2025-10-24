@@ -21,7 +21,12 @@ import { UserApiKeyModelSchema } from '../../prisma/zod/userapikey.js';
 export const userRouter = router({
   login: publicProcedure
     .meta({
-      openapi: { method: 'POST', path: '/login', tags: [OPENAPI_TAG.USER] },
+      openapi: {
+        method: 'POST',
+        path: '/login',
+        tags: [OPENAPI_TAG.USER],
+        summary: 'User login',
+      },
     })
     .input(
       z.object({
@@ -49,6 +54,7 @@ export const userRouter = router({
         method: 'POST',
         path: '/loginWithToken',
         tags: [OPENAPI_TAG.USER],
+        summary: 'Login with token',
       },
     })
     .input(
@@ -86,6 +92,7 @@ export const userRouter = router({
         method: 'POST',
         path: '/register',
         tags: [OPENAPI_TAG.USER],
+        summary: 'Register user',
       },
     })
     .input(

@@ -37,6 +37,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/usage',
+        summary: 'Get usage',
         description: 'get workspace usage',
       })
     )
@@ -65,6 +66,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/limit',
+        summary: 'Get limit',
         description: 'get workspace subscription limit',
       })
     )
@@ -80,6 +82,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/currentTier',
+        summary: 'Get current tier',
         description: 'get workspace current tier',
       })
     )
@@ -94,6 +97,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/currentSubscription',
+        summary: 'Get subscription',
         description: 'get workspace current subscription',
       })
     )
@@ -175,6 +179,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/credit',
+        summary: 'Get credit',
         description: 'get workspace credit balance',
       })
     )
@@ -194,6 +199,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/credit/bills',
+        summary: 'Get credit bills',
         description: 'list workspace credit bills',
       })
     )
@@ -228,6 +234,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'GET',
         path: '/credit/packs',
+        summary: 'Get credit packs',
         description: 'list available credit packs',
       })
     )
@@ -256,6 +263,7 @@ export const billingRouter = router({
       buildBillingOpenapi({
         method: 'POST',
         path: '/credit/checkout',
+        summary: 'Checkout credit',
         description: 'create credit checkout session',
       })
     )

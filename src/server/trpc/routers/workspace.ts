@@ -46,6 +46,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'POST',
         path: '/create',
+        summary: 'Create workspace',
       })
     )
     .input(
@@ -101,6 +102,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'POST',
         path: '/switch',
+        summary: 'Switch workspace',
       })
     )
     .input(
@@ -145,6 +147,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'PATCH',
         path: '/rename',
+        summary: 'Rename workspace',
       })
     )
     .input(
@@ -172,6 +175,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'DELETE',
         path: '/{workspaceId}/del',
+        summary: 'Delete workspace',
       })
     )
     .input(
@@ -214,6 +218,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'GET',
         path: '/{workspaceId}/members',
+        summary: 'Get members',
       })
     )
     .output(
@@ -256,6 +261,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'POST',
         path: '/{workspaceId}/updateSettings',
+        summary: 'Update settings',
       })
     )
     .input(
@@ -302,6 +308,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'POST',
         path: '/{workspaceId}/invite',
+        summary: 'Invite member',
       })
     )
     .input(
@@ -420,6 +427,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'DELETE',
         path: '/{workspaceId}/tick',
+        summary: 'Kick member',
         description: 'Administrator kicks a user out of a workspace.',
       })
     )
@@ -440,6 +448,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'PATCH',
         path: '/{workspaceId}/updateMemberRole',
+        summary: 'Update member role',
         description: 'Update workspace member role',
       })
     )
@@ -509,6 +518,7 @@ export const workspaceRouter = router({
       buildWorkspaceOpenapi({
         method: 'GET',
         path: '/{workspaceId}/getServiceCount',
+        summary: 'Get service count',
       })
     )
     .output(

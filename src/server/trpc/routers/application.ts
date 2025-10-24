@@ -37,6 +37,7 @@ export const applicationRouter = router({
         path: '/workspace/{workspaceId}/application/all',
         tags: [OPENAPI_TAG.APPLICATION],
         protect: true,
+        summary: 'Get all applications',
       },
     })
     .output(z.array(ApplicationModelSchema))
@@ -61,6 +62,7 @@ export const applicationRouter = router({
       buildApplicationOpenapi({
         method: 'GET',
         path: '/info',
+        summary: 'Get application info',
       })
     )
     .input(
@@ -99,6 +101,7 @@ export const applicationRouter = router({
         path: '/workspace/{workspaceId}/application/create',
         tags: [OPENAPI_TAG.APPLICATION],
         protect: true,
+        summary: 'Create application',
       },
     })
     .input(applicationCreateSchema)
@@ -135,6 +138,7 @@ export const applicationRouter = router({
       buildApplicationOpenapi({
         method: 'PATCH',
         path: '/update',
+        summary: 'Update application',
       })
     )
     .input(
@@ -182,6 +186,7 @@ export const applicationRouter = router({
       buildApplicationOpenapi({
         method: 'DELETE',
         path: '/delete',
+        summary: 'Delete application',
       })
     )
     .input(
@@ -218,6 +223,7 @@ export const applicationRouter = router({
         protect: true,
         method: 'GET',
         path: `/application/storeAppSearch`,
+        summary: 'Search store apps',
       },
     })
     .input(
@@ -246,6 +252,7 @@ export const applicationRouter = router({
       buildApplicationOpenapi({
         method: 'GET',
         path: '/storeInfoHistory',
+        summary: 'Get store info history',
       })
     )
     .input(
@@ -299,6 +306,7 @@ export const applicationRouter = router({
       buildApplicationOpenapi({
         method: 'GET',
         path: '/eventStats',
+        summary: 'Get event stats',
       })
     )
     .input(

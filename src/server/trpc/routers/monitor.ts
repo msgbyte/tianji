@@ -44,6 +44,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/all',
+        summary: 'Get all monitors',
       })
     )
     .output(z.array(monitorInfoWithNotificationIdSchema))
@@ -72,6 +73,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/{monitorId}/get',
+        summary: 'Get monitor',
       })
     )
     .input(
@@ -105,6 +107,7 @@ export const monitorRouter = router({
         protect: false,
         method: 'POST',
         path: '/monitor/getPublicInfo',
+        summary: 'Get public info',
       },
     })
     .input(
@@ -123,6 +126,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'POST',
         path: '/upsert',
+        summary: 'Upsert monitor',
       })
     )
     .input(
@@ -179,6 +183,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'DELETE',
         path: '/{monitorId}/del',
+        summary: 'Delete monitor',
       })
     )
     .input(
@@ -197,6 +202,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'POST',
         path: '/{monitorId}/regeneratePushToken',
+        summary: 'Regenerate push token',
       })
     )
     .input(
@@ -291,6 +297,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'POST',
         path: '/{monitorId}/trigger',
+        summary: 'Trigger monitor',
       })
     )
     .input(
@@ -345,6 +352,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/{monitorId}/data',
+        summary: 'Get data',
       })
     )
     .input(
@@ -377,6 +385,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'PATCH',
         path: '/{monitorId}/changeActive',
+        summary: 'Change active status',
       })
     )
     .input(
@@ -445,6 +454,7 @@ export const monitorRouter = router({
         method: 'GET',
         protect: false,
         path: '/{monitorId}/recentData',
+        summary: 'Get recent data',
       })
     )
     .input(
@@ -473,6 +483,7 @@ export const monitorRouter = router({
         method: 'GET',
         protect: false,
         path: '/{monitorId}/publicSummary',
+        summary: 'Get public summary',
       })
     )
     .input(
@@ -504,6 +515,7 @@ export const monitorRouter = router({
         method: 'GET',
         protect: false,
         path: '/{monitorId}/publicData',
+        summary: 'Get public data',
       })
     )
     .input(
@@ -535,6 +547,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/{monitorId}/dataMetrics',
+        summary: 'Get data metrics',
       })
     )
     .input(
@@ -635,6 +648,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/events',
+        summary: 'Get events',
       })
     )
     .input(
@@ -667,6 +681,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'DELETE',
         path: '/clearEvents',
+        summary: 'Clear events',
       })
     )
     .input(
@@ -694,6 +709,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'DELETE',
         path: '/clearData',
+        summary: 'Clear data',
       })
     )
     .input(
@@ -721,6 +737,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/{monitorId}/status',
+        summary: 'Get status',
       })
     )
     .input(
@@ -747,6 +764,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'GET',
         path: '/getAllPages',
+        summary: 'Get all pages',
       })
     )
     .output(z.array(MonitorStatusPageModelSchema))
@@ -768,6 +786,7 @@ export const monitorRouter = router({
         tags: [OPENAPI_TAG.MONITOR],
         method: 'GET',
         path: '/monitor/getPageInfo',
+        summary: 'Get page info',
       },
     })
     .input(
@@ -790,6 +809,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'POST',
         path: '/createStatusPage',
+        summary: 'Create status page',
       })
     )
     .input(
@@ -860,6 +880,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'PATCH',
         path: '/updateStatusPage',
+        summary: 'Update status page',
       })
     )
     .input(
@@ -938,6 +959,7 @@ export const monitorRouter = router({
       buildMonitorOpenapi({
         method: 'DELETE',
         path: '/deleteStatusPage',
+        summary: 'Delete status page',
       })
     )
     .input(

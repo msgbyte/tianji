@@ -22,6 +22,7 @@ export const feedStateRouter = router({
       buildFeedOpenapi({
         method: 'GET',
         path: '/state/all',
+        summary: 'Get all states',
       })
     )
     .input(
@@ -116,6 +117,7 @@ export const feedStateRouter = router({
       buildFeedOpenapi({
         method: 'POST',
         path: '/{channelId}/state/resolve',
+        summary: 'Resolve state',
       })
     )
     .input(

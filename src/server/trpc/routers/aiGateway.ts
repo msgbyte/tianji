@@ -40,6 +40,7 @@ export const aiGatewayRouter = router({
         path: '/workspace/{workspaceId}/aiGateway/all',
         tags: [OPENAPI_TAG.AI_GATEWAY],
         protect: true,
+        summary: 'Get all gateways',
       },
     })
     .output(z.array(AIGatewayModelSchema))
@@ -70,6 +71,7 @@ export const aiGatewayRouter = router({
       buildAIGatewayOpenapi({
         method: 'GET',
         path: '/info',
+        summary: 'Get gateway info',
       })
     )
     .input(
@@ -109,6 +111,7 @@ export const aiGatewayRouter = router({
         path: '/workspace/{workspaceId}/aiGateway/create',
         tags: [OPENAPI_TAG.APPLICATION],
         protect: true,
+        summary: 'Create gateway',
       },
     })
     .input(aiGatewayCreateSchema)
@@ -152,6 +155,7 @@ export const aiGatewayRouter = router({
       buildAIGatewayOpenapi({
         method: 'PATCH',
         path: '/update',
+        summary: 'Update gateway',
       })
     )
     .input(
@@ -207,6 +211,7 @@ export const aiGatewayRouter = router({
       buildAIGatewayOpenapi({
         method: 'DELETE',
         path: '/delete',
+        summary: 'Delete gateway',
       })
     )
     .input(
@@ -242,6 +247,7 @@ export const aiGatewayRouter = router({
       buildAIGatewayOpenapi({
         method: 'GET',
         path: '/logs',
+        summary: 'Get gateway logs',
       })
     )
     .input(
@@ -296,6 +302,7 @@ export const aiGatewayRouter = router({
       buildAIGatewayOpenapi({
         method: 'GET',
         path: '/model-pricing',
+        summary: 'Get model pricing',
       })
     )
     .input(
@@ -432,6 +439,7 @@ export const aiGatewayRouter = router({
         buildAIGatewayOpenapi({
           method: 'GET',
           path: '/quota-alert',
+          summary: 'Get quota alert',
         })
       )
       .input(
@@ -484,6 +492,7 @@ export const aiGatewayRouter = router({
         buildAIGatewayOpenapi({
           method: 'POST',
           path: '/quota-alert/upsert',
+          summary: 'Upsert quota alert',
         })
       )
       .input(
@@ -543,6 +552,7 @@ export const aiGatewayRouter = router({
         buildAIGatewayOpenapi({
           method: 'DELETE',
           path: '/quota-alert/delete',
+          summary: 'Delete quota alert',
         })
       )
       .input(

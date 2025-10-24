@@ -37,6 +37,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'GET',
         path: '/channels',
+        summary: 'Get all channels',
       })
     )
     .output(
@@ -77,6 +78,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'GET',
         path: '/{channelId}/info',
+        summary: 'Get channel info',
       })
     )
     .input(
@@ -123,6 +125,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'POST',
         path: '/{channelId}/update',
+        summary: 'Update channel',
       })
     )
     .input(
@@ -187,6 +190,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'GET',
         path: '/{channelId}/fetchEventsByCursor',
+        summary: 'Fetch events',
         description: 'Fetch workspace feed channel events',
       })
     )
@@ -344,6 +348,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'POST',
         path: '/createChannel',
+        summary: 'Create channel',
       })
     )
     .input(
@@ -410,6 +415,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'POST',
         path: '/{channelId}/refreshPublicShare',
+        summary: 'Refresh public share',
         description: 'Regenerate public share id for feed channel',
       })
     )
@@ -446,6 +452,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'POST',
         path: '/{channelId}/disablePublicShare',
+        summary: 'Disable public share',
         description: 'Disable public share for feed channel',
       })
     )
@@ -482,6 +489,7 @@ export const feedRouter = router({
       buildFeedOpenapi({
         method: 'DELETE',
         path: '/{channelId}/del',
+        summary: 'Delete channel',
       })
     )
     .input(

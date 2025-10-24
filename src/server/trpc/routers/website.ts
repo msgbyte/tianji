@@ -77,6 +77,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/onlineCount',
+        summary: 'Get online count',
       })
     )
     .input(
@@ -99,6 +100,7 @@ export const websiteRouter = router({
         path: '/workspace/{workspaceId}/website/all',
         tags: [OPENAPI_TAG.WEBSITE],
         protect: true,
+        summary: 'Get all websites',
       },
     })
     .output(z.array(websiteInfoSchema))
@@ -123,6 +125,7 @@ export const websiteRouter = router({
         path: '/workspace/{workspaceId}/website/allOverview',
         tags: [OPENAPI_TAG.WEBSITE],
         protect: true,
+        summary: 'Get overview',
       },
     })
     .output(z.record(z.string(), z.number()))
@@ -166,6 +169,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/info',
+        summary: 'Get website info',
       })
     )
     .input(
@@ -191,6 +195,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/stats',
+        summary: 'Get stats',
       })
     )
     .input(
@@ -281,6 +286,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/geoStats',
+        summary: 'Get geo stats',
       })
     )
     .input(
@@ -331,6 +337,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/pageviews',
+        summary: 'Get pageviews',
       })
     )
     .input(
@@ -399,6 +406,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/metrics',
+        summary: 'Get metrics',
       })
     )
     .input(
@@ -517,6 +525,7 @@ export const websiteRouter = router({
         tags: [OPENAPI_TAG.WEBSITE],
         protect: true,
         path: `/workspace/{workspaceId}/website/add`,
+        summary: 'Add website',
       },
     })
     .input(
@@ -562,6 +571,7 @@ export const websiteRouter = router({
         tags: [OPENAPI_TAG.WEBSITE],
         protect: true,
         path: `/workspace/{workspaceId}/website/{websiteId}`,
+        summary: 'Delete website',
       },
     })
     .input(
@@ -587,6 +597,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'PUT',
         path: '/update',
+        summary: 'Update website',
       })
     )
     .input(
@@ -620,6 +631,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'POST',
         path: '/generateLighthouseReport',
+        summary: 'Generate Lighthouse report',
       })
     )
     .input(
@@ -655,6 +667,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'GET',
         path: '/getLighthouseReport',
+        summary: 'Get Lighthouse report',
       })
     )
     .input(
@@ -706,6 +719,7 @@ export const websiteRouter = router({
         protect: true,
         method: 'GET',
         path: '/lighthouse/{lighthouseId}',
+        summary: 'Get Lighthouse JSON',
       },
     })
     .input(
@@ -739,6 +753,7 @@ export const websiteRouter = router({
       buildWebsitePublicOpenapi({
         method: 'GET',
         path: '/{shareId}/info',
+        summary: 'Get public info',
       })
     )
     .input(
@@ -773,6 +788,7 @@ export const websiteRouter = router({
       buildWebsitePublicOpenapi({
         method: 'GET',
         path: '/{shareId}/stats',
+        summary: 'Get public stats',
       })
     )
     .input(
@@ -828,6 +844,7 @@ export const websiteRouter = router({
       buildWebsitePublicOpenapi({
         method: 'GET',
         path: '/{shareId}/metrics',
+        summary: 'Get public metrics',
       })
     )
     .input(
@@ -940,6 +957,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'POST',
         path: '/share/enable',
+        summary: 'Enable share',
       })
     )
     .input(
@@ -993,6 +1011,7 @@ export const websiteRouter = router({
       buildWebsiteOpenapi({
         method: 'POST',
         path: '/share/disable',
+        summary: 'Disable share',
       })
     )
     .input(

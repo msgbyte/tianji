@@ -11,6 +11,7 @@ export const globalRouter = router({
         method: 'GET',
         path: '/global/config',
         tags: [OPENAPI_TAG.GLOBAL],
+        summary: 'Get global config',
         description: 'Get Tianji system global config',
       },
     })

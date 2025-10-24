@@ -36,6 +36,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/all',
+        summary: 'Get all telemetry',
       })
     )
     .output(z.array(TelemetryModelSchema))
@@ -58,6 +59,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/info',
+        summary: 'Get telemetry info',
       })
     )
     .input(
@@ -83,6 +85,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/allEventCount',
+        summary: 'Get all event count',
       })
     )
     .output(z.record(z.string(), z.number()))
@@ -110,6 +113,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/eventCount',
+        summary: 'Get event count',
       })
     )
     .input(
@@ -135,6 +139,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'POST',
         path: '/upsert',
+        summary: 'Upsert telemetry',
       })
     )
     .input(
@@ -171,6 +176,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'POST',
         path: '/delete',
+        summary: 'Delete telemetry',
       })
     )
     .input(
@@ -194,6 +200,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/pageviews',
+        summary: 'Get pageviews',
       })
     )
     .input(
@@ -255,6 +262,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/metrics',
+        summary: 'Get metrics',
       })
     )
     .input(
@@ -342,6 +350,7 @@ export const telemetryRouter = router({
       buildTelemetryOpenapi({
         method: 'GET',
         path: '/stats',
+        summary: 'Get stats',
       })
     )
     .input(

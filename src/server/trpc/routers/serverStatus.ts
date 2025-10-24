@@ -27,6 +27,7 @@ export const serverStatusRouter = router({
         method: 'POST',
         path: '/serverStatus/publicInfo',
         protect: false,
+        summary: 'Get server status',
       },
     })
     .input(

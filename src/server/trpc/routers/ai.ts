@@ -116,6 +116,7 @@ export const aiRouter = router({
       buildAIOpenapi({
         method: 'POST',
         path: '/classifySurvey',
+        summary: 'Classify survey',
         description: 'classify survey',
       })
     )
@@ -162,6 +163,7 @@ export const aiRouter = router({
       buildAIOpenapi({
         method: 'POST',
         path: '/translateSurvey',
+        summary: 'Translate survey',
         description: 'translate survey',
       })
     )

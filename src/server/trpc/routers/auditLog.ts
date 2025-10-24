@@ -17,6 +17,7 @@ export const auditLogRouter = router({
       buildAuditLogOpenapi({
         method: 'GET',
         path: '/fetchByCursor',
+        summary: 'Fetch audit log',
         description: 'Fetch workspace audit log',
       })
     )
@@ -56,6 +57,7 @@ export const auditLogRouter = router({
       buildAuditLogOpenapi({
         method: 'DELETE',
         path: '/clear',
+        summary: 'Clear audit log',
         description: 'clear all workspace audit log',
       })
     )
