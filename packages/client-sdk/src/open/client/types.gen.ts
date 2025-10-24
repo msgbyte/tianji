@@ -119,7 +119,7 @@ export type $OpenApiTs = {
                 /**
                  * Successful response
                  */
-                200: 'ok';
+                200: "ok";
                 /**
                  * Invalid input data
                  */
@@ -156,7 +156,7 @@ export type $OpenApiTs = {
                 /**
                  * Successful response
                  */
-                200: 'ok';
+                200: "ok";
                 /**
                  * Invalid input data
                  */
@@ -187,17 +187,17 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    modelApiKey?: string | null;
-                    customModelBaseUrl?: string | null;
-                    customModelName?: string | null;
-                    customModelInputPrice?: number | null;
-                    customModelOutputPrice?: number | null;
-                    createdAt: string;
-                    updatedAt: string;
-                } | null;
+    id: string;
+    workspaceId: string;
+    name: string;
+    modelApiKey?: string | null;
+    customModelBaseUrl?: string | null;
+    customModelName?: string | null;
+    customModelInputPrice?: number | null;
+    customModelOutputPrice?: number | null;
+    createdAt: string;
+    updatedAt: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -325,6 +325,7 @@ export type $OpenApiTs = {
                 cursor?: string;
                 gatewayId: string;
                 limit?: number;
+                logId?: string;
                 workspaceId: string;
             };
             res: {
@@ -352,6 +353,190 @@ export type $OpenApiTs = {
                     }>;
                     nextCursor?: string;
                 };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/model-pricing': {
+        get: {
+            req: {
+                limit?: number;
+                search?: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    providers: Array<{
+                        id: string;
+                        name: string;
+                        api?: string;
+                        doc?: string;
+                        models: Array<{
+                            id: string;
+                            name: string;
+                            attachment?: boolean;
+                            reasoning?: boolean;
+                            temperature?: boolean;
+                            tool_call?: boolean;
+                            knowledge?: string;
+                            release_date?: string;
+                            last_updated?: string;
+                            modalities?: {
+                                input?: Array<(string)>;
+                                output?: Array<(string)>;
+                            };
+                            open_weights?: boolean;
+                            cost?: {
+                                input?: number;
+                                output?: number;
+                                cache_read?: number;
+                            };
+                            limit?: {
+                                context?: number;
+                                output?: number;
+                            };
+                        }>;
+                    }>;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/quota-alert': {
+        get: {
+            req: {
+                gatewayId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+    id: string;
+    dailyQuota: number;
+    enabled: boolean;
+    notificationId: string | null;
+    lastAlertSentAt: string | null;
+    alertLevel80Sent: boolean;
+    alertLevel100Sent: boolean;
+    alertLevel150Sent: boolean;
+} | null;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/quota-alert/upsert': {
+        post: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    gatewayId: string;
+                    dailyQuota: number;
+                    enabled: boolean;
+                    notificationId: string | null;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    dailyQuota: number;
+                    enabled: boolean;
+                    notificationId: string | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/aiGateway/quota-alert/delete': {
+        delete: {
+            req: {
+                gatewayId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: boolean;
                 /**
                  * Invalid input data
                  */
@@ -518,31 +703,31 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    createdAt: string;
-                    updatedAt: string;
-                    deletedAt?: string | null;
-                    applicationStoreInfos: Array<{
-                        applicationId: string;
-                        storeType: string;
-                        storeId: string;
-                        appId: string;
-                        title: string;
-                        description: string;
-                        releaseNotes: string;
-                        url: string;
-                        downloads?: number | null;
-                        score?: number | null;
-                        ratingCount?: number | null;
-                        reviews?: number | null;
-                        version?: string | null;
-                        size?: number | null;
-                        createdAt: string;
-                        updatedAt: string;
-                    }>;
-                } | null;
+    id: string;
+    workspaceId: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string | null;
+    applicationStoreInfos: Array<{
+        applicationId: string;
+        storeType: string;
+        storeId: string;
+        appId: string;
+        title: string;
+        description: string;
+        releaseNotes: string;
+        url: string;
+        downloads?: number | null;
+        score?: number | null;
+        ratingCount?: number | null;
+        reviews?: number | null;
+        version?: string | null;
+        size?: number | null;
+        createdAt: string;
+        updatedAt: string;
+    }>;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -848,9 +1033,19 @@ export type $OpenApiTs = {
                     alphaMode: boolean;
                     disableAnonymousTelemetry: boolean;
                     customTrackerScriptName?: string;
+                    serverTimezone?: string;
                     authProvider: Array<(string)>;
+                    customAuthProviderIcon?: string;
+                    smtpAvailable: boolean;
                     enableBilling: boolean;
                     enableAI: boolean;
+                    enableFunctionWorker: boolean;
+                    observability: {
+                        tianji: {
+                            baseUrl?: string;
+                            websiteId?: string;
+                        };
+                    };
                 };
                 /**
                  * Authorization not provided
@@ -929,6 +1124,63 @@ export type $OpenApiTs = {
             req: {
                 requestBody: {
                     token: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    info: {
+                        id: string;
+                        role: string;
+                        username: string;
+                        nickname: string | null;
+                        avatar: string | null;
+                        email: string | null;
+                        createdAt: string;
+                        updatedAt: string;
+                        deletedAt: string | null;
+                        currentWorkspaceId: string | null;
+                        workspaces: Array<{
+                            role: string;
+                            workspace: {
+                                id: string;
+                                name: string;
+                                settings: {
+                                    [key: string]: unknown;
+                                };
+                                paused: boolean;
+                            };
+                        }>;
+                    };
+                    token: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/register': {
+        post: {
+            req: {
+                requestBody: {
+                    username: string;
+                    password: string;
                 };
             };
             res: {
@@ -1212,7 +1464,7 @@ export type $OpenApiTs = {
             req: {
                 requestBody: {
                     settings: {
-                        [key: string]: unknown;
+                        [key: string]: (unknown) | undefined;
                     };
                 };
                 workspaceId: string;
@@ -1370,7 +1622,9 @@ export type $OpenApiTs = {
                     page: number;
                     survey: number;
                     feed: number;
+                    shortLink: number;
                     aiGateway: number;
+                    functionWorker: number;
                 };
                 /**
                  * Invalid input data
@@ -1519,17 +1773,17 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    domain: string | null;
-                    shareId: string | null;
-                    resetAt: string | null;
-                    monitorId: string | null;
-                    createdAt: string;
-                    updatedAt: string;
-                    deletedAt: string | null;
-                } | null;
+    id: string;
+    workspaceId: string;
+    name: string;
+    domain: string | null;
+    shareId: string | null;
+    resetAt: string | null;
+    monitorId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -1681,8 +1935,8 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    pageviews?: unknown;
-                    sessions?: unknown;
+                    pageviews: unknown;
+                    sessions: unknown;
                 };
                 /**
                  * Invalid input data
@@ -1722,8 +1976,13 @@ export type $OpenApiTs = {
                 region?: string;
                 startAt: number;
                 title?: string;
-                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'device' | 'country' | 'event';
+                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'device' | 'country' | 'event' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
                 url?: string;
+                utmCampaign?: string;
+                utmContent?: string;
+                utmMedium?: string;
+                utmSource?: string;
+                utmTerm?: string;
                 websiteId: string;
                 workspaceId: string;
             };
@@ -2009,6 +2268,180 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/website/public/{shareId}/info': {
+        get: {
+            req: {
+                shareId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    name: string;
+                    domain?: string | null;
+                    shareId?: string | null;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/website/public/{shareId}/stats': {
+        get: {
+            req: {
+                range?: 'realtime' | '24h' | '7d' | '30d' | '90d';
+                shareId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    pageviews: {
+                        value: number;
+                        prev: number;
+                    };
+                    visitors: {
+                        value: number;
+                        prev: number;
+                    };
+                    bounce_rate: {
+                        value: number;
+                        prev: number;
+                    };
+                    average_visit_duration: {
+                        value: number;
+                        prev: number;
+                    };
+                    pageviews_trend: Array<{
+                        date: string;
+                        value: number;
+                    }>;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/website/public/{shareId}/metrics': {
+        get: {
+            req: {
+                range?: 'realtime' | '24h' | '7d' | '30d' | '90d';
+                shareId: string;
+                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'device' | 'country' | 'event' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    x: string | null;
+                    y: number;
+                    ratio: number;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/website/{websiteId}/share/enable': {
+        post: {
+            req: {
+                websiteId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    shareUrl: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/website/{websiteId}/share/disable': {
+        post: {
+            req: {
+                websiteId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    success: true;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
     '/workspace/{workspaceId}/monitor/all': {
         get: {
             req: {
@@ -2031,6 +2464,8 @@ export type $OpenApiTs = {
                     };
                     trendingMode: boolean;
                     recentError?: string | null;
+                    upMessageTemplate?: string | null;
+                    downMessageTemplate?: string | null;
                     createdAt: string;
                     updatedAt: string;
                     notifications: Array<{
@@ -2071,24 +2506,26 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    type: string;
-                    active: boolean;
-                    interval: number;
-                    maxRetries: number;
-                    payload: {
-                        [key: string]: unknown;
-                    };
-                    trendingMode: boolean;
-                    recentError?: string | null;
-                    createdAt: string;
-                    updatedAt: string;
-                    notifications: Array<{
-                        id: string;
-                    }>;
-                } | null;
+    id: string;
+    workspaceId: string;
+    name: string;
+    type: string;
+    active: boolean;
+    interval: number;
+    maxRetries: number;
+    payload: {
+        [key: string]: unknown;
+    };
+    trendingMode: boolean;
+    recentError?: string | null;
+    upMessageTemplate?: string | null;
+    downMessageTemplate?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    notifications: Array<{
+        id: string;
+    }>;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -2153,8 +2590,10 @@ export type $OpenApiTs = {
                     trendingMode?: boolean;
                     notificationIds?: Array<(string)>;
                     payload: {
-                        [key: string]: unknown;
+                        [key: string]: (unknown) | undefined;
                     };
+                    upMessageTemplate?: string | null;
+                    downMessageTemplate?: string | null;
                 };
                 workspaceId: string;
             };
@@ -2175,6 +2614,8 @@ export type $OpenApiTs = {
                     };
                     trendingMode: boolean;
                     recentError?: string | null;
+                    upMessageTemplate?: string | null;
+                    downMessageTemplate?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -2220,6 +2661,8 @@ export type $OpenApiTs = {
                     };
                     trendingMode: boolean;
                     recentError?: string | null;
+                    upMessageTemplate?: string | null;
+                    downMessageTemplate?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -2257,6 +2700,36 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: string;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/monitor/{monitorId}/trigger': {
+        post: {
+            req: {
+                monitorId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: unknown;
                 /**
                  * Invalid input data
                  */
@@ -2341,6 +2814,8 @@ export type $OpenApiTs = {
                     };
                     trendingMode: boolean;
                     recentError?: string | null;
+                    upMessageTemplate?: string | null;
+                    downMessageTemplate?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -2618,14 +3093,14 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    monitorId: string;
-                    statusName: string;
-                    payload: null | {
+    monitorId: string;
+    statusName: string;
+    payload: null | {
     [key: string]: unknown;
 } | Array<unknown> | string | boolean | number;
-                    createdAt: string;
-                    updatedAt: string;
-                } | null;
+    createdAt: string;
+    updatedAt: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -2670,6 +3145,7 @@ export type $OpenApiTs = {
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
+                        showDetail?: boolean;
                     }>;
                     domain?: string | null;
                     createdAt: string;
@@ -2708,22 +3184,23 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    slug: string;
-                    title: string;
-                    description: string;
-                    body: {
-                        [key: string]: unknown;
-                    };
-                    monitorList: Array<{
-                        id: string;
-                        showCurrent?: boolean;
-                    }>;
-                    domain?: string | null;
-                    createdAt: string;
-                    updatedAt: string;
-                } | null;
+    id: string;
+    workspaceId: string;
+    slug: string;
+    title: string;
+    description: string;
+    body: {
+        [key: string]: unknown;
+    };
+    monitorList: Array<{
+        id: string;
+        showCurrent?: boolean;
+        showDetail?: boolean;
+    }>;
+    domain?: string | null;
+    createdAt: string;
+    updatedAt: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -2760,6 +3237,7 @@ export type $OpenApiTs = {
                     monitorList?: Array<{
                         id: string;
                         showCurrent?: boolean;
+                        showDetail?: boolean;
                     }>;
                     domain?: string | null;
                 };
@@ -2781,6 +3259,7 @@ export type $OpenApiTs = {
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
+                        showDetail?: boolean;
                     }>;
                     domain?: string | null;
                     createdAt: string;
@@ -2819,6 +3298,7 @@ export type $OpenApiTs = {
                     monitorList?: Array<{
                         id: string;
                         showCurrent?: boolean;
+                        showDetail?: boolean;
                     }>;
                     domain?: string | null;
                 };
@@ -2840,6 +3320,7 @@ export type $OpenApiTs = {
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
+                        showDetail?: boolean;
                     }>;
                     domain?: string | null;
                     createdAt: string;
@@ -2890,6 +3371,7 @@ export type $OpenApiTs = {
                     monitorList: Array<{
                         id: string;
                         showCurrent?: boolean;
+                        showDetail?: boolean;
                     }>;
                     domain?: string | null;
                     createdAt: string;
@@ -2911,6 +3393,39 @@ export type $OpenApiTs = {
                  * Not found
                  */
                 404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/serverStatus/publicInfo': {
+        post: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    serverNames: Array<(string)>;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    [key: string]: {
+                        workspaceId: string;
+                        name: string;
+                        hostname: string;
+                        timeout?: number;
+                        updatedAt: number;
+                        payload: unknown;
+                    };
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
                 /**
                  * Internal server error
                  */
@@ -2969,13 +3484,13 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    createdAt: string;
-                    updatedAt: string;
-                    deletedAt?: string | null;
-                } | null;
+    id: string;
+    workspaceId: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string | null;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -3166,8 +3681,8 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    pageviews?: unknown;
-                    sessions?: unknown;
+                    pageviews: unknown;
+                    sessions: unknown;
                 };
                 /**
                  * Invalid input data
@@ -3350,24 +3865,24 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    payload: {
-                        items: Array<{
-                            label: string;
-                            name: string;
-                            type: 'text' | 'select' | 'email' | 'imageUrl';
-                            options?: Array<(string)>;
-                        }>;
-                    };
-                    feedChannelIds: Array<(string)>;
-                    feedTemplate: string;
-                    webhookUrl: string;
-                    recentSuggestionCategory: Array<(string)>;
-                    createdAt: string;
-                    updatedAt: string;
-                } | null;
+    id: string;
+    workspaceId: string;
+    name: string;
+    payload: {
+        items: Array<{
+            label: string;
+            name: string;
+            type: 'text' | 'select' | 'email' | 'imageUrl';
+            options?: Array<(string)>;
+        }>;
+    };
+    feedChannelIds: Array<(string)>;
+    feedTemplate: string;
+    webhookUrl: string;
+    recentSuggestionCategory: Array<(string)>;
+    createdAt: string;
+    updatedAt: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -3475,7 +3990,7 @@ export type $OpenApiTs = {
                 /**
                  * Successful response
                  */
-                200: string;
+                200: "success";
                 /**
                  * Invalid input data
                  */
@@ -3674,6 +4189,112 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/workspace/{workspaceId}/survey/{surveyId}/duplicate': {
+        post: {
+            req: {
+                requestBody: {
+                    name: string;
+                };
+                surveyId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    payload: {
+                        items: Array<{
+                            label: string;
+                            name: string;
+                            type: 'text' | 'select' | 'email' | 'imageUrl';
+                            options?: Array<(string)>;
+                        }>;
+                    };
+                    feedChannelIds: Array<(string)>;
+                    feedTemplate: string;
+                    webhookUrl: string;
+                    recentSuggestionCategory: Array<(string)>;
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/survey/result/{resultId}': {
+        get: {
+            req: {
+                resultId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+    id: string;
+    surveyId: string;
+    createdAt: string;
+    sessionId: string;
+    payload: {
+        [key: string]: unknown;
+    };
+    browser?: string | null;
+    os?: string | null;
+    language?: string | null;
+    ip?: string | null;
+    country?: string | null;
+    subdivision1?: string | null;
+    subdivision2?: string | null;
+    city?: string | null;
+    longitude?: number | null;
+    latitude?: number | null;
+    accuracyRadius?: number | null;
+    aiCategory?: string | null;
+    aiTranslation?: string | null;
+} | null;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
     '/workspace/{workspaceId}/survey/{surveyId}/result/list': {
         get: {
             req: {
@@ -3830,7 +4451,7 @@ export type $OpenApiTs = {
                         workspaceId: string;
                         content: string;
                         relatedId?: string | null;
-                        relatedType?: 'Monitor' | 'Notification' | 'Task' | null;
+                        relatedType?: 'Monitor' | 'Notification' | 'Task' | 'FunctionWorker' | null;
                         createdAt: string;
                     }>;
                     nextCursor?: string;
@@ -4015,19 +4636,19 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    subscriptionId: string;
-                    workspaceId: string;
-                    storeId: string;
-                    productId: string;
-                    variantId: string;
-                    status: string;
-                    cardBrand: string;
-                    cardLastFour: string;
-                    renewsAt: string;
-                    createdAt: string;
-                    updatedAt: string;
-                    tier: string;
-                } | null;
+    subscriptionId: string;
+    workspaceId: string;
+    storeId: string;
+    productId: string;
+    variantId: string;
+    status: string;
+    cardBrand: string;
+    cardLastFour: string;
+    renewsAt: string;
+    createdAt: string;
+    updatedAt: string;
+    tier: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -4051,6 +4672,162 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/billing/credit': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    credit: number;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/billing/credit/bills': {
+        get: {
+            req: {
+                page?: number;
+                pageSize?: number;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    list: Array<{
+                        id: string;
+                        workspaceId: string;
+                        type: string;
+                        amount: number;
+                        createdAt: string;
+                    }>;
+                    total: number;
+                    page: number;
+                    pageSize: number;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/billing/credit/packs': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    name: string;
+                    variantId: string;
+                    credit: number;
+                    price: number;
+                    currency: string;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/billing/credit/checkout': {
+        post: {
+            req: {
+                requestBody: {
+                    workspaceId: string;
+                    packId: string;
+                    redirectUrl?: string;
+                };
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    url: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
     '/workspace/{workspaceId}/feed/channels': {
         get: {
             req: {
@@ -4066,6 +4843,7 @@ export type $OpenApiTs = {
                     name: string;
                     webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
+                    publicShareId?: string | null;
                     createdAt: string;
                     updatedAt: string;
                     _count: {
@@ -4106,15 +4884,16 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    notificationIds: Array<(string)>;
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    webhookSignature: string;
-                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
-                    createdAt: string;
-                    updatedAt: string;
-                } | null;
+    notificationIds: Array<(string)>;
+    id: string;
+    workspaceId: string;
+    name: string;
+    webhookSignature: string;
+    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
+    publicShareId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -4155,15 +4934,16 @@ export type $OpenApiTs = {
                  * Successful response
                  */
                 200: {
-                    notificationIds: Array<(string)>;
-                    id: string;
-                    workspaceId: string;
-                    name: string;
-                    webhookSignature: string;
-                    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
-                    createdAt: string;
-                    updatedAt: string;
-                } | null;
+    notificationIds: Array<(string)>;
+    id: string;
+    workspaceId: string;
+    name: string;
+    webhookSignature: string;
+    notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
+    publicShareId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+} | null;
                 /**
                  * Invalid input data
                  */
@@ -4212,8 +4992,8 @@ export type $OpenApiTs = {
                         important: boolean;
                         archived: boolean;
                         payload?: {
-                            [key: string]: unknown;
-                        } | null;
+    [key: string]: unknown;
+} | null;
                     }>;
                     nextCursor?: string;
                 };
@@ -4229,6 +5009,82 @@ export type $OpenApiTs = {
                  * Insufficient access
                  */
                 403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/feed/public/{shareId}/events': {
+        get: {
+            req: {
+                cursor?: string;
+                limit?: number;
+                shareId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    items: Array<{
+                        id: string;
+                        channelId: string;
+                        createdAt: string;
+                        updatedAt: string;
+                        eventName: string;
+                        eventContent: string;
+                        tags: Array<(string)>;
+                        source: string;
+                        senderId?: string | null;
+                        senderName?: string | null;
+                        url?: string | null;
+                        important: boolean;
+                        archived: boolean;
+                        payload?: {
+    [key: string]: unknown;
+} | null;
+                    }>;
+                    nextCursor?: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/feed/public/{shareId}/info': {
+        get: {
+            req: {
+                shareId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    name: string;
+                    publicShareId?: string | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
                 /**
                  * Not found
                  */
@@ -4261,8 +5117,73 @@ export type $OpenApiTs = {
                     name: string;
                     webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
+                    publicShareId?: string | null;
                     createdAt: string;
                     updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/{channelId}/refreshPublicShare': {
+        post: {
+            req: {
+                channelId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    publicShareId: string | null;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/feed/{channelId}/disablePublicShare': {
+        post: {
+            req: {
+                channelId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    publicShareId: string | null;
                 };
                 /**
                  * Invalid input data
@@ -4299,6 +5220,7 @@ export type $OpenApiTs = {
                     name: string;
                     webhookSignature: string;
                     notifyFrequency: 'none' | 'event' | 'day' | 'week' | 'month';
+                    publicShareId?: string | null;
                     createdAt: string;
                     updatedAt: string;
                 };
@@ -4338,8 +5260,8 @@ export type $OpenApiTs = {
                     senderName?: string | null;
                     important: boolean;
                     payload?: {
-                        [key: string]: unknown;
-                    } | null;
+    [key: string]: unknown;
+} | null;
                 };
             };
             res: {
@@ -4361,8 +5283,8 @@ export type $OpenApiTs = {
                     important: boolean;
                     archived: boolean;
                     payload?: {
-                        [key: string]: unknown;
-                    } | null;
+    [key: string]: unknown;
+} | null;
                 };
                 /**
                  * Invalid input data
@@ -4594,8 +5516,8 @@ export type $OpenApiTs = {
                     status: 'Ongoing' | 'Resolved';
                     resolvedAt?: string | null;
                     payload?: {
-                        [key: string]: unknown;
-                    } | null;
+    [key: string]: unknown;
+} | null;
                 }>;
                 /**
                  * Invalid input data
@@ -4634,8 +5556,8 @@ export type $OpenApiTs = {
                     senderName?: string | null;
                     important: boolean;
                     payload?: {
-                        [key: string]: unknown;
-                    } | null;
+    [key: string]: unknown;
+} | null;
                 };
             };
             res: {
@@ -4659,8 +5581,8 @@ export type $OpenApiTs = {
                     status: 'Ongoing' | 'Resolved';
                     resolvedAt?: string | null;
                     payload?: {
-                        [key: string]: unknown;
-                    } | null;
+    [key: string]: unknown;
+} | null;
                 };
                 /**
                  * Invalid input data
@@ -4703,8 +5625,8 @@ export type $OpenApiTs = {
                     status: 'Ongoing' | 'Resolved';
                     resolvedAt?: string | null;
                     payload?: {
-                        [key: string]: unknown;
-                    } | null;
+    [key: string]: unknown;
+} | null;
                 };
                 /**
                  * Invalid input data
