@@ -60,7 +60,7 @@ const formSchema = z
     }
   );
 
-const defaultCode = `function fetch() {
+const defaultCode = `function fetch(params) {
   return 'Hello, World!';
 }
 `;
