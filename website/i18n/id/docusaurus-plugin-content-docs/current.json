@@ -32,7 +32,7 @@
     "description": "The label for category Application in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Monitor": {
-    "message": "Monitor",
+    "message": "Memantau",
     "description": "The label for category Monitor in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Notification": {

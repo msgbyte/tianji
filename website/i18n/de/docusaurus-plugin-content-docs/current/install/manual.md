@@ -1,23 +1,23 @@
 ---
 sidebar_position: 1
-_i18n_hash: 94d2e9b28e14ee0258d96bc450acf5f6
+_i18n_hash: bd680ba831a70a5f00ce7db124d136dc
 ---
 # Installation ohne Docker
 
-Die Verwendung von Docker zur Installation von `Tianji` ist der beste Weg, da Sie sich keine Gedanken über Umgebungsprobleme machen müssen.
+Die Installation von `Tianji` mit Docker ist der beste Weg, da Sie sich nicht um Umweltprobleme kümmern müssen.
 
-Wenn Ihr Server jedoch kein Docker unterstützt, können Sie versuchen, es manuell zu installieren.
+Falls Ihr Server jedoch keine Docker-Unterstützung bietet, können Sie es manuell installieren.
 
 ## Anforderungen
 
 Sie benötigen:
 
 - [Node.js](https://nodejs.org/en/download/) 18.12+ / 20.4+
-- [pnpm](https://pnpm.io/) 9.x (9.7.1 besser)
+- [pnpm](https://pnpm.io/) 9.x (9.7.1 wird empfohlen)
 - [Git](https://git-scm.com/downloads)
-- [PostgreSQL](https://www.postgresql.org/)
+- [Postgresql](https://www.postgresql.org/)
 - [pm2](https://pm2.keymetrics.io/) - Um Tianji im Hintergrund auszuführen
-- [Apprise](https://github.com/caronc/apprise) - optional, falls Sie Benachrichtigungen benötigen
+- [apprise](https://github.com/caronc/apprise) - optional, falls Sie Benachrichtigungen benötigen
 
 ## Code klonen und bauen
 
@@ -31,25 +31,25 @@ pnpm build
 
 ## Umgebungsdatei vorbereiten
 
-Erstellen Sie eine `.env` Datei in `src/server`
+Erstellen Sie eine `.env` Datei im Verzeichnis `src/server`
 
 ```ini
 DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
-JWT_SECRET="ersetzen-sie-mich-durch-einen-beliebigen-string"
+JWT_SECRET="ersetzen-sie-mich-durch-einen-zufälligen-string"
 ```
 
-Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist, und vergessen Sie nicht, die Datenbank vorher zu erstellen.
+Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist und denken Sie daran, die Datenbank zuvor zu erstellen.
 
-Weitere Umgebungen finden Sie in diesem Dokument [environment](./environment.md)
+Weitere Umgebungen finden Sie in diesem Dokument [environment](./environment.md).
 
-> Wenn Sie können, ist es besser sicherzustellen, dass Ihr Encoding en_US.utf8 ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
+> Wenn möglich, stellen Sie sicher, dass Ihre Zeichencodierung auf en_US.utf8 eingestellt ist, zum Beispiel: `createdb -E UTF8 -l en_US.utf8 tianji`
 
 ## Server ausführen
 
 ```bash
 npm install pm2 -g && pm2 install pm2-logrotate
 
-# DB-Migration initialisieren
+# Datenbankmigration initialisieren
 cd src/server
 pnpm db:migrate:apply
 
@@ -57,12 +57,12 @@ pnpm db:migrate:apply
 pm2 start ./dist/src/server/main.js --name tianji
 ```
 
-Standardmäßig läuft `Tianji` auf `http://localhost:12345`.
+Standardmäßig wird `Tianji` unter `http://localhost:12345` ausgeführt.
 
 ## Code auf neue Version aktualisieren
 
 ```bash
-# Neuen Release/Tags auschecken
+# Neue Versions-/Tags übernehmen
 cd tianji
 git fetch --tags
 git checkout -q <version>
@@ -73,7 +73,7 @@ pnpm install
 # Projekt bauen
 pnpm build
 
-# DB-Migrationen durchführen
+# Datenbankmigrationen durchführen
 cd src/server
 pnpm db:migrate:apply
 
@@ -85,17 +85,17 @@ pm2 restart tianji
 
 ## Installation von `isolated-vm` fehlgeschlagen
 
-Wenn Sie Python 3.12 verwenden, wird ein Fehler wie folgt angezeigt:
+Wenn Sie Python 3.12 verwenden, wird möglicherweise folgender Fehler angezeigt:
 
 ```
 ModuleNotFoundError: No module named 'distutils'
 ```
 
-Das liegt daran, dass Python 3.12 `distutils` aus dem eingebauten Modul entfernt hat. Jetzt haben wir eine gute Lösung dafür.
+Dies liegt daran, dass Python 3.12 `distutils` als integriertes Modul entfernt hat. Es gibt jedoch eine gute Lösung dafür.
 
-Sie können Ihre Python-Version von 3.12 auf 3.9 ändern, um das Problem zu lösen.
+Sie können Ihre Python-Version von 3.12 auf 3.9 ändern, um das Problem zu beheben.
 
-### Wie man es mit einem von Brew verwalteten Python löst
+### Wie man es mit Brew-verwaltetem Python löst
 
 ```bash
 brew install python@3.9
@@ -103,4 +103,4 @@ rm /opt/homebrew/bin/python3
 ln -sf /opt/homebrew/bin/python3 /opt/homebrew/bin/python3.9
 ```
 
-Dann können Sie die Version mit `python3 --version` überprüfen.
+Anschließend können Sie die Version mit `python3 --version` überprüfen.
