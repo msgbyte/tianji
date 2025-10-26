@@ -9,6 +9,7 @@ import { execWorker } from './index.js';
 import { createAuditLog } from '../auditLog.js';
 import dayjs from 'dayjs';
 import { get } from 'lodash-es';
+import { withDistributedLock } from '../../cache/distributedLock.js';
 
 /**
  * Class which actually runs worker cron jobs
@@ -28,51 +29,61 @@ export class WorkerCronRunner {
 
   private async runWorker() {
     const worker = this.worker;
+    const lockName = `worker-execution:${worker.id}`;
 
-    try {
-      logger.info(
-        `[Worker Cron] Executing worker ${worker.name}(${worker.id}) with cron expression: ${worker.cronExpression}`
-      );
+    // Use distributed lock to ensure only one execution per worker at a time
+    await withDistributedLock(
+      lockName,
+      async () => {
+        try {
+          logger.info(
+            `[Worker Cron] Executing worker ${worker.name}(${worker.id}) with cron expression: ${worker.cronExpression}`
+          );
 
-      // Execute the worker
-      const result = await execWorker(worker.code, worker.id, undefined, {
-        type: 'cron',
-      });
+          // Execute the worker
+          const result = await execWorker(worker.code, worker.id, undefined, {
+            type: 'cron',
+          });
 
-      logger.info(
-        `[Worker Cron] Worker ${worker.name}(${worker.id}) executed successfully`
-      );
+          logger.info(
+            `[Worker Cron] Worker ${worker.name}(${worker.id}) executed successfully`
+          );
 
-      // Create audit log for successful execution
-      createAuditLog({
-        workspaceId: this.worker.workspaceId,
-        relatedId: this.worker.id,
-        relatedType: WorkspaceAuditLogType.FunctionWorker,
-        content: `Worker(${worker.name}) cron execution completed successfully at ${dayjs()
-          .tz(this.getTimezone())
-          .format('YYYY-MM-DD HH:mm:ss (z)')}`,
-      });
+          // Create audit log for successful execution
+          createAuditLog({
+            workspaceId: this.worker.workspaceId,
+            relatedId: this.worker.id,
+            relatedType: WorkspaceAuditLogType.FunctionWorker,
+            content: `Worker(${worker.name}) cron execution completed successfully at ${dayjs()
+              .tz(this.getTimezone())
+              .format('YYYY-MM-DD HH:mm:ss (z)')}`,
+          });
 
-      return result;
-    } catch (err) {
-      const errorMessage = get(err, 'message', String(err));
-      logger.error(
-        `[Worker Cron] Worker ${worker.name}(${worker.id}) execution error:`,
-        errorMessage
-      );
+          return result;
+        } catch (err) {
+          const errorMessage = get(err, 'message', String(err));
+          logger.error(
+            `[Worker Cron] Worker ${worker.name}(${worker.id}) execution error:`,
+            errorMessage
+          );
 
-      // Create audit log for failed execution
-      createAuditLog({
-        workspaceId: this.worker.workspaceId,
-        relatedId: this.worker.id,
-        relatedType: WorkspaceAuditLogType.FunctionWorker,
-        content: `Worker(${worker.name}) cron execution failed at ${dayjs()
-          .tz(this.getTimezone())
-          .format('YYYY-MM-DD HH:mm:ss (z)')}: ${errorMessage}`,
-      });
+          // Create audit log for failed execution
+          createAuditLog({
+            workspaceId: this.worker.workspaceId,
+            relatedId: this.worker.id,
+            relatedType: WorkspaceAuditLogType.FunctionWorker,
+            content: `Worker(${worker.name}) cron execution failed at ${dayjs()
+              .tz(this.getTimezone())
+              .format('YYYY-MM-DD HH:mm:ss (z)')}: ${errorMessage}`,
+          });
 
-      throw err;
-    }
+          throw err;
+        }
+      },
+      {
+        skipOnFailure: true, // Skip execution if lock is already held by another instance
+      }
+    );
   }
 
   /**
