@@ -33,7 +33,7 @@ export async function execWorker(
   const contextString = isPlainObject(context) ? JSON.stringify(context) : '{}';
 
   try {
-    const { isolate, logger, result, usage } = await runCodeInIVM(`
+    const { isolate, logger, result, error, usage } = await runCodeInIVM(`
       (async () => {
         ${code}
 
@@ -48,12 +48,15 @@ export async function execWorker(
 
     const payload = {
       workerId: workerId || '',
-      status: FunctionWorkerExecutionStatus.Success,
+      status: error
+        ? FunctionWorkerExecutionStatus.Failed
+        : FunctionWorkerExecutionStatus.Success,
       duration: usage,
       memoryUsed: used_heap_size,
       cpuTime,
       requestPayload,
       responsePayload: result,
+      error: String(error),
       logs: Array.isArray(logger) ? logger : [],
     };
 

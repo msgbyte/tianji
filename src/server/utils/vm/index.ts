@@ -79,13 +79,25 @@ ${_code}`;
     },
   });
 
-  const res = await script.run(context, {
-    promise: true,
-    copy: true,
-  });
+  let res: any;
+  let err: any;
+  try {
+    res = await script.run(context, {
+      promise: true,
+      copy: true,
+    });
+  } catch (e) {
+    err = e;
+  }
 
   context.release();
   script.release();
 
-  return { isolate, logger, result: res, usage: Date.now() - start };
+  return {
+    isolate,
+    logger,
+    result: res,
+    error: err,
+    usage: Date.now() - start,
+  };
 }
