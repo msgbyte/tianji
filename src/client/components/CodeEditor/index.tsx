@@ -11,3 +11,9 @@ export const CodeDiffEditor = loadable(() =>
 export const JsonEditor = loadable(() =>
   import('./json').then((m) => ({ default: m.JsonEditor }))
 );
+
+export const SQLEditor = loadable(() =>
+  import('./sql').then((m) => ({ default: m.SQLEditor }))
+);
+
+export type { SQLTableSchema } from './sql';

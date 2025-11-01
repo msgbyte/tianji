@@ -1,14 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  LuTrash2,
-  LuChevronDown,
-  LuChevronUp,
-  LuEyeClosed,
-  LuEye,
-  LuEyeOff,
-} from 'react-icons/lu';
+import { LuTrash2, LuEye, LuEyeOff } from 'react-icons/lu';
 import {
   TimeEventChart,
   TimeEventChartType,
