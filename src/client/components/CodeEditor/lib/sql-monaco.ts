@@ -7,6 +7,8 @@ import type { IDisposable } from 'monaco-editor';
  */
 let sqlCompletionDisposable: IDisposable | null = null;
 let sqlHoverDisposable: IDisposable | null = null;
+let sqlCodeLensDisposable: IDisposable | null = null;
+let sqlCommandDisposable: IDisposable | null = null;
 let sqlLanguageConfigured = false;
 
 /**
@@ -288,6 +290,151 @@ export function createSQLHoverProvider(
 }
 
 /**
+ * Parse SQL statements from text
+ * Split by semicolon and return statement info
+ */
+function parseSQLStatements(text: string): Array<{
+  sql: string;
+  startLine: number;
+  endLine: number;
+}> {
+  const lines = text.split('\n');
+  const statements: Array<{
+    sql: string;
+    startLine: number;
+    endLine: number;
+  }> = [];
+
+  let currentStatement = '';
+  let startLine = 1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const lineNumber = i + 1;
+    const line = lines[i];
+    const trimmedLine = line.trim();
+
+    // Skip empty lines at the start
+    if (!currentStatement && !trimmedLine) {
+      startLine = lineNumber + 1;
+      continue;
+    }
+
+    // Skip comment-only lines
+    if (trimmedLine.startsWith('--')) {
+      if (!currentStatement) {
+        startLine = lineNumber + 1;
+      }
+      continue;
+    }
+
+    currentStatement += line + '\n';
+
+    // Check if line ends with semicolon
+    if (trimmedLine.endsWith(';')) {
+      const sql = currentStatement.trim();
+      if (sql) {
+        statements.push({
+          sql,
+          startLine,
+          endLine: lineNumber,
+        });
+      }
+      currentStatement = '';
+      startLine = lineNumber + 1;
+    }
+  }
+
+  // Handle statement without trailing semicolon
+  if (currentStatement.trim()) {
+    statements.push({
+      sql: currentStatement.trim(),
+      startLine,
+      endLine: lines.length,
+    });
+  }
+
+  return statements;
+}
+
+/**
+ * Create SQL Code Lens Provider
+ * Adds run buttons to each SQL statement (separated by semicolons)
+ */
+export function createSQLCodeLensProvider(
+  monaco: Monaco,
+  onExecuteLine: (lineNumber: number, sql: string) => void | Promise<void>,
+  executingLine?: number | null
+) {
+  // Dispose previous provider if it exists
+  if (sqlCodeLensDisposable) {
+    sqlCodeLensDisposable.dispose();
+    sqlCodeLensDisposable = null;
+  }
+
+  // Dispose previous command if it exists
+  if (sqlCommandDisposable) {
+    sqlCommandDisposable.dispose();
+    sqlCommandDisposable = null;
+  }
+
+  // Register a single command handler for executing SQL
+  const commandId = 'tianji.sql.runStatement';
+  sqlCommandDisposable = monaco.editor.registerCommand(
+    commandId,
+    async (accessor, lineNumber: number, sql: string) => {
+      try {
+        await onExecuteLine(lineNumber, sql);
+      } catch (error) {
+        console.error('Error executing SQL:', error);
+      }
+      // Don't return anything to avoid async response expectation
+    }
+  );
+
+  // Register new provider
+  sqlCodeLensDisposable = monaco.languages.registerCodeLensProvider('sql', {
+    provideCodeLenses: (model) => {
+      const lenses: any[] = [];
+      const text = model.getValue();
+      const statements = parseSQLStatements(text);
+
+      // Add code lens for each SQL statement
+      statements.forEach((statement, index) => {
+        const isExecuting = executingLine === statement.startLine;
+
+        lenses.push({
+          range: {
+            startLineNumber: statement.startLine,
+            startColumn: 1,
+            endLineNumber: statement.startLine,
+            endColumn: 1,
+          },
+          id: `run-statement-${index}`,
+          command: {
+            id: commandId,
+            title: isExecuting ? '⏳ Running...' : '▶ Run',
+            tooltip: isExecuting
+              ? 'Executing SQL statement...'
+              : `Execute SQL statement (lines ${statement.startLine}-${statement.endLine})`,
+            arguments: [statement.startLine, statement.sql],
+          },
+        });
+      });
+
+      return {
+        lenses,
+        dispose: () => {},
+      };
+    },
+    resolveCodeLens: (model, codeLens) => {
+      return codeLens;
+    },
+  });
+
+  return sqlCodeLensDisposable;
+}
+
+/**
  * Configure SQL language for Monaco Editor
  * Only configures once to avoid duplicate configurations
  */
@@ -330,6 +477,16 @@ export function disposeSQLProviders() {
   if (sqlHoverDisposable) {
     sqlHoverDisposable.dispose();
     sqlHoverDisposable = null;
+  }
+
+  if (sqlCodeLensDisposable) {
+    sqlCodeLensDisposable.dispose();
+    sqlCodeLensDisposable = null;
+  }
+
+  if (sqlCommandDisposable) {
+    sqlCommandDisposable.dispose();
+    sqlCommandDisposable = null;
   }
 
   // Reset language configuration flag

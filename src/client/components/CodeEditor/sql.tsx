@@ -1,10 +1,11 @@
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useTheme } from '../../store/settings';
 import { useEvent } from '../../hooks/useEvent';
 import {
   createSQLCompletionProvider,
   createSQLHoverProvider,
+  createSQLCodeLensProvider,
   configureSQLLanguage,
 } from './lib/sql-monaco';
 
@@ -24,10 +25,19 @@ interface SQLEditorProps {
   onChange?: (code: string) => void;
   tables?: SQLTableSchema[];
   placeholder?: string;
+  onExecuteLine?: (lineNumber: number, sql: string) => void | Promise<void>;
+  enableRunButton?: boolean;
+  executingLine?: number | null;
 }
 
 export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
-  const { readOnly = false, tables = [] } = props;
+  const {
+    readOnly = false,
+    tables = [],
+    enableRunButton = false,
+    onExecuteLine,
+    executingLine = null,
+  } = props;
   const colorScheme = useTheme();
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
   const editorRef = useRef<any>(null);
@@ -36,6 +46,14 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
   const registerSQLCompletions = useEvent((monaco: Monaco) => {
     return createSQLCompletionProvider(monaco, tables);
   });
+
+  const handleExecuteLine = useEvent(
+    async (lineNumber: number, sql: string) => {
+      if (onExecuteLine) {
+        await onExecuteLine(lineNumber, sql);
+      }
+    }
+  );
 
   const handleEditorDidMount: OnMount = useEvent((editor, monaco) => {
     editorRef.current = editor;
@@ -47,6 +65,16 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
     // Register SQL hover provider
     const hoverDisposable = createSQLHoverProvider(monaco, tables);
 
+    // Register SQL code lens (run button) if enabled
+    if (enableRunButton && onExecuteLine) {
+      const codeLensDisposable = createSQLCodeLensProvider(
+        monaco,
+        handleExecuteLine,
+        executingLine
+      );
+      (editor as any).__sqlCodeLensDisposable = codeLensDisposable;
+    }
+
     // Store disposables for cleanup
     (editor as any).__sqlCompletionDisposable = completionDisposable;
     (editor as any).__sqlHoverDisposable = hoverDisposable;
@@ -56,6 +84,17 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
     // Configure SQL language settings
     configureSQLLanguage(monaco);
   });
+
+  // Update code lens when executingLine changes
+  useEffect(() => {
+    if (enableRunButton && onExecuteLine && monacoRef.current) {
+      createSQLCodeLensProvider(
+        monacoRef.current,
+        handleExecuteLine,
+        executingLine
+      );
+    }
+  }, [executingLine, enableRunButton, onExecuteLine, handleExecuteLine]);
 
   return (
     <Editor
@@ -73,6 +112,7 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
         formatOnPaste: true,
         formatOnType: true,
         minimap: { enabled: false },
+        codeLens: enableRunButton,
         suggest: {
           showKeywords: true,
           showSnippets: true,

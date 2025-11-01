@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useState } from 'react';
 import { SQLEditor, SQLTableSchema } from './index';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const meta = {
   title: 'Components/CodeEditor/SQLEditor',
@@ -336,4 +337,80 @@ export const NoTables: Story = {
 SELECT COUNT(*) FROM my_table;`}
     />
   ),
+};
+
+// Story 11: With Run Button
+export const WithRunButton: Story = {
+  render: () => {
+    const [value, setValue] =
+      useState(`-- Click the ▶ Run button to execute each SQL statement
+-- Statements are separated by semicolons
+
+SELECT * FROM users WHERE active = true;
+
+SELECT COUNT(*) FROM orders;
+
+SELECT
+  users.name,
+  COUNT(orders.order_id) as order_count
+FROM users
+LEFT JOIN orders ON users.id = orders.user_id
+GROUP BY users.name;
+
+-- Statement without trailing semicolon also works
+SELECT * FROM products`);
+
+    const [lastExecuted, setLastExecuted] = useState<{
+      line: number;
+      sql: string;
+    } | null>(null);
+    const [executingLine, setExecutingLine] = useState<number | null>(null);
+
+    const handleExecuteLine = async (lineNumber: number, sql: string) => {
+      console.log(`Executing line ${lineNumber}:`, sql);
+      setExecutingLine(lineNumber);
+
+      // Simulate async execution
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      setExecutingLine(null);
+      setLastExecuted({ line: lineNumber, sql });
+    };
+
+    return (
+      <div className="space-y-4">
+        <Alert>
+          <AlertDescription>
+            Click the <strong>▶ Run</strong> button that appears at the start
+            of each SQL statement. Statements are separated by semicolons (;).
+            Multi-line statements are fully supported. The button will show
+            <strong> ⏳ Running...</strong> during execution.
+          </AlertDescription>
+        </Alert>
+
+        <SQLEditor
+          height="400px"
+          value={value}
+          onChange={setValue}
+          tables={sampleTables}
+          enableRunButton={true}
+          onExecuteLine={handleExecuteLine}
+          executingLine={executingLine}
+        />
+
+        {lastExecuted && (
+          <Alert>
+            <AlertDescription>
+              <div className="space-y-1">
+                <div>
+                  <strong>Last Executed:</strong> Line {lastExecuted.line}
+                </div>
+                <div className="font-mono text-sm">{lastExecuted.sql}</div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+    );
+  },
 };
