@@ -1,5 +1,13 @@
 import type { Monaco } from '@monaco-editor/react';
 import type { SQLTableSchema } from '../sql';
+import type { IDisposable } from 'monaco-editor';
+
+/**
+ * Track registered providers to avoid duplicate registrations
+ */
+let sqlCompletionDisposable: IDisposable | null = null;
+let sqlHoverDisposable: IDisposable | null = null;
+let sqlLanguageConfigured = false;
 
 /**
  * SQL Keywords for autocompletion
@@ -85,128 +93,148 @@ export const SQL_FUNCTIONS = [
 /**
  * Create SQL Completion Provider
  * Provides intelligent autocompletion for SQL queries
+ * Uses singleton pattern to prevent duplicate registrations
  */
 export function createSQLCompletionProvider(
   monaco: Monaco,
   tables: SQLTableSchema[]
 ) {
-  return monaco.languages.registerCompletionItemProvider('sql', {
-    triggerCharacters: ['.', ' '],
-    provideCompletionItems: (model, position) => {
-      const textUntilPosition = model.getValueInRange({
-        startLineNumber: position.lineNumber,
-        startColumn: 1,
-        endLineNumber: position.lineNumber,
-        endColumn: position.column,
-      });
+  // Dispose previous provider if it exists
+  if (sqlCompletionDisposable) {
+    sqlCompletionDisposable.dispose();
+  }
 
-      const word = model.getWordUntilPosition(position);
-      const range = {
-        startLineNumber: position.lineNumber,
-        endLineNumber: position.lineNumber,
-        startColumn: word.startColumn,
-        endColumn: word.endColumn,
-      };
+  // Register new provider
+  sqlCompletionDisposable = monaco.languages.registerCompletionItemProvider(
+    'sql',
+    {
+      triggerCharacters: ['.', ' '],
+      provideCompletionItems: (model, position) => {
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
 
-      const suggestions: any[] = [];
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn,
+        };
 
-      // Check if we're after a dot (for column suggestions)
-      const lastDotIndex = textUntilPosition.lastIndexOf('.');
-      if (
-        lastDotIndex !== -1 &&
-        lastDotIndex === textUntilPosition.length - 1
-      ) {
-        // Get the table name before the dot
-        const beforeDot = textUntilPosition.substring(0, lastDotIndex).trim();
-        const tableNameMatch = beforeDot.match(/(\w+)$/);
+        const suggestions: any[] = [];
 
-        if (tableNameMatch) {
-          const tableName = tableNameMatch[1];
-          const table = tables.find(
-            (t) => t.name.toLowerCase() === tableName.toLowerCase()
-          );
+        // Check if we're after a dot (for column suggestions)
+        const lastDotIndex = textUntilPosition.lastIndexOf('.');
+        if (
+          lastDotIndex !== -1 &&
+          lastDotIndex === textUntilPosition.length - 1
+        ) {
+          // Get the table name before the dot
+          const beforeDot = textUntilPosition.substring(0, lastDotIndex).trim();
+          const tableNameMatch = beforeDot.match(/(\w+)$/);
 
-          if (table) {
-            // Suggest columns for this table
-            table.columns.forEach((column) => {
-              suggestions.push({
-                label: column.name,
-                kind: monaco.languages.CompletionItemKind.Field,
-                detail: column.type,
-                documentation:
-                  column.description ||
-                  `Column: ${column.name} (${column.type})`,
-                insertText: column.name,
-                range: range,
+          if (tableNameMatch) {
+            const tableName = tableNameMatch[1];
+            const table = tables.find(
+              (t) => t.name.toLowerCase() === tableName.toLowerCase()
+            );
+
+            if (table) {
+              // Suggest columns for this table
+              table.columns.forEach((column) => {
+                suggestions.push({
+                  label: column.name,
+                  kind: monaco.languages.CompletionItemKind.Field,
+                  detail: column.type,
+                  documentation:
+                    column.description ||
+                    `Column: ${column.name} (${column.type})`,
+                  insertText: column.name,
+                  range: range,
+                });
               });
-            });
+            }
           }
-        }
-      } else {
-        // SQL Keywords
-        SQL_KEYWORDS.forEach((keyword) => {
-          suggestions.push({
-            label: keyword,
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            detail: 'SQL Keyword',
-            insertText: keyword,
-            range: range,
-          });
-        });
-
-        // SQL Functions
-        SQL_FUNCTIONS.forEach((func) => {
-          suggestions.push({
-            label: func,
-            kind: monaco.languages.CompletionItemKind.Function,
-            detail: 'SQL Function',
-            insertText: func,
-            range: range,
-          });
-        });
-
-        // Table names
-        tables.forEach((table) => {
-          suggestions.push({
-            label: table.name,
-            kind: monaco.languages.CompletionItemKind.Class,
-            detail: 'Table',
-            documentation: `Table with ${table.columns.length} columns`,
-            insertText: table.name,
-            range: range,
-          });
-        });
-
-        // All columns from all tables (when not after a dot)
-        tables.forEach((table) => {
-          table.columns.forEach((column) => {
+        } else {
+          // SQL Keywords
+          SQL_KEYWORDS.forEach((keyword) => {
             suggestions.push({
-              label: `${table.name}.${column.name}`,
-              kind: monaco.languages.CompletionItemKind.Field,
-              detail: `${column.type} (from ${table.name})`,
-              documentation:
-                column.description || `Column: ${column.name} (${column.type})`,
-              insertText: `${table.name}.${column.name}`,
+              label: keyword,
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              detail: 'SQL Keyword',
+              insertText: keyword,
               range: range,
             });
           });
-        });
-      }
 
-      return { suggestions };
-    },
-  });
+          // SQL Functions
+          SQL_FUNCTIONS.forEach((func) => {
+            suggestions.push({
+              label: func,
+              kind: monaco.languages.CompletionItemKind.Function,
+              detail: 'SQL Function',
+              insertText: func,
+              range: range,
+            });
+          });
+
+          // Table names
+          tables.forEach((table) => {
+            suggestions.push({
+              label: table.name,
+              kind: monaco.languages.CompletionItemKind.Class,
+              detail: 'Table',
+              documentation: `Table with ${table.columns.length} columns`,
+              insertText: table.name,
+              range: range,
+            });
+          });
+
+          // All columns from all tables (when not after a dot)
+          tables.forEach((table) => {
+            table.columns.forEach((column) => {
+              suggestions.push({
+                label: `${table.name}.${column.name}`,
+                kind: monaco.languages.CompletionItemKind.Field,
+                detail: `${column.type} (from ${table.name})`,
+                documentation:
+                  column.description ||
+                  `Column: ${column.name} (${column.type})`,
+                insertText: `${table.name}.${column.name}`,
+                range: range,
+              });
+            });
+          });
+        }
+
+        return { suggestions };
+      },
+    }
+  );
+
+  return sqlCompletionDisposable;
 }
 
 /**
  * Create SQL Hover Provider
  * Provides hover information for tables and columns
+ * Uses singleton pattern to prevent duplicate registrations
  */
 export function createSQLHoverProvider(
   monaco: Monaco,
   tables: SQLTableSchema[]
 ) {
-  return monaco.languages.registerHoverProvider('sql', {
+  // Dispose previous provider if it exists
+  if (sqlHoverDisposable) {
+    sqlHoverDisposable.dispose();
+  }
+
+  // Register new provider
+  sqlHoverDisposable = monaco.languages.registerHoverProvider('sql', {
     provideHover: (model, position) => {
       const word = model.getWordAtPosition(position);
       if (!word) {
@@ -255,12 +283,20 @@ export function createSQLHoverProvider(
       return null;
     },
   });
+
+  return sqlHoverDisposable;
 }
 
 /**
  * Configure SQL language for Monaco Editor
+ * Only configures once to avoid duplicate configurations
  */
 export function configureSQLLanguage(monaco: Monaco) {
+  // Only configure once
+  if (sqlLanguageConfigured) {
+    return;
+  }
+
   monaco.languages.setLanguageConfiguration('sql', {
     comments: {
       lineComment: '--',
@@ -277,4 +313,25 @@ export function configureSQLLanguage(monaco: Monaco) {
       { open: '"', close: '"', notIn: ['string', 'comment'] },
     ],
   });
+
+  sqlLanguageConfigured = true;
+}
+
+/**
+ * Dispose all SQL providers
+ * Call this to clean up resources when SQL editor is no longer needed
+ */
+export function disposeSQLProviders() {
+  if (sqlCompletionDisposable) {
+    sqlCompletionDisposable.dispose();
+    sqlCompletionDisposable = null;
+  }
+
+  if (sqlHoverDisposable) {
+    sqlHoverDisposable.dispose();
+    sqlHoverDisposable = null;
+  }
+
+  // Reset language configuration flag
+  sqlLanguageConfigured = false;
 }
