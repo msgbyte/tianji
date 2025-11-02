@@ -15,24 +15,18 @@ import { Button } from '@/components/ui/button';
 import { LuPlus, LuDatabase, LuCircleAlert, LuTrash2 } from 'react-icons/lu';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { useChat } from '@ai-sdk/react';
-import {
-  DefaultChatTransport,
-  lastAssistantMessageIsCompleteWithToolCalls,
-} from 'ai';
 import { useEvent } from '@/hooks/useEvent';
-import { useMemo, useReducer, useState, useEffect } from 'react';
-import { sleep } from '@tianji/shared';
+import { useWarehouseAIChat } from '@/hooks/useWarehouseAIChat';
+import { useMemo, useState, useEffect } from 'react';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
-import { formatNumber, generateRandomString } from '@/utils/common';
+import { formatNumber } from '@/utils/common';
 import { AIResponseMessages } from '@/components/ai/AIResponseMessages';
 import { WarehouseChartBlock } from '@/components/insights/WarehouseChartBlock';
-import { TimeEventChartType } from '@/components/chart/TimeEventChart';
 import {
   PromptInput,
   PromptInputSubmit,
@@ -68,7 +62,6 @@ const suggestions = [
 function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const [input, setInput] = useState('');
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { data: databases } = trpc.insights.warehouse.database.list.useQuery({
@@ -83,28 +76,6 @@ function PageComponent() {
       id: string;
       name: string;
       databaseId?: string;
-    }>
-  >([]);
-  const [id, refreshId] = useReducer(
-    () => generateRandomString(14),
-    '',
-    () => generateRandomString(14)
-  );
-  const [usage, setUsage] = useState<{
-    cachedInputTokens: number;
-    inputTokens: number;
-    outputTokens: number;
-    reasoningTokens: number;
-    totalTokens: number;
-  } | null>(null);
-
-  // local chart blocks state
-  const [chartBlocks, setChartBlocks] = useState<
-    Array<{
-      id: string;
-      title: string;
-      data: Array<Record<string, any>>;
-      type: TimeEventChartType;
     }>
   >([]);
 
@@ -152,118 +123,31 @@ function PageComponent() {
     };
   }, [databases, selectedScopes]);
 
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: `/api/insights/${workspaceId}/chat`,
-      }),
-    [workspaceId]
-  );
-
-  const { messages, sendMessage, stop, status, error, addToolResult } = useChat(
-    {
-      id,
-      transport,
-      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-      async onToolCall({ toolCall }) {
-        if (toolCall.toolName === 'getLocation') {
-          const cities = [
-            'New York',
-            'Los Angeles',
-            'Chicago',
-            'San Francisco',
-          ];
-
-          await sleep(2000);
-
-          addToolResult({
-            tool: 'getLocation',
-            toolCallId: toolCall.toolCallId,
-            output: cities[Math.floor(Math.random() * cities.length)],
-          });
-        }
-
-        if (toolCall.toolName === 'createCharts') {
-          try {
-            const input = toolCall.input as {
-              data?: Array<Record<string, any>>;
-              title?: string;
-              type?: TimeEventChartType;
-            };
-            const data = Array.isArray(input.data) ? input.data : [];
-            const title =
-              typeof input.title === 'string' ? input.title : 'Chart';
-            const type = typeof input.type === 'string' ? input.type : 'line';
-
-            if (data.length === 0) {
-              throw new Error('No data provided');
-            }
-
-            setChartBlocks((prev) => [
-              { id: generateRandomString(8), title, data, type },
-              ...prev,
-            ]);
-
-            addToolResult({
-              tool: 'createCharts',
-              toolCallId: toolCall.toolCallId,
-              output: 'Chart created',
-            });
-          } catch (e) {
-            addToolResult({
-              tool: 'createCharts',
-              toolCallId: toolCall.toolCallId,
-              error: String(e),
-            } as any);
-          }
-        }
-      },
-      onData(data) {
-        if (data.type === 'data-usage') {
-          setUsage(data.data as any);
-        }
-      },
-    }
-  );
-
-  const handleSend = useEvent(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!input.trim() || databaseStatus.isDisabled) {
-      const message = databaseStatus.hasNoDatabases
-        ? t('Please configure a database first')
-        : databaseStatus.isMultiDatabase
-          ? t('Please select tables from a single database')
-          : t('Please configure a database first');
-
-      toast.warning(message);
-      return;
-    }
-
-    await handleSendWithScopes(input.trim());
-    setInput('');
-  });
-
-  const handleSendWithScopes = useEvent(async (text: string) => {
-    await sendMessage({
-      text,
-      metadata: {
-        scopes: selectedScopes,
-      },
-    });
+  // Use warehouse AI chat hook
+  const {
+    input,
+    setInput,
+    messages,
+    status,
+    error,
+    addToolResult,
+    chartBlocks,
+    usage,
+    handleSend,
+    handleSendWithScopes,
+    handleSuggestionClick,
+    handleReset,
+    handleClearCharts,
+    handleDeleteChart,
+    refreshId,
+  } = useWarehouseAIChat({
+    workspaceId,
+    selectedScopes,
+    isDisabled: databaseStatus.isDisabled,
   });
 
   const handleNavigateToConnections = useEvent(() => {
     navigate({ to: '/insights/warehouse/connections' });
-  });
-
-  const handleSuggestionClick = useEvent(async (suggestion: string) => {
-    await handleSendWithScopes(suggestion);
-  });
-
-  const handleReset = useEvent(() => {
-    refreshId();
-    setUsage(null);
   });
 
   return (
@@ -301,7 +185,7 @@ function PageComponent() {
                     variant="ghost"
                     size="sm"
                     Icon={LuTrash2}
-                    onClick={() => setChartBlocks([])}
+                    onClick={handleClearCharts}
                   >
                     {t('Clear All')}
                   </Button>
@@ -341,11 +225,7 @@ function PageComponent() {
                         title={block.title}
                         data={block.data}
                         chartType={block.type}
-                        onDelete={(id) =>
-                          setChartBlocks((prev) =>
-                            prev.filter((b) => b.id !== id)
-                          )
-                        }
+                        onDelete={handleDeleteChart}
                       />
                     ))
                   )}
@@ -366,11 +246,7 @@ function PageComponent() {
                   {t('Chat')}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => refreshId()}
-                  >
+                  <Button size="sm" variant="outline" onClick={refreshId}>
                     {t('New chat')}
                   </Button>
                 </div>
@@ -398,7 +274,7 @@ function PageComponent() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleReset()}
+                          onClick={handleReset}
                         >
                           {t('Retry')}
                         </Button>

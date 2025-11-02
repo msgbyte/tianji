@@ -1,4 +1,12 @@
-import { tool, ToolSet } from 'ai';
+import {
+  tool,
+  ToolSet,
+  streamText,
+  convertToModelMessages,
+  UIMessage,
+  stepCountIs,
+  LanguageModel,
+} from 'ai';
 import { env } from '../../../utils/env.js';
 import {
   getWarehouseConnection,
@@ -108,3 +116,56 @@ ${needGetContext ? '- Always start by ensuring you know the table and column str
 - Prefer clear, concise outputs. dont generate any image which like attachment.
 `;
 };
+
+/**
+ * Create a streaming text response for warehouse AI chat
+ * @param model - The language model to use
+ * @param inputMessages - System messages with context
+ * @param messages - User conversation messages
+ * @param aiTools - The warehouse AI tools to use
+ * @returns StreamText result that can be piped to response
+ */
+export function createWarehouseAIStream({
+  model,
+  inputMessages = [],
+  messages,
+  aiTools,
+}: {
+  model: LanguageModel;
+  inputMessages: Parameters<typeof streamText>[0]['messages'];
+  messages: Array<Omit<UIMessage, 'id'>>;
+  aiTools: ToolSet;
+}) {
+  return streamText({
+    model,
+    messages: [...inputMessages, ...convertToModelMessages(messages)],
+    stopWhen: stepCountIs(5),
+    tools: {
+      // server-side tool with execute function:
+      getWeatherInformation: {
+        description: 'show the weather in a given city to the user',
+        inputSchema: z.object({ city: z.string() }),
+        execute: async ({}: { city: string }) => {
+          const weatherOptions = ['sunny', 'cloudy', 'rainy', 'snowy', 'windy'];
+          return weatherOptions[
+            Math.floor(Math.random() * weatherOptions.length)
+          ];
+        },
+      },
+      // client-side tool that starts user interaction:
+      askForConfirmation: {
+        description: 'Ask the user for confirmation.',
+        inputSchema: z.object({
+          message: z.string().describe('The message to ask for confirmation.'),
+        }),
+      },
+      // client-side tool that is automatically executed on the client:
+      getLocation: {
+        description:
+          'Get the user location. Always ask for confirmation before using this tool.',
+        inputSchema: z.object({}),
+      },
+      ...aiTools,
+    },
+  });
+}

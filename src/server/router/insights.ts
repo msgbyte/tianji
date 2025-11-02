@@ -1,18 +1,12 @@
 import { Router } from 'express';
 import { env } from '../utils/env.js';
 import { createOpenAI } from '@ai-sdk/openai';
-import {
-  convertToModelMessages,
-  ModelMessage,
-  stepCountIs,
-  streamText,
-  UIMessage,
-} from 'ai';
-import z from 'zod';
+import { ModelMessage, UIMessage } from 'ai';
 import {
   warehouseAISystemPrompt,
   warehouseAITools,
   createWarehouseAITools,
+  createWarehouseAIStream,
 } from '../model/insights/warehouse/ai.js';
 import { auth } from '../middleware/authjs.js';
 import { INIT_ADMIN_USER_ID } from '../utils/const.js';
@@ -136,37 +130,11 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
     });
   }
 
-  const result = streamText({
+  const result = createWarehouseAIStream({
     model,
-    messages: [...inputMessages, ...convertToModelMessages(messages)],
-    stopWhen: stepCountIs(5),
-    tools: {
-      // server-side tool with execute function:
-      getWeatherInformation: {
-        description: 'show the weather in a given city to the user',
-        inputSchema: z.object({ city: z.string() }),
-        execute: async ({}: { city: string }) => {
-          const weatherOptions = ['sunny', 'cloudy', 'rainy', 'snowy', 'windy'];
-          return weatherOptions[
-            Math.floor(Math.random() * weatherOptions.length)
-          ];
-        },
-      },
-      // client-side tool that starts user interaction:
-      askForConfirmation: {
-        description: 'Ask the user for confirmation.',
-        inputSchema: z.object({
-          message: z.string().describe('The message to ask for confirmation.'),
-        }),
-      },
-      // client-side tool that is automatically executed on the client:
-      getLocation: {
-        description:
-          'Get the user location. Always ask for confirmation before using this tool.',
-        inputSchema: z.object({}),
-      },
-      ...aiTools,
-    },
+    inputMessages,
+    messages,
+    aiTools,
   });
 
   result.pipeUIMessageStreamToResponse(res, {
