@@ -20,7 +20,7 @@ import { AlertConfirm } from '@/components/AlertConfirm';
 import { trpc, defaultErrorHandler } from '@/api/trpc';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { useEvent } from '@/hooks/useEvent';
-import { LuFilePen, LuPlus, LuTrash2 } from 'react-icons/lu';
+import { LuFilePen, LuPlus, LuTrash2, LuSearch } from 'react-icons/lu';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
@@ -146,6 +146,19 @@ function PageComponent() {
                     {item.name}
                   </CardTitle>
                   <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      Icon={LuSearch}
+                      onClick={() =>
+                        navigate({
+                          to: '/insights/warehouse/$databaseId/query',
+                          params: { databaseId: item.id },
+                        })
+                      }
+                    >
+                      {t('Query')}
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"

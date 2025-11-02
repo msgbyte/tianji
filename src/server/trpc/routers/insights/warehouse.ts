@@ -7,8 +7,21 @@ import {
 import { prisma } from '../../../model/_client.js';
 import { WarehouseDatebaseModelSchema } from '../../../prisma/zod/warehousedatebase.js';
 import { WarehouseDatabaseTableModelSchema } from '../../../prisma/zod/warehousedatabasetable.js';
-import { pingWarehouse } from '../../../model/insights/warehouse/utils.js';
+import {
+  pingWarehouse,
+  getWarehouseConnection,
+  getWarehouseScopes,
+  getFieldType,
+} from '../../../model/insights/warehouse/utils.js';
 import { upsertWarehouseTable } from '../../../model/insights/warehouse/connections.js';
+import {
+  createWarehouseAITools,
+  warehouseAISystemPrompt,
+} from '../../../model/insights/warehouse/ai.js';
+import { createOpenAI } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+import { env } from '../../../utils/env.js';
+import { logger } from '../../../utils/logger.js';
 
 export const warehouseRouter = router({
   database: router({
@@ -187,6 +200,93 @@ export const warehouseRouter = router({
           where: { id: input.id },
         });
         return res;
+      }),
+  }),
+  query: router({
+    execute: workspaceProcedure
+      .input(
+        z.object({
+          databaseId: z.string(),
+          sql: z.string(),
+        })
+      )
+      .output(
+        z.object({
+          columns: z.array(
+            z.object({
+              name: z.string(),
+              type: z.string(),
+            })
+          ),
+          rows: z.array(z.any()),
+          rowCount: z.number(),
+          executionTime: z.number(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { databaseId, sql } = input;
+        const startTime = Date.now();
+
+        // Validate SQL - only allow SELECT statements
+        const trimmedSql = sql.trim().toLowerCase();
+        if (!trimmedSql.startsWith('select')) {
+          throw new Error('Only SELECT queries are allowed');
+        }
+
+        // Check for dangerous keywords
+        const dangerousKeywords = [
+          'insert',
+          'update',
+          'delete',
+          'drop',
+          'truncate',
+          'alter',
+          'create',
+          'replace',
+        ];
+        for (const keyword of dangerousKeywords) {
+          if (trimmedSql.includes(keyword)) {
+            throw new Error(`Dangerous keyword "${keyword}" is not allowed`);
+          }
+        }
+
+        // Get database connection URI
+        const database = await prisma.warehouseDatabase.findUnique({
+          where: { id: databaseId },
+          select: { connectionUri: true },
+        });
+
+        if (!database || !database.connectionUri) {
+          throw new Error('Database connection not found');
+        }
+
+        // Execute query
+        const connection = getWarehouseConnection(database.connectionUri);
+
+        try {
+          const [rows, fields] = await connection.query(sql);
+          const executionTime = Date.now() - startTime;
+
+          // Extract column information
+          const columns = fields.map((field) => ({
+            name: field.name,
+            type: getFieldType(field.type ?? -1),
+          }));
+
+          const rowsArray = Array.isArray(rows) ? rows : [];
+
+          return {
+            columns,
+            rows: rowsArray,
+            rowCount: rowsArray.length,
+            executionTime,
+          };
+        } catch (error) {
+          logger.error('Query execution error:', error);
+          throw new Error(
+            `Query execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
       }),
   }),
 });

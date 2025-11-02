@@ -91,6 +91,7 @@ import { Route as ApplicationApplicationIdEditImport } from './routes/applicatio
 import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
 import { Route as InsightsWarehouseConnectionsIndexImport } from './routes/insights/warehouse/connections/index'
 import { Route as SurveyWorkspaceIdSurveyIdPublicImport } from './routes/survey_/$workspaceId/$surveyId/public'
+import { Route as InsightsWarehouseDatabaseIdQueryImport } from './routes/insights_/warehouse/$databaseId/query'
 import { Route as InsightsWarehouseConnectionsCreateImport } from './routes/insights/warehouse/connections/create'
 import { Route as InsightsWarehouseConnectionsConnectionIdTableImport } from './routes/insights/warehouse/connections/$connectionId/table'
 
@@ -502,6 +503,12 @@ const SurveyWorkspaceIdSurveyIdPublicRoute =
     getParentRoute: () => rootRoute,
   } as any)
 
+const InsightsWarehouseDatabaseIdQueryRoute =
+  InsightsWarehouseDatabaseIdQueryImport.update({
+    path: '/insights/warehouse/$databaseId/query',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 const InsightsWarehouseConnectionsCreateRoute =
   InsightsWarehouseConnectionsCreateImport.update({
     path: '/warehouse/connections/create',
@@ -834,6 +841,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsWarehouseConnectionsCreateImport
       parentRoute: typeof InsightsImport
     }
+    '/insights/warehouse/$databaseId/query': {
+      preLoaderRoute: typeof InsightsWarehouseDatabaseIdQueryImport
+      parentRoute: typeof rootRoute
+    }
     '/survey/$workspaceId/$surveyId/public': {
       preLoaderRoute: typeof SurveyWorkspaceIdSurveyIdPublicImport
       parentRoute: typeof rootRoute
@@ -941,6 +952,7 @@ export const routeTree = rootRoute.addChildren([
   WebsitePublicShareIdRoute,
   WebsiteVisitorMapWebsiteIdRoute,
   WorkerWorkerIdEditorRoute,
+  InsightsWarehouseDatabaseIdQueryRoute,
   SurveyWorkspaceIdSurveyIdPublicRoute,
 ])
 
