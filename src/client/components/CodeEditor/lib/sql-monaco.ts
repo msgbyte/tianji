@@ -293,7 +293,7 @@ export function createSQLHoverProvider(
  * Parse SQL statements from text
  * Split by semicolon and return statement info
  */
-function parseSQLStatements(text: string): Array<{
+export function parseSQLStatements(text: string): Array<{
   sql: string;
   startLine: number;
   endLine: number;

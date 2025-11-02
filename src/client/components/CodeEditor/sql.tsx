@@ -8,6 +8,7 @@ import {
   createSQLHoverProvider,
   createSQLCodeLensProvider,
   configureSQLLanguage,
+  parseSQLStatements,
 } from './lib/sql-monaco';
 
 export interface SQLTableSchema {
@@ -74,6 +75,53 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
         executingLine
       );
       (editor as any).__sqlCodeLensDisposable = codeLensDisposable;
+    }
+
+    // Register keyboard shortcut to execute current statement/selection (Cmd/Ctrl + Enter)
+    if (onExecuteLine) {
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+        const selection = editor.getSelection();
+        const model = editor.getModel();
+        if (!model) return;
+
+        let sql: string;
+        let lineNumber: number;
+
+        if (selection && !selection.isEmpty()) {
+          // If there is a selection, execute the selected text
+          sql = model.getValueInRange(selection);
+          lineNumber = selection.startLineNumber;
+        } else {
+          // If no selection, find and execute the current SQL statement
+          const position = editor.getPosition();
+          if (!position) return;
+
+          const text = model.getValue();
+          const statements = parseSQLStatements(text);
+
+          // Find the statement that contains the current cursor position
+          const currentStatement = statements.find(
+            (stmt) =>
+              position.lineNumber >= stmt.startLine &&
+              position.lineNumber <= stmt.endLine
+          );
+
+          if (currentStatement) {
+            sql = currentStatement.sql;
+            lineNumber = currentStatement.startLine;
+          } else {
+            // Fallback to current line if no statement found
+            lineNumber = position.lineNumber;
+            sql = model.getLineContent(lineNumber);
+          }
+        }
+
+        // Trim whitespace and check if line is not empty
+        sql = sql.trim();
+        if (sql) {
+          handleExecuteLine(lineNumber, sql);
+        }
+      });
     }
 
     // Store disposables for cleanup
