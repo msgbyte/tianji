@@ -1,5 +1,6 @@
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, forwardRef } from 'react';
+import { format } from 'sql-formatter';
 import { useTheme } from '../../store/settings';
 import { useEvent } from '../../hooks/useEvent';
 import {
@@ -83,6 +84,35 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
   const handleEditorWillMount = useEvent((monaco: Monaco) => {
     // Configure SQL language settings
     configureSQLLanguage(monaco);
+
+    // Register document formatting provider for SQL
+    monaco.languages.registerDocumentFormattingEditProvider('sql', {
+      provideDocumentFormattingEdits: (model) => {
+        const currentValue = model.getValue();
+        if (!currentValue) {
+          return [];
+        }
+
+        try {
+          const formatted = format(currentValue, {
+            language: 'sql',
+            tabWidth: 2,
+            keywordCase: 'upper',
+          });
+
+          // Return edit that replaces entire document
+          return [
+            {
+              range: model.getFullModelRange(),
+              text: formatted,
+            },
+          ];
+        } catch (error) {
+          console.error('Failed to format SQL:', error);
+          return [];
+        }
+      },
+    });
   });
 
   // Update code lens when executingLine changes
@@ -95,6 +125,18 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
       );
     }
   }, [executingLine, enableRunButton, onExecuteLine, handleExecuteLine]);
+
+  // Cleanup disposables on unmount
+  useEffect(() => {
+    return () => {
+      const editor = editorRef.current;
+      if (editor) {
+        editor.__sqlCompletionDisposable?.dispose();
+        editor.__sqlHoverDisposable?.dispose();
+        editor.__sqlCodeLensDisposable?.dispose();
+      }
+    };
+  }, []);
 
   return (
     <Editor

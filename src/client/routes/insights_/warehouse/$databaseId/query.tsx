@@ -41,6 +41,18 @@ export const Route = createFileRoute('/insights/warehouse/$databaseId/query')({
   component: PageComponent,
 });
 
+const defaultSql = `SELECT
+  date AS date,
+  count(1) AS count
+FROM
+  your_table
+WHERE
+  date > DATE_SUB (NOW (), INTERVAL 7 DAY)
+GROUP BY
+  1
+ORDER BY
+  1;`;
+
 function PageComponent() {
   const { databaseId } = Route.useParams<{ databaseId: string }>();
   const { t } = useTranslation();
@@ -50,7 +62,7 @@ function PageComponent() {
   const [sql, setSql] = useLocalStorageState<string>(
     `tianji-warehouse-sql-${databaseId}`,
     {
-      defaultValue: 'SELECT * FROM your_table LIMIT 10;',
+      defaultValue: defaultSql,
     }
   );
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
