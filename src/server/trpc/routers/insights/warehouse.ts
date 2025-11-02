@@ -250,6 +250,16 @@ export const warehouseRouter = router({
           }
         }
 
+        // Auto-add LIMIT if not present
+        let finalSql = sql.trim();
+        if (!trimmedSql.includes('limit')) {
+          // Remove trailing semicolon if present
+          if (finalSql.endsWith(';')) {
+            finalSql = finalSql.slice(0, -1).trim();
+          }
+          finalSql = `${finalSql} LIMIT 1000`;
+        }
+
         // Get database connection URI
         const database = await prisma.warehouseDatabase.findUnique({
           where: { id: databaseId },
@@ -264,7 +274,7 @@ export const warehouseRouter = router({
         const connection = getWarehouseConnection(database.connectionUri);
 
         try {
-          const [rows, fields] = await connection.query(sql);
+          const [rows, fields] = await connection.query(finalSql);
           const executionTime = Date.now() - startTime;
 
           // Extract column information

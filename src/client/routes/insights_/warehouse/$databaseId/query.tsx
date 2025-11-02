@@ -10,7 +10,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { LuArrowLeft, LuPlay, LuTable2 } from 'react-icons/lu';
+import { LuArrowLeft, LuTable2 } from 'react-icons/lu';
 import { Allotment } from 'allotment';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -25,11 +25,9 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CodeEditor } from '@/components/CodeEditor';
+import { CodeBlock } from '@/components/CodeBlock';
 
 import 'allotment/dist/style.css';
-import { Code } from '@/components/Code';
-import { CodeBlock } from '@/components/CodeBlock';
 
 interface QueryResult {
   columns: Array<{ name: string; type: string }>;
@@ -196,14 +194,6 @@ function PageComponent() {
                 onClick={() => setShowDDLSheet(true)}
               >
                 {t('Tables')} ({currentDatabaseTables.length})
-              </Button>
-              <Button
-                Icon={LuPlay}
-                onClick={handleExecuteSQL}
-                loading={executeMutation.isPending}
-                disabled={executeMutation.isPending}
-              >
-                {t('Execute Query')}
               </Button>
             </div>
           </div>

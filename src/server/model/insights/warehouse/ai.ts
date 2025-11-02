@@ -50,9 +50,20 @@ export const createWarehouseAITools = (connectionUrl?: string): ToolSet => ({
         connectionUrl || env.insights.warehouse.url
       );
 
-      logger.info('[queryWarehouse]:' + sql);
+      // Auto-add LIMIT if not present
+      let finalSql = sql.trim();
+      const trimmedSqlLower = finalSql.toLowerCase();
+      if (!trimmedSqlLower.includes('limit')) {
+        // Remove trailing semicolon if present
+        if (finalSql.endsWith(';')) {
+          finalSql = finalSql.slice(0, -1).trim();
+        }
+        finalSql = `${finalSql} LIMIT 1000`;
+      }
 
-      const [res] = await connection.query(sql);
+      logger.info('[queryWarehouse]:' + finalSql);
+
+      const [res] = await connection.query(finalSql);
 
       logger.info('[queryWarehouse] result:' + JSON.stringify(res));
 
