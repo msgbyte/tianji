@@ -4,12 +4,25 @@ import type { IDisposable, editor } from 'monaco-editor';
 
 /**
  * Track registered providers to avoid duplicate registrations
+ * Note: Completion and Hover are language-level providers (shared globally)
+ * CodeLens and Commands are editor-instance-level (one per editor)
  */
 let sqlCompletionDisposable: IDisposable | null = null;
 let sqlHoverDisposable: IDisposable | null = null;
-let sqlCodeLensDisposable: IDisposable | null = null;
-let sqlCommandDisposable: IDisposable | null = null;
 let sqlLanguageConfigured = false;
+
+/**
+ * Store disposables per editor instance to support multiple editors
+ * Each editor needs its own CodeLens provider, command handler, and keyboard shortcut
+ */
+const editorDisposables = new WeakMap<
+  editor.IStandaloneCodeEditor,
+  {
+    codeLensDisposable?: IDisposable;
+    commandDisposable?: IDisposable;
+    keyboardShortcutDisposable?: string | null; // editor.addCommand returns a disposable ID (string | null)
+  }
+>();
 
 /**
  * SQL Keywords for autocompletion
@@ -96,17 +109,18 @@ export const SQL_FUNCTIONS = [
  * Create SQL Completion Provider
  * Provides intelligent autocompletion for SQL queries
  * Uses singleton pattern to prevent duplicate registrations
+ * Only registers once globally, shared by all SQL editors
  */
 export function createSQLCompletionProvider(
   monaco: Monaco,
   tables: SQLTableSchema[]
 ) {
-  // Dispose previous provider if it exists
+  // If already registered, dispose and re-register with updated tables
   if (sqlCompletionDisposable) {
     sqlCompletionDisposable.dispose();
   }
 
-  // Register new provider
+  // Register new provider (or re-register with updated table schemas)
   sqlCompletionDisposable = monaco.languages.registerCompletionItemProvider(
     'sql',
     {
@@ -225,17 +239,18 @@ export function createSQLCompletionProvider(
  * Create SQL Hover Provider
  * Provides hover information for tables and columns
  * Uses singleton pattern to prevent duplicate registrations
+ * Only registers once globally, shared by all SQL editors
  */
 export function createSQLHoverProvider(
   monaco: Monaco,
   tables: SQLTableSchema[]
 ) {
-  // Dispose previous provider if it exists
+  // If already registered, dispose and re-register with updated tables
   if (sqlHoverDisposable) {
     sqlHoverDisposable.dispose();
   }
 
-  // Register new provider
+  // Register new provider (or re-register with updated table schemas)
   sqlHoverDisposable = monaco.languages.registerHoverProvider('sql', {
     provideHover: (model, position) => {
       const word = model.getWordAtPosition(position);
@@ -360,6 +375,7 @@ export function parseSQLStatements(text: string): Array<{
  * Create SQL Code Lens Provider
  * Adds run buttons to each SQL statement (separated by semicolons)
  * Also registers keyboard shortcut (Cmd/Ctrl + Enter) to execute current statement/selection
+ * This is registered per editor instance to support multiple editors simultaneously
  */
 export function createSQLCodeLensProvider(
   monaco: Monaco,
@@ -367,16 +383,12 @@ export function createSQLCodeLensProvider(
   onExecuteLine: (lineNumber: number, sql: string) => void | Promise<void>,
   executingLine?: number | null
 ) {
-  // Dispose previous provider if it exists
-  if (sqlCodeLensDisposable) {
-    sqlCodeLensDisposable.dispose();
-    sqlCodeLensDisposable = null;
-  }
-
-  // Dispose previous command if it exists
-  if (sqlCommandDisposable) {
-    sqlCommandDisposable.dispose();
-    sqlCommandDisposable = null;
+  // Clean up previous disposables for this editor instance
+  const existingDisposables = editorDisposables.get(editorInstance);
+  if (existingDisposables) {
+    existingDisposables.codeLensDisposable?.dispose();
+    existingDisposables.commandDisposable?.dispose();
+    // Note: keyboard shortcuts are automatically cleaned up when command is disposed
   }
 
   // Helper function to execute SQL statement
@@ -389,7 +401,8 @@ export function createSQLCodeLensProvider(
   };
 
   // Register keyboard shortcut to execute current statement/selection (Cmd/Ctrl + Enter)
-  editorInstance.addCommand(
+  // This returns a disposable ID that can be used to remove the command later
+  const keyboardShortcutDisposable = editorInstance.addCommand(
     monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
     () => {
       const selection = editorInstance.getSelection();
@@ -436,9 +449,9 @@ export function createSQLCodeLensProvider(
     }
   );
 
-  // Register a single command handler for executing SQL
-  const commandId = 'tianji.sql.runStatement';
-  sqlCommandDisposable = monaco.editor.registerCommand(
+  // Generate a unique command ID for this editor instance
+  const commandId = `tianji.sql.runStatement.${Date.now()}.${Math.random()}`;
+  const commandDisposable = monaco.editor.registerCommand(
     commandId,
     async (accessor, lineNumber: number, sql: string) => {
       await executeSQLStatement(lineNumber, sql);
@@ -450,9 +463,14 @@ export function createSQLCodeLensProvider(
     typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
   const shortcutKey = isMac ? '⌘' : 'Ctrl';
 
-  // Register new provider
-  sqlCodeLensDisposable = monaco.languages.registerCodeLensProvider('sql', {
+  // Register CodeLens provider for this editor
+  const codeLensDisposable = monaco.languages.registerCodeLensProvider('sql', {
     provideCodeLenses: (model) => {
+      // Only provide lenses for this editor's model
+      if (model !== editorInstance.getModel()) {
+        return { lenses: [], dispose: () => {} };
+      }
+
       const lenses: any[] = [];
       const text = model.getValue();
       const statements = parseSQLStatements(text);
@@ -492,7 +510,30 @@ export function createSQLCodeLensProvider(
     },
   });
 
-  return sqlCodeLensDisposable;
+  // Store disposables for this editor instance
+  editorDisposables.set(editorInstance, {
+    codeLensDisposable,
+    commandDisposable,
+    keyboardShortcutDisposable,
+  });
+
+  return codeLensDisposable;
+}
+
+/**
+ * Dispose SQL CodeLens provider for a specific editor instance
+ * Call this when an editor is being unmounted
+ */
+export function disposeSQLCodeLensForEditor(
+  editorInstance: editor.IStandaloneCodeEditor
+) {
+  const disposables = editorDisposables.get(editorInstance);
+  if (disposables) {
+    disposables.codeLensDisposable?.dispose();
+    disposables.commandDisposable?.dispose();
+    // Keyboard shortcut is automatically cleaned up
+    editorDisposables.delete(editorInstance);
+  }
 }
 
 /**
@@ -527,7 +568,9 @@ export function configureSQLLanguage(monaco: Monaco) {
 
 /**
  * Dispose all SQL providers
- * Call this to clean up resources when SQL editor is no longer needed
+ * Call this to clean up all global resources
+ * Note: This disposes language-level providers only
+ * Editor-instance-level disposables are managed separately via WeakMap
  */
 export function disposeSQLProviders() {
   if (sqlCompletionDisposable) {
@@ -538,16 +581,6 @@ export function disposeSQLProviders() {
   if (sqlHoverDisposable) {
     sqlHoverDisposable.dispose();
     sqlHoverDisposable = null;
-  }
-
-  if (sqlCodeLensDisposable) {
-    sqlCodeLensDisposable.dispose();
-    sqlCodeLensDisposable = null;
-  }
-
-  if (sqlCommandDisposable) {
-    sqlCommandDisposable.dispose();
-    sqlCommandDisposable = null;
   }
 
   // Reset language configuration flag

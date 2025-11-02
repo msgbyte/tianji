@@ -8,6 +8,7 @@ import {
   createSQLCompletionProvider,
   createSQLHoverProvider,
   createSQLCodeLensProvider,
+  disposeSQLCodeLensForEditor,
   configureSQLLanguage,
   parseSQLStatements,
 } from './lib/sql-monaco';
@@ -70,21 +71,13 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
 
     // Register SQL code lens (run button) and keyboard shortcut if enabled
     if (enableRunButton && onExecuteLine) {
-      const codeLensDisposable = createSQLCodeLensProvider(
+      createSQLCodeLensProvider(
         monaco,
         editor,
         handleExecuteLine,
         executingLine
       );
-      // Store disposable on editor instance for cleanup
-      Object.assign(editor, { __sqlCodeLensDisposable: codeLensDisposable });
     }
-
-    // Store disposables on editor instance for cleanup
-    Object.assign(editor, {
-      __sqlCompletionDisposable: completionDisposable,
-      __sqlHoverDisposable: hoverDisposable,
-    });
   });
 
   const handleEditorWillMount = useEvent((monaco: Monaco) => {
@@ -143,11 +136,8 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
     return () => {
       const editor = editorRef.current;
       if (editor) {
-        // Clean up custom disposables attached to editor instance
-        const editorWithDisposables = editor as any;
-        editorWithDisposables.__sqlCompletionDisposable?.dispose();
-        editorWithDisposables.__sqlHoverDisposable?.dispose();
-        editorWithDisposables.__sqlCodeLensDisposable?.dispose();
+        // Clean up CodeLens and related disposables for this editor instance
+        disposeSQLCodeLensForEditor(editor);
       }
     };
   }, []);
