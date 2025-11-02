@@ -1,6 +1,6 @@
 import type { Monaco } from '@monaco-editor/react';
 import type { SQLTableSchema } from '../sql';
-import type { IDisposable } from 'monaco-editor';
+import type { IDisposable, editor } from 'monaco-editor';
 
 /**
  * Track registered providers to avoid duplicate registrations
@@ -359,9 +359,11 @@ export function parseSQLStatements(text: string): Array<{
 /**
  * Create SQL Code Lens Provider
  * Adds run buttons to each SQL statement (separated by semicolons)
+ * Also registers keyboard shortcut (Cmd/Ctrl + Enter) to execute current statement/selection
  */
 export function createSQLCodeLensProvider(
   monaco: Monaco,
+  editorInstance: editor.IStandaloneCodeEditor,
   onExecuteLine: (lineNumber: number, sql: string) => void | Promise<void>,
   executingLine?: number | null
 ) {
@@ -377,19 +379,76 @@ export function createSQLCodeLensProvider(
     sqlCommandDisposable = null;
   }
 
+  // Helper function to execute SQL statement
+  const executeSQLStatement = async (lineNumber: number, sql: string) => {
+    try {
+      await onExecuteLine(lineNumber, sql);
+    } catch (error) {
+      console.error('Error executing SQL:', error);
+    }
+  };
+
+  // Register keyboard shortcut to execute current statement/selection (Cmd/Ctrl + Enter)
+  editorInstance.addCommand(
+    monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+    () => {
+      const selection = editorInstance.getSelection();
+      const model = editorInstance.getModel();
+      if (!model) return;
+
+      let sql: string;
+      let lineNumber: number;
+
+      if (selection && !selection.isEmpty()) {
+        // If there is a selection, execute the selected text
+        sql = model.getValueInRange(selection);
+        lineNumber = selection.startLineNumber;
+      } else {
+        // If no selection, find and execute the current SQL statement
+        const position = editorInstance.getPosition();
+        if (!position) return;
+
+        const text = model.getValue();
+        const statements = parseSQLStatements(text);
+
+        // Find the statement that contains the current cursor position
+        const currentStatement = statements.find(
+          (stmt) =>
+            position.lineNumber >= stmt.startLine &&
+            position.lineNumber <= stmt.endLine
+        );
+
+        if (currentStatement) {
+          sql = currentStatement.sql;
+          lineNumber = currentStatement.startLine;
+        } else {
+          // Fallback to current line if no statement found
+          lineNumber = position.lineNumber;
+          sql = model.getLineContent(lineNumber);
+        }
+      }
+
+      // Trim whitespace and check if line is not empty
+      sql = sql.trim();
+      if (sql) {
+        executeSQLStatement(lineNumber, sql);
+      }
+    }
+  );
+
   // Register a single command handler for executing SQL
   const commandId = 'tianji.sql.runStatement';
   sqlCommandDisposable = monaco.editor.registerCommand(
     commandId,
     async (accessor, lineNumber: number, sql: string) => {
-      try {
-        await onExecuteLine(lineNumber, sql);
-      } catch (error) {
-        console.error('Error executing SQL:', error);
-      }
-      // Don't return anything to avoid async response expectation
+      await executeSQLStatement(lineNumber, sql);
     }
   );
+
+  // Detect platform for shortcut display
+  const isMac =
+    typeof navigator !== 'undefined' && /Mac/.test(navigator.platform);
+  const shortcutKey = isMac ? '⌘' : 'Ctrl';
 
   // Register new provider
   sqlCodeLensDisposable = monaco.languages.registerCodeLensProvider('sql', {
@@ -412,10 +471,12 @@ export function createSQLCodeLensProvider(
           id: `run-statement-${index}`,
           command: {
             id: commandId,
-            title: isExecuting ? '⏳ Running...' : '▶ Run',
+            title: isExecuting
+              ? '⏳ Running...'
+              : `▶ Run (${shortcutKey}+Enter)`,
             tooltip: isExecuting
               ? 'Executing SQL statement...'
-              : `Execute SQL statement (lines ${statement.startLine}-${statement.endLine})`,
+              : `Execute SQL statement (lines ${statement.startLine}-${statement.endLine})\nShortcut: ${shortcutKey}+Enter`,
             arguments: [statement.startLine, statement.sql],
           },
         });

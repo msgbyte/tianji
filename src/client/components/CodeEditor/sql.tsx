@@ -3,6 +3,7 @@ import React, { useRef, useEffect, forwardRef } from 'react';
 import { format } from 'sql-formatter';
 import { useTheme } from '../../store/settings';
 import { useEvent } from '../../hooks/useEvent';
+import type { editor } from 'monaco-editor';
 import {
   createSQLCompletionProvider,
   createSQLHoverProvider,
@@ -42,7 +43,7 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
   } = props;
   const colorScheme = useTheme();
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
 
   const registerSQLCompletions = useEvent((monaco: Monaco) => {
@@ -67,66 +68,23 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
     // Register SQL hover provider
     const hoverDisposable = createSQLHoverProvider(monaco, tables);
 
-    // Register SQL code lens (run button) if enabled
+    // Register SQL code lens (run button) and keyboard shortcut if enabled
     if (enableRunButton && onExecuteLine) {
       const codeLensDisposable = createSQLCodeLensProvider(
         monaco,
+        editor,
         handleExecuteLine,
         executingLine
       );
-      (editor as any).__sqlCodeLensDisposable = codeLensDisposable;
+      // Store disposable on editor instance for cleanup
+      Object.assign(editor, { __sqlCodeLensDisposable: codeLensDisposable });
     }
 
-    // Register keyboard shortcut to execute current statement/selection (Cmd/Ctrl + Enter)
-    if (onExecuteLine) {
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-        const selection = editor.getSelection();
-        const model = editor.getModel();
-        if (!model) return;
-
-        let sql: string;
-        let lineNumber: number;
-
-        if (selection && !selection.isEmpty()) {
-          // If there is a selection, execute the selected text
-          sql = model.getValueInRange(selection);
-          lineNumber = selection.startLineNumber;
-        } else {
-          // If no selection, find and execute the current SQL statement
-          const position = editor.getPosition();
-          if (!position) return;
-
-          const text = model.getValue();
-          const statements = parseSQLStatements(text);
-
-          // Find the statement that contains the current cursor position
-          const currentStatement = statements.find(
-            (stmt) =>
-              position.lineNumber >= stmt.startLine &&
-              position.lineNumber <= stmt.endLine
-          );
-
-          if (currentStatement) {
-            sql = currentStatement.sql;
-            lineNumber = currentStatement.startLine;
-          } else {
-            // Fallback to current line if no statement found
-            lineNumber = position.lineNumber;
-            sql = model.getLineContent(lineNumber);
-          }
-        }
-
-        // Trim whitespace and check if line is not empty
-        sql = sql.trim();
-        if (sql) {
-          handleExecuteLine(lineNumber, sql);
-        }
-      });
-    }
-
-    // Store disposables for cleanup
-    (editor as any).__sqlCompletionDisposable = completionDisposable;
-    (editor as any).__sqlHoverDisposable = hoverDisposable;
+    // Store disposables on editor instance for cleanup
+    Object.assign(editor, {
+      __sqlCompletionDisposable: completionDisposable,
+      __sqlHoverDisposable: hoverDisposable,
+    });
   });
 
   const handleEditorWillMount = useEvent((monaco: Monaco) => {
@@ -165,9 +123,15 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
 
   // Update code lens when executingLine changes
   useEffect(() => {
-    if (enableRunButton && onExecuteLine && monacoRef.current) {
+    if (
+      enableRunButton &&
+      onExecuteLine &&
+      monacoRef.current &&
+      editorRef.current
+    ) {
       createSQLCodeLensProvider(
         monacoRef.current,
+        editorRef.current,
         handleExecuteLine,
         executingLine
       );
@@ -179,9 +143,11 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
     return () => {
       const editor = editorRef.current;
       if (editor) {
-        editor.__sqlCompletionDisposable?.dispose();
-        editor.__sqlHoverDisposable?.dispose();
-        editor.__sqlCodeLensDisposable?.dispose();
+        // Clean up custom disposables attached to editor instance
+        const editorWithDisposables = editor as any;
+        editorWithDisposables.__sqlCompletionDisposable?.dispose();
+        editorWithDisposables.__sqlHoverDisposable?.dispose();
+        editorWithDisposables.__sqlCodeLensDisposable?.dispose();
       }
     };
   }, []);

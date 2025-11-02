@@ -1,7 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { TimeEventChart } from '@/components/chart/TimeEventChart';
+import {
+  TimeEventChart,
+  TimeEventChartData,
+} from '@/components/chart/TimeEventChart';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { LuChartBar, LuChartLine, LuChartArea } from 'react-icons/lu';
 
 type ChartType = 'line' | 'bar' | 'area';
@@ -29,7 +38,9 @@ export const QueryResultChart: React.FC<QueryResultChartProps> = React.memo(
 
     // Transform data for chart
     const chartData = useMemo(() => {
-      if (!hasDateField) return [];
+      if (!hasDateField) {
+        return [];
+      }
 
       return rows.map((row) => {
         const item: Record<string, any> = {};
@@ -83,43 +94,42 @@ export const QueryResultChart: React.FC<QueryResultChartProps> = React.memo(
     return (
       <div className="flex h-full flex-col gap-2 p-4">
         {/* Chart type selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">
-            {t('Chart Type')}:
-          </span>
-          <div className="flex gap-1">
-            <Button
-              variant={chartType === 'line' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setChartType('line')}
-              Icon={LuChartLine}
-            >
-              {t('Line')}
-            </Button>
-            <Button
-              variant={chartType === 'bar' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setChartType('bar')}
-              Icon={LuChartBar}
-            >
-              {t('Bar')}
-            </Button>
-            <Button
-              variant={chartType === 'area' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setChartType('area')}
-              Icon={LuChartArea}
-            >
-              {t('Area')}
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          <Select
+            value={chartType}
+            onValueChange={(value) => setChartType(value as ChartType)}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="line">
+                <div className="flex items-center gap-2">
+                  <LuChartLine className="h-4 w-4" />
+                  <span>{t('Line')}</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="bar">
+                <div className="flex items-center gap-2">
+                  <LuChartBar className="h-4 w-4" />
+                  <span>{t('Bar')}</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="area">
+                <div className="flex items-center gap-2">
+                  <LuChartArea className="h-4 w-4" />
+                  <span>{t('Area')}</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Chart */}
         <div className="flex-1">
           <TimeEventChart
             className="h-full w-full"
-            data={chartData}
+            data={chartData as TimeEventChartData[]}
             unit="day"
             chartConfig={chartConfig}
             chartType={chartType}

@@ -233,7 +233,7 @@ function PageComponent() {
 
                 {/* Query Results */}
                 <Allotment.Pane minSize={200}>
-                  <div className="h-full p-1">
+                  <div className="h-full p-2">
                     {queryResult ? (
                       <Tabs
                         value={activeTab}
@@ -242,7 +242,7 @@ function PageComponent() {
                         }
                         className="flex h-full flex-col overflow-hidden"
                       >
-                        <div className="px-2">
+                        <div>
                           <TabsList>
                             <TabsTrigger value="table">
                               {t('Table')}
