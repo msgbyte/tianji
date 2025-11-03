@@ -218,6 +218,43 @@ importers:
         specifier: 5.7.2
         version: 5.7.2
 
+  packages/cli:
+    dependencies:
+      chalk:
+        specifier: ^4.1.2
+        version: 4.1.2
+      fs-extra:
+        specifier: ^11.2.0
+        version: 11.3.0
+      ora:
+        specifier: ^5.4.1
+        version: 5.4.1
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
+      tianji-client-sdk:
+        specifier: workspace:*
+        version: link:../client-sdk
+      yargs:
+        specifier: ^17.7.2
+        version: 17.7.2
+    devDependencies:
+      '@types/fs-extra':
+        specifier: ^11.0.4
+        version: 11.0.4
+      '@types/node':
+        specifier: 22.13.11
+        version: 22.13.11
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
+      '@types/yargs':
+        specifier: ^17.0.32
+        version: 17.0.33
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
+
   packages/client-sdk:
     dependencies:
       load-script:
@@ -6958,6 +6995,9 @@ packages:
 
   '@types/prismjs@1.26.5':
     resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
+
+  '@types/prompts@2.4.9':
+    resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
 
   '@types/prop-types@15.7.14':
     resolution: {integrity: sha512-gNMvNH49DJ7OJYv+KAKn0Xp45p8PLl6zo2YnvDIbTd4J6MER2BmWN49TG7n9LvkyihINxeKW8+3bfS2yDC9dzQ==}
@@ -25797,6 +25837,11 @@ snapshots:
   '@types/prismjs@1.26.4': {}
 
   '@types/prismjs@1.26.5': {}
+
+  '@types/prompts@2.4.9':
+    dependencies:
+      '@types/node': 22.13.11
+      kleur: 3.0.3
 
   '@types/prop-types@15.7.14': {}
 

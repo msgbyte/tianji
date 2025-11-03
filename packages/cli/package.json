@@ -1,0 +1,36 @@
+{
+  "name": "tianji-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for Tianji Worker development and deployment",
+  "main": "lib/index.js",
+  "bin": {
+    "tianji": "./bin/tianji"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "tianji",
+    "cli",
+    "worker"
+  ],
+  "author": "moonrailgun <moonrailgun@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "tianji-client-sdk": "workspace:*",
+    "yargs": "^17.7.2",
+    "prompts": "^2.4.2",
+    "chalk": "^4.1.2",
+    "fs-extra": "^11.2.0",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.10.0",
+    "@types/prompts": "^2.4.9",
+    "@types/yargs": "^17.0.32",
+    "typescript": "^5.4.5"
+  }
+}
