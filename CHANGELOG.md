@@ -1,5 +1,36 @@
 
 
+## [1.30.5](https://github.com/msgbyte/tianji/compare/v1.30.4...v1.30.5) (2025-11-03)
+
+### Features
+
+* add failed worker record usage and log support ([094291a](https://github.com/msgbyte/tianji/commit/094291a88206496b209893ad63a7df1bd73feebf))
+* add keyboard shortcut to execute SQL statements in editor ([2b77df7](https://github.com/msgbyte/tianji/commit/2b77df7cdaeab7b90986bd5074e21e1ad7ac9984))
+* add sql editor componemt ([b4e41ec](https://github.com/msgbyte/tianji/commit/b4e41ece65db171f1cb1c970237605b833210488))
+* add SQL editor with run button feature ([720db51](https://github.com/msgbyte/tianji/commit/720db51ccd724c458336a61f468f6a19e1229f03))
+* add sql formatter for sql editor ([3c34919](https://github.com/msgbyte/tianji/commit/3c3491901b84be4e54a313305dea46b5dcaa3373))
+* add warehouse sql query feature ([a2ce0a5](https://github.com/msgbyte/tianji/commit/a2ce0a53e7a7342d5ef109a4f9098fa2c7f79e88))
+* improve sql editor and query page display ([9594a14](https://github.com/msgbyte/tianji/commit/9594a14356bd2699975290bb24dee5f75826aacd))
+
+### Bug Fixes
+
+* fix a bug which warehouse can not correct exec insight query issue with workspace level ([5fa8650](https://github.com/msgbyte/tianji/commit/5fa865057788c9481bfd0dfe1d865627a15cc0ee))
+
+### Document
+
+* update tracker script document ([67a3023](https://github.com/msgbyte/tianji/commit/67a3023a5bb6ad3360b077ed1975d060ac87fdd7))
+
+### Others
+
+* add query limit to avoid query too many data ([f4fe136](https://github.com/msgbyte/tianji/commit/f4fe136988bb6c7a41f5f74f82623a12b3d0c1cb))
+* add worker openapi ([e22eb2d](https://github.com/msgbyte/tianji/commit/e22eb2d3dcdada292cf36b71fe51103c1c54f636))
+* change sql formatter library to reduce bundle size ([f7eddb8](https://github.com/msgbyte/tianji/commit/f7eddb8fe67582479447a661dc2fd75533f0889f))
+* extract logic for ai generate ([97ee03a](https://github.com/msgbyte/tianji/commit/97ee03aa3b7604d9dbf955c443fe993121cd62be))
+* resolve duplicated register issue ([802b645](https://github.com/msgbyte/tianji/commit/802b645a7dcea94c0e70f048d6d8e3c83aceae2a))
+* streamline SQL CodeLens management for editor instances ([1b9bc27](https://github.com/msgbyte/tianji/commit/1b9bc2719e0ee9dd072319675dd4142285aa5775))
+* update default worker template ([339f861](https://github.com/msgbyte/tianji/commit/339f8612327103441bb39f7ae4854029548e0dce))
+* update storybook for more code editor ([c941638](https://github.com/msgbyte/tianji/commit/c94163869c6a5e5d6df31ec3ae5bed5ed3950771))
+
 ## [1.30.4](https://github.com/msgbyte/tianji/compare/v1.30.3...v1.30.4) (2025-10-26)
 
 ### Features
