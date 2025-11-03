@@ -112,7 +112,7 @@
     "rehype-external-links": "^3.0.0",
     "socket.io-client": "^4.8.1",
     "sonner": "^1.7.4",
-    "sql-formatter": "^15.6.10",
+    "@sqltools/formatter": "^1.2.5",
     "str2int": "^1.1.0",
     "streamdown": "^1.0.11",
     "tailwind-merge": "^2.6.0",

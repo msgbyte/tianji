@@ -1,6 +1,6 @@
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
 import React, { useRef, useEffect, forwardRef } from 'react';
-import { format } from 'sql-formatter';
+import { format } from '@sqltools/formatter';
 import { useTheme } from '../../store/settings';
 import { useEvent } from '../../hooks/useEvent';
 import type { editor } from 'monaco-editor';
@@ -95,8 +95,8 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
         try {
           const formatted = format(currentValue, {
             language: 'sql',
-            tabWidth: 2,
-            keywordCase: 'upper',
+            indent: '  ', // 2 spaces
+            reservedWordCase: 'upper',
           });
 
           // Return edit that replaces entire document
