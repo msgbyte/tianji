@@ -36,7 +36,7 @@ export async function queryInsight(
     return insightsAIGateway(query, context);
   }
 
-  if (insightType === 'warehouse' && query.workspaceId === INIT_WORKSPACE_ID) {
+  if (insightType === 'warehouse') {
     const application = await findWarehouseApplication(
       query.workspaceId,
       query.insightId

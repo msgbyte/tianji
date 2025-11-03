@@ -296,19 +296,11 @@ export const insightsRouter = router({
       return [];
     }),
   warehouseApplications: workspaceProcedure.query(async ({ input }) => {
-    if (input.workspaceId !== INIT_WORKSPACE_ID) {
-      return [];
-    }
-
     const applications = await getWarehouseApplications(input.workspaceId);
     return applications.map((a) => a.name);
   }),
   warehouseApplicationsWideTable: workspaceProcedure.query(
     async ({ input }) => {
-      if (input.workspaceId !== INIT_WORKSPACE_ID) {
-        return [];
-      }
-
       const applications = await getWarehouseApplications(input.workspaceId);
       return applications
         .filter((a) => a.type === 'wideTable')

@@ -187,18 +187,20 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
     const application = this.getApplication();
 
     return metrics.map((item) => {
+      const alias = item.alias ?? item.name;
+
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as "$all_event"`;
+          return sql`count(1) as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`count("${raw(item.name)}") as "${raw(item.name)}"`;
+        return sql`count("${raw(item.name)}") as ${raw(`"${alias}"`)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return sql`count(distinct "${raw(application.distinctField)}") as "$all_event"`;
+          return sql`count(distinct "${raw(application.distinctField)}") as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`count(distinct case WHEN "${raw(item.name)}" = ${item.name} THEN "${raw(application.distinctField)}" END) as ${raw(`"${item.name}"`)}`;
+        return sql`count(distinct case WHEN "${raw(item.name)}" = ${item.name} THEN "${raw(application.distinctField)}" END) as ${raw(`"${alias}"`)}`;
       }
 
       return null;

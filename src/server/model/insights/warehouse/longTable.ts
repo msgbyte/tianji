@@ -280,12 +280,14 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
     const eventTable = this.getEventTable();
 
     return metrics.map((item) => {
+      const alias = item.alias ?? item.name;
+
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as "$all_event"`;
+          return sql`count(1) as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`sum(case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${item.name}"`)}`;
+        return sql`sum(case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
       } else if (item.math === 'sessions') {
         const sessionIdField = eventTable.sessionIdField;
         if (!sessionIdField) {
@@ -295,10 +297,10 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
         }
 
         if (item.name === '$all_event') {
-          return sql`count(distinct "${raw(eventTable.name)}"."${raw(sessionIdField)}") as "$all_event"`;
+          return sql`count(distinct "${raw(eventTable.name)}"."${raw(sessionIdField)}") as ${raw(`"${alias}"`)}`;
         }
 
-        return sql`count(distinct case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN "${raw(eventTable.name)}"."${raw(sessionIdField)}" ELSE null END) as ${raw(`"${item.name}"`)}`;
+        return sql`count(distinct case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN "${raw(eventTable.name)}"."${raw(sessionIdField)}" ELSE null END) as ${raw(`"${alias}"`)}`;
       }
 
       return null;
