@@ -12,6 +12,7 @@
     "start:docker:db": "cd src/server && pnpm db:migrate:apply && pnpm db:migrate:script && pnpm ch:migrate:apply",
     "website": "cd website && pnpm dev",
     "example": "cd example/web && pnpm dev",
+    "storybook": "cd src/client && pnpm storybook",
     "test": "vitest",
     "build": "pnpm build:tracker && pnpm build:app && pnpm build:geo",
     "build:static": "pnpm build:tracker && pnpm build:client && pnpm build:geo",
