@@ -140,4 +140,5 @@ export enum OPENAPI_TAG {
   FEED = 'Feed',
   AI = 'AI',
   AI_GATEWAY = 'AIGateway',
+  WORKER = 'Worker',
 }

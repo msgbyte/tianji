@@ -7,6 +7,7 @@ import type { $OpenApiTs } from './types.gen';
 
 export class AiService {
     /**
+     * Classify survey
      * classify survey
      * @param data The data for the request.
      * @param data.requestBody
@@ -29,6 +30,7 @@ export class AiService {
     }
     
     /**
+     * Translate survey
      * translate survey
      * @param data The data for the request.
      * @param data.requestBody
@@ -51,6 +53,7 @@ export class AiService {
     }
     
     /**
+     * Get gateway info
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.gatewayId
@@ -76,6 +79,7 @@ export class AiService {
     }
     
     /**
+     * Update gateway
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -98,6 +102,7 @@ export class AiService {
     }
     
     /**
+     * Delete gateway
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.gatewayId
@@ -123,6 +128,7 @@ export class AiService {
     }
     
     /**
+     * Get gateway logs
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.gatewayId
@@ -154,6 +160,7 @@ export class AiService {
     }
     
     /**
+     * Get model pricing
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.search
@@ -181,6 +188,7 @@ export class AiService {
     }
     
     /**
+     * Get quota alert
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.gatewayId
@@ -206,6 +214,7 @@ export class AiService {
     }
     
     /**
+     * Upsert quota alert
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -227,6 +236,7 @@ export class AiService {
     }
     
     /**
+     * Delete quota alert
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.gatewayId
@@ -255,6 +265,7 @@ export class AiService {
 
 export class AiGatewayService {
     /**
+     * Get all gateways
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -281,6 +292,7 @@ export class AiGatewayService {
 
 export class ApplicationService {
     /**
+     * Create gateway
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -306,6 +318,7 @@ export class ApplicationService {
     }
     
     /**
+     * Get all applications
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -329,6 +342,7 @@ export class ApplicationService {
     }
     
     /**
+     * Get application info
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.applicationId
@@ -354,6 +368,7 @@ export class ApplicationService {
     }
     
     /**
+     * Create application
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -379,6 +394,7 @@ export class ApplicationService {
     }
     
     /**
+     * Update application
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.applicationId
@@ -407,6 +423,7 @@ export class ApplicationService {
     }
     
     /**
+     * Delete application
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.applicationId
@@ -432,6 +449,7 @@ export class ApplicationService {
     }
     
     /**
+     * Search store apps
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.keyword
@@ -459,6 +477,7 @@ export class ApplicationService {
     }
     
     /**
+     * Get store info history
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.applicationId
@@ -494,6 +513,7 @@ export class ApplicationService {
     }
     
     /**
+     * Get event stats
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.applicationId
@@ -532,6 +552,7 @@ export class ApplicationService {
 
 export class GlobalService {
     /**
+     * Get global config
      * Get Tianji system global config
      * @returns unknown Successful response
      * @throws ApiError
@@ -552,6 +573,7 @@ export class GlobalService {
 
 export class UserService {
     /**
+     * User login
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -573,6 +595,7 @@ export class UserService {
     }
     
     /**
+     * Login with token
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -594,6 +617,7 @@ export class UserService {
     }
     
     /**
+     * Register user
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -618,6 +642,7 @@ export class UserService {
 
 export class WorkspaceService {
     /**
+     * Create workspace
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -639,6 +664,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Switch workspace
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -660,6 +686,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Rename workspace
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -682,6 +709,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Delete workspace
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -705,6 +733,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Get members
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -728,6 +757,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Update settings
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -753,6 +783,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Invite member
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -778,6 +809,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Kick member
      * Administrator kicks a user out of a workspace.
      * @param data The data for the request.
      * @param data.workspaceId
@@ -806,6 +838,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Update member role
      * Update workspace member role
      * @param data The data for the request.
      * @param data.workspaceId
@@ -833,6 +866,7 @@ export class WorkspaceService {
     }
     
     /**
+     * Get service count
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -859,6 +893,7 @@ export class WorkspaceService {
 
 export class WebsiteService {
     /**
+     * Get online count
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -884,6 +919,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get all websites
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -907,6 +943,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get overview
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns number Successful response
@@ -930,6 +967,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get website info
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -955,6 +993,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get stats
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1008,6 +1047,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get geo stats
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1039,6 +1079,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get pageviews
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1092,6 +1133,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get metrics
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1157,6 +1199,7 @@ export class WebsiteService {
     }
     
     /**
+     * Add website
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -1182,6 +1225,7 @@ export class WebsiteService {
     }
     
     /**
+     * Delete website
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1207,6 +1251,7 @@ export class WebsiteService {
     }
     
     /**
+     * Update website
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1235,6 +1280,7 @@ export class WebsiteService {
     }
     
     /**
+     * Generate Lighthouse report
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1262,6 +1308,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get Lighthouse report
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1293,6 +1340,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get Lighthouse JSON
      * @param data The data for the request.
      * @param data.lighthouseId
      * @returns unknown Successful response
@@ -1316,6 +1364,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get public info
      * @param data The data for the request.
      * @param data.shareId
      * @returns unknown Successful response
@@ -1337,6 +1386,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get public stats
      * @param data The data for the request.
      * @param data.shareId
      * @param data.range
@@ -1362,6 +1412,7 @@ export class WebsiteService {
     }
     
     /**
+     * Get public metrics
      * @param data The data for the request.
      * @param data.shareId
      * @param data.type
@@ -1389,6 +1440,7 @@ export class WebsiteService {
     }
     
     /**
+     * Enable share
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1413,6 +1465,7 @@ export class WebsiteService {
     }
     
     /**
+     * Disable share
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.websiteId
@@ -1440,6 +1493,7 @@ export class WebsiteService {
 
 export class MonitorService {
     /**
+     * Get all monitors
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -1463,6 +1517,7 @@ export class MonitorService {
     }
     
     /**
+     * Get monitor
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1488,6 +1543,7 @@ export class MonitorService {
     }
     
     /**
+     * Get public info
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -1507,6 +1563,7 @@ export class MonitorService {
     }
     
     /**
+     * Upsert monitor
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -1532,6 +1589,7 @@ export class MonitorService {
     }
     
     /**
+     * Delete monitor
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1557,6 +1615,7 @@ export class MonitorService {
     }
     
     /**
+     * Regenerate push token
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1581,6 +1640,7 @@ export class MonitorService {
     }
     
     /**
+     * Trigger monitor
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1605,6 +1665,7 @@ export class MonitorService {
     }
     
     /**
+     * Get data
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1636,6 +1697,7 @@ export class MonitorService {
     }
     
     /**
+     * Change active status
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1664,6 +1726,7 @@ export class MonitorService {
     }
     
     /**
+     * Get recent data
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1691,6 +1754,7 @@ export class MonitorService {
     }
     
     /**
+     * Get public summary
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1714,6 +1778,7 @@ export class MonitorService {
     }
     
     /**
+     * Get public data
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1737,6 +1802,7 @@ export class MonitorService {
     }
     
     /**
+     * Get data metrics
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1762,6 +1828,7 @@ export class MonitorService {
     }
     
     /**
+     * Get events
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1791,6 +1858,7 @@ export class MonitorService {
     }
     
     /**
+     * Clear events
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1818,6 +1886,7 @@ export class MonitorService {
     }
     
     /**
+     * Clear data
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1845,6 +1914,7 @@ export class MonitorService {
     }
     
     /**
+     * Get status
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.monitorId
@@ -1874,6 +1944,7 @@ export class MonitorService {
     }
     
     /**
+     * Get all pages
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -1897,6 +1968,7 @@ export class MonitorService {
     }
     
     /**
+     * Get page info
      * @param data The data for the request.
      * @param data.slug
      * @returns unknown Successful response
@@ -1920,6 +1992,7 @@ export class MonitorService {
     }
     
     /**
+     * Create status page
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -1945,6 +2018,7 @@ export class MonitorService {
     }
     
     /**
+     * Update status page
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -1971,6 +2045,7 @@ export class MonitorService {
     }
     
     /**
+     * Delete status page
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.id
@@ -1998,6 +2073,7 @@ export class MonitorService {
     }
     
     /**
+     * Get server status
      * @param data The data for the request.
      * @param data.requestBody
      * @returns unknown Successful response
@@ -2020,6 +2096,7 @@ export class MonitorService {
 
 export class TelemetryService {
     /**
+     * Get all telemetry
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -2043,6 +2120,7 @@ export class TelemetryService {
     }
     
     /**
+     * Get telemetry info
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.telemetryId
@@ -2070,6 +2148,7 @@ export class TelemetryService {
     }
     
     /**
+     * Get all event count
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns number Successful response
@@ -2093,6 +2172,7 @@ export class TelemetryService {
     }
     
     /**
+     * Get event count
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.telemetryId
@@ -2120,6 +2200,7 @@ export class TelemetryService {
     }
     
     /**
+     * Upsert telemetry
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -2145,6 +2226,7 @@ export class TelemetryService {
     }
     
     /**
+     * Delete telemetry
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -2170,6 +2252,7 @@ export class TelemetryService {
     }
     
     /**
+     * Get pageviews
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.telemetryId
@@ -2213,6 +2296,7 @@ export class TelemetryService {
     }
     
     /**
+     * Get metrics
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.telemetryId
@@ -2256,6 +2340,7 @@ export class TelemetryService {
     }
     
     /**
+     * Get stats
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.telemetryId
@@ -2303,6 +2388,7 @@ export class TelemetryService {
 export class SurveyService {
     /**
      * Get all surveys
+     * Get all surveys
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -2326,6 +2412,7 @@ export class SurveyService {
     }
     
     /**
+     * Get survey
      * Get a specific survey by ID
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2352,6 +2439,7 @@ export class SurveyService {
     }
     
     /**
+     * Get result count
      * Get the total count of survey results
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2378,6 +2466,7 @@ export class SurveyService {
     }
     
     /**
+     * Get all result counts
      * Get result counts for all surveys in the workspace
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2402,6 +2491,7 @@ export class SurveyService {
     }
     
     /**
+     * Submit survey
      * Submit survey responses
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2430,6 +2520,7 @@ export class SurveyService {
     }
     
     /**
+     * Create survey
      * Create a new survey with payload, feed channels and webhook configuration
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2456,6 +2547,7 @@ export class SurveyService {
     }
     
     /**
+     * Update survey
      * Update an existing survey configuration
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2485,6 +2577,7 @@ export class SurveyService {
     }
     
     /**
+     * Delete survey
      * Delete a survey permanently
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2511,6 +2604,7 @@ export class SurveyService {
     }
     
     /**
+     * Duplicate survey
      * Duplicate an existing survey with a new name
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2539,6 +2633,7 @@ export class SurveyService {
     }
     
     /**
+     * Get result
      * Get a specific survey result by result ID
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2565,6 +2660,7 @@ export class SurveyService {
     }
     
     /**
+     * Get result list
      * Get paginated list of survey results with optional date range and filters
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2603,6 +2699,7 @@ export class SurveyService {
     }
     
     /**
+     * Get stats
      * Get survey submission statistics grouped by date
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2635,6 +2732,7 @@ export class SurveyService {
     }
     
     /**
+     * Get AI categories
      * Get AI-categorized survey results with counts for each category
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2664,6 +2762,7 @@ export class SurveyService {
 
 export class AuditLogService {
     /**
+     * Fetch audit log
      * Fetch workspace audit log
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2692,6 +2791,7 @@ export class AuditLogService {
     }
     
     /**
+     * Clear audit log
      * clear all workspace audit log
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2719,6 +2819,7 @@ export class AuditLogService {
 
 export class BillingService {
     /**
+     * Get usage
      * get workspace usage
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2747,6 +2848,7 @@ export class BillingService {
     }
     
     /**
+     * Get limit
      * get workspace subscription limit
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2771,6 +2873,7 @@ export class BillingService {
     }
     
     /**
+     * Get current tier
      * get workspace current tier
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2795,6 +2898,7 @@ export class BillingService {
     }
     
     /**
+     * Get subscription
      * get workspace current subscription
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2819,6 +2923,7 @@ export class BillingService {
     }
     
     /**
+     * Get credit
      * get workspace credit balance
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2843,6 +2948,7 @@ export class BillingService {
     }
     
     /**
+     * Get credit bills
      * list workspace credit bills
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2871,6 +2977,7 @@ export class BillingService {
     }
     
     /**
+     * Get credit packs
      * list available credit packs
      * @param data The data for the request.
      * @param data.workspaceId
@@ -2895,6 +3002,7 @@ export class BillingService {
     }
     
     /**
+     * Checkout credit
      * create credit checkout session
      * @param data The data for the request.
      * @param data.requestBody
@@ -2920,6 +3028,7 @@ export class BillingService {
 
 export class FeedService {
     /**
+     * Get all channels
      * @param data The data for the request.
      * @param data.workspaceId
      * @returns unknown Successful response
@@ -2943,6 +3052,7 @@ export class FeedService {
     }
     
     /**
+     * Get channel info
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.channelId
@@ -2968,6 +3078,7 @@ export class FeedService {
     }
     
     /**
+     * Update channel
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.channelId
@@ -2995,6 +3106,7 @@ export class FeedService {
     }
     
     /**
+     * Fetch events
      * Fetch workspace feed channel events
      * @param data The data for the request.
      * @param data.workspaceId
@@ -3079,6 +3191,7 @@ export class FeedService {
     }
     
     /**
+     * Create channel
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.requestBody
@@ -3104,6 +3217,7 @@ export class FeedService {
     }
     
     /**
+     * Refresh public share
      * Regenerate public share id for feed channel
      * @param data The data for the request.
      * @param data.workspaceId
@@ -3129,6 +3243,7 @@ export class FeedService {
     }
     
     /**
+     * Disable public share
      * Disable public share for feed channel
      * @param data The data for the request.
      * @param data.workspaceId
@@ -3154,6 +3269,7 @@ export class FeedService {
     }
     
     /**
+     * Delete channel
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.channelId
@@ -3383,6 +3499,7 @@ export class FeedService {
     }
     
     /**
+     * Get all states
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.channelId
@@ -3435,6 +3552,7 @@ export class FeedService {
     }
     
     /**
+     * Resolve state
      * @param data The data for the request.
      * @param data.workspaceId
      * @param data.channelId
@@ -3456,6 +3574,166 @@ export class FeedService {
                 400: 'Invalid input data',
                 401: 'Authorization not provided',
                 403: 'Insufficient access',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+}
+
+export class WorkerService {
+    /**
+     * Get all workers in workspace
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workerAll(data: $OpenApiTs['/workspace/{workspaceId}/worker/all']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/worker/all']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/worker/all',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * Get worker by ID
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.workerId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workerGet(data: $OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/info']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/info']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/worker/{workerId}/info',
+            path: {
+                workspaceId: data.workspaceId,
+                workerId: data.workerId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * Create or update worker
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workerUpsert(data: $OpenApiTs['/workspace/{workspaceId}/worker/upsert']['post']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/worker/upsert']['post']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/workspace/{workspaceId}/worker/upsert',
+            path: {
+                workspaceId: data.workspaceId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * Delete worker
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.workerId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workerDelete(data: $OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/delete']['delete']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/delete']['delete']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/workspace/{workspaceId}/worker/{workerId}/delete',
+            path: {
+                workspaceId: data.workspaceId,
+                workerId: data.workerId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * Toggle worker active status
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.workerId
+     * @param data.requestBody
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workerToggleActive(data: $OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/toggleActive']['patch']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/toggleActive']['patch']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/workspace/{workspaceId}/worker/{workerId}/toggleActive',
+            path: {
+                workspaceId: data.workspaceId,
+                workerId: data.workerId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * Get worker revisions
+     * @param data The data for the request.
+     * @param data.workspaceId
+     * @param data.workerId
+     * @returns unknown Successful response
+     * @throws ApiError
+     */
+    public static workerGetRevisions(data: $OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/revisions']['get']['req']): CancelablePromise<$OpenApiTs['/workspace/{workspaceId}/worker/{workerId}/revisions']['get']['res'][200]> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/workspace/{workspaceId}/worker/{workerId}/revisions',
+            path: {
+                workspaceId: data.workspaceId,
+                workerId: data.workerId
+            },
+            errors: {
+                400: 'Invalid input data',
+                401: 'Authorization not provided',
+                403: 'Insufficient access',
+                404: 'Not found',
                 500: 'Internal server error'
             }
         });

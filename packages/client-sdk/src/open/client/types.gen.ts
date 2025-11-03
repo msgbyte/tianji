@@ -5647,4 +5647,285 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/workspace/{workspaceId}/worker/all': {
+        get: {
+            req: {
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    description?: string | null;
+                    code: string;
+                    revision: number;
+                    active: boolean;
+                    enableCron: boolean;
+                    cronExpression?: string | null;
+                    visibility: 'Public' | 'Private';
+                    createdAt: string;
+                    updatedAt: string;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/worker/{workerId}/info': {
+        get: {
+            req: {
+                workerId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+    id: string;
+    workspaceId: string;
+    name: string;
+    description?: string | null;
+    code: string;
+    revision: number;
+    active: boolean;
+    enableCron: boolean;
+    cronExpression?: string | null;
+    visibility: 'Public' | 'Private';
+    createdAt: string;
+    updatedAt: string;
+} | null;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/worker/upsert': {
+        post: {
+            req: {
+                requestBody: {
+                    id?: string;
+                    name: string;
+                    description?: string;
+                    code: string;
+                    active?: boolean;
+                    enableCron?: boolean;
+                    cronExpression?: string;
+                };
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    description?: string | null;
+                    code: string;
+                    revision: number;
+                    active: boolean;
+                    enableCron: boolean;
+                    cronExpression?: string | null;
+                    visibility: 'Public' | 'Private';
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/worker/{workerId}/delete': {
+        delete: {
+            req: {
+                workerId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    description?: string | null;
+                    code: string;
+                    revision: number;
+                    active: boolean;
+                    enableCron: boolean;
+                    cronExpression?: string | null;
+                    visibility: 'Public' | 'Private';
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/worker/{workerId}/toggleActive': {
+        patch: {
+            req: {
+                requestBody: {
+                    active: boolean;
+                };
+                workerId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: {
+                    id: string;
+                    workspaceId: string;
+                    name: string;
+                    description?: string | null;
+                    code: string;
+                    revision: number;
+                    active: boolean;
+                    enableCron: boolean;
+                    cronExpression?: string | null;
+                    visibility: 'Public' | 'Private';
+                    createdAt: string;
+                    updatedAt: string;
+                };
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
+    '/workspace/{workspaceId}/worker/{workerId}/revisions': {
+        get: {
+            req: {
+                workerId: string;
+                workspaceId: string;
+            };
+            res: {
+                /**
+                 * Successful response
+                 */
+                200: Array<{
+                    id: string;
+                    workerId: string;
+                    revision: number;
+                    code: string;
+                    createdAt: string;
+                }>;
+                /**
+                 * Invalid input data
+                 */
+                400: error_BAD_REQUEST;
+                /**
+                 * Authorization not provided
+                 */
+                401: error_UNAUTHORIZED;
+                /**
+                 * Insufficient access
+                 */
+                403: error_FORBIDDEN;
+                /**
+                 * Not found
+                 */
+                404: error_NOT_FOUND;
+                /**
+                 * Internal server error
+                 */
+                500: error_INTERNAL_SERVER_ERROR;
+            };
+        };
+    };
 };

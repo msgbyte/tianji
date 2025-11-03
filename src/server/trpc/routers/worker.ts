@@ -2,25 +2,33 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  OpenApiMetaInfo,
 } from '../trpc.js';
 import { prisma } from '../../model/_client.js';
 import { z } from 'zod';
 import {
   FunctionWorkerModelSchema,
   FunctionWorkerRevisionModelSchema,
+  FunctionWorkerExecutionModelSchema,
 } from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
 import { execWorker } from '../../model/worker/index.js';
-import {
-  FunctionWorkerExecutionStatus,
-  WorkspaceAuditLogType,
-} from '@prisma/client';
+import { WorkspaceAuditLogType } from '@prisma/client';
 import { env } from '../../utils/env.js';
 import { workerCronManager } from '../../model/worker/manager.js';
+import { OPENAPI_TAG } from '../../utils/const.js';
+import { OpenApiMeta } from 'trpc-to-openapi';
 
 export const workerRouter = router({
   // Get all workers in workspace
   all: workspaceProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'GET',
+        path: '/all',
+        summary: 'Get all workers in workspace',
+      })
+    )
     .output(z.array(FunctionWorkerModelSchema))
     .query(async ({ input }) => {
       const { workspaceId } = input;
@@ -39,6 +47,13 @@ export const workerRouter = router({
 
   // Get specific worker by id
   get: workspaceProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'GET',
+        path: '/{workerId}/info',
+        summary: 'Get worker by ID',
+      })
+    )
     .input(
       z.object({
         workerId: z.cuid2(),
@@ -60,6 +75,13 @@ export const workerRouter = router({
 
   // Create or update worker
   upsert: workspaceAdminProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'POST',
+        path: '/upsert',
+        summary: 'Create or update worker',
+      })
+    )
     .input(
       z.object({
         id: z.cuid2().optional(),
@@ -147,6 +169,13 @@ export const workerRouter = router({
 
   // Delete worker
   delete: workspaceAdminProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'DELETE',
+        path: '/{workerId}/delete',
+        summary: 'Delete worker',
+      })
+    )
     .input(
       z.object({
         workerId: z.cuid2(),
@@ -183,6 +212,13 @@ export const workerRouter = router({
 
   // Toggle worker active status
   toggleActive: workspaceAdminProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'PATCH',
+        path: '/{workerId}/toggleActive',
+        summary: 'Toggle worker active status',
+      })
+    )
     .input(
       z.object({
         workerId: z.string().cuid2(),
@@ -327,6 +363,16 @@ export const workerRouter = router({
         days: z.number().min(1).max(90).default(7),
       })
     )
+    .output(
+      z.object({
+        totalExecutions: z.number(),
+        successExecutions: z.number(),
+        failedExecutions: z.number(),
+        avgDuration: z.number().nullable(),
+        avgMemoryUsed: z.number().nullable(),
+        avgCpuTime: z.number().nullable(),
+      })
+    )
     .query(async ({ input }) => {
       const { workerId, workspaceId, days } = input;
 
@@ -386,6 +432,14 @@ export const workerRouter = router({
       z.object({
         workerId: z.cuid2(),
       })
+    )
+    .output(
+      z.array(
+        z.object({
+          date: z.string(),
+          value: z.number(),
+        })
+      )
     )
     .query(async ({ input }) => {
       const { workerId, workspaceId } = input;
@@ -452,6 +506,13 @@ export const workerRouter = router({
     }),
 
   getRevisions: workspaceProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'GET',
+        path: '/{workerId}/revisions',
+        summary: 'Get worker revisions',
+      })
+    )
     .input(
       z.object({
         workerId: z.string().cuid2(),
@@ -484,3 +545,14 @@ export const workerRouter = router({
       return revisions;
     }),
 });
+
+function buildWorkerOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
+  return {
+    openapi: {
+      tags: [OPENAPI_TAG.WORKER],
+      protect: true,
+      ...meta,
+      path: `/workspace/{workspaceId}/worker${meta.path}`,
+    },
+  };
+}
