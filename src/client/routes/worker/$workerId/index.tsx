@@ -167,6 +167,20 @@ function PageComponent() {
     refetchExecutions();
   });
 
+  const handleReplay = useEvent(async (payload: unknown) => {
+    if (!worker) {
+      return;
+    }
+
+    await executeMutation.mutateAsync({
+      workspaceId,
+      workerId: worker.id,
+      payload: payload as Record<string, any> | undefined,
+    });
+    refetchExecutions();
+    setSelectedExecutionIndex(-1);
+  });
+
   const handleEdit = useEvent(() => {
     navigate({
       to: '/worker/$workerId/edit',
@@ -542,6 +556,7 @@ function PageComponent() {
             <WorkerExecutionDetail
               vertical={true}
               execution={selectedExecution}
+              onReplay={handleReplay}
             />
           )}
         </SheetContent>

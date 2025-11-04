@@ -11,7 +11,7 @@ import { WorkerExecutionsTable } from '@/components/worker/WorkerExecutionsTable
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
 import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
 import { NavigationBlocker } from '@/components/NavigationBlocker';
-import { AppRouterOutput, trpc } from '@/api/trpc';
+import { AppRouterOutput, defaultErrorHandler, trpc } from '@/api/trpc';
 import { useEvent } from '@/hooks/useEvent';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
@@ -79,13 +79,11 @@ function PageComponent() {
   });
 
   const updateMutation = trpc.worker.upsert.useMutation({
-    onError: (error) => {
-      toast.error(error.message);
-    },
-    onSuccess: () => {
-      toast.success(t('Worker updated successfully'));
-      refetchWorker();
-    },
+    onError: defaultErrorHandler,
+  });
+
+  const executeMutation = trpc.worker.execute.useMutation({
+    onError: defaultErrorHandler,
   });
 
   useEffect(() => {
@@ -136,6 +134,8 @@ function PageComponent() {
       enableCron: worker.enableCron,
       cronExpression: worker.cronExpression ?? undefined,
     });
+    toast.success(t('Worker updated successfully'));
+    refetchWorker();
   });
 
   const handleLogRefresh = useEvent(() => {
@@ -155,6 +155,21 @@ function PageComponent() {
       to: '/worker/$workerId',
       params: { workerId },
     });
+  });
+
+  const handleReplay = useEvent(async (payload: unknown) => {
+    if (!worker) {
+      return;
+    }
+
+    await executeMutation.mutateAsync({
+      workspaceId,
+      workerId: worker.id,
+      payload: payload as Record<string, any> | undefined,
+    });
+    toast.success(t('Worker executed successfully'));
+    refetchExecutions();
+    setSelectedExecutionIndex(-1);
   });
 
   useEffect(() => {
@@ -314,6 +329,7 @@ function PageComponent() {
               <WorkerExecutionDetail
                 vertical={true}
                 execution={selectedExecution}
+                onReplay={handleReplay}
               />
             ) : (
               <div className="text-muted-foreground flex flex-1 items-center justify-center text-center text-sm">

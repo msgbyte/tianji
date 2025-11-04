@@ -266,10 +266,11 @@ export const workerRouter = router({
     .input(
       z.object({
         workerId: z.cuid2(),
+        payload: z.record(z.string(), z.any()).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { workerId, workspaceId } = input;
+      const { workerId, workspaceId, payload = undefined } = input;
 
       if (!env.enableFunctionWorker) {
         throw new Error('Function worker is not enabled');
@@ -287,7 +288,7 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const execution = await execWorker(worker.code, workerId, undefined, {
+      const execution = await execWorker(worker.code, workerId, payload, {
         type: 'manual',
       });
 
@@ -420,9 +421,9 @@ export const workerRouter = router({
         totalExecutions: Number(result.totalExecutions),
         successExecutions: Number(result.successExecutions),
         failedExecutions: Number(result.failedExecutions),
-        avgDuration: result.avgDuration,
-        avgMemoryUsed: result.avgMemoryUsed,
-        avgCpuTime: result.avgCpuTime,
+        avgDuration: Number(result.avgDuration),
+        avgMemoryUsed: Number(result.avgMemoryUsed),
+        avgCpuTime: Number(result.avgCpuTime),
       };
     }),
 

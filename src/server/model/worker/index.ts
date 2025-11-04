@@ -56,7 +56,7 @@ export async function execWorker(
       cpuTime,
       requestPayload,
       responsePayload: result,
-      error: String(error),
+      error: error ? String(error) : undefined,
       logs: Array.isArray(logger) ? logger : [],
     };
 

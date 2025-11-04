@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SheetDataSection } from '@/components/ui/sheet';
 import dayjs from 'dayjs';
@@ -8,6 +9,9 @@ import { cn } from '@/utils/style';
 import { formatDate } from '@/utils/date';
 import { DataRender } from '../DataRender';
 import { drop } from 'lodash-es';
+import { LuPlay } from 'react-icons/lu';
+import { useEventWithLoading } from '@/hooks/useEvent';
+import { AlertConfirm } from '../AlertConfirm';
 
 interface WorkerExecutionDetailProps {
   vertical?: boolean;
@@ -23,12 +27,19 @@ interface WorkerExecutionDetailProps {
     responsePayload?: unknown;
     logs?: (string | number)[][] | null;
   };
+  onReplay?: (payload: unknown) => Promise<void>;
 }
 
 export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
   React.memo((props) => {
-    const { vertical = false, execution } = props;
+    const { vertical = false, execution, onReplay } = props;
     const { t } = useTranslation();
+
+    const [handleReplay, isReplaying] = useEventWithLoading(async () => {
+      if (onReplay) {
+        await onReplay(execution.requestPayload);
+      }
+    });
 
     return (
       <ScrollArea className="h-full">
@@ -76,11 +87,34 @@ export const WorkerExecutionDetail: React.FC<WorkerExecutionDetailProps> =
 
           {execution.requestPayload !== null &&
             execution.requestPayload !== undefined && (
-              <SheetDataSection label={t('Request')}>
-                <div className="mt-1 max-h-[400px] overflow-auto rounded-md bg-gray-100 p-3 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-                  <DataRender type="json" value={execution.requestPayload} />
-                </div>
-              </SheetDataSection>
+              <>
+                <SheetDataSection label={t('Request')}>
+                  <div className="mt-1 max-h-[400px] overflow-auto rounded-md bg-gray-100 p-3 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                    <DataRender type="json" value={execution.requestPayload} />
+                  </div>
+                </SheetDataSection>
+
+                {onReplay && (
+                  <div className="flex justify-end">
+                    <AlertConfirm
+                      title={t('Replay Worker Execution')}
+                      description={t(
+                        'Are you sure you want to replay this execution with the same payload?'
+                      )}
+                      onConfirm={handleReplay}
+                    >
+                      <Button
+                        size="sm"
+                        Icon={LuPlay}
+                        loading={isReplaying}
+                        disabled={isReplaying}
+                      >
+                        {t('Replay')}
+                      </Button>
+                    </AlertConfirm>
+                  </div>
+                )}
+              </>
             )}
 
           {execution.responsePayload !== null &&
