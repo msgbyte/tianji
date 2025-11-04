@@ -1,5 +1,18 @@
 
 
+## [1.30.6](https://github.com/msgbyte/tianji/compare/v1.30.5...v1.30.6) (2025-11-04)
+
+### Features
+
+* add tianji cli which should more easy to manage worker ([c9ce2ab](https://github.com/msgbyte/tianji/commit/c9ce2ab18842a3e85f051e4d3fd2c81355133256))
+* add tianji worker pull command ([c658101](https://github.com/msgbyte/tianji/commit/c658101a8b7889b6b683527d890f2016872d6580))
+* add worker execution replay feature ([eee5f84](https://github.com/msgbyte/tianji/commit/eee5f846dc84a4da24d187a1fc18905130de0a45))
+
+### Others
+
+* dump sdk version to latest openapi ([e4b61b2](https://github.com/msgbyte/tianji/commit/e4b61b2466e87d92c94d1c36687a4cd3333c57da))
+* update translations and increment SDK version to 1.30.5 ([8fa574c](https://github.com/msgbyte/tianji/commit/8fa574c99670cc9f8393d2f832b87f06dd03e8a1))
+
 ## [1.30.5](https://github.com/msgbyte/tianji/compare/v1.30.4...v1.30.5) (2025-11-03)
 
 ### Features
