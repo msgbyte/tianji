@@ -72,6 +72,7 @@ function PageComponent() {
     >
       <ScrollArea className="h-full overflow-hidden p-4">
         <WorkerEditForm
+          workerId={workerId}
           defaultValues={{
             name: worker.name,
             description: worker.description || '',

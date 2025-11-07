@@ -21,7 +21,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useEffect, useState } from 'react';
 import { CodeEditor } from '@/components/CodeEditor';
 import { FullscreenModal } from '@/components/ui/fullscreen-modal';
-import { LuMaximize2, LuPlay, LuClock, LuTriangleAlert } from 'react-icons/lu';
+import {
+  LuMaximize2,
+  LuPlay,
+  LuClock,
+  LuTriangleAlert,
+  LuExternalLink,
+} from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -36,6 +42,7 @@ import { fetchValidator, ValidatorFn } from '../CodeEditor/validator/fetch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Spinner } from '../ui/spinner';
 import { useCronPreview } from './useCronPreview';
+import { useNavigate } from '@tanstack/react-router';
 
 const formSchema = z
   .object({
@@ -68,6 +75,7 @@ const defaultCode = `async function fetch(payload, ctx) {
 export type WorkerEditFormValues = z.infer<typeof formSchema>;
 
 interface WorkerEditFormProps {
+  workerId?: string;
   defaultValues?: Partial<WorkerEditFormValues>;
   onSubmit: (values: WorkerEditFormValues) => Promise<void>;
 }
@@ -81,6 +89,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [testResult, setTestResult] = useState<any>(null);
     const [showTestResult, setShowTestResult] = useState(false);
+    const navigate = useNavigate();
 
     const form = useForm<WorkerEditFormValues>({
       resolver: zodResolver(formSchema),
@@ -191,37 +200,67 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                   <FormItem>
                     <FormLabel className="flex items-center justify-between">
                       {t('JavaScript Code')}
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          Icon={LuPlay}
-                          onClick={handleTestCode}
-                          loading={isTestLoading}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          Icon={LuMaximize2}
-                          onClick={() => setIsFullscreen(true)}
-                        />
-                      </div>
+                      {!props.workerId && (
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            Icon={LuPlay}
+                            onClick={handleTestCode}
+                            loading={isTestLoading}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            Icon={LuMaximize2}
+                            onClick={() => setIsFullscreen(true)}
+                          />
+                        </div>
+                      )}
                     </FormLabel>
                     <FormControl>
-                      <CodeEditor
-                        height={680}
-                        value={field.value}
-                        onChange={field.onChange}
-                        codeValidator={codeValidator}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {t(
-                        'Write your JavaScript code that will be executed by this worker. Click the play button to test your code or the fullscreen button for a better coding experience.'
+                      {props.workerId ? (
+                        <div className="relative h-64">
+                          <div className="bg-background/95 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
+                            <div className="flex flex-col items-center gap-4 text-center">
+                              <div className="space-y-2">
+                                <h3 className="text-lg font-semibold">
+                                  {t('Use Advanced Editor for Code Editing')}
+                                </h3>
+                                <p className="text-muted-foreground text-sm">
+                                  {t(
+                                    'For better code editing experience with live preview and testing, please use the dedicated code editor.'
+                                  )}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                size="lg"
+                                Icon={LuExternalLink}
+                                onClick={() => {
+                                  navigate({
+                                    to: '/worker/$workerId/editor',
+                                    params: { workerId: props.workerId },
+                                    replace: true,
+                                  });
+                                }}
+                              >
+                                {t('Go to Code Editor')}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <CodeEditor
+                          height={680}
+                          value={field.value}
+                          onChange={field.onChange}
+                          codeValidator={codeValidator}
+                        />
                       )}
-                    </FormDescription>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -398,9 +437,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
 
             <CardFooter>
               <Button type="submit" loading={isLoading}>
-                {props.defaultValues?.name
-                  ? t('Update Worker')
-                  : t('Create Worker')}
+                {props.workerId ? t('Update Worker') : t('Create Worker')}
               </Button>
             </CardFooter>
           </Card>
