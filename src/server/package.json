@@ -22,6 +22,7 @@
     "ch:migrate:apply": "tsx ./clickhouse/scripts/apply.ts",
     "test": "vitest",
     "test:ci": "vitest --run",
+    "bench": "vitest bench",
     "knip": "knip"
   },
   "keywords": [],
@@ -37,6 +38,7 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "5.14.0",
     "@socket.io/redis-adapter": "^8.3.0",
+    "@swc/core": "^1.15.0",
     "@tianji/shared": "workspace:^",
     "@trpc/server": "11.6.0",
     "accept-language-parser": "^1.5.0",
@@ -57,6 +59,7 @@
     "detect-browser": "^5.3.0",
     "dotenv": "^16.4.7",
     "easy-currency-symbol": "^1.0.1",
+    "esbuild": "0.25.5",
     "eventemitter-strict": "^1.0.1",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
