@@ -490,16 +490,17 @@ export const workerRouter = router({
     .input(
       z.object({
         code: z.string(),
+        payload: z.record(z.string(), z.any()).optional(),
       })
     )
     .mutation(async ({ input }) => {
-      const { code } = input;
+      const { code, payload = undefined } = input;
 
       if (!env.enableFunctionWorker) {
         throw new Error('Function worker is not enabled');
       }
 
-      const execution = await execWorker(code, undefined, undefined, {
+      const execution = await execWorker(code, undefined, payload, {
         type: 'test',
       });
 

@@ -118,3 +118,15 @@ export function getQueryString(params: UrlParam[]): string {
 
   return qs.stringify(queryObject);
 }
+
+export function getPayloadFromParams(params: UrlParam[]): Record<string, any> {
+  const payload: Record<string, any> = {};
+
+  params.forEach((param) => {
+    if (param.key && param.key.trim() !== '') {
+      payload[param.key] = param.value;
+    }
+  });
+
+  return payload;
+}

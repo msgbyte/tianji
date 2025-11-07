@@ -86,6 +86,10 @@ function PageComponent() {
     onError: defaultErrorHandler,
   });
 
+  const testCodeMutation = trpc.worker.testCode.useMutation({
+    onError: defaultErrorHandler,
+  });
+
   useEffect(() => {
     if (!executionsData?.executions?.length) {
       setSelectedExecutionIndex(-1);
@@ -171,6 +175,17 @@ function PageComponent() {
     refetchExecutions();
     setSelectedExecutionIndex(-1);
   });
+
+  const handleTestExecution = useEvent(
+    async (payload?: Record<string, any>) => {
+      const result = await testCodeMutation.mutateAsync({
+        workspaceId,
+        code,
+        payload,
+      });
+      return result;
+    }
+  );
 
   useEffect(() => {
     if (currentPage > 1 && pagination && currentPage > pagination.totalPages) {
@@ -302,6 +317,7 @@ function PageComponent() {
                   isActive={worker.active}
                   disabled={isCodeDirty}
                   onPreviewLoaded={handleLogRefresh}
+                  onTest={hasAdminPermission ? handleTestExecution : undefined}
                   variant="split"
                 />
               </Allotment.Pane>

@@ -5,13 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SimpleTooltip } from '@/components/ui/tooltip';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   UrlParamsInput,
+  getPayloadFromParams,
   getQueryString,
   type UrlParam,
 } from '@/components/worker/UrlParamsInput';
 import { cn } from '@/utils/style';
 import { toast } from 'sonner';
-import { LuCopy, LuExternalLink, LuPlay } from 'react-icons/lu';
+import { LuCopy, LuExternalLink, LuFlaskConical, LuPlay } from 'react-icons/lu';
+import { WorkerExecutionDetail } from './WorkerExecutionDetail';
 
 type WorkerApiPreviewVariant = 'card' | 'split';
 
@@ -28,6 +36,7 @@ export interface WorkerApiPreviewProps {
   onCopyUrl?: (url: string) => void;
   onOpenNewWindow?: (url: string) => void;
   onPreviewLoaded?: () => void;
+  onTest?: (payload?: Record<string, any>) => Promise<any>;
   variant?: WorkerApiPreviewVariant;
 }
 
@@ -44,6 +53,7 @@ export const WorkerApiPreview: React.FC<WorkerApiPreviewProps> = ({
   onCopyUrl,
   onOpenNewWindow,
   onPreviewLoaded,
+  onTest,
   variant = 'card',
 }) => {
   const { t } = useTranslation();
@@ -75,6 +85,9 @@ export const WorkerApiPreview: React.FC<WorkerApiPreviewProps> = ({
   });
   const [previewKey, setPreviewKey] = useState(0);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [isTestExecuting, setIsTestExecuting] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
+  const [isTestResultOpen, setIsTestResultOpen] = useState(false);
 
   useEffect(() => {
     if (controlledParams) {
@@ -167,7 +180,33 @@ export const WorkerApiPreview: React.FC<WorkerApiPreviewProps> = ({
   const handlePreviewLoad = useCallback(() => {
     setIsLoadingPreview(false);
     onPreviewLoaded?.();
-  }, []);
+  }, [onPreviewLoaded]);
+
+  const handleTestExecution = useCallback(async () => {
+    if (!onTest) {
+      return;
+    }
+
+    try {
+      setIsTestExecuting(true);
+
+      const payload = getPayloadFromParams(params);
+
+      const result = await onTest(payload);
+      setTestResult(result);
+      setIsTestResultOpen(true);
+
+      if (result.status === 'Success') {
+        toast.success(t('Test execution completed successfully'));
+      } else {
+        toast.error(t('Test execution failed'));
+      }
+    } catch (error: any) {
+      toast.error(error.message || t('Test execution failed'));
+    } finally {
+      setIsTestExecuting(false);
+    }
+  }, [onTest, params, t]);
 
   const previewSrc = useMemo(() => {
     if (!basePreviewUrl) {
@@ -205,6 +244,18 @@ export const WorkerApiPreview: React.FC<WorkerApiPreviewProps> = ({
           disabled={openDisabled}
         />
       </SimpleTooltip>
+      {onTest && (
+        <SimpleTooltip content={t('Test with Current Code')}>
+          <Button
+            variant="outline"
+            size="icon"
+            Icon={LuFlaskConical}
+            className="h-8 w-8"
+            onClick={handleTestExecution}
+            loading={isTestExecuting}
+          />
+        </SimpleTooltip>
+      )}
       <SimpleTooltip content={t('Execute Preview')}>
         <Button
           variant="outline"
@@ -260,73 +311,106 @@ export const WorkerApiPreview: React.FC<WorkerApiPreviewProps> = ({
     </div>
   );
 
+  const renderTestDialog = () => (
+    <Dialog
+      open={isTestResultOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setIsTestResultOpen(false);
+        }
+      }}
+    >
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
+        <DialogHeader>
+          <DialogTitle>{t('Test Execution Result')}</DialogTitle>
+        </DialogHeader>
+
+        {testResult ? (
+          <WorkerExecutionDetail vertical={false} execution={testResult} />
+        ) : (
+          <div className="text-muted-foreground flex flex-1 items-center justify-center text-center text-sm">
+            {t('No test result available')}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
   if (variant === 'split') {
     return (
-      <div
-        className={cn(
-          'bg-muted/40 flex h-full flex-col border-t px-4 py-3',
-          className
-        )}
-      >
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
-              {t('Execution Preview')}
-            </span>
-            <span className="text-muted-foreground text-xs">
-              {t('Test API endpoint with custom query parameters')}
-            </span>
+      <>
+        <div
+          className={cn(
+            'bg-muted/40 flex h-full flex-col border-t px-4 py-3',
+            className
+          )}
+        >
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {t('Execution Preview')}
+              </span>
+              <span className="text-muted-foreground text-xs">
+                {t('Test API endpoint with custom query parameters')}
+              </span>
+            </div>
+            {renderActionButtons()}
           </div>
-          {renderActionButtons()}
+
+          <div className="mt-3 grid flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+            <div className="bg-background rounded-md border p-3">
+              <UrlParamsInput params={params} onChange={handleParamsChange} />
+            </div>
+            <div className="bg-background relative min-h-[200px] rounded-md border">
+              {hasPreview && previewSrc
+                ? renderPreviewFrame(
+                    'absolute inset-0 h-full w-full rounded-md bg-white'
+                  )
+                : renderPlaceholder(
+                    'text-muted-foreground flex h-full flex-col items-center justify-center space-y-2 text-center text-sm',
+                    t(
+                      'Configure parameters and execute preview to see live response'
+                    )
+                  )}
+            </div>
+          </div>
         </div>
 
-        <div className="mt-3 grid flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-          <div className="bg-background rounded-md border p-3">
-            <UrlParamsInput params={params} onChange={handleParamsChange} />
-          </div>
-          <div className="bg-background relative min-h-[200px] rounded-md border">
-            {hasPreview && previewSrc
-              ? renderPreviewFrame(
-                  'absolute inset-0 h-full w-full rounded-md bg-white'
-                )
-              : renderPlaceholder(
-                  'text-muted-foreground flex h-full flex-col items-center justify-center space-y-2 text-center text-sm',
-                  t(
-                    'Configure parameters and execute preview to see live response'
-                  )
-                )}
-          </div>
-        </div>
-      </div>
+        {renderTestDialog()}
+      </>
     );
   }
 
   return (
-    <Card className={cn('flex flex-col', className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>{t('Preview')}</CardTitle>
-        {renderActionButtons()}
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col">
-        <UrlParamsInput params={params} onChange={handleParamsChange} />
+    <>
+      <Card className={cn('flex flex-col', className)}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle>{t('Preview')}</CardTitle>
+          {renderActionButtons()}
+        </CardHeader>
+        <CardContent className="flex flex-1 flex-col">
+          <UrlParamsInput params={params} onChange={handleParamsChange} />
 
-        {hasPreview && previewSrc ? (
-          <div className="flex h-full flex-1 flex-col space-y-4">
-            <p className="text-muted-foreground text-sm">
-              {t('Live preview of the worker API endpoint:')}
-            </p>
-            {renderPreviewFrame(
-              'relative h-full flex-1 rounded-md border bg-white'
-            )}
-          </div>
-        ) : (
-          renderPlaceholder(
-            'text-muted-foreground flex h-[400px] items-center justify-center text-sm',
-            t('Click "Execute Preview" to see the live result')
-          )
-        )}
-      </CardContent>
-    </Card>
+          {hasPreview && previewSrc ? (
+            <div className="flex h-full flex-1 flex-col space-y-4">
+              <p className="text-muted-foreground text-sm">
+                {t('Live preview of the worker API endpoint:')}
+              </p>
+              {renderPreviewFrame(
+                'relative h-full flex-1 rounded-md border bg-white'
+              )}
+            </div>
+          ) : (
+            renderPlaceholder(
+              'text-muted-foreground flex h-[400px] items-center justify-center text-sm',
+              t('Click "Execute Preview" to see the live result')
+            )
+          )}
+        </CardContent>
+      </Card>
+
+      {renderTestDialog()}
+    </>
   );
 };
 
