@@ -93,11 +93,11 @@ async function fetch(payload: Record<string, any>, ctx: { type: string }): Promi
 `;
 
   bench('typescript', () => {
-    const result = typescript.transpile(sourceCode);
+    typescript.transpile(sourceCode);
   });
 
   bench('esbuild', async () => {
-    const result = await esbuildTransform(sourceCode, {
+    await esbuildTransform(sourceCode, {
       loader: 'ts',
       format: 'esm',
       target: 'esnext',
@@ -106,7 +106,7 @@ async function fetch(payload: Record<string, any>, ctx: { type: string }): Promi
   });
 
   bench('swc', async () => {
-    const result = await swcTransform(sourceCode, {
+    await swcTransform(sourceCode, {
       jsc: {
         parser: {
           syntax: 'typescript',
