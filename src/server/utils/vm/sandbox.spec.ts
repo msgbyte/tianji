@@ -1,4 +1,4 @@
-import { describe, test, expect, bench } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import ivm from 'isolated-vm';
 
 describe('isolated-vm', () => {
