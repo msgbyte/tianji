@@ -1,5 +1,18 @@
 
 
+## [1.30.7](https://github.com/msgbyte/tianji/compare/v1.30.6...v1.30.7) (2025-11-09)
+
+### Features
+
+* add test feature without deploy ([402e236](https://github.com/msgbyte/tianji/commit/402e23634b1ef2e1eb38bbd10d6debd2f0dde3d8))
+* add worker typescript support ([c723f62](https://github.com/msgbyte/tianji/commit/c723f626ca292f71c2948054bb8510e0a804e7f5))
+
+### Others
+
+* add benchmarking for ts support and sandbox module demo ([474433f](https://github.com/msgbyte/tianji/commit/474433fe6a0e6739c718e0658f9c13a5aa0a7e25))
+* add editor tip for worker edit form ([e4a2bc2](https://github.com/msgbyte/tianji/commit/e4a2bc2cd1c4cfba3abe2c9cf2f0b100067c9222))
+* remove unused code ([c8a9814](https://github.com/msgbyte/tianji/commit/c8a981452258388b570cc6fb68f53b4488ffc906))
+
 ## [1.30.6](https://github.com/msgbyte/tianji/compare/v1.30.5...v1.30.6) (2025-11-04)
 
 ### Features
