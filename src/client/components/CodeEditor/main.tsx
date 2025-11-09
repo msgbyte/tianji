@@ -126,7 +126,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
         readOnly,
         automaticLayout: true,
         scrollBeyondLastLine: false,
-        wordWrap: 'on',
+        wordWrap: 'off',
         wrappingIndent: 'indent',
         formatOnPaste: true,
         formatOnType: true,

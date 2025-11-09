@@ -187,4 +187,17 @@ describe('runCodeInIVM', () => {
     expect(result.logger[0][5]).toEqual({ key: 'value' });
     expect(result.result).toBe('complete');
   });
+
+  test.only('should support typescript code', async () => {
+    const code = `
+      (async () => {
+        const a: number = 1;
+        const b: number = 2;
+
+        return a + b;
+      })()
+    `;
+    const result = await runCodeInIVM(code);
+    expect(result.result).toBe(3);
+  });
 });

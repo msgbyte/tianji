@@ -3,6 +3,7 @@ import { buildSandbox, environmentScript } from './sandbox.js';
 import { env } from '../env.js';
 import { runCodeInVM2 } from './sandbox-vm2.js';
 import { logger } from '../logger.js';
+import { transformTypescriptCode } from './utils.js';
 
 if (env.sandbox.useVM2) {
   logger.warn(
@@ -52,11 +53,12 @@ export async function runCodeInVM(_code: string): Promise<{
 export async function runCodeInIVM(_code: string) {
   const start = Date.now();
   const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
+  const transformedCode = await transformTypescriptCode(_code);
 
   // avoid end comment with line break
   const code = `${environmentScript}
 
-${_code}`;
+${transformedCode}`;
 
   const [context, script] = await Promise.all([
     isolate.createContext(),

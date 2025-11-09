@@ -67,7 +67,7 @@ const formSchema = z
     }
   );
 
-const defaultCode = `async function fetch(payload, ctx) {
+const defaultCode = `async function fetch(payload: Record<string, any>, ctx: FetchContext) {
   return 'Hello, World!';
 }
 `;
