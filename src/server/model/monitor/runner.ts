@@ -12,7 +12,7 @@ import { MonitorWithNotification } from './types.js';
 import { get } from 'lodash-es';
 import { updateMonitorErrorMessage } from './index.js';
 import { formatString } from '../../utils/template.js';
-import { withDistributedLock } from '../../cache/index.js';
+import { withDistributedLock, getCacheManager } from '../../cache/index.js';
 
 /**
  * Class which actually run monitor data collect
@@ -20,8 +20,6 @@ import { withDistributedLock } from '../../cache/index.js';
 export class MonitorRunner {
   isStopped = false;
   timer: NodeJS.Timeout | null = null;
-  retriedNum = 0;
-  currentStatus: 'UP' | 'DOWN' = 'UP';
 
   constructor(
     public workspace: Workspace,
@@ -33,6 +31,55 @@ export class MonitorRunner {
    */
   getTimezone(): string {
     return get(this.workspace, ['settings', 'timezone']) || 'utc';
+  }
+
+  /**
+   * Get cache key for monitor state
+   */
+  private getCacheKey(suffix: string): string {
+    return `monitor:${this.monitor.id}:${suffix}`;
+  }
+
+  /**
+   * Get retried number from cache
+   */
+  private async getRetriedNum(): Promise<number> {
+    const cacheManager = await getCacheManager();
+    const value = await cacheManager.get(this.getCacheKey('retriedNum'));
+    return value ? Number(value) : 0;
+  }
+
+  /**
+   * Set retried number to cache
+   */
+  private async setRetriedNum(num: number): Promise<void> {
+    const cacheManager = await getCacheManager();
+    await cacheManager.set(
+      this.getCacheKey('retriedNum'),
+      num,
+      1000 * 60 * 60 * 24 * 30
+    ); // 30 days
+  }
+
+  /**
+   * Get current status from cache
+   */
+  private async getCurrentStatus(): Promise<'UP' | 'DOWN'> {
+    const cacheManager = await getCacheManager();
+    const value = await cacheManager.get(this.getCacheKey('currentStatus'));
+    return (value as 'UP' | 'DOWN') || 'UP';
+  }
+
+  /**
+   * Set current status to cache
+   */
+  private async setCurrentStatus(status: 'UP' | 'DOWN'): Promise<void> {
+    const cacheManager = await getCacheManager();
+    await cacheManager.set(
+      this.getCacheKey('currentStatus'),
+      status,
+      1000 * 60 * 60 * 24 * 30
+    ); // 30 days
   }
 
   private async runMonitor() {
@@ -74,14 +121,17 @@ export class MonitorRunner {
             value = -1;
           }
 
-          if (value < 0 && this.retriedNum < maxRetries) {
+          const retriedNum = await this.getRetriedNum();
+          const currentStatus = await this.getCurrentStatus();
+
+          if (value < 0 && retriedNum < maxRetries) {
             // can be retry
-            this.retriedNum++;
+            await this.setRetriedNum(retriedNum + 1);
           } else {
-            this.retriedNum = 0; // make sure its will throw error in every retry times
+            await this.setRetriedNum(0); // make sure its will throw error in every retry times
 
             // check event update
-            if (value < 0 && this.currentStatus === 'UP') {
+            if (value < 0 && currentStatus === 'UP') {
               // UP -> DOWN
               await this.createEvent(
                 'DOWN',
@@ -92,8 +142,8 @@ export class MonitorRunner {
                 this.monitor.recentError || 'Unknown error'
               );
               await this.notify(title, [token.text(content)]);
-              this.currentStatus = 'DOWN';
-            } else if (value > 0 && this.currentStatus === 'DOWN') {
+              await this.setCurrentStatus('DOWN');
+            } else if (value > 0 && currentStatus === 'DOWN') {
               // DOWN -> UP
               await this.createEvent(
                 'UP',
@@ -102,7 +152,7 @@ export class MonitorRunner {
 
               const { title, content } = this.buildUpNotification();
               await this.notify(title, [token.text(content)]);
-              this.currentStatus = 'UP';
+              await this.setCurrentStatus('UP');
             }
           }
 
