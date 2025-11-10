@@ -1,5 +1,11 @@
 
 
+## [1.30.9](https://github.com/msgbyte/tianji/compare/v1.30.8...v1.30.9) (2025-11-10)
+
+### Others
+
+* add new implementation method for typescript support ([654abec](https://github.com/msgbyte/tianji/commit/654abec67bc9cf1f743ac2f87c7570505886f199))
+
 ## [1.30.8](https://github.com/msgbyte/tianji/compare/v1.30.7...v1.30.8) (2025-11-10)
 
 ### Features
