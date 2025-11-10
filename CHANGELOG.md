@@ -1,5 +1,19 @@
 
 
+## [1.30.8](https://github.com/msgbyte/tianji/compare/v1.30.7...v1.30.8) (2025-11-10)
+
+### Features
+
+* enhance MonitorRunner with caching for retried number and current status ([766d229](https://github.com/msgbyte/tianji/commit/766d2295c1431a18630ebf0d5333e56f9230b6c5))
+
+### Bug Fixes
+
+* rollback typescript support which maybe have memory leak ([c5f4a57](https://github.com/msgbyte/tianji/commit/c5f4a57a9588b0ff5540ac46230263f075f75950))
+
+### Others
+
+* improve JSON display performance with large payload ([2f093d6](https://github.com/msgbyte/tianji/commit/2f093d67621e8a72d424480c418c0713fcbbb83b))
+
 ## [1.30.7](https://github.com/msgbyte/tianji/compare/v1.30.6...v1.30.7) (2025-11-09)
 
 ### Features
