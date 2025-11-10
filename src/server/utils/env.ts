@@ -166,6 +166,9 @@ export const env = {
   debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
   debugInsights: checkEnvTrusty(process.env.DEBUG_INSIGHTS) || isDev, // debug insights
   enableFunctionWorker: checkEnvTrusty(process.env.ENABLE_FUNCTION_WORKER),
+  enableFunctionWorkerTypescriptSupport: checkEnvTrusty(
+    process.env.ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT
+  ),
   registerAutoJoinWorkspaceId: process.env.REGISTER_AUTO_JOIN_WORKSPACE_ID, // dangerous, its will make user auto join workspace rather than create own after register.
 };
 
