@@ -53,12 +53,12 @@ export async function runCodeInVM(_code: string): Promise<{
 export async function runCodeInIVM(_code: string) {
   const start = Date.now();
   const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
-  const transformedCode = await transformTypescriptCode(_code);
+  // const transformedCode = await transformTypescriptCode(_code);
 
   // avoid end comment with line break
   const code = `${environmentScript}
 
-${transformedCode}`;
+${_code}`;
 
   const [context, script] = await Promise.all([
     isolate.createContext(),
