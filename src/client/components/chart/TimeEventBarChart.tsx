@@ -25,6 +25,7 @@ export const TimeEventBarChart: React.FC<{
   stacked?: boolean;
   isTrendingMode?: boolean;
   showDifference?: boolean;
+  hideLegend?: boolean;
   valueFormatter?: (value: number) => string;
   xAxisLabelFormatter?: (value: string) => string;
   tooltipLabelFormatter?: (value: string) => string;
@@ -38,6 +39,7 @@ export const TimeEventBarChart: React.FC<{
     stacked = false,
     isTrendingMode = false,
     showDifference = false,
+    hideLegend = false,
     valueFormatter,
     xAxisLabelFormatter,
     tooltipLabelFormatter,
@@ -63,22 +65,26 @@ export const TimeEventBarChart: React.FC<{
           domain={isTrendingMode ? ['auto', 'auto'] : yAxisDomain}
           tickFormatter={valueFormatter}
         />
-        <ChartLegend
-          content={
-            <ChartLegendContent
-              selectedItem={selectedItem}
-              onItemClick={(item) => {
-                setSelectedItem((selected) => {
-                  if (selected.includes(item.value)) {
-                    return selected.filter((s) => s !== item.value);
-                  } else {
-                    return [...selected, item.value];
-                  }
-                });
-              }}
-            />
-          }
-        />
+
+        {!hideLegend && (
+          <ChartLegend
+            content={
+              <ChartLegendContent
+                selectedItem={selectedItem}
+                onItemClick={(item) => {
+                  setSelectedItem((selected) => {
+                    if (selected.includes(item.value)) {
+                      return selected.filter((s) => s !== item.value);
+                    } else {
+                      return [...selected, item.value];
+                    }
+                  });
+                }}
+              />
+            }
+          />
+        )}
+
         <CartesianGrid vertical={false} />
 
         <ChartTooltip

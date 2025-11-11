@@ -53,6 +53,7 @@ export const TimeEventChart: React.FC<{
   chartType?: TimeEventChartType;
   isTrendingMode?: boolean;
   showDifference?: boolean;
+  hideLegend?: boolean;
   valueFormatter?: (value: number) => string;
   xAxisLabelFormatter?: (value: string) => string;
   tooltipLabelFormatter?: (value: string) => string;
@@ -65,6 +66,7 @@ export const TimeEventChart: React.FC<{
     chartType = 'area',
     isTrendingMode = false,
     showDifference = false,
+    hideLegend = false,
     yAxisDomain,
     xAxisLabelFormatter,
     tooltipLabelFormatter,
@@ -106,6 +108,7 @@ export const TimeEventChart: React.FC<{
         stacked={true}
         isTrendingMode={isTrendingMode}
         showDifference={showDifference}
+        hideLegend={hideLegend}
         valueFormatter={props.valueFormatter}
         xAxisLabelFormatter={xAxisLabelFormatter}
         tooltipLabelFormatter={tooltipLabelFormatter}
@@ -160,23 +163,27 @@ export const TimeEventChart: React.FC<{
           domain={isTrendingMode ? ['auto', 'auto'] : yAxisDomain}
           tickFormatter={props.valueFormatter}
         />
-        <ChartLegend
-          className="flex-wrap gap-2"
-          content={
-            <ChartLegendContent
-              selectedItem={selectedItem}
-              onItemClick={(item) => {
-                setSelectedItem((selected) => {
-                  if (selected.includes(item.value)) {
-                    return selected.filter((s) => s !== item.value);
-                  } else {
-                    return [...selected, item.value];
-                  }
-                });
-              }}
-            />
-          }
-        />
+
+        {!hideLegend && (
+          <ChartLegend
+            className="flex-wrap gap-2"
+            content={
+              <ChartLegendContent
+                selectedItem={selectedItem}
+                onItemClick={(item) => {
+                  setSelectedItem((selected) => {
+                    if (selected.includes(item.value)) {
+                      return selected.filter((s) => s !== item.value);
+                    } else {
+                      return [...selected, item.value];
+                    }
+                  });
+                }}
+              />
+            }
+          />
+        )}
+
         <CartesianGrid vertical={false} />
 
         <ChartTooltip
