@@ -9,12 +9,14 @@ import {
   deleteShortLink,
   getShortLink,
   getShortLinkAccessStats,
+  getShortLinkAccessTimeSeries,
   getWorkspaceShortLinks,
   updateShortLink,
 } from '../../model/shortlink.js';
 import { ShortLinkModelSchema } from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
 import { ShortLinkType } from '@prisma/client';
+import dayjs from 'dayjs';
 
 export const shortlinkRouter = router({
   /**
@@ -175,11 +177,19 @@ export const shortlinkRouter = router({
             }),
           })
         ),
+        accessesByDate: z.array(
+          z.object({
+            date: z.string(),
+            count: z.number(),
+          })
+        ),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { workspaceId, shortLinkId, startDate, endDate } = input;
+      const timezone = ctx.timezone;
 
+      // Get aggregated stats
       const stats = await getShortLinkAccessStats(
         workspaceId,
         shortLinkId,
@@ -187,6 +197,26 @@ export const shortlinkRouter = router({
         endDate
       );
 
-      return stats;
+      // Get time series data for the last 30 days
+      const end = endDate || new Date();
+      const start = startDate || dayjs(end).subtract(30, 'day').toDate();
+
+      const accessesByDate = await getShortLinkAccessTimeSeries(
+        workspaceId,
+        shortLinkId,
+        {
+          startDate: start,
+          endDate: end,
+        },
+        {
+          timezone,
+          unit: 'day',
+        }
+      );
+
+      return {
+        ...stats,
+        accessesByDate,
+      };
     }),
 });

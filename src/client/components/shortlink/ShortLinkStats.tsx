@@ -1,11 +1,12 @@
 import { useTranslation } from '@i18next-toolkit/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SimplePieChart } from '../chart/SimplePieChart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 import { AppRouterOutput } from '@/api/trpc';
-import { LuActivity, LuGlobe, LuMonitor } from 'react-icons/lu';
+import { LuActivity, LuGlobe, LuMonitor, LuCalendar } from 'react-icons/lu';
+import { TimeEventChart, TimeEventChartData } from '../chart/TimeEventChart';
 
 type StatsData = AppRouterOutput['shortlink']['stats'];
 
@@ -25,6 +26,24 @@ export const ShortLinkStats: React.FC<ShortLinkStatsProps> = React.memo(
   (props) => {
     const { stats } = props;
     const { t } = useTranslation();
+
+    // Prepare time series data for TimeEventChart
+    const timeSeriesData: TimeEventChartData[] = useMemo(() => {
+      return stats.accessesByDate.map((item) => ({
+        date: item.date,
+        count: item.count,
+      }));
+    }, [stats.accessesByDate]);
+
+    const timeSeriesChartConfig = useMemo(
+      () => ({
+        count: {
+          label: t('Visits'),
+          color: 'hsl(var(--chart-1))',
+        },
+      }),
+      [t]
+    );
 
     // Prepare data for charts
     const countryData = stats.accessesByCountry.map((item, index) => ({
@@ -95,6 +114,32 @@ export const ShortLinkStats: React.FC<ShortLinkStatsProps> = React.memo(
             <p className="text-muted-foreground mt-2 text-sm">
               {t('Total number of times this link has been accessed')}
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Last 30 Days Visits Trend */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LuCalendar className="h-5 w-5" />
+              {t('Last 30 Days Visits')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {timeSeriesData.length > 0 ? (
+              <TimeEventChart
+                className="h-[300px] w-full"
+                data={timeSeriesData}
+                unit="day"
+                chartConfig={timeSeriesChartConfig}
+                chartType="bar"
+                hideLegend={true}
+              />
+            ) : (
+              <div className="text-muted-foreground flex h-[300px] items-center justify-center">
+                {t('No data')}
+              </div>
+            )}
           </CardContent>
         </Card>
 

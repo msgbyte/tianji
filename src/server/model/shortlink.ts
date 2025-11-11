@@ -3,6 +3,12 @@ import { nanoid } from 'nanoid';
 import { getRequestInfo } from '../utils/detect.js';
 import { IncomingMessage } from 'http';
 import { ShortLinkType } from '@prisma/client';
+import { getDateArray } from '@tianji/shared';
+import {
+  BaseQueryFilters,
+  getDateQuery,
+  QueryOptions,
+} from '../utils/prisma.js';
 
 /**
  * Create a short link
@@ -264,6 +270,53 @@ export async function getShortLinkAccessStats(
     accessesByBrowser,
     accessesByDevice,
   };
+}
+
+/**
+ * Get time series access statistics for a short link
+ */
+export async function getShortLinkAccessTimeSeries(
+  workspaceId: string,
+  shortLinkId: string,
+  filter: BaseQueryFilters,
+  options: QueryOptions = {}
+) {
+  const shortLink = await prisma.shortLink.findFirst({
+    where: {
+      id: shortLinkId,
+      workspaceId,
+    },
+  });
+
+  if (!shortLink) {
+    throw new Error('Short link not found');
+  }
+
+  const { startDate, endDate } = filter;
+  const { timezone = 'utc', unit = 'day' } = options;
+
+  const results = await prisma.$queryRaw<{ date: string; count: BigInt }[]>`
+    SELECT
+      ${getDateQuery('"createdAt"', unit, timezone)} "date",
+      count(*) "count"
+    FROM
+      "ShortLinkAccess"
+    WHERE
+      "shortLinkId" = ${shortLinkId}
+      and "createdAt" between ${startDate}::timestamptz and ${endDate}::timestamptz
+    GROUP BY 1
+  `;
+
+  return getDateArray(
+    results.map((res) => ({
+      date: res.date,
+      count: Number(res.count),
+    })),
+    startDate,
+    endDate,
+    unit,
+    timezone
+  );
 }
 
 /**
