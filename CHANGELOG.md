@@ -1,5 +1,16 @@
 
 
+## [1.30.10](https://github.com/msgbyte/tianji/compare/v1.30.9...v1.30.10) (2025-11-11)
+
+### Features
+
+* add days visit charts for shortlink ([a3bcf49](https://github.com/msgbyte/tianji/commit/a3bcf4964bd08200afa228377269ea265a5897b9))
+* TimeEventChart add new props hideLegend ([e3f7df9](https://github.com/msgbyte/tianji/commit/e3f7df9cb593fca6dce0eeb46943ffd28264781e))
+
+### Bug Fixes
+
+* improve legend display in  time event chart when too much data ([8e615fd](https://github.com/msgbyte/tianji/commit/8e615fd102d0ac53db4619f740726bb336f1d4f9))
+
 ## [1.30.9](https://github.com/msgbyte/tianji/compare/v1.30.8...v1.30.9) (2025-11-10)
 
 ### Others
