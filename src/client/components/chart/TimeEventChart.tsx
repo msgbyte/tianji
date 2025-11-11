@@ -161,6 +161,7 @@ export const TimeEventChart: React.FC<{
           tickFormatter={props.valueFormatter}
         />
         <ChartLegend
+          className="flex-wrap gap-2"
           content={
             <ChartLegendContent
               selectedItem={selectedItem}
