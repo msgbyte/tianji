@@ -9,7 +9,6 @@ API Getting Started - https://tianji.dev/docs/api/getting-started
 OpenAPI SDK Usage Guide - https://tianji.dev/docs/api/openapi-sdk
 Application Tracking - https://tianji.dev/docs/application/tracking
 Prepare To Develop - https://tianji.dev/docs/dev/prepare
-Environment - https://tianji.dev/docs/environment
 Event Tracking - https://tianji.dev/docs/events/track
 Channels - https://tianji.dev/docs/feed/channels
 Integrations - https://tianji.dev/docs/feed/integrations
