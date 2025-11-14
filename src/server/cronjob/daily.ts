@@ -79,15 +79,13 @@ export async function statDailyUsage() {
     await prisma.$queryRaw<WebsiteEventCountSqlReturn>`
         SELECT
           w.id AS workspace_id,
-          COALESCE(COUNT(sr.id), 0) AS count
+          COALESCE(COUNT(s.id), 0) AS count
         FROM
           "Workspace" w
         LEFT JOIN
           "Survey" s ON w.id = s."workspaceId"
-        LEFT JOIN
-          "SurveyResult" sr ON s.id = sr."surveyId"
-        AND sr."createdAt" >= ${start}
-        AND sr."createdAt" < ${end}
+          AND s."createdAt" >= ${start}
+          AND s."createdAt" < ${end}
         GROUP BY
           w.id
         ORDER BY
