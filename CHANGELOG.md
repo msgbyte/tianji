@@ -1,5 +1,21 @@
 
 
+## [1.30.11](https://github.com/msgbyte/tianji/compare/v1.30.10...v1.30.11) (2025-11-16)
+
+### Bug Fixes
+
+* fix survey count logic ([c2c8118](https://github.com/msgbyte/tianji/commit/c2c8118a997f067f97cd0ba5c94c6543d88d9347))
+
+### Document
+
+* add more log ([d6a9d86](https://github.com/msgbyte/tianji/commit/d6a9d866cb8970a959fbfb70c790edca24d483a2))
+* update api document and resolve render issue  for website api page ([94c824f](https://github.com/msgbyte/tianji/commit/94c824f6f86892ed1e38904de9f410b27d279e13))
+
+### Others
+
+* update model price ([441770e](https://github.com/msgbyte/tianji/commit/441770eb60854dcd8b3cbc5cbb3e89955a725f25))
+* update translation ([1966254](https://github.com/msgbyte/tianji/commit/1966254b471a829655d3d1434919643ba2d1a1ef))
+
 ## [1.30.10](https://github.com/msgbyte/tianji/compare/v1.30.9...v1.30.10) (2025-11-11)
 
 ### Features
