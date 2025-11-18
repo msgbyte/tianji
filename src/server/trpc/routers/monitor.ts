@@ -653,7 +653,7 @@ export const monitorRouter = router({
     )
     .input(
       z.object({
-        monitorId: z.string().cuid2().optional(),
+        monitorId: z.cuid2().optional(),
         limit: z.number().default(20),
       })
     )

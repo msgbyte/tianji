@@ -129,7 +129,7 @@ export async function getWorkspaceShortLinks(workspaceId: string) {
       deletedAt: null,
     },
     orderBy: {
-      createdAt: 'desc',
+      updatedAt: 'desc',
     },
   });
 
