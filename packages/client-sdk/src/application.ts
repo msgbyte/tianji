@@ -99,10 +99,18 @@ export async function reportApplicationScreenView(
     return;
   }
 
+  if (screenName) {
+    currentScreenName = screenName;
+  }
+
+  if (screenParams) {
+    currentScreenParams = screenParams;
+  }
+
   const payload: ApplicationEventPayload = {
     application: options.applicationId,
-    screen: screenName ?? currentScreenName,
-    params: screenParams ?? currentScreenParams,
+    screen: currentScreenName,
+    params: currentScreenParams,
   };
 
   sendApplicationRequest(options.serverUrl, 'event', payload);
