@@ -57,7 +57,9 @@ export async function execWorker(
       requestPayload,
       responsePayload: result,
       error: error ? String(error) : undefined,
-      logs: Array.isArray(logger) ? logger : [],
+      logs: Array.isArray(logger)
+        ? logger.map((log) => log.map((item) => item ?? null)) // make sure log item is not undefined
+        : [],
     };
 
     if (workerId) {
