@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
-_i18n_hash: ae151f338aa838eaab15a19bfea78d7f
+_i18n_hash: fbe38264a49d1d3af45c4417fdc9a108
 ---
 # Pelacakan Aplikasi
 
-Tianji menyediakan SDK yang kuat untuk melacak acara dan perilaku pengguna di aplikasi Anda. Panduan ini menjelaskan cara mengintegrasikan dan menggunakan SDK Pelacakan Aplikasi dalam proyek Anda.
+Tianji menyediakan SDK yang kuat untuk melacak kejadian dan perilaku pengguna dalam aplikasi Anda. Panduan ini menjelaskan cara mengintegrasikan dan menggunakan SDK Pelacakan Aplikasi dalam proyek Anda.
 
 ## Instalasi
 
-Pasang Tianji react native SDK di proyek Anda:
+Pasang SDK Tianji untuk React Native dalam proyek Anda:
 
 ```bash
 npm install tianji-react-native
@@ -20,28 +20,28 @@ pnpm add tianji-react-native
 
 ## Inisialisasi
 
-Sebelum menggunakan fitur pelacakan, Anda perlu menginisialisasi SDK Aplikasi dengan URL server Tianji dan ID aplikasi Anda:
+Sebelum menggunakan fitur pelacakan apa pun, Anda perlu menginisialisasi SDK Aplikasi dengan URL server Tianji dan ID aplikasi Anda:
 
 ```ts
 import { initApplication } from 'tianji-react-native';
 
 initApplication({
   serverUrl: 'https://tianji.example.com',  // URL server Tianji Anda
-  applicationId: 'your-application-id'      // Pengidentifikasi aplikasi Anda
+  applicationId: 'your-application-id'      // Identifier aplikasi Anda
 });
 ```
 
-## Pelacakan Acara
+## Pelacakan Kejadian
 
-Anda dapat melacak acara khusus dalam aplikasi Anda untuk memantau tindakan dan perilaku pengguna:
+Anda dapat melacak kejadian khusus dalam aplikasi Anda untuk memantau tindakan dan perilaku pengguna:
 
 ```ts
 import { reportApplicationEvent } from 'tianji-react-native';
 
-// Melacak acara sederhana
+// Lacak kejadian sederhana
 reportApplicationEvent('Button Clicked');
 
-// Melacak acara dengan data tambahan
+// Lacak kejadian dengan data tambahan
 reportApplicationEvent('Purchase Completed', {
   productId: 'product-123',
   price: 29.99,
@@ -49,24 +49,24 @@ reportApplicationEvent('Purchase Completed', {
 });
 ```
 
-## Pelacakan Halaman
+## Pelacakan Layar
 
 Lacak tampilan layar dalam aplikasi Anda untuk memahami pola navigasi pengguna:
 
 ### Menetapkan Layar Saat Ini
 
-Anda dapat menetapkan informasi layar saat ini yang akan dimasukkan dalam acara berikutnya:
+Anda dapat menetapkan informasi layar saat ini yang akan disertakan dalam kejadian berikutnya:
 
 ```ts
 import { updateCurrentApplicationScreen } from 'tianji-react-native';
 
-// Perbarui layar saat ini saat pengguna bernavigasi
+// Perbarui layar saat ini ketika pengguna bernavigasi
 updateCurrentApplicationScreen('ProductDetails', { productId: 'product-123' });
 ```
 
 ### Melaporkan Tampilan Layar
 
-Secara eksplisit laporkan acara tampilan layar:
+Secara eksplisit melaporkan kejadian tampilan layar:
 
 ```ts
 import { reportApplicationScreenView } from 'tianji-react-native';
@@ -78,6 +78,22 @@ reportApplicationScreenView();
 reportApplicationScreenView('Checkout', { cartItems: 3 });
 ```
 
+#### Integrasi dengan expo-router
+
+```tsx
+import { useGlobalSearchParams, usePathname } from 'expo-router'
+import { reportApplicationScreenView } from 'tianji-react-native'
+
+function App() {
+  const pathname = usePathname()
+  const params = useGlobalSearchParams()
+
+  useEffect(() => {
+    reportApplicationScreenView(pathname, params)
+  }, [pathname, params])
+}
+```
+
 ## Identifikasi Pengguna
 
 Identifikasi pengguna dalam aplikasi Anda untuk melacak perilaku mereka di berbagai sesi:
@@ -87,7 +103,7 @@ import { identifyApplicationUser } from 'tianji-react-native';
 
 // Identifikasi pengguna dengan informasi mereka
 identifyApplicationUser({
-  id: 'user-123',          // Pengidentifikasi pengguna unik
+  id: 'user-123',          // Identifier unik pengguna
   email: 'user@example.com',
   name: 'John Doe',
   // Tambahkan properti pengguna lainnya
@@ -105,19 +121,19 @@ Menginisialisasi SDK pelacakan aplikasi.
 **Parameter:**
 
 - `options`: ApplicationTrackingOptions
-  - `serverUrl`: URL server Tianji Anda (misal, 'https://tianji.example.com')
-  - `applicationId`: Pengidentifikasi aplikasi Anda
+  - `serverUrl`: URL server Tianji Anda (mis. 'https://tianji.example.com')
+  - `applicationId`: Identifier aplikasi Anda
 
 ### `reportApplicationEvent(eventName, eventData?, screenName?, screenParams?)`
 
-Mengirim acara aplikasi ke server Tianji.
+Mengirimkan kejadian aplikasi ke server Tianji.
 
 **Parameter:**
 
-- `eventName`: Nama acara (maks 50 karakter)
-- `eventData`: (Opsional) Objek data acara
-- `screenName`: (Opsional) Nama layar untuk menimpa layar saat ini
-- `screenParams`: (Opsional) Parameter layar untuk menimpa parameter layar saat ini
+- `eventName`: Nama kejadian (maks 50 karakter)
+- `eventData`: (Opsional) Objek data kejadian
+- `screenName`: (Opsional) Nama layar untuk mengganti layar saat ini
+- `screenParams`: (Opsional) Parameter layar untuk mengganti parameter layar saat ini
 
 ### `updateCurrentApplicationScreen(name, params)`
 
@@ -130,12 +146,12 @@ Memperbarui informasi layar aplikasi saat ini.
 
 ### `reportApplicationScreenView(screenName?, screenParams?)`
 
-Mengirim acara tampilan layar ke server Tianji.
+Mengirimkan kejadian tampilan layar ke server Tianji.
 
 **Parameter:**
 
-- `screenName`: (Opsional) Nama layar untuk menimpa layar saat ini
-- `screenParams`: (Opsional) Parameter layar untuk menimpa parameter layar saat ini
+- `screenName`: (Opsional) Nama layar untuk mengganti layar saat ini
+- `screenParams`: (Opsional) Parameter layar untuk mengganti parameter layar saat ini
 
 ### `identifyApplicationUser(userInfo)`
 
@@ -150,4 +166,4 @@ Mengidentifikasi pengguna dalam aplikasi.
 - Informasi bahasa: maks 35 karakter
 - Informasi sistem operasi: maks 20 karakter
 - Informasi URL: maks 500 karakter
-- Nama acara: maks 50 karakter
+- Nama kejadian: maks 50 karakter

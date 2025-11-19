@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
-_i18n_hash: ae151f338aa838eaab15a19bfea78d7f
+_i18n_hash: fbe38264a49d1d3af45c4417fdc9a108
 ---
-# Suivi des Applications
+# Suivi d'Application
 
-Tianji fournit un SDK puissant pour suivre les événements et le comportement des utilisateurs dans vos applications. Ce guide explique comment intégrer et utiliser le SDK de Suivi d'Applications dans vos projets.
+Tianji fournit un puissant SDK pour le suivi des événements et du comportement des utilisateurs dans vos applications. Ce guide explique comment intégrer et utiliser le SDK de suivi d'application dans vos projets.
 
 ## Installation
 
-Installez le SDK react native de Tianji dans votre projet :
+Installez le SDK Tianji react native dans votre projet :
 
 ```bash
 npm install tianji-react-native
@@ -20,14 +20,14 @@ pnpm add tianji-react-native
 
 ## Initialisation
 
-Avant d'utiliser les fonctionnalités de suivi, vous devez initialiser le SDK d'Application avec l'URL de votre serveur Tianji et l'ID de votre application :
+Avant d'utiliser les fonctionnalités de suivi, vous devez initialiser le SDK d'application avec l'URL de votre serveur Tianji et l'ID de votre application :
 
 ```ts
 import { initApplication } from 'tianji-react-native';
 
 initApplication({
-  serverUrl: 'https://tianji.example.com',  // Votre URL de serveur Tianji
-  applicationId: 'votre-id-application'     // Votre identifiant d'application
+  serverUrl: 'https://tianji.example.com',  // Votre URL du serveur Tianji
+  applicationId: 'votre-id-application'     // Identifiant de votre application
 });
 ```
 
@@ -39,11 +39,11 @@ Vous pouvez suivre des événements personnalisés dans votre application pour s
 import { reportApplicationEvent } from 'tianji-react-native';
 
 // Suivre un événement simple
-reportApplicationEvent('Clic sur le bouton');
+reportApplicationEvent('Button Clicked');
 
 // Suivre un événement avec des données supplémentaires
-reportApplicationEvent('Achat complété', {
-  productId: 'produit-123',
+reportApplicationEvent('Purchase Completed', {
+  productId: 'product-123',
   price: 29.99,
   currency: 'USD'
 });
@@ -55,42 +55,58 @@ Suivez les vues des écrans dans votre application pour comprendre les schémas 
 
 ### Définir l'Écran Actuel
 
-Vous pouvez définir l'information de l'écran actuel qui sera incluse dans les événements suivants :
+Vous pouvez définir les informations de l'écran actuel qui seront incluses dans les événements suivants :
 
 ```ts
 import { updateCurrentApplicationScreen } from 'tianji-react-native';
 
 // Mettre à jour l'écran actuel lorsque l'utilisateur navigue
-updateCurrentApplicationScreen('DétailsDuProduit', { productId: 'produit-123' });
+updateCurrentApplicationScreen('ProductDetails', { productId: 'product-123' });
 ```
 
-### Reporting des Vues d'Écran
+### Compte Rendu des Vues d'Écran
 
 Rapportez explicitement les événements de vue d'écran :
 
 ```ts
 import { reportApplicationScreenView } from 'tianji-react-native';
 
-// Rapporter la vue de l'écran actuel
+// Rapport sur la vue de l'écran actuel
 reportApplicationScreenView();
 
-// Ou rapporter une vue d'écran spécifique
-reportApplicationScreenView('Commande', { cartItems: 3 });
+// Ou rapport sur une vue d'écran spécifique
+reportApplicationScreenView('Checkout', { cartItems: 3 });
 ```
 
-## Identification des Utilisateurs
+#### Intégration avec expo-router
+
+```tsx
+import { useGlobalSearchParams, usePathname } from 'expo-router'
+import { reportApplicationScreenView } from 'tianji-react-native'
+
+function App() {
+  const pathname = usePathname()
+  const params = useGlobalSearchParams()
+
+  useEffect(() => {
+    reportApplicationScreenView(pathname, params)
+  }, [pathname, params])
+}
+```
+
+## Identification de l'Utilisateur
 
 Identifiez les utilisateurs dans votre application pour suivre leur comportement à travers les sessions :
 
 ```ts
 import { identifyApplicationUser } from 'tianji-react-native';
 
-// Identifier un utilisateur avec leurs informations
+// Identifiez un utilisateur avec ses informations
 identifyApplicationUser({
-  id: 'utilisateur-123',    // Identifiant unique de l'utilisateur
-  email: 'utilisateur@exemple.com',
+  id: 'user-123',          // Identifiant unique de l'utilisateur
+  email: 'user@example.com',
   name: 'John Doe',
-  // Ajouter d'autres propriétés utilisateur
+  // Ajoutez d'autres propriétés utilisateur
   plan: 'premium',
   signupDate: '2023-01-15'
 });
@@ -105,7 +121,7 @@ Initialise le SDK de suivi d'application.
 **Paramètres :**
 
 - `options`: ApplicationTrackingOptions
-  - `serverUrl`: URL de votre serveur Tianji (ex. 'https://tianji.example.com')
+  - `serverUrl`: Votre URL du serveur Tianji (ex : 'https://tianji.example.com')
   - `applicationId`: Identifiant de votre application
 
 ### `reportApplicationEvent(eventName, eventData?, screenName?, screenParams?)`
@@ -115,13 +131,13 @@ Envoie un événement d'application au serveur Tianji.
 **Paramètres :**
 
 - `eventName`: Nom de l'événement (max 50 caractères)
-- `eventData`: (Optionnel) Objet de données d'événement
+- `eventData`: (Optionnel) Objet de données de l'événement
 - `screenName`: (Optionnel) Nom de l'écran pour remplacer l'écran actuel
-- `screenParams`: (Optionnel) Paramètres de l'écran pour remplacer les paramètres d'écran actuels
+- `screenParams`: (Optionnel) Paramètres de l'écran pour remplacer les paramètres de l'écran actuel
 
 ### `updateCurrentApplicationScreen(name, params)`
 
-Met à jour l'information de l'écran d'application actuel.
+Met à jour les informations de l'écran de l'application actuelle.
 
 **Paramètres :**
 
@@ -135,7 +151,7 @@ Envoie un événement de vue d'écran au serveur Tianji.
 **Paramètres :**
 
 - `screenName`: (Optionnel) Nom de l'écran pour remplacer l'écran actuel
-- `screenParams`: (Optionnel) Paramètres de l'écran pour remplacer les paramètres d'écran actuels
+- `screenParams`: (Optionnel) Paramètres de l'écran pour remplacer les paramètres de l'écran actuel
 
 ### `identifyApplicationUser(userInfo)`
 
@@ -143,11 +159,11 @@ Identifie un utilisateur dans l'application.
 
 **Paramètres :**
 
-- `userInfo`: Objet de données d'identification utilisateur
+- `userInfo`: Objet de données d'identification de l'utilisateur
 
-## Limites de Chargement
+## Limitations des Charges Utiles
 
-- Information de langue : max 35 caractères
-- Information du système d'exploitation : max 20 caractères
-- Information URL : max 500 caractères
+- Informations sur la langue : max 35 caractères
+- Informations sur le système d'exploitation : max 20 caractères
+- Informations sur l'URL : max 500 caractères
 - Nom de l'événement : max 50 caractères

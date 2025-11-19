@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
-_i18n_hash: ae151f338aa838eaab15a19bfea78d7f
+_i18n_hash: fbe38264a49d1d3af45c4417fdc9a108
 ---
 # アプリケーショントラッキング
 
-Tianjiは、アプリケーション内のイベントやユーザーの行動を追跡するための強力なSDKを提供しています。このガイドでは、プロジェクトにApplication Tracking SDKを統合して使用する方法を説明します。
+Tianjiは、アプリケーション内のイベントやユーザー行動をトラッキングするための強力なSDKを提供しています。このガイドでは、アプリケーショントラッキングSDKをプロジェクトに統合して使用する方法を説明します。
 
 ## インストール
 
-プロジェクトにTianjiのReact Native SDKをインストールします：
+プロジェクトにTianjiのReact Native SDKをインストールします:
 
 ```bash
 npm install tianji-react-native
@@ -20,7 +20,7 @@ pnpm add tianji-react-native
 
 ## 初期化
 
-トラッキング機能を使用する前に、TianjiのサーバーURLとアプリケーションIDでApplication SDKを初期化する必要があります：
+トラッキング機能を使用する前に、TianjiサーバーURLとアプリケーションIDを使用してアプリケーションSDKを初期化する必要があります:
 
 ```ts
 import { initApplication } from 'tianji-react-native';
@@ -33,7 +33,7 @@ initApplication({
 
 ## イベントトラッキング
 
-アプリケーション内でカスタムイベントをトラッキングし、ユーザーの行動を監視できます：
+アプリケーション内でカスタムイベントをトラッキングすることで、ユーザーの行動を監視できます:
 
 ```ts
 import { reportApplicationEvent } from 'tianji-react-native';
@@ -41,7 +41,7 @@ import { reportApplicationEvent } from 'tianji-react-native';
 // シンプルなイベントをトラッキング
 reportApplicationEvent('Button Clicked');
 
-// 追加データと一緒にイベントをトラッキング
+// 追加データを伴うイベントをトラッキング
 reportApplicationEvent('Purchase Completed', {
   productId: 'product-123',
   price: 29.99,
@@ -49,45 +49,61 @@ reportApplicationEvent('Purchase Completed', {
 });
 ```
 
-## 画面トラッキング
+## スクリントラッキング
 
-アプリケーション内で画面遷移をトラッキングし、ユーザーのナビゲーションパターンを理解します：
+アプリケーション内のスクリーンビューをトラッキングして、ユーザーのナビゲーションパターンを理解します:
 
-### 現在の画面の設定
+### 現在のスクリーン設定
 
-ユーザーが移動した際に、以降のイベントに含まれる現在の画面情報を設定できます：
+後続のイベントに含まれる現在のスクリーン情報を設定できます:
 
 ```ts
 import { updateCurrentApplicationScreen } from 'tianji-react-native';
 
-// ユーザーのナビゲーション時に現在の画面を更新
+// ユーザーがナビゲートした際に現在のスクリーンを更新
 updateCurrentApplicationScreen('ProductDetails', { productId: 'product-123' });
 ```
 
-### 画面ビューの報告
+### スクリーンビューの報告
 
-明示的に画面ビューイベントを報告します：
+スクリーンビューイベントを明示的に報告します:
 
 ```ts
 import { reportApplicationScreenView } from 'tianji-react-native';
 
-// 現在の画面ビューを報告
+// 現在のスクリーンビューを報告
 reportApplicationScreenView();
 
-// 特定の画面ビューを報告
+// または特定のスクリーンビューを報告
 reportApplicationScreenView('Checkout', { cartItems: 3 });
+```
+
+#### expo-routerとの統合
+
+```tsx
+import { useGlobalSearchParams, usePathname } from 'expo-router'
+import { reportApplicationScreenView } from 'tianji-react-native'
+
+function App() {
+  const pathname = usePathname()
+  const params = useGlobalSearchParams()
+
+  useEffect(() => {
+    reportApplicationScreenView(pathname, params)
+  }, [pathname, params])
+}
 ```
 
 ## ユーザー識別
 
-アプリケーション内でユーザーを識別し、セッションを超えた行動を追跡します：
+アプリケーション内のユーザーを識別し、セッションを超えた行動をトラッキングします:
 
 ```ts
 import { identifyApplicationUser } from 'tianji-react-native';
 
-// ユーザー情報で識別
+// ユーザー情報でユーザーを識別
 identifyApplicationUser({
-  id: 'user-123',          // ユーザーの一意識別子
+  id: 'user-123',          // ユーザーの一意の識別子
   email: 'user@example.com',
   name: 'John Doe',
   // その他のユーザー属性を追加
@@ -105,7 +121,7 @@ identifyApplicationUser({
 **パラメータ:**
 
 - `options`: ApplicationTrackingOptions
-  - `serverUrl`: TianjiサーバーURL（例：'https://tianji.example.com'）
+  - `serverUrl`: TianjiサーバーURL（例: 'https://tianji.example.com'）
   - `applicationId`: アプリケーション識別子
 
 ### `reportApplicationEvent(eventName, eventData?, screenName?, screenParams?)`
@@ -116,26 +132,26 @@ identifyApplicationUser({
 
 - `eventName`: イベント名（最大50文字）
 - `eventData`: （オプション）イベントデータオブジェクト
-- `screenName`: （オプション）現在の画面を上書きするための画面名
-- `screenParams`: （オプション）現在の画面パラメータを上書きするための画面パラメータ
+- `screenName`: （オプション）現在のスクリーンをオーバーライドするスクリーン名
+- `screenParams`: （オプション）現在のスクリーンパラメータをオーバーライドするスクリーンパラメータ
 
 ### `updateCurrentApplicationScreen(name, params)`
 
-現在のアプリケーション画面情報を更新します。
+現在のアプリケーションスクリーン情報を更新します。
 
 **パラメータ:**
 
-- `name`: 画面名
-- `params`: 画面パラメータオブジェクト
+- `name`: スクリーン名
+- `params`: スクリーンパラメータオブジェクト
 
 ### `reportApplicationScreenView(screenName?, screenParams?)`
 
-画面ビューイベントをTianjiサーバーに送信します。
+スクリーンビューイベントをTianjiサーバーに送信します。
 
 **パラメータ:**
 
-- `screenName`: （オプション）現在の画面を上書きするための画面名
-- `screenParams`: （オプション）現在の画面パラメータを上書きするための画面パラメータ
+- `screenName`: （オプション）現在のスクリーンをオーバーライドするスクリーン名
+- `screenParams`: （オプション）現在のスクリーンパラメータをオーバーライドするスクリーンパラメータ
 
 ### `identifyApplicationUser(userInfo)`
 

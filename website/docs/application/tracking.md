@@ -78,6 +78,22 @@ reportApplicationScreenView();
 reportApplicationScreenView('Checkout', { cartItems: 3 });
 ```
 
+#### Intergate with expo-router
+
+```tsx
+import { useGlobalSearchParams, usePathname } from 'expo-router'
+import { reportApplicationScreenView } from 'tianji-react-native'
+
+function App() {
+  const pathname = usePathname()
+  const params = useGlobalSearchParams()
+
+  useEffect(() => {
+    reportApplicationScreenView(pathname, params)
+  }, [pathname, params])
+}
+```
+
 ## User Identification
 
 Identify users in your application to track their behavior across sessions:

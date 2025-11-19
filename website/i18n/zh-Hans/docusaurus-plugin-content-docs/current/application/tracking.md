@@ -1,14 +1,14 @@
 ---
 sidebar_position: 1
-_i18n_hash: ae151f338aa838eaab15a19bfea78d7f
+_i18n_hash: fbe38264a49d1d3af45c4417fdc9a108
 ---
-# 应用程序追踪
+# 应用跟踪
 
-Tianji 提供了一个强大的 SDK 用于在您的应用程序中追踪事件和用户行为。本指南解释了如何在项目中集成和使用应用程序追踪 SDK。
+Tianji 提供了一个强大的 SDK 用于跟踪应用中的事件和用户行为。本指南说明了如何在项目中集成和使用应用跟踪 SDK。
 
 ## 安装
 
-在您的项目中安装 Tianji React Native SDK：
+在项目中安装 Tianji React Native SDK：
 
 ```bash
 npm install tianji-react-native
@@ -20,28 +20,28 @@ pnpm add tianji-react-native
 
 ## 初始化
 
-在使用任何追踪功能之前，您需要使用您的 Tianji 服务器 URL 和应用程序 ID 来初始化应用程序 SDK：
+在使用任何跟踪功能之前，您需要用您的 Tianji 服务器 URL 和应用 ID 初始化应用 SDK：
 
 ```ts
 import { initApplication } from 'tianji-react-native';
 
 initApplication({
   serverUrl: 'https://tianji.example.com',  // 您的 Tianji 服务器 URL
-  applicationId: 'your-application-id'       // 您的应用程序标识符
+  applicationId: 'your-application-id'       // 您的应用标识符
 });
 ```
 
-## 追踪事件
+## 事件跟踪
 
-您可以在应用程序中追踪自定义事件以监控用户操作和行为：
+您可以在应用中跟踪自定义事件以监视用户操作和行为：
 
 ```ts
 import { reportApplicationEvent } from 'tianji-react-native';
 
-// 追踪简单事件
+// 跟踪一个简单事件
 reportApplicationEvent('Button Clicked');
 
-// 追踪带有附加数据的事件
+// 跟踪带有附加数据的事件
 reportApplicationEvent('Purchase Completed', {
   productId: 'product-123',
   price: 29.99,
@@ -49,9 +49,9 @@ reportApplicationEvent('Purchase Completed', {
 });
 ```
 
-## 屏幕追踪
+## 屏幕跟踪
 
-在您的应用程序中追踪屏幕视图以了解用户导航模式：
+跟踪应用中的屏幕浏览以了解用户导航模式：
 
 ### 设置当前屏幕
 
@@ -60,27 +60,43 @@ reportApplicationEvent('Purchase Completed', {
 ```ts
 import { updateCurrentApplicationScreen } from 'tianji-react-native';
 
-// 当用户导航时更新当前屏幕
+// 用户导航时更新当前屏幕
 updateCurrentApplicationScreen('ProductDetails', { productId: 'product-123' });
 ```
 
-### 报告屏幕视图
+### 报告屏幕浏览
 
-显式报告屏幕视图事件：
+明确地报告屏幕浏览事件：
 
 ```ts
 import { reportApplicationScreenView } from 'tianji-react-native';
 
-// 报告当前屏幕视图
+// 报告当前屏幕浏览
 reportApplicationScreenView();
 
-// 或者报告特定屏幕视图
+// 或报告特定屏幕浏览
 reportApplicationScreenView('Checkout', { cartItems: 3 });
+```
+
+#### 集成 expo-router
+
+```tsx
+import { useGlobalSearchParams, usePathname } from 'expo-router'
+import { reportApplicationScreenView } from 'tianji-react-native'
+
+function App() {
+  const pathname = usePathname()
+  const params = useGlobalSearchParams()
+
+  useEffect(() => {
+    reportApplicationScreenView(pathname, params)
+  }, [pathname, params])
+}
 ```
 
 ## 用户识别
 
-在您的应用程序中识别用户，以便跨会话追踪其行为：
+在应用中识别用户以在会话之间跟踪他们的行为：
 
 ```ts
 import { identifyApplicationUser } from 'tianji-react-native';
@@ -100,28 +116,28 @@ identifyApplicationUser({
 
 ### `initApplication(options)`
 
-初始化应用程序追踪 SDK。
+初始化应用跟踪 SDK。
 
 **参数：**
 
 - `options`: ApplicationTrackingOptions
-  - `serverUrl`: 您的 Tianji 服务器 URL (例如，'https://tianji.example.com')
-  - `applicationId`: 您的应用程序标识符
+  - `serverUrl`: 您的 Tianji 服务器 URL（例如，'https://tianji.example.com'）
+  - `applicationId`: 您的应用标识符
 
 ### `reportApplicationEvent(eventName, eventData?, screenName?, screenParams?)`
 
-向 Tianji 服务器发送一个应用程序事件。
+向 Tianji 服务器发送应用事件。
 
 **参数：**
 
 - `eventName`: 事件名称（最多 50 个字符）
-- `eventData`: (可选) 事件数据对象
-- `screenName`: (可选) 用于覆盖当前屏幕的屏幕名称
-- `screenParams`: (可选) 用于覆盖当前屏幕参数的屏幕参数
+- `eventData`: （可选）事件数据对象
+- `screenName`: （可选）覆盖当前屏幕的屏幕名称
+- `screenParams`: （可选）覆盖当前屏幕参数的屏幕参数
 
 ### `updateCurrentApplicationScreen(name, params)`
 
-更新当前应用程序屏幕信息。
+更新当前应用屏幕信息。
 
 **参数：**
 
@@ -130,16 +146,16 @@ identifyApplicationUser({
 
 ### `reportApplicationScreenView(screenName?, screenParams?)`
 
-向 Tianji 服务器发送屏幕视图事件。
+向 Tianji 服务器发送屏幕浏览事件。
 
 **参数：**
 
-- `screenName`: (可选) 用于覆盖当前屏幕的屏幕名称
-- `screenParams`: (可选) 用于覆盖当前屏幕参数的屏幕参数
+- `screenName`: （可选）覆盖当前屏幕的屏幕名称
+- `screenParams`: （可选）覆盖当前屏幕参数的屏幕参数
 
 ### `identifyApplicationUser(userInfo)`
 
-在应用程序中识别用户。
+在应用中识别用户。
 
 **参数：**
 
