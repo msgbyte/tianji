@@ -1,5 +1,21 @@
 
 
+## [1.30.12](https://github.com/msgbyte/tianji/compare/v1.30.11...v1.30.12) (2025-11-20)
+
+### Bug Fixes
+
+* fix a bug which will make crash when print undefined value ([22ba8a2](https://github.com/msgbyte/tianji/commit/22ba8a2c007286ae387a6df2f825f0acbd48d474))
+* fix shortlink order incorrect issue ([58997d7](https://github.com/msgbyte/tianji/commit/58997d70aa86b3413c711af04b700b8145eccd63))
+
+### Document
+
+* update tracking document with expo-router example ([c85996e](https://github.com/msgbyte/tianji/commit/c85996e2e0c1b77624d74c4505bf76d59d9620c2))
+
+### Others
+
+* dump react-native package version to 1.0.5 ([d49a929](https://github.com/msgbyte/tianji/commit/d49a929df29d9493bbfa7e3705a21313ee431bbd))
+* update screen params handler ([e3027e6](https://github.com/msgbyte/tianji/commit/e3027e6437f37441ff56954d7747717c0f42c523))
+
 ## [1.30.11](https://github.com/msgbyte/tianji/compare/v1.30.10...v1.30.11) (2025-11-16)
 
 ### Bug Fixes
