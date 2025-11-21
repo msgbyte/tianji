@@ -180,7 +180,7 @@ export function buildOpenAIHandler(
           const price =
             modelProvider === 'openrouter' && Boolean(openrouterProviderName)
               ? await getOpenRouterCostDecimal(
-                  modelPriceName,
+                  responseModelName,
                   openrouterProviderName,
                   inputToken,
                   outputToken
@@ -257,7 +257,7 @@ export function buildOpenAIHandler(
           const price =
             modelProvider === 'openrouter' && Boolean(openrouterProviderName)
               ? await getOpenRouterCostDecimal(
-                  modelPriceName,
+                  responseModelName,
                   openrouterProviderName,
                   inputToken,
                   outputToken

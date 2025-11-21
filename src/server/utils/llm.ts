@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const contextWindows = await import('./model_prices_and_context_window.json', {
   with: { type: 'json' },
@@ -169,7 +169,19 @@ function fetchOpenrouterEndpoints(model: string): Promise<OpenRouterResponse> {
     .then((res) => {
       return res.data;
     })
-    .catch((error) => {
+    .catch((error: AxiosError) => {
+      if (error.response?.status === 404) {
+        const promise = Promise.resolve({
+          data: {
+            endpoints: [],
+          },
+        } as unknown as OpenRouterResponse);
+
+        openRouterRequestCache.set(model, promise);
+
+        return promise;
+      }
+
       openRouterRequestCache.delete(model); // remove cache its fetch failed
 
       throw error;
