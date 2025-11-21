@@ -106,3 +106,8 @@ export const InsightQueryChart: React.FC<InsightQueryChartProps> = React.memo(
   }
 );
 InsightQueryChart.displayName = 'InsightQueryChart';
+
+export const defaultValueProcessor: Record<string, (value: number) => number> =
+  {
+    alwaysPositive: (value: number) => Math.max(value, 0),
+  };

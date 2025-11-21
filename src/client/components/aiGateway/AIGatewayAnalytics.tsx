@@ -8,15 +8,11 @@ import { Button } from '../ui/button';
 import { LuRefreshCw } from 'react-icons/lu';
 import { useEvent } from '@/hooks/useEvent';
 import { trpc } from '@/api/trpc';
-import { InsightQueryChart } from '../insights/InsightQueryChart';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
+  defaultValueProcessor,
+  InsightQueryChart,
+} from '../insights/InsightQueryChart';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 interface AIGatewayAnalyticsProps {
@@ -31,8 +27,6 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
     const { gatewayId } = props;
     const workspaceId = useCurrentWorkspaceId();
     const { startDate, endDate, unit } = useGlobalRangeDate();
-
-    const [usageMetric, setUsageMetric] = useState<UsageMetric>('$all_event');
 
     const trpcUtils = trpc.useUtils();
     const handleRefresh = useEvent(async () => {
@@ -52,10 +46,6 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
       }),
       [startDate, endDate, unit]
     );
-
-    const valueProcessor = useEvent((value: number) => {
-      return Math.max(value, 0);
-    });
 
     return (
       <div className="space-y-6">
@@ -110,6 +100,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     groups={[]}
                     time={timeConfig}
                     chartType="line"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
                   />
                 </CardContent>
               </Card>
@@ -138,7 +129,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     groups={[]}
                     time={timeConfig}
                     chartType="line"
-                    valueProcessor={valueProcessor}
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
                   />
                 </CardContent>
               </Card>
@@ -165,6 +156,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   groups={[{ value: 'modelName', type: 'string' }]}
                   time={timeConfig}
                   chartType="bar"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
                 />
               </CardContent>
             </Card>
@@ -191,6 +183,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     groups={[]}
                     time={timeConfig}
                     chartType="area"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
                   />
                 </CardContent>
               </Card>
@@ -215,6 +208,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     groups={[{ value: 'stream', type: 'boolean' }]}
                     time={timeConfig}
                     chartType="bar"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
                   />
                 </CardContent>
               </Card>
@@ -243,6 +237,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   groups={[{ value: 'modelName', type: 'string' }]}
                   time={timeConfig}
                   chartType="bar"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
                 />
               </CardContent>
             </Card>
@@ -271,6 +266,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     groups={[{ value: 'status', type: 'string' }]}
                     time={timeConfig}
                     chartType="pie"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
                   />
                 </CardContent>
               </Card>
@@ -300,6 +296,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     groups={[]}
                     time={timeConfig}
                     chartType="line"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
                   />
                 </CardContent>
               </Card>
@@ -331,6 +328,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   groups={[]}
                   time={timeConfig}
                   chartType="area"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
                 />
               </CardContent>
             </Card>
@@ -363,6 +361,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   groups={[{ value: 'modelName', type: 'string' }]}
                   time={timeConfig}
                   chartType="bar"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
                 />
               </CardContent>
             </Card>
