@@ -124,7 +124,7 @@ export async function checkWorkspaceUsageAndUpdateStatus(workspaceId: string) {
       limit.maxMonitorExecutionCount
     ) ||
     checkValueOver(usage.websiteEventCount, limit.maxWebsiteEventCount) ||
-    checkValueOver(usage.surveyCount, limit.maxSurveyCount) ||
+    checkValueOver(serviceCount.survey, limit.maxSurveyCount) ||
     checkValueOver(serviceCount.feed, limit.maxFeedChannelCount) ||
     checkValueOver(usage.feedEventCount, limit.maxFeedEventCount);
 

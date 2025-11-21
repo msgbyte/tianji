@@ -175,6 +175,12 @@ export function useHasAdminPermission(): boolean {
   return hasAdminPermission;
 }
 
+export function useIsWorkspaceOwner(): boolean {
+  const currentWorkspaceRole = useCurrentWorkspaceRole();
+
+  return currentWorkspaceRole === ROLES.owner;
+}
+
 export function useWorkspacePaused(): boolean {
   const currentWorkspace = useCurrentWorkspace();
 

@@ -39,6 +39,7 @@ import {
 } from '../../model/invitation.js';
 import { workspaceConfigRouter } from './workspaceConfig.js';
 import Cron from 'croner';
+import { checkWorkspaceUsageAndUpdateStatus } from '../../model/billing/workspace.js';
 
 export const workspaceRouter = router({
   create: protectProedure
@@ -645,6 +646,22 @@ export const workspaceRouter = router({
       return {
         nextRuns: cron.nextRuns(count).map((run) => run.toISOString()),
       };
+    }),
+
+  recheckPauseStatus: workspaceOwnerProcedure
+    .meta(
+      buildWorkspaceOpenapi({
+        method: 'POST',
+        path: '/{workspaceId}/recheckPauseStatus',
+        summary: 'Recheck workspace pause status',
+        description: 'Manually trigger workspace pause status check based on usage limits',
+      })
+    )
+    .output(z.void())
+    .mutation(async ({ input }) => {
+      const { workspaceId } = input;
+
+      await checkWorkspaceUsageAndUpdateStatus(workspaceId);
     }),
 
   config: workspaceConfigRouter,

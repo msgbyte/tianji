@@ -5,6 +5,7 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   useCurrentWorkspace,
+  useIsWorkspaceOwner,
   useHasAdminPermission,
   useUserStore,
 } from '../../store/user';
@@ -44,12 +45,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import dayjs from 'dayjs';
 import { getTimezoneList } from '@/utils/date';
 import { useWorkspaceMembers } from '@/components/workspace/useWorkspaceMembers';
 import { useGlobalConfig } from '@/hooks/useConfig';
 import { SimpleTooltip } from '@/components/ui/tooltip';
 import { LuTriangleAlert } from 'react-icons/lu';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/settings/workspace')({
   beforeLoad: routeAuthBeforeLoad,
@@ -66,6 +67,7 @@ function PageComponent() {
   const { t } = useTranslation();
   const { id: workspaceId, name, role, settings } = useCurrentWorkspace();
   const hasAdminPermission = useHasAdminPermission();
+  const isWorkspaceOwner = useIsWorkspaceOwner();
   const trpcUtils = trpc.useUtils();
   const updateCurrentWorkspaceName = useUserStore(
     (state) => state.updateCurrentWorkspaceName
@@ -98,6 +100,11 @@ function PageComponent() {
     onSuccess: defaultSuccessHandler,
     onError: defaultErrorHandler,
   });
+  const recheckPauseStatusMutation =
+    trpc.workspace.recheckPauseStatus.useMutation({
+      onSuccess: defaultSuccessHandler,
+      onError: defaultErrorHandler,
+    });
 
   const [renameWorkspaceName, setRenameWorkspaceName] = useState('');
   const [handleRename, isRenameLoading] = useEventWithLoading(async () => {
@@ -281,6 +288,34 @@ function PageComponent() {
                       </Button>
                     </AlertConfirm>
                   </div>
+
+                  <Separator className="my-4" />
+
+                  {isWorkspaceOwner && (
+                    <div>
+                      <div className="text-muted-foreground mb-2 text-sm">
+                        {t(
+                          'Manually check workspace usage and update pause status based on current limits'
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        loading={recheckPauseStatusMutation.isPending}
+                        onClick={async () => {
+                          await recheckPauseStatusMutation.mutateAsync({
+                            workspaceId,
+                          });
+                          toast.success(
+                            t(
+                              'Recheck Pause Status Success, please reload window.'
+                            )
+                          );
+                        }}
+                      >
+                        {t('Recheck Pause Status')}
+                      </Button>
+                    </div>
+                  )}
 
                   <Separator className="my-4" />
 
