@@ -72,7 +72,7 @@ export async function execWorker(
 
     return payload;
   } catch (e) {
-    logger.error('execWorker error:', e);
+    logger.error('ExecWorker error:', e);
     const payload = {
       workerId: workerId || '',
       status: FunctionWorkerExecutionStatus.Failed,

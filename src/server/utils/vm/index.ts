@@ -25,7 +25,7 @@ export async function runCodeInVM(_code: string): Promise<{
         const ret = await runCodeInVM2(code);
         return ret;
       } catch (err) {
-        console.error(
+        logger.error(
           '[Monitor] VM2 execution failed, falling back to isolated-vm:',
           err
         );
@@ -37,12 +37,12 @@ export async function runCodeInVM(_code: string): Promise<{
         const ret = await runCodeInIVM(code);
         return ret;
       } catch (err) {
-        console.error('[Monitor] isolated-vm execution failed:', err);
+        logger.error('[Monitor] isolated-vm execution failed:', err);
         throw err;
       }
     }
   } catch (err) {
-    console.error('[Monitor] Code execution failed:', err);
+    logger.error('[Monitor] Code execution failed:', err);
     throw err;
   }
 }
@@ -94,6 +94,7 @@ ${sourceCode}`;
       copy: true,
     });
   } catch (e) {
+    console.trace(e);
     err = e;
   }
 
