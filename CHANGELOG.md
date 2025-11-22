@@ -1,5 +1,21 @@
 
 
+## [1.30.13](https://github.com/msgbyte/tianji/compare/v1.30.12...v1.30.13) (2025-11-22)
+
+### Features
+
+* add manual recheck for workspace pause status by owners ([1247667](https://github.com/msgbyte/tianji/commit/12476676ea6adc63c55386bfecfa5905a229d064))
+* add tts feature for feed public page ([315b0bb](https://github.com/msgbyte/tianji/commit/315b0bb03ae1bb82c29a6fe80155df0fa70be587))
+
+### Bug Fixes
+
+* fix a bug which ai gateway analytics will render negative number ([4d003cb](https://github.com/msgbyte/tianji/commit/4d003cbcc1176d01f16d1b4cd355e25f3633d451))
+* fix a bug which will use much resource when request will incorrect model name ([b9fc873](https://github.com/msgbyte/tianji/commit/b9fc873aa5f80f76e487a14bd39729a841b6a1de))
+
+### Others
+
+* standardize error logging to use logger instead of console ([96d1cea](https://github.com/msgbyte/tianji/commit/96d1cead44c90473997fa2008f281214b53bdba8))
+
 ## [1.30.12](https://github.com/msgbyte/tianji/compare/v1.30.11...v1.30.12) (2025-11-20)
 
 ### Bug Fixes
