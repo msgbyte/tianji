@@ -17,7 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LuRefreshCcw } from 'react-icons/lu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { LuRefreshCcw, LuVolume2, LuVolumeX, LuPlay } from 'react-icons/lu';
+import { useTTSAnnouncement } from '@/hooks/useTTSAnnouncement';
 
 export const Route = createFileRoute('/feed/public/$shareId')({
   component: PageComponent,
@@ -97,6 +103,21 @@ function PageComponent() {
     [data]
   );
 
+  const {
+    isTTSEnabled,
+    toggleTTS,
+    isSpeaking,
+    availableVoices,
+    selectedVoiceURI,
+    setSelectedVoiceURI,
+    testSpeak,
+  } = useTTSAnnouncement({
+    items: events.map((event) => ({
+      id: event.id,
+      content: event.eventContent,
+    })),
+  });
+
   const handleRefreshIntervalChange = (value: string) => {
     const next = Number(value);
     setRefreshInterval(next);
@@ -158,6 +179,92 @@ function PageComponent() {
                 <SelectItem value="60000">{t('60s')}</SelectItem>
               </SelectContent>
             </Select>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  aria-label={t('TTS Announcement')}
+                  className={isSpeaking ? 'animate-pulse' : ''}
+                >
+                  {isTTSEnabled ? (
+                    <LuVolume2 className="h-4 w-4" />
+                  ) : (
+                    <LuVolumeX className="h-4 w-4" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">
+                      {t('Voice Settings')}
+                    </h4>
+                    <p className="text-muted-foreground text-sm">
+                      {t('Configure text-to-speech options')}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      {t('Enable TTS')}
+                    </label>
+                    <Button
+                      variant={isTTSEnabled ? 'default' : 'outline'}
+                      className="w-full"
+                      onClick={toggleTTS}
+                    >
+                      {isTTSEnabled ? t('Enabled') : t('Disabled')}
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">{t('Voice')}</label>
+                    <Select
+                      value={selectedVoiceURI}
+                      onValueChange={setSelectedVoiceURI}
+                      disabled={availableVoices.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            availableVoices.length === 0
+                              ? t('No voices available')
+                              : t('Select a voice')
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableVoices.map((voice) => (
+                          <SelectItem
+                            key={voice.voiceURI}
+                            value={voice.voiceURI}
+                          >
+                            {voice.name} ({voice.lang})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      size="sm"
+                      onClick={() => {
+                        const latestEvent = events[0];
+                        const testText =
+                          latestEvent?.eventContent || 'Hello World';
+                        testSpeak(testText);
+                      }}
+                      disabled={availableVoices.length === 0 || isSpeaking}
+                    >
+                      <LuPlay className="mr-2 h-4 w-4" />
+                      {t('Test Voice')}
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <Button
               size="icon"

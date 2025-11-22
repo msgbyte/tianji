@@ -530,6 +530,7 @@ export const feedRouter = router({
       }).merge(
         z.object({
           channelId: z.string(),
+          tags: z.array(z.string()).default([]),
         })
       )
     )
