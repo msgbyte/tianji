@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useEvent } from '@/hooks/useEvent';
 import { useAIChat, ToolCallHandler } from '@/hooks/useAIChat';
+import { useWarehouseSessionStorage } from '@/hooks/useWarehouseSessionStorage';
 import { sleep } from '@tianji/shared';
 import { generateRandomString } from '@/utils/common';
 import { TimeEventChartType } from '@/components/chart/TimeEventChart';
 import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
 
-interface WarehouseScope {
+export interface WarehouseScope {
   type: 'database' | 'table';
   id: string;
   name: string;
@@ -30,6 +31,7 @@ interface UseWarehouseAIChatOptions {
 /**
  * Custom hook for warehouse AI chat functionality
  * Manages chat messages, tool calls, chart blocks, and usage tracking
+ * Includes automatic persistence to localStorage
  */
 export function useWarehouseAIChat({
   workspaceId,
@@ -38,7 +40,34 @@ export function useWarehouseAIChat({
 }: UseWarehouseAIChatOptions) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
-  const [chartBlocks, setChartBlocks] = useState<ChartBlock[]>([]);
+
+  // Initialize persistence storage
+  const {
+    session,
+    saveMessages,
+    saveChartBlocks,
+    saveSelectedScopes,
+    clearSession,
+  } = useWarehouseSessionStorage(workspaceId);
+
+  // Initialize chartBlocks from storage or empty array
+  const [chartBlocks, _setChartBlocks] = useState<ChartBlock[]>(
+    session?.chartBlocks ?? []
+  );
+
+  // Wrapped setter for chartBlocks that triggers save
+  const setChartBlocks = useEvent(
+    (newChartBlocks: ChartBlock[] | ((prev: ChartBlock[]) => ChartBlock[])) => {
+      _setChartBlocks((prev) => {
+        const updated =
+          typeof newChartBlocks === 'function'
+            ? newChartBlocks(prev)
+            : newChartBlocks;
+        saveChartBlocks(updated);
+        return updated;
+      });
+    }
+  );
 
   // Initialize AI chat with warehouse-specific tool handlers
   const {
@@ -49,10 +78,17 @@ export function useWarehouseAIChat({
     error,
     addToolResult,
     usage,
-    refreshId,
+    refreshId: _refreshId,
     reset: resetChat,
   } = useAIChat({
     apiEndpoint: `/api/insights/${workspaceId}/chat`,
+    initialMessages: session?.messages ?? [],
+    onMessagesUpdate: (messages) => {
+      // Save messages when AI response finishes
+      if (messages.length > 0) {
+        saveMessages(messages);
+      }
+    },
     async onToolCall({ toolCall }: Parameters<ToolCallHandler>[0]) {
       // Handle getLocation tool call (demo tool)
       if (toolCall.toolName === 'getLocation') {
@@ -153,6 +189,13 @@ export function useWarehouseAIChat({
     setChartBlocks((prev) => prev.filter((b) => b.id !== id));
   });
 
+  // Wrapped refreshId that also clears storage
+  const refreshId = useEvent(() => {
+    clearSession();
+    _setChartBlocks([]);
+    _refreshId();
+  });
+
   return {
     // Input state
     input,
@@ -170,6 +213,10 @@ export function useWarehouseAIChat({
 
     // Usage tracking
     usage,
+
+    // Persisted data
+    savedSelectedScopes: session?.selectedScopes ?? [],
+    saveSelectedScopes, // Expose save function for manual save
 
     // Actions
     handleSend,

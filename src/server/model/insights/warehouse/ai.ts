@@ -46,9 +46,11 @@ export const createWarehouseAITools = (connectionUrl?: string): ToolSet => ({
         ),
     }),
     execute: async ({ sql }) => {
-      const connection = getWarehouseConnection(
-        connectionUrl || env.insights.warehouse.url
-      );
+      if (!connectionUrl) {
+        throw new Error('Connection url is not set');
+      }
+
+      const connection = getWarehouseConnection(connectionUrl);
 
       // Auto-add LIMIT if not present
       let finalSql = sql.trim();

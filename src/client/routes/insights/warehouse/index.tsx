@@ -16,7 +16,7 @@ import { LuPlus, LuDatabase, LuCircleAlert, LuTrash2 } from 'react-icons/lu';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useEvent } from '@/hooks/useEvent';
-import { useWarehouseAIChat } from '@/hooks/useWarehouseAIChat';
+import { useWarehouseAIChat, WarehouseScope } from '@/hooks/useWarehouseAIChat';
 import { useMemo, useState, useEffect } from 'react';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import {
@@ -70,7 +70,8 @@ function PageComponent() {
   const { data: tables } = trpc.insights.warehouse.table.list.useQuery({
     workspaceId,
   });
-  const [selectedScopes, setSelectedScopes] = useState<
+
+  const [selectedScopes, _setSelectedScopes] = useState<
     Array<{
       type: 'database' | 'table';
       id: string;
@@ -78,20 +79,6 @@ function PageComponent() {
       databaseId?: string;
     }>
   >([]);
-
-  // Initialize with first database if available
-  useEffect(() => {
-    if (databases && databases.length > 0 && selectedScopes.length === 0) {
-      const firstDb = databases[0];
-      setSelectedScopes([
-        {
-          type: 'database',
-          id: firstDb.id,
-          name: firstDb.name,
-        },
-      ]);
-    }
-  }, [databases]);
 
   // Check database availability and cross-database conflicts
   const databaseStatus = useMemo(() => {
@@ -133,6 +120,8 @@ function PageComponent() {
     addToolResult,
     chartBlocks,
     usage,
+    savedSelectedScopes,
+    saveSelectedScopes: _saveSelectedScopes,
     handleSend,
     handleSendWithScopes,
     handleSuggestionClick,
@@ -145,6 +134,44 @@ function PageComponent() {
     selectedScopes,
     isDisabled: databaseStatus.isDisabled,
   });
+
+  // Wrapped setter that saves to storage
+  const setSelectedScopes = useEvent(
+    (
+      newScopes:
+        | WarehouseScope[]
+        | ((prev: WarehouseScope[]) => WarehouseScope[])
+    ) => {
+      _setSelectedScopes((prev) => {
+        const updated =
+          typeof newScopes === 'function' ? newScopes(prev) : newScopes;
+        if (updated.length > 0) {
+          _saveSelectedScopes(updated);
+        }
+        return updated;
+      });
+    }
+  );
+
+  // Initialize selectedScopes from storage or default to first database
+  useEffect(() => {
+    if (savedSelectedScopes.length > 0) {
+      _setSelectedScopes(savedSelectedScopes);
+    } else if (
+      databases &&
+      databases.length > 0 &&
+      selectedScopes.length === 0
+    ) {
+      const firstDb = databases[0];
+      setSelectedScopes([
+        {
+          type: 'database',
+          id: firstDb.id,
+          name: firstDb.name,
+        },
+      ]);
+    }
+  }, [databases, savedSelectedScopes]);
 
   const handleNavigateToConnections = useEvent(() => {
     navigate({ to: '/insights/warehouse/connections' });
