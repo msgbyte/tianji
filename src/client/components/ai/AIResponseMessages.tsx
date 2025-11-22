@@ -2,6 +2,7 @@ import { AbstractChat, ChatStatus, UIDataTypes, UIMessage, UITools } from 'ai';
 import React from 'react';
 import { Message, MessageContent } from '../ai-elements/message';
 import { AIResponseItem } from './AIResponseItem';
+import { Spinner } from '../ui/spinner';
 
 interface AIResponseMessagesProps {
   messages: UIMessage<unknown, UIDataTypes, UITools>[];
@@ -31,6 +32,14 @@ export const AIResponseMessages: React.FC<AIResponseMessagesProps> = React.memo(
             </MessageContent>
           </Message>
         ))}
+
+        {status === 'submitted' && (
+          <Message from="assistant">
+            <MessageContent>
+              <Spinner />
+            </MessageContent>
+          </Message>
+        )}
       </>
     );
   }

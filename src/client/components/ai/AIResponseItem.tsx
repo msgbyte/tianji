@@ -26,7 +26,6 @@ import {
 import { get, map } from 'lodash-es';
 
 type AskForConfirmationInput = { message: string };
-type WeatherInformationInput = { city: string };
 
 function isAskForConfirmationInput(
   input: unknown

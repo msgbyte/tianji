@@ -31,7 +31,7 @@ const openai = createOpenAI({
 });
 
 insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
-  if (!env.insights.warehouse.enable || !env.openai.enable) {
+  if (!env.openai.enable) {
     // only for dev now, and require shared OpenAI enabled
     res
       .status(401)
@@ -41,7 +41,7 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
     return;
   }
 
-  if (req.user?.id !== INIT_ADMIN_USER_ID) {
+  if (req.user?.id !== INIT_ADMIN_USER_ID && !env.isDev) {
     res.status(401).end('This feature is only for admin user');
     return;
   }

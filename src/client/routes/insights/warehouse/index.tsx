@@ -252,44 +252,36 @@ function PageComponent() {
                 </div>
               </div>
               <div className="border-t border-zinc-200 dark:border-zinc-800" />
-              <ScrollArea className="flex-1">
-                <Conversation>
-                  <ConversationContent>
-                    <AIResponseMessages
-                      messages={messages}
-                      status={status}
-                      onAddToolResult={addToolResult}
-                    />
-                  </ConversationContent>
-                  <ConversationScrollButton />
-                </Conversation>
 
-                {error && (
-                  <div className="p-3">
-                    <Alert variant="destructive">
-                      <LuCircleAlert className="h-4 w-4" />
-                      <AlertTitle>{t('An error occurred.')}</AlertTitle>
-                      <AlertDescription>{String(error)}</AlertDescription>
-                      <div className="mt-2 flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={handleReset}
-                        >
-                          {t('Retry')}
-                        </Button>
-                      </div>
-                    </Alert>
-                  </div>
-                )}
+              <Conversation>
+                <ConversationContent>
+                  <AIResponseMessages
+                    messages={messages}
+                    status={status}
+                    onAddToolResult={addToolResult}
+                  />
+                </ConversationContent>
+                <ConversationScrollButton />
+              </Conversation>
 
-                {usage && status === 'ready' && messages.length > 0 && (
-                  <div className="px-4 py-1 text-right text-xs text-opacity-40">
-                    {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
-                    tokens used
-                  </div>
-                )}
-              </ScrollArea>
+              {error && (
+                <div className="p-3">
+                  <Alert variant="destructive">
+                    <LuCircleAlert className="h-4 w-4" />
+                    <AlertTitle>{t('An error occurred.')}</AlertTitle>
+                    <AlertDescription>{String(error)}</AlertDescription>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={handleReset}
+                      >
+                        {t('Retry')}
+                      </Button>
+                    </div>
+                  </Alert>
+                </div>
+              )}
 
               {!databaseStatus.isDisabled && (
                 <Suggestions className="p-3 pb-0">
@@ -383,6 +375,15 @@ function PageComponent() {
                     </div>
                   )}
                 </div>
+
+                {usage && status === 'ready' && messages.length > 0 && (
+                  <div className="relative">
+                    <div className="absolute -top-8 right-0 px-4 py-1 text-right text-xs text-opacity-40">
+                      {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
+                      {t('tokens used')}
+                    </div>
+                  </div>
+                )}
 
                 <PromptInput onSubmit={handleSend}>
                   <PromptInputTextarea

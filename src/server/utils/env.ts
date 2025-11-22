@@ -134,6 +134,9 @@ export const env = {
     },
   },
   insights: {
+    /**
+     * @deprecated
+     */
     warehouse: {
       enable: Boolean(process.env.INSIGHTS_WAREHOUSE_URL),
       url: process.env.INSIGHTS_WAREHOUSE_URL,

@@ -123,8 +123,14 @@ export function useWarehouseAIChat({
       return;
     }
 
-    await handleSendWithScopes(input.trim());
+    const text = input.trim();
     setInput('');
+    try {
+      await handleSendWithScopes(text);
+    } catch (err) {
+      toast.error(String(err));
+      setInput(text);
+    }
   });
 
   // Handle suggestion click
