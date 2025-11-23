@@ -18,9 +18,11 @@
   "keywords": [],
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "dependencies": {
-    "dayjs": "^1.11.9"
+    "dayjs": "^1.11.9",
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
     "tsup": "^8.5.0",
     "typescript": "5.7.2",
     "vitest": "~3.0.8"
