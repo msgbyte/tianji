@@ -117,6 +117,7 @@ function PageComponent() {
     messages,
     status,
     error,
+    stop,
     addToolResult,
     chartBlocks,
     usage,
@@ -135,6 +136,17 @@ function PageComponent() {
     selectedScopes,
     isDisabled: databaseStatus.isDisabled,
   });
+
+  const handleClickSendButton = useEvent(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      if (status === 'streaming') {
+        stop();
+        return;
+      }
+
+      handleSend(e);
+    }
+  );
 
   // Wrapped setter that saves to storage
   const setSelectedScopes = useEvent(
@@ -414,7 +426,7 @@ function PageComponent() {
                   </div>
                 )}
 
-                <PromptInput onSubmit={handleSend}>
+                <PromptInput onSubmit={handleClickSendButton}>
                   <PromptInputTextarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -530,7 +542,10 @@ function PageComponent() {
                       </Popover>
                     </PromptInputTools>
                     <PromptInputSubmit
-                      disabled={!input || databaseStatus.isDisabled}
+                      disabled={
+                        !input &&
+                        ['ready', 'submitted', 'error'].includes(status)
+                      }
                       status={status}
                     />
                   </PromptInputToolbar>
