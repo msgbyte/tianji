@@ -1,9 +1,14 @@
+import { type InsightsTimeEventChartProps } from '@/components/insights/InsightsTimeEventChart';
 import { useEvent } from '@/hooks/useEvent';
 import { EventEmitter } from 'eventemitter-strict';
 import { useEffect } from 'react';
 
 export interface GlobalEventMap {
   commonListSelected: () => void;
+  createInsightChartBlock: (
+    title: string,
+    chartBlock: InsightsTimeEventChartProps
+  ) => void;
 }
 
 export const globalEventBus = new EventEmitter<GlobalEventMap>();

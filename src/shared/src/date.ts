@@ -99,6 +99,42 @@ export function getDateArray<T extends { date: string }>(
 }
 
 /**
+ * Infer the time range from the dates
+ * @param dates - The dates to infer the time range from
+ * @param unit - Optional time unit to normalize the range boundaries
+ * @param timezone - Optional timezone for normalization
+ * @returns The time range [startDate, endDate]
+ */
+export function inferTimeRangeFromDates(
+  dates: (Date | string | number)[],
+  unit?: DateUnit,
+  timezone?: string
+): [Date, Date] | null {
+  if (dates.length === 0) return null;
+
+  const timestamps = dates
+    .map((d) => new Date(d).getTime())
+    .filter((t) => !isNaN(t));
+  if (timestamps.length === 0) return null;
+
+  let startDate = new Date(Math.min(...timestamps));
+  let endDate = new Date(Math.max(...timestamps));
+
+  // Normalize to unit boundaries if unit is provided
+  if (unit) {
+    if (timezone) {
+      startDate = dayjs(startDate).tz(timezone).startOf(unit).toDate();
+      endDate = dayjs(endDate).tz(timezone).endOf(unit).toDate();
+    } else {
+      startDate = dayjs(startDate).startOf(unit).toDate();
+      endDate = dayjs(endDate).endOf(unit).toDate();
+    }
+  }
+
+  return [startDate, endDate];
+}
+
+/**
  * Convert a number to a letter
  *
  * @example

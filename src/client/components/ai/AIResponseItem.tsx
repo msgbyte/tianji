@@ -24,6 +24,8 @@ import {
   ReasoningTrigger,
 } from '../ai-elements/reasoning';
 import { get, map } from 'lodash-es';
+import { SimpleVirtualList } from '../SimpleVirtualList';
+import { globalEventBus } from '@/utils/event';
 
 type AskForConfirmationInput = { message: string };
 
@@ -181,25 +183,67 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
     }
 
     if (part.type === 'tool-queryWarehouse') {
+      const input = part.input as any;
+      const output = get(part, 'output.data', part.output);
+      const available = part.state === 'output-available';
+
       return (
-        <Tool key={part.toolCallId} defaultOpen={false}>
-          <ToolHeader type={part.type} state={part.state} />
-          <ToolContent>
-            <ToolInput input={part.input} />
-            <ToolOutput
-              output={
-                <Response>
-                  {Array.isArray(part.output)
-                    ? part.output
-                        .map((item) => `- ${JSON.stringify(item)}`)
-                        .join('\n')
-                    : JSON.stringify(part.output)}
-                </Response>
-              }
-              errorText={part.errorText}
-            />
-          </ToolContent>
-        </Tool>
+        <>
+          <Tool
+            key={part.toolCallId}
+            defaultOpen={false}
+            className="w-full overflow-hidden"
+          >
+            <ToolHeader type={part.type} state={part.state} />
+            <ToolContent>
+              <ToolInput input={part.input} />
+              <ToolOutput
+                className="max-h-80 overflow-auto"
+                output={
+                  Array.isArray(output) ? (
+                    <SimpleVirtualList
+                      estimateSize={16}
+                      allData={output}
+                      renderItem={(item) => (
+                        <div className="text-nowrap">
+                          {JSON.stringify(item)}
+                        </div>
+                      )}
+                    />
+                  ) : (
+                    <Response>{JSON.stringify(output)}</Response>
+                  )
+                }
+                errorText={part.errorText}
+              />
+            </ToolContent>
+          </Tool>
+          {available && (
+            <div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  globalEventBus.emit(
+                    'createInsightChartBlock',
+                    input.title ?? 'Chart',
+                    {
+                      rawData: output as any[],
+                      groups: input.groups,
+                      metrics: input.metrics,
+                      time: {
+                        ...input.time,
+                        ...(part.output as any).time,
+                      },
+                      chartType: input.chartType,
+                    }
+                  );
+                }}
+              >
+                {t('Create Chart')}
+              </Button>
+            </div>
+          )}
+        </>
       );
     }
 

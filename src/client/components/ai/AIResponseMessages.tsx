@@ -33,7 +33,7 @@ export const AIResponseMessages: React.FC<AIResponseMessagesProps> = React.memo(
           return (
             <>
               <Message from={message.role} key={message.id}>
-                <MessageContent>
+                <MessageContent className="w-full">
                   {message.parts.map((part, i) => (
                     <AIResponseItem
                       key={`${message.id}-${i}`}

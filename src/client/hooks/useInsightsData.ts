@@ -12,7 +12,7 @@ import { ChartConfig } from '@/components/ui/chart';
  */
 function generateSeriesName(
   item: InsightsRawData,
-  groups: GroupInfo[]
+  groups: Pick<GroupInfo, 'value'>[]
 ): string {
   // Use alias if available, otherwise use name
   let name = item.alias ?? item.name;
@@ -50,7 +50,7 @@ export interface ProcessedChartData {
 
 export interface UseInsightsDataOptions {
   data: InsightsRawData[];
-  groups: GroupInfo[];
+  groups: Pick<GroupInfo, 'value'>[];
   time: {
     startAt: number;
     endAt: number;

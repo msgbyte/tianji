@@ -4,9 +4,10 @@ import { useAIChat, ToolCallHandler } from '@/hooks/useAIChat';
 import { useWarehouseSessionStorage } from '@/hooks/useWarehouseSessionStorage';
 import { sleep } from '@tianji/shared';
 import { generateRandomString } from '@/utils/common';
-import { TimeEventChartType } from '@/components/chart/TimeEventChart';
 import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useGlobalEventSubscribe } from '@/utils/event';
+import { InsightsTimeEventChartProps } from '@/components/insights/InsightsTimeEventChart';
 
 export interface WarehouseScope {
   type: 'database' | 'table';
@@ -15,12 +16,10 @@ export interface WarehouseScope {
   databaseId?: string;
 }
 
-interface ChartBlock {
+type ChartBlock = InsightsTimeEventChartProps & {
   id: string;
   title: string;
-  data: Array<Record<string, any>>;
-  type: TimeEventChartType;
-}
+};
 
 interface UseWarehouseAIChatOptions {
   workspaceId: string;
@@ -103,42 +102,18 @@ export function useWarehouseAIChat({
           output: cities[Math.floor(Math.random() * cities.length)],
         });
       }
-
-      // Handle createCharts tool call
-      if (toolCall.toolName === 'createCharts') {
-        try {
-          const input = toolCall.input as {
-            data?: Array<Record<string, any>>;
-            title?: string;
-            type?: TimeEventChartType;
-          };
-          const data = Array.isArray(input.data) ? input.data : [];
-          const title = typeof input.title === 'string' ? input.title : 'Chart';
-          const type = typeof input.type === 'string' ? input.type : 'line';
-
-          if (data.length === 0) {
-            throw new Error('No data provided');
-          }
-
-          setChartBlocks((prev) => [
-            { id: generateRandomString(8), title, data, type },
-            ...prev,
-          ]);
-
-          addToolResult({
-            tool: 'createCharts',
-            toolCallId: toolCall.toolCallId,
-            output: 'Chart created',
-          });
-        } catch (e) {
-          addToolResult({
-            tool: 'createCharts',
-            toolCallId: toolCall.toolCallId,
-            error: String(e),
-          } as any);
-        }
-      }
     },
+  });
+
+  useGlobalEventSubscribe('createInsightChartBlock', (title, chartBlock) => {
+    setChartBlocks((prev) => [
+      {
+        id: generateRandomString(8),
+        title,
+        ...chartBlock,
+      },
+      ...prev,
+    ]);
   });
 
   // Send message with scopes

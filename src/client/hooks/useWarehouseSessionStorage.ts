@@ -1,15 +1,13 @@
 import { useLocalStorageState } from 'ahooks';
 import { UIMessage } from 'ai';
 import { useCallback } from 'react';
-import { TimeEventChartType } from '@/components/chart/TimeEventChart';
 import { type WarehouseScope } from './useWarehouseAIChat';
+import { InsightsTimeEventChartProps } from '@/components/insights/InsightsTimeEventChart';
 
-interface ChartBlock {
+type ChartBlock = InsightsTimeEventChartProps & {
   id: string;
   title: string;
-  data: Array<Record<string, any>>;
-  type: TimeEventChartType;
-}
+};
 
 interface StoredSession {
   messages: UIMessage[];

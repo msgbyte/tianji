@@ -45,7 +45,7 @@ interface UseAIChatOptions {
   /**
    * Additional chat options
    */
-  chatOptions?: Partial<ChatInit<UIMessage>>;
+  chatOptions?: Omit<Partial<ChatInit<UIMessage>>, 'onToolCall'>;
 
   /**
    * Whether to send automatically when assistant message is complete with tool calls

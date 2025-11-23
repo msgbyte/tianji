@@ -261,10 +261,7 @@ function PageComponent() {
                     chartBlocks.map((block) => (
                       <WarehouseChartBlock
                         key={block.id}
-                        id={block.id}
-                        title={block.title}
-                        data={block.data}
-                        chartType={block.type}
+                        {...block}
                         onDelete={handleDeleteChart}
                       />
                     ))

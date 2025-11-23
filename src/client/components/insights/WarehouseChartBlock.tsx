@@ -3,12 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LuTrash2, LuEye, LuEyeOff } from 'react-icons/lu';
 import {
-  TimeEventChart,
-  TimeEventChartType,
-  useTimeEventChartConfig,
-} from '../chart/TimeEventChart';
-import { DateUnit } from '@tianji/shared';
-import {
   Table,
   TableBody,
   TableCell,
@@ -17,52 +11,34 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useTranslation } from '@i18next-toolkit/react';
+import {
+  InsightsTimeEventChart,
+  InsightsTimeEventChartProps,
+} from './InsightsTimeEventChart';
 
-export interface WarehouseChartBlockProps {
+export interface WarehouseChartBlockProps extends InsightsTimeEventChartProps {
   id: string;
   title: string;
-  data: Array<Record<string, any>>;
-  unit?: DateUnit;
-  chartType?: TimeEventChartType;
   onDelete?: (id: string) => void;
 }
 
 export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
   React.memo((props) => {
     const { t } = useTranslation();
-    const unit = props.unit ?? 'day';
     const [showTable, setShowTable] = useState(false);
+    const data = props.rawData;
 
     const keys = useMemo(() => {
-      if (!props.data || props.data.length === 0) {
+      if (!data || data.length === 0) {
         return [] as string[];
       }
 
       return Array.from(
         new Set(
-          props.data
-            .flatMap((row) => Object.keys(row))
-            .filter((k) => k !== 'date')
+          data.flatMap((row) => Object.keys(row)).filter((k) => k !== 'date')
         )
       );
-    }, [props.data]);
-
-    const chartData = useMemo(() => {
-      if (!props.data || props.data.length === 0) {
-        return [] as any[];
-      }
-
-      return props.data.map((row) => {
-        const date = String(row.date ?? '');
-        const item: any = { date };
-        keys.forEach((k) => {
-          item[k] = Number(row[k] ?? 0);
-        });
-        return item;
-      });
-    }, [props.data, keys]);
-
-    const chartConfig = useTimeEventChartConfig(chartData);
+    }, [data]);
 
     return (
       <Card className="overflow-hidden">
@@ -78,11 +54,12 @@ export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
         </CardHeader>
         <CardContent className="p-0">
           <div className="h-[280px] p-4">
-            <TimeEventChart
+            <InsightsTimeEventChart
               className="h-full w-full"
-              data={chartData as any}
-              unit={unit}
-              chartConfig={chartConfig}
+              rawData={props.rawData}
+              groups={props.groups}
+              metrics={props.metrics}
+              time={props.time}
               drawGradientArea={false}
               chartType={props.chartType}
             />
@@ -119,19 +96,25 @@ export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {props.data.map((row, idx) => (
+                    {data.map((row, idx) => (
                       <TableRow key={idx}>
                         <TableCell className="whitespace-nowrap">
                           {String((row as any).date ?? '')}
                         </TableCell>
-                        {keys.map((k) => (
-                          <TableCell
-                            key={k}
-                            className="whitespace-nowrap text-right"
-                          >
-                            {Number((row as any)[k] ?? 0).toLocaleString()}
-                          </TableCell>
-                        ))}
+                        {keys.map((k) => {
+                          const val = (row as any)[k];
+                          return (
+                            <TableCell
+                              key={k}
+                              className="whitespace-nowrap text-right"
+                            >
+                              {typeof val === 'number' ||
+                              typeof val === 'bigint'
+                                ? Number(val).toLocaleString()
+                                : val}
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     ))}
                   </TableBody>

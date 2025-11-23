@@ -7,9 +7,9 @@ import React, { useRef } from 'react';
 
 interface VirtualListProps<T = any> {
   allData: T[];
-  hasNextPage: boolean | undefined;
-  isFetchingNextPage: boolean;
-  onFetchNextPage: () => void;
+  hasNextPage?: boolean | undefined;
+  isFetchingNextPage?: boolean;
+  onFetchNextPage?: () => void;
   estimateSize: number;
   renderItem: (item: T) => React.ReactElement;
   renderEmpty?: () => React.ReactElement;
@@ -49,7 +49,7 @@ export const SimpleVirtualList: React.FC<VirtualListProps> = React.memo(
         hasNextPage &&
         !isFetchingNextPage
       ) {
-        onFetchNextPage();
+        onFetchNextPage?.();
       }
     });
 
