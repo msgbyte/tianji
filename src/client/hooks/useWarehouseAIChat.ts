@@ -80,6 +80,7 @@ export function useWarehouseAIChat({
     usage,
     refreshId: _refreshId,
     reset: resetChat,
+    regenerate: regenerateChat,
   } = useAIChat({
     apiEndpoint: `/api/insights/${workspaceId}/chat`,
     initialMessages: session?.messages ?? [],
@@ -223,6 +224,7 @@ export function useWarehouseAIChat({
     handleSendWithScopes,
     handleSuggestionClick,
     handleReset,
+    handleRegenerate: regenerateChat,
     handleClearCharts,
     handleDeleteChart,
     refreshId,

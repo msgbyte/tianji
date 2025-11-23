@@ -126,6 +126,7 @@ function PageComponent() {
     handleSendWithScopes,
     handleSuggestionClick,
     handleReset,
+    handleRegenerate,
     handleClearCharts,
     handleDeleteChart,
     refreshId,
@@ -281,10 +282,11 @@ function PageComponent() {
               <div className="border-t border-zinc-200 dark:border-zinc-800" />
 
               <Conversation>
-                <ConversationContent>
+                <ConversationContent className="space-y-2">
                   <AIResponseMessages
                     messages={messages}
                     status={status}
+                    onRegenerate={handleRegenerate}
                     onAddToolResult={addToolResult}
                   />
                 </ConversationContent>
