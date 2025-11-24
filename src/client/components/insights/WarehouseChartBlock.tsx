@@ -1,7 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LuTrash2, LuEye, LuEyeOff } from 'react-icons/lu';
+import {
+  SimpleTooltip,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { LuTrash2, LuEye, LuEyeOff, LuTriangleAlert } from 'react-icons/lu';
 import {
   Table,
   TableBody,
@@ -66,7 +73,20 @@ export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
           </div>
           <div className="border-t border-zinc-200 px-3 py-2 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium">{t('Source Data')}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-medium">{t('Source Data')}</div>
+                {data.length >= 1000 && (
+                  <SimpleTooltip
+                    content={t(
+                      'The result contains more than 1000 records. Only partial data may be displayed. Consider optimizing your query for better performance.'
+                    )}
+                  >
+                    <div>
+                      <LuTriangleAlert className="h-4 w-4 text-yellow-500" />
+                    </div>
+                  </SimpleTooltip>
+                )}
+              </div>
               <Button
                 size="icon"
                 variant="ghost"

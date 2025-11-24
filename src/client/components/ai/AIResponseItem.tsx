@@ -26,6 +26,8 @@ import {
 import { get, map } from 'lodash-es';
 import { SimpleVirtualList } from '../SimpleVirtualList';
 import { globalEventBus } from '@/utils/event';
+import { SimpleTooltip } from '../ui/tooltip';
+import { LuTriangleAlert } from 'react-icons/lu';
 
 type AskForConfirmationInput = { message: string };
 
@@ -219,7 +221,7 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
             </ToolContent>
           </Tool>
           {available && (
-            <div>
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 onClick={() => {
@@ -241,6 +243,17 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
               >
                 {t('Create Chart')}
               </Button>
+              {Array.isArray(output) && output.length >= 1000 && (
+                <SimpleTooltip
+                  content={t(
+                    'The result contains more than 1000 records. Only partial data may be displayed. Consider optimizing your query for better performance.'
+                  )}
+                >
+                  <div>
+                    <LuTriangleAlert className="h-4 w-4 text-yellow-500" />
+                  </div>
+                </SimpleTooltip>
+              )}
             </div>
           )}
         </>
