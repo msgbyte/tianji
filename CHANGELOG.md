@@ -1,5 +1,11 @@
 
 
+## [1.30.15](https://github.com/msgbyte/tianji/compare/v1.30.14...v1.30.15) (2025-11-24)
+
+### Others
+
+* fix ci issue ([ae0e640](https://github.com/msgbyte/tianji/commit/ae0e640aa5f41be2705d433dcf1cc346c04f5b18))
+
 ## [1.30.14](https://github.com/msgbyte/tianji/compare/v1.30.13...v1.30.14) (2025-11-24)
 
 ### Features
