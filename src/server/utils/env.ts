@@ -1,6 +1,7 @@
 import { v1 as uuid } from 'uuid';
 import md5 from 'md5';
 import { compact } from 'lodash-es';
+import { getLLMContextWindow } from './llm.js';
 
 const jwtSecret =
   !process.env.JWT_SECRET ||
@@ -105,6 +106,9 @@ export const env = {
     modelName: process.env.SHARED_OPENAI_MODEL_NAME ?? 'gpt-4o',
     tokenCalcConcurrency: Number(
       process.env.SHARED_OPENAI_TOKEN_CALC_CONCURRENCY || '5'
+    ),
+    contextWindow: getLLMContextWindow(
+      process.env.SHARED_OPENAI_MODEL_NAME ?? 'gpt-4o'
     ),
   },
   clickhouse: {

@@ -136,7 +136,7 @@ function PageComponent() {
 
   useRegisterCommand('survey-ai', {
     label: (text) => t('Ask AI about this survey with: {{text}}', { text }),
-    enabled: config.enableAI,
+    enabled: config.ai.enable,
     handler: async (input) => {
       askAIQuestion(input);
     },
@@ -282,7 +282,7 @@ function PageComponent() {
               <div className="flex justify-between">
                 <div>{count}</div>
                 <div className="flex gap-2">
-                  {config.enableAI && <SurveyAIBtn surveyId={surveyId} />}
+                  {config.ai.enable && <SurveyAIBtn surveyId={surveyId} />}
                   <SurveyUsageBtn surveyId={surveyId} />
                   <SurveyDownloadBtn surveyId={surveyId} />
                 </div>
@@ -295,7 +295,7 @@ function PageComponent() {
                       {t('Recent Survey Count')}
                     </TabsTrigger>
 
-                    {config.enableAI && (
+                    {config.ai.enable && (
                       <TabsTrigger value="category">
                         {t('Survey Category')}
                       </TabsTrigger>
@@ -314,7 +314,7 @@ function PageComponent() {
                     />
                   </TabsContent>
 
-                  {config.enableAI && (
+                  {config.ai.enable && (
                     <TabsContent value="category">
                       <SurveyCategoryChart surveyId={surveyId} />
                     </TabsContent>

@@ -30,7 +30,10 @@ export const globalRouter = router({
         customAuthProviderIcon: z.string().optional(),
         smtpAvailable: z.boolean(),
         enableBilling: z.boolean(),
-        enableAI: z.boolean(),
+        ai: z.object({
+          enable: z.boolean(),
+          contextWindow: z.number(),
+        }),
         enableFunctionWorker: z.boolean(),
         observability: z.object({
           tianji: z.object({
@@ -54,7 +57,10 @@ export const globalRouter = router({
         customAuthProviderIcon: env.auth.custom.icon,
         smtpAvailable: env.smtp.enable,
         enableBilling: env.billing.enable,
-        enableAI: env.openai.enable,
+        ai: {
+          enable: env.openai.enable,
+          contextWindow: env.openai.contextWindow,
+        },
         enableFunctionWorker: env.enableFunctionWorker,
         observability: env.observability,
       };

@@ -2,19 +2,12 @@ import { useChat } from '@ai-sdk/react';
 import {
   ChatInit,
   DefaultChatTransport,
+  LanguageModelUsage,
   lastAssistantMessageIsCompleteWithToolCalls,
   UIMessage,
 } from 'ai';
 import { useMemo, useState, useReducer, useEffect, useRef } from 'react';
 import { generateRandomString } from '@/utils/common';
-
-interface UsageData {
-  cachedInputTokens: number;
-  inputTokens: number;
-  outputTokens: number;
-  reasoningTokens: number;
-  totalTokens: number;
-}
 
 /**
  * Type for tool call handler
@@ -66,7 +59,7 @@ export function useAIChat({
   chatOptions = {},
   sendAutomatically = true,
 }: UseAIChatOptions) {
-  const [usage, setUsage] = useState<UsageData | null>(null);
+  const [usage, setUsage] = useState<LanguageModelUsage | null>(null);
   const prevStatusRef = useRef<string>('ready');
 
   // Generate unique chat session ID

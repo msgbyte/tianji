@@ -46,12 +46,12 @@ export function useSurveyListColumns(surveyId: string) {
           header: item.label,
         })
       ) ?? []),
-      config.enableAI &&
+      config.ai.enable &&
         columnHelper.accessor('aiCategory', {
           header: t('AI Category'),
           size: 200,
         }),
-      config.enableAI &&
+      config.ai.enable &&
         columnHelper.accessor('aiTranslation', {
           header: t('AI Translation'),
           size: 200,

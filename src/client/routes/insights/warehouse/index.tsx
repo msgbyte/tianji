@@ -24,7 +24,6 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
-import { formatNumber } from '@/utils/common';
 import { AIResponseMessages } from '@/components/ai/AIResponseMessages';
 import { WarehouseChartBlock } from '@/components/insights/WarehouseChartBlock';
 import {
@@ -47,7 +46,18 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { toast } from 'sonner';
+import {
+  Context,
+  ContextCacheUsage,
+  ContextContent,
+  ContextContentBody,
+  ContextContentHeader,
+  ContextInputUsage,
+  ContextOutputUsage,
+  ContextReasoningUsage,
+  ContextTrigger,
+} from '@/components/ai-elements/context';
+import { useGlobalConfig } from '@/hooks/useConfig';
 
 export const Route = createFileRoute('/insights/warehouse/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -79,6 +89,7 @@ function PageComponent() {
       databaseId?: string;
     }>
   >([]);
+  const { ai } = useGlobalConfig();
 
   // Check database availability and cross-database conflicts
   const databaseStatus = useMemo(() => {
@@ -416,9 +427,23 @@ function PageComponent() {
 
                 {usage && status === 'ready' && messages.length > 0 && (
                   <div className="relative">
-                    <div className="absolute -top-8 right-0 px-4 py-1 text-right text-xs text-opacity-40">
-                      {formatNumber(usage.inputTokens + usage.outputTokens)}{' '}
-                      {t('tokens used')}
+                    <div className="absolute -top-10 right-0 px-4 py-1 text-right text-xs text-opacity-40">
+                      <Context
+                        maxTokens={ai.contextWindow}
+                        usage={usage}
+                        usedTokens={usage.totalTokens ?? 0}
+                      >
+                        <ContextTrigger />
+                        <ContextContent>
+                          <ContextContentHeader />
+                          <ContextContentBody>
+                            <ContextInputUsage />
+                            <ContextOutputUsage />
+                            <ContextReasoningUsage />
+                            <ContextCacheUsage />
+                          </ContextContentBody>
+                        </ContextContent>
+                      </Context>
                     </div>
                   </div>
                 )}

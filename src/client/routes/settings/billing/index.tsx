@@ -44,7 +44,8 @@ function PageComponent() {
       }
     );
 
-  const { enableAI } = useGlobalConfig();
+  const { ai } = useGlobalConfig();
+  const enableAI = ai.enable;
 
   const {
     data,

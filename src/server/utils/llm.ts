@@ -91,6 +91,30 @@ export function getLLMCostDecimalV2(
   }
 }
 
+/**
+ * Get LLM context window using v2 configuration with provider support
+ * @param modelName - The model name (e.g., 'deepseek-chat', 'grok-3-mini-latest')
+ * @returns The context window in tokens
+ */
+export function getLLMContextWindow(modelName: string): number {
+  let contextWindow = 0;
+
+  for (const provider of Object.values(contextWindowsV2)) {
+    if (contextWindow > 0) {
+      break;
+    }
+
+    for (const model of Object.values(provider.models)) {
+      if (model.id === modelName) {
+        contextWindow = model.limit.context ?? 0;
+        break;
+      }
+    }
+  }
+
+  return contextWindow;
+}
+
 export function getLLMCostDecimalWithCustomPrice(
   inputToken: number,
   outputToken: number,

@@ -12,7 +12,10 @@ const defaultGlobalConfig: AppRouterOutput['global']['config'] = {
   serverTimezone: 'UTC',
   smtpAvailable: false,
   enableBilling: false,
-  enableAI: false,
+  ai: {
+    enable: false,
+    contextWindow: 0,
+  },
   enableFunctionWorker: false,
   observability: {
     tianji: {

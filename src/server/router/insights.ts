@@ -42,6 +42,7 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   }
 
   if (req.user?.id !== INIT_ADMIN_USER_ID && !env.isDev) {
+    // NOTICE: this feature is not integrated with billing system yet.
     res.status(401).end('This feature is only for admin user');
     return;
   }

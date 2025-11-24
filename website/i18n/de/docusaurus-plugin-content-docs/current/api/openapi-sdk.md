@@ -53,7 +53,7 @@ async function getSystemConfig() {
     const config = await openApiClient.GlobalService.globalConfig();
     
     console.log('Registrierung erlauben:', config.allowRegister);
-    console.log('KI-Funktionen aktiviert:', config.enableAI);
+    console.log('KI-Funktionen aktiviert:', config.ai.enable);
     console.log('Abrechnung aktiviert:', config.enableBilling);
     
     return config;
