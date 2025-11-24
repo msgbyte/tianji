@@ -8,7 +8,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { LuTrash2, LuEye, LuEyeOff, LuTriangleAlert } from 'react-icons/lu';
+import {
+  LuTrash2,
+  LuEye,
+  LuEyeOff,
+  LuTriangleAlert,
+  LuDownload,
+} from 'react-icons/lu';
 import {
   Table,
   TableBody,
@@ -22,6 +28,7 @@ import {
   InsightsTimeEventChart,
   InsightsTimeEventChartProps,
 } from './InsightsTimeEventChart';
+import { downloadCSVJson } from '@/utils/dom';
 
 export interface WarehouseChartBlockProps extends InsightsTimeEventChartProps {
   id: string;
@@ -87,13 +94,24 @@ export const WarehouseChartBlock: React.FC<WarehouseChartBlockProps> =
                   </SimpleTooltip>
                 )}
               </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                Icon={showTable ? LuEye : LuEyeOff}
-                onClick={() => setShowTable((v) => !v)}
-                aria-label={showTable ? t('Hide') : t('Show')}
-              />
+              <div className="flex items-center gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  Icon={LuDownload}
+                  onClick={() => downloadCSVJson(data, props.title || 'chart')}
+                  aria-label={t('Download CSV')}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  Icon={showTable ? LuEye : LuEyeOff}
+                  onClick={() => setShowTable((v) => !v)}
+                  aria-label={showTable ? t('Hide') : t('Show')}
+                />
+              </div>
             </div>
           </div>
           {showTable && (
