@@ -1,5 +1,26 @@
 
 
+## [1.30.14](https://github.com/msgbyte/tianji/compare/v1.30.13...v1.30.14) (2025-11-24)
+
+### Features
+
+* add ai chat persist feature ([d9ec593](https://github.com/msgbyte/tianji/commit/d9ec59313985747b897cee5e60113f4e9f119b5f))
+* add context usage for ai chat ([8322fcc](https://github.com/msgbyte/tianji/commit/8322fccb1646a02cc59dd1819bb71d45faa32678))
+* add download csv table for warehouse chart block ([efa1527](https://github.com/msgbyte/tianji/commit/efa15276331e416eea0df52257f8926115ee0d10))
+* add render complex which has group feature render chart in warehouse ai chat feature ([a5c9bd8](https://github.com/msgbyte/tianji/commit/a5c9bd836196b03edc096d846b879e6c8de95c6b))
+* add tip for large source data ([0de6235](https://github.com/msgbyte/tianji/commit/0de6235ef1624e84eed0c849e0b66f34a481c44c))
+* add warehouse ai chat allow stop feature ([bc969ce](https://github.com/msgbyte/tianji/commit/bc969ce198b98555f63e35a121941c92fa14dd2e))
+* add warehouse ai chat message actions: regenerate and copy feature ([e58034d](https://github.com/msgbyte/tianji/commit/e58034d9bb32e3076723dcab813cd8ff7a40bb55))
+
+### Bug Fixes
+
+* adjust message content width based on role in AI response component ([f65f1e3](https://github.com/msgbyte/tianji/commit/f65f1e3ace5a543c55fba0f346369f9e52963339))
+
+### Others
+
+* improve style of ai chat bot style and improve user interface ([0e1e21d](https://github.com/msgbyte/tianji/commit/0e1e21d8a568edfbf527afb12374fbb56c1b1710))
+* move processGroupedTimeSeriesData utils to share code ([45000ed](https://github.com/msgbyte/tianji/commit/45000edf7706bbb65d50b5e45aa0f25d418f461a))
+
 ## [1.30.13](https://github.com/msgbyte/tianji/compare/v1.30.12...v1.30.13) (2025-11-22)
 
 ### Features
