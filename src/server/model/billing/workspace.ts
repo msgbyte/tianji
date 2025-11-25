@@ -22,8 +22,10 @@ export async function getWorkspaceUsage(
       websiteAcceptedCount: true,
       websiteEventCount: true,
       monitorExecutionCount: true,
-      surveyCount: true,
       feedEventCount: true,
+    },
+    _max: {
+      surveyCount: true,
     },
   });
 
@@ -31,7 +33,7 @@ export async function getWorkspaceUsage(
     websiteAcceptedCount: res._sum.websiteAcceptedCount ?? 0,
     websiteEventCount: res._sum.websiteEventCount ?? 0,
     monitorExecutionCount: res._sum.monitorExecutionCount ?? 0,
-    surveyCount: res._sum.surveyCount ?? 0,
+    surveyCount: res._max.surveyCount ?? 0,
     feedEventCount: res._sum.feedEventCount ?? 0,
   };
 }

@@ -84,8 +84,6 @@ export async function statDailyUsage() {
           "Workspace" w
         LEFT JOIN
           "Survey" s ON w.id = s."workspaceId"
-          AND s."createdAt" >= ${start}
-          AND s."createdAt" < ${end}
         GROUP BY
           w.id
         ORDER BY
