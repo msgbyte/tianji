@@ -1,7 +1,7 @@
 import { useLocalStorageState } from 'ahooks';
 import { UIMessage } from 'ai';
 import { useCallback } from 'react';
-import { type WarehouseScope } from './useWarehouseAIChat';
+import { type WarehouseScope } from './useWarehouseInsightChat';
 import { InsightsTimeEventChartProps } from '@/components/insights/InsightsTimeEventChart';
 
 type ChartBlock = InsightsTimeEventChartProps & {

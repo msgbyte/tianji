@@ -16,7 +16,10 @@ import { LuPlus, LuDatabase, LuCircleAlert, LuTrash2 } from 'react-icons/lu';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useEvent } from '@/hooks/useEvent';
-import { useWarehouseAIChat, WarehouseScope } from '@/hooks/useWarehouseAIChat';
+import {
+  useWarehouseInsightChat,
+  WarehouseScope,
+} from '@/hooks/useWarehouseInsightChat';
 import { useMemo, useState, useEffect } from 'react';
 import { WarehouseChartBlock } from '@/components/insights/WarehouseChartBlock';
 import {
@@ -118,7 +121,7 @@ function PageComponent() {
     handleClearCharts,
     handleDeleteChart,
     refreshId,
-  } = useWarehouseAIChat({
+  } = useWarehouseInsightChat({
     workspaceId,
     selectedScopes,
     isDisabled: databaseStatus.isDisabled,

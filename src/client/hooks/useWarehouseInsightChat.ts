@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { useEvent } from '@/hooks/useEvent';
 import { useAIChat, ToolCallHandler } from '@/hooks/useAIChat';
 import { useWarehouseSessionStorage } from '@/hooks/useWarehouseSessionStorage';
@@ -32,7 +32,7 @@ interface UseWarehouseAIChatOptions {
  * Manages chat messages, tool calls, chart blocks, and usage tracking
  * Includes automatic persistence to localStorage
  */
-export function useWarehouseAIChat({
+export function useWarehouseInsightChat({
   workspaceId,
   selectedScopes,
   isDisabled = false,
