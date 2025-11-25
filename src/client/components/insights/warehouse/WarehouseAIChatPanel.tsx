@@ -1,20 +1,48 @@
 import React from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuSparkles } from 'react-icons/lu';
+import { AIChatbot } from '@/components/ai/AIChatbot';
+import { useWarehouseSqlChat } from '@/hooks/useWarehouseSqlChat';
+import { AppRouterOutput } from '@/api/trpc';
+
+type DatabaseType =
+  AppRouterOutput['insights']['warehouse']['database']['list'][number];
 
 interface WarehouseAIChatPanelProps {
   workspaceId: string;
-  databaseId: string;
+  database: DatabaseType;
+  currentSelectedSql: string | null;
   onSQLGenerated?: (sql: string) => void;
 }
 
 export const WarehouseAIChatPanel: React.FC<WarehouseAIChatPanelProps> =
-  React.memo(() => {
+  React.memo((props) => {
     const { t } = useTranslation();
+
+    const {
+      messages,
+      status,
+      input,
+      setInput,
+      usage,
+      addToolResult,
+      handleReset,
+      handleSend,
+      handleRegenerate,
+    } = useWarehouseSqlChat({
+      workspaceId: props.workspaceId,
+      selectedScopes: [
+        {
+          type: 'database',
+          id: props.database.id,
+          name: props.database.name,
+        },
+      ],
+      currentSelectedSql: props.currentSelectedSql,
+      onSQLGenerated: props.onSQLGenerated,
+    });
 
     return (
       <div className="flex h-full flex-col">
-        {/* Header */}
         <div className="border-b px-4 py-3">
           <h3 className="font-semibold">{t('AI Assistant')}</h3>
           <p className="text-muted-foreground text-xs">
@@ -22,20 +50,18 @@ export const WarehouseAIChatPanel: React.FC<WarehouseAIChatPanelProps> =
           </p>
         </div>
 
-        {/* Coming Soon Content */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-          <div className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full">
-            <LuSparkles className="h-8 w-8" />
-          </div>
-          <div className="space-y-2">
-            <h4 className="text-lg font-semibold">{t('Coming Soon')}</h4>
-            <p className="text-muted-foreground max-w-sm text-sm">
-              {t(
-                'AI-powered SQL query generation and assistance will be available soon. Stay tuned!'
-              )}
-            </p>
-          </div>
-        </div>
+        <AIChatbot
+          className="flex-1 overflow-hidden"
+          messages={messages}
+          status={status}
+          input={input}
+          setInput={setInput}
+          usage={usage}
+          onAddToolResult={addToolResult}
+          onSubmit={handleSend}
+          onReset={handleReset}
+          onRegenerate={handleRegenerate}
+        />
       </div>
     );
   });

@@ -68,6 +68,9 @@ function PageComponent() {
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [activeTab, setActiveTab] = useState<'table' | 'chart'>('table');
   const [showDDLSheet, setShowDDLSheet] = useState(false);
+  const [currentSelectedSql, setCurrentSelectedSql] = useState<string | null>(
+    null
+  );
 
   const { data: database, isLoading: isLoadingDatabase } =
     trpc.insights.warehouse.database.list.useQuery({
@@ -121,8 +124,12 @@ function PageComponent() {
     }
   );
 
+  const handleSelectSqlChange = useEvent((lineNumber: number, sql: string) => {
+    setCurrentSelectedSql(sql);
+  });
+
   const handleSQLGenerated = useEvent((generatedSql: string) => {
-    setSql(generatedSql);
+    setSql((prev) => prev + '\n\n' + generatedSql);
   });
 
   const handleNavigateBack = useEvent(() => {
@@ -225,6 +232,7 @@ function PageComponent() {
                       onChange={setSql}
                       enableRunButton={true}
                       onExecuteLine={handleExecuteLine}
+                      onSelectSqlChange={handleSelectSqlChange}
                       tables={tableSchemas}
                       height="100%"
                     />
@@ -291,7 +299,8 @@ function PageComponent() {
             <Allotment.Pane preferredSize={400} minSize={300} snap={true}>
               <WarehouseAIChatPanel
                 workspaceId={workspaceId}
-                databaseId={databaseId}
+                database={currentDatabase}
+                currentSelectedSql={currentSelectedSql}
                 onSQLGenerated={handleSQLGenerated}
               />
             </Allotment.Pane>

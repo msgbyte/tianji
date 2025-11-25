@@ -1,72 +1,35 @@
 import { useState } from 'react';
 import { useEvent } from '@/hooks/useEvent';
 import { useAIChat, ToolCallHandler } from '@/hooks/useAIChat';
-import { useWarehouseSessionStorage } from '@/hooks/useWarehouseSessionStorage';
 import { sleep } from '@tianji/shared';
-import { generateRandomString } from '@/utils/common';
 import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useGlobalEventSubscribe } from '@/utils/event';
-import { InsightsTimeEventChartProps } from '@/components/insights/InsightsTimeEventChart';
+import { get } from 'lodash-es';
 
-export interface WarehouseScope {
+export interface WarehouseSqlScope {
   type: 'database' | 'table';
   id: string;
   name: string;
   databaseId?: string;
 }
 
-type ChartBlock = InsightsTimeEventChartProps & {
-  id: string;
-  title: string;
-};
-
-interface UseWarehouseInsightChatOptions {
+interface UseWarehouseSqlChatOptions {
   workspaceId: string;
-  selectedScopes: WarehouseScope[];
+  selectedScopes: WarehouseSqlScope[];
   isDisabled?: boolean;
+  currentSelectedSql: string | null;
+  onSQLGenerated?: (sql: string) => void;
 }
 
-/**
- * Custom hook for warehouse AI chat functionality
- * Manages chat messages, tool calls, chart blocks, and usage tracking
- * Includes automatic persistence to localStorage
- */
-export function useWarehouseInsightChat({
+export function useWarehouseSqlChat({
   workspaceId,
   selectedScopes,
   isDisabled = false,
-}: UseWarehouseInsightChatOptions) {
+  currentSelectedSql,
+  onSQLGenerated,
+}: UseWarehouseSqlChatOptions) {
   const { t } = useTranslation();
   const [input, setInput] = useState('');
-
-  // Initialize persistence storage
-  const {
-    session,
-    saveMessages,
-    saveChartBlocks,
-    saveSelectedScopes,
-    clearSession,
-  } = useWarehouseSessionStorage(workspaceId);
-
-  // Initialize chartBlocks from storage or empty array
-  const [chartBlocks, _setChartBlocks] = useState<ChartBlock[]>(
-    session?.chartBlocks ?? []
-  );
-
-  // Wrapped setter for chartBlocks that triggers save
-  const setChartBlocks = useEvent(
-    (newChartBlocks: ChartBlock[] | ((prev: ChartBlock[]) => ChartBlock[])) => {
-      _setChartBlocks((prev) => {
-        const updated =
-          typeof newChartBlocks === 'function'
-            ? newChartBlocks(prev)
-            : newChartBlocks;
-        saveChartBlocks(updated);
-        return updated;
-      });
-    }
-  );
 
   // Initialize AI chat with warehouse-specific tool handlers
   const {
@@ -84,16 +47,12 @@ export function useWarehouseInsightChat({
     apiEndpoint: `/api/insights/${workspaceId}/chat`,
     transportOptions: {
       body: {
-        toolType: 'chart',
+        toolType: 'sql',
+        // its looks like not working, need to find a way to make it update after changed
+        // systemPrompt: `User current selecte sql is: ${currentSelectedSql}`,
       },
     },
-    initialMessages: session?.messages ?? [],
-    onMessagesUpdate: (messages) => {
-      // Save messages when AI response finishes
-      if (messages.length > 0) {
-        saveMessages(messages);
-      }
-    },
+    initialMessages: [],
     async onToolCall({ toolCall }: Parameters<ToolCallHandler>[0]) {
       // Handle getLocation tool call (demo tool)
       if (toolCall.toolName === 'getLocation') {
@@ -107,18 +66,20 @@ export function useWarehouseInsightChat({
           output: cities[Math.floor(Math.random() * cities.length)],
         });
       }
-    },
-  });
 
-  useGlobalEventSubscribe('createInsightChartBlock', (title, chartBlock) => {
-    setChartBlocks((prev) => [
-      {
-        id: generateRandomString(8),
-        title,
-        ...chartBlock,
-      },
-      ...prev,
-    ]);
+      if (toolCall.toolName === 'generateSql') {
+        const sql = get(toolCall.input, 'sql');
+        if (typeof sql === 'string') {
+          onSQLGenerated?.(sql);
+        }
+
+        addToolResult({
+          tool: 'generateSql',
+          toolCallId: toolCall.toolCallId,
+          output: 'Success',
+        });
+      }
+    },
   });
 
   // Send message with scopes
@@ -134,6 +95,11 @@ export function useWarehouseInsightChat({
   // Handle form submission
   const handleSend = useEvent(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (status === 'streaming') {
+      stop();
+      return;
+    }
 
     if (!input.trim() || isDisabled) {
       toast.warning(t('Please configure a database first'));
@@ -160,20 +126,8 @@ export function useWarehouseInsightChat({
     resetChat();
   });
 
-  // Clear all chart blocks
-  const handleClearCharts = useEvent(() => {
-    setChartBlocks([]);
-  });
-
-  // Delete a specific chart block
-  const handleDeleteChart = useEvent((id: string) => {
-    setChartBlocks((prev) => prev.filter((b) => b.id !== id));
-  });
-
   // Wrapped refreshId that also clears storage
   const refreshId = useEvent(() => {
-    clearSession();
-    _setChartBlocks([]);
     _refreshId();
   });
 
@@ -189,15 +143,8 @@ export function useWarehouseInsightChat({
     addToolResult,
     stop,
 
-    // Chart blocks
-    chartBlocks,
-
     // Usage tracking
     usage,
-
-    // Persisted data
-    savedSelectedScopes: session?.selectedScopes ?? [],
-    saveSelectedScopes, // Expose save function for manual save
 
     // Actions
     handleSend,
@@ -205,8 +152,6 @@ export function useWarehouseInsightChat({
     handleSuggestionClick,
     handleReset,
     handleRegenerate: regenerateChat,
-    handleClearCharts,
-    handleDeleteChart,
     refreshId,
   };
 }

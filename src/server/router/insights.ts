@@ -4,7 +4,6 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { ModelMessage, UIMessage } from 'ai';
 import {
   warehouseAISystemPrompt,
-  warehouseAITools,
   createWarehouseAITools,
   createWarehouseAIStream,
 } from '../model/insights/warehouse/ai.js';
@@ -47,7 +46,15 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
     return;
   }
 
-  const { messages } = req.body as { messages: Array<Omit<UIMessage, 'id'>> };
+  const {
+    messages,
+    toolType = 'chart',
+    systemPrompt,
+  } = req.body as {
+    messages: Array<Omit<UIMessage, 'id'>>;
+    toolType: 'chart' | 'sql';
+    systemPrompt?: string;
+  };
   const workspaceId = req.params.workspaceId;
   const model = openai(env.openai.modelName);
   const metadata = last(messages)?.metadata as WarehouseChatMetadata;
@@ -91,43 +98,40 @@ insightsRouter.post('/:workspaceId/chat', auth(), async (req, res) => {
   }
 
   // Create AI tools with the specific database connection URL
-  const aiTools = databaseConnectionUrl
-    ? createWarehouseAITools(databaseConnectionUrl)
-    : warehouseAITools;
+  const aiTools = createWarehouseAITools(toolType, databaseConnectionUrl);
+  const hasScope = Array.isArray(scopes) && scopes.length > 0;
 
   // Prepare input messages
-  if (Array.isArray(scopes) && scopes.length > 0) {
+  inputMessages.push({
+    role: 'system',
+    content: warehouseAISystemPrompt({
+      needGetContext: !hasScope, // if has scope, we don't need to get context anymore
+      tools: aiTools,
+    }),
+  });
+
+  if (systemPrompt) {
+    inputMessages.push({
+      role: 'system',
+      content: systemPrompt,
+    });
+  }
+
+  if (hasScope) {
     // Get table metadata
     const tables = await getWarehouseScopes(workspaceId, scopes);
 
-    inputMessages.push(
-      {
-        role: 'system',
-        content: warehouseAISystemPrompt({
-          needGetContext: false,
-          tools: aiTools,
-        }),
-      },
-      {
-        role: 'assistant',
-        content: `Current Database tables structure is:\n${tables
-          .map((t) =>
-            JSON.stringify({
-              name: t.name,
-              prompt: t.prompt,
-              ddl: t.ddl,
-            })
-          )
-          .join('\n')}`,
-      }
-    );
-  } else {
     inputMessages.push({
-      role: 'system',
-      content: warehouseAISystemPrompt({
-        needGetContext: true,
-        tools: aiTools,
-      }),
+      role: 'assistant',
+      content: `Current Database tables structure is:\n${tables
+        .map((t) =>
+          JSON.stringify({
+            name: t.name,
+            prompt: t.prompt,
+            ddl: t.ddl,
+          })
+        )
+        .join('\n')}`,
     });
   }
 

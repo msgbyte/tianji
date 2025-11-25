@@ -10,17 +10,9 @@ import { WarehouseDatabaseTableModelSchema } from '../../../prisma/zod/warehouse
 import {
   pingWarehouse,
   getWarehouseConnection,
-  getWarehouseScopes,
   getFieldType,
 } from '../../../model/insights/warehouse/utils.js';
 import { upsertWarehouseTable } from '../../../model/insights/warehouse/connections.js';
-import {
-  createWarehouseAITools,
-  warehouseAISystemPrompt,
-} from '../../../model/insights/warehouse/ai.js';
-import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
-import { env } from '../../../utils/env.js';
 import { logger } from '../../../utils/logger.js';
 
 export const warehouseRouter = router({

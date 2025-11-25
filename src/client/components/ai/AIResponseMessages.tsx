@@ -1,5 +1,5 @@
 import { AbstractChat, ChatStatus, UIDataTypes, UIMessage, UITools } from 'ai';
-import React from 'react';
+import React, { Fragment } from 'react';
 import {
   Message,
   MessageAction,
@@ -31,8 +31,8 @@ export const AIResponseMessages: React.FC<AIResponseMessagesProps> = React.memo(
           const isLastMessage = messageIndex === messages.length - 1;
 
           return (
-            <>
-              <Message from={message.role} key={message.id}>
+            <Fragment key={message.id}>
+              <Message from={message.role}>
                 <MessageContent
                   className={message.role === 'assistant' ? 'w-full' : 'w-auto'}
                 >
@@ -71,7 +71,7 @@ export const AIResponseMessages: React.FC<AIResponseMessagesProps> = React.memo(
                     </MessageAction>
                   </MessageActions>
                 )}
-            </>
+            </Fragment>
           );
         })}
 

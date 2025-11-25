@@ -1,5 +1,5 @@
 import React from 'react';
-import { LuCircleAlert } from 'react-icons/lu';
+import { LuCircleAlert, LuSparkles } from 'react-icons/lu';
 import { SimpleContextUsage } from '../ai-elements/context';
 import {
   Conversation,
@@ -30,7 +30,7 @@ interface AIChatbotProps {
   input: string;
   setInput: (input: string) => void;
   placeholder?: string;
-  usage?: LanguageModelUsage;
+  usage?: LanguageModelUsage | null;
   isDisabled?: boolean;
   suggestions?: string[];
   alert?: React.ReactNode;
@@ -61,6 +61,24 @@ export const AIChatbot: React.FC<AIChatbotProps> = React.memo((props) => {
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
+
+      {props.messages.length === 0 && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+          <div className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full">
+            <LuSparkles className="h-8 w-8" />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-lg font-semibold">
+              {t('Use AI to improve your work')}
+            </h4>
+            <p className="text-muted-foreground max-w-sm text-sm">
+              {t(
+                'Leverage AI to generate SQL queries, gain insights, and enhance your productivity. Describe your data analysis needs and let AI assist you effortlessly.'
+              )}
+            </p>
+          </div>
+        </div>
+      )}
 
       {props.error && (
         <div className="p-3">

@@ -32,6 +32,7 @@ interface SQLEditorProps {
   onExecuteLine?: (lineNumber: number, sql: string) => void | Promise<void>;
   enableRunButton?: boolean;
   executingLine?: number | null;
+  onSelectSqlChange?: (lineNumber: number, sql: string) => void;
 }
 
 export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
@@ -41,11 +42,13 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
     enableRunButton = false,
     onExecuteLine,
     executingLine = null,
+    onSelectSqlChange,
   } = props;
   const colorScheme = useTheme();
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const lastSelectedLineRef = useRef<number | null>(null);
 
   const registerSQLCompletions = useEvent((monaco: Monaco) => {
     return createSQLCompletionProvider(monaco, tables);
@@ -77,6 +80,36 @@ export const SQLEditor: React.FC<SQLEditorProps> = React.memo((props) => {
         handleExecuteLine,
         executingLine
       );
+    }
+
+    // Listen to cursor position changes
+    if (onSelectSqlChange) {
+      editor.onDidChangeCursorPosition((e) => {
+        const lineNumber = e.position.lineNumber;
+
+        // Only trigger if line changed
+        if (lastSelectedLineRef.current === lineNumber) {
+          return;
+        }
+        lastSelectedLineRef.current = lineNumber;
+
+        const model = editor.getModel();
+        if (!model) {
+          return;
+        }
+
+        const content = model.getValue();
+        const statements = parseSQLStatements(content);
+
+        // Find the statement that contains the current line
+        const statement = statements.find(
+          (stmt) => stmt.startLine <= lineNumber && stmt.endLine >= lineNumber
+        );
+
+        if (statement) {
+          onSelectSqlChange(lineNumber, statement.sql);
+        }
+      });
     }
   });
 

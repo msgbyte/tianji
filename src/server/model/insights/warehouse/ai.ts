@@ -14,172 +14,196 @@ import {
 } from './utils.js';
 import z from 'zod';
 import { logger } from '../../../utils/logger.js';
-import { omit } from 'lodash-es';
+import { omit, pickBy } from 'lodash-es';
 import { inferTimeRangeFromDates } from '@tianji/shared';
 import dayjs from 'dayjs';
-import { chatByCountryDemo } from './__fixtures__/ai_sample.js';
-import { env } from '../../../utils/env.js';
 
-export const createWarehouseAITools = (connectionUrl?: string): ToolSet => ({
-  getWarehouseTables: tool({
-    description: 'Get the warehouse tables',
-    inputSchema: z.object({}),
-    execute: async () => {
-      return await getWarehouseTables(connectionUrl);
-    },
-  }),
-  getWarehouseTable: tool({
-    description: 'Get the warehouse table',
-    inputSchema: z.object({
-      tableName: z
-        .string()
-        .describe('The name of the table to get the description of'),
-    }),
-    execute: async ({ tableName }) => {
-      return await getWarehouseTable(tableName, connectionUrl);
-    },
-  }),
-  queryWarehouse: tool({
-    description: 'Execute a warehouse query with sql',
-    inputSchema: z.object({
-      sql: z
-        .string()
-        .describe(
-          'The SQL query to execute, any date-like field should be renamed as `date` rather than original field name. and sql should be order by date field with asc order. If a valid time range is not provided or cannot be inferred, return an error message instead of SQL. Prefer single-table queries; use JOINs only when a single table isn’t enough.'
-        ),
-      title: z
-        .string()
-        .describe(
-          'Query title, should be a human-readable title for the chart.'
-        ),
-      metrics: z
-        .array(
-          z.object({
-            // alias: z
-            //   .string()
-            //   .optional()
-            //   .describe(
-            //     'The name of the group, just for display, should be a human-readable title for the chart.'
-            //   ),
-            name: z
-              .string()
-              .describe('The key of the group, should be same with sql'),
-          })
-        )
-        .describe(
-          'The metrics to create charts from, its should be a object array, which must be have a field named as name and alias.'
-        ),
-      groups: z
-        .array(
-          z.object({
-            // name: z
-            //   .string()
-            //   .describe(
-            //     'The name of the group, just for display, should be a human-readable title for the chart.'
-            //   ),
-            value: z
-              .string()
-              .describe('The value of the group, should be same with sql'),
-          })
-        )
-        .describe(
-          'The groups to create charts from, its should be a object array, which must be have a field named as name and value. not include date field.'
-        ),
-      time: z
-        .object({
-          unit: z
-            .enum(['hour', 'day', 'month', 'year'])
-            .describe('The unit of the time range'),
-        })
-        .describe('The time range to query the warehouse.'),
-      chartType: z
-        .enum(['line', 'bar', 'pie', 'area'])
-        .default('line')
-        .describe('The best chart type to describe the query data'),
-    }),
-    outputSchema: z.object({
-      data: z
-        .array(z.object({ date: z.string() }).passthrough())
-        .describe(
-          'The data to create charts from, its should be a object array, which must be have a field named as date and other field show other info count'
-        ),
-      time: z
-        .object({
-          startAt: z
-            .number()
-            .describe('The start time of the time range, unix timestamp, ms'),
-          endAt: z
-            .number()
-            .describe('The end time of the time range, unix timestamp, ms'),
-          unit: z
-            .enum(['hour', 'day', 'month', 'year'])
-            .describe('The unit of the time range'),
-        })
-        .describe('The time range to create charts from'),
-    }),
-    execute: async ({ sql, time }) => {
-      if (!connectionUrl) {
-        throw new Error('Connection url is not set');
-      }
+export const createWarehouseAITools = (
+  toolType: 'chart' | 'sql',
+  connectionUrl?: string
+): ToolSet => {
+  const isSqlTool = toolType === 'sql';
+  const isChartTool = toolType === 'chart';
 
-      const connection = getWarehouseConnection(connectionUrl);
-
-      // Auto-add LIMIT if not present
-      let finalSql = sql.trim();
-      const trimmedSqlLower = finalSql.toLowerCase();
-      if (!trimmedSqlLower.includes('limit')) {
-        // Remove trailing semicolon if present
-        if (finalSql.endsWith(';')) {
-          finalSql = finalSql.slice(0, -1).trim();
-        }
-        finalSql = `${finalSql} LIMIT 1000`;
-      }
-
-      logger.info('[queryWarehouse]:' + finalSql);
-
-      // const [res] = env.isDev
-      //   ? [chatByCountryDemo] // TODO: remove this after testing
-      //   : await connection.query(finalSql);
-      const [res] = await connection.query(finalSql);
-
-      logger.info('[queryWarehouse] result:' + JSON.stringify(res));
-
-      const defaultStartAt = dayjs()
-        .subtract(7, 'day')
-        .startOf('day')
-        .valueOf();
-      const defaultEndAt = dayjs().endOf('day').valueOf();
-
-      if (Array.isArray(res)) {
-        const timeRange = inferTimeRangeFromDates(
-          res.map((item: any) => item.date),
-          time.unit ?? 'day'
-        );
-
-        return {
-          data: Array.isArray(res) ? res : ([] as any[]),
-          time: {
-            startAt: timeRange?.[0] ?? defaultStartAt,
-            endAt: timeRange?.[1] ?? defaultEndAt,
-            unit: time.unit ?? 'day',
-          },
-        };
-      }
-
-      return {
-        data: [],
-        time: {
-          startAt: defaultStartAt,
-          endAt: defaultEndAt,
-          unit: 'day',
+  return pickBy(
+    {
+      getWarehouseTables: tool({
+        description: 'Get the warehouse tables',
+        inputSchema: z.object({}),
+        execute: async () => {
+          return await getWarehouseTables(connectionUrl);
         },
-      };
-    },
-  }),
-});
+      }),
+      getWarehouseTable: tool({
+        description: 'Get the warehouse table',
+        inputSchema: z.object({
+          tableName: z
+            .string()
+            .describe('The name of the table to get the description of'),
+        }),
+        execute: async ({ tableName }) => {
+          return await getWarehouseTable(tableName, connectionUrl);
+        },
+      }),
+      queryWarehouse: isChartTool
+        ? tool({
+            description: 'Execute a warehouse query with sql',
+            inputSchema: z.object({
+              sql: z
+                .string()
+                .describe(
+                  'The SQL query to execute, any date-like field should be renamed as `date` rather than original field name. and sql should be order by date field with asc order. If a valid time range is not provided or cannot be inferred, return an error message instead of SQL. Prefer single-table queries; use JOINs only when a single table isn’t enough.'
+                ),
+              title: z
+                .string()
+                .describe(
+                  'Query title, should be a human-readable title for the chart.'
+                ),
+              metrics: z
+                .array(
+                  z.object({
+                    // alias: z
+                    //   .string()
+                    //   .optional()
+                    //   .describe(
+                    //     'The name of the group, just for display, should be a human-readable title for the chart.'
+                    //   ),
+                    name: z
+                      .string()
+                      .describe(
+                        'The key of the group, should be same with sql'
+                      ),
+                  })
+                )
+                .describe(
+                  'The metrics to create charts from, its should be a object array, which must be have a field named as name and alias.'
+                ),
+              groups: z
+                .array(
+                  z.object({
+                    // name: z
+                    //   .string()
+                    //   .describe(
+                    //     'The name of the group, just for display, should be a human-readable title for the chart.'
+                    //   ),
+                    value: z
+                      .string()
+                      .describe(
+                        'The value of the group, should be same with sql'
+                      ),
+                  })
+                )
+                .describe(
+                  'The groups to create charts from, its should be a object array, which must be have a field named as name and value. not include date field.'
+                ),
+              time: z
+                .object({
+                  unit: z
+                    .enum(['hour', 'day', 'month', 'year'])
+                    .describe('The unit of the time range'),
+                })
+                .describe('The time range to query the warehouse.'),
+              chartType: z
+                .enum(['line', 'bar', 'pie', 'area'])
+                .default('line')
+                .describe('The best chart type to describe the query data'),
+            }),
+            outputSchema: z.object({
+              data: z
+                .array(z.object({ date: z.string() }).passthrough())
+                .describe(
+                  'The data to create charts from, its should be a object array, which must be have a field named as date and other field show other info count'
+                ),
+              time: z
+                .object({
+                  startAt: z
+                    .number()
+                    .describe(
+                      'The start time of the time range, unix timestamp, ms'
+                    ),
+                  endAt: z
+                    .number()
+                    .describe(
+                      'The end time of the time range, unix timestamp, ms'
+                    ),
+                  unit: z
+                    .enum(['hour', 'day', 'month', 'year'])
+                    .describe('The unit of the time range'),
+                })
+                .describe('The time range to create charts from'),
+            }),
+            execute: async ({ sql, time }) => {
+              if (!connectionUrl) {
+                throw new Error('Connection url is not set');
+              }
 
-// Default tools for backward compatibility
-export const warehouseAITools = createWarehouseAITools();
+              const connection = getWarehouseConnection(connectionUrl);
+
+              // Auto-add LIMIT if not present
+              let finalSql = sql.trim();
+              const trimmedSqlLower = finalSql.toLowerCase();
+              if (!trimmedSqlLower.includes('limit')) {
+                // Remove trailing semicolon if present
+                if (finalSql.endsWith(';')) {
+                  finalSql = finalSql.slice(0, -1).trim();
+                }
+                finalSql = `${finalSql} LIMIT 1000`;
+              }
+
+              logger.info('[queryWarehouse]:' + finalSql);
+
+              // const [res] = env.isDev
+              //   ? [chatByCountryDemo] // TODO: remove this after testing
+              //   : await connection.query(finalSql);
+              const [res] = await connection.query(finalSql);
+
+              logger.info('[queryWarehouse] result:' + JSON.stringify(res));
+
+              const defaultStartAt = dayjs()
+                .subtract(7, 'day')
+                .startOf('day')
+                .valueOf();
+              const defaultEndAt = dayjs().endOf('day').valueOf();
+
+              if (Array.isArray(res)) {
+                const timeRange = inferTimeRangeFromDates(
+                  res.map((item: any) => item.date),
+                  time.unit ?? 'day'
+                );
+
+                return {
+                  data: Array.isArray(res) ? res : ([] as any[]),
+                  time: {
+                    startAt: timeRange?.[0] ?? defaultStartAt,
+                    endAt: timeRange?.[1] ?? defaultEndAt,
+                    unit: time.unit ?? 'day',
+                  },
+                };
+              }
+
+              return {
+                data: [],
+                time: {
+                  startAt: defaultStartAt,
+                  endAt: defaultEndAt,
+                  unit: 'day',
+                },
+              };
+            },
+          })
+        : undefined,
+      generateSql: isSqlTool
+        ? tool({
+            description: 'Generate a SQL query',
+            inputSchema: z.object({
+              sql: z.string().describe('The SQL query to generate'),
+            }),
+          })
+        : undefined,
+    },
+    (value, key) => value !== undefined
+  );
+};
 
 export const warehouseAISystemPrompt = ({
   needGetContext,
@@ -188,7 +212,7 @@ export const warehouseAISystemPrompt = ({
   needGetContext: boolean;
   tools?: ToolSet;
 }) => {
-  const toolSet = tools || warehouseAITools;
+  const toolSet = tools || createWarehouseAITools('chart');
   return `
 You are a helpful assistant that can help with tasks related to the warehouse.
 You can use the following tools to help the user:

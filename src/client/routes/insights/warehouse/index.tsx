@@ -127,17 +127,6 @@ function PageComponent() {
     isDisabled: databaseStatus.isDisabled,
   });
 
-  const handleClickSendButton = useEvent(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      if (status === 'streaming') {
-        stop();
-        return;
-      }
-
-      handleSend(e);
-    }
-  );
-
   // Wrapped setter that saves to storage
   const setSelectedScopes = useEvent(
     (
@@ -451,13 +440,13 @@ function PageComponent() {
                       ? t('Please select tables from a single database')
                       : ''
                 }
-                usage={usage ?? undefined}
+                usage={usage}
                 isDisabled={databaseStatus.isDisabled}
                 suggestions={suggestions}
                 alert={alert}
                 selectedContext={selectedContext}
                 tools={tableSelector}
-                onSubmit={handleClickSendButton}
+                onSubmit={handleSend}
                 onReset={handleReset}
                 onRegenerate={handleRegenerate}
                 onAddToolResult={addToolResult}

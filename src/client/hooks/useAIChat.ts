@@ -2,6 +2,7 @@ import { useChat } from '@ai-sdk/react';
 import {
   ChatInit,
   DefaultChatTransport,
+  HttpChatTransportInitOptions,
   LanguageModelUsage,
   lastAssistantMessageIsCompleteWithToolCalls,
   UIMessage,
@@ -19,6 +20,8 @@ interface UseAIChatOptions {
    * API endpoint for the chat
    */
   apiEndpoint: string;
+
+  transportOptions?: Omit<HttpChatTransportInitOptions<UIMessage>, 'api'>;
 
   /**
    * Custom tool call handler
@@ -53,6 +56,7 @@ interface UseAIChatOptions {
  */
 export function useAIChat({
   apiEndpoint,
+  transportOptions,
   onToolCall,
   initialMessages,
   onMessagesUpdate,
@@ -73,9 +77,10 @@ export function useAIChat({
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
+        ...transportOptions,
         api: apiEndpoint,
       }),
-    [apiEndpoint]
+    [apiEndpoint, transportOptions]
   );
 
   // Initialize chat with AI SDK
