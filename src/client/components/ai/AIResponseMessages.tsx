@@ -15,7 +15,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 interface AIResponseMessagesProps {
   messages: UIMessage<unknown, UIDataTypes, UITools>[];
   status: ChatStatus;
-  onRegenerate: () => void;
+  onRegenerate?: () => void;
   onAddToolResult: (
     result: Parameters<AbstractChat<UIMessage>['addToolResult']>[0]
   ) => void;

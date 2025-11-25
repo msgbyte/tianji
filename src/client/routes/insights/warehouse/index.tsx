@@ -18,21 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { useEvent } from '@/hooks/useEvent';
 import { useWarehouseAIChat, WarehouseScope } from '@/hooks/useWarehouseAIChat';
 import { useMemo, useState, useEffect } from 'react';
-import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
-import {
-  Conversation,
-  ConversationContent,
-  ConversationScrollButton,
-} from '@/components/ai-elements/conversation';
-import { AIResponseMessages } from '@/components/ai/AIResponseMessages';
 import { WarehouseChartBlock } from '@/components/insights/WarehouseChartBlock';
-import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-} from '@/components/ai-elements/prompt-input';
 import {
   Popover,
   PopoverContent,
@@ -46,18 +32,8 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Context,
-  ContextCacheUsage,
-  ContextContent,
-  ContextContentBody,
-  ContextContentHeader,
-  ContextInputUsage,
-  ContextOutputUsage,
-  ContextReasoningUsage,
-  ContextTrigger,
-} from '@/components/ai-elements/context';
 import { useGlobalConfig } from '@/hooks/useConfig';
+import { AIChatbot } from '@/components/ai/AIChatbot';
 
 export const Route = createFileRoute('/insights/warehouse/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -201,6 +177,163 @@ function PageComponent() {
     navigate({ to: '/insights/warehouse/connections' });
   });
 
+  const tableSelector = (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="icon" Icon={LuDatabase} />
+      </PopoverTrigger>
+      <PopoverContent className="w-[420px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={t('Filter tables...')} />
+          <CommandList>
+            <CommandEmpty>{t('No connection found')}</CommandEmpty>
+            <CommandGroup heading={t('Databases')}>
+              {databases?.map((db) => (
+                <CommandItem
+                  key={db.id}
+                  value={db.id}
+                  keywords={[db.name]}
+                  onSelect={() => {
+                    setSelectedScopes((prev) => {
+                      const isChecked = prev.some(
+                        (p) => p.type === 'database' && p.id === db.id
+                      );
+                      if (isChecked) {
+                        return prev.filter(
+                          (p) => !(p.type === 'database' && p.id === db.id)
+                        );
+                      } else {
+                        return [
+                          ...prev,
+                          {
+                            type: 'database',
+                            id: db.id,
+                            name: db.name,
+                          },
+                        ];
+                      }
+                    });
+                    setOpen(false);
+                  }}
+                >
+                  {db.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+
+            <CommandGroup heading={t('Tables')}>
+              {tables?.map((tb) => (
+                <CommandItem
+                  key={tb.id}
+                  value={tb.id}
+                  keywords={[tb.name]}
+                  onSelect={() => {
+                    setSelectedScopes((prev) => {
+                      const isChecked = prev.some(
+                        (p) => p.type === 'table' && p.id === tb.id
+                      );
+
+                      if (isChecked) {
+                        return prev.filter(
+                          (p) => !(p.type === 'table' && p.id === tb.id)
+                        );
+                      } else {
+                        return [
+                          ...prev,
+                          {
+                            type: 'table',
+                            id: tb.id,
+                            name: tb.name,
+                            databaseId: tb.databaseId,
+                          },
+                        ];
+                      }
+                    });
+                    setOpen(false);
+                  }}
+                >
+                  {tb.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+
+  const alert = (
+    <>
+      {databaseStatus.hasNoDatabases && (
+        <Alert className="mb-3">
+          <LuCircleAlert className="h-4 w-4" />
+          <AlertTitle>{t('No databases configured')}</AlertTitle>
+          <AlertDescription>
+            <div>{t('Please configure a database connection first.')}</div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              onClick={handleNavigateToConnections}
+            >
+              {t('Configure Database')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {!databaseStatus.hasNoDatabases && databaseStatus.hasNoActiveScopes && (
+        <Alert className="mb-3">
+          <LuCircleAlert className="h-4 w-4" />
+          <AlertTitle>{t('No database or table selected')}</AlertTitle>
+          <AlertDescription>
+            {t('Please select a database or table to start querying.')}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {databaseStatus.isMultiDatabase && (
+        <Alert variant="destructive" className="mb-3">
+          <LuCircleAlert className="h-4 w-4" />
+          <AlertTitle>{t('Cross-database query disabled')}</AlertTitle>
+          <AlertDescription>
+            {t('Cannot query across multiple databases simultaneously.')}
+          </AlertDescription>
+        </Alert>
+      )}
+    </>
+  );
+
+  const selectedContext = (
+    <div className="mb-2">
+      {selectedScopes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {selectedScopes.map((s) => (
+            <Badge
+              key={`${s.type}-${s.id}`}
+              variant="secondary"
+              className="gap-1"
+            >
+              {s.type === 'database' ? t('DB') : t('Table')}: {s.name}
+              <button
+                type="button"
+                className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                onClick={() =>
+                  setSelectedScopes((prev) =>
+                    prev.filter((p) => !(p.type === s.type && p.id === s.id))
+                  )
+                }
+                aria-label={t('Remove')}
+              >
+                ×
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <CommonWrapper
       header={
@@ -301,278 +434,32 @@ function PageComponent() {
               </div>
               <div className="border-t border-zinc-200 dark:border-zinc-800" />
 
-              <Conversation>
-                <ConversationContent className="space-y-2">
-                  <AIResponseMessages
-                    messages={messages}
-                    status={status}
-                    onRegenerate={handleRegenerate}
-                    onAddToolResult={addToolResult}
-                  />
-                </ConversationContent>
-                <ConversationScrollButton />
-              </Conversation>
-
-              {error && (
-                <div className="p-3">
-                  <Alert variant="destructive">
-                    <LuCircleAlert className="h-4 w-4" />
-                    <AlertTitle>{t('An error occurred.')}</AlertTitle>
-                    <AlertDescription>{String(error)}</AlertDescription>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={handleReset}
-                      >
-                        {t('Retry')}
-                      </Button>
-                    </div>
-                  </Alert>
-                </div>
-              )}
-
-              {!databaseStatus.isDisabled && (
-                <Suggestions className="p-3 pb-0">
-                  {suggestions.map((suggestion) => (
-                    <Suggestion
-                      key={suggestion}
-                      onClick={handleSuggestionClick}
-                      suggestion={suggestion}
-                    />
-                  ))}
-                </Suggestions>
-              )}
-
-              <div className="p-3">
-                {databaseStatus.hasNoDatabases && (
-                  <Alert className="mb-3">
-                    <LuCircleAlert className="h-4 w-4" />
-                    <AlertTitle>{t('No databases configured')}</AlertTitle>
-                    <AlertDescription>
-                      <div>
-                        {t('Please configure a database connection first.')}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2"
-                        onClick={handleNavigateToConnections}
-                      >
-                        {t('Configure Database')}
-                      </Button>
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {!databaseStatus.hasNoDatabases &&
-                  databaseStatus.hasNoActiveScopes && (
-                    <Alert className="mb-3">
-                      <LuCircleAlert className="h-4 w-4" />
-                      <AlertTitle>
-                        {t('No database or table selected')}
-                      </AlertTitle>
-                      <AlertDescription>
-                        {t(
-                          'Please select a database or table to start querying.'
-                        )}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                {databaseStatus.isMultiDatabase && (
-                  <Alert variant="destructive" className="mb-3">
-                    <LuCircleAlert className="h-4 w-4" />
-                    <AlertTitle>
-                      {t('Cross-database query disabled')}
-                    </AlertTitle>
-                    <AlertDescription>
-                      {t(
-                        'Cannot query across multiple databases simultaneously.'
-                      )}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="mb-2">
-                  {selectedScopes.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {selectedScopes.map((s) => (
-                        <Badge
-                          key={`${s.type}-${s.id}`}
-                          variant="secondary"
-                          className="gap-1"
-                        >
-                          {s.type === 'database' ? t('DB') : t('Table')}:{' '}
-                          {s.name}
-                          <button
-                            type="button"
-                            className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                            onClick={() =>
-                              setSelectedScopes((prev) =>
-                                prev.filter(
-                                  (p) => !(p.type === s.type && p.id === s.id)
-                                )
-                              )
-                            }
-                            aria-label={t('Remove')}
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {usage && status === 'ready' && messages.length > 0 && (
-                  <div className="relative">
-                    <div className="absolute -top-10 right-0 px-4 py-1 text-right text-xs text-opacity-40">
-                      <Context
-                        maxTokens={ai.contextWindow}
-                        usage={usage}
-                        usedTokens={usage.totalTokens ?? 0}
-                      >
-                        <ContextTrigger />
-                        <ContextContent>
-                          <ContextContentHeader />
-                          <ContextContentBody>
-                            <ContextInputUsage />
-                            <ContextOutputUsage />
-                            <ContextReasoningUsage />
-                            <ContextCacheUsage />
-                          </ContextContentBody>
-                        </ContextContent>
-                      </Context>
-                    </div>
-                  </div>
-                )}
-
-                <PromptInput onSubmit={handleClickSendButton}>
-                  <PromptInputTextarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    disabled={databaseStatus.isDisabled}
-                    placeholder={
-                      databaseStatus.hasNoDatabases
-                        ? t('Please configure a database first')
-                        : databaseStatus.isMultiDatabase
-                          ? t('Please select tables from a single database')
-                          : ''
-                    }
-                  />
-                  <PromptInputToolbar>
-                    <PromptInputTools>
-                      <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            Icon={LuDatabase}
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[420px] p-0" align="start">
-                          <Command>
-                            <CommandInput placeholder="Filter status..." />
-                            <CommandList>
-                              <CommandEmpty>
-                                {t('No connection found')}
-                              </CommandEmpty>
-                              <CommandGroup heading={t('Databases')}>
-                                {databases?.map((db) => (
-                                  <CommandItem
-                                    key={db.id}
-                                    value={db.id}
-                                    keywords={[db.name]}
-                                    onSelect={() => {
-                                      setSelectedScopes((prev) => {
-                                        const isChecked = prev.some(
-                                          (p) =>
-                                            p.type === 'database' &&
-                                            p.id === db.id
-                                        );
-                                        if (isChecked) {
-                                          return prev.filter(
-                                            (p) =>
-                                              !(
-                                                p.type === 'database' &&
-                                                p.id === db.id
-                                              )
-                                          );
-                                        } else {
-                                          return [
-                                            ...prev,
-                                            {
-                                              type: 'database',
-                                              id: db.id,
-                                              name: db.name,
-                                            },
-                                          ];
-                                        }
-                                      });
-                                      setOpen(false);
-                                    }}
-                                  >
-                                    {db.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-
-                              <CommandGroup heading={t('Tables')}>
-                                {tables?.map((tb) => (
-                                  <CommandItem
-                                    key={tb.id}
-                                    value={tb.id}
-                                    keywords={[tb.name]}
-                                    onSelect={() => {
-                                      setSelectedScopes((prev) => {
-                                        const isChecked = prev.some(
-                                          (p) =>
-                                            p.type === 'table' && p.id === tb.id
-                                        );
-
-                                        if (isChecked) {
-                                          return prev.filter(
-                                            (p) =>
-                                              !(
-                                                p.type === 'table' &&
-                                                p.id === tb.id
-                                              )
-                                          );
-                                        } else {
-                                          return [
-                                            ...prev,
-                                            {
-                                              type: 'table',
-                                              id: tb.id,
-                                              name: tb.name,
-                                              databaseId: tb.databaseId,
-                                            },
-                                          ];
-                                        }
-                                      });
-                                      setOpen(false);
-                                    }}
-                                  >
-                                    {tb.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </PromptInputTools>
-                    <PromptInputSubmit
-                      disabled={
-                        !input &&
-                        ['ready', 'submitted', 'error'].includes(status)
-                      }
-                      status={status}
-                    />
-                  </PromptInputToolbar>
-                </PromptInput>
-              </div>
+              <AIChatbot
+                className="flex-1 overflow-hidden"
+                messages={messages}
+                status={status}
+                input={input}
+                error={error}
+                setInput={setInput}
+                placeholder={
+                  databaseStatus.hasNoDatabases
+                    ? t('Please configure a database first')
+                    : databaseStatus.isMultiDatabase
+                      ? t('Please select tables from a single database')
+                      : ''
+                }
+                usage={usage ?? undefined}
+                isDisabled={databaseStatus.isDisabled}
+                suggestions={suggestions}
+                alert={alert}
+                selectedContext={selectedContext}
+                tools={tableSelector}
+                onSubmit={handleClickSendButton}
+                onReset={handleReset}
+                onRegenerate={handleRegenerate}
+                onAddToolResult={addToolResult}
+                onSuggestionClick={handleSuggestionClick}
+              />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

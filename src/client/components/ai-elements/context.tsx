@@ -408,3 +408,22 @@ const TokensWithCost = ({
     </span>
   );
 };
+
+export const SimpleContextUsage = (
+  props: Pick<ContextProps, 'maxTokens' | 'usage' | 'usedTokens'>
+) => {
+  return (
+    <Context {...props}>
+      <ContextTrigger />
+      <ContextContent>
+        <ContextContentHeader />
+        <ContextContentBody>
+          <ContextInputUsage />
+          <ContextOutputUsage />
+          <ContextReasoningUsage />
+          <ContextCacheUsage />
+        </ContextContentBody>
+      </ContextContent>
+    </Context>
+  );
+};
