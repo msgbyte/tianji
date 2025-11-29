@@ -1,5 +1,23 @@
 
 
+## [1.30.16](https://github.com/msgbyte/tianji/compare/v1.30.15...v1.30.16) (2025-11-29)
+
+### Features
+
+* add toolType as useAIChat feature, and add sql chat which can help user generate sql which easy to query ([2dd3ea8](https://github.com/msgbyte/tianji/commit/2dd3ea83af4dd21a0fd802c5a20aa912362e9593))
+
+### Bug Fixes
+
+* fix a bug which calc incorrect survey count ([e550e9c](https://github.com/msgbyte/tianji/commit/e550e9ccca292c6cc6a830e72c939b81b42148c2))
+* migrate cron runner status to cache manager to avoid multi-node async issue ([5a8f85c](https://github.com/msgbyte/tianji/commit/5a8f85c5422c2f83864c9c31eecb57dfc3ac61dd))
+
+### Others
+
+* extract common aichatbot component which ready for reuse for other ai chat bot feature ([dde5219](https://github.com/msgbyte/tianji/commit/dde52192ba484b476c2ac834fba3e46a299bdffc))
+* improve email display for non-email ([76c3802](https://github.com/msgbyte/tianji/commit/76c3802a2fe57a6468ec090ff16e84d4e802a137))
+* rename warehouse insight hooks ([2bf0c61](https://github.com/msgbyte/tianji/commit/2bf0c619b927420cb2038f0b85a3a48ba76a70c4))
+* update translation ([de3401d](https://github.com/msgbyte/tianji/commit/de3401d8641ea1efe05f76d94aa1534f64ebd471))
+
 ## [1.30.15](https://github.com/msgbyte/tianji/compare/v1.30.14...v1.30.15) (2025-11-24)
 
 ### Others
