@@ -105,9 +105,18 @@ export function useWorkspaceMembers() {
         header: t('Email'),
         size: 130,
         cell: (props) => {
+          const email = props.getValue();
+
+          let emailEl: React.ReactNode = <span>{email}</span>;
+          if (email === null) {
+            emailEl = <span className="text-gray-500">(null)</span>;
+          } else if (String(email).endsWith('@tianji.com')) {
+            emailEl = <span className="text-gray-500">{t('(Internal)')}</span>;
+          }
+
           return (
             <span>
-              {props.getValue()}
+              {emailEl}
               {props.row.original.user.emailVerified && (
                 <Badge className="ml-1">{t('Verified')}</Badge>
               )}
