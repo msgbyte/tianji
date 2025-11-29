@@ -10,13 +10,13 @@ import { createAuditLog } from '../auditLog.js';
 import dayjs from 'dayjs';
 import { get } from 'lodash-es';
 import { withDistributedLock } from '../../cache/distributedLock.js';
+import { getCacheManager } from '../../cache/index.js';
 
 /**
  * Class which actually runs worker cron jobs
  */
 export class WorkerCronRunner {
   private cronJob: Cron | null = null;
-  private isStopped = false;
 
   constructor(
     public workspace: Workspace,
@@ -100,14 +100,15 @@ export class WorkerCronRunner {
     }
 
     if (this.cronJob) {
-      this.stopCron();
+      await this.stopCron();
     }
 
     try {
       this.cronJob = new Cron(
         worker.cronExpression,
         async () => {
-          if (this.isStopped) {
+          const isStopped = await this.getIsStopped();
+          if (isStopped) {
             return;
           }
 
@@ -125,7 +126,7 @@ export class WorkerCronRunner {
         }
       );
 
-      this.isStopped = false;
+      await this.setIsStopped(false);
 
       logger.info(
         `[Worker Cron] Started cron job for worker ${worker.name}(${worker.id}) with expression: ${worker.cronExpression}`
@@ -156,10 +157,10 @@ export class WorkerCronRunner {
   /**
    * Stop cron job for this worker
    */
-  stopCron() {
+  async stopCron() {
     const worker = this.worker;
 
-    this.isStopped = true;
+    await this.setIsStopped(true);
 
     if (this.cronJob) {
       this.cronJob.stop();
@@ -175,7 +176,7 @@ export class WorkerCronRunner {
    * Restart cron job
    */
   async restartCron() {
-    this.stopCron();
+    await this.stopCron();
     await this.startCron();
   }
 
@@ -196,7 +197,53 @@ export class WorkerCronRunner {
   /**
    * Check if cron job is running
    */
-  isRunning(): boolean {
-    return !this.isStopped && this.cronJob !== null;
+  async isRunning(): Promise<boolean> {
+    const isStopped = await this.getIsStopped();
+    return !isStopped && this.cronJob !== null;
+  }
+
+  /**
+   * Get the cache key for isStopped state
+   */
+  private getStoppedCacheKey(): string {
+    return `worker-cron-stopped:${this.worker.id}`;
+  }
+
+  /**
+   * Get isStopped state from cache
+   */
+  private async getIsStopped(): Promise<boolean> {
+    try {
+      const cacheManager = await getCacheManager();
+      const value = await cacheManager.get(this.getStoppedCacheKey());
+      return value === 'true';
+    } catch (err) {
+      logger.error(
+        `[Worker Cron] Error getting isStopped state for worker ${this.worker.id}:`,
+        err
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Set isStopped state in cache
+   */
+  private async setIsStopped(value: boolean): Promise<void> {
+    try {
+      const cacheManager = await getCacheManager();
+      if (value) {
+        // Set with no TTL (persistent until manually deleted)
+        await cacheManager.set(this.getStoppedCacheKey(), 'true');
+      } else {
+        // Remove from cache when setting to false
+        await cacheManager.delete(this.getStoppedCacheKey());
+      }
+    } catch (err) {
+      logger.error(
+        `[Worker Cron] Error setting isStopped state for worker ${this.worker.id}:`,
+        err
+      );
+    }
   }
 }

@@ -94,14 +94,14 @@ export class WorkerCronManager {
 
     // Stop and remove old runner if exists
     if (this.workerRunners[worker.id]) {
-      this.workerRunners[worker.id].stopCron();
+      await this.workerRunners[worker.id].stopCron();
       delete this.workerRunners[worker.id];
     }
 
     // Create new runner if cron is enabled
     if (worker.active && worker.enableCron && worker.cronExpression) {
       const runner = await this.createRunner(worker);
-      runner.startCron();
+      await runner.startCron();
     }
 
     return worker;
@@ -110,7 +110,7 @@ export class WorkerCronManager {
   async delete(workspaceId: string, workerId: string) {
     const runner = this.getRunner(workerId);
     if (runner) {
-      runner.stopCron();
+      await runner.stopCron();
       delete this.workerRunners[workerId];
     }
 
@@ -182,7 +182,7 @@ export class WorkerCronManager {
    */
   async createRunner(worker: FunctionWorker) {
     if (this.workerRunners[worker.id]) {
-      this.workerRunners[worker.id].stopCron();
+      await this.workerRunners[worker.id].stopCron();
     }
 
     const workspace = await prisma.workspace.findUniqueOrThrow({
@@ -235,10 +235,10 @@ export class WorkerCronManager {
   /**
    * Stop all cron jobs
    */
-  stopAll() {
-    Object.values(this.workerRunners).forEach((runner) => {
-      runner.stopCron();
-    });
+  async stopAll() {
+    await Promise.all(
+      Object.values(this.workerRunners).map((runner) => runner.stopCron())
+    );
     this.workerRunners = {};
     logger.info('All worker cron jobs stopped.');
   }
