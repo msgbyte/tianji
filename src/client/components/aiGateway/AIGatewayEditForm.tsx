@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { SecretInput } from '@/components/ui/secret-input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
@@ -90,10 +91,11 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                   <FormItem>
                     <FormLabel optional={true}>{t('Model API Key')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        {...field}
-                        value={field.value ?? ''}
+                      <SecretInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="sk-..."
+                        maskPlaceholder="••••••••••••••••"
                       />
                     </FormControl>
                     <FormDescription>
