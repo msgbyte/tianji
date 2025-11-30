@@ -131,7 +131,7 @@ export const AIGatewayQuotaStatus: React.FC<AIGatewayQuotaStatusProps> = ({
             {t('Daily Quota Status')}
           </CardTitle>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={onOpenQuotaSettings}
             className="h-6 px-2 text-xs"
