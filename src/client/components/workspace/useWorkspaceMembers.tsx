@@ -110,7 +110,7 @@ export function useWorkspaceMembers() {
           let emailEl: React.ReactNode = <span>{email}</span>;
           if (email === null) {
             emailEl = <span className="text-gray-500">(null)</span>;
-          } else if (String(email).endsWith('@tianji.com')) {
+          } else if (String(email).endsWith('@auth.tianji.com')) {
             emailEl = <span className="text-gray-500">{t('(Internal)')}</span>;
           }
 
