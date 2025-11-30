@@ -1,5 +1,15 @@
 
 
+## [1.30.17](https://github.com/msgbyte/tianji/compare/v1.30.16...v1.30.17) (2025-11-30)
+
+### Features
+
+* add secret input for secret key sense ([b0677b8](https://github.com/msgbyte/tianji/commit/b0677b89a8794a6fbbb797036afb10dff4c33717))
+
+### Others
+
+* change style of quota setting to improve style of ai gateway ([06b0091](https://github.com/msgbyte/tianji/commit/06b00916b5570e93843c001a7398b3fe97be7aee))
+
 ## [1.30.16](https://github.com/msgbyte/tianji/compare/v1.30.15...v1.30.16) (2025-11-29)
 
 ### Features
