@@ -1,5 +1,11 @@
 
 
+## [1.30.18](https://github.com/msgbyte/tianji/compare/v1.30.17...v1.30.18) (2025-12-01)
+
+### Others
+
+* fix email not match issue ([5bd2e06](https://github.com/msgbyte/tianji/commit/5bd2e06ac7ebda8c6bed685faa4732f3937bf8c6))
+
 ## [1.30.17](https://github.com/msgbyte/tianji/compare/v1.30.16...v1.30.17) (2025-11-30)
 
 ### Features
