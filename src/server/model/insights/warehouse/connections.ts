@@ -1,5 +1,5 @@
 import { prisma } from '../../_client.js';
-import { getWarehouseTables } from './utils.js';
+import { getWarehouseTables, type WarehouseDriver } from './utils.js';
 
 /**
  * Upsert warehouse table records by database id and connection uri.
@@ -11,14 +11,16 @@ export async function upsertWarehouseTable(
   return await prisma.$transaction(async (tx) => {
     const database = await tx.warehouseDatabase.findUnique({
       where: { id: databaseId },
-      select: { id: true, workspaceId: true },
+      select: { id: true, workspaceId: true, dbDriver: true },
     });
     if (!database) {
       throw new Error('Warehouse database not found');
     }
 
+    const driver = (database.dbDriver || 'mysql') as WarehouseDriver;
+
     const [liveTables, existing] = await Promise.all([
-      getWarehouseTables(connectionUri),
+      getWarehouseTables(connectionUri, driver),
       tx.warehouseDatabaseTable.findMany({
         where: { workspaceId: database.workspaceId, databaseId: database.id },
         select: { id: true, name: true },

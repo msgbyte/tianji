@@ -10,10 +10,15 @@ import { WarehouseDatabaseTableModelSchema } from '../../../prisma/zod/warehouse
 import {
   pingWarehouse,
   getWarehouseConnection,
-  getFieldType,
+  getMysqlFieldType,
+  getPostgresqlFieldType,
+  extractSchemaFromUrl,
+  type WarehouseDriver,
 } from '../../../model/insights/warehouse/utils.js';
 import { upsertWarehouseTable } from '../../../model/insights/warehouse/connections.js';
 import { logger } from '../../../utils/logger.js';
+
+const warehouseDriverSchema = z.enum(['mysql', 'postgresql']);
 
 export const warehouseRouter = router({
   database: router({
@@ -74,14 +79,17 @@ export const warehouseRouter = router({
           name: z.string(),
           description: z.string().optional().default(''),
           connectionUri: z.string().optional(),
-          dbDriver: z.string().optional().default('mysql'),
+          dbDriver: warehouseDriverSchema.optional().default('mysql'),
         })
       )
       .output(WarehouseDatebaseModelSchema)
       .mutation(async ({ input }) => {
         // only ping when connectionUri provided (create or update connection string)
         if (typeof input.connectionUri === 'string') {
-          const isHealthy = await pingWarehouse(input.connectionUri);
+          const isHealthy = await pingWarehouse(
+            input.connectionUri,
+            input.dbDriver as WarehouseDriver
+          );
           if (!isHealthy) {
             throw new Error('Warehouse connection is not healthy');
           }
@@ -226,6 +234,7 @@ export const warehouseRouter = router({
         }
 
         // Check for dangerous keywords
+        // TODO: replace check with `node-sql-parser`
         const dangerousKeywords = [
           'insert',
           'update',
@@ -233,7 +242,7 @@ export const warehouseRouter = router({
           'drop',
           'truncate',
           'alter',
-          'create',
+          'create ', // keep space to avoid conflict with `created_at` column
           'replace',
         ];
         for (const keyword of dangerousKeywords) {
@@ -252,30 +261,46 @@ export const warehouseRouter = router({
           finalSql = `${finalSql} LIMIT 1000`;
         }
 
-        // Get database connection URI
+        // Get database connection URI and driver
         const database = await prisma.warehouseDatabase.findUnique({
           where: { id: databaseId },
-          select: { connectionUri: true },
+          select: { connectionUri: true, dbDriver: true },
         });
 
         if (!database || !database.connectionUri) {
           throw new Error('Database connection not found');
         }
 
+        const driver = (database.dbDriver || 'mysql') as WarehouseDriver;
+
         // Execute query
-        const connection = getWarehouseConnection(database.connectionUri);
+        const connection = getWarehouseConnection(
+          database.connectionUri,
+          driver
+        );
 
         try {
-          const [rows, fields] = await connection.query(finalSql);
+          let columns: { name: string; type: string }[];
+          let rowsArray: any[];
+
+          if (connection.driver === 'postgresql') {
+            const result = await connection.pool.query(finalSql);
+            rowsArray = result.rows;
+            columns = result.fields.map((field) => ({
+              name: field.name,
+              type: getPostgresqlFieldType(field.dataTypeID),
+            }));
+          } else {
+            // MySQL query
+            const [rows, fields] = await connection.pool.query(finalSql);
+            rowsArray = Array.isArray(rows) ? rows : [];
+            columns = fields.map((field) => ({
+              name: field.name,
+              type: getMysqlFieldType(field.type ?? -1),
+            }));
+          }
+
           const executionTime = Date.now() - startTime;
-
-          // Extract column information
-          const columns = fields.map((field) => ({
-            name: field.name,
-            type: getFieldType(field.type ?? -1),
-          }));
-
-          const rowsArray = Array.isArray(rows) ? rows : [];
 
           return {
             columns,

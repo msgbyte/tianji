@@ -30,7 +30,7 @@ export const Route = createFileRoute('/insights/warehouse/connections/create')({
 const connectionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional().default(''),
-  dbDriver: z.enum(['mysql']),
+  dbDriver: z.enum(['mysql', 'postgresql']),
   connectionUri: z.string().min(1, 'Connection URI is required'),
 });
 
@@ -135,6 +135,7 @@ function PageComponent() {
                         >
                           <Space direction="vertical">
                             <Radio value={'mysql'}>MySQL</Radio>
+                            <Radio value={'postgresql'}>PostgreSQL</Radio>
                           </Space>
                         </Radio.Group>
                       </FormControl>

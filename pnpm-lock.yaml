@@ -936,6 +936,9 @@ importers:
       p-map:
         specifier: 4.0.0
         version: 4.0.0
+      pg:
+        specifier: ^8.13.1
+        version: 8.16.3
       ping:
         specifier: ^0.4.4
         version: 0.4.4
@@ -1039,6 +1042,9 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
+      '@types/pg':
+        specifier: ^8.11.10
+        version: 8.15.6
       '@types/ping':
         specifier: ^0.4.4
         version: 0.4.4
@@ -7201,6 +7207,9 @@ packages:
 
   '@types/pbf@3.0.5':
     resolution: {integrity: sha512-j3pOPiEcWZ34R6a6mN07mUkM4o4Lwf6hPNt8eilOeZhTFbxFXmKhvXl9Y28jotFPaI1bpPDJsbCprUoNke6OrA==}
+
+  '@types/pg@8.15.6':
+    resolution: {integrity: sha512-NoaMtzhxOrubeL/7UZuNTrejB4MPAJ0RpxZqXQf2qXuVlTPuG6Y8p4u9dKRaue4yjmC7ZhzVO2/Yyyn25znrPQ==}
 
   '@types/ping@0.4.4':
     resolution: {integrity: sha512-ifvo6w2f5eJYlXm+HiVx67iJe8WZp87sfa683nlqED5Vnt9Z93onkokNoWqOG21EaE8fMxyKPobE+mkPEyxsdw==}
@@ -16917,8 +16926,8 @@ packages:
   third-party-web@0.26.5:
     resolution: {integrity: sha512-tDuKQJUTfjvi9Fcrs1s6YAQAB9mzhTSbBZMfNgtWNmJlHuoFeXO6dzBFdGeCWRvYL50jQGK0jPsBZYxqZQJ2SA==}
 
-  third-party-web@0.28.0:
-    resolution: {integrity: sha512-4P798O67JmIKRJfJ1HSOkIsZrx2+FuaN2jTQX+imHXFPbGp17KSMDabYxrRT011B3gBzaoHFhUkBlEkNZN8vuQ==}
+  third-party-web@0.29.0:
+    resolution: {integrity: sha512-nBDSJw5B7Sl1YfsATG2XkW5qgUPODbJhXw++BKygi9w6O/NKS98/uY/nR/DxDq2axEjL6halHW1v+jhm/j1DBQ==}
 
   throat@5.0.0:
     resolution: {integrity: sha512-fcwX4mndzpLQKBS1DVYhGAcYaYt7vsHNIvQV+WXMvnow5cgjPphq5CaayLaGsjRdSCKZFNGt7/GYAuXaNOiYCA==}
@@ -22561,7 +22570,7 @@ snapshots:
 
   '@paulirish/trace_engine@0.0.44':
     dependencies:
-      third-party-web: 0.28.0
+      third-party-web: 0.29.0
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -26201,6 +26210,12 @@ snapshots:
   '@types/parse5@6.0.3': {}
 
   '@types/pbf@3.0.5': {}
+
+  '@types/pg@8.15.6':
+    dependencies:
+      '@types/node': 22.13.11
+      pg-protocol: 1.10.3
+      pg-types: 2.2.0
 
   '@types/ping@0.4.4': {}
 
@@ -36437,7 +36452,7 @@ snapshots:
 
   rc-util@5.44.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
-      '@babel/runtime': 7.28.3
+      '@babel/runtime': 7.28.4
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-is: 18.3.1
@@ -38737,7 +38752,7 @@ snapshots:
 
   third-party-web@0.26.5: {}
 
-  third-party-web@0.28.0: {}
+  third-party-web@0.29.0: {}
 
   throat@5.0.0: {}
 
