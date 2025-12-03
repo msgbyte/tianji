@@ -17,6 +17,7 @@ import {
 } from '../../../model/insights/warehouse/utils.js';
 import { upsertWarehouseTable } from '../../../model/insights/warehouse/connections.js';
 import { logger } from '../../../utils/logger.js';
+import { validateSqlIsQuery } from '../../../utils/sql.js';
 
 const warehouseDriverSchema = z.enum(['mysql', 'postgresql']);
 
@@ -233,22 +234,9 @@ export const warehouseRouter = router({
           throw new Error('Only SELECT queries are allowed');
         }
 
-        // Check for dangerous keywords
-        // TODO: replace check with `node-sql-parser`
-        const dangerousKeywords = [
-          'insert',
-          'update',
-          'delete',
-          'drop',
-          'truncate',
-          'alter',
-          'create ', // keep space to avoid conflict with `created_at` column
-          'replace',
-        ];
-        for (const keyword of dangerousKeywords) {
-          if (trimmedSql.includes(keyword)) {
-            throw new Error(`Dangerous keyword "${keyword}" is not allowed`);
-          }
+        // Check for dangerous behavior
+        if (!validateSqlIsQuery(sql)) {
+          throw new Error('Invalid SQL, should only allow SELECT statements');
         }
 
         // Auto-add LIMIT if not present

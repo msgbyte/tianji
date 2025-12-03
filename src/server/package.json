@@ -80,6 +80,7 @@
     "morgan": "^1.10.0",
     "mysql2": "^3.14.3",
     "nanoid": "^5.1.3",
+    "node-sql-parser": "^5.3.13",
     "nodemailer": "^6.10.0",
     "openai": "^4.87.3",
     "p-map": "4.0.0",
