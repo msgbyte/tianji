@@ -139,6 +139,10 @@ export const createWarehouseAITools = (
 
               const connection = getWarehouseConnection(connectionUrl);
 
+              if (connection.driver === 'postgresql') {
+                throw new Error('PostgreSQL connection is not supported yet');
+              }
+
               // Auto-add LIMIT if not present
               let finalSql = sql.trim();
               const trimmedSqlLower = finalSql.toLowerCase();
@@ -155,7 +159,8 @@ export const createWarehouseAITools = (
               // const [res] = env.isDev
               //   ? [chatByCountryDemo] // TODO: remove this after testing
               //   : await connection.query(finalSql);
-              const [res] = await connection.query(finalSql);
+
+              const [res] = await connection.pool.query(finalSql);
 
               logger.info('[queryWarehouse] result:' + JSON.stringify(res));
 

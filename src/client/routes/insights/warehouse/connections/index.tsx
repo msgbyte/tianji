@@ -32,7 +32,7 @@ type ConnectionItem = {
   id: string;
   name: string;
   description: string;
-  dbDriver: string;
+  dbDriver: 'mysql' | 'postgresql';
   createdAt: string;
   updatedAt: string;
 };
@@ -41,7 +41,7 @@ interface ConnectionFormValues {
   id?: string;
   name: string;
   description: string;
-  dbDriver: string;
+  dbDriver: 'mysql' | 'postgresql';
 }
 
 function PageComponent() {

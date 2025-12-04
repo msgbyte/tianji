@@ -397,9 +397,17 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
   async executeQuery(sql: Prisma.Sql): Promise<any[]> {
     const application = this.getApplication();
+    if (!application.databaseUrl) {
+      throw new Error('Database url is not set');
+    }
+
     const connection = getWarehouseConnection(application.databaseUrl);
 
-    const [rows] = await connection.query(
+    if (connection.driver === 'postgresql') {
+      throw new Error('PostgreSQL connection is not supported yet');
+    }
+
+    const [rows] = await connection.pool.query(
       sql.sql.replaceAll('"', '`'), // avoid mysql and pg sql syntax error about double quote
       sql.values
     );
@@ -483,10 +491,18 @@ export async function insightsLongTableWarehouseEvents(
     throw new Error(`Event table not found for application ${applicationId}`);
   }
 
+  if (!application.databaseUrl) {
+    throw new Error('Database url is not set');
+  }
+
   const connection = getWarehouseConnection(application.databaseUrl);
   const eventTable = application.eventTable;
 
-  const [rows] = await connection.query(`
+  if (connection.driver === 'postgresql') {
+    throw new Error('PostgreSQL connection is not supported yet');
+  }
+
+  const [rows] = await connection.pool.query(`
 SELECT DISTINCT event_name
 FROM (
     SELECT \`${eventTable.eventNameField}\` as event_name, \`${eventTable.dateBasedCreatedAtField ?? eventTable.createdAtField}\` as date
@@ -515,10 +531,18 @@ export async function insightsLongTableWarehouseFilterParams(
     throw new Error(`Event table not found for application ${applicationId}`);
   }
 
+  if (!application.databaseUrl) {
+    throw new Error('Database url is not set');
+  }
+
   const connection = getWarehouseConnection(application.databaseUrl);
   const eventParametersTable = application.eventParametersTable;
 
-  const [rows] = await connection.query(`
+  if (connection.driver === 'postgresql') {
+    throw new Error('PostgreSQL connection is not supported yet');
+  }
+
+  const [rows] = await connection.pool.query(`
 SELECT DISTINCT param_value
 FROM (
     SELECT \`${eventParametersTable.paramsNameField}\` as param_value, \`${eventParametersTable.dateBasedCreatedAtField ?? eventParametersTable.createdAtField}\` as date

@@ -273,9 +273,16 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
   async executeQuery(sql: Prisma.Sql): Promise<any[]> {
     const application = this.getApplication();
+    if (!application.databaseUrl) {
+      throw new Error('Database url is not set');
+    }
     const connection = getWarehouseConnection(application.databaseUrl);
 
-    const [rows] = await connection.query(
+    if (connection.driver === 'postgresql') {
+      throw new Error('PostgreSQL connection is not supported yet');
+    }
+
+    const [rows] = await connection.pool.query(
       sql.sql.replaceAll('"', '`'), // avoid mysql and pg sql syntax error about double quote
       sql.values
     );
