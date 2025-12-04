@@ -39,88 +39,85 @@ export async function getApplicationEventStats(
     throw new Error('Start date and end date are required');
   }
 
-  // Get current period stats
-  const currentStats = await prisma.$queryRaw<EventStatsQueryResultItem[]>`
-    SELECT
-      ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
-      COUNT(*) as "eventCount",
-      COUNT(DISTINCT "sessionId") as "sessionCount",
-      ${getTimestampIntervalQuery('"ApplicationEvent"."createdAt"')} as "totalTime",
-      ROUND(
-        CAST(
-          COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
-        ) /
-        NULLIF(COUNT(DISTINCT "sessionId"), 0),
-        2
-      ) as "avgEventsPerSession",
-      ROUND(
-        CAST(
-          COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN CONCAT("sessionId", ':', "screenName") ELSE NULL END) AS DECIMAL
-        ) /
-        NULLIF(COUNT(DISTINCT "sessionId"), 0),
-        2
-      ) as "avgScreensPerSession"
-    FROM "ApplicationEvent"
-    WHERE "applicationId" = ${applicationId}
-      AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
-    GROUP BY 1
-    ORDER BY 1
-  `;
-
-  // Get current period total session count
-  const currentTotalResult = await prisma.$queryRaw<
-    { totalSessionCount: bigint }[]
-  >`
-    SELECT
-      COUNT(DISTINCT "sessionId") as "totalSessionCount"
-    FROM "ApplicationEvent"
-    WHERE "applicationId" = ${applicationId}
-      AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
-  `;
-
   // Calculate previous period
   const diffInMs = endDate.getTime() - startDate.getTime();
   const prevStartDate = new Date(startDate.getTime() - diffInMs);
   const prevEndDate = new Date(endDate.getTime() - diffInMs);
 
-  // Get previous period stats
-  const prevStats = await prisma.$queryRaw<EventStatsQueryResultItem[]>`
-    SELECT
-      ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
-      COUNT(*) as "eventCount",
-      COUNT(DISTINCT "sessionId") as "sessionCount",
-      ${getTimestampIntervalQuery('"ApplicationEvent"."createdAt"')} as "totalTime",
-      ROUND(
-        CAST(
-          COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
-        ) /
-        NULLIF(COUNT(DISTINCT "sessionId"), 0),
-        2
-      ) as "avgEventsPerSession",
-      ROUND(
-        CAST(
-          COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN CONCAT("sessionId", ':', "screenName") ELSE NULL END) AS DECIMAL
-        ) /
-        NULLIF(COUNT(DISTINCT "sessionId"), 0),
-        2
-      ) as "avgScreensPerSession"
-    FROM "ApplicationEvent"
-    WHERE "applicationId" = ${applicationId}
-      AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
-    GROUP BY 1
-    ORDER BY 1
-  `;
-
-  // Get previous period total session count
-  const previousTotalResult = await prisma.$queryRaw<
-    { totalSessionCount: bigint }[]
-  >`
-    SELECT
-      COUNT(DISTINCT "sessionId") as "totalSessionCount"
-    FROM "ApplicationEvent"
-    WHERE "applicationId" = ${applicationId}
-      AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
-  `;
+  // Execute all queries in parallel
+  const [currentStats, currentTotalResult, prevStats, previousTotalResult] =
+    await Promise.all([
+      // Get current period stats
+      prisma.$queryRaw<EventStatsQueryResultItem[]>`
+        SELECT
+          ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
+          COUNT(*) as "eventCount",
+          COUNT(DISTINCT "sessionId") as "sessionCount",
+          ${getTimestampIntervalQuery('"ApplicationEvent"."createdAt"')} as "totalTime",
+          ROUND(
+            CAST(
+              COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
+            ) /
+            NULLIF(COUNT(DISTINCT "sessionId"), 0),
+            2
+          ) as "avgEventsPerSession",
+          ROUND(
+            CAST(
+              COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN CONCAT("sessionId", ':', "screenName") ELSE NULL END) AS DECIMAL
+            ) /
+            NULLIF(COUNT(DISTINCT "sessionId"), 0),
+            2
+          ) as "avgScreensPerSession"
+        FROM "ApplicationEvent"
+        WHERE "applicationId" = ${applicationId}
+          AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
+        GROUP BY 1
+        ORDER BY 1
+      `,
+      // Get current period total session count
+      prisma.$queryRaw<{ totalSessionCount: bigint }[]>`
+        SELECT
+          COUNT(DISTINCT "sessionId") as "totalSessionCount"
+        FROM "ApplicationEvent"
+        WHERE "applicationId" = ${applicationId}
+          AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
+      `,
+      // Get previous period stats
+      prisma.$queryRaw<EventStatsQueryResultItem[]>`
+        SELECT
+          ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
+          COUNT(*) as "eventCount",
+          COUNT(DISTINCT "sessionId") as "sessionCount",
+          ${getTimestampIntervalQuery('"ApplicationEvent"."createdAt"')} as "totalTime",
+          ROUND(
+            CAST(
+              COUNT(DISTINCT CONCAT("sessionId", ':', "eventName")) AS DECIMAL
+            ) /
+            NULLIF(COUNT(DISTINCT "sessionId"), 0),
+            2
+          ) as "avgEventsPerSession",
+          ROUND(
+            CAST(
+              COUNT(DISTINCT CASE WHEN "screenName" IS NOT NULL THEN CONCAT("sessionId", ':', "screenName") ELSE NULL END) AS DECIMAL
+            ) /
+            NULLIF(COUNT(DISTINCT "sessionId"), 0),
+            2
+          ) as "avgScreensPerSession"
+        FROM "ApplicationEvent"
+        WHERE "applicationId" = ${applicationId}
+          AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
+        GROUP BY 1
+        ORDER BY 1
+      `,
+      // Get previous period total session count
+      prisma.$queryRaw<{ totalSessionCount: bigint }[]>`
+        SELECT
+          COUNT(DISTINCT "sessionId") as "totalSessionCount"
+        FROM "ApplicationEvent"
+        WHERE "applicationId" = ${applicationId}
+          AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
+      `,
+    ]);
 
   // Format the results
   return {
