@@ -30,6 +30,8 @@ export async function getApplicationEventStats(
 ): Promise<{
   current: EventStatsQueryResultItem[];
   previous: EventStatsQueryResultItem[];
+  currentTotalSessionCount: number;
+  previousTotalSessionCount: number;
 }> {
   const { startDate, endDate, timezone = 'utc', unit = 'day' } = filters;
 
@@ -65,6 +67,17 @@ export async function getApplicationEventStats(
     ORDER BY 1
   `;
 
+  // Get current period total session count
+  const currentTotalResult = await prisma.$queryRaw<
+    { totalSessionCount: bigint }[]
+  >`
+    SELECT
+      COUNT(DISTINCT "sessionId") as "totalSessionCount"
+    FROM "ApplicationEvent"
+    WHERE "applicationId" = ${applicationId}
+      AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
+  `;
+
   // Calculate previous period
   const diffInMs = endDate.getTime() - startDate.getTime();
   const prevStartDate = new Date(startDate.getTime() - diffInMs);
@@ -98,6 +111,17 @@ export async function getApplicationEventStats(
     ORDER BY 1
   `;
 
+  // Get previous period total session count
+  const previousTotalResult = await prisma.$queryRaw<
+    { totalSessionCount: bigint }[]
+  >`
+    SELECT
+      COUNT(DISTINCT "sessionId") as "totalSessionCount"
+    FROM "ApplicationEvent"
+    WHERE "applicationId" = ${applicationId}
+      AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
+  `;
+
   // Format the results
   return {
     current: getDateArray(
@@ -127,6 +151,12 @@ export async function getApplicationEventStats(
       prevEndDate,
       unit,
       timezone
+    ),
+    currentTotalSessionCount: Number(
+      currentTotalResult[0]?.totalSessionCount ?? 0
+    ),
+    previousTotalSessionCount: Number(
+      previousTotalResult[0]?.totalSessionCount ?? 0
     ),
   };
 }
