@@ -1,5 +1,11 @@
 
 
+## [1.30.20](https://github.com/msgbyte/tianji/compare/v1.30.19...v1.30.20) (2025-12-04)
+
+### Bug Fixes
+
+* update connection issue for new connection logic which will parse driver ([ae4ae90](https://github.com/msgbyte/tianji/commit/ae4ae90f7e629474eda894a33e5006ed5adaeeb8))
+
 ## [1.30.19](https://github.com/msgbyte/tianji/compare/v1.30.18...v1.30.19) (2025-12-04)
 
 ### Features
