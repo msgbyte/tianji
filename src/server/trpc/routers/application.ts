@@ -322,6 +322,8 @@ export const applicationRouter = router({
       z.object({
         current: eventStatsQueryResultItemSchema.array(),
         previous: eventStatsQueryResultItemSchema.array(),
+        currentTotalSessionCount: z.number(),
+        previousTotalSessionCount: z.number(),
       })
     )
     .query(async ({ ctx, input }) => {

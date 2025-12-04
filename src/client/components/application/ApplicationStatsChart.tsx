@@ -151,8 +151,11 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
 
           <StatCard
             label={t('Sessions')}
-            curr={statsData.sessions.total}
-            diff={statsData.sessions.diff}
+            curr={data?.currentTotalSessionCount || 0}
+            diff={
+              (data?.currentTotalSessionCount || 0) -
+              (data?.previousTotalSessionCount || 0)
+            }
           />
 
           <StatCard
