@@ -1,5 +1,18 @@
 
 
+## [1.30.19](https://github.com/msgbyte/tianji/compare/v1.30.18...v1.30.19) (2025-12-04)
+
+### Features
+
+* add pg query support for sql query ([bf832ee](https://github.com/msgbyte/tianji/commit/bf832eea4bda9cfcd152b00418a44430581a8065))
+* add session count for event stats ([6a31851](https://github.com/msgbyte/tianji/commit/6a31851b8b1b16104cd7162863b1f36eac5d1c6b))
+* update ApplicationStatsChart to use new session count fields ([093aafd](https://github.com/msgbyte/tianji/commit/093aafdcd3fff0adc1f7c36b51726cc894652ad7))
+
+### Others
+
+* improve query ([8487675](https://github.com/msgbyte/tianji/commit/84876751f526daa339beed14bb7206f9f1651548))
+* improve validate sql logic to make sure its can be work in many case ([880d80d](https://github.com/msgbyte/tianji/commit/880d80d68527cd76358a78da5ec62463535838ed))
+
 ## [1.30.18](https://github.com/msgbyte/tianji/compare/v1.30.17...v1.30.18) (2025-12-01)
 
 ### Others
