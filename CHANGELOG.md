@@ -1,5 +1,11 @@
 
 
+## [1.30.22](https://github.com/msgbyte/tianji/compare/v1.30.21...v1.30.22) (2025-12-11)
+
+### Others
+
+* remove unused index ([1497f05](https://github.com/msgbyte/tianji/commit/1497f05a3f83c8884d59b7ab5dceefe0568e2d3b))
+
 ## [1.30.21](https://github.com/msgbyte/tianji/compare/v1.30.20...v1.30.21) (2025-12-11)
 
 ### Features
