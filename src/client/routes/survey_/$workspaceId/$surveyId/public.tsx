@@ -80,6 +80,8 @@ function PageComponent() {
                 .string()
                 .url(t('Invalid URL'))
                 .or(z.literal(''));
+            } else if (item.type === 'hidden') {
+              acc[item.name] = z.string().optional();
             } else {
               acc[item.name] = z.string().min(1, t('This field is required'));
             }
@@ -221,72 +223,80 @@ function PageComponent() {
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-6"
             >
-              {surveyInfo.payload.items.map((item, index) => (
-                <FormField
-                  key={item.name}
-                  control={form.control}
-                  name={item.name}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-semibold">
-                        {index + 1}. {item.label}
-                      </FormLabel>
-                      <FormControl>
-                        {item.type === 'select' && item.options ? (
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue
-                                placeholder={t('Select an option')}
+              {surveyInfo.payload.items.map((item, index) => {
+                const type = item.type;
+
+                if (type === 'hidden') {
+                  return null;
+                }
+
+                return (
+                  <FormField
+                    key={item.name}
+                    control={form.control}
+                    name={item.name}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">
+                          {index + 1}. {item.label}
+                        </FormLabel>
+                        <FormControl>
+                          {item.type === 'select' && item.options ? (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-11">
+                                <SelectValue
+                                  placeholder={t('Select an option')}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {item.options.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : item.type === 'email' ? (
+                            <>
+                              <Input
+                                type="email"
+                                placeholder={t('your.email@example.com')}
+                                className="h-11"
+                                {...field}
                               />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {item.options.map((option) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : item.type === 'email' ? (
-                          <>
-                            <Input
-                              type="email"
-                              placeholder={t('your.email@example.com')}
-                              className="h-11"
+                              <FormDescription>
+                                {t('Please enter a valid email address')}
+                              </FormDescription>
+                            </>
+                          ) : item.type === 'imageUrl' ? (
+                            <>
+                              <Input
+                                type="url"
+                                placeholder={t('https://example.com/image.jpg')}
+                                className="h-11"
+                                {...field}
+                              />
+                              <FormDescription>
+                                {t('Please enter a valid image URL')}
+                              </FormDescription>
+                            </>
+                          ) : (
+                            <Textarea
+                              placeholder={t('Enter your answer here...')}
+                              className="min-h-[100px] resize-y"
                               {...field}
                             />
-                            <FormDescription>
-                              {t('Please enter a valid email address')}
-                            </FormDescription>
-                          </>
-                        ) : item.type === 'imageUrl' ? (
-                          <>
-                            <Input
-                              type="url"
-                              placeholder={t('https://example.com/image.jpg')}
-                              className="h-11"
-                              {...field}
-                            />
-                            <FormDescription>
-                              {t('Please enter a valid image URL')}
-                            </FormDescription>
-                          </>
-                        ) : (
-                          <Textarea
-                            placeholder={t('Enter your answer here...')}
-                            className="min-h-[100px] resize-y"
-                            {...field}
-                          />
-                        )}
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
+                          )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                );
+              })}
 
               <div className="pt-4">
                 <Button
