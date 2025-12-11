@@ -260,6 +260,7 @@ export const surveyRouter = router({
     .input(
       z.object({
         name: z.string(),
+        desc: z.string().optional(),
         payload: SurveyPayloadSchema,
         feedChannelIds: z.array(z.string()),
         feedTemplate: z.string(),
@@ -271,6 +272,7 @@ export const surveyRouter = router({
       const {
         workspaceId,
         name,
+        desc,
         payload,
         feedChannelIds,
         feedTemplate,
@@ -281,6 +283,7 @@ export const surveyRouter = router({
         data: {
           workspaceId,
           name,
+          desc,
           payload,
           feedChannelIds,
           feedTemplate,
@@ -303,6 +306,7 @@ export const surveyRouter = router({
       z.object({
         surveyId: z.string(),
         name: z.string().optional(),
+        desc: z.string().optional(),
         payload: SurveyPayloadSchema.optional(),
         feedChannelIds: z.array(z.string()).optional(),
         feedTemplate: z.string().optional(),
@@ -315,6 +319,7 @@ export const surveyRouter = router({
         workspaceId,
         surveyId,
         name,
+        desc,
         payload,
         feedChannelIds,
         feedTemplate,
@@ -328,6 +333,7 @@ export const surveyRouter = router({
         },
         data: {
           name,
+          desc,
           payload,
           feedChannelIds,
           feedTemplate,
@@ -400,6 +406,7 @@ export const surveyRouter = router({
         data: {
           workspaceId,
           name,
+          desc: originalSurvey.desc,
           payload: originalSurvey.payload,
           feedChannelIds: originalSurvey.feedChannelIds,
           feedTemplate: originalSurvey.feedTemplate,

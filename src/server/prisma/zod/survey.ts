@@ -12,6 +12,7 @@ export const SurveyModelSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
   name: z.string(),
+  desc: z.string(),
   /**
    * [SurveyPayload]
    */

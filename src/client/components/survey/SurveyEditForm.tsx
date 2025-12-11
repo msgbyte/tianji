@@ -29,9 +29,11 @@ import { TipIcon } from '../TipIcon';
 import { cn } from '@/utils/style';
 import { Switch } from '../ui/switch';
 import { FeedChannelPicker } from '../feed/FeedChannelPicker';
+import { Textarea } from '../ui/textarea';
 
 const addFormSchema = z.object({
   name: z.string(),
+  desc: z.string().optional(),
   payload: z.object({
     items: z.array(
       z.object({
@@ -71,6 +73,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
       resolver: zodResolver(addFormSchema),
       defaultValues: props.defaultValues ?? {
         name: 'New Survey',
+        desc: '',
         payload: {
           items: [generateDefaultItem()],
         },
@@ -110,6 +113,23 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                     </FormControl>
                     <FormDescription>
                       {t('Survey Name to Display')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="desc"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel optional={true}>{t('Description')}</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      {t('Survey description to display on public page')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

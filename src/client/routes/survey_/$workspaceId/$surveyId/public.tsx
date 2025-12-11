@@ -209,6 +209,11 @@ function PageComponent() {
             <CardTitle className="text-3xl font-bold tracking-tight">
               {surveyInfo.name}
             </CardTitle>
+            {surveyInfo.desc && (
+              <p className="text-muted-foreground text-base">
+                {surveyInfo.desc}
+              </p>
+            )}
             <Separator className="my-2" />
             <CardDescription className="text-base">
               {t(

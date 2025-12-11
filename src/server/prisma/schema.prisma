@@ -795,6 +795,7 @@ model Survey {
   id                       String   @id @default(cuid()) @db.VarChar(30)
   workspaceId              String   @db.VarChar(30)
   name                     String
+  desc                     String   @default("")
   /// [SurveyPayload]
   /// @zod.custom(imports.SurveyPayloadSchema)
   payload                  Json     @db.Json
