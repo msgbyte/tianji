@@ -243,7 +243,7 @@ function PageComponent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-semibold">
-                          {index + 1}. {item.label}
+                          {item.label}
                         </FormLabel>
                         <FormControl>
                           {item.type === 'select' && item.options ? (
