@@ -1,5 +1,16 @@
 
 
+## [1.30.21](https://github.com/msgbyte/tianji/compare/v1.30.20...v1.30.21) (2025-12-11)
+
+### Features
+
+* add description field to survey model and update forms for input and display ([4452a5a](https://github.com/msgbyte/tianji/commit/4452a5af086b50cd10879a9699386556cb0f5c0e))
+* add hidden field which not display in survey public page ([23423cb](https://github.com/msgbyte/tianji/commit/23423cb1653f0879f5c286aff6e425d00d092029))
+
+### Document
+
+* update tianji social card ([74a9b9c](https://github.com/msgbyte/tianji/commit/74a9b9cbe4a874a499d82c1267df3b62162ec159))
+
 ## [1.30.20](https://github.com/msgbyte/tianji/compare/v1.30.19...v1.30.20) (2025-12-04)
 
 ### Bug Fixes
