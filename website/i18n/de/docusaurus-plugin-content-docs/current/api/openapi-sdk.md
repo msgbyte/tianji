@@ -1,20 +1,20 @@
 ---
 sidebar_position: 7
-_i18n_hash: f6c7dbe145cf9dcabd803f4db67fbe69
+_i18n_hash: 31c4981c02a399801d9f7185e51b5e44
 ---
-# OpenAPI SDK-Benutzerhandbuch
+# OpenAPI SDK-Nutzungsanleitung
 
-Dieses Dokument bietet detaillierte Anleitungen zur Verwendung des Tianji SDK, um OpenAPI-Schnittstellen aufzurufen und vollständigen programmatischen Zugriff auf Tianji-Dienste zu erreichen.
+Dieses Dokument bietet detaillierte Anweisungen zur Verwendung des Tianji SDKs, um OpenAPI-Schnittstellen aufzurufen und einen vollständigen programmgesteuerten Zugriff auf Tianji-Dienste zu erlangen.
 
-## Übersicht
+## Überblick
 
-Das Tianji OpenAPI SDK basiert auf einem automatisch generierten TypeScript-Client und bietet typensichere API-Aufrufmethoden. Über das SDK können Sie:
+Das Tianji OpenAPI SDK basiert auf einem automatisch generierten TypeScript-Client und bietet typsichere API-Aufrufmethoden. Über das SDK können Sie:
 
-- Workspaces und Websites verwalten
+- Arbeitsbereiche und Websites verwalten
 - Analysedaten und Statistiken abrufen
 - Überwachungsprojekte betreiben
 - Umfragen verwalten
-- Feed-Kanäle und -Ereignisse handhaben
+- Feed-Kanäle und Ereignisse handhaben
 - ...
 
 [Vollständige API-Dokumentation](/api)
@@ -52,7 +52,7 @@ async function getSystemConfig() {
   try {
     const config = await openApiClient.GlobalService.globalConfig();
     
-    console.log('Registrierung erlauben:', config.allowRegister);
+    console.log('Registrierung erlaubt:', config.allowRegister);
     console.log('KI-Funktionen aktiviert:', config.ai.enable);
     console.log('Abrechnung aktiviert:', config.enableBilling);
     

@@ -1,6 +1,6 @@
 /** @type {import('@i18next-toolkit/cli').I18nextToolkitConfig} */
 const config = {
-  locales: ['en', 'zh-CN', 'ja-JP', 'fr-FR', 'de-DE', 'pl-PL', 'pt-PT', 'ru-RU', 'tr-TR', 'id-ID'],
+  locales: ['en', 'zh-CN', 'ja-JP', 'fr-FR', 'de-DE', 'pl-PL', 'pt-PT', 'ru-RU', 'tr-TR', 'id-ID', 'es-ES'],
   verbose: true,
   namespaces: ['translation'],
   translator: {

@@ -1,27 +1,27 @@
 ---
 sidebar_position: 7
-_i18n_hash: f6c7dbe145cf9dcabd803f4db67fbe69
+_i18n_hash: 31c4981c02a399801d9f7185e51b5e44
 ---
 Panduan Penggunaan SDK OpenAPI
 
-Dokumen ini memberikan instruksi rinci tentang cara menggunakan SDK Tianji untuk memanggil antar muka OpenAPI dan mencapai akses programatis sepenuhnya ke layanan Tianji.
+Dokumen ini memberikan instruksi rinci tentang cara menggunakan SDK Tianji untuk memanggil antarmuka OpenAPI dan mencapai akses programatik lengkap ke layanan Tianji.
 
 ## Gambaran Umum
 
-SDK OpenAPI Tianji didasarkan pada klien TypeScript yang dihasilkan otomatis, menyediakan metode pemanggilan API yang aman tipe. Melalui SDK, Anda dapat:
+SDK OpenAPI Tianji didasarkan pada klien TypeScript yang dihasilkan secara otomatis, menyediakan metode pemanggilan API yang aman tipe. Melalui SDK ini, Anda dapat:
 
 - Mengelola ruang kerja dan situs web
 - Mengambil data analitik dan statistik
 - Mengoperasikan proyek pemantauan
 - Mengelola survei
-- Menangani saluran dan acara Feed
+- Menangani saluran dan acara Umpan
 - ...
 
 [Dokumentasi API Lengkap](/api)
 
-## Instalasi dan Inisialisasi
+## Pemasangan dan Inisialisasi
 
-### Instal SDK
+### Pasang SDK
 
 ```bash
 npm install tianji-client-sdk
@@ -52,7 +52,7 @@ async function getSystemConfig() {
   try {
     const config = await openApiClient.GlobalService.globalConfig();
     
-    console.log('Mengizinkan pendaftaran:', config.allowRegister);
+    console.log('Izinkan pendaftaran:', config.allowRegister);
     console.log('Fitur AI diaktifkan:', config.ai.enable);
     console.log('Penagihan diaktifkan:', config.enableBilling);
     

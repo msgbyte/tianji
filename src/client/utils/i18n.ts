@@ -10,6 +10,10 @@ export const languages = [
     key: 'de-DE',
   },
   {
+    label: 'Español',
+    key: 'es-ES',
+  },
+  {
     label: 'Français',
     key: 'fr-FR',
   },
