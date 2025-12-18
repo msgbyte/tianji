@@ -1,5 +1,16 @@
 
 
+## [1.30.23](https://github.com/msgbyte/tianji/compare/v1.30.22...v1.30.23) (2025-12-18)
+
+### Features
+
+* add es-ES language support ([5a2d52e](https://github.com/msgbyte/tianji/commit/5a2d52eac3d3428e3d4d81838a418899ac980b5d))
+
+### Others
+
+* update translation ([5f25c03](https://github.com/msgbyte/tianji/commit/5f25c03973ad5b71f4cbaf8726edf5c5e6e5ac7a))
+* update translation ([ad379df](https://github.com/msgbyte/tianji/commit/ad379df7ea839739e226fcdbaa6049eb454f0b82))
+
 ## [1.30.22](https://github.com/msgbyte/tianji/compare/v1.30.21...v1.30.22) (2025-12-11)
 
 ### Others
