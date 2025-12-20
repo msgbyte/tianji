@@ -3,6 +3,7 @@
  */
 
 import { IdentifyPayload } from './types';
+import { BatchManager, BatchItem } from './utils/batch-manager';
 
 /**
  * Application event payload interface
@@ -55,6 +56,15 @@ export interface ApplicationIdentifyPayload extends ApplicationEventPayload {
 }
 
 /**
+ * Batch request item interface
+ */
+export interface ApplicationBatchRequestItem
+  extends BatchItem<ApplicationEventPayload | ApplicationIdentifyPayload> {
+  type: 'event' | 'identify';
+  payload: ApplicationEventPayload | ApplicationIdentifyPayload;
+}
+
+/**
  * Options for application tracking
  */
 export interface ApplicationTrackingOptions {
@@ -67,11 +77,39 @@ export interface ApplicationTrackingOptions {
    * Application identifier
    */
   applicationId: string;
+  /**
+   * Batch delay in milliseconds (optional, defaults to 200ms)
+   */
+  batchDelay?: number;
+  /**
+   * Disable batch mode and send requests immediately (optional, defaults to false)
+   */
+  disableBatch?: boolean;
 }
 
 let options: ApplicationTrackingOptions | undefined;
+let batchManager: BatchManager<
+  ApplicationEventPayload | ApplicationIdentifyPayload
+> | null = null;
+
 export function initApplication(_options: ApplicationTrackingOptions) {
   options = _options;
+
+  // Initialize batch manager
+  batchManager = new BatchManager({
+    batchDelay: _options.batchDelay,
+    disableBatch: _options.disableBatch,
+    onBatchSend: async (items) => {
+      await sendBatchRequest(_options.serverUrl, items);
+    },
+    onSingleSend: async (item) => {
+      await sendSingleRequest(
+        _options.serverUrl,
+        item.type as 'event' | 'identify',
+        item.payload
+      );
+    },
+  });
 }
 
 let currentScreenName: string | undefined = undefined;
@@ -113,7 +151,7 @@ export async function reportApplicationScreenView(
     params: currentScreenParams,
   };
 
-  sendApplicationRequest(options.serverUrl, 'event', payload);
+  sendRequest('event', payload);
 }
 
 /**
@@ -142,7 +180,7 @@ export async function reportApplicationEvent(
     params: screenParams ?? currentScreenParams,
   };
 
-  sendApplicationRequest(options.serverUrl, 'event', payload);
+  sendRequest('event', payload);
 }
 
 export interface VersionPayload {
@@ -174,18 +212,28 @@ export async function identifyApplicationUser(
     data: userInfo,
   };
 
-  sendApplicationRequest(options.serverUrl, 'identify', payload);
+  sendRequest('identify', payload);
 }
 
 /**
- * Send request to Tianji application API
- *
- * @param serverUrl - Tianji server URL
- * @param type - Request type ('event' or 'identify')
- * @param payload - Request payload
- * @returns Promise with token string
+ * Send request with automatic batching
  */
-async function sendApplicationRequest(
+function sendRequest(
+  type: 'event' | 'identify',
+  payload: ApplicationEventPayload | ApplicationIdentifyPayload
+): void {
+  if (!batchManager) {
+    console.warn('Application tracking is not initialized');
+    return;
+  }
+
+  batchManager.add(type, payload);
+}
+
+/**
+ * Send single request to Tianji application API (fallback when batch is disabled)
+ */
+async function sendSingleRequest(
   serverUrl: string,
   type: 'event' | 'identify',
   payload: ApplicationEventPayload | ApplicationIdentifyPayload
@@ -209,5 +257,43 @@ async function sendApplicationRequest(
   } catch (error) {
     console.error(`Error sending application ${type}:`, error);
     return; // As event tracking SDK, should not throw error which maybe cause crash
+  }
+}
+
+/**
+ * Send batch request to Tianji application API
+ */
+async function sendBatchRequest(
+  serverUrl: string,
+  items: BatchItem[]
+): Promise<void> {
+  try {
+    const response = await fetch(`${serverUrl}/api/application/batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        events: items,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to send batch request: ${errorText}`);
+    }
+  } catch (error) {
+    console.error('Error sending batch request:', error);
+    return; // As event tracking SDK, should not throw error which maybe cause crash
+  }
+}
+
+/**
+ * Flush batch queue manually (send all pending requests immediately)
+ * Useful for ensuring events are sent before app closes
+ */
+export async function flushApplicationBatchQueue(): Promise<void> {
+  if (batchManager) {
+    await batchManager.flush();
   }
 }

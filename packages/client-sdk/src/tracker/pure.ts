@@ -4,6 +4,7 @@
  */
 
 import { IdentifyPayload } from '../types';
+import { BatchManager, BatchItem } from '../utils/batch-manager';
 
 /**
  * Website event payload interface
@@ -89,8 +90,9 @@ export interface WebsiteTrackingOptions {
 }
 
 let options: WebsiteTrackingOptions | undefined;
-let batchQueue: BatchRequestItem[] = [];
-let batchTimer: NodeJS.Timeout | number | null = null;
+let batchManager: BatchManager<
+  WebsiteEventPayload | WebsiteIdentifyPayload
+> | null = null;
 
 /**
  * Initialize website tracking
@@ -98,19 +100,21 @@ let batchTimer: NodeJS.Timeout | number | null = null;
 export function initWebsiteTracking(_options: WebsiteTrackingOptions) {
   options = _options;
 
-  // Clear any existing batch queue and timer when reinitializing
-  clearBatchQueue();
-}
-
-/**
- * Clear batch queue and timer
- */
-function clearBatchQueue() {
-  batchQueue = [];
-  if (batchTimer) {
-    clearTimeout(batchTimer as any);
-    batchTimer = null;
-  }
+  // Initialize batch manager
+  batchManager = new BatchManager({
+    batchDelay: _options.batchDelay,
+    disableBatch: _options.disableBatch,
+    onBatchSend: async (items) => {
+      await sendBatchRequest(_options.serverUrl, items);
+    },
+    onSingleSend: async (item) => {
+      await sendSingleRequest(
+        _options.serverUrl,
+        item.type as 'event' | 'identify',
+        item.payload
+      );
+    },
+  });
 }
 
 /**
@@ -229,28 +233,12 @@ function sendWebsiteRequest(
   type: 'event' | 'identify',
   payload: WebsiteEventPayload | WebsiteIdentifyPayload
 ): void {
-  if (options?.disableBatch) {
-    // Send immediately if batch mode is disabled
-    sendSingleRequest(serverUrl, type, payload);
+  if (!batchManager) {
+    console.warn('Website tracking is not initialized');
     return;
   }
 
-  // Add to batch queue
-  batchQueue.push({ type, payload });
-
-  // Send immediately if queue reaches the limit (100 events)
-  if (batchQueue.length >= 100) {
-    flushBatchQueue();
-    return;
-  }
-
-  // Start timer only if not already running (throttling behavior)
-  if (!batchTimer) {
-    const delay = options?.batchDelay || 200;
-    batchTimer = setTimeout(() => {
-      sendBatchRequest(serverUrl);
-    }, delay);
-  }
+  batchManager.add(type, payload);
 }
 
 /**
@@ -289,18 +277,11 @@ async function sendSingleRequest(
 
 /**
  * Send batch request to Tianji website API
- *
- * @param serverUrl - Tianji server URL
  */
-async function sendBatchRequest(serverUrl: string): Promise<void> {
-  if (batchQueue.length === 0) {
-    return;
-  }
-
-  const requestData = [...batchQueue];
-  batchQueue = [];
-  batchTimer = null;
-
+async function sendBatchRequest(
+  serverUrl: string,
+  items: BatchItem[]
+): Promise<void> {
   try {
     const response = await fetch(`${serverUrl}/api/website/batch`, {
       method: 'POST',
@@ -308,7 +289,7 @@ async function sendBatchRequest(serverUrl: string): Promise<void> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        events: requestData,
+        events: items,
       }),
     });
 
@@ -327,12 +308,7 @@ async function sendBatchRequest(serverUrl: string): Promise<void> {
  * Useful for ensuring events are sent before page unload
  */
 export async function flushBatchQueue(): Promise<void> {
-  if (batchTimer) {
-    clearTimeout(batchTimer as any);
-    batchTimer = null;
-  }
-
-  if (batchQueue.length > 0 && options) {
-    await sendBatchRequest(options.serverUrl);
+  if (batchManager) {
+    await batchManager.flush();
   }
 }
