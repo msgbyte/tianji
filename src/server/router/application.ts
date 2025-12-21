@@ -9,6 +9,7 @@ import {
 } from '../model/application/index.js';
 import { createToken } from '../utils/common.js';
 import { isWorkspacePaused } from '../model/billing/workspace.js';
+import { promApplicationEventCounter } from '../utils/prometheus/client.js';
 
 export const applicationRouter = Router();
 
@@ -89,6 +90,11 @@ applicationRouter.post(
     try {
       await processEvent(type, payload, session);
       const token = createToken(session);
+      promApplicationEventCounter.inc({
+        applicationId: payload.application,
+        eventType: type,
+        endpoint: 'send',
+      });
       res.send(token);
     } catch (error) {
       res.status(400).json({
@@ -141,6 +147,11 @@ applicationRouter.post(
       try {
         const result = await processEvent(event.type, event.payload, session);
         results.push({ index: i, ...result });
+        promApplicationEventCounter.inc({
+          applicationId: event.payload.application,
+          eventType: event.type,
+          endpoint: 'batch',
+        });
       } catch (error) {
         errors.push({
           index: i,

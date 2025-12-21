@@ -74,3 +74,15 @@ export const promWorkerMemoryUsage = new Prometheus.Histogram({
   labelNames: ['workerId', 'status'],
   buckets: [1024, 10240, 102400, 1048576, 5242880, 10485760],
 });
+
+export const promWebsiteEventCounter = new Prometheus.Counter({
+  name: 'tianji_website_event_counter',
+  help: 'website event counter',
+  labelNames: ['websiteId', 'eventType', 'endpoint'],
+});
+
+export const promApplicationEventCounter = new Prometheus.Counter({
+  name: 'tianji_application_event_counter',
+  help: 'application event counter',
+  labelNames: ['applicationId', 'eventType', 'endpoint'],
+});

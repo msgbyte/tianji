@@ -10,6 +10,7 @@ import {
 import { createToken } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
 import { isWorkspacePaused } from '../model/billing/workspace.js';
+import { promWebsiteEventCounter } from '../utils/prometheus/client.js';
 
 export const websiteRouter = Router();
 
@@ -134,6 +135,11 @@ websiteRouter.post(
     try {
       await processEvent(type, payload, session);
       const token = createToken(session);
+      promWebsiteEventCounter.inc({
+        websiteId: payload.website,
+        eventType: type,
+        endpoint: 'send',
+      });
       res.send(token);
     } catch (error) {
       res.status(400).json({
@@ -186,6 +192,11 @@ websiteRouter.post(
       try {
         const result = await processEvent(event.type, event.payload, session);
         results.push({ index: i, ...result });
+        promWebsiteEventCounter.inc({
+          websiteId: event.payload.website,
+          eventType: event.type,
+          endpoint: 'batch',
+        });
       } catch (error) {
         errors.push({
           index: i,
