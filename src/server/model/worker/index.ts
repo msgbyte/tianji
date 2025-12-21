@@ -4,6 +4,12 @@ import { prisma } from '../_client.js';
 import { isPlainObject } from 'lodash-es';
 import { logger } from '../../utils/logger.js';
 import { buildQueryWithCache } from '../../cache/index.js';
+import {
+  promWorkerExecutionCounter,
+  promWorkerExecutionDuration,
+  promWorkerCPUTime,
+  promWorkerMemoryUsage,
+} from '../../utils/prometheus/client.js';
 
 export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
   async (workerId: string, workspaceId: string) => {
@@ -62,6 +68,19 @@ export async function execWorker(
         : [],
     };
 
+    // Record Prometheus metrics
+    const workerIdLabel = workerId || 'anonymous';
+    const statusLabel = error ? 'Failed' : 'Success';
+
+    promWorkerExecutionCounter.labels(workerIdLabel, statusLabel).inc();
+    promWorkerExecutionDuration
+      .labels(workerIdLabel, statusLabel)
+      .observe(usage / 1000); // ms to seconds
+    promWorkerCPUTime.labels(workerIdLabel, statusLabel).observe(cpuTime);
+    promWorkerMemoryUsage
+      .labels(workerIdLabel, statusLabel)
+      .observe(used_heap_size);
+
     if (workerId) {
       const res = await prisma.functionWorkerExecution.create({
         data: payload,
@@ -73,6 +92,12 @@ export async function execWorker(
     return payload;
   } catch (e) {
     logger.error('ExecWorker error:', e);
+
+    // Record Prometheus metrics for failure
+    const workerIdLabel = workerId || 'anonymous';
+
+    promWorkerExecutionCounter.labels(workerIdLabel, 'Failed').inc();
+
     const payload = {
       workerId: workerId || '',
       status: FunctionWorkerExecutionStatus.Failed,
