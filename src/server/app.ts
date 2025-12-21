@@ -33,7 +33,11 @@ import { shortlinkRouter } from './router/shortlink.js';
 const app = express();
 
 app.set('trust proxy', true);
-app.use(prometheusApiVersion());
+app.use(
+  prometheusApiVersion({
+    metricsPath: env.observability.prometheus.metricsPath,
+  })
+);
 app.use(compression());
 app.use(
   express.json({

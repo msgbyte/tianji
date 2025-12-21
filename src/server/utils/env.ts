@@ -92,6 +92,9 @@ export const env = {
     },
   },
   observability: {
+    prometheus: {
+      metricsPath: process.env.OBSERVABILITY_PROMETHEUS_METRICS_PATH, // default is /_prom/metrics
+    },
     tianji: {
       baseUrl: process.env.OBSERVABILITY_TIANJI_BASE_URL,
       websiteId: process.env.OBSERVABILITY_TIANJI_WEBSITE_ID,
