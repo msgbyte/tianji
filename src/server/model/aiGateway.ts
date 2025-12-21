@@ -14,6 +14,7 @@ import { get } from 'lodash-es';
 import { verifyUserApiKey } from '../model/user.js';
 import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
 import { logger } from '../utils/logger.js';
+import { promAIGatewayRequestCounter } from '../utils/prometheus/client.js';
 
 export const { get: getGatewayInfoCache, del: clearGatewayInfoCache } =
   buildQueryWithCache(async (workspaceId: string, gatewayId: string) => {
@@ -113,6 +114,9 @@ export function buildOpenAIHandler(
       const modelPriceName = options.modelPriceName
         ? options.modelPriceName(modelName)
         : modelName;
+
+      // Record request count with model provider label
+      promAIGatewayRequestCounter.inc({ modelProvider });
 
       // Create payload with custom model name if specified
       const requestPayload = {

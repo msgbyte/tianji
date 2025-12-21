@@ -86,3 +86,9 @@ export const promApplicationEventCounter = new Prometheus.Counter({
   help: 'application event counter',
   labelNames: ['applicationId', 'eventType', 'endpoint'],
 });
+
+export const promAIGatewayRequestCounter = new Prometheus.Counter({
+  name: 'tianji_ai_gateway_request_total',
+  help: 'Total number of AI Gateway requests',
+  labelNames: ['modelProvider'],
+});
