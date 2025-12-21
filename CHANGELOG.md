@@ -1,5 +1,18 @@
 
 
+## [1.30.24](https://github.com/msgbyte/tianji/compare/v1.30.23...v1.30.24) (2025-12-21)
+
+### Features
+
+* **sdk:** implement batch request management for application and website tracking ([dce22c2](https://github.com/msgbyte/tianji/commit/dce22c27b70ab454bfe22d8634fa1b00fb48faff))
+
+### Others
+
+* allow custom prometheus metrics path with env ([74a5b42](https://github.com/msgbyte/tianji/commit/74a5b42724e310b534da2284731f012c4d2f39d5))
+* dump client sdk version to v1.5.0 ([269d108](https://github.com/msgbyte/tianji/commit/269d108aa9a95d9f7f3a58001eafd243f2d9815e))
+* dump react native sdk version to v1.1.0 ([ae45e2a](https://github.com/msgbyte/tianji/commit/ae45e2afa823609e07dc50e3027c9ada9c6c36b2))
+* remove migrate script for docker start ([c35671e](https://github.com/msgbyte/tianji/commit/c35671ec6442de33d407e51479217ec8553b7c20))
+
 ## [1.30.23](https://github.com/msgbyte/tianji/compare/v1.30.22...v1.30.23) (2025-12-18)
 
 ### Features
