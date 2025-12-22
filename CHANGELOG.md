@@ -1,5 +1,14 @@
 
 
+## [1.30.25](https://github.com/msgbyte/tianji/compare/v1.30.24...v1.30.25) (2025-12-22)
+
+### Features
+
+* **metrics:** add AI Gateway request counter to Prometheus metrics ([845f07d](https://github.com/msgbyte/tianji/commit/845f07df1c891cd0a6317080b050f2033a6a9a8d))
+* **metrics:** add Prometheus event counters for applications and websites ([8a14bf9](https://github.com/msgbyte/tianji/commit/8a14bf9372b4b85872f4671fb911ffaf1e240107))
+* **metrics:** add Prometheus metrics for worker execution tracking ([88ef452](https://github.com/msgbyte/tianji/commit/88ef45210a7fb14a1c0563e00fd2f7bf231f672e))
+* **worker:** enhance execWorker to include unique ID and improve logging for execution records ([d576d59](https://github.com/msgbyte/tianji/commit/d576d59542987bd52ef137d9acd7c4dd690cfed9))
+
 ## [1.30.24](https://github.com/msgbyte/tianji/compare/v1.30.23...v1.30.24) (2025-12-21)
 
 ### Features
