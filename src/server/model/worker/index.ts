@@ -10,6 +10,7 @@ import {
   promWorkerCPUTime,
   promWorkerMemoryUsage,
 } from '../../utils/prometheus/client.js';
+import { createId } from '@paralleldrive/cuid2';
 
 export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
   async (workerId: string, workspaceId: string) => {
@@ -39,7 +40,13 @@ export async function execWorker(
   const contextString = isPlainObject(context) ? JSON.stringify(context) : '{}';
 
   try {
-    const { isolate, logger, result, error, usage } = await runCodeInIVM(`
+    const {
+      isolate,
+      logger: logs,
+      result,
+      error,
+      usage,
+    } = await runCodeInIVM(`
       (async () => {
         ${code}
 
@@ -53,6 +60,7 @@ export async function execWorker(
     const { used_heap_size } = memoryUsage;
 
     const payload = {
+      id: workerId ? createId() : undefined,
       workerId: workerId || '',
       status: error
         ? FunctionWorkerExecutionStatus.Failed
@@ -63,8 +71,8 @@ export async function execWorker(
       requestPayload,
       responsePayload: result,
       error: error ? String(error) : undefined,
-      logs: Array.isArray(logger)
-        ? logger.map((log) => log.map((item) => item ?? null)) // make sure log item is not undefined
+      logs: Array.isArray(logs)
+        ? logs.map((log) => log.map((item) => item ?? null)) // make sure log item is not undefined
         : [],
     };
 
@@ -82,11 +90,10 @@ export async function execWorker(
       .observe(used_heap_size);
 
     if (workerId) {
-      const res = await prisma.functionWorkerExecution.create({
-        data: payload,
+      // Async save execution record without blocking response
+      prisma.functionWorkerExecution.create({ data: payload }).catch((err) => {
+        logger.error('Failed to save worker execution record:', err); // TODO: need to confirm its will not have too much error
       });
-
-      return res;
     }
 
     return payload;
@@ -108,6 +115,7 @@ export async function execWorker(
     };
 
     if (workerId) {
+      // Sync save execution record if failed to run
       const res = await prisma.functionWorkerExecution.create({
         data: payload,
       });
