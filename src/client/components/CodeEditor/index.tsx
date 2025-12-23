@@ -21,3 +21,4 @@ export const HtmlEditor = loadable(() =>
 );
 
 export type { SQLTableSchema } from './sql';
+export type { HtmlEditorRef } from './html';

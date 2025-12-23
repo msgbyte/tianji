@@ -83,6 +83,7 @@ import { Route as WebsiteWebsiteIdConfigImport } from './routes/website/$website
 import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edit'
 import { Route as ShortlinkShortLinkIdEditImport } from './routes/shortlink/$shortLinkId/edit'
 import { Route as SettingsBillingHistoryImport } from './routes/settings/billing/history'
+import { Route as PageSlugEditorImport } from './routes/page_/$slug/editor'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
 import { Route as FeedPublicShareIdImport } from './routes/feed_/public/$shareId'
@@ -460,6 +461,11 @@ const SettingsBillingHistoryRoute = SettingsBillingHistoryImport.update({
   getParentRoute: () => SettingsRoute,
 } as any)
 
+const PageSlugEditorRoute = PageSlugEditorImport.update({
+  path: '/page/$slug/editor',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
   path: '/$monitorId/edit',
   getParentRoute: () => MonitorRoute,
@@ -761,6 +767,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorMonitorIdEditImport
       parentRoute: typeof MonitorImport
     }
+    '/page/$slug/editor': {
+      preLoaderRoute: typeof PageSlugEditorImport
+      parentRoute: typeof rootRoute
+    }
     '/settings/billing/history': {
       preLoaderRoute: typeof SettingsBillingHistoryImport
       parentRoute: typeof SettingsImport
@@ -949,6 +959,7 @@ export const routeTree = rootRoute.addChildren([
   StatusSlugRoute,
   FeedPublicShareIdRoute,
   InvitationAcceptTokenRoute,
+  PageSlugEditorRoute,
   WebsitePublicShareIdRoute,
   WebsiteVisitorMapWebsiteIdRoute,
   WorkerWorkerIdEditorRoute,
