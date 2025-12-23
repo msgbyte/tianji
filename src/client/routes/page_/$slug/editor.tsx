@@ -309,132 +309,107 @@ function PageComponent() {
     />
   );
 
+  // Render toolbar buttons
+  const renderToolbarButtons = () => (
+    <div className="flex gap-1">
+      <Button
+        size="icon-sm"
+        variant={aiPanelVisible ? 'default' : 'ghost'}
+        onClick={() => setAiPanelVisible(!aiPanelVisible)}
+        title="AI Assistant"
+      >
+        <LuSparkles className="size-4" />
+      </Button>
+      <Button
+        size="icon-sm"
+        variant={layoutMode === 'split' ? 'default' : 'ghost'}
+        onClick={() => setLayoutMode('split')}
+        title="Split Layout"
+      >
+        <LuColumns2 className="size-4" />
+      </Button>
+      <Button
+        size="icon-sm"
+        variant={layoutMode === 'tabs' ? 'default' : 'ghost'}
+        onClick={() => setLayoutMode('tabs')}
+        title="Tab Layout"
+      >
+        <LuPanelTop className="size-4" />
+      </Button>
+    </div>
+  );
+
+  // Render AI panel
+  const renderAIPanel = () =>
+    aiPanelVisible ? (
+      <Allotment.Pane minSize={400} preferredSize={400} maxSize={600}>
+        <HtmlEditorAIChatPanel
+          workspaceId={workspaceId}
+          currentHtmlCode={htmlCode ?? null}
+          selectedElement={selectedElement}
+          onHtmlGenerated={setHtmlCode}
+          onClearSelectedElement={() => setSelectedElement(null)}
+        />
+      </Allotment.Pane>
+    ) : null;
+
+  // Render header with title and toolbar
+  const renderHeader = (centerContent?: React.ReactNode) => (
+    <div className="border-b px-4 py-3">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">HTML Editor</h1>
+
+        {centerContent}
+
+        <div className="flex items-center gap-3">
+          <div className="text-muted-foreground text-xs">
+            Live Preview • Auto-saved to localStorage
+          </div>
+          {renderToolbarButtons()}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render split layout mode
+  const renderSplitLayout = () => (
+    <>
+      {renderHeader()}
+      <Allotment>
+        <Allotment.Pane className="h-full">{renderEditor()}</Allotment.Pane>
+        <Allotment.Pane>{renderPreview()}</Allotment.Pane>
+        {renderAIPanel()}
+      </Allotment>
+    </>
+  );
+
+  // Render tabs layout mode
+  const renderTabsLayout = () => (
+    <Tabs defaultValue="editor" className="flex h-full flex-col">
+      {renderHeader(
+        <TabsList>
+          <TabsTrigger value="editor">Editor</TabsTrigger>
+          <TabsTrigger value="preview">Preview</TabsTrigger>
+        </TabsList>
+      )}
+      <Allotment>
+        <Allotment.Pane>
+          <TabsContent value="editor" className="mt-0 h-full">
+            {renderEditor()}
+          </TabsContent>
+          <TabsContent value="preview" className="mt-0 h-full">
+            {renderPreview()}
+          </TabsContent>
+        </Allotment.Pane>
+        {renderAIPanel()}
+      </Allotment>
+    </Tabs>
+  );
+
   return (
     <CommonWrapper>
       <div className="bg-background flex h-screen flex-col overflow-hidden">
-        {layoutMode === 'split' ? (
-          <>
-            <div className="border-b px-4 py-3">
-              <div className="flex items-center justify-between">
-                <h1 className="text-lg font-semibold">HTML Editor</h1>
-                <div className="flex items-center gap-3">
-                  <div className="text-muted-foreground text-xs">
-                    Live Preview • Auto-saved to localStorage
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon-sm"
-                      variant={aiPanelVisible ? 'default' : 'ghost'}
-                      onClick={() => setAiPanelVisible(!aiPanelVisible)}
-                      title="AI Assistant"
-                    >
-                      <LuSparkles className="size-4" />
-                    </Button>
-                    <Button
-                      size="icon-sm"
-                      variant="default"
-                      onClick={() => setLayoutMode('split')}
-                      title="Split Layout"
-                    >
-                      <LuColumns2 className="size-4" />
-                    </Button>
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => setLayoutMode('tabs')}
-                      title="Tab Layout"
-                    >
-                      <LuPanelTop className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Allotment>
-              <Allotment.Pane className="h-full">
-                {renderEditor()}
-              </Allotment.Pane>
-              <Allotment.Pane>{renderPreview()}</Allotment.Pane>
-              {aiPanelVisible && (
-                <Allotment.Pane minSize={400} preferredSize={400} maxSize={600}>
-                  <HtmlEditorAIChatPanel
-                    workspaceId={workspaceId}
-                    currentHtmlCode={htmlCode ?? null}
-                    selectedElement={selectedElement}
-                    onHtmlGenerated={setHtmlCode}
-                    onClearSelectedElement={() => setSelectedElement(null)}
-                  />
-                </Allotment.Pane>
-              )}
-            </Allotment>
-          </>
-        ) : (
-          <Tabs defaultValue="editor" className="flex h-full flex-col">
-            <div className="border-b px-4 py-3">
-              <div className="flex items-center justify-between">
-                <h1 className="text-lg font-semibold">HTML Editor</h1>
-
-                <TabsList>
-                  <TabsTrigger value="editor">Editor</TabsTrigger>
-                  <TabsTrigger value="preview">Preview</TabsTrigger>
-                </TabsList>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-muted-foreground text-xs">
-                    Live Preview • Auto-saved to localStorage
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon-sm"
-                      variant={aiPanelVisible ? 'default' : 'ghost'}
-                      onClick={() => setAiPanelVisible(!aiPanelVisible)}
-                      title="AI Assistant"
-                    >
-                      <LuSparkles className="size-4" />
-                    </Button>
-                    <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => setLayoutMode('split')}
-                      title="Split Layout"
-                    >
-                      <LuColumns2 className="size-4" />
-                    </Button>
-                    <Button
-                      size="icon-sm"
-                      variant="default"
-                      onClick={() => setLayoutMode('tabs')}
-                      title="Tab Layout"
-                    >
-                      <LuPanelTop className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Allotment>
-              <Allotment.Pane>
-                <TabsContent value="editor" className="mt-0 h-full">
-                  {renderEditor()}
-                </TabsContent>
-                <TabsContent value="preview" className="mt-0 h-full">
-                  {renderPreview()}
-                </TabsContent>
-              </Allotment.Pane>
-              {aiPanelVisible && (
-                <Allotment.Pane minSize={400} preferredSize={400} maxSize={600}>
-                  <HtmlEditorAIChatPanel
-                    workspaceId={workspaceId}
-                    currentHtmlCode={htmlCode ?? null}
-                    selectedElement={selectedElement}
-                    onHtmlGenerated={setHtmlCode}
-                    onClearSelectedElement={() => setSelectedElement(null)}
-                  />
-                </Allotment.Pane>
-              )}
-            </Allotment>
-          </Tabs>
-        )}
+        {layoutMode === 'split' ? renderSplitLayout() : renderTabsLayout()}
       </div>
     </CommonWrapper>
   );
