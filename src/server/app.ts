@@ -19,7 +19,7 @@ import { logger } from './utils/logger.js';
 import { monitorRouter } from './router/monitor.js';
 import { healthRouter } from './router/health.js';
 import path from 'path';
-import { monitorPageManager } from './model/monitor/page/manager.js';
+import { customDomainManager } from './model/page/manager.js';
 import { ExpressAuth } from '@auth/express';
 import { authConfig } from './model/auth.js';
 import { prometheusApiVersion } from './middleware/prometheus/index.js';
@@ -120,8 +120,12 @@ if (env.allowOpenapi) {
 
 // Custom Status Page
 app.use('/*', (req, res, next) => {
-  if (req.baseUrl === '/' || req.baseUrl === '') {
-    const customDomain = monitorPageManager.findPageDomain(req.hostname);
+  if (
+    req.method === 'GET' &&
+    req.accepts('html') &&
+    (req.baseUrl === '/' || req.baseUrl === '')
+  ) {
+    const customDomain = customDomainManager.findPageDomain(req.hostname);
     if (customDomain) {
       res
         .status(200)

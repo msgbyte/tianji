@@ -55,7 +55,6 @@ import { Route as SettingsNotificationsImport } from './routes/settings/notifica
 import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as SettingsApiKeyImport } from './routes/settings/apiKey'
 import { Route as PageAddImport } from './routes/page/add'
-import { Route as PageSlugImport } from './routes/page/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as InsightsEventsImport } from './routes/insights/events'
 import { Route as InsightsCohortsImport } from './routes/insights/cohorts'
@@ -70,6 +69,7 @@ import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteI
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
 import { Route as ShortlinkShortLinkIdIndexImport } from './routes/shortlink/$shortLinkId/index'
 import { Route as SettingsBillingIndexImport } from './routes/settings/billing/index'
+import { Route as PageSlugIndexImport } from './routes/page/$slug/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as InsightsWarehouseIndexImport } from './routes/insights/warehouse/index'
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
@@ -317,11 +317,6 @@ const PageAddRoute = PageAddImport.update({
   getParentRoute: () => PageRoute,
 } as any)
 
-const PageSlugRoute = PageSlugImport.update({
-  path: '/$slug',
-  getParentRoute: () => PageRoute,
-} as any)
-
 const MonitorAddRoute = MonitorAddImport.update({
   path: '/add',
   getParentRoute: () => MonitorRoute,
@@ -390,6 +385,11 @@ const ShortlinkShortLinkIdIndexRoute = ShortlinkShortLinkIdIndexImport.update({
 const SettingsBillingIndexRoute = SettingsBillingIndexImport.update({
   path: '/billing/',
   getParentRoute: () => SettingsRoute,
+} as any)
+
+const PageSlugIndexRoute = PageSlugIndexImport.update({
+  path: '/$slug/',
+  getParentRoute: () => PageRoute,
 } as any)
 
 const MonitorMonitorIdIndexRoute = MonitorMonitorIdIndexImport.update({
@@ -633,10 +633,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorAddImport
       parentRoute: typeof MonitorImport
     }
-    '/page/$slug': {
-      preLoaderRoute: typeof PageSlugImport
-      parentRoute: typeof PageImport
-    }
     '/page/add': {
       preLoaderRoute: typeof PageAddImport
       parentRoute: typeof PageImport
@@ -817,6 +813,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorMonitorIdIndexImport
       parentRoute: typeof MonitorImport
     }
+    '/page/$slug/': {
+      preLoaderRoute: typeof PageSlugIndexImport
+      parentRoute: typeof PageImport
+    }
     '/settings/billing/': {
       preLoaderRoute: typeof SettingsBillingIndexImport
       parentRoute: typeof SettingsImport
@@ -900,7 +900,7 @@ export const routeTree = rootRoute.addChildren([
     MonitorMonitorIdEditRoute,
     MonitorMonitorIdIndexRoute,
   ]),
-  PageRoute.addChildren([PageSlugRoute, PageAddRoute, PageIndexRoute]),
+  PageRoute.addChildren([PageAddRoute, PageIndexRoute, PageSlugIndexRoute]),
   PlaygroundRoute,
   RegisterRoute,
   ServerRoute,

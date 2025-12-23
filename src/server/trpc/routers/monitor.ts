@@ -31,7 +31,7 @@ import {
   MonitorInfoWithNotificationIds,
   monitorPublicInfoSchema,
 } from '../../model/_schema/monitor.js';
-import { monitorPageManager } from '../../model/monitor/page/manager.js';
+import { customDomainManager } from '../../model/page/manager.js';
 import { token } from '../../model/notification/token/index.js';
 import { runCodeInVM } from '../../utils/vm/index.js';
 import { nanoid } from 'nanoid';
@@ -849,7 +849,7 @@ export const monitorRouter = router({
         throw new Error('This slug has been existed');
       }
 
-      if (domain && !(await monitorPageManager.checkDomain(domain))) {
+      if (domain && !(await customDomainManager.checkDomain(domain))) {
         throw new Error('This domain has been used');
       }
 
@@ -866,7 +866,7 @@ export const monitorRouter = router({
       });
 
       if (page.domain) {
-        monitorPageManager.updatePageDomain(page.domain, {
+        customDomainManager.updatePageDomain(page.domain, {
           workspaceId: page.workspaceId,
           pageId: page.id,
           slug: page.slug,
@@ -925,7 +925,7 @@ export const monitorRouter = router({
         }
       }
 
-      if (domain && !(await monitorPageManager.checkDomain(domain, id))) {
+      if (domain && !(await customDomainManager.checkDomain(domain, id))) {
         throw new Error('This domain has been used by others');
       }
 
@@ -945,7 +945,7 @@ export const monitorRouter = router({
       });
 
       if (page.domain) {
-        monitorPageManager.updatePageDomain(page.domain, {
+        customDomainManager.updatePageDomain(page.domain, {
           workspaceId: page.workspaceId,
           pageId: page.id,
           slug: page.slug,

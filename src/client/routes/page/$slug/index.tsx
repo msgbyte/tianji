@@ -15,7 +15,7 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { LuEye, LuTrash } from 'react-icons/lu';
 
-export const Route = createFileRoute('/page/$slug')({
+export const Route = createFileRoute('/page/$slug/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
 });

@@ -1,7 +1,7 @@
-import { logger } from '../../../utils/logger.js';
-import { prisma } from '../../_client.js';
+import { logger } from '../../utils/logger.js';
+import { prisma } from '../_client.js';
 
-class MonitorPageManager {
+class CustomDomainManager {
   private customDomainPage: Record<
     string,
     {
@@ -84,4 +84,4 @@ class MonitorPageManager {
   }
 }
 
-export const monitorPageManager = new MonitorPageManager();
+export const customDomainManager = new CustomDomainManager();
