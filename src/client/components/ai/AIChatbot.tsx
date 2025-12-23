@@ -95,7 +95,7 @@ export const AIChatbot: React.FC<AIChatbotProps> = React.memo((props) => {
         </div>
       )}
 
-      {!props.isDisabled && (
+      {!props.isDisabled && props.messages.length === 0 && (
         <Suggestions className="p-3 pb-0">
           {(props.suggestions ?? []).map((suggestion) => (
             <Suggestion

@@ -12,8 +12,15 @@ import {
 } from '@/components/ai-elements/web-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { LuMousePointer2, LuColumns2, LuPanelTop } from 'react-icons/lu';
+import {
+  LuMousePointer2,
+  LuColumns2,
+  LuPanelTop,
+  LuSparkles,
+} from 'react-icons/lu';
 import { cn } from '@/utils/style';
+import { HtmlEditorAIChatPanel } from '@/components/page/HtmlEditorAIChatPanel';
+import { useCurrentWorkspaceId } from '@/store/user';
 
 import 'allotment/dist/style.css';
 
@@ -45,6 +52,7 @@ export const Route = createFileRoute('/page/$slug/editor')({
 type LayoutMode = 'split' | 'tabs';
 
 function PageComponent() {
+  const workspaceId = useCurrentWorkspaceId();
   const [htmlCode, setHtmlCode] = useLocalStorageState(
     'tianji-html-editor-code',
     {
@@ -57,7 +65,22 @@ function PageComponent() {
       defaultValue: 'split',
     }
   );
+  const [aiPanelVisible, setAiPanelVisible] = useLocalStorageState(
+    'tianji-html-editor-ai-panel',
+    {
+      defaultValue: false,
+    }
+  );
   const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<{
+    tagName: string;
+    className: string;
+    id: string;
+    lineStart: string;
+    lineEnd: string;
+    textContent: string;
+    outerHTML: string;
+  } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const editorRef = useRef<HtmlEditorRef>(null);
 
@@ -207,21 +230,21 @@ function PageComponent() {
       e.stopPropagation();
       const target = e.target as HTMLElement;
 
-      // Log element information
-      console.log('Selected Element:', {
+      const elementInfo = {
         tagName: target.tagName,
         className: target.className.replace('tianji-element-hover', '').trim(),
         id: target.id,
-        lineStart: target.getAttribute('data-line-start'),
-        lineEnd: target.getAttribute('data-line-end'),
-        textContent: target.textContent?.substring(0, 100),
-        innerHTML: target.innerHTML.substring(0, 200),
-        attributes: Array.from(target.attributes).map((attr) => ({
-          name: attr.name,
-          value: attr.value,
-        })),
-        element: target,
-      });
+        lineStart: target.getAttribute('data-line-start') || '',
+        lineEnd: target.getAttribute('data-line-end') || '',
+        textContent: target.textContent?.substring(0, 100) || '',
+        outerHTML: target.outerHTML.substring(0, 300),
+      };
+
+      // Save selected element info
+      setSelectedElement(elementInfo);
+
+      // Log element information
+      console.log('Selected Element:', elementInfo);
 
       // Clean up and exit select mode
       target.classList.remove('tianji-element-hover');
@@ -301,6 +324,14 @@ function PageComponent() {
                   <div className="flex gap-1">
                     <Button
                       size="icon-sm"
+                      variant={aiPanelVisible ? 'default' : 'ghost'}
+                      onClick={() => setAiPanelVisible(!aiPanelVisible)}
+                      title="AI Assistant"
+                    >
+                      <LuSparkles className="size-4" />
+                    </Button>
+                    <Button
+                      size="icon-sm"
                       variant="default"
                       onClick={() => setLayoutMode('split')}
                       title="Split Layout"
@@ -324,6 +355,17 @@ function PageComponent() {
                 {renderEditor()}
               </Allotment.Pane>
               <Allotment.Pane>{renderPreview()}</Allotment.Pane>
+              {aiPanelVisible && (
+                <Allotment.Pane minSize={400} preferredSize={400} maxSize={600}>
+                  <HtmlEditorAIChatPanel
+                    workspaceId={workspaceId}
+                    currentHtmlCode={htmlCode ?? null}
+                    selectedElement={selectedElement}
+                    onHtmlGenerated={setHtmlCode}
+                    onClearSelectedElement={() => setSelectedElement(null)}
+                  />
+                </Allotment.Pane>
+              )}
             </Allotment>
           </>
         ) : (
@@ -344,6 +386,14 @@ function PageComponent() {
                   <div className="flex gap-1">
                     <Button
                       size="icon-sm"
+                      variant={aiPanelVisible ? 'default' : 'ghost'}
+                      onClick={() => setAiPanelVisible(!aiPanelVisible)}
+                      title="AI Assistant"
+                    >
+                      <LuSparkles className="size-4" />
+                    </Button>
+                    <Button
+                      size="icon-sm"
                       variant="ghost"
                       onClick={() => setLayoutMode('split')}
                       title="Split Layout"
@@ -362,12 +412,27 @@ function PageComponent() {
                 </div>
               </div>
             </div>
-            <TabsContent value="editor" className="mt-0 flex-1">
-              {renderEditor()}
-            </TabsContent>
-            <TabsContent value="preview" className="mt-0 flex-1">
-              {renderPreview()}
-            </TabsContent>
+            <Allotment>
+              <Allotment.Pane>
+                <TabsContent value="editor" className="mt-0 h-full">
+                  {renderEditor()}
+                </TabsContent>
+                <TabsContent value="preview" className="mt-0 h-full">
+                  {renderPreview()}
+                </TabsContent>
+              </Allotment.Pane>
+              {aiPanelVisible && (
+                <Allotment.Pane minSize={400} preferredSize={400} maxSize={600}>
+                  <HtmlEditorAIChatPanel
+                    workspaceId={workspaceId}
+                    currentHtmlCode={htmlCode ?? null}
+                    selectedElement={selectedElement}
+                    onHtmlGenerated={setHtmlCode}
+                    onClearSelectedElement={() => setSelectedElement(null)}
+                  />
+                </Allotment.Pane>
+              )}
+            </Allotment>
           </Tabs>
         )}
       </div>
