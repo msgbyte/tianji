@@ -16,4 +16,8 @@ export const SQLEditor = loadable(() =>
   import('./sql').then((m) => ({ default: m.SQLEditor }))
 );
 
+export const HtmlEditor = loadable(() =>
+  import('./html').then((m) => ({ default: m.HtmlEditor }))
+);
+
 export type { SQLTableSchema } from './sql';
