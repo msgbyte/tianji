@@ -15,7 +15,7 @@ import { useWatch } from '@/hooks/useWatch';
 import { isServerOnline } from '@tianji/shared';
 
 interface StatusPageHeaderProps {
-  info: NonNullable<AppRouterOutput['monitor']['getPageInfo']>;
+  info: NonNullable<AppRouterOutput['page']['getPageInfo']>;
   workspaceId: string;
 }
 
@@ -32,9 +32,17 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
   ({ info, workspaceId }) => {
     const { t } = useTranslation();
     const body = useMemo(() => {
-      const res = bodySchema.safeParse(info.body);
-      return res.success ? res.data : { groups: [] };
-    }, [info.body]);
+      if (info.type === 'status') {
+        const res = bodySchema.safeParse(info.body);
+        if (res.success) {
+          return res.data;
+        } else {
+          return { groups: [] };
+        }
+      }
+
+      return { groups: [] };
+    }, [info]);
     const lastUpdatedAt = useStatusPageStore((state) => state.lastUpdatedAt);
     const updateLastUpdatedAt = useStatusPageStore(
       (state) => state.updateLastUpdatedAt
@@ -57,7 +65,7 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
       });
 
       // Add legacy monitors
-      if (Array.isArray(info.monitorList)) {
+      if (info.type === 'status' && Array.isArray(info.monitorList)) {
         info.monitorList.forEach((monitor) => {
           contexts.push({
             id: monitor.id,
@@ -67,8 +75,9 @@ export const StatusPageHeader: React.FC<StatusPageHeaderProps> = React.memo(
           });
         });
       }
+
       return contexts;
-    }, [body, info.monitorList]);
+    }, [body, info]);
 
     const monitorContexts = useMemo(
       () => allContexts.filter((ctx) => ctx.type === 'monitor'),

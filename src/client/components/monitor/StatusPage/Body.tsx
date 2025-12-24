@@ -24,7 +24,7 @@ import { StatusItemServer } from './StatusItemServer';
 
 interface StatusPageBodyProps {
   workspaceId: string;
-  info: NonNullable<AppRouterOutput['monitor']['getPageInfo']>;
+  info: NonNullable<AppRouterOutput['page']['getPageInfo']>;
 }
 export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
   (props) => {
@@ -32,13 +32,17 @@ export const StatusPageBody: React.FC<StatusPageBodyProps> = React.memo(
     const { t } = useTranslation();
 
     const body = useMemo(() => {
-      const res = bodySchema.safeParse(info.body);
-      if (res.success) {
-        return res.data;
-      } else {
-        return { groups: [] };
+      if (info.type === 'status') {
+        const res = bodySchema.safeParse(info.body);
+        if (res.success) {
+          return res.data;
+        } else {
+          return { groups: [] };
+        }
       }
-    }, [info.body]);
+
+      return { groups: [] };
+    }, [info]);
 
     return (
       <div className="rounded-lg border border-gray-200/80 dark:border-gray-700/25">
