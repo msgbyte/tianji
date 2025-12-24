@@ -25,8 +25,9 @@ export const Route = createFileRoute('/page')({
 function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
-  const { data = [], isLoading } = trpc.monitor.getAllPages.useQuery({
+  const { data = [], isLoading } = trpc.page.getAllPages.useQuery({
     workspaceId,
+    type: 'status',
   });
   const navigate = useNavigate();
   const pathname = useRouterState({

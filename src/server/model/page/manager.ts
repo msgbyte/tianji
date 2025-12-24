@@ -12,55 +12,87 @@ class CustomDomainManager {
   > = {}; // key: domain
 
   constructor() {
-    prisma.monitorStatusPage
-      .findMany({
-        where: {
-          domain: {
-            not: null,
+    this.loadCustomDomains();
+  }
+
+  private async loadCustomDomains() {
+    try {
+      const [monitorStatusPages, generalPages] = await Promise.all([
+        prisma.monitorStatusPage.findMany({
+          where: {
+            domain: {
+              not: null,
+            },
           },
-        },
-        select: {
-          id: true,
-          domain: true,
-          workspaceId: true,
-          slug: true,
-        },
-      })
-      .then((res) => {
-        res.forEach((item) => {
-          if (!item.domain) {
-            return;
-          }
+          select: {
+            id: true,
+            domain: true,
+            workspaceId: true,
+            slug: true,
+          },
+        }),
+        prisma.page.findMany({
+          where: {
+            domain: {
+              not: null,
+            },
+          },
+          select: {
+            id: true,
+            domain: true,
+            workspaceId: true,
+            slug: true,
+          },
+        }),
+      ]);
 
-          this.customDomainPage[item.domain] = {
-            pageId: item.id,
-            workspaceId: item.workspaceId,
-            slug: item.slug,
-          };
-        });
+      const allPages = [...monitorStatusPages, ...generalPages];
 
-        logger.info(`Loaded ${res.length} custom domain for status page`);
-      })
-      .catch((err) => {
-        logger.error('Cannot load monitor page domain list:', err);
+      allPages.forEach((item) => {
+        if (!item.domain) {
+          return;
+        }
+
+        this.customDomainPage[item.domain] = {
+          pageId: item.id,
+          workspaceId: item.workspaceId,
+          slug: item.slug,
+        };
       });
+
+      logger.info(
+        `Loaded ${allPages.length} custom domain for pages (${monitorStatusPages.length} monitor status pages, ${generalPages.length} general pages)`
+      );
+    } catch (err) {
+      logger.error('Cannot load page domain list:', err);
+    }
   }
 
   /**
    * check domain existed
    * if domain not been used, return true
    */
-  async checkDomain(domain: string, excludeMonitorId?: string) {
-    const res = await prisma.monitorStatusPage.findFirst({
-      where: {
-        domain,
-        id: {
-          notIn: excludeMonitorId ? [excludeMonitorId] : [],
+  async checkDomain(domain: string, excludePageId?: string) {
+    const [monitorStatusPage, generalPage] = await Promise.all([
+      prisma.monitorStatusPage.findFirst({
+        where: {
+          domain,
+          id: {
+            notIn: excludePageId ? [excludePageId] : [],
+          },
         },
-      },
-    });
+      }),
+      prisma.page.findFirst({
+        where: {
+          domain,
+          id: {
+            notIn: excludePageId ? [excludePageId] : [],
+          },
+        },
+      }),
+    ]);
 
-    return !res;
+    return !monitorStatusPage && !generalPage;
   }
 
   async updatePageDomain(

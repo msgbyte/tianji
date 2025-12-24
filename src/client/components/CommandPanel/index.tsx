@@ -268,8 +268,9 @@ export const CommandPanelSearchGroup: React.FC<CommandPanelSearchGroupProps> =
     const { data: telemetryList = [] } = trpc.telemetry.all.useQuery({
       workspaceId,
     });
-    const { data: pages = [] } = trpc.monitor.getAllPages.useQuery({
+    const { data: pages = [] } = trpc.page.getAllPages.useQuery({
       workspaceId,
+      type: 'status',
     });
     const { data: surveys = [] } = trpc.survey.all.useQuery({
       workspaceId,

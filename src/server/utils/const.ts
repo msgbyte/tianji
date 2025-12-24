@@ -133,6 +133,7 @@ export enum OPENAPI_TAG {
   WEBSITE = 'Website',
   APPLICATION = 'Application',
   MONITOR = 'Monitor',
+  PAGE = 'Page',
   AUDIT_LOG = 'AuditLog',
   BILLING = 'Billing',
   TELEMETRY = 'Telemetry',

@@ -37,10 +37,10 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
     const { t } = useTranslation();
     const { slug, showBackBtn = true, fullWidth } = props;
 
-    const { data: info } = trpc.monitor.getPageInfo.useQuery({
+    const { data: info } = trpc.page.getPageInfo.useQuery({
       slug,
     });
-    const editPageMutation = trpc.monitor.editPage.useMutation();
+    const editPageMutation = trpc.page.editPage.useMutation();
     const trpcUtils = trpc.useUtils();
     const navigate = useNavigate();
 
@@ -49,7 +49,8 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
       return new URLSearchParams(window.location.search).has('edit');
     });
 
-    const monitorList = info?.monitorList ?? [];
+    const monitorList =
+      info?.type === 'status' ? (info?.monitorList ?? []) : [];
 
     const initialValues = useMemo(() => {
       if (!info) {
@@ -74,7 +75,7 @@ export const MonitorStatusPage: React.FC<MonitorStatusPageProps> = React.memo(
           ...values,
         });
 
-        trpcUtils.monitor.getPageInfo.setData(
+        trpcUtils.page.getPageInfo.setData(
           {
             slug,
           },

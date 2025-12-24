@@ -12,7 +12,7 @@ export const Route = createFileRoute('/status/$slug')({
 function PageComponent() {
   const { slug } = Route.useParams<{ slug: string }>();
 
-  const { data: pageInfo, isLoading } = trpc.monitor.getPageInfo.useQuery({
+  const { data: pageInfo, isLoading } = trpc.page.getPageInfo.useQuery({
     slug,
   });
 

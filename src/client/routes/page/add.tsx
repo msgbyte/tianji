@@ -20,7 +20,7 @@ export const Route = createFileRoute('/page/add')({
 function PageAddComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const createPageMutation = trpc.monitor.createPage.useMutation({
+  const createPageMutation = trpc.page.createPage.useMutation({
     onError: defaultErrorHandler,
   });
   const navigate = useNavigate();
@@ -31,9 +31,10 @@ function PageAddComponent() {
       const res = await createPageMutation.mutateAsync({
         ...values,
         workspaceId,
+        type: 'status',
       });
 
-      utils.monitor.getAllPages.refetch();
+      utils.page.getAllPages.refetch();
 
       navigate({
         to: '/page/$slug',

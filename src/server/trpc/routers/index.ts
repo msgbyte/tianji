@@ -17,6 +17,7 @@ import { applicationRouter } from './application.js';
 import { aiGatewayRouter } from './aiGateway.js';
 import { workerRouter } from './worker.js';
 import { shortlinkRouter } from './shortlink.js';
+import { pageRouter } from './page.js';
 
 export const appRouter = router({
   ai: aiRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   insights: insightsRouter,
   notification: notificationRouter,
   monitor: monitorRouter,
+  page: pageRouter,
   telemetry: telemetryRouter,
   survey: surveyRouter,
   serverStatus: serverStatusRouter,

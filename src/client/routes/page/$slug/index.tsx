@@ -24,13 +24,13 @@ function PageComponent() {
   const { slug } = Route.useParams<{ slug: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: pageInfo, isLoading } = trpc.monitor.getPageInfo.useQuery({
+  const { data: pageInfo, isLoading } = trpc.page.getPageInfo.useQuery({
     slug,
   });
   const trpcUtils = trpc.useUtils();
   const hasAdminPermission = useHasAdminPermission();
 
-  const deletePageMutation = trpc.monitor.deletePage.useMutation();
+  const deletePageMutation = trpc.page.deletePage.useMutation();
 
   const handleDelete = useEvent(async () => {
     if (!pageInfo) {
@@ -42,8 +42,9 @@ function PageComponent() {
       id: pageInfo.id,
     });
 
-    trpcUtils.monitor.getAllPages.refetch({
+    trpcUtils.page.getAllPages.refetch({
       workspaceId: pageInfo.workspaceId,
+      type: 'status',
     });
 
     navigate({
