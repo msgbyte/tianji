@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteWarehouseCohorts, RelatedWarehouseCohortsModelSchema, CompleteWarehouseDatabase, RelatedWarehouseDatabaseModelSchema, CompleteWarehouseDatabaseTable, RelatedWarehouseDatabaseTableModelSchema, CompleteAIGateway, RelatedAIGatewayModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspaceConfig, RelatedWorkspaceConfigModelSchema, CompleteShortLink, RelatedShortLinkModelSchema } from "./index.js"
+import { CompleteWorkspaceSubscription, RelatedWorkspaceSubscriptionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteWebsite, RelatedWebsiteModelSchema, CompleteApplication, RelatedApplicationModelSchema, CompleteNotification, RelatedNotificationModelSchema, CompleteMonitor, RelatedMonitorModelSchema, CompleteMonitorStatusPage, RelatedMonitorStatusPageModelSchema, CompleteTelemetry, RelatedTelemetryModelSchema, CompletePage, RelatedPageModelSchema, CompleteWorkspaceDailyUsage, RelatedWorkspaceDailyUsageModelSchema, CompleteWorkspaceAuditLog, RelatedWorkspaceAuditLogModelSchema, CompleteSurvey, RelatedSurveyModelSchema, CompleteFeedChannel, RelatedFeedChannelModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteWarehouseCohorts, RelatedWarehouseCohortsModelSchema, CompleteWarehouseDatabase, RelatedWarehouseDatabaseModelSchema, CompleteWarehouseDatabaseTable, RelatedWarehouseDatabaseTableModelSchema, CompleteAIGateway, RelatedAIGatewayModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspaceConfig, RelatedWorkspaceConfigModelSchema, CompleteShortLink, RelatedShortLinkModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -35,6 +35,7 @@ export interface CompleteWorkspace extends z.infer<typeof WorkspaceModelSchema> 
   monitors: CompleteMonitor[]
   monitorStatusPages: CompleteMonitorStatusPage[]
   telemetryList: CompleteTelemetry[]
+  pages: CompletePage[]
   workspaceDailyUsage: CompleteWorkspaceDailyUsage[]
   workspaceAuditLog: CompleteWorkspaceAuditLog[]
   surveys: CompleteSurvey[]
@@ -64,6 +65,7 @@ export const RelatedWorkspaceModelSchema: z.ZodSchema<CompleteWorkspace> = z.laz
   monitors: RelatedMonitorModelSchema.array(),
   monitorStatusPages: RelatedMonitorStatusPageModelSchema.array(),
   telemetryList: RelatedTelemetryModelSchema.array(),
+  pages: RelatedPageModelSchema.array(),
   workspaceDailyUsage: RelatedWorkspaceDailyUsageModelSchema.array(),
   workspaceAuditLog: RelatedWorkspaceAuditLogModelSchema.array(),
   surveys: RelatedSurveyModelSchema.array(),

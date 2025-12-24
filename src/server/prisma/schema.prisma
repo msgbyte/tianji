@@ -112,6 +112,7 @@ model Workspace {
   monitors           Monitor[]
   monitorStatusPages MonitorStatusPage[]
   telemetryList      Telemetry[]
+  pages              Page[]
 
   // for user currentWorkspace
   workspaceDailyUsage    WorkspaceDailyUsage[]
@@ -753,6 +754,27 @@ model StatusPageIncident {
   /// [StatusPageIncidentPayload]
   /// @zod.custom(imports.StatusPageIncidentPayloadSchema)
   payload Json @db.Json
+}
+
+model Page {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  type        String   @db.VarChar(100) @default("status") // status / static / index
+  slug        String   @unique // url slug
+  title       String   @db.VarChar(100)
+  description String   @default("") @db.VarChar(1000)
+  domain      String? // custom domain which can add cname record
+
+  /// [CommonPayload]
+  /// @zod.custom(imports.CommonPayloadSchema)
+  payload        Json     @default("{}")
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([slug])
 }
 
 model WorkspaceDailyUsage {
