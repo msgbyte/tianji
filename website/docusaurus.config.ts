@@ -44,7 +44,7 @@ const config: Config = {
       /** @type {import('docusaurus-preset-openapi').Options} */
       {
         api: {
-          path: './openapi.json',
+          path: './static/openapi.json',
           routeBasePath: '/api',
         },
         docs: {

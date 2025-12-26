@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const target = path.resolve(__dirname, '../website/openapi.json');
+const target = path.resolve(__dirname, '../website/static/openapi.json');
 fs.writeJSON(target, trpcOpenapiDocument)
   .then(() => {
     console.log('openapi schema has been write into:', target);
