@@ -9,8 +9,13 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useNavigate } from '@tanstack/react-router';
 import { useLocalStorageState } from 'ahooks';
 import { useGlobalConfig } from '@/hooks/useConfig';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
-export const FreeTierTip: React.FC = React.memo(() => {
+interface FreeTierTipProps {
+  isCollapsed: boolean;
+}
+export const FreeTierTip: React.FC<FreeTierTipProps> = React.memo((props) => {
+  const { isCollapsed } = props;
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const { data: currentTier } = trpc.billing.currentTier.useQuery({
@@ -39,7 +44,7 @@ export const FreeTierTip: React.FC = React.memo(() => {
     return null;
   }
 
-  return (
+  const card = (
     <Alert>
       <LuInfo className="h-4 w-4" />
       <AlertTitle>{t('Tip')}</AlertTitle>
@@ -76,5 +81,18 @@ export const FreeTierTip: React.FC = React.memo(() => {
       </div>
     </Alert>
   );
+
+  if (isCollapsed) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button Icon={LuInfo} variant="outline" size="icon" />
+        </PopoverTrigger>
+        <PopoverContent asChild>{card}</PopoverContent>
+      </Popover>
+    );
+  }
+
+  return card;
 });
 FreeTierTip.displayName = 'FreeTierTip';

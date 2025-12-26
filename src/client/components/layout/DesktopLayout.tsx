@@ -170,7 +170,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
       <div className="flex-1" />
 
       <div className="p-2">
-        <FreeTierTip />
+        <FreeTierTip isCollapsed={isCollapsed} />
       </div>
 
       <Separator />
