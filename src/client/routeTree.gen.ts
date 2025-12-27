@@ -55,6 +55,7 @@ import { Route as SettingsNotificationsImport } from './routes/settings/notifica
 import { Route as SettingsAuditLogImport } from './routes/settings/auditLog'
 import { Route as SettingsApiKeyImport } from './routes/settings/apiKey'
 import { Route as PageAddImport } from './routes/page/add'
+import { Route as PSlugImport } from './routes/p/$slug'
 import { Route as MonitorAddImport } from './routes/monitor/add'
 import { Route as InsightsEventsImport } from './routes/insights/events'
 import { Route as InsightsCohortsImport } from './routes/insights/cohorts'
@@ -84,6 +85,7 @@ import { Route as SurveySurveyIdEditImport } from './routes/survey/$surveyId/edi
 import { Route as ShortlinkShortLinkIdEditImport } from './routes/shortlink/$shortLinkId/edit'
 import { Route as SettingsBillingHistoryImport } from './routes/settings/billing/history'
 import { Route as PageSlugEditorImport } from './routes/page_/$slug/editor'
+import { Route as PageSlugEditImport } from './routes/page/$slug/edit'
 import { Route as MonitorMonitorIdEditImport } from './routes/monitor/$monitorId/edit'
 import { Route as InvitationAcceptTokenImport } from './routes/invitation/accept/$token'
 import { Route as FeedPublicShareIdImport } from './routes/feed_/public/$shareId'
@@ -318,6 +320,11 @@ const PageAddRoute = PageAddImport.update({
   getParentRoute: () => PageRoute,
 } as any)
 
+const PSlugRoute = PSlugImport.update({
+  path: '/p/$slug',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const MonitorAddRoute = MonitorAddImport.update({
   path: '/add',
   getParentRoute: () => MonitorRoute,
@@ -464,6 +471,11 @@ const SettingsBillingHistoryRoute = SettingsBillingHistoryImport.update({
 const PageSlugEditorRoute = PageSlugEditorImport.update({
   path: '/page/$slug/editor',
   getParentRoute: () => rootRoute,
+} as any)
+
+const PageSlugEditRoute = PageSlugEditImport.update({
+  path: '/$slug/edit',
+  getParentRoute: () => PageRoute,
 } as any)
 
 const MonitorMonitorIdEditRoute = MonitorMonitorIdEditImport.update({
@@ -639,6 +651,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorAddImport
       parentRoute: typeof MonitorImport
     }
+    '/p/$slug': {
+      preLoaderRoute: typeof PSlugImport
+      parentRoute: typeof rootRoute
+    }
     '/page/add': {
       preLoaderRoute: typeof PageAddImport
       parentRoute: typeof PageImport
@@ -766,6 +782,10 @@ declare module '@tanstack/react-router' {
     '/monitor/$monitorId/edit': {
       preLoaderRoute: typeof MonitorMonitorIdEditImport
       parentRoute: typeof MonitorImport
+    }
+    '/page/$slug/edit': {
+      preLoaderRoute: typeof PageSlugEditImport
+      parentRoute: typeof PageImport
     }
     '/page/$slug/editor': {
       preLoaderRoute: typeof PageSlugEditorImport
@@ -910,7 +930,12 @@ export const routeTree = rootRoute.addChildren([
     MonitorMonitorIdEditRoute,
     MonitorMonitorIdIndexRoute,
   ]),
-  PageRoute.addChildren([PageAddRoute, PageIndexRoute, PageSlugIndexRoute]),
+  PageRoute.addChildren([
+    PageAddRoute,
+    PageIndexRoute,
+    PageSlugEditRoute,
+    PageSlugIndexRoute,
+  ]),
   PlaygroundRoute,
   RegisterRoute,
   ServerRoute,
@@ -956,6 +981,7 @@ export const routeTree = rootRoute.addChildren([
     WorkerWorkerIdIndexRoute,
   ]),
   FeedPlaygroundRoute,
+  PSlugRoute,
   StatusSlugRoute,
   FeedPublicShareIdRoute,
   InvitationAcceptTokenRoute,

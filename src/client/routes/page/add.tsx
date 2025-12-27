@@ -31,7 +31,7 @@ function PageAddComponent() {
       const res = await createPageMutation.mutateAsync({
         ...values,
         workspaceId,
-        type: 'status',
+        type: values.type,
       });
 
       utils.page.getAllPages.refetch();

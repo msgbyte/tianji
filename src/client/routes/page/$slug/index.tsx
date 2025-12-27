@@ -13,7 +13,7 @@ import { useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { LuEye, LuTrash } from 'react-icons/lu';
+import { LuEye, LuPencil, LuTrash } from 'react-icons/lu';
 
 export const Route = createFileRoute('/page/$slug/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -73,6 +73,12 @@ function PageComponent() {
           actions={
             <div className="space-x-2">
               {hasAdminPermission && (
+                <Link to="/page/$slug/edit" params={{ slug }}>
+                  <Button variant="outline" size="icon" Icon={LuPencil} />
+                </Link>
+              )}
+
+              {hasAdminPermission && (
                 <AlertConfirm
                   title={t('Confirm to delete this page?')}
                   content={t('It will permanently delete the relevant data')}
@@ -82,7 +88,11 @@ function PageComponent() {
                 </AlertConfirm>
               )}
 
-              <Link to="/status/$slug" params={{ slug }} target="_blank">
+              <Link
+                to={pageInfo.type === 'static' ? '/p/$slug' : '/status/$slug'}
+                params={{ slug }}
+                target="_blank"
+              >
                 <Button variant="outline" Icon={LuEye}>
                   {t('Preview')}
                 </Button>
@@ -93,7 +103,16 @@ function PageComponent() {
       }
     >
       <ScrollArea className="h-full overflow-hidden">
-        <MonitorStatusPage slug={slug} showBackBtn={false} fullWidth={true} />
+        {pageInfo.type === 'static' ? (
+          <iframe
+            srcDoc={(pageInfo.payload as { html?: string })?.html ?? ''}
+            className="h-full w-full border-0 bg-white"
+            title={pageInfo.title}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+          />
+        ) : (
+          <MonitorStatusPage slug={slug} showBackBtn={false} fullWidth={true} />
+        )}
       </ScrollArea>
     </CommonWrapper>
   );

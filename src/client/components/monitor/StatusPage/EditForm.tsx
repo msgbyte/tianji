@@ -29,10 +29,22 @@ import { CaretSortIcon } from '@radix-ui/react-icons';
 import { DeprecatedBadge } from '@/components/DeprecatedBadge';
 import { MonitorStatusPageServiceList } from './ServiceList';
 import { bodySchema } from './schema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { HtmlEditor } from '@/components/CodeEditor/html';
 
 const Text = Typography.Text;
 
+export const pageTypeSchema = z.enum(['status', 'static']).default('status');
+export type PageType = z.infer<typeof pageTypeSchema>;
+
 const editFormSchema = z.object({
+  type: pageTypeSchema,
   title: z.string(),
   slug: z.string().regex(slugRegex),
   description: z.string(),
@@ -42,6 +54,11 @@ const editFormSchema = z.object({
     .or(z.literal(''))
     .optional(),
   body: bodySchema,
+  payload: z
+    .object({
+      html: z.string(),
+    })
+    .optional(),
 
   /**
    * @deprecated
@@ -73,14 +90,18 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
     const form = useForm<MonitorStatusPageEditFormValues>({
       resolver: zodResolver(editFormSchema),
       defaultValues: props.initialValues ?? {
+        type: 'status',
         title: '',
         slug: '',
         description: '',
         domain: '',
         monitorList: [],
         body: { groups: [] },
+        payload: { html: '' },
       },
     });
+
+    const pageType = form.watch('type');
 
     const showDeprecatedMonitorList = props.initialValues
       ? Array.isArray(props.initialValues.monitorList) &&
@@ -111,6 +132,29 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           onSubmit={form.handleSubmit(handleSubmit)}
           className="flex flex-col space-y-2"
         >
+          {/* Type */}
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('Type')}</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="status">{t('Status Page')}</SelectItem>
+                    <SelectItem value="static">{t('Static Page')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Title */}
           <FormField
             control={form.control}
@@ -130,31 +174,36 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
           <FormField
             control={form.control}
             name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('Slug')}</FormLabel>
-                <FormControl>
-                  <AntdInput
-                    {...field}
-                    addonBefore={
-                      width < 280 ? '/status/' : `${window.origin}/status/`
-                    }
-                  />
-                </FormControl>
-                <FormDescription>
-                  <div className="pt-2">
-                    <div>
-                      {t('Accept characters')}: <Text code>a-z</Text>{' '}
-                      <Text code>0-9</Text> <Text code>-</Text>
+            render={({ field }) => {
+              const slugPrefix = pageType === 'static' ? '/p/' : '/status/';
+              return (
+                <FormItem>
+                  <FormLabel>{t('Slug')}</FormLabel>
+                  <FormControl>
+                    <AntdInput
+                      {...field}
+                      addonBefore={
+                        width < 280
+                          ? slugPrefix
+                          : `${window.origin}${slugPrefix}`
+                      }
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    <div className="pt-2">
+                      <div>
+                        {t('Accept characters')}: <Text code>a-z</Text>{' '}
+                        <Text code>0-9</Text> <Text code>-</Text>
+                      </div>
+                      <div>
+                        {t('No consecutive dashes')} <Text code>--</Text>
+                      </div>
                     </div>
-                    <div>
-                      {t('No consecutive dashes')} <Text code>--</Text>
-                    </div>
-                  </div>
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
 
           <Collapsible>
@@ -202,27 +251,57 @@ export const MonitorStatusPageEditForm: React.FC<MonitorStatusPageEditFormProps>
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Body */}
-          <FormField
-            control={form.control}
-            name="body.groups"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('Body')}</FormLabel>
-                <FormControl>
-                  <MonitorStatusPageServiceList
-                    {...field}
-                    value={field.value ?? []}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Body - Status Page */}
+          {pageType === 'status' && (
+            <FormField
+              control={form.control}
+              name="body.groups"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Body')}</FormLabel>
+                  <FormControl>
+                    <MonitorStatusPageServiceList
+                      {...field}
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
-          {/* MonitorList */}
-          {showDeprecatedMonitorList && (
+          {/* HTML Content - Static Page */}
+          {pageType === 'static' && (
+            <FormField
+              control={form.control}
+              name="payload.html"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('HTML Content')}</FormLabel>
+                  <FormControl>
+                    <div className="overflow-hidden rounded-md border">
+                      <HtmlEditor
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        height={400}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    {t(
+                      'Write HTML code that will be rendered in the static page'
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* MonitorList - Status Page (Deprecated) */}
+          {pageType === 'status' && showDeprecatedMonitorList && (
             <FormField
               control={form.control}
               name="monitorList"

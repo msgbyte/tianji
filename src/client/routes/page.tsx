@@ -27,7 +27,7 @@ function PageComponent() {
   const { t } = useTranslation();
   const { data = [], isLoading } = trpc.page.getAllPages.useQuery({
     workspaceId,
-    type: 'status',
+    type: 'all',
   });
   const navigate = useNavigate();
   const pathname = useRouterState({
