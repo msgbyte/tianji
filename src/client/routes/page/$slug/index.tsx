@@ -3,6 +3,7 @@ import { AlertConfirm } from '@/components/AlertConfirm';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
+import { HTMLRender } from '@/components/HTMLRender';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { MonitorStatusPage } from '@/components/monitor/StatusPage';
@@ -104,11 +105,10 @@ function PageComponent() {
     >
       <ScrollArea className="h-full overflow-hidden">
         {pageInfo.type === 'static' ? (
-          <iframe
-            srcDoc={(pageInfo.payload as { html?: string })?.html ?? ''}
-            className="h-full w-full border-0 bg-white"
+          <HTMLRender
+            html={(pageInfo.payload as { html?: string })?.html ?? ''}
+            className="h-full w-full"
             title={pageInfo.title}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
           />
         ) : (
           <MonitorStatusPage slug={slug} showBackBtn={false} fullWidth={true} />

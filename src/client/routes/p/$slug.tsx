@@ -1,5 +1,6 @@
 import { trpc } from '@/api/trpc';
 import { ErrorTip } from '@/components/ErrorTip';
+import { HTMLRender } from '@/components/HTMLRender';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { createFileRoute } from '@tanstack/react-router';
@@ -34,11 +35,10 @@ function PageComponent() {
   const htmlContent = (pageInfo.payload as { html?: string })?.html ?? '';
 
   return (
-    <iframe
-      srcDoc={htmlContent}
-      className="h-screen w-screen border-0 bg-white"
+    <HTMLRender
+      html={htmlContent}
+      className="h-screen w-screen"
       title={pageInfo.title}
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
     />
   );
 }
