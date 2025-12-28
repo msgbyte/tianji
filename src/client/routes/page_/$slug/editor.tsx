@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { trpc } from '@/api/trpc';
 import { useLocalStorageState, useDebounce } from 'ahooks';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { HtmlEditor, HtmlEditorRef } from '@/components/CodeEditor';
@@ -17,33 +18,15 @@ import {
   LuColumns2,
   LuPanelTop,
   LuSparkles,
+  LuSave,
 } from 'react-icons/lu';
 import { cn } from '@/utils/style';
 import { HtmlEditorAIChatPanel } from '@/components/page/HtmlEditorAIChatPanel';
 import { useCurrentWorkspaceId } from '@/store/user';
+import { ErrorTip } from '@/components/ErrorTip';
+import { toast } from 'sonner';
 
 import 'allotment/dist/style.css';
-
-const DEFAULT_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preview</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      padding: 2rem;
-      line-height: 1.6;
-    }
-  </style>
-</head>
-<body>
-  <h1>Hello World</h1>
-  <p>Start editing to see changes...</p>
-  <p>This is a live HTML editor with real-time preview.</p>
-</body>
-</html>`;
 
 export const Route = createFileRoute('/page/$slug/editor')({
   component: PageComponent,
@@ -53,12 +36,23 @@ type LayoutMode = 'split' | 'tabs';
 
 function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
-  const [htmlCode, setHtmlCode] = useLocalStorageState(
-    'tianji-html-editor-code',
+  const { slug } = Route.useParams();
+  const { data: pageInfo } = trpc.page.getPageInfo.useQuery(
+    { slug },
     {
-      defaultValue: DEFAULT_HTML,
+      refetchOnWindowFocus: false,
     }
   );
+  const editPage = trpc.page.editPage.useMutation();
+
+  const [htmlCode, setHtmlCode] = useState('');
+
+  useEffect(() => {
+    if (pageInfo && pageInfo.type === 'static' && pageInfo.payload?.html) {
+      setHtmlCode(pageInfo.payload.html);
+    }
+  }, [pageInfo, setHtmlCode]);
+
   const [layoutMode, setLayoutMode] = useLocalStorageState<LayoutMode>(
     'tianji-html-editor-layout',
     {
@@ -142,7 +136,7 @@ function PageComponent() {
   // Use debounced value and inject line numbers for preview
   const debouncedHtmlCode = useDebounce(htmlCode, { wait: 500 });
   const processedHtmlCode = React.useMemo(() => {
-    return injectLineNumbers(debouncedHtmlCode ?? DEFAULT_HTML);
+    return injectLineNumbers(debouncedHtmlCode);
   }, [debouncedHtmlCode, injectLineNumbers]);
 
   // Clear highlight when code changes
@@ -158,6 +152,23 @@ function PageComponent() {
       editorRef.current.clearHighlight();
     }
   }, [isSelectMode]);
+
+  const handleSave = async () => {
+    if (!pageInfo?.id) return;
+
+    try {
+      await editPage.mutateAsync({
+        id: pageInfo.id,
+        workspaceId: pageInfo.workspaceId,
+        payload: {
+          html: htmlCode,
+        },
+      });
+      toast.success('Saved successfully');
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
 
   // Handle element selection in iframe
   useEffect(() => {
@@ -303,7 +314,7 @@ function PageComponent() {
   const renderEditor = () => (
     <HtmlEditor
       ref={editorRef}
-      value={htmlCode ?? DEFAULT_HTML}
+      value={htmlCode}
       onChange={setHtmlCode}
       height="100%"
     />
@@ -312,6 +323,15 @@ function PageComponent() {
   // Render toolbar buttons
   const renderToolbarButtons = () => (
     <div className="flex gap-1">
+      <Button
+        size="icon-sm"
+        variant="ghost"
+        onClick={handleSave}
+        title="Save (Cmd+S)"
+        disabled={editPage.isPending}
+      >
+        <LuSave className="size-4" />
+      </Button>
       <Button
         size="icon-sm"
         variant={aiPanelVisible ? 'default' : 'ghost'}
@@ -405,6 +425,10 @@ function PageComponent() {
       </Allotment>
     </Tabs>
   );
+
+  if (pageInfo?.type !== 'static') {
+    return <ErrorTip />;
+  }
 
   return (
     <CommonWrapper>
