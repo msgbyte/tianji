@@ -39,6 +39,7 @@ function PageComponent() {
       html={htmlContent}
       className="h-screen w-screen"
       title={pageInfo.title}
+      useTianjiTheme={false}
     />
   );
 }
