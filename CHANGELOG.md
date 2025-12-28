@@ -1,5 +1,27 @@
 
 
+## [1.31.0](https://github.com/msgbyte/tianji/compare/v1.30.25...v1.31.0) (2025-12-28)
+
+### Features
+
+* add html editor ([d222023](https://github.com/msgbyte/tianji/commit/d222023d28dd3ca19b8dd5d145d5252394960818))
+* add html editor for vibe coding prepare ([6dd7c7f](https://github.com/msgbyte/tianji/commit/6dd7c7f763c5b2442a6e2d521f3008cee4dd8653))
+* add new model page ([0fc6e03](https://github.com/msgbyte/tianji/commit/0fc6e0355017d38fff20be1af51606b72af4c9c4))
+* implement AI chat panel for HTML editor with AI tools for generating and modifying HTML ([320c094](https://github.com/msgbyte/tianji/commit/320c094ff1007ef1338998049c6e1ecea33003e7))
+* **routes:** add custom domain management for page routes and change page route ([657e501](https://github.com/msgbyte/tianji/commit/657e5015be004087e1b37d2143f9b5a6c5f8d207))
+* **routes:** add dynamic page routing and enhance status page editing with type selection ([594fa24](https://github.com/msgbyte/tianji/commit/594fa241ae0db2b0a17f95bb60fe79b87caa8947))
+* update streamdown to version 1.6.10 and enhance response component with theme support ([847095b](https://github.com/msgbyte/tianji/commit/847095b6ef944ee72ecd40b9263a594f3be76b38))
+
+### Bug Fixes
+
+* fix a style issue for isCollapsed style with FreeTierTip ([5608a6f](https://github.com/msgbyte/tianji/commit/5608a6f69d0ca8ad402e8c8b9fdea94779b50f53))
+
+### Others
+
+* migrate page file from old path to new path ([36099f1](https://github.com/msgbyte/tianji/commit/36099f13711daf3b294d250a610d9bee5ba2b719))
+* resolve type issue for ci ([62c62a4](https://github.com/msgbyte/tianji/commit/62c62a48fab0a95197d2e178679b90d2244cea4c))
+* update OpenAPI schema path and relocate JSON file to static directory ([0ecdd77](https://github.com/msgbyte/tianji/commit/0ecdd7759cb4ac63963fb37bf0535497fe4d63aa))
+
 ## [1.30.25](https://github.com/msgbyte/tianji/compare/v1.30.24...v1.30.25) (2025-12-22)
 
 ### Features
