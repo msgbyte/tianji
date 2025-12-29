@@ -1,5 +1,17 @@
 
 
+## [1.31.1](https://github.com/msgbyte/tianji/compare/v1.31.0...v1.31.1) (2025-12-29)
+
+### Features
+
+* add HTMLRender to unify render way of static page ([a08b852](https://github.com/msgbyte/tianji/commit/a08b85241517ab610907931172d8fb937923f0d8))
+* add tianji theme inject to improve style display in in tianji's preview ([dcfbcba](https://github.com/msgbyte/tianji/commit/dcfbcba338ba987e43aa97481c432336e16e1510))
+* static page editor add save feature ([5bc2a1a](https://github.com/msgbyte/tianji/commit/5bc2a1a3984a4d7d32cd20235770b0320f7217f7))
+
+### Others
+
+* dump google-play-scraper version ([f848eef](https://github.com/msgbyte/tianji/commit/f848eef2ba6deba50be43cad59bba82851cd5243))
+
 ## [1.31.0](https://github.com/msgbyte/tianji/compare/v1.30.25...v1.31.0) (2025-12-28)
 
 ### Features
