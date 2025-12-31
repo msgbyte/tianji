@@ -25,6 +25,9 @@ import { HtmlEditorAIChatPanel } from '@/components/page/HtmlEditorAIChatPanel';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { ErrorTip } from '@/components/ErrorTip';
 import { toast } from 'sonner';
+import { useTranslation } from '@i18next-toolkit/react';
+import { Separator } from '@/components/ui/separator';
+import { SimpleTooltip } from '@/components/ui/tooltip';
 
 import 'allotment/dist/style.css';
 
@@ -44,8 +47,8 @@ function PageComponent() {
     }
   );
   const editPage = trpc.page.editPage.useMutation();
-
   const [htmlCode, setHtmlCode] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (pageInfo && pageInfo.type === 'static' && pageInfo.payload?.html) {
@@ -322,40 +325,48 @@ function PageComponent() {
 
   // Render toolbar buttons
   const renderToolbarButtons = () => (
-    <div className="flex gap-1">
-      <Button
-        size="icon-sm"
-        variant="ghost"
-        onClick={handleSave}
-        title="Save (Cmd+S)"
-        disabled={editPage.isPending}
-      >
-        <LuSave className="size-4" />
-      </Button>
-      <Button
-        size="icon-sm"
-        variant={aiPanelVisible ? 'default' : 'ghost'}
-        onClick={() => setAiPanelVisible(!aiPanelVisible)}
-        title="AI Assistant"
-      >
-        <LuSparkles className="size-4" />
-      </Button>
-      <Button
-        size="icon-sm"
-        variant={layoutMode === 'split' ? 'default' : 'ghost'}
-        onClick={() => setLayoutMode('split')}
-        title="Split Layout"
-      >
-        <LuColumns2 className="size-4" />
-      </Button>
-      <Button
-        size="icon-sm"
-        variant={layoutMode === 'tabs' ? 'default' : 'ghost'}
-        onClick={() => setLayoutMode('tabs')}
-        title="Tab Layout"
-      >
-        <LuPanelTop className="size-4" />
-      </Button>
+    <div className="flex items-center gap-1">
+      <SimpleTooltip content={t('Split Layout')}>
+        <Button
+          size="icon-sm"
+          variant={layoutMode === 'split' ? 'default' : 'ghost'}
+          onClick={() => setLayoutMode('split')}
+        >
+          <LuColumns2 className="size-4" />
+        </Button>
+      </SimpleTooltip>
+      <SimpleTooltip content={t('Tab Layout')}>
+        <Button
+          size="icon-sm"
+          variant={layoutMode === 'tabs' ? 'default' : 'ghost'}
+          onClick={() => setLayoutMode('tabs')}
+        >
+          <LuPanelTop className="size-4" />
+        </Button>
+      </SimpleTooltip>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      <SimpleTooltip content={t('AI Assistant')}>
+        <Button
+          size="icon-sm"
+          variant={aiPanelVisible ? 'default' : 'ghost'}
+          onClick={() => setAiPanelVisible(!aiPanelVisible)}
+        >
+          <LuSparkles className="size-4" />
+        </Button>
+      </SimpleTooltip>
+
+      <SimpleTooltip content={t('Save')}>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          onClick={handleSave}
+          disabled={editPage.isPending}
+        >
+          <LuSave className="size-4" />
+        </Button>
+      </SimpleTooltip>
     </div>
   );
 
@@ -381,12 +392,7 @@ function PageComponent() {
 
         {centerContent}
 
-        <div className="flex items-center gap-3">
-          <div className="text-muted-foreground text-xs">
-            Live Preview • Auto-saved to localStorage
-          </div>
-          {renderToolbarButtons()}
-        </div>
+        <div className="flex items-center gap-3">{renderToolbarButtons()}</div>
       </div>
     </div>
   );
@@ -408,8 +414,8 @@ function PageComponent() {
     <Tabs defaultValue="editor" className="flex h-full flex-col">
       {renderHeader(
         <TabsList>
-          <TabsTrigger value="editor">Editor</TabsTrigger>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
+          <TabsTrigger value="editor">{t('Editor')}</TabsTrigger>
+          <TabsTrigger value="preview">{t('Preview')}</TabsTrigger>
         </TabsList>
       )}
       <Allotment>
