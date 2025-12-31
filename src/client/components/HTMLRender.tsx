@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { cn } from '@/utils/style';
 import { useTheme } from '@/store/settings';
+import { useIsMount } from '@/hooks/useIsMount';
 // import { useTheme } from '@/hooks/useTheme';
 
 interface HTMLRenderProps extends React.ComponentPropsWithoutRef<'iframe'> {
@@ -13,12 +14,13 @@ interface HTMLRenderProps extends React.ComponentPropsWithoutRef<'iframe'> {
 export const HTMLRender = React.memo(forwardRef<HTMLIFrameElement, HTMLRenderProps>((props, ref) => {
   const { html, title, className, srcDoc, style, useTianjiTheme = true, ...rest } = props;
   const theme = useTheme();
+  const isMount = useIsMount();
 
   // Use html prop for srcDoc if provided, otherwise fallback to srcDoc from props
   const content = React.useMemo(() => {
     const raw = html ?? srcDoc;
 
-    if (!raw) {
+    if (typeof raw !== 'string') {
       return raw;
     }
 
@@ -44,7 +46,7 @@ export const HTMLRender = React.memo(forwardRef<HTMLIFrameElement, HTMLRenderPro
     <iframe
       ref={ref}
       srcDoc={content}
-      className={cn("border-0 bg-white", className)}
+      className={cn("border-0", isMount ? 'bg-white' : 'bg-transparent', className)}
       title={title}
       sandbox={defaultSandbox}
       style={{ ...style }}
