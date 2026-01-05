@@ -26,6 +26,7 @@ import axios from 'axios';
 import { getSurveyStats } from '../../model/survey.js';
 import dayjs from 'dayjs';
 import qs from 'qs';
+import { promSurveySubmitCounter } from '../../utils/prometheus/client.js';
 
 export const surveyRouter = router({
   all: workspaceProcedure
@@ -167,6 +168,8 @@ export const surveyRouter = router({
       } = await getRequestInfo(req);
 
       const sessionId = hashUuid(workspaceId, surveyId, ip, userAgent!);
+
+      promSurveySubmitCounter.inc({ surveyId });
 
       const result = await prisma.surveyResult.create({
         data: {

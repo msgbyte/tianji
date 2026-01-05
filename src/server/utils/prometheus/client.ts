@@ -92,3 +92,9 @@ export const promAIGatewayRequestCounter = new Prometheus.Counter({
   help: 'Total number of AI Gateway requests',
   labelNames: ['modelProvider'],
 });
+
+export const promSurveySubmitCounter = new Prometheus.Counter({
+  name: 'tianji_survey_submit_total',
+  help: 'Total number of survey submissions',
+  labelNames: ['surveyId'],
+});
