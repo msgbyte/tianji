@@ -18,6 +18,7 @@ export const ApplicationSessionModelSchema = z.object({
   latitude: z.number().nullish(),
   accuracyRadius: z.number().int().nullish(),
   createdAt: z.date(),
+  updatedAt: z.date().nullish(),
 })
 
 export interface CompleteApplicationSession extends z.infer<typeof ApplicationSessionModelSchema> {

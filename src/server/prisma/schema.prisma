@@ -403,21 +403,22 @@ model Application {
 }
 
 model ApplicationSession {
-  id             String   @id @unique @db.Uuid
-  applicationId  String   @db.VarChar(30)
-  os             String?  @db.VarChar(20) // android or ios os version
-  language       String?  @db.VarChar(35)
-  version        String?  @db.VarChar(35) // application version
-  sdkVersion     String?  @db.VarChar(35) // tianji sdk version
-  ip             String?  @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
-  country        String?  @db.Char(2)
-  subdivision1   String?  @db.VarChar(20)
-  subdivision2   String?  @db.VarChar(50)
-  city           String?  @db.VarChar(50)
+  id             String    @id @unique @db.Uuid
+  applicationId  String    @db.VarChar(30)
+  os             String?   @db.VarChar(20) // android or ios os version
+  language       String?   @db.VarChar(35)
+  version        String?   @db.VarChar(35) // application version
+  sdkVersion     String?   @db.VarChar(35) // tianji sdk version
+  ip             String?   @db.VarChar(45) // The max length of ipv6 which adapter with ipv4 is 45(for example: [::ffff:192.168.100.228] => 0000:0000:0000:0000:0000:ffff:192.168.100.228)
+  country        String?   @db.Char(2)
+  subdivision1   String?   @db.VarChar(20)
+  subdivision2   String?   @db.VarChar(50)
+  city           String?   @db.VarChar(50)
   longitude      Float?
   latitude       Float?
   accuracyRadius Int?
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime? @updatedAt @db.Timestamptz(6)
 
   application Application @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -757,20 +758,20 @@ model StatusPageIncident {
 }
 
 model Page {
-  id          String   @id @default(cuid()) @db.VarChar(30)
-  workspaceId String   @db.VarChar(30)
-  type        String   @db.VarChar(100) @default("status") // status / static / index
-  slug        String   @unique // url slug
-  title       String   @db.VarChar(100)
-  description String   @default("") @db.VarChar(1000)
+  id          String  @id @default(cuid()) @db.VarChar(30)
+  workspaceId String  @db.VarChar(30)
+  type        String  @default("status") @db.VarChar(100) // status / static / index
+  slug        String  @unique // url slug
+  title       String  @db.VarChar(100)
+  description String  @default("") @db.VarChar(1000)
   domain      String? // custom domain which can add cname record
 
   /// [CommonPayload]
   /// @zod.custom(imports.CommonPayloadSchema)
-  payload        Json     @default("{}")
+  payload Json @default("{}")
 
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
