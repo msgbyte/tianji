@@ -1,5 +1,16 @@
 
 
+## [1.31.2](https://github.com/msgbyte/tianji/compare/v1.31.1...v1.31.2) (2026-01-05)
+
+### Others
+
+* add get location cache for improve usage for get ip ([ed27233](https://github.com/msgbyte/tianji/commit/ed27233ad98a6c8402d5357e6e3b26b0c4bc3274))
+* add survey counter for prometheus ([b1012c5](https://github.com/msgbyte/tianji/commit/b1012c511bfde9fe10aa993b16f4a38257fd6144))
+* add updatedAt in application session which can track update time of builtin info update ([ba9ba06](https://github.com/msgbyte/tianji/commit/ba9ba06fed25769f20dfcbdafcdacd5911bef5b1))
+* improve html render and update tabs panel style ([021530e](https://github.com/msgbyte/tianji/commit/021530e1f578c911f82fb512cb0a7341a8adf776))
+* improve page editor toolbar style and update translation ([16955ee](https://github.com/msgbyte/tianji/commit/16955eea4f5ba93e9b339e228f34a7092c8ae695))
+* record builtin info when save application session data ([8fad875](https://github.com/msgbyte/tianji/commit/8fad875309e5a4bcab1068f5b0e489e076364242))
+
 ## [1.31.1](https://github.com/msgbyte/tianji/compare/v1.31.0...v1.31.1) (2025-12-29)
 
 ### Features
