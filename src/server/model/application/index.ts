@@ -221,7 +221,7 @@ export async function saveApplicationSessionData(data: {
       .catch(() => {});
   }
 
-  const jsonKeys = flattenJSON(omit(sessionData, builtinSessionDataKeys));
+  const jsonKeys = flattenJSON(sessionData);
 
   const flattendData = jsonKeys.map(
     (a) =>
