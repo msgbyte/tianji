@@ -201,7 +201,7 @@ export async function saveApplicationEvent(data: {
   return applicationEvent;
 }
 
-const builtinSessionDataKeys = ['os', 'version', 'sdkVersion'];
+const builtinSessionDataKeys = ['os', 'language', 'version', 'sdkVersion'];
 export async function saveApplicationSessionData(data: {
   applicationId: string;
   sessionId: string;
