@@ -19,6 +19,8 @@ import { AlertConfirm } from '@/components/AlertConfirm';
 import { message } from 'antd';
 import { ApplicationCompareTab } from '@/components/application/ApplicationCompareTab';
 import { ApplicationVersionChart } from '@/components/application/ApplicationVersionChart';
+import { ApplicationCountryChart } from '@/components/application/ApplicationCountryChart';
+import { ApplicationOSChart } from '@/components/application/ApplicationOSChart';
 
 export const Route = createFileRoute('/application/$applicationId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -128,6 +130,8 @@ function PageComponent() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <ApplicationVersionChart applicationId={applicationId} />
+              <ApplicationCountryChart applicationId={applicationId} />
+              <ApplicationOSChart applicationId={applicationId} />
 
               {application.applicationStoreInfos.map((storeInfo) => (
                 <ApplicationOverviewCard

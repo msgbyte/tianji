@@ -348,12 +348,12 @@ export const applicationRouter = router({
 
       return stats;
     }),
-  versionStats: workspaceProcedure
+  sessionStats: workspaceProcedure
     .meta(
       buildApplicationOpenapi({
         method: 'GET',
-        path: '/versionStats',
-        summary: 'Get version distribution stats based on session updatedAt',
+        path: '/sessionStats',
+        summary: 'Get session distribution stats based on session updatedAt',
       })
     )
     .input(
@@ -361,24 +361,25 @@ export const applicationRouter = router({
         applicationId: z.string(),
         startAt: z.number(),
         endAt: z.number(),
+        groupBy: z.enum(['version', 'country', 'os', 'language']),
       })
     )
     .output(
       z
         .object({
-          version: z.string(),
+          name: z.string(),
           count: z.number(),
         })
         .array()
     )
     .query(async ({ input }) => {
-      const { applicationId, startAt, endAt } = input;
+      const { applicationId, startAt, endAt, groupBy } = input;
 
       const startDate = new Date(startAt);
       const endDate = new Date(endAt);
 
-      const versionStats = await prisma.applicationSession.groupBy({
-        by: ['version'],
+      const stats = await prisma.applicationSession.groupBy({
+        by: [groupBy],
         where: {
           applicationId,
           updatedAt: {
@@ -389,10 +390,12 @@ export const applicationRouter = router({
         _count: true,
       });
 
-      return versionStats.map((item) => ({
-        version: item.version || 'Unknown',
-        count: item._count || 0,
-      }));
+      return stats
+        .map((item) => ({
+          name: (item[groupBy] as string) || 'Unknown',
+          count: item._count || 0,
+        }))
+        .sort((a, b) => b.count - a.count);
     }),
 });
 
