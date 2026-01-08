@@ -23,6 +23,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cleanObject } from '@/utils/common';
+import { SurveyEventTable } from '@/components/insights/SurveyEventTable';
 import { Switch } from '@/components/ui/switch';
 import Identicon from 'react-identicons';
 import { getUserTimezone } from '@/api/model/user';
@@ -57,6 +58,7 @@ function PageComponent() {
   const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
 
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
+  const { data: surveys = [] } = trpc.survey.all.useQuery({ workspaceId });
   const { data: warehouseApplicationIds = [] } =
     trpc.insights.warehouseApplications.useQuery({ workspaceId });
 
@@ -66,7 +68,9 @@ function PageComponent() {
   const handleValueChange = useEvent((value: string) => {
     let type: InsightType = 'website';
 
-    if (warehouseApplicationIds.includes(value)) {
+    if (surveys.some((s) => s.id === value)) {
+      type = 'survey';
+    } else if (warehouseApplicationIds.includes(value)) {
       type = 'warehouse';
     }
 
@@ -152,6 +156,16 @@ function PageComponent() {
                       </SelectItem>
                     ))}
                   </SelectGroup>
+                  {surveys.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>{t('Surveys')}</SelectLabel>
+                      {surveys.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
                   {warehouseApplicationIds.length > 0 && (
                     <SelectGroup>
                       <SelectLabel>{t('Warehouse')}</SelectLabel>
@@ -212,6 +226,8 @@ function PageComponent() {
             </DelayRender>
           ) : data.length === 0 ? (
             <Empty description={t('No event data yet')} />
+          ) : insightType === 'survey' ? (
+            <SurveyEventTable surveyId={insightId} data={data} />
           ) : (
             <Collapse
               accordion

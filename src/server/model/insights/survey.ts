@@ -2,17 +2,48 @@ import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { Prisma } from '@prisma/client';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
-import { InsightsSqlBuilder } from './shared.js';
+import { InsightEvent, InsightsSqlBuilder } from './shared.js';
 import {
   insightsSurveyBuiltinFields,
   processGroupedTimeSeriesData,
 } from './utils.js';
+import { prisma } from '../_client.js';
 
 const { sql, raw } = Prisma;
 
 export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
     return 'SurveyResult';
+  }
+
+  protected getDistinctFieldName(): string {
+    return 'sessionId';
+  }
+
+  public buildFetchEventsQuery(cursor: string | undefined): Prisma.Sql {
+    const tableName = this.getTableName();
+    const whereQueryArr = this.buildWhereQueryArr();
+
+    return sql`
+      SELECT
+        "id",
+        "surveyId",
+        "createdAt",
+        "sessionId",
+        "payload",
+        "browser",
+        "os",
+        "language",
+        "country",
+        "subdivision1",
+        "subdivision2",
+        "city"
+      FROM "${raw(tableName)}"
+      WHERE ${Prisma.join(whereQueryArr, ' AND ')}
+      ${cursor ? sql`AND "${raw(tableName)}"."id" < ${cursor}` : Prisma.empty}
+      ORDER BY "${raw(tableName)}"."createdAt" DESC
+      LIMIT ${raw(String(this.resultLimit))}
+    `;
   }
 
   buildSelectQueryArr() {
@@ -123,6 +154,45 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
       valueField
     );
   }
+
+  public async queryEvents(
+    cursor: string | undefined
+  ): Promise<InsightEvent[]> {
+    const allEventsSql = this.buildFetchEventsQuery(cursor);
+    const results = await prisma.$queryRaw<SurveyResultRow[]>(allEventsSql);
+
+    return results.map((result) => ({
+      id: result.id,
+      name: 'survey_submit',
+      createdAt: result.createdAt,
+      properties: {
+        ...result.payload,
+        sessionId: result.sessionId,
+        browser: result.browser,
+        os: result.os,
+        language: result.language,
+        country: result.country,
+        subdivision1: result.subdivision1,
+        subdivision2: result.subdivision2,
+        city: result.city,
+      },
+    }));
+  }
+}
+
+interface SurveyResultRow {
+  id: string;
+  surveyId: string;
+  createdAt: Date;
+  sessionId: string;
+  payload: Record<string, any>;
+  browser: string | null;
+  os: string | null;
+  language: string | null;
+  country: string | null;
+  subdivision1: string | null;
+  subdivision2: string | null;
+  city: string | null;
 }
 
 export async function insightsSurvey(

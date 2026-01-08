@@ -4,7 +4,7 @@ import {
   insightsQuerySchema,
 } from '../../utils/schema.js';
 import { insightsWebsite, WebsiteInsightsSqlBuilder } from './website.js';
-import { insightsSurvey } from './survey.js';
+import { insightsSurvey, SurveyInsightsSqlBuilder } from './survey.js';
 import { insightsAIGateway } from './aiGateway.js';
 import { compact, omit } from 'lodash-es';
 import { prisma } from '../_client.js';
@@ -99,6 +99,20 @@ export async function queryEvents(
           : null,
       };
     });
+  }
+
+  if (insightType === 'survey') {
+    const builder = new SurveyInsightsSqlBuilder(query, {
+      ...context,
+      useClickhouse: false,
+    });
+
+    const events = await builder.queryEvents(query.cursor);
+
+    return events.map((event) => ({
+      ...event,
+      sessions: null,
+    }));
   }
 
   if (insightType === 'warehouse') {
