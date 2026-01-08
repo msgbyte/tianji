@@ -181,7 +181,7 @@ export const aiRouter = router({
       } = input;
       const { language } = ctx;
 
-      sendBuildSurveyTranslationMessageQueue({
+      await sendBuildSurveyTranslationMessageQueue({
         workspaceId,
         surveyId,
         startAt,
