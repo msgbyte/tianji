@@ -26,6 +26,7 @@ import {
   getTelemetrySessionMetrics,
   getTelemetryStats,
   getTelemetryUrlMetrics,
+  delTelemetryCache,
 } from '../../model/telemetry.js';
 import { BaseQueryFilters } from '../../utils/prisma.js';
 import dayjs from 'dayjs';
@@ -153,7 +154,7 @@ export const telemetryRouter = router({
       const { workspaceId, telemetryId, name } = input;
 
       if (telemetryId) {
-        return prisma.telemetry.update({
+        const telemetry = await prisma.telemetry.update({
           where: {
             id: telemetryId,
             workspaceId,
@@ -162,6 +163,10 @@ export const telemetryRouter = router({
             name,
           },
         });
+
+        await delTelemetryCache(telemetryId);
+
+        return telemetry;
       } else {
         return prisma.telemetry.create({
           data: {
@@ -188,12 +193,16 @@ export const telemetryRouter = router({
     .mutation(async ({ input }) => {
       const { workspaceId, telemetryId } = input;
 
-      return prisma.telemetry.delete({
+      const telemetry = await prisma.telemetry.delete({
         where: {
           id: telemetryId,
           workspaceId,
         },
       });
+
+      await delTelemetryCache(telemetryId);
+
+      return telemetry;
     }),
   pageviews: workspaceProcedure
     .meta(

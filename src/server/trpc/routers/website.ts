@@ -11,6 +11,7 @@ import {
   getWorkspaceWebsitePageview,
   getWorkspaceWebsiteSession,
   getWorkspaceWebsiteStats,
+  delWebsiteCache,
 } from '../../model/website/index.js';
 import { prisma } from '../../model/_client.js';
 import {
@@ -590,6 +591,8 @@ export const websiteRouter = router({
         },
       });
 
+      await delWebsiteCache(websiteId);
+
       return website;
     }),
   updateInfo: workspaceAdminProcedure
@@ -623,6 +626,8 @@ export const websiteRouter = router({
           monitorId,
         },
       });
+
+      await delWebsiteCache(websiteId);
 
       return websiteInfo;
     }),
@@ -1000,6 +1005,8 @@ export const websiteRouter = router({
             shareId,
           },
         });
+
+        await delWebsiteCache(input.websiteId);
       }
 
       return {
@@ -1034,6 +1041,8 @@ export const websiteRouter = router({
           shareId: null,
         },
       });
+
+      await delWebsiteCache(input.websiteId);
 
       return { success: true };
     }),

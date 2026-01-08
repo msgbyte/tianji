@@ -15,6 +15,7 @@ import {
   searchStoreApps,
   setupStoreInfo,
 } from '../../model/application/storeInfo.js';
+import { delApplicationCache } from '../../model/application/index.js';
 import {
   eventStatsQueryResultItemSchema,
   getApplicationEventStats,
@@ -173,6 +174,8 @@ export const applicationRouter = router({
         },
       });
 
+      await delApplicationCache(applicationId);
+
       await setupStoreInfo(application.id, {
         appstoreId,
         playstoreId,
@@ -213,6 +216,8 @@ export const applicationRouter = router({
           workspaceId,
         },
       });
+
+      await delApplicationCache(applicationId);
 
       return application;
     }),

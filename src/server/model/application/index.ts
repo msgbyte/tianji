@@ -11,6 +11,7 @@ import { getClientInfo } from '../../utils/detect.js';
 import { DATA_TYPE, EVENT_NAME_LENGTH, EVENT_TYPE } from '../../utils/const.js';
 import type { DynamicData } from '../../utils/types.js';
 import { omit, pick } from 'lodash-es';
+import { buildQueryWithCache } from '../../cache/index.js';
 
 export interface ApplicationEventPayload {
   data?: object;
@@ -110,37 +111,55 @@ export async function findSession(
   return res;
 }
 
+const { get: getApplicationFromCache, del: delApplicationCache } =
+  buildQueryWithCache(
+    async (applicationId: string): Promise<Application | null> => {
+      const application = await prisma.application.findUnique({
+        where: {
+          id: applicationId,
+        },
+      });
+
+      if (!application || application.deletedAt) {
+        return null;
+      }
+
+      return application;
+    }
+  );
+
 export async function loadApplication(
   applicationId: string
 ): Promise<Application | null> {
-  const application = await prisma.application.findUnique({
-    where: {
-      id: applicationId,
-    },
-  });
-
-  if (!application || application.deletedAt) {
-    return null;
-  }
-
-  return application;
+  return getApplicationFromCache(applicationId);
 }
+
+export { delApplicationCache };
+
+const { get: getApplicationSessionFromCache, del: delApplicationSessionCache } =
+  buildQueryWithCache(
+    async (sessionId: string): Promise<ApplicationSession | null> => {
+      const session = await prisma.applicationSession.findUnique({
+        where: {
+          id: sessionId,
+        },
+      });
+
+      if (!session) {
+        return null;
+      }
+
+      return session;
+    }
+  );
 
 async function loadSession(
   sessionId: string
 ): Promise<ApplicationSession | null> {
-  const session = await prisma.applicationSession.findUnique({
-    where: {
-      id: sessionId,
-    },
-  });
-
-  if (!session) {
-    return null;
-  }
-
-  return session;
+  return getApplicationSessionFromCache(sessionId);
 }
+
+export { delApplicationSessionCache };
 
 export async function saveApplicationEvent(data: {
   sessionId: string;

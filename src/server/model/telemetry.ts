@@ -9,6 +9,7 @@ import {
   parseTelemetryFilters,
 } from '../utils/prisma.js';
 import { SESSION_COLUMNS } from '../utils/const.js';
+import { buildQueryWithCache } from '../cache/index.js';
 
 export async function recordTelemetryEvent(req: Request) {
   const { name, title, start, fullNum, force, ...others } = req.query;
@@ -127,37 +128,51 @@ async function findSession(req: Request, url: string) {
   return session;
 }
 
+const { get: getTelemetrySessionFromCache, del: delTelemetrySessionCache } =
+  buildQueryWithCache(async (sessionId: string): Promise<TelemetrySession | null> => {
+    const session = await prisma.telemetrySession.findUnique({
+      where: {
+        id: sessionId,
+      },
+    });
+
+    if (!session) {
+      return null;
+    }
+
+    return session;
+  });
+
 async function loadSession(
   sessionId: string
 ): Promise<TelemetrySession | null> {
-  const session = await prisma.telemetrySession.findUnique({
-    where: {
-      id: sessionId,
-    },
-  });
-
-  if (!session) {
-    return null;
-  }
-
-  return session;
+  return getTelemetrySessionFromCache(sessionId);
 }
+
+export { delTelemetrySessionCache };
+
+const { get: getTelemetryFromCache, del: delTelemetryCache } =
+  buildQueryWithCache(async (telemetryId: string): Promise<Telemetry | null> => {
+    const telemetry = await prisma.telemetry.findUnique({
+      where: {
+        id: telemetryId,
+      },
+    });
+
+    if (!telemetry || telemetry.deletedAt) {
+      return null;
+    }
+
+    return telemetry;
+  });
 
 export async function loadTelemetry(
   telemetryId: string
 ): Promise<Telemetry | null> {
-  const telemetry = await prisma.telemetry.findUnique({
-    where: {
-      id: telemetryId,
-    },
-  });
-
-  if (!telemetry || telemetry.deletedAt) {
-    return null;
-  }
-
-  return telemetry;
+  return getTelemetryFromCache(telemetryId);
 }
+
+export { delTelemetryCache };
 
 export async function getTelemetryPageview(
   telemetryId: string,

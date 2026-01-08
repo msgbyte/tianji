@@ -28,6 +28,7 @@ import { logger } from '../../utils/logger.js';
 import { env } from '../../utils/env.js';
 import { clickhouse } from '../../clickhouse/index.js';
 import { clickhouseHealthManager } from '../../clickhouse/health.js';
+import { buildQueryWithCache } from '../../cache/index.js';
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -157,33 +158,50 @@ export async function findSession(
   return res;
 }
 
-export async function loadWebsite(websiteId: string): Promise<Website | null> {
-  const website = await prisma.website.findUnique({
-    where: {
-      id: websiteId,
-    },
-  });
+const { get: getWebsiteFromCache, del: delWebsiteCache } = buildQueryWithCache(
+  async (websiteId: string): Promise<Website | null> => {
+    const website = await prisma.website.findUnique({
+      where: {
+        id: websiteId,
+      },
+    });
 
-  if (!website || website.deletedAt) {
-    return null;
+    if (!website || website.deletedAt) {
+      return null;
+    }
+
+    return website;
   }
+);
 
-  return website;
+export async function loadWebsite(websiteId: string): Promise<Website | null> {
+  return getWebsiteFromCache(websiteId);
 }
+
+export { delWebsiteCache };
+
+const { get: getSessionFromCache, del: delWebsiteSessionCache } =
+  buildQueryWithCache(
+    async (sessionId: string): Promise<WebsiteSession | null> => {
+      const session = await prisma.websiteSession.findUnique({
+        where: {
+          id: sessionId,
+        },
+      });
+
+      if (!session) {
+        return null;
+      }
+
+      return session;
+    }
+  );
 
 async function loadSession(sessionId: string): Promise<WebsiteSession | null> {
-  const session = await prisma.websiteSession.findUnique({
-    where: {
-      id: sessionId,
-    },
-  });
-
-  if (!session) {
-    return null;
-  }
-
-  return session;
+  return getSessionFromCache(sessionId);
 }
+
+export { delWebsiteSessionCache };
 
 export async function saveWebsiteEvent(data: {
   sessionId: string;
