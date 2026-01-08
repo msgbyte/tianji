@@ -3,28 +3,33 @@ import { useTranslation } from '@i18next-toolkit/react';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ColumnDef } from '@tanstack/react-table';
+import { VirtualizedInfiniteDataTable } from '../VirtualizedInfiniteDataTable';
+import { cn } from '@/utils/style';
+
+interface EventData {
+  id: string;
+  name: string;
+  createdAt: string;
+  properties: Record<string, any>;
+}
 
 interface SurveyEventTableProps {
   surveyId: string;
-  data: Array<{
-    id: string;
-    name: string;
-    createdAt: string;
-    properties: Record<string, any>;
-  }>;
+  data: EventData[];
+  hasMore?: boolean;
+  isLoading?: boolean;
+  onLoadMore?: () => void;
+  className?: string;
 }
 
 export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
   surveyId,
   data,
+  hasMore = false,
+  isLoading = false,
+  onLoadMore,
+  className,
 }) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
@@ -42,49 +47,60 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
     return payload.items || [];
   }, [survey]);
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[180px]">{t('Time')}</TableHead>
-          {surveyFields.map((field) => (
-            <TableHead key={field.name}>{field.label}</TableHead>
-          ))}
-          <TableHead className="w-[100px]">{t('Country')}</TableHead>
-          <TableHead className="w-[100px]">{t('Browser')}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((event) => {
-          const eventDate = dayjs(event.createdAt);
+  const columns = useMemo<ColumnDef<EventData>[]>(() => {
+    const baseColumns: ColumnDef<EventData>[] = [
+      {
+        accessorKey: 'createdAt',
+        header: t('Time'),
+        size: 180,
+        cell: ({ row }) => {
+          const eventDate = dayjs(row.original.createdAt);
+          return eventDate.isValid()
+            ? eventDate.format('YYYY-MM-DD HH:mm:ss')
+            : '-';
+        },
+      },
+    ];
 
-          return (
-            <TableRow key={event.id}>
-              <TableCell className="text-muted-foreground text-xs">
-                {eventDate.isValid()
-                  ? eventDate.format('YYYY-MM-DD HH:mm:ss')
-                  : '-'}
-              </TableCell>
-              {surveyFields.map((field) => {
-                const value = event.properties[field.name];
-                return (
-                  <TableCell key={field.name} className="max-w-[300px]">
-                    <div className="truncate" title={String(value ?? '')}>
-                      {value != null ? String(value) : '-'}
-                    </div>
-                  </TableCell>
-                );
-              })}
-              <TableCell className="text-muted-foreground text-xs">
-                {event.properties.country || '-'}
-              </TableCell>
-              <TableCell className="text-muted-foreground text-xs">
-                {event.properties.browser || '-'}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    const fieldColumns: ColumnDef<EventData>[] = surveyFields.map((field) => ({
+      id: field.name,
+      accessorFn: (row) => row.properties[field.name],
+      header: field.label,
+      size: 150,
+      cell: ({ getValue }) => {
+        const value = getValue();
+        return value != null ? String(value) : '-';
+      },
+    }));
+
+    const metaColumns: ColumnDef<EventData>[] = [
+      {
+        id: 'country',
+        accessorFn: (row) => row.properties.country,
+        header: t('Country'),
+        size: 100,
+      },
+      {
+        id: 'browser',
+        accessorFn: (row) => row.properties.browser,
+        header: t('Browser'),
+        size: 100,
+      },
+    ];
+
+    return [...baseColumns, ...fieldColumns, ...metaColumns];
+  }, [surveyFields, t]);
+
+  return (
+    <div className={cn('h-full min-h-0 overflow-hidden', className)}>
+      <VirtualizedInfiniteDataTable
+        columns={columns}
+        data={data}
+        hasNextPage={hasMore}
+        isFetching={isLoading}
+        isLoading={isLoading && data.length === 0}
+        onFetchNextPage={onLoadMore ?? (() => {})}
+      />
+    </div>
   );
 };

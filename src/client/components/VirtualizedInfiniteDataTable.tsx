@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-
-//3 TanStack Libraries!!!
 import {
   ColumnDef,
   flexRender,
@@ -8,7 +6,6 @@ import {
   Row,
   useReactTable,
 } from '@tanstack/react-table';
-import { InfiniteData } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   TableBody,

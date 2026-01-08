@@ -4,8 +4,9 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import { InsightType, useInsightsStore } from '@/store/insights';
 import { trpc } from '@/api/trpc';
 import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Collapse, Empty } from 'antd';
+import { Button } from '@/components/ui/button';
 import { FilterSection } from '@/components/insights/FilterSection';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
@@ -65,6 +66,21 @@ function PageComponent() {
   // JSON mode state
   const [jsonMode, setJsonMode] = useState(false);
 
+  // Data state
+  const [allData, setAllData] = useState<
+    Array<{
+      id: string;
+      name: string;
+      createdAt: string;
+      properties: Record<string, any>;
+      sessions?: Record<string, any> | null;
+    }>
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+
+  const trpcUtils = trpc.useUtils();
+
   const handleValueChange = useEvent((value: string) => {
     let type: InsightType = 'website';
 
@@ -77,32 +93,59 @@ function PageComponent() {
     setInsightTarget(value, type);
   });
 
-  // Query params for trpc
-  const queryParams = useMemo(
-    () => ({
-      workspaceId,
-      insightId,
-      insightType,
-      metrics: [{ name: '$all_event', math: 'events' as const }], // Only support 'events' or 'sessions'
-      filters,
-      groups: [],
-      time: {
-        startAt: dateRange[0].valueOf(),
-        endAt: dateRange[1].valueOf(),
-        unit: 'day' as const,
-        timezone: getUserTimezone(),
-      },
-    }),
-    [workspaceId, insightId, insightType, filters, dateRange]
-  );
+  // Fetch events function
+  const fetchEvents = useEvent(async (cursor?: string) => {
+    if (!insightId) return;
 
-  // Query events
-  const { data = [], isFetching } = trpc.insights.queryEvents.useQuery(
-    queryParams,
-    {
-      enabled: Boolean(insightId),
+    setIsLoading(true);
+    try {
+      const result = await trpcUtils.insights.queryEvents.fetch({
+        workspaceId,
+        insightId,
+        insightType,
+        metrics: [{ name: '$all_event', math: 'events' as const }],
+        filters,
+        groups: [],
+        time: {
+          startAt: dateRange[0].valueOf(),
+          endAt: dateRange[1].valueOf(),
+          unit: 'day' as const,
+          timezone: getUserTimezone(),
+        },
+        cursor,
+      });
+
+      if (cursor) {
+        // Load more - append data
+        setAllData((prev) => [...prev, ...result]);
+      } else {
+        // Initial load - replace data
+        setAllData(result);
+      }
+      setHasMore(result.length >= 100);
+    } finally {
+      setIsLoading(false);
     }
-  );
+  });
+
+  // Stringify filters for stable dependency
+  const filtersKey = JSON.stringify(filters);
+  const dateRangeKey = `${dateRange[0].valueOf()}-${dateRange[1].valueOf()}`;
+
+  // Initial fetch and refetch when params change
+  useEffect(() => {
+    setAllData([]);
+    fetchEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspaceId, insightId, insightType, filtersKey, dateRangeKey]);
+
+  // Handle load more
+  const handleLoadMore = useEvent(() => {
+    if (allData.length > 0 && !isLoading) {
+      const lastItem = allData[allData.length - 1];
+      fetchEvents(lastItem.id);
+    }
+  });
 
   // Render event properties as grid
   function renderGrid(properties: Record<string, any> | null) {
@@ -198,11 +241,14 @@ function PageComponent() {
           <div className="flex-1" />
 
           {/* Switch for JSON/Grid mode */}
-          <div className="ml-4 flex items-center gap-1">
-            <span className="text-xs text-gray-500">Grid</span>
-            <Switch checked={jsonMode} onCheckedChange={setJsonMode} />
-            <span className="text-xs text-gray-500">JSON</span>
-          </div>
+
+          {insightType === 'survey' && (
+            <div className="ml-4 flex items-center gap-1">
+              <span className="text-xs text-gray-500">Grid</span>
+              <Switch checked={jsonMode} onCheckedChange={setJsonMode} />
+              <span className="text-xs text-gray-500">JSON</span>
+            </div>
+          )}
         </div>
 
         <div className="mb-2">
@@ -217,121 +263,150 @@ function PageComponent() {
           />
         </div>
 
-        <ScrollArea className="flex-1 overflow-hidden">
-          {isFetching ? (
-            <DelayRender>
-              <div className="flex h-40 items-center justify-center">
-                <SearchLoadingView className="pt-4" />
-              </div>
-            </DelayRender>
-          ) : data.length === 0 ? (
-            <Empty description={t('No event data yet')} />
-          ) : insightType === 'survey' ? (
-            <SurveyEventTable surveyId={insightId} data={data} />
-          ) : (
-            <Collapse
-              accordion
-              expandIcon={({ isActive }) => (
-                <LuChevronDown
-                  className={cn(isActive ? 'rotate-0' : '-rotate-90')}
-                  size={16}
-                />
-              )}
-            >
-              {data.map((event, index) => {
-                // Calculate date difference
-                const eventDate = dayjs(event.createdAt);
-                const diffNow = eventDate.isValid() ? eventDate.fromNow() : '';
+        {isLoading && allData.length === 0 ? (
+          <DelayRender>
+            <div className="flex h-40 items-center justify-center">
+              <SearchLoadingView className="pt-4" />
+            </div>
+          </DelayRender>
+        ) : allData.length === 0 ? (
+          <Empty description={t('No event data yet')} />
+        ) : insightType === 'survey' ? (
+          <SurveyEventTable
+            className="flex-1"
+            surveyId={insightId}
+            data={allData}
+            hasMore={hasMore}
+            isLoading={isLoading}
+            onLoadMore={handleLoadMore}
+          />
+        ) : (
+          <ScrollArea className="flex-1 overflow-hidden">
+            <>
+              <Collapse
+                accordion
+                expandIcon={({ isActive }) => (
+                  <LuChevronDown
+                    className={cn(isActive ? 'rotate-0' : '-rotate-90')}
+                    size={16}
+                  />
+                )}
+              >
+                {allData.map((event, index) => {
+                  // Calculate date difference
+                  const eventDate = dayjs(event.createdAt);
+                  const diffNow = eventDate.isValid()
+                    ? eventDate.fromNow()
+                    : '';
 
-                // Get user ID
-                const userId =
-                  event.properties.distinctId ||
-                  event.properties.userId ||
-                  event.properties.user_id ||
-                  event.properties.sessionId ||
-                  '';
+                  // Get user ID
+                  const userId =
+                    event.properties.distinctId ||
+                    event.properties.userId ||
+                    event.properties.user_id ||
+                    event.properties.sessionId ||
+                    '';
 
-                // Clean properties and sessions objects to remove falsy values
-                const cleanedProperties = cleanObject(
-                  get(event, 'properties', {})
-                );
-                const cleanedSessions = cleanObject(get(event, 'sessions', {}));
+                  // Clean properties and sessions objects to remove falsy values
+                  const cleanedProperties = cleanObject(
+                    get(event, 'properties', {})
+                  );
+                  const cleanedSessions = cleanObject(
+                    get(event, 'sessions', {})
+                  );
 
-                return (
-                  <Collapse.Panel
-                    header={
-                      <div className="flex flex-col gap-1">
-                        <div className="flex w-full items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">{event.name}</span>
+                  return (
+                    <Collapse.Panel
+                      header={
+                        <div className="flex flex-col gap-1">
+                          <div className="flex w-full items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">
+                                {event.name}
+                              </span>
+                            </div>
+
+                            <div className="overflow-hidden rounded-sm bg-white p-0.5">
+                              {userId && (
+                                <div title={userId}>
+                                  <Identicon string={userId} size={20} />
+                                </div>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="overflow-hidden rounded-sm bg-white p-0.5">
-                            {userId && (
-                              <div title={userId}>
-                                <Identicon string={userId} size={20} />
-                              </div>
+                          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                            {eventDate.isValid() && (
+                              <>
+                                <span>
+                                  {eventDate.format('YYYY-MM-DD HH:mm:ss')}
+                                </span>
+                                <span>({diffNow})</span>
+                              </>
                             )}
                           </div>
                         </div>
-
-                        <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                          {eventDate.isValid() && (
-                            <>
-                              <span>
-                                {eventDate.format('YYYY-MM-DD HH:mm:ss')}
-                              </span>
-                              <span>({diffNow})</span>
-                            </>
+                      }
+                      key={`${event.id}-${index}`}
+                    >
+                      {jsonMode ? (
+                        <pre className="overflow-x-auto rounded p-2 text-xs">
+                          {JSON.stringify(
+                            {
+                              ...cleanedSessions,
+                              ...cleanedProperties,
+                            },
+                            null,
+                            2
                           )}
-                        </div>
-                      </div>
-                    }
-                    key={`${event.id}-${index}`}
-                  >
-                    {jsonMode ? (
-                      <pre className="overflow-x-auto rounded p-2 text-xs">
-                        {JSON.stringify(
-                          {
-                            ...cleanedSessions,
-                            ...cleanedProperties,
-                          },
-                          null,
-                          2
-                        )}
-                      </pre>
-                    ) : (
-                      <Tabs defaultValue="all" className="w-full">
-                        <TabsList className="mb-2">
-                          <TabsTrigger value="all">{t('All')}</TabsTrigger>
-                          <TabsTrigger value="event">{t('Event')}</TabsTrigger>
-
-                          {Object.keys(cleanedSessions).length > 0 && (
-                            <TabsTrigger value="session">
-                              {t('Session')}
+                        </pre>
+                      ) : (
+                        <Tabs defaultValue="all" className="w-full">
+                          <TabsList className="mb-2">
+                            <TabsTrigger value="all">{t('All')}</TabsTrigger>
+                            <TabsTrigger value="event">
+                              {t('Event')}
                             </TabsTrigger>
-                          )}
-                        </TabsList>
-                        <TabsContent value="all">
-                          {renderGrid({
-                            ...cleanedSessions,
-                            ...cleanedProperties,
-                          })}
-                        </TabsContent>
-                        <TabsContent value="event">
-                          {renderGrid(cleanedProperties)}
-                        </TabsContent>
-                        <TabsContent value="session">
-                          {renderGrid(cleanedSessions)}
-                        </TabsContent>
-                      </Tabs>
-                    )}
-                  </Collapse.Panel>
-                );
-              })}
-            </Collapse>
-          )}
-        </ScrollArea>
+
+                            {Object.keys(cleanedSessions).length > 0 && (
+                              <TabsTrigger value="session">
+                                {t('Session')}
+                              </TabsTrigger>
+                            )}
+                          </TabsList>
+                          <TabsContent value="all">
+                            {renderGrid({
+                              ...cleanedSessions,
+                              ...cleanedProperties,
+                            })}
+                          </TabsContent>
+                          <TabsContent value="event">
+                            {renderGrid(cleanedProperties)}
+                          </TabsContent>
+                          <TabsContent value="session">
+                            {renderGrid(cleanedSessions)}
+                          </TabsContent>
+                        </Tabs>
+                      )}
+                    </Collapse.Panel>
+                  );
+                })}
+              </Collapse>
+
+              {hasMore && (
+                <div className="flex justify-center py-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleLoadMore}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? t('Loading...') : t('Load More')}
+                  </Button>
+                </div>
+              )}
+            </>
+          </ScrollArea>
+        )}
       </div>
     </CommonWrapper>
   );
