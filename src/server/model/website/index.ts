@@ -109,36 +109,28 @@ export async function findSession(
 
   // Create a session if not found
   if (!session) {
-    try {
-      session = await prisma.websiteSession.create({
-        data: {
-          id: sessionId,
-          websiteId,
-          hostname,
-          browser,
-          os,
-          device,
-          screen,
-          language,
-          ip,
-          country,
-          subdivision1,
-          subdivision2,
-          city,
-          longitude,
-          latitude,
-          accuracyRadius,
-        },
-      });
-    } catch (e: any) {
-      if (!e.message.toLowerCase().includes('unique constraint')) {
-        throw e;
-      }
-
-      logger.error(
-        `[Find Session] create website session failed: ${String(e)}, sessionId: ${sessionId}, websiteId: ${websiteId}`
-      );
-    }
+    session = await prisma.websiteSession.upsert({
+      where: { id: sessionId },
+      create: {
+        id: sessionId,
+        websiteId,
+        hostname,
+        browser,
+        os,
+        device,
+        screen,
+        language,
+        ip,
+        country,
+        subdivision1,
+        subdivision2,
+        city,
+        longitude,
+        latitude,
+        accuracyRadius,
+      },
+      update: {},
+    });
   }
 
   const res: WebsiteSession & { workspaceId: string } = {

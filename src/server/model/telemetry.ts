@@ -16,7 +16,7 @@ export async function recordTelemetryEvent(req: Request) {
   const url =
     req.query.url && force === 'true'
       ? req.query.url
-      : req.headers.referer ?? req.query.url;
+      : (req.headers.referer ?? req.query.url);
 
   if (!(url && typeof url === 'string')) {
     return;
@@ -103,29 +103,25 @@ async function findSession(req: Request, url: string) {
 
   let session = await loadSession(sessionId);
   if (!session) {
-    try {
-      session = await prisma.telemetrySession.create({
-        data: {
-          id: sessionId,
-          workspaceId,
-          hostname,
-          browser,
-          os,
-          ip,
-          country,
-          subdivision1,
-          subdivision2,
-          city,
-          longitude,
-          latitude,
-          accuracyRadius,
-        },
-      });
-    } catch (e: any) {
-      if (!e.message.toLowerCase().includes('unique constraint')) {
-        throw e;
-      }
-    }
+    session = await prisma.telemetrySession.upsert({
+      where: { id: sessionId },
+      create: {
+        id: sessionId,
+        workspaceId,
+        hostname,
+        browser,
+        os,
+        ip,
+        country,
+        subdivision1,
+        subdivision2,
+        city,
+        longitude,
+        latitude,
+        accuracyRadius,
+      },
+      update: {},
+    });
   }
 
   return session;
