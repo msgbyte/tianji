@@ -1,5 +1,23 @@
 
 
+## [1.31.3](https://github.com/msgbyte/tianji/compare/v1.31.2...v1.31.3) (2026-01-08)
+
+### Features
+
+* add country and OS distribution charts for application sessions ([47165b5](https://github.com/msgbyte/tianji/commit/47165b537d2f75171bb5e3f7b0b8cf0a2b525310))
+* add survey event fetch ([da931f4](https://github.com/msgbyte/tianji/commit/da931f427b3a7082ade554e1557b3733a0682ffa))
+* add version stats feature ([04070f7](https://github.com/msgbyte/tianji/commit/04070f7c118606c5484fd23fa49dfa70439f3fca))
+* enhance SurveyEventTable with virtualized data fetching and loading state management ([6f756c5](https://github.com/msgbyte/tianji/commit/6f756c53c5e530eeddd286078de5986ae7eeaadc))
+
+### Bug Fixes
+
+* handle uncaught exceptions and unhandled rejections in server initialization ([6c0dbea](https://github.com/msgbyte/tianji/commit/6c0dbeab26b11cc6e6e6ab49118212ccb81ccd40))
+
+### Others
+
+* add builtin session data key language ([97e0861](https://github.com/msgbyte/tianji/commit/97e0861c3d144aade757562d014a13b318791d0e))
+* update layout for application overview cards in the application details page ([0a39068](https://github.com/msgbyte/tianji/commit/0a39068744620648d8b9e1e35b27da8beed57ff5))
+
 ## [1.31.2](https://github.com/msgbyte/tianji/compare/v1.31.1...v1.31.2) (2026-01-05)
 
 ### Others
