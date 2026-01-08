@@ -13,6 +13,7 @@ import { get } from 'lodash-es';
 import { updateMonitorErrorMessage } from './index.js';
 import { formatString } from '../../utils/template.js';
 import { withDistributedLock, getCacheManager } from '../../cache/index.js';
+import { promMonitorExecutionCounter } from '../../utils/prometheus/client.js';
 
 /**
  * Class which actually run monitor data collect
@@ -165,6 +166,11 @@ export class MonitorRunner {
           });
 
           subscribeEventBus.emit('onMonitorReceiveNewData', workspaceId, data);
+
+          promMonitorExecutionCounter.inc({
+            monitorId: monitor.id,
+            status: value > 0 ? 'success' : 'error',
+          });
         } catch (err) {
           logger.error('[Monitor] Run monitor error,', monitor.id, String(err));
         }

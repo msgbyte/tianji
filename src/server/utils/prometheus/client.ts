@@ -21,6 +21,12 @@ export const promMonitorRunnerCounter = new Prometheus.Gauge({
   help: 'monitor runner counter',
 });
 
+export const promMonitorExecutionCounter = new Prometheus.Counter({
+  name: 'tianji_monitor_execution_total',
+  help: 'Total number of monitor executions',
+  labelNames: ['monitorId', 'status'],
+});
+
 export const promServerCounter = new Prometheus.Gauge({
   name: 'tianji_server_count',
   help: 'server count',
