@@ -13,6 +13,7 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 
 export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
+  'worker',
   async (workerId: string, workspaceId: string) => {
     const worker = await prisma.functionWorker.findUnique({
       where: {

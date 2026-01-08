@@ -155,7 +155,7 @@ export async function getWorkspaceServiceCount(workspaceId: string) {
 }
 
 export const { get: getWorkspaceSettings, del: clearWorkspaceSettingsCache } =
-  buildQueryWithCache(async (workspaceId: string) => {
+  buildQueryWithCache('workspaceSettings', async (workspaceId: string) => {
     const workspace = await prisma.workspace.findUnique({
       where: {
         id: workspaceId,

@@ -129,7 +129,7 @@ async function findSession(req: Request, url: string) {
 }
 
 const { get: getTelemetrySessionFromCache, del: delTelemetrySessionCache } =
-  buildQueryWithCache(async (sessionId: string): Promise<TelemetrySession | null> => {
+  buildQueryWithCache('telemetrySession', async (sessionId: string): Promise<TelemetrySession | null> => {
     const session = await prisma.telemetrySession.findUnique({
       where: {
         id: sessionId,
@@ -152,7 +152,7 @@ async function loadSession(
 export { delTelemetrySessionCache };
 
 const { get: getTelemetryFromCache, del: delTelemetryCache } =
-  buildQueryWithCache(async (telemetryId: string): Promise<Telemetry | null> => {
+  buildQueryWithCache('telemetry', async (telemetryId: string): Promise<Telemetry | null> => {
     const telemetry = await prisma.telemetry.findUnique({
       where: {
         id: telemetryId,

@@ -3,7 +3,7 @@ import { prisma } from '../_client.js';
 import { clearWarehouseApplicationsCache } from '../insights/warehouse/utils.js';
 
 const { get: getWorkspaceConfig, del: clearWorkspaceConfigCache } =
-  buildQueryWithCache(async (workspaceId: string, key: string) => {
+  buildQueryWithCache('workspaceConfig', async (workspaceId: string, key: string) => {
     return prisma.workspaceConfig
       .findUnique({
         where: {

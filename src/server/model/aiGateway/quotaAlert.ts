@@ -59,7 +59,7 @@ const {
   get: getQuotaAlertCache,
   del: clearQuotaAlertCache,
   update: updateQuotaAlertCache,
-} = buildQueryWithCache(async (workspaceId: string, gatewayId: string) => {
+} = buildQueryWithCache('quotaAlert', async (workspaceId: string, gatewayId: string) => {
   return await prisma.aIGatewayQuotaAlert.findFirst({
     where: {
       workspaceId,

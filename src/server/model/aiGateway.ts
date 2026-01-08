@@ -17,16 +17,19 @@ import { logger } from '../utils/logger.js';
 import { promAIGatewayRequestCounter } from '../utils/prometheus/client.js';
 
 export const { get: getGatewayInfoCache, del: clearGatewayInfoCache } =
-  buildQueryWithCache(async (workspaceId: string, gatewayId: string) => {
-    const gatewayInfo = await prisma.aIGateway.findUnique({
-      where: {
-        workspaceId,
-        id: gatewayId,
-      },
-    });
+  buildQueryWithCache(
+    'aiGatewayInfo',
+    async (workspaceId: string, gatewayId: string) => {
+      const gatewayInfo = await prisma.aIGateway.findUnique({
+        where: {
+          workspaceId,
+          id: gatewayId,
+        },
+      });
 
-    return gatewayInfo;
-  });
+      return gatewayInfo;
+    }
+  );
 
 const openaiRequestSchema = z
   .object({

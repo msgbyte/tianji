@@ -1,4 +1,3 @@
-import { uniqueId } from 'lodash-es';
 import Keyv, { type KeyvStoreAdapter } from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import KeyvPostgres from '@keyv/postgres';
@@ -35,9 +34,10 @@ export async function getCacheManager() {
 }
 
 export function buildQueryWithCache<T, Args extends any[]>(
+  name: string,
   fetchFn: (...args: Args) => Promise<T>
 ) {
-  const id = uniqueId('cache-query');
+  const id = `cache-query:${name}`;
 
   const get = async (...args: Args): Promise<T> => {
     const key = [id, ...args.map((a) => JSON.stringify(a))].join('|');

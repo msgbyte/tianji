@@ -159,6 +159,7 @@ export async function findSession(
 }
 
 const { get: getWebsiteFromCache, del: delWebsiteCache } = buildQueryWithCache(
+  'website',
   async (websiteId: string): Promise<Website | null> => {
     const website = await prisma.website.findUnique({
       where: {
@@ -182,6 +183,7 @@ export { delWebsiteCache };
 
 const { get: getSessionFromCache, del: delWebsiteSessionCache } =
   buildQueryWithCache(
+    'websiteSession',
     async (sessionId: string): Promise<WebsiteSession | null> => {
       const session = await prisma.websiteSession.findUnique({
         where: {

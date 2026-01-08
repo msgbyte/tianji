@@ -51,7 +51,7 @@ export async function getWorkspaceTier(
 }
 
 const { get: isWorkspacePaused, del: clearWorkspacePausedStatus } =
-  buildQueryWithCache(async (workspaceId: string) => {
+  buildQueryWithCache('workspacePaused', async (workspaceId: string) => {
     const workspace = await prisma.workspace.findUnique({
       where: {
         id: workspaceId,
