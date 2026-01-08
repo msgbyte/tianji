@@ -1,5 +1,18 @@
 
 
+## [1.31.4](https://github.com/msgbyte/tianji/compare/v1.31.3...v1.31.4) (2026-01-08)
+
+### Features
+
+* add Prometheus counter for monitor execution tracking ([946f280](https://github.com/msgbyte/tianji/commit/946f28039652030d3d49711e190fcdb251cc6241))
+* add query to improve query performance ([807f223](https://github.com/msgbyte/tianji/commit/807f223cbff8f646e13bbd6ffb2a63f8de89f4d2))
+
+### Others
+
+* change create to upsert which maybe can resolve issue of competition ([fd401de](https://github.com/msgbyte/tianji/commit/fd401de51ace71a3a6473300d61971dc58308009))
+* update cache query identifiers for consistency across models ([d480edb](https://github.com/msgbyte/tianji/commit/d480edb35f02541fe7d0335d59fcc787b2d1f604))
+* update translation ([d4ed7a3](https://github.com/msgbyte/tianji/commit/d4ed7a32ad7b92ef758f63476fe1968b41f2d083))
+
 ## [1.31.3](https://github.com/msgbyte/tianji/compare/v1.31.2...v1.31.3) (2026-01-08)
 
 ### Features
