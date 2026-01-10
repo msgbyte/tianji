@@ -1,16 +1,13 @@
 /**
+ * Tianji Website Tracker (IIFE version)
  * Fork from https://github.com/umami-software/umami/blob/master/src/tracker/index.js
+ * Now uses shared core from tianji-client-sdk
  */
 
+import { createTrackerCore } from 'tianji-client-sdk';
+
 ((window) => {
-  const {
-    screen: { width, height },
-    navigator: { language },
-    location,
-    localStorage,
-    document,
-    history,
-  } = window;
+  const { location, localStorage, document, history } = window;
   const { hostname, pathname, search } = location;
   const { currentScript } = document;
 
@@ -30,8 +27,6 @@
   const root = hostUrl
     ? hostUrl.replace(/\/$/, '')
     : (currentScript as any).src.split('/').slice(0, -1).join('/');
-  const endpoint = `${root}/api/website/send`;
-  const screen = `${width}x${height}`;
   const eventRegex = /data-tianji-event-([\w-_]+)/;
   const eventNameAttribute = _data + 'tianji-event';
   const delayDuration = 300;
@@ -40,10 +35,8 @@
 
   const hook = (_this: any, method: string, callback: any) => {
     const orig = _this[method];
-
     return (...args: any[]) => {
       callback.apply(null, args);
-
       return orig.apply(_this, args);
     };
   };
@@ -56,21 +49,10 @@
     }
   };
 
-  const getPayload = () => ({
-    website,
-    hostname,
-    screen,
-    language,
-    title,
-    url: currentUrl,
-    referrer: currentRef,
-  });
-
   /* Tracking functions */
 
   const doNotTrack = () => {
     const { doNotTrack, navigator, external } = window as any;
-
     const msTrackProtection = 'msTrackingProtectionEnabled';
     const msTracking = () => {
       return (
@@ -79,14 +61,12 @@
         external[msTrackProtection]()
       );
     };
-
-    const dnt =
+    const dntValue =
       doNotTrack ||
       navigator.doNotTrack ||
       navigator.msDoNotTrack ||
       msTracking();
-
-    return dnt == '1' || dnt === 'yes';
+    return dntValue == '1' || dntValue === 'yes';
   };
 
   const trackingDisabled = () =>
@@ -94,36 +74,82 @@
     (dnt && doNotTrack()) ||
     (domain && !domains.includes(hostname));
 
-  const handlePush = (state: any, title: any, url: any) => {
-    if (!url) return;
+  if (!website || trackingDisabled()) {
+    return;
+  }
 
+  // Initialize tracker core with batch mode
+  const tracker = createTrackerCore({
+    serverUrl: root,
+    websiteId: website,
+    batchDelay: 200,
+    disableBatch: false,
+  });
+
+  let currentUrl = `${pathname}${search}`;
+  let currentRef = document.referrer;
+  let title = document.title;
+  let initialized = false;
+
+  const track = (
+    eventNameOrPayload?: string | { name?: string; data?: Record<string, any> },
+    eventData?: Record<string, any>
+  ) => {
+    if (trackingDisabled()) return;
+
+    let name: string | undefined;
+    let data: Record<string, any> | undefined;
+
+    if (typeof eventNameOrPayload === 'object' && eventNameOrPayload !== null) {
+      name = eventNameOrPayload.name;
+      data = eventNameOrPayload.data;
+    } else {
+      name = eventNameOrPayload;
+      data = eventData;
+    }
+
+    const payload = tracker.getPayload({
+      title,
+      url: currentUrl,
+      referrer: currentRef,
+      name,
+      data,
+    });
+
+    tracker.track(payload.name, payload.data);
+  };
+
+  const identify = (data: Record<string, any>) => {
+    if (trackingDisabled()) return;
+    tracker.identify(data);
+  };
+
+  const handlePush = (state: any, titleArg: any, url: any) => {
+    if (!url) return;
     currentRef = currentUrl;
     currentUrl = getPath(url.toString());
-
     if (currentUrl !== currentRef) {
-      setTimeout(track, delayDuration);
+      setTimeout(() => track(), delayDuration);
     }
   };
 
   const handleClick = () => {
     const trackElement = (el: any) => {
-      const attr = el.getAttribute.bind(el);
-      const eventName = attr(eventNameAttribute);
+      const attrFn = el.getAttribute.bind(el);
+      const eventName = attrFn(eventNameAttribute);
 
       if (eventName) {
         const eventData: any = {};
-
         el.getAttributeNames().forEach((name: any) => {
           const match = name.match(eventRegex);
-
           if (match) {
-            eventData[match[1]] = attr(name);
+            eventData[match[1]] = attrFn(name);
           }
         });
-
-        return track(eventName, eventData);
+        track(eventName, eventData);
+        return true;
       }
-      return Promise.resolve();
+      return false;
     };
 
     const callback = (e: any) => {
@@ -158,9 +184,12 @@
           if (!external) {
             e.preventDefault();
           }
-          trackElement(anchor)?.then(() => {
-            if (!external) location.href = href;
-          });
+          trackElement(anchor);
+          if (!external) {
+            setTimeout(() => {
+              location.href = href;
+            }, 100);
+          }
         }
       } else {
         trackElement(el);
@@ -176,7 +205,6 @@
     };
 
     const observer = new MutationObserver(callback);
-
     const node = document.querySelector('head > title');
 
     if (node) {
@@ -188,45 +216,12 @@
     }
   };
 
-  const send = (payload: any, type = 'event') => {
-    if (trackingDisabled()) {
-      return;
-    }
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (typeof cache !== 'undefined') {
-      headers['x-tianji-cache'] = cache;
-    }
-    return fetch(endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ type, payload }),
-      headers,
-    })
-      .then((res) => res.text())
-      .then((text) => (cache = text))
-      .catch(() => {});
+  // Flush batch on page unload
+  const handleUnload = () => {
+    tracker.flush();
   };
 
-  const track = (obj?: any, data?: any) => {
-    if (typeof obj === 'string') {
-      return send({
-        ...getPayload(),
-        name: obj,
-        data: typeof data === 'object' ? data : undefined,
-      });
-    } else if (typeof obj === 'object') {
-      return send(obj);
-    } else if (typeof obj === 'function') {
-      return send(obj(getPayload()));
-    }
-    return send(getPayload());
-  };
-
-  const identify = (data: any) => send({ ...getPayload(), data }, 'identify');
-
-  /* Start */
-
+  /* Expose API */
   if (!(window as any).tianji) {
     (window as any).tianji = {
       track,
@@ -234,17 +229,15 @@
     };
   }
 
-  let currentUrl = `${pathname}${search}`;
-  let currentRef = document.referrer;
-  let title = document.title;
-  let cache: any;
-  let initialized: any;
-
-  if (autoTrack && !trackingDisabled()) {
+  /* Start auto tracking */
+  if (autoTrack) {
     history.pushState = hook(history, 'pushState', handlePush);
     history.replaceState = hook(history, 'replaceState', handlePush);
     handleClick();
     observeTitle();
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
 
     const init = () => {
       if (document.readyState === 'complete' && !initialized) {
@@ -254,7 +247,6 @@
     };
 
     document.addEventListener('readystatechange', init, true);
-
     init();
   }
 })(window);

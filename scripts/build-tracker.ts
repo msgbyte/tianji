@@ -5,6 +5,14 @@ console.log('Start Build Tracker');
 
 vite
   .build({
+    resolve: {
+      alias: {
+        'tianji-client-sdk': resolve(
+          process.cwd(),
+          './packages/client-sdk/src'
+        ),
+      },
+    },
     build: {
       lib: {
         entry: resolve(process.cwd(), './src/tracker/index.ts'),
@@ -14,6 +22,12 @@ vite
       },
       emptyOutDir: false,
       outDir: resolve(process.cwd(), './src/client/public'),
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+        },
+      },
     },
   })
   .then((res) => {

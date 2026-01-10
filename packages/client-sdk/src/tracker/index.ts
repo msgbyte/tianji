@@ -7,6 +7,8 @@ import {
   reportWebsiteEvent,
 } from './pure';
 
+export { createTrackerCore } from './core';
+
 export {
   identifyWebsiteUser,
   initWebsiteTracking,

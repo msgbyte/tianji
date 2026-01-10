@@ -11,5 +11,8 @@
     "tianji"
   ],
   "author": "moonrailgun <moonrailgun@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "tianji-client-sdk": "workspace:*"
+  }
 }

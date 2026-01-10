@@ -2,6 +2,7 @@ packages:
   - 'src/client'
   - 'src/server'
   - 'src/shared'
+  - 'src/tracker'
   - 'website'
   - 'packages/*'
   - 'apps/*'

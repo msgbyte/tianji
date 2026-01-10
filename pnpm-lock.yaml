@@ -1128,6 +1128,12 @@ importers:
         specifier: ~3.0.8
         version: 3.0.8(@types/debug@4.1.12)(@types/node@22.13.11)(@vitest/browser@3.0.8)(happy-dom@15.11.6)(jsdom@26.1.0)(less@4.2.2)(lightningcss@1.27.0)(msw@2.10.4(@types/node@22.13.11)(typescript@5.7.2))(terser@5.28.1)
 
+  src/tracker:
+    dependencies:
+      tianji-client-sdk:
+        specifier: workspace:*
+        version: link:../../packages/client-sdk
+
   website:
     dependencies:
       '@docusaurus/core':
