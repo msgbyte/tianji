@@ -13,54 +13,61 @@ healthRouter.get('/', async (req, res) => {
     { status: 'healthy' | 'unhealthy'; duration?: number; error?: string }
   > = {};
 
+  const checkDb = 'db' in req.query;
+  const checkCache = 'cache' in req.query;
+
   try {
-    // Check database connectivity
-    const dbStartTime = Date.now();
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      checks.database = {
-        status: 'healthy',
-        duration: Date.now() - dbStartTime,
-      };
-    } catch (dbError) {
-      logger.error('[HealthCheck] Database connection failed:', dbError);
-      checks.database = {
-        status: 'unhealthy',
-        duration: Date.now() - dbStartTime,
-        error: 'Database connection failed',
-      };
+    // Check database connectivity (only when ?db is present)
+    if (checkDb) {
+      const dbStartTime = Date.now();
+      try {
+        await prisma.$queryRaw`SELECT 1`;
+        checks.database = {
+          status: 'healthy',
+          duration: Date.now() - dbStartTime,
+        };
+      } catch (dbError) {
+        logger.error('[HealthCheck] Database connection failed:', dbError);
+        checks.database = {
+          status: 'unhealthy',
+          duration: Date.now() - dbStartTime,
+          error: 'Database connection failed',
+        };
+      }
     }
 
-    // Check cache connectivity
-    const cacheStartTime = Date.now();
-    try {
-      const cacheManager = await getCacheManager();
-      const testKey = 'healthcheck:test';
-      const testValue = 'ok';
+    // Check cache connectivity (only when ?cache is present)
+    if (checkCache) {
+      const cacheStartTime = Date.now();
+      try {
+        const cacheManager = await getCacheManager();
+        const testKey = 'healthcheck:test';
+        const testValue = 'ok';
 
-      // Test cache write and read
-      await cacheManager.set(testKey, testValue, 1000); // 1 second TTL
-      const retrievedValue = await cacheManager.get(testKey);
+        // Test cache write and read
+        await cacheManager.set(testKey, testValue, 1000); // 1 second TTL
+        const retrievedValue = await cacheManager.get(testKey);
 
-      if (retrievedValue === testValue) {
-        checks.cache = {
-          status: 'healthy',
-          duration: Date.now() - cacheStartTime,
-        };
-      } else {
+        if (retrievedValue === testValue) {
+          checks.cache = {
+            status: 'healthy',
+            duration: Date.now() - cacheStartTime,
+          };
+        } else {
+          checks.cache = {
+            status: 'unhealthy',
+            duration: Date.now() - cacheStartTime,
+            error: 'Cache read/write test failed',
+          };
+        }
+      } catch (cacheError) {
+        logger.error('[HealthCheck] Cache connection failed:', cacheError);
         checks.cache = {
           status: 'unhealthy',
           duration: Date.now() - cacheStartTime,
-          error: 'Cache read/write test failed',
+          error: 'Cache connection failed',
         };
       }
-    } catch (cacheError) {
-      logger.error('[HealthCheck] Cache connection failed:', cacheError);
-      checks.cache = {
-        status: 'unhealthy',
-        duration: Date.now() - cacheStartTime,
-        error: 'Cache connection failed',
-      };
     }
 
     // Determine overall health status
