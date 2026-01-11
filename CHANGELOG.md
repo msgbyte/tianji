@@ -1,5 +1,12 @@
 
 
+## [1.31.5](https://github.com/msgbyte/tianji/compare/v1.31.4...v1.31.5) (2026-01-11)
+
+### Features
+
+* add event batch feature for website inject tracker ([1f58af3](https://github.com/msgbyte/tianji/commit/1f58af3a4cebdf92405680f1839960cf44714203))
+* update health check to conditionally verify database and cache connectivity based on query parameters ([34c3bb1](https://github.com/msgbyte/tianji/commit/34c3bb17f068fbc482649b9be77b9e54705fba8b))
+
 ## [1.31.4](https://github.com/msgbyte/tianji/compare/v1.31.3...v1.31.4) (2026-01-08)
 
 ### Features
