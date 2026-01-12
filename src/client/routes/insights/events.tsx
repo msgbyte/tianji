@@ -107,8 +107,8 @@ function PageComponent() {
         filters,
         groups: [],
         time: {
-          startAt: dateRange[0].valueOf(),
-          endAt: dateRange[1].valueOf(),
+          startAt: dayjs(dateRange[0]).valueOf(),
+          endAt: dayjs(dateRange[1]).valueOf(),
           unit: 'day' as const,
           timezone: getUserTimezone(),
         },
@@ -242,7 +242,7 @@ function PageComponent() {
 
           {/* Switch for JSON/Grid mode */}
 
-          {insightType === 'survey' && (
+          {insightType !== 'survey' && (
             <div className="ml-4 flex items-center gap-1">
               <span className="text-xs text-gray-500">Grid</span>
               <Switch checked={jsonMode} onCheckedChange={setJsonMode} />
