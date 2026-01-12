@@ -4,7 +4,7 @@
  * Now uses shared core from tianji-client-sdk
  */
 
-import { createTrackerCore } from 'tianji-client-sdk';
+import { createTrackerCore } from 'tianji-client-sdk/tracker/core';
 
 ((window) => {
   const { location, localStorage, document, history } = window;

@@ -4,7 +4,8 @@
     "module": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "tianji-client-sdk/tracker/core": ["../../packages/client-sdk/src/tracker/core"]
     }
   },
   "include": ["./**/*", "../server/**/*"]

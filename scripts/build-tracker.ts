@@ -7,6 +7,10 @@ vite
   .build({
     resolve: {
       alias: {
+        'tianji-client-sdk/tracker/core': resolve(
+          process.cwd(),
+          './packages/client-sdk/src/tracker/core'
+        ),
         'tianji-client-sdk': resolve(
           process.cwd(),
           './packages/client-sdk/src'
