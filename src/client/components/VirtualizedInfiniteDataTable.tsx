@@ -106,7 +106,12 @@ export function VirtualizedInfiniteDataTable<TData>(
       colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
     }
     return colSizes;
-  }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    columns,
+    table.getState().columnSizingInfo,
+    table.getState().columnSizing,
+  ]);
 
   return (
     <div
@@ -116,13 +121,13 @@ export function VirtualizedInfiniteDataTable<TData>(
     >
       <LoadingView isLoading={isLoading}>
         {/* Even though we're still using sematic table tags, we must use CSS grid and flexbox for dynamic row heights */}
-        <table style={{ display: 'grid' }}>
-          <TableHeader
-            className="sticky top-0 z-10 grid"
-            style={{
-              ...columnSizeVars,
-            }}
-          >
+        <table
+          style={{
+            display: 'grid',
+            ...columnSizeVars,
+          }}
+        >
+          <TableHeader className="sticky top-0 z-10 grid">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
@@ -191,7 +196,7 @@ export function VirtualizedInfiniteDataTable<TData>(
                       <TableCell
                         key={cell.id}
                         className={cn(
-                          'flex transition-all',
+                          'flex transition-colors',
                           selectedIndex === virtualRow.index &&
                             'bg-zinc-200 dark:bg-zinc-700'
                         )}
