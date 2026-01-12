@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { VirtualizedInfiniteDataTable } from '../VirtualizedInfiniteDataTable';
 import { cn } from '@/utils/style';
+import { Image } from 'antd';
 
 interface EventData {
   id: string;
@@ -69,6 +70,27 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
       size: 150,
       cell: ({ getValue }) => {
         const value = getValue();
+
+        if (
+          field.type === 'imageUrl' &&
+          typeof value === 'string' &&
+          value.startsWith('http')
+        ) {
+          return (
+            <div className="h-6 w-6 overflow-hidden">
+              <Image
+                src={value}
+                alt={field.label}
+                width={24}
+                height={24}
+                preview={{
+                  destroyOnClose: true,
+                }}
+              />
+            </div>
+          );
+        }
+
         return value != null ? String(value) : '-';
       },
     }));
