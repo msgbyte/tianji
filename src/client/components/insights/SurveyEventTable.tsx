@@ -7,6 +7,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { VirtualizedInfiniteDataTable } from '../VirtualizedInfiniteDataTable';
 import { cn } from '@/utils/style';
 import { Image } from 'antd';
+import { CountryName } from '../CountryName';
 
 interface EventData {
   id: string;
@@ -97,10 +98,26 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
 
     const metaColumns: ColumnDef<EventData>[] = [
       {
+        id: 'aiCategory',
+        accessorFn: (row) => row.properties.aiCategory,
+        header: t('AI Category'),
+        size: 120,
+      },
+      {
+        id: 'aiTranslation',
+        accessorFn: (row) => row.properties.aiTranslation,
+        header: t('AI Translation'),
+        size: 200,
+      },
+      {
         id: 'country',
         accessorFn: (row) => row.properties.country,
         header: t('Country'),
         size: 100,
+        cell: ({ getValue }) => {
+          const value = getValue();
+          return <CountryName country={String(value)} />;
+        },
       },
       {
         id: 'browser',

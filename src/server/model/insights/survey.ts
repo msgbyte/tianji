@@ -37,7 +37,9 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
         "country",
         "subdivision1",
         "subdivision2",
-        "city"
+        "city",
+        "aiCategory",
+        "aiTranslation"
       FROM "${raw(tableName)}"
       WHERE ${Prisma.join(whereQueryArr, ' AND ')}
       ${cursor ? sql`AND "${raw(tableName)}"."id" < ${cursor}` : Prisma.empty}
@@ -175,6 +177,8 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
         subdivision1: result.subdivision1,
         subdivision2: result.subdivision2,
         city: result.city,
+        aiCategory: result.aiCategory,
+        aiTranslation: result.aiTranslation,
       },
     }));
   }
@@ -193,6 +197,8 @@ interface SurveyResultRow {
   subdivision1: string | null;
   subdivision2: string | null;
   city: string | null;
+  aiCategory: string | null;
+  aiTranslation: string | null;
 }
 
 export async function insightsSurvey(
