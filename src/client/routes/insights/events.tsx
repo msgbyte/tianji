@@ -34,6 +34,7 @@ import { get } from 'lodash-es';
 import { DelayRender } from '@/components/DelayRender';
 import { SearchLoadingView } from '@/components/loading/Searching';
 import { DateRangeSelection } from '@/components/insights/DateRangeSelection';
+import { showErrorToast } from '@/utils/error';
 
 export const Route = createFileRoute('/insights/events')({
   beforeLoad: routeAuthBeforeLoad,
@@ -123,6 +124,8 @@ function PageComponent() {
         setAllData(result);
       }
       setHasMore(result.length >= 100);
+    } catch (err) {
+      showErrorToast(err);
     } finally {
       setIsLoading(false);
     }

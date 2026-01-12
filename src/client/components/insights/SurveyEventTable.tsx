@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -8,6 +8,7 @@ import { VirtualizedInfiniteDataTable } from '../VirtualizedInfiniteDataTable';
 import { cn } from '@/utils/style';
 import { Image } from 'antd';
 import { CountryName } from '../CountryName';
+import { DataTableColumnSelector } from '../DataTableColumnSelector';
 
 interface EventData {
   id: string;
@@ -35,6 +36,9 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
 }) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
+  const [hiddenColumnIds, setHiddenColumnIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const { data: survey } = trpc.survey.get.useQuery(
     { workspaceId, surveyId },
@@ -49,9 +53,10 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
     return payload.items || [];
   }, [survey]);
 
-  const columns = useMemo<ColumnDef<EventData>[]>(() => {
+  const allColumns = useMemo<ColumnDef<EventData>[]>(() => {
     const baseColumns: ColumnDef<EventData>[] = [
       {
+        id: 'createdAt',
         accessorKey: 'createdAt',
         header: t('Time'),
         size: 180,
@@ -130,16 +135,31 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
     return [...baseColumns, ...fieldColumns, ...metaColumns];
   }, [surveyFields, t]);
 
+  const visibleColumns = useMemo(() => {
+    return allColumns.filter((col) => !hiddenColumnIds.has(col.id!));
+  }, [allColumns, hiddenColumnIds]);
+
   return (
-    <div className={cn('h-full min-h-0 overflow-hidden', className)}>
-      <VirtualizedInfiniteDataTable
-        columns={columns}
-        data={data}
-        hasNextPage={hasMore}
-        isFetching={isLoading}
-        isLoading={isLoading && data.length === 0}
-        onFetchNextPage={onLoadMore ?? (() => {})}
-      />
+    <div
+      className={cn('flex h-full min-h-0 flex-col overflow-hidden', className)}
+    >
+      <div className="mb-2 flex justify-end">
+        <DataTableColumnSelector
+          columns={allColumns}
+          hiddenColumnIds={hiddenColumnIds}
+          setHiddenColumnIds={setHiddenColumnIds}
+        />
+      </div>
+      <div className="min-h-0 flex-1">
+        <VirtualizedInfiniteDataTable
+          columns={visibleColumns}
+          data={data}
+          hasNextPage={hasMore}
+          isFetching={isLoading}
+          isLoading={isLoading && data.length === 0}
+          onFetchNextPage={onLoadMore ?? (() => {})}
+        />
+      </div>
     </div>
   );
 };
