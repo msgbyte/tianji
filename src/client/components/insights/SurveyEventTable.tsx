@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
+import { useLocalStorageState } from 'ahooks';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
@@ -36,8 +37,16 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
 }) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const [hiddenColumnIds, setHiddenColumnIds] = useState<Set<string>>(
-    new Set()
+  const [hiddenColumnIds = [], setHiddenColumnIds] = useLocalStorageState<
+    string[]
+  >(`tianji-survey-table-hidden-columns-${surveyId}`, {
+    defaultValue: [],
+  });
+  const [columnOrder = [], setColumnOrder] = useLocalStorageState<string[]>(
+    `tianji-survey-table-column-order-${surveyId}`,
+    {
+      defaultValue: [],
+    }
   );
 
   const { data: survey } = trpc.survey.get.useQuery(
@@ -83,16 +92,20 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
           value.startsWith('http')
         ) {
           return (
-            <div className="h-6 w-6 overflow-hidden">
-              <Image
-                src={value}
-                alt={field.label}
-                width={24}
-                height={24}
-                preview={{
-                  destroyOnClose: true,
-                }}
-              />
+            <div className="flex items-center gap-1">
+              {value.split(',').map((url) => (
+                <div className="h-6 w-6 overflow-hidden">
+                  <Image
+                    src={url}
+                    alt={field.label}
+                    width={24}
+                    height={24}
+                    preview={{
+                      destroyOnClose: true,
+                    }}
+                  />
+                </div>
+              ))}
             </div>
           );
         }
@@ -136,8 +149,20 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
   }, [surveyFields, t]);
 
   const visibleColumns = useMemo(() => {
-    return allColumns.filter((col) => !hiddenColumnIds.has(col.id!));
-  }, [allColumns, hiddenColumnIds]);
+    const hiddenSet = new Set(hiddenColumnIds);
+    const filtered = allColumns.filter((col) => !hiddenSet.has(col.id!));
+
+    if (columnOrder.length === 0) {
+      return filtered;
+    }
+
+    const orderMap = new Map(columnOrder.map((id, index) => [id, index]));
+    return [...filtered].sort((a, b) => {
+      const aIndex = orderMap.get(a.id!) ?? Number.MAX_SAFE_INTEGER;
+      const bIndex = orderMap.get(b.id!) ?? Number.MAX_SAFE_INTEGER;
+      return aIndex - bIndex;
+    });
+  }, [allColumns, hiddenColumnIds, columnOrder]);
 
   return (
     <div
@@ -148,6 +173,8 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
           columns={allColumns}
           hiddenColumnIds={hiddenColumnIds}
           setHiddenColumnIds={setHiddenColumnIds}
+          columnOrder={columnOrder}
+          setColumnOrder={setColumnOrder}
         />
       </div>
       <div className="min-h-0 flex-1">
