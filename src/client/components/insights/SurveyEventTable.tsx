@@ -165,10 +165,8 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
   }, [allColumns, hiddenColumnIds, columnOrder]);
 
   return (
-    <div
-      className={cn('flex h-full min-h-0 flex-col overflow-hidden', className)}
-    >
-      <div className="mb-2 flex justify-end">
+    <div className={cn('relative flex h-full min-h-0 flex-col', className)}>
+      <div className="absolute -top-12 right-0 mb-2 flex justify-end">
         <DataTableColumnSelector
           columns={allColumns}
           hiddenColumnIds={hiddenColumnIds}
@@ -177,7 +175,8 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
           setColumnOrder={setColumnOrder}
         />
       </div>
-      <div className="min-h-0 flex-1">
+
+      <div className="min-h-0 flex-1 overflow-hidden">
         <VirtualizedInfiniteDataTable
           columns={visibleColumns}
           data={data}
