@@ -1,5 +1,24 @@
 
 
+## [1.31.6](https://github.com/msgbyte/tianji/compare/v1.31.5...v1.31.6) (2026-01-12)
+
+### Features
+
+* add ai translation and ai category in survey event table ([6d28506](https://github.com/msgbyte/tianji/commit/6d28506042ecd46e59c9778304bc4258c7d718d1))
+* add DataTableColumnSelector for dynamic column visibility in SurveyEventTable ([0ba1299](https://github.com/msgbyte/tianji/commit/0ba12998bc0cc37ea85ff439b38e2e3b43ba3bd9))
+* add image render to survey event table ([45f4772](https://github.com/msgbyte/tianji/commit/45f477288d333b69c279c8e0671dfefc8db46917))
+* enhance DataTableColumnSelector with drag-and-drop functionality and local storage for column visibility and order ([6aa327b](https://github.com/msgbyte/tianji/commit/6aa327b87f95e449ed1baacc686baf96816d5442))
+
+### Bug Fixes
+
+* correct date handling and toggle logic in insights events page ([4fd93ad](https://github.com/msgbyte/tianji/commit/4fd93ad108099b98c90bf08375fd6184e6ecec02))
+* fix layout and resize issue for VirtualizedInfiniteDataTable ([75524ae](https://github.com/msgbyte/tianji/commit/75524aee0595fe2a3d84c60e3c33ed573acfce13))
+* update tracker import path to use core module from tianji-client-sdk ([540e161](https://github.com/msgbyte/tianji/commit/540e161668ff2b7fb39bb5f7205778ab2069c4bc))
+
+### Others
+
+* improve style of survey event table ([74543a3](https://github.com/msgbyte/tianji/commit/74543a3590ce599d2361c6c3415e72350a723c59))
+
 ## [1.31.5](https://github.com/msgbyte/tianji/compare/v1.31.4...v1.31.5) (2026-01-11)
 
 ### Features
