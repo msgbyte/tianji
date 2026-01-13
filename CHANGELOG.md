@@ -1,5 +1,11 @@
 
 
+## [1.31.7](https://github.com/msgbyte/tianji/compare/v1.31.6...v1.31.7) (2026-01-13)
+
+### Features
+
+* add download feature ([b855872](https://github.com/msgbyte/tianji/commit/b8558723d51364b8af2d4627c6d785fbe53039fc))
+
 ## [1.31.6](https://github.com/msgbyte/tianji/compare/v1.31.5...v1.31.6) (2026-01-12)
 
 ### Features
