@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useLocalStorageState } from 'ahooks';
 import { trpc } from '@/api/trpc';
@@ -10,6 +10,13 @@ import { cn } from '@/utils/style';
 import { Image } from 'antd';
 import { CountryName } from '../CountryName';
 import { DataTableColumnSelector } from '../DataTableColumnSelector';
+import { Button } from '@/components/ui/button';
+import { LuDownload, LuLoader } from 'react-icons/lu';
+import { downloadCSVJson } from '@/utils/dom';
+import { getUserTimezone } from '@/api/model/user';
+import { showErrorToast } from '@/utils/error';
+import { useInsightsStore } from '@/store/insights';
+import { useEvent } from '@/hooks/useEvent';
 
 interface EventData {
   id: string;
@@ -37,6 +44,13 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
 }) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
+  const filters = useInsightsStore((state) =>
+    state.currentFilters.filter((f): f is NonNullable<typeof f> => !!f)
+  );
+  const dateRange = useInsightsStore((state) => state.currentDateRange);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadedCount, setDownloadedCount] = useState(0);
+  const trpcUtils = trpc.useUtils();
   const [hiddenColumnIds = [], setHiddenColumnIds] = useLocalStorageState<
     string[]
   >(`tianji-survey-table-hidden-columns-${surveyId}`, {
@@ -164,9 +178,93 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
     });
   }, [allColumns, hiddenColumnIds, columnOrder]);
 
+  const handleDownloadCSV = useEvent(async () => {
+    if (!dateRange) return;
+
+    setIsDownloading(true);
+    setDownloadedCount(0);
+    try {
+      const allData: EventData[] = [];
+      const limit = 1000;
+      let cursor: string | undefined;
+
+      while (true) {
+        const result = await trpcUtils.insights.queryEvents.fetch({
+          workspaceId,
+          insightId: surveyId,
+          insightType: 'survey',
+          metrics: [{ name: '$all_event', math: 'events' as const }],
+          filters,
+          groups: [],
+          time: {
+            startAt: dayjs(dateRange[0]).valueOf(),
+            endAt: dayjs(dateRange[1]).valueOf(),
+            unit: 'day' as const,
+            timezone: getUserTimezone(),
+          },
+          cursor,
+          limit,
+        });
+
+        allData.push(...result);
+        setDownloadedCount(allData.length);
+
+        if (result.length < limit) {
+          break;
+        }
+
+        cursor = result[result.length - 1]?.id;
+      }
+
+      const exportData = allData.map((item) => {
+        const row: Record<string, any> = {
+          createdAt: dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+        };
+
+        surveyFields.forEach((field) => {
+          row[field.label] = item.properties[field.name] ?? '';
+        });
+
+        row[t('AI Category')] = item.properties.aiCategory ?? '';
+        row[t('AI Translation')] = item.properties.aiTranslation ?? '';
+        row[t('Country')] = item.properties.country ?? '';
+        row[t('Browser')] = item.properties.browser ?? '';
+
+        return row;
+      });
+
+      await downloadCSVJson(
+        exportData,
+        `survey-${surveyId}-export-${Date.now()}`
+      );
+    } catch (err) {
+      showErrorToast(err);
+    } finally {
+      setIsDownloading(false);
+    }
+  });
+
   return (
     <div className={cn('relative flex h-full min-h-0 flex-col', className)}>
-      <div className="absolute -top-12 right-0 mb-2 flex justify-end">
+      <div className="absolute -top-12 right-0 mb-2 flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDownloadCSV}
+          disabled={isDownloading || !dateRange}
+        >
+          {isDownloading ? (
+            <>
+              <LuLoader className="mr-1 h-4 w-4 animate-spin" />
+              {downloadedCount.toLocaleString()}
+            </>
+          ) : (
+            <>
+              <LuDownload className="mr-1 h-4 w-4" />
+              {t('Download CSV')}
+            </>
+          )}
+        </Button>
         <DataTableColumnSelector
           columns={allColumns}
           hiddenColumnIds={hiddenColumnIds}

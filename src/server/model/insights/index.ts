@@ -107,6 +107,10 @@ export async function queryEvents(
       useClickhouse: false,
     });
 
+    if (typeof query.limit === 'number') {
+      builder.resultLimit = query.limit;
+    }
+
     const events = await builder.queryEvents(query.cursor);
 
     return events.map((event) => ({

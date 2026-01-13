@@ -90,6 +90,7 @@ export const insightsQuerySchema = z.object({
 
 export const insightsQueryEventsSchema = insightsQuerySchema.merge(
   z.object({
+    limit: z.number().optional().default(100),
     cursor: z.string().optional(),
   })
 );

@@ -53,7 +53,7 @@ export abstract class InsightsSqlBuilder {
     return 'createdAt';
   }
 
-  protected resultLimit = 100; // set default result limit for insights query
+  public resultLimit = 100; // set default result limit for insights query
   protected maxResultLimit = 1000; // set max result limit for insights query to avoid performance issues
 
   protected useClickhouse = env.clickhouse.enable;
