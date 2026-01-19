@@ -11,6 +11,8 @@ import { Image } from 'antd';
 import { CountryName } from '../CountryName';
 import { DataTableColumnSelector } from '../DataTableColumnSelector';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { LuDownload, LuLoader } from 'react-icons/lu';
 import { downloadCSVJson } from '@/utils/dom';
 import { getUserTimezone } from '@/api/model/user';
@@ -60,6 +62,12 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
     `tianji-survey-table-column-order-${surveyId}`,
     {
       defaultValue: [],
+    }
+  );
+  const [allowWrap = true, setAllowWrap] = useLocalStorageState<boolean>(
+    `tianji-survey-table-allow-wrap-${surveyId}`,
+    {
+      defaultValue: false,
     }
   );
 
@@ -247,6 +255,16 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
   return (
     <div className={cn('relative flex h-full min-h-0 flex-col', className)}>
       <div className="absolute -top-12 right-0 mb-2 flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <Switch
+            id="allow-wrap"
+            checked={allowWrap}
+            onCheckedChange={setAllowWrap}
+          />
+          <Label htmlFor="allow-wrap" className="cursor-pointer text-xs">
+            {t('Wrap')}
+          </Label>
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -282,6 +300,7 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
           isFetching={isLoading}
           isLoading={isLoading && data.length === 0}
           onFetchNextPage={onLoadMore ?? (() => {})}
+          allowWrap={allowWrap}
         />
       </div>
     </div>

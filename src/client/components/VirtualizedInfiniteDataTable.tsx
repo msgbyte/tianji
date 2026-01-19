@@ -27,6 +27,7 @@ interface VirtualizedInfiniteDataTableProps<TData> {
   isFetching: boolean;
   isLoading: boolean;
   hasNextPage: boolean | undefined;
+  allowWrap?: boolean;
 }
 
 export function VirtualizedInfiniteDataTable<TData>(
@@ -40,6 +41,7 @@ export function VirtualizedInfiniteDataTable<TData>(
     isFetching,
     isLoading,
     hasNextPage,
+    allowWrap = false,
   } = props;
   const { t } = useTranslation();
 
@@ -206,15 +208,27 @@ export function VirtualizedInfiniteDataTable<TData>(
                       >
                         {useSystemTooltip ? (
                           <div
-                            className="w-full cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-left"
-                            title={String(value)}
+                            className={cn(
+                              'w-full cursor-default text-left',
+                              allowWrap
+                                ? 'break-words'
+                                : 'overflow-hidden text-ellipsis whitespace-nowrap'
+                            )}
+                            title={allowWrap ? undefined : String(value)}
                           >
                             {content}
                           </div>
                         ) : (
                           <Tooltip>
                             <TooltipTrigger asChild={true}>
-                              <div className="w-full cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-left">
+                              <div
+                                className={cn(
+                                  'w-full cursor-default text-left',
+                                  allowWrap
+                                    ? 'break-words'
+                                    : 'overflow-hidden text-ellipsis whitespace-nowrap'
+                                )}
+                              >
                                 {content}
                               </div>
                             </TooltipTrigger>
