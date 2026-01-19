@@ -109,6 +109,23 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
         const value = getValue();
 
         if (
+          field.type === 'url' &&
+          typeof value === 'string' &&
+          value.startsWith('http')
+        ) {
+          return (
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              {value}
+            </a>
+          );
+        }
+
+        if (
           field.type === 'imageUrl' &&
           typeof value === 'string' &&
           value.startsWith('http')

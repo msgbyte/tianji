@@ -39,7 +39,7 @@ const addFormSchema = z.object({
       z.object({
         label: z.string(),
         name: z.string(),
-        type: z.enum(['text', 'select', 'email', 'imageUrl', 'hidden']),
+        type: z.enum(['text', 'select', 'email', 'url', 'imageUrl', 'hidden']),
         options: z.array(z.string()).optional(),
       })
     ),
@@ -192,6 +192,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                           <SelectContent>
                             <SelectItem value="text">{t('Text')}</SelectItem>
                             <SelectItem value="email">{t('Email')}</SelectItem>
+                            <SelectItem value="url">{t('Url')}</SelectItem>
                             <SelectItem value="imageUrl">
                               {t('Image Url')}
                             </SelectItem>

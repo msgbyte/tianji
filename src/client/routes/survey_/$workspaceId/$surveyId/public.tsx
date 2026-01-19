@@ -75,6 +75,11 @@ function PageComponent() {
           (acc, item) => {
             if (item.type === 'email') {
               acc[item.name] = z.string().email(t('Invalid email address'));
+            } else if (item.type === 'url') {
+              acc[item.name] = z
+                .string()
+                .url(t('Invalid URL'))
+                .or(z.literal(''));
             } else if (item.type === 'imageUrl') {
               acc[item.name] = z
                 .string()
@@ -274,6 +279,18 @@ function PageComponent() {
                               />
                               <FormDescription>
                                 {t('Please enter a valid email address')}
+                              </FormDescription>
+                            </>
+                          ) : item.type === 'url' ? (
+                            <>
+                              <Input
+                                type="url"
+                                placeholder={t('https://example.com')}
+                                className="h-11"
+                                {...field}
+                              />
+                              <FormDescription>
+                                {t('Please enter a valid URL')}
                               </FormDescription>
                             </>
                           ) : item.type === 'imageUrl' ? (
