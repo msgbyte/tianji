@@ -1,5 +1,17 @@
 
 
+## [1.31.8](https://github.com/msgbyte/tianji/compare/v1.31.7...v1.31.8) (2026-01-19)
+
+### Features
+
+* add url as new field type of survey ([c8a6efe](https://github.com/msgbyte/tianji/commit/c8a6efe1982e7ed9a2c323abd7e515dbc593fa1b))
+* add wrap for survey event table to display long text ([1ea8d41](https://github.com/msgbyte/tianji/commit/1ea8d419ca38ab49cb800285e75deda519ac2608))
+
+### Others
+
+* update model price ([f7daffa](https://github.com/msgbyte/tianji/commit/f7daffa3161c9db271b437516238dcf8087db04f))
+* update translation ([21d929a](https://github.com/msgbyte/tianji/commit/21d929a5d838b6b726e86c7ba57b4ae710c39e21))
+
 ## [1.31.7](https://github.com/msgbyte/tianji/compare/v1.31.6...v1.31.7) (2026-01-13)
 
 ### Features
