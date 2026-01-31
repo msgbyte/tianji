@@ -1,5 +1,11 @@
 
 
+## [1.31.9](https://github.com/msgbyte/tianji/compare/v1.31.8...v1.31.9) (2026-01-31)
+
+### Others
+
+* add title for more customize ([965b3d9](https://github.com/msgbyte/tianji/commit/965b3d99d8170ad7d0c731ab1a930e8381bee17c))
+
 ## [1.31.8](https://github.com/msgbyte/tianji/compare/v1.31.7...v1.31.8) (2026-01-19)
 
 ### Features
