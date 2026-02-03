@@ -29,7 +29,10 @@ import { pushRouter } from './router/push.js';
 import { workerRouter } from './router/worker.js';
 import { insightsRouter } from './router/insights.js';
 import { shortlinkRouter } from './router/shortlink.js';
-import { staticPageRouter } from './router/staticPage.js';
+import {
+  serveStaticPageBySlug,
+  staticPageRouter,
+} from './router/staticPage.js';
 import { pageRouter } from './router/page.js';
 
 const app = express();
@@ -121,21 +124,23 @@ if (env.allowOpenapi) {
   app.use('/open', trpcOpenapiHttpHandler);
 }
 
-// Custom Status Page
-app.use('/*', (req, res, next) => {
-  if (
-    req.method === 'GET' &&
-    req.accepts('html') &&
-    (req.baseUrl === '/' || req.baseUrl === '')
-  ) {
+// Custom domain: only for root path so /p/:slug and /status/:slug are not intercepted
+app.use('/*', async (req, res, next) => {
+  if (req.method === 'GET' && req.accepts('html')) {
     const customDomain = customDomainManager.findPageDomain(req.hostname);
     if (customDomain) {
-      res
-        .status(200)
-        .send(
-          `<body style="padding: 0; margin: 0;"><iframe style="border:none; width: 100%; height: 100%;" title="" src="/status/${customDomain.slug}" /></body>`
-        );
-      return;
+      if (customDomain.type === 'static') {
+        const sent = await serveStaticPageBySlug(customDomain.slug, res);
+        if (sent) return;
+      } else {
+        const path = `/status/${customDomain.slug}`;
+        res
+          .status(200)
+          .send(
+            `<body style="padding: 0; margin: 0;"><iframe style="border:none; width: 100%; height: 100%;" title="" src="${path}" /></body>`
+          );
+        return;
+      }
     }
   }
 

@@ -8,6 +8,7 @@ class CustomDomainManager {
       workspaceId: string;
       pageId: string;
       slug: string;
+      type: 'status' | 'static';
     }
   > = {}; // key: domain
 
@@ -46,22 +47,31 @@ class CustomDomainManager {
         }),
       ]);
 
-      const allPages = [...monitorStatusPages, ...generalPages];
-
-      allPages.forEach((item) => {
+      monitorStatusPages.forEach((item) => {
         if (!item.domain) {
           return;
         }
-
         this.customDomainPage[item.domain] = {
           pageId: item.id,
           workspaceId: item.workspaceId,
           slug: item.slug,
+          type: 'status',
+        };
+      });
+      generalPages.forEach((item) => {
+        if (!item.domain) {
+          return;
+        }
+        this.customDomainPage[item.domain] = {
+          pageId: item.id,
+          workspaceId: item.workspaceId,
+          slug: item.slug,
+          type: 'static',
         };
       });
 
       logger.info(
-        `Loaded ${allPages.length} custom domain for pages (${monitorStatusPages.length} monitor status pages, ${generalPages.length} general pages)`
+        `Loaded ${monitorStatusPages.length + generalPages.length} custom domain for pages (${monitorStatusPages.length} monitor status pages, ${generalPages.length} general pages)`
       );
     } catch (err) {
       logger.error('Cannot load page domain list:', err);
@@ -101,9 +111,13 @@ class CustomDomainManager {
       workspaceId: string;
       pageId: string;
       slug: string;
+      type?: 'status' | 'static';
     }
   ) {
-    this.customDomainPage[domain] = info;
+    this.customDomainPage[domain] = {
+      ...info,
+      type: info.type ?? 'static',
+    };
     logger.info(`Update page domain: ${domain} to page ${info.pageId}`);
   }
 

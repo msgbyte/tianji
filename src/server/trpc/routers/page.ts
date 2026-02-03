@@ -184,6 +184,7 @@ export const pageRouter = router({
             workspaceId: page.workspaceId,
             pageId: page.id,
             slug: page.slug,
+            type: 'status',
           });
         }
 
@@ -207,6 +208,7 @@ export const pageRouter = router({
             workspaceId: page.workspaceId,
             pageId: page.id,
             slug: page.slug,
+            type: 'static',
           });
         }
 
@@ -283,6 +285,7 @@ export const pageRouter = router({
             workspaceId: updated.workspaceId,
             pageId: updated.id,
             slug: updated.slug,
+            type: 'status',
           });
         }
 
@@ -330,6 +333,7 @@ export const pageRouter = router({
             workspaceId: updated.workspaceId,
             pageId: updated.id,
             slug: updated.slug,
+            type: 'static',
           });
         }
 
