@@ -29,6 +29,7 @@ import { pushRouter } from './router/push.js';
 import { workerRouter } from './router/worker.js';
 import { insightsRouter } from './router/insights.js';
 import { shortlinkRouter } from './router/shortlink.js';
+import { staticPageRouter } from './router/staticPage.js';
 import { pageRouter } from './router/page.js';
 
 const app = express();
@@ -143,6 +144,8 @@ app.use('/*', (req, res, next) => {
 
 // Static
 app.use(express.static('public'));
+
+app.use('/p', staticPageRouter);
 
 // fallback
 const webEntry = path.join(process.cwd(), 'public', 'index.html');

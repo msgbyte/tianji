@@ -14,6 +14,7 @@ import {
   PageModelSchema,
 } from '../../prisma/zod/index.js';
 import { customDomainManager } from '../../model/page/manager.js';
+import { invalidateStaticPageCache } from '../../router/staticPage.js';
 
 // Union type for page info
 const PageInfoSchema = z.union([
@@ -332,6 +333,10 @@ export const pageRouter = router({
           });
         }
 
+        await invalidateStaticPageCache(updated.slug);
+        if (staticPage.slug !== updated.slug) {
+          await invalidateStaticPageCache(staticPage.slug);
+        }
         return { ...updated, type: 'static' as const };
       }
 
@@ -377,6 +382,7 @@ export const pageRouter = router({
         const deleted = await prisma.page.delete({
           where: { id, workspaceId },
         });
+        await invalidateStaticPageCache(staticPage.slug);
         return { ...deleted, type: 'static' as const };
       }
 
