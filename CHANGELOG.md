@@ -1,5 +1,12 @@
 
 
+## [1.31.10](https://github.com/msgbyte/tianji/compare/v1.31.9...v1.31.10) (2026-02-04)
+
+### Features
+
+* add static page router for seo and caching mechanism ([52185e9](https://github.com/msgbyte/tianji/commit/52185e9da89c09fd0aac84c4391508f0d63ab086))
+* enhance custom domain handling with static and status page types ([10fe22d](https://github.com/msgbyte/tianji/commit/10fe22df71e0c55c58c7f29240de0b875fc90ce9))
+
 ## [1.31.9](https://github.com/msgbyte/tianji/compare/v1.31.8...v1.31.9) (2026-01-31)
 
 ### Others
