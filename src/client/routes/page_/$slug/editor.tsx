@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { trpc } from '@/api/trpc';
 import { useLocalStorageState, useDebounce } from 'ahooks';
@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Separator } from '@/components/ui/separator';
 import { SimpleTooltip } from '@/components/ui/tooltip';
+import { useEvent } from '@/hooks/useEvent';
 
 import 'allotment/dist/style.css';
 
@@ -156,8 +157,10 @@ function PageComponent() {
     }
   }, [isSelectMode]);
 
-  const handleSave = async () => {
-    if (!pageInfo?.id) return;
+  const handleSave = useEvent(async () => {
+    if (!pageInfo?.id) {
+      return;
+    }
 
     try {
       await editPage.mutateAsync({
@@ -171,7 +174,24 @@ function PageComponent() {
     } catch (e: any) {
       toast.error(e.message);
     }
-  };
+  });
+
+  // Handle keyboard shortcut Cmd+S / Ctrl+S to save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Cmd+S (Mac) or Ctrl+S (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleSave]);
 
   // Handle element selection in iframe
   useEffect(() => {
