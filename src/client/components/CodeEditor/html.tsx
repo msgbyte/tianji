@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle } from 'react';
+import React, { useRef, useImperativeHandle, useEffect } from 'react';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { useTheme } from '@/store/settings';
 import { useEvent } from '@/hooks/useEvent';
@@ -15,10 +15,11 @@ interface HtmlEditorProps {
   height?: string | number;
   readOnly?: boolean;
   onValidate?: (markers: any[]) => void;
+  onSave?: () => void | Promise<void>;
 }
 
 export const HtmlEditor = React.forwardRef<HtmlEditorRef, HtmlEditorProps>(
-  ({ value, onChange, height = 400, readOnly = false, onValidate }, ref) => {
+  ({ value, onChange, height = 400, readOnly = false, onValidate, onSave }, ref) => {
     const editorRef = useRef<any>(null);
     const monacoRef = useRef<any>(null);
     const colorScheme = useTheme();
@@ -35,6 +36,21 @@ export const HtmlEditor = React.forwardRef<HtmlEditorRef, HtmlEditorProps>(
       highlightLines,
       clearHighlight,
     }));
+
+    // Register save shortcut when editor is ready and onSave is provided
+    useEffect(() => {
+      const editor = editorRef.current;
+      const monaco = monacoRef.current;
+
+      if (!editor || !monaco || !onSave) {
+        return;
+      }
+
+      // Register Cmd+S / Ctrl+S shortcut for save
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+        onSave();
+      });
+    }, [onSave]);
 
     const handleEditorDidMount: OnMount = (editor, monaco) => {
       editorRef.current = editor;

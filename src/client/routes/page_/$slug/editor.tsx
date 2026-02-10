@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { trpc } from '@/api/trpc';
 import { useLocalStorageState, useDebounce } from 'ahooks';
@@ -176,23 +176,6 @@ function PageComponent() {
     }
   });
 
-  // Handle keyboard shortcut Cmd+S / Ctrl+S to save
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Check for Cmd+S (Mac) or Ctrl+S (Windows/Linux)
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleSave]);
-
   // Handle element selection in iframe
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -340,6 +323,7 @@ function PageComponent() {
       value={htmlCode}
       onChange={setHtmlCode}
       height="100%"
+      onSave={handleSave}
     />
   );
 
