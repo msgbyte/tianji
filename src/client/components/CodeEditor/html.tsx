@@ -19,7 +19,10 @@ interface HtmlEditorProps {
 }
 
 export const HtmlEditor = React.forwardRef<HtmlEditorRef, HtmlEditorProps>(
-  ({ value, onChange, height = 400, readOnly = false, onValidate, onSave }, ref) => {
+  (
+    { value, onChange, height = 400, readOnly = false, onValidate, onSave },
+    ref
+  ) => {
     const editorRef = useRef<any>(null);
     const monacoRef = useRef<any>(null);
     const colorScheme = useTheme();

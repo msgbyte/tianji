@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Command,
   CommandDialog,
@@ -25,6 +25,7 @@ import {
 import { RiSurveyLine } from 'react-icons/ri';
 
 import { NavigateOptions, useNavigate } from '@tanstack/react-router';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { useEvent } from '@/hooks/useEvent';
 import { useCommandState } from 'cmdk';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -62,19 +63,11 @@ export const CommandPanel: React.FC<CommandPanelProps> = React.memo((props) => {
     };
   });
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-
-    document.addEventListener('keydown', down);
-    return () => {
-      document.removeEventListener('keydown', down);
-    };
-  }, []);
+  // Handle keyboard shortcut Cmd+K / Ctrl+K to toggle command panel
+  useHotkeys('mod+k', (event) => {
+    event.preventDefault();
+    setOpen((open) => !open);
+  });
 
   return (
     <>
