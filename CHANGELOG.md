@@ -1,5 +1,11 @@
 
 
+## [1.31.12](https://github.com/msgbyte/tianji/compare/v1.31.11...v1.31.12) (2026-02-12)
+
+### Features
+
+* implement batch writer for efficient database operations in worker execution ([ef0382f](https://github.com/msgbyte/tianji/commit/ef0382f3a7d23314eace0d8464aa995a9e686a3d))
+
 ## [1.31.11](https://github.com/msgbyte/tianji/compare/v1.31.10...v1.31.11) (2026-02-12)
 
 ### Features
