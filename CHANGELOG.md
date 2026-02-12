@@ -1,5 +1,17 @@
 
 
+## [1.31.11](https://github.com/msgbyte/tianji/compare/v1.31.10...v1.31.11) (2026-02-12)
+
+### Features
+
+* add save functionality with keyboard shortcut in HtmlEditor ([c7f1a11](https://github.com/msgbyte/tianji/commit/c7f1a11611fc9e1393480a39e2c938dba8716674))
+* implement in-memory caching layer for buildQueryWithCache function ([8437170](https://github.com/msgbyte/tianji/commit/84371709b89b2601a37054a46b3b9d92f46e2fa2))
+* implement keyboard shortcut for saving in editor ([5be539b](https://github.com/msgbyte/tianji/commit/5be539ba23f091fa39bd002d053f13e20376c691))
+
+### Others
+
+* migrate mod + k to useHotkeys to reduce usage ([bf7aab1](https://github.com/msgbyte/tianji/commit/bf7aab119a0e8c6c3aa131c8efa92bf28b0b0a64))
+
 ## [1.31.10](https://github.com/msgbyte/tianji/compare/v1.31.9...v1.31.10) (2026-02-04)
 
 ### Features
