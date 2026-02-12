@@ -1,4 +1,4 @@
-import { FunctionWorkerExecutionStatus } from '@prisma/client';
+import { FunctionWorkerExecutionStatus, Prisma } from '@prisma/client';
 import { runCodeInIVM } from '../../utils/vm/index.js';
 import { prisma } from '../_client.js';
 import { isPlainObject } from 'lodash-es';
@@ -11,6 +11,13 @@ import {
   promWorkerMemoryUsage,
 } from '../../utils/prometheus/client.js';
 import { createId } from '@paralleldrive/cuid2';
+import { createBatchWriter } from '../../utils/batchWriter.js';
+
+const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
+  name: 'WorkerExecution',
+  flush: (batch) =>
+    prisma.functionWorkerExecution.createMany({ data: batch }).then(() => {}),
+});
 
 export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
   'worker',
@@ -91,10 +98,7 @@ export async function execWorker(
       .observe(used_heap_size);
 
     if (workerId) {
-      // Async save execution record without blocking response
-      prisma.functionWorkerExecution.create({ data: payload }).catch((err) => {
-        logger.error('Failed to save worker execution record:', err); // TODO: need to confirm its will not have too much error
-      });
+      execRecordWriter.enqueue(payload);
     }
 
     return payload;
@@ -111,17 +115,12 @@ export async function execWorker(
       status: FunctionWorkerExecutionStatus.Failed,
       requestPayload,
       error: String(e),
-      logs: [], // TODO: add logs for error worker
+      logs: [],
       responsePayload: null,
     };
 
     if (workerId) {
-      // Sync save execution record if failed to run
-      const res = await prisma.functionWorkerExecution.create({
-        data: payload,
-      });
-
-      return res;
+      execRecordWriter.enqueue(payload);
     }
 
     return payload;
