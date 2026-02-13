@@ -68,7 +68,7 @@ async function processEvent(type: string, payload: any, session: any) {
       utmContent = params.get('utm_content') || undefined;
     }
 
-    await saveWebsiteEvent({
+    saveWebsiteEvent({
       urlPath,
       urlQuery,
       referrerPath,

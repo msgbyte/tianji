@@ -29,6 +29,30 @@ import { env } from '../../utils/env.js';
 import { clickhouse } from '../../clickhouse/index.js';
 import { clickhouseHealthManager } from '../../clickhouse/health.js';
 import { buildQueryWithCache } from '../../cache/index.js';
+import { createBatchWriter } from '../../utils/batchWriter.js';
+import { createId } from '@paralleldrive/cuid2';
+
+interface WebsiteEventBatchItem {
+  event: Prisma.WebsiteEventCreateManyInput;
+  eventData?: Prisma.WebsiteEventDataCreateManyInput[];
+}
+
+const websiteEventWriter = createBatchWriter<WebsiteEventBatchItem>({
+  name: 'WebsiteEvent',
+  flush: async (batch) => {
+    const events = batch.map((b) => b.event);
+    const allEventData = batch.flatMap((b) => b.eventData ?? []);
+
+    if (allEventData.length > 0) {
+      await prisma.$transaction([
+        prisma.websiteEvent.createMany({ data: events }),
+        prisma.websiteEventData.createMany({ data: allEventData }),
+      ]);
+    } else {
+      await prisma.websiteEvent.createMany({ data: events });
+    }
+  },
+});
 
 export interface WebsiteEventPayload {
   data?: object;
@@ -205,7 +229,7 @@ async function loadSession(sessionId: string): Promise<WebsiteSession | null> {
 
 export { delWebsiteSessionCache };
 
-export async function saveWebsiteEvent(data: {
+export function saveWebsiteEvent(data: {
   sessionId: string;
   websiteId: string;
   urlPath: string;
@@ -240,32 +264,34 @@ export async function saveWebsiteEvent(data: {
     pageTitle,
   } = data;
 
-  const websiteEvent = await prisma.websiteEvent.create({
-    data: {
-      websiteId,
-      sessionId,
-      urlPath: urlPath?.substring(0, URL_LENGTH),
-      urlQuery: urlQuery?.substring(0, URL_LENGTH),
-      referrerPath: referrerPath?.substring(0, URL_LENGTH),
-      referrerQuery: referrerQuery?.substring(0, URL_LENGTH),
-      referrerDomain: referrerDomain?.substring(0, URL_LENGTH),
-      utmSource: utmSource?.substring(0, 100),
-      utmMedium: utmMedium?.substring(0, 100),
-      utmCampaign: utmCampaign?.substring(0, 100),
-      utmTerm: utmTerm?.substring(0, 100),
-      utmContent: utmContent?.substring(0, 100),
-      pageTitle,
-      eventType: eventName ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView,
-      eventName: eventName ? eventName?.substring(0, EVENT_NAME_LENGTH) : null,
-    },
-  });
+  const eventId = createId();
+
+  const event: Prisma.WebsiteEventCreateManyInput = {
+    id: eventId,
+    websiteId,
+    sessionId,
+    urlPath: urlPath?.substring(0, URL_LENGTH),
+    urlQuery: urlQuery?.substring(0, URL_LENGTH),
+    referrerPath: referrerPath?.substring(0, URL_LENGTH),
+    referrerQuery: referrerQuery?.substring(0, URL_LENGTH),
+    referrerDomain: referrerDomain?.substring(0, URL_LENGTH),
+    utmSource: utmSource?.substring(0, 100),
+    utmMedium: utmMedium?.substring(0, 100),
+    utmCampaign: utmCampaign?.substring(0, 100),
+    utmTerm: utmTerm?.substring(0, 100),
+    utmContent: utmContent?.substring(0, 100),
+    pageTitle,
+    eventType: eventName ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView,
+    eventName: eventName ? eventName?.substring(0, EVENT_NAME_LENGTH) : null,
+  };
+
+  let batchEventData: Prisma.WebsiteEventDataCreateManyInput[] | undefined;
 
   if (eventData) {
     const jsonKeys = flattenJSON(eventData);
 
-    // id, websiteEventId, eventStringValue
-    const flattendData = jsonKeys.map((a) => ({
-      websiteEventId: websiteEvent.id,
+    batchEventData = jsonKeys.map((a) => ({
+      websiteEventId: eventId,
       websiteId,
       eventKey: a.key,
       stringValue:
@@ -279,13 +305,9 @@ export async function saveWebsiteEvent(data: {
         a.dynamicDataType === DATA_TYPE.date ? new Date(a.value) : null,
       dataType: a.dynamicDataType,
     }));
-
-    await prisma.websiteEventData.createMany({
-      data: flattendData,
-    });
   }
 
-  return websiteEvent;
+  websiteEventWriter.enqueue({ event, eventData: batchEventData });
 }
 
 export async function saveWebsiteSessionData(data: {
