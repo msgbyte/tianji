@@ -11,6 +11,25 @@ export interface BatchWriterOptions<T> {
   name?: string;
 }
 
+const registry = new Set<{ name: string; dispose: () => Promise<void> }>();
+
+/**
+ * Flush and dispose all registered batch writers.
+ * Call this before process exit for graceful shutdown.
+ */
+export async function flushAllBatchWriters(): Promise<void> {
+  const writers = [...registry];
+  if (writers.length === 0) return;
+
+  logger.info(
+    `[BatchWriter] Flushing ${writers.length} writer(s) before shutdown...`
+  );
+
+  await Promise.allSettled(writers.map((w) => w.dispose()));
+
+  logger.info('[BatchWriter] All writers flushed.');
+}
+
 /**
  * Generic batch writer that buffers items in memory and
  * periodically flushes them via a single bulk operation.
@@ -68,8 +87,12 @@ export function createBatchWriter<T>(options: BatchWriterOptions<T>) {
       clearInterval(timer);
       timer = null;
     }
+    registry.delete(handle);
     return flush();
   }
+
+  const handle = { name, dispose };
+  registry.add(handle);
 
   return { enqueue, flush, dispose };
 }

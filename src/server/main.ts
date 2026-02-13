@@ -12,6 +12,7 @@ import { app } from './app.js';
 import { runMQWorker } from './mq/worker.js';
 import { initCounter } from './utils/prometheus/index.js';
 import { initClickHouse } from './clickhouse/index.js';
+import { flushAllBatchWriters } from './utils/batchWriter.js';
 
 const port = env.port;
 
@@ -46,3 +47,20 @@ httpServer.listen(port, () => {
   }
   logger.info(`Website: http://127.0.0.1:${port}`);
 });
+
+// Graceful shutdown
+async function gracefulShutdown(signal: string) {
+  logger.info(`Received ${signal}, shutting down gracefully...`);
+
+  // Stop accepting new connections
+  httpServer.close();
+
+  // Flush all pending batch writes
+  await flushAllBatchWriters();
+
+  logger.info('Graceful shutdown complete.');
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
