@@ -1,5 +1,12 @@
 
 
+## [1.31.13](https://github.com/msgbyte/tianji/compare/v1.31.12...v1.31.13) (2026-02-13)
+
+### Features
+
+* add graceful shutdown handling and batch writer flushing on termination ([1e301a0](https://github.com/msgbyte/tianji/commit/1e301a07b593c85a0a098dc22e2e8d0f009e5bf2))
+* enhance saveWebsiteEvent function to utilize batch writing for improved performance ([98aadb9](https://github.com/msgbyte/tianji/commit/98aadb95d2606382e4f4853cbf35a8ad3cc4bc2c))
+
 ## [1.31.12](https://github.com/msgbyte/tianji/compare/v1.31.11...v1.31.12) (2026-02-12)
 
 ### Features
