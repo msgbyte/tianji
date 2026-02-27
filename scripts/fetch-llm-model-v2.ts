@@ -5,6 +5,7 @@ import 'dotenv/config';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { z } from 'zod';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +15,40 @@ const TARGET_PATH = path.resolve(
   __dirname,
   '../src/server/utils/model_prices_and_context_window_v2.json'
 );
+
+const modelSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    cost: z
+      .object({
+        input: z.number().optional(),
+        output: z.number().optional(),
+      })
+      .passthrough()
+      .optional(),
+    limit: z
+      .object({
+        context: z.number().optional(),
+        output: z.number().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
+const providerSchema = z
+  .object({
+    name: z.string(),
+    models: z.record(z.string(), modelSchema),
+  })
+  .passthrough();
+
+const llmModelDataSchema = z.record(z.string(), providerSchema);
+
+export type LLMModelData = z.infer<typeof llmModelDataSchema>;
+export type LLMProvider = z.infer<typeof providerSchema>;
+export type LLMModel = z.infer<typeof modelSchema>;
 
 async function fetchLLMModelDataV2() {
   try {
@@ -27,21 +62,19 @@ async function fetchLLMModelDataV2() {
       );
     }
 
-    const data = await response.json();
+    const raw = await response.json();
+    llmModelDataSchema.parse(raw);
 
-    // Ensure target directory exists
     const targetDir = path.dirname(TARGET_PATH);
     await fs.ensureDir(targetDir);
 
-    // Write data to file
-    await fs.writeJSON(TARGET_PATH, data, { spaces: 2 });
+    await fs.writeJSON(TARGET_PATH, raw, { spaces: 2 });
 
     console.log(`LLM model data v2 has been written to: ${TARGET_PATH}`);
-    console.log(`Total providers: ${Object.keys(data).length}`);
+    console.log(`Total providers: ${Object.keys(raw).length}`);
 
-    // Log some statistics about the data
     let totalModels = 0;
-    Object.values(data).forEach((provider: any) => {
+    Object.values(raw).forEach((provider: any) => {
       if (provider.models) {
         totalModels += Object.keys(provider.models).length;
       }
