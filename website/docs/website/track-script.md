@@ -16,6 +16,41 @@ the script look like below:
 
 you can get this script code from your **Tianji** website list
 
+## Script Attributes
+
+The tracker script supports the following `data-*` attributes on the `<script>` tag:
+
+| Attribute | Required | Default | Description |
+|---|---|---|---|
+| `data-website-id` | **Yes** | — | The unique website ID for associating tracking data. The tracker will not initialize without this. |
+| `data-host-url` | No | Script `src` origin | The backend server URL. If omitted, it is automatically derived from the script's `src` path. |
+| `data-auto-track` | No | `true` | Automatically track page views and route changes. Set to `"false"` to disable. |
+| `data-do-not-track` | No | — | When set, respects the browser's Do Not Track (DNT) setting and disables tracking if DNT is enabled. |
+| `data-domains` | No | — | A comma-separated list of domains to track (e.g. `"example.com,www.example.com"`). Tracking is only active when the current hostname matches one of these domains. |
+
+### Full Example
+
+```html
+<script
+  async
+  defer
+  src="https://example.com/tracker.js"
+  data-website-id="clxxxxxxxxxxxxxxxxxx"
+  data-host-url="https://analytics.example.com"
+  data-auto-track="true"
+  data-do-not-track="true"
+  data-domains="example.com,www.example.com"
+></script>
+```
+
+### Disable Tracking via localStorage
+
+You can also disable tracking at runtime by setting a localStorage flag:
+
+```javascript
+localStorage.setItem('tianji.disabled', '1');
+```
+
 ## Report Event
 
 **Tianji** provide a simple way to report user click event, its easy to help you track which action user like and often to use.
