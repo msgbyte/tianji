@@ -1,0 +1,40 @@
+name: tianji-analytics
+version: 0.2.0
+author: moonrailgun
+description: >
+  Query website analytics, monitor uptime, survey results, telemetry data,
+  feed events, and more from Tianji platform via its OpenAPI.
+  Use when the user asks about website traffic, pageviews, monitor uptime,
+  survey feedback, telemetry events, or any Tianji platform data.
+license: MIT
+permissions:
+  - network
+entryPoint:
+  type: natural-language
+  skillFile: SKILL.md
+config:
+  TIANJI_BASE_URL:
+    type: string
+    description: Tianji API base URL (e.g. https://tianji.example.com)
+    required: true
+  TIANJI_API_KEY:
+    type: string
+    description: Tianji API key for authentication
+    required: true
+    secret: true
+  TIANJI_WORKSPACE_ID:
+    type: string
+    description: Default Tianji workspace ID
+    required: true
+triggers:
+  keywords:
+    - website analytics
+    - pageview
+    - monitor status
+    - survey results
+    - telemetry
+    - tianji
+    - uptime
+    - traffic analysis
+    - feed events
+    - lighthouse report

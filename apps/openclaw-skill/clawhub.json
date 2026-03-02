@@ -1,0 +1,24 @@
+{
+  "name": "tianji-analytics",
+  "tagline": "Query all read-only data from Tianji monitoring & analytics platform",
+  "category": "analytics",
+  "tags": [
+    "monitoring",
+    "analytics",
+    "website",
+    "survey",
+    "uptime",
+    "telemetry",
+    "feed"
+  ],
+  "license": "MIT",
+  "author": "moonrailgun",
+  "repository": "https://github.com/msgbyte/tianji",
+  "requiredEnvVars": [
+    "TIANJI_BASE_URL",
+    "TIANJI_API_KEY",
+    "TIANJI_WORKSPACE_ID"
+  ],
+  "primaryCredential": "TIANJI_API_KEY",
+  "sensitiveDataNote": "Some GET endpoints (e.g. aiGateway) may return platform-stored secrets such as modelApiKey. The skill instructs the agent to redact these fields before presenting results to the user."
+}
