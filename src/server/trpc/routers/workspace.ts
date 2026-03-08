@@ -32,6 +32,7 @@ import {
   clearWorkspaceSettingsCache,
   getWorkspaceServiceCount,
 } from '../../model/workspace.js';
+import { createAuditLog } from '../../model/auditLog.js';
 import {
   acceptInvitation,
   createWorkspaceInvitation,
@@ -188,6 +189,12 @@ export const workspaceRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { workspaceId } = input;
       const userId = ctx.user.id;
+
+      createAuditLog({
+        workspaceId,
+        relatedType: 'Workspace',
+        content: `Workspace deleted by ${String(ctx.user.username)}(${userId})`,
+      });
 
       const monitors = await prisma.monitor.findMany({
         where: {
@@ -438,8 +445,14 @@ export const workspaceRouter = router({
       })
     )
     .output(z.void())
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { targetUserId, workspaceId } = input;
+
+      createAuditLog({
+        workspaceId,
+        relatedType: 'Workspace',
+        content: `Member(${targetUserId}) kicked by ${String(ctx.user.username)}(${ctx.user.id})`,
+      });
 
       leaveWorkspace(targetUserId, workspaceId);
     }),
@@ -460,7 +473,7 @@ export const workspaceRouter = router({
       })
     )
     .output(z.void())
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { userId, workspaceId, role } = input;
 
       const member = await prisma.workspacesOnUsers.findUnique({
@@ -490,6 +503,12 @@ export const workspaceRouter = router({
         data: {
           role,
         },
+      });
+
+      createAuditLog({
+        workspaceId,
+        relatedType: 'Workspace',
+        content: `Member(${userId}) role changed to ${role} by ${String(ctx.user.username)}(${ctx.user.id})`,
       });
     }),
   getUserWorkspaceRole: publicProcedure

@@ -17,6 +17,7 @@ import { userInfoSchema } from '../../model/_schema/index.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
 import { UserApiKeyModelSchema } from '../../prisma/zod/userapikey.js';
+import { createAuditLog } from '../../model/auditLog.js';
 
 export const userRouter = router({
   login: publicProcedure
@@ -45,6 +46,14 @@ export const userRouter = router({
       const user = await authUser(username, password);
 
       const token = jwtSign(user);
+
+      if (user.currentWorkspaceId) {
+        createAuditLog({
+          workspaceId: user.currentWorkspaceId,
+          relatedType: 'User',
+          content: `User login: ${username}`,
+        });
+      }
 
       return { info: user, token };
     }),
@@ -143,7 +152,21 @@ export const userRouter = router({
       const userId = ctx.user.id;
       const { oldPassword, newPassword } = input;
 
-      return changeUserPassword(userId, oldPassword, newPassword);
+      const result = await changeUserPassword(userId, oldPassword, newPassword);
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { currentWorkspaceId: true, username: true },
+      });
+      if (user?.currentWorkspaceId) {
+        createAuditLog({
+          workspaceId: user.currentWorkspaceId,
+          relatedType: 'User',
+          content: `User changed password: ${user.username}`,
+        });
+      }
+
+      return result;
     }),
   info: protectProedure
     .input(z.void())
@@ -168,7 +191,21 @@ export const userRouter = router({
     .input(z.void())
     .output(z.string())
     .mutation(async ({ ctx }) => {
-      return generateUserApiKey(ctx.user.id);
+      const apiKey = await generateUserApiKey(ctx.user.id);
+
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        select: { currentWorkspaceId: true, username: true },
+      });
+      if (user?.currentWorkspaceId) {
+        createAuditLog({
+          workspaceId: user.currentWorkspaceId,
+          relatedType: 'User',
+          content: `User generated API key: ${user.username}`,
+        });
+      }
+
+      return apiKey;
     }),
   deleteApiKey: protectProedure
     .input(
@@ -184,6 +221,18 @@ export const userRouter = router({
           apiKey: input.apiKey,
         },
       });
+
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        select: { currentWorkspaceId: true, username: true },
+      });
+      if (user?.currentWorkspaceId) {
+        createAuditLog({
+          workspaceId: user.currentWorkspaceId,
+          relatedType: 'User',
+          content: `User deleted API key: ${user.username}`,
+        });
+      }
     }),
   updateApiKeyDescription: protectProedure
     .input(

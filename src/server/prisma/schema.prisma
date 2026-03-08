@@ -812,6 +812,8 @@ enum WorkspaceAuditLogType {
   Notification
   Task
   FunctionWorker
+  User
+  Workspace
 }
 
 model Survey {
