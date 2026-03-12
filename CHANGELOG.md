@@ -1,5 +1,25 @@
 
 
+## [1.31.14](https://github.com/msgbyte/tianji/compare/v1.31.13...v1.31.14) (2026-03-12)
+
+### Features
+
+* add some audit log in important logic ([91c562b](https://github.com/msgbyte/tianji/commit/91c562bdd4937369cdee12c5ea9cd0248e7c902c))
+* add Tianji analytics skill with OpenAPI integration and endpoint documentation ([b3ba444](https://github.com/msgbyte/tianji/commit/b3ba444bf92f9b4d17239f566de44d964339a2fc))
+* implement session error tracking and handling in website session management ([0006c34](https://github.com/msgbyte/tianji/commit/0006c347e2501cb91db22a4dcde1ca7d1473b418))
+* update pricing logic to utilize response cost from API and improve handling of custom model prices ([3811467](https://github.com/msgbyte/tianji/commit/38114678f1e2d2ec71fb8741cade7d29b204b3f2))
+
+### Document
+
+* update track-script documentation with new script attributes and examples ([8093993](https://github.com/msgbyte/tianji/commit/80939932a6c6d41cfd9c4588762746c8cbb005c9))
+
+### Others
+
+* add Zod validation schemas for LLM model data fetching ([418a2ae](https://github.com/msgbyte/tianji/commit/418a2ae788b9f9dee013b18622c85217a77e151f))
+* simply website overview component with card layout and event tracking ([67d336e](https://github.com/msgbyte/tianji/commit/67d336efe1983929abb6b697490e36a188a3e0a8))
+* update model price ([2896db8](https://github.com/msgbyte/tianji/commit/2896db85c991b469f1ec4ed04510249783a8139c))
+* update model pricing ([cebfafd](https://github.com/msgbyte/tianji/commit/cebfafd63fb38275a765d604407bc693691af3c0))
+
 ## [1.31.13](https://github.com/msgbyte/tianji/compare/v1.31.12...v1.31.13) (2026-02-13)
 
 ### Features
