@@ -180,6 +180,9 @@ export const env = {
     process.env.ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT
   ),
   registerAutoJoinWorkspaceId: process.env.REGISTER_AUTO_JOIN_WORKSPACE_ID, // dangerous, its will make user auto join workspace rather than create own after register.
+  aiGatewayLogClearDays: Number(process.env.AIGATEWAY_LOG_CLEAR_DAYS) || 0,
+  aiGatewayPayloadClearDays:
+    Number(process.env.AIGATEWAY_PAYLOAD_CLEAR_DAYS) || 0,
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {

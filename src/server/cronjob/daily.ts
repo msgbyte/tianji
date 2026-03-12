@@ -354,3 +354,61 @@ export async function dailyUpdateApplicationStoreInfo() {
     allStores.length
   );
 }
+
+export async function clearAIGatewayLogsDaily() {
+  const days = env.aiGatewayLogClearDays;
+  if (days <= 0) {
+    return;
+  }
+
+  const date = dayjs().subtract(days, 'days').toDate();
+  logger.info(
+    '[clearAIGatewayLogsDaily] Start clear AI Gateway logs before:',
+    date.toISOString()
+  );
+  const res = await prisma.aIGatewayLogs.deleteMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+    },
+  });
+
+  logger.info(
+    '[clearAIGatewayLogsDaily] Clear completed, delete record:',
+    res.count
+  );
+}
+
+export async function clearAIGatewayPayloadDaily() {
+  const days = env.aiGatewayPayloadClearDays;
+  if (days <= 0) {
+    return;
+  }
+
+  const date = dayjs().subtract(days, 'days').toDate();
+  logger.info(
+    '[clearAIGatewayPayloadDaily] Start clear AI Gateway payload before:',
+    date.toISOString()
+  );
+  const res = await prisma.aIGatewayLogs.updateMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+      OR: [
+        { requestPayload: { not: {} } },
+        { responsePayload: { not: {} } },
+      ],
+    },
+    data: {
+      requestPayload: {},
+      responsePayload: {},
+    },
+  });
+
+  logger.info(
+    '[clearAIGatewayPayloadDaily] Clear completed, update record:',
+    res.count
+  );
+}

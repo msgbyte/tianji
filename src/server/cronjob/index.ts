@@ -4,6 +4,8 @@ import { FeedChannelNotifyFrequency } from '@prisma/client';
 import { env } from '../utils/env.js';
 import { checkWorkspaceUsage } from '../model/billing/cronjob.js';
 import {
+  clearAIGatewayLogsDaily,
+  clearAIGatewayPayloadDaily,
   clearAuditLogDaily,
   clearMonitorDataDaily,
   clearMonitorEventDaily,
@@ -35,6 +37,8 @@ export function initCronjob() {
             dailyUpdateApplicationStoreInfo().catch(logger.error),
             checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
             resetDailyAlertFlags().catch(logger.error),
+            clearAIGatewayPayloadDaily().catch(logger.error),
+            clearAIGatewayLogsDaily().catch(logger.error),
           ]);
 
           if (env.billing.enable) {
