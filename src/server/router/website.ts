@@ -10,7 +10,7 @@ import {
 import { createToken } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
 import { isWorkspacePaused } from '../model/billing/workspace.js';
-import { promWebsiteEventCounter } from '../utils/prometheus/client.js';
+import { promWebsiteEventCounter, promWebsiteSessionErrorCounter } from '../utils/prometheus/client.js';
 
 export const websiteRouter = Router();
 
@@ -125,14 +125,14 @@ websiteRouter.post(
 
     const { type, payload } = req.body;
 
-    const session = await findSession(req, req.body);
-
-    if (await isWorkspacePaused(session.workspaceId)) {
-      res.status(403).send('Workspace is paused.');
-      return;
-    }
-
     try {
+      const session = await findSession(req, req.body);
+
+      if (await isWorkspacePaused(session.workspaceId)) {
+        res.status(403).send('Workspace is paused.');
+        return;
+      }
+
       await processEvent(type, payload, session);
       const token = createToken(session);
       promWebsiteEventCounter.inc({
@@ -142,6 +142,7 @@ websiteRouter.post(
       });
       res.send(token);
     } catch (error) {
+      promWebsiteSessionErrorCounter.inc({ type: 'find_session', endpoint: 'send' });
       res.status(400).json({
         error: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -176,7 +177,16 @@ websiteRouter.post(
   async (req, res) => {
     const { events } = req.body;
 
-    const session = await findSession(req, events[0]);
+    let session;
+    try {
+      session = await findSession(req, events[0]);
+    } catch (error) {
+      promWebsiteSessionErrorCounter.inc({ type: 'find_session', endpoint: 'batch' });
+      res.status(400).json({
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      return;
+    }
 
     if (await isWorkspacePaused(session.workspaceId)) {
       res.status(403).send('Workspace is paused.');

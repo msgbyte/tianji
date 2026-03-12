@@ -87,6 +87,12 @@ export const promWebsiteEventCounter = new Prometheus.Counter({
   labelNames: ['websiteId', 'eventType', 'endpoint'],
 });
 
+export const promWebsiteSessionErrorCounter = new Prometheus.Counter({
+  name: 'tianji_website_session_error_total',
+  help: 'Total number of website session errors',
+  labelNames: ['type', 'endpoint'],
+});
+
 export const promApplicationEventCounter = new Prometheus.Counter({
   name: 'tianji_application_event_counter',
   help: 'application event counter',

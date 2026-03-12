@@ -31,6 +31,7 @@ import { clickhouseHealthManager } from '../../clickhouse/health.js';
 import { buildQueryWithCache } from '../../cache/index.js';
 import { createBatchWriter } from '../../utils/batchWriter.js';
 import { createId } from '@paralleldrive/cuid2';
+import { promWebsiteSessionErrorCounter } from '../../utils/prometheus/client.js';
 
 interface WebsiteEventBatchItem {
   event: Prisma.WebsiteEventCreateManyInput;
@@ -134,28 +135,40 @@ export async function findSession(
 
   // Create a session if not found
   if (!session) {
-    session = await prisma.websiteSession.upsert({
-      where: { id: sessionId },
-      create: {
-        id: sessionId,
-        websiteId,
-        hostname,
-        browser,
-        os,
-        device,
-        screen,
-        language,
-        ip,
-        country,
-        subdivision1,
-        subdivision2,
-        city,
-        longitude,
-        latitude,
-        accuracyRadius,
-      },
-      update: {},
-    });
+    try {
+      session = await prisma.websiteSession.upsert({
+        where: { id: sessionId },
+        create: {
+          id: sessionId,
+          websiteId,
+          hostname,
+          browser,
+          os,
+          device,
+          screen,
+          language,
+          ip,
+          country,
+          subdivision1,
+          subdivision2,
+          city,
+          longitude,
+          latitude,
+          accuracyRadius,
+        },
+        update: {},
+      });
+    } catch (err) {
+      if (
+        (err as Prisma.PrismaClientKnownRequestError).code === 'P2002'
+      ) {
+        promWebsiteSessionErrorCounter.inc({ type: 'p2002', endpoint: 'session_upsert' });
+        session = await prisma.websiteSession.findUnique({
+          where: { id: sessionId },
+        });
+      }
+      if (!session) throw err;
+    }
   }
 
   const res: WebsiteSession & { workspaceId: string } = {
