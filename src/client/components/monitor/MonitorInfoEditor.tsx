@@ -129,7 +129,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
             label={t('Up Notification Template')}
             name="upMessageTemplate"
             tooltip={t(
-              'Optional, Custom template for UP notification. Available variables: {{monitorName}}, {{currentTime}}, {{monitorType}}'
+              'Optional, Custom template for UP notification. Available variables: {{monitorName}}, {{currentTime}}, {{monitorType}}, {{url}}'
             )}
           >
             <Input.TextArea
@@ -142,7 +142,7 @@ export const MonitorInfoEditor: React.FC<MonitorInfoEditorProps> = React.memo(
             label={t('Down Notification Template')}
             name="downMessageTemplate"
             tooltip={t(
-              'Optional, Custom template for DOWN notification. Available variables: {{monitorName}}, {{currentTime}}, {{monitorType}}, {{errorMessage}}'
+              'Optional, Custom template for DOWN notification. Available variables: {{monitorName}}, {{currentTime}}, {{monitorType}}, {{errorMessage}}, {{url}}'
             )}
           >
             <Input.TextArea

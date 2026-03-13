@@ -276,6 +276,7 @@ export class MonitorRunner {
       monitorName: monitor.name,
       currentTime,
       monitorType: monitor.type,
+      url: get(this.monitor.payload, 'url', '') || get(this.monitor.payload, 'hostname', ''),
     };
 
     const defaultTitle = `[${monitor.name}] ✅ Up`;
@@ -318,6 +319,7 @@ export class MonitorRunner {
       currentTime,
       monitorType: monitor.type,
       errorMessage,
+      url: get(this.monitor.payload, 'url', '') || get(this.monitor.payload, 'hostname', ''),
     };
 
     const defaultTitle = `[${monitor.name}] 🔴 Down`;
