@@ -1,5 +1,14 @@
 
 
+## [1.31.15](https://github.com/msgbyte/tianji/compare/v1.31.14...v1.31.15) (2026-03-13)
+
+### Features
+
+* add {{url}} variable for http monitor [#190](https://github.com/msgbyte/tianji/issues/190) ([eafbd82](https://github.com/msgbyte/tianji/commit/eafbd82fa96e3d440dc903e691e7546475ee1cc7))
+* add daily log and payload clearing functions for AI Gateway ([a75119a](https://github.com/msgbyte/tianji/commit/a75119a47a78a777e92913029a596b5115616279))
+* add user analytics and logging enhancements to AI Gateway components ([8afa79a](https://github.com/msgbyte/tianji/commit/8afa79a750f11d1cced02895eaee1c5a37bf33ba))
+* enhance logging in cronjob functions and initialize system info logging ([bacdfc0](https://github.com/msgbyte/tianji/commit/bacdfc008475c013d4ee813802f5528e3ce31a75))
+
 ## [1.31.14](https://github.com/msgbyte/tianji/compare/v1.31.13...v1.31.14) (2026-03-12)
 
 ### Features
