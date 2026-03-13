@@ -44,6 +44,19 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
         header: t('Model'),
         size: 120,
       }),
+      columnHelper.accessor('userId', {
+        header: t('User'),
+        size: 120,
+        cell: (props) => {
+          const val = props.getValue();
+          if (!val) {
+            return (
+              <span className="text-muted-foreground opacity-50">-</span>
+            );
+          }
+          return val.substring(0, 8);
+        },
+      }),
       columnHelper.accessor('status', {
         header: t('Status'),
         size: 100,

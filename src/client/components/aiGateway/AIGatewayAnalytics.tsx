@@ -70,6 +70,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
           <TabsList>
             <TabsTrigger value="performance">{t('Performance')}</TabsTrigger>
             <TabsTrigger value="models">{t('Models')}</TabsTrigger>
+            <TabsTrigger value="users">{t('Users')}</TabsTrigger>
             <TabsTrigger value="errors">{t('Errors')}</TabsTrigger>
           </TabsList>
 
@@ -235,6 +236,89 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   metrics={[{ name: '$all_event', math: 'events' }]}
                   filters={[]}
                   groups={[{ value: 'modelName', type: 'string' }]}
+                  time={timeConfig}
+                  chartType="bar"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* User Analytics */}
+          <TabsContent value="users" className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('Request Count by User')}</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    {t(
+                      'Total request count distribution across different users'
+                    )}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <InsightQueryChart
+                    className="h-[300px] w-full"
+                    workspaceId={workspaceId}
+                    insightId={gatewayId}
+                    insightType="aigateway"
+                    metrics={[{ name: '$all_event', math: 'events' }]}
+                    filters={[]}
+                    groups={[{ value: 'userId', type: 'string' }]}
+                    time={timeConfig}
+                    chartType="bar"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('Cost by User')}</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    {t(
+                      'Total cost distribution across different users'
+                    )}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <InsightQueryChart
+                    className="h-[300px] w-full"
+                    workspaceId={workspaceId}
+                    insightId={gatewayId}
+                    insightType="aigateway"
+                    metrics={[{ name: 'price', math: 'events' }]}
+                    filters={[]}
+                    groups={[{ value: 'userId', type: 'string' }]}
+                    time={timeConfig}
+                    chartType="bar"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Token Usage by User')}</CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  {t(
+                    'Total token consumption (input + output) distribution across different users'
+                  )}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <InsightQueryChart
+                  className="h-[400px] w-full"
+                  workspaceId={workspaceId}
+                  insightId={gatewayId}
+                  insightType="aigateway"
+                  metrics={[
+                    { name: 'inputToken', math: 'events', alias: 'inputToken' },
+                    { name: 'outputToken', math: 'events', alias: 'outputToken' },
+                  ]}
+                  filters={[]}
+                  groups={[{ value: 'userId', type: 'string' }]}
                   time={timeConfig}
                   chartType="bar"
                   valueProcessor={defaultValueProcessor.alwaysPositive}

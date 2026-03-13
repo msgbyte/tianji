@@ -121,6 +121,12 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
                     )}
                   </SheetDataSection>
 
+                  <SheetDataSection label={t('User')}>
+                    {selectedItem.userId ?? (
+                      <span className="opacity-40">-</span>
+                    )}
+                  </SheetDataSection>
+
                   <SheetDataSection label={t('Created At')}>
                     {dayjs(selectedItem.createdAt).format(
                       'YYYY-MM-DD HH:mm:ss'

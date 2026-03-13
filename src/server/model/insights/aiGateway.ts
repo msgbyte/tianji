@@ -122,6 +122,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         'duration',
         'ttft',
         'price',
+        'userId',
       ].includes(name)
     ) {
       // Special handling for enum fields that need type casting
