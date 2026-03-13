@@ -13,6 +13,9 @@ import { runMQWorker } from './mq/worker.js';
 import { initCounter } from './utils/prometheus/index.js';
 import { initClickHouse } from './clickhouse/index.js';
 import { flushAllBatchWriters } from './utils/batchWriter.js';
+import { logSystemInfo } from './utils/system.js';
+
+logSystemInfo();
 
 const port = env.port;
 

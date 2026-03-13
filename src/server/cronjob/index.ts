@@ -24,7 +24,7 @@ export function initCronjob() {
     const result = await withDistributedLock(
       'tianji-daily-cronjob',
       async () => {
-        logger.info('Start daily cronjob');
+        logger.info('[Cronjob] Start daily cronjob');
 
         try {
           promCronCounter.inc({ period: 'daily' });
@@ -45,10 +45,10 @@ export function initCronjob() {
             await checkWorkspaceUsage();
           }
 
-          logger.info('Daily cronjob completed');
+          logger.info('[Cronjob] Daily cronjob completed');
           return true;
         } catch (err) {
-          logger.error('Daily cronjob error:', err);
+          logger.error('[Cronjob] Daily cronjob error:', err);
           throw err;
         }
       },
@@ -60,7 +60,7 @@ export function initCronjob() {
 
     if (result === null) {
       logger.info(
-        'Daily cronjob skipped - already running on another instance'
+        '[Cronjob] Daily cronjob skipped - already running on another instance'
       );
     }
   });
@@ -69,7 +69,7 @@ export function initCronjob() {
     const result = await withDistributedLock(
       'tianji-weekly-cronjob',
       async () => {
-        logger.info('Start weekly cronjob');
+        logger.info('[Cronjob] Start weekly cronjob');
 
         try {
           promCronCounter.inc({ period: 'weekly' });
@@ -77,10 +77,10 @@ export function initCronjob() {
             checkFeedEventsNotify(FeedChannelNotifyFrequency.week),
           ]);
 
-          logger.info('Weekly cronjob completed');
+          logger.info('[Cronjob] Weekly cronjob completed');
           return true;
         } catch (err) {
-          logger.error('Weekly cronjob error:', err);
+          logger.error('[Cronjob] Weekly cronjob error:', err);
           throw err;
         }
       },
@@ -92,7 +92,7 @@ export function initCronjob() {
 
     if (result === null) {
       logger.info(
-        'Weekly cronjob skipped - already running on another instance'
+        '[Cronjob] Weekly cronjob skipped - already running on another instance'
       );
     }
   });
@@ -101,7 +101,7 @@ export function initCronjob() {
     const result = await withDistributedLock(
       'tianji-monthly-cronjob',
       async () => {
-        logger.info('Start monthly cronjob');
+        logger.info('[Cronjob] Start monthly cronjob');
 
         try {
           promCronCounter.inc({ period: 'monthly' });
@@ -109,10 +109,10 @@ export function initCronjob() {
             checkFeedEventsNotify(FeedChannelNotifyFrequency.month),
           ]);
 
-          logger.info('Monthly cronjob completed');
+          logger.info('[Cronjob] Monthly cronjob completed');
           return true;
         } catch (err) {
-          logger.error('Monthly cronjob error:', err);
+          logger.error('[Cronjob] Monthly cronjob error:', err);
           throw err;
         }
       },
@@ -124,17 +124,23 @@ export function initCronjob() {
 
     if (result === null) {
       logger.info(
-        'Monthly cronjob skipped - already running on another instance'
+        '[Cronjob] Monthly cronjob skipped - already running on another instance'
       );
     }
   });
 
   // TODO: add more cronjob
 
-  logger.info('Daily job will start at:', dailyJob.nextRun()?.toISOString());
-  logger.info('Weekly job will start at:', weeklyJob.nextRun()?.toISOString());
   logger.info(
-    'Monthly job will start at:',
+    '[Cronjob] Daily job will start at:',
+    dailyJob.nextRun()?.toISOString()
+  );
+  logger.info(
+    '[Cronjob] Weekly job will start at:',
+    weeklyJob.nextRun()?.toISOString()
+  );
+  logger.info(
+    '[Cronjob] Monthly job will start at:',
     monthlyJob.nextRun()?.toISOString()
   );
 
@@ -142,7 +148,7 @@ export function initCronjob() {
     const clickHouseSyncJob = initClickHouseSyncCronjob();
 
     logger.info(
-      'Clickhouse sync job will start at:',
+      '[Cronjob] Clickhouse sync job will start at:',
       clickHouseSyncJob.nextRun()?.toISOString()
     );
   }
