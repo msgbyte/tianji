@@ -30,20 +30,29 @@ export function initCronjob() {
 
         try {
           promCronCounter.inc({ period: 'daily' });
-          await Promise.all([
-            statDailyUsage().catch(logger.error),
-            clearMonitorDataDaily().catch(logger.error),
-            clearMonitorEventDaily().catch(logger.error),
-            clearAuditLogDaily().catch(logger.error),
-            dailyHTTPCertCheckNotify().catch(logger.error),
-            dailyUpdateApplicationStoreInfo().catch(logger.error),
-            checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
-            resetDailyAlertFlags().catch(logger.error),
-            clearAIGatewayPayloadDaily().catch(logger.error),
-            clearAIGatewayLogsDaily().catch(logger.error),
-            clearWorkerExecutionDaily().catch(logger.error),
-            clearWorkerExecutionPayloadDaily().catch(logger.error),
-          ]);
+
+          const dailyTasks = [
+            () => statDailyUsage(),
+            () => clearMonitorDataDaily(),
+            () => clearMonitorEventDaily(),
+            () => clearAuditLogDaily(),
+            () => dailyHTTPCertCheckNotify(),
+            () => dailyUpdateApplicationStoreInfo(),
+            () => checkFeedEventsNotify(FeedChannelNotifyFrequency.day),
+            () => resetDailyAlertFlags(),
+            () => clearAIGatewayPayloadDaily(),
+            () => clearAIGatewayLogsDaily(),
+            () => clearWorkerExecutionDaily(),
+            () => clearWorkerExecutionPayloadDaily(),
+          ];
+
+          for (const task of dailyTasks) {
+            try {
+              await task();
+            } catch (err) {
+              logger.error(err);
+            }
+          }
 
           if (env.billing.enable) {
             await checkWorkspaceUsage();
