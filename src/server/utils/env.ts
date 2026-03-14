@@ -183,6 +183,10 @@ export const env = {
   aiGatewayLogClearDays: Number(process.env.AIGATEWAY_LOG_CLEAR_DAYS) || 0,
   aiGatewayPayloadClearDays:
     Number(process.env.AIGATEWAY_PAYLOAD_CLEAR_DAYS) || 0,
+  workerExecutionClearDays:
+    Number(process.env.WORKER_EXECUTION_CLEAR_DAYS) || 0,
+  workerExecutionPayloadClearDays:
+    Number(process.env.WORKER_EXECUTION_PAYLOAD_CLEAR_DAYS) || 0,
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {

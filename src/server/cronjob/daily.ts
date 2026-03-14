@@ -355,6 +355,64 @@ export async function dailyUpdateApplicationStoreInfo() {
   );
 }
 
+export async function clearWorkerExecutionDaily() {
+  const days = env.workerExecutionClearDays;
+  if (days <= 0) {
+    return;
+  }
+
+  const date = dayjs().subtract(days, 'days').toDate();
+  logger.info(
+    '[clearWorkerExecutionDaily] Start clear worker execution data before:',
+    date.toISOString()
+  );
+  const res = await prisma.functionWorkerExecution.deleteMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+    },
+  });
+
+  logger.info(
+    '[clearWorkerExecutionDaily] Clear completed, delete record:',
+    res.count
+  );
+}
+
+export async function clearWorkerExecutionPayloadDaily() {
+  const days = env.workerExecutionPayloadClearDays;
+  if (days <= 0) {
+    return;
+  }
+
+  const date = dayjs().subtract(days, 'days').toDate();
+  logger.info(
+    '[clearWorkerExecutionPayloadDaily] Start clear worker execution payload before:',
+    date.toISOString()
+  );
+  const res = await prisma.functionWorkerExecution.updateMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+      OR: [
+        { requestPayload: { not: Prisma.DbNull } },
+        { responsePayload: { not: Prisma.DbNull } },
+      ],
+    },
+    data: {
+      requestPayload: Prisma.DbNull,
+      responsePayload: Prisma.DbNull,
+    },
+  });
+
+  logger.info(
+    '[clearWorkerExecutionPayloadDaily] Clear completed, update record:',
+    res.count
+  );
+}
+
 export async function clearAIGatewayLogsDaily() {
   const days = env.aiGatewayLogClearDays;
   if (days <= 0) {

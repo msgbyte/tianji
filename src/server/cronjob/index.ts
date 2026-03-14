@@ -9,6 +9,8 @@ import {
   clearAuditLogDaily,
   clearMonitorDataDaily,
   clearMonitorEventDaily,
+  clearWorkerExecutionDaily,
+  clearWorkerExecutionPayloadDaily,
   dailyHTTPCertCheckNotify,
   dailyUpdateApplicationStoreInfo,
   statDailyUsage,
@@ -39,6 +41,8 @@ export function initCronjob() {
             resetDailyAlertFlags().catch(logger.error),
             clearAIGatewayPayloadDaily().catch(logger.error),
             clearAIGatewayLogsDaily().catch(logger.error),
+            clearWorkerExecutionDaily().catch(logger.error),
+            clearWorkerExecutionPayloadDaily().catch(logger.error),
           ]);
 
           if (env.billing.enable) {
