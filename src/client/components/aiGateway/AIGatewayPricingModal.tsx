@@ -42,7 +42,7 @@ export const AIGatewayPricingModal: React.FC<AIGatewayPricingModalProps> = ({
   const { data, isLoading, error } = trpc.aiGateway.modelPricing.useQuery({
     workspaceId,
     search: debouncedSearchTerm || undefined,
-    limit: 10,
+    limit: 50,
   });
 
   const formatPrice = (price: number) => {
