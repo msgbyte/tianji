@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import { buildOpenAIHandler } from '../model/aiGateway.js';
+import {
+  buildOpenAIHandler,
+  buildAnthropicHandler,
+} from '../model/aiGateway.js';
 
 export const aiGatewayRouter = Router();
 
@@ -50,6 +53,41 @@ aiGatewayRouter.post(
     isCustomRoute: true,
   })
 );
+
+//#region Anthropic Messages API format (/v1/messages)
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/anthropic/v1/messages',
+  buildAnthropicHandler({
+    baseUrl: 'https://api.anthropic.com/v1',
+    modelProvider: 'anthropic',
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/openrouter/v1/messages',
+  buildAnthropicHandler({
+    baseUrl: 'https://openrouter.ai/api/v1',
+    modelProvider: 'openrouter',
+    header: (req) => {
+      return {
+        'HTTP-Referer': req.headers['HTTP-Referer']
+          ? String(req.headers['HTTP-Referer'])
+          : 'https://tianji.dev/',
+        'X-Title': req.headers['X-Title']
+          ? String(req.headers['X-Title'])
+          : 'Tianji',
+      };
+    },
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/custom/v1/messages',
+  buildAnthropicHandler({
+    isCustomRoute: true,
+  })
+);
+//#endregion
 
 //#region Alias should be remove in future
 aiGatewayRouter.post(

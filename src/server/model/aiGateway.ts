@@ -343,3 +343,342 @@ export function buildOpenAIHandler(
     }
   };
 }
+
+const anthropicRequestSchema = z
+  .object({
+    model: z.string(),
+    messages: z.array(z.any()).nonempty(),
+    max_tokens: z.number().int(),
+    stream: z.boolean().optional(),
+  })
+  .passthrough();
+
+const DEFAULT_ANTHROPIC_VERSION = '2023-06-01';
+
+interface AnthropicHandlerOptions {
+  baseUrl?: string;
+  modelProvider?: string;
+  isCustomRoute?: boolean;
+  header?: (req: Request) => Record<string, string>;
+}
+
+export function buildAnthropicHandler(
+  options: AnthropicHandlerOptions
+): RequestHandler {
+  return async (req, res) => {
+    const payload = anthropicRequestSchema.parse(req.body);
+    const { stream } = payload;
+    const { workspaceId, gatewayId } = z
+      .object({
+        workspaceId: z.string(),
+        gatewayId: z.string(),
+      })
+      .parse(req.params);
+
+    // Anthropic uses x-api-key header, fall back to Authorization Bearer
+    const apiKey =
+      (req.headers['x-api-key'] as string) ??
+      (req.headers.authorization ?? '').replace('Bearer ', '');
+    let modelApiKey = apiKey;
+    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
+    let userId: string | null = null;
+    if (gatewayInfo?.modelApiKey) {
+      const user = await verifyUserApiKey(apiKey);
+      userId = user.id;
+      modelApiKey = gatewayInfo.modelApiKey;
+    }
+
+    const baseUrl =
+      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
+        ? gatewayInfo?.customModelBaseUrl
+        : options.baseUrl;
+    const modelName =
+      options.isCustomRoute && gatewayInfo?.customModelName
+        ? gatewayInfo?.customModelName
+        : payload.model;
+
+    const start = Date.now();
+    const modelProvider = options.modelProvider ?? 'anthropic';
+
+    const logP = new Promise<AIGatewayLogs>(async (resolve) => {
+      const _log = await prisma.aIGatewayLogs.create({
+        data: {
+          workspaceId,
+          gatewayId,
+          modelName,
+          stream,
+          inputToken: -1,
+          outputToken: -1,
+          duration: -1,
+          ttft: -1,
+          requestPayload: payload,
+          responsePayload: {},
+          userId,
+          status: AIGatewayLogsStatus.Pending,
+        },
+      });
+      resolve(_log);
+    });
+
+    try {
+      promAIGatewayRequestCounter.inc({ modelProvider });
+
+      const upstreamUrl = `${baseUrl}/messages`;
+      const anthropicVersion =
+        (req.headers['anthropic-version'] as string) ||
+        DEFAULT_ANTHROPIC_VERSION;
+
+      const requestPayload = {
+        ...payload,
+        model: modelName,
+      };
+
+      const headers: Record<string, string> = {
+        'content-type': 'application/json',
+        'x-api-key': modelApiKey,
+        'anthropic-version': anthropicVersion,
+        ...options.header?.(req),
+      };
+
+      // Forward anthropic-beta header if present
+      const betaHeader = req.headers['anthropic-beta'];
+      if (betaHeader) {
+        headers['anthropic-beta'] = String(betaHeader);
+      }
+
+      const upstreamResponse = await fetch(upstreamUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestPayload),
+      });
+
+      if (!upstreamResponse.ok) {
+        const errorBody = await upstreamResponse.text();
+        res.status(upstreamResponse.status);
+        res.setHeader(
+          'content-type',
+          upstreamResponse.headers.get('content-type') || 'application/json'
+        );
+        res.end(errorBody);
+
+        const duration = Date.now() - start;
+        logP.then(async ({ id: logId }) => {
+          await prisma.aIGatewayLogs.update({
+            where: { id: logId },
+            data: {
+              status: AIGatewayLogsStatus.Failed,
+              duration,
+              responsePayload: { error: errorBody },
+            },
+          });
+        });
+        return;
+      }
+
+      if (stream) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+
+        let inputTokens = 0;
+        let outputTokens = 0;
+        let outputContent = '';
+        let ttft = -1;
+        let responseModelName = modelName;
+
+        const body = upstreamResponse.body;
+        if (!body) {
+          throw new Error('No response body from upstream');
+        }
+
+        const reader = body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const text = decoder.decode(value, { stream: true });
+            // Write raw SSE data directly to client
+            res.write(text);
+            if (res.flush) {
+              res.flush();
+            }
+
+            // Parse SSE events from buffer for usage extraction
+            buffer += text;
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            let currentEventType = '';
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                currentEventType = line.slice(7).trim();
+              } else if (line.startsWith('data: ') && currentEventType) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (
+                    currentEventType === 'message_start' &&
+                    data.message
+                  ) {
+                    responseModelName = data.message.model || responseModelName;
+                    inputTokens =
+                      data.message.usage?.input_tokens || inputTokens;
+                  } else if (currentEventType === 'content_block_delta') {
+                    if (ttft === -1) {
+                      ttft = Date.now() - start;
+                    }
+                    if (data.delta?.type === 'text_delta') {
+                      outputContent += data.delta.text || '';
+                    }
+                  } else if (currentEventType === 'message_delta') {
+                    outputTokens =
+                      data.usage?.output_tokens || outputTokens;
+                  }
+                } catch {
+                  // Skip non-JSON data lines
+                }
+                currentEventType = '';
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+
+        res.end();
+        const duration = Date.now() - start;
+
+        logP.then(async ({ id: logId }) => {
+          const customInputPrice = gatewayInfo?.customModelInputPrice;
+          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+
+          const price =
+            options.isCustomRoute && (customInputPrice || customOutputPrice)
+              ? getLLMCostDecimalWithCustomPrice(
+                  inputTokens,
+                  outputTokens,
+                  customInputPrice,
+                  customOutputPrice
+                )
+              : getLLMCostDecimalV2(
+                  modelProvider,
+                  modelName,
+                  inputTokens,
+                  outputTokens
+                );
+
+          await prisma.aIGatewayLogs.update({
+            where: { id: logId },
+            data: {
+              status: AIGatewayLogsStatus.Success,
+              modelName: responseModelName,
+              inputToken: inputTokens,
+              outputToken: outputTokens,
+              duration,
+              ttft,
+              price,
+              responsePayload: {
+                content: outputContent,
+                usage: {
+                  input_tokens: inputTokens,
+                  output_tokens: outputTokens,
+                },
+              },
+            },
+          });
+
+          checkQuotaAlert(workspaceId, gatewayId, Number(price)).catch(
+            (error) => {
+              logger.error('Error checking quota alert:', error);
+            }
+          );
+        });
+      } else {
+        const responseBody = await upstreamResponse.json();
+
+        res.json(responseBody);
+        const duration = Date.now() - start;
+
+        logP.then(async ({ id: logId }) => {
+          const responseModelName = responseBody.model || modelName;
+          const inputTokens = responseBody.usage?.input_tokens || 0;
+          const outputTokens = responseBody.usage?.output_tokens || 0;
+
+          const contentBlocks = responseBody.content || [];
+          const outputContent = contentBlocks
+            .filter((b: any) => b.type === 'text')
+            .map((b: any) => b.text)
+            .join('');
+
+          const customInputPrice = gatewayInfo?.customModelInputPrice;
+          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+
+          const price =
+            options.isCustomRoute && (customInputPrice || customOutputPrice)
+              ? getLLMCostDecimalWithCustomPrice(
+                  inputTokens,
+                  outputTokens,
+                  customInputPrice,
+                  customOutputPrice
+                )
+              : getLLMCostDecimalV2(
+                  modelProvider,
+                  modelName,
+                  inputTokens,
+                  outputTokens
+                );
+
+          await prisma.aIGatewayLogs.update({
+            where: { id: logId },
+            data: {
+              status: AIGatewayLogsStatus.Success,
+              modelName: responseModelName,
+              inputToken: inputTokens,
+              outputToken: outputTokens,
+              duration,
+              price,
+              responsePayload: {
+                content: outputContent,
+                usage: responseBody.usage,
+              },
+            },
+          });
+
+          checkQuotaAlert(workspaceId, gatewayId, Number(price)).catch(
+            (error) => {
+              logger.error('Error checking quota alert:', error);
+            }
+          );
+        });
+      }
+    } catch (error) {
+      console.error('Anthropic proxy error:', error);
+
+      if (!res.headersSent) {
+        res.status(500).json({
+          type: 'error',
+          error: {
+            type: 'server_error',
+            message:
+              error instanceof Error ? error.message : 'Unknown error',
+          },
+        });
+      }
+
+      const duration = Date.now() - start;
+      logP.then(async ({ id: logId }) => {
+        await prisma.aIGatewayLogs.update({
+          where: { id: logId },
+          data: {
+            status: AIGatewayLogsStatus.Failed,
+            duration,
+            responsePayload: { error: String(error) },
+          },
+        });
+      });
+    }
+  };
+}

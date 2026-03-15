@@ -86,15 +86,10 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
       [gatewayId]
     );
 
-    // Generate base code template
-    const generateCodeTemplate = (provider: AIProvider, language: string) => {
-      const config = providerConfigs[provider];
-      const baseUrl = config.baseUrl
-        .replace('${workspaceId}', workspaceId)
-        .replace('${gatewayId}', gatewayId);
-      const model = config.defaultModel;
+    const isAnthropicNative = (provider: AIProvider) =>
+      provider === 'anthropic';
 
-      // Generate different code based on language
+    const generateOpenAITemplate = (baseUrl: string, model: string, language: string) => {
       switch (language) {
         case 'nodejs':
           return `const axios = require('axios');
@@ -189,9 +184,86 @@ call_ai_gateway()`;
       }
     };
 
-    // Generate code examples for different providers and languages
+    const generateAnthropicTemplate = (baseUrl: string, model: string, language: string) => {
+      switch (language) {
+        case 'nodejs':
+          return `const Anthropic = require('@anthropic-ai/sdk');
+
+const client = new Anthropic({
+  apiKey: '<YOUR_API_KEY>',
+  baseURL: '${window.location.origin}${baseUrl}',
+});
+
+async function callAIGateway() {
+  const message = await client.messages.create({
+    model: '${model}',
+    max_tokens: 1024,
+    system: 'You are an AI assistant',
+    messages: [
+      { role: 'user', content: 'Hello' }
+    ],
+  });
+  console.log(message.content);
+}
+
+callAIGateway();
+
+// Claude Code: set ANTHROPIC_BASE_URL=${window.location.origin}${baseUrl}`;
+
+        case 'python':
+          return `import anthropic
+
+client = anthropic.Anthropic(
+    api_key="<YOUR_API_KEY>",
+    base_url="${window.location.origin}${baseUrl}",
+)
+
+message = client.messages.create(
+    model="${model}",
+    max_tokens=1024,
+    system="You are an AI assistant",
+    messages=[
+        {"role": "user", "content": "Hello"}
+    ],
+)
+
+print(message.content)
+
+# Claude Code: set ANTHROPIC_BASE_URL=${window.location.origin}${baseUrl}`;
+
+        case 'curl':
+          return `curl -X POST '${window.location.origin}${baseUrl}/v1/messages' \\
+  -H 'Content-Type: application/json' \\
+  -H 'x-api-key: <YOUR_API_KEY>' \\
+  -H 'anthropic-version: 2023-06-01' \\
+  -d '{
+  "model": "${model}",
+  "max_tokens": 1024,
+  "system": "You are an AI assistant",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello"
+    }
+  ]
+}'`;
+
+        default:
+          return '';
+      }
+    };
+
     const generateCode = (provider: AIProvider, language: string) => {
-      return generateCodeTemplate(provider, language);
+      const config = providerConfigs[provider];
+      const baseUrl = config.baseUrl
+        .replace('${workspaceId}', workspaceId)
+        .replace('${gatewayId}', gatewayId);
+      const model = config.defaultModel;
+
+      if (isAnthropicNative(provider)) {
+        return generateAnthropicTemplate(baseUrl, model, language);
+      }
+      return generateOpenAITemplate(baseUrl, model, language);
     };
 
     const currentConfig = providerConfigs[selectedProvider];
