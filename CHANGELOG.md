@@ -1,5 +1,16 @@
 
 
+## [1.31.16](https://github.com/msgbyte/tianji/compare/v1.31.15...v1.31.16) (2026-03-15)
+
+### Features
+
+* add daily clearing functions for worker execution data and payloads ([d76e782](https://github.com/msgbyte/tianji/commit/d76e782454b3b5699a5235831f607dc2a67843a1))
+* implement Anthropic API integration with message handling and code generation examples ([c4c10b2](https://github.com/msgbyte/tianji/commit/c4c10b2e5b58f86411ece8acb2f36dc17a8dca66))
+
+### Others
+
+* streamline daily task execution in cronjob with improved error handling ([dda8669](https://github.com/msgbyte/tianji/commit/dda86695a0daec37cfddefcf8201fde21e2e3f7a))
+
 ## [1.31.15](https://github.com/msgbyte/tianji/compare/v1.31.14...v1.31.15) (2026-03-13)
 
 ### Features
