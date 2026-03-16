@@ -485,6 +485,8 @@ export function buildAnthropicHandler(
         let outputContent = '';
         let ttft = -1;
         let responseModelName = modelName;
+        let responseCost: number | undefined;
+        let usage: Record<string, any> | undefined;
 
         const body = upstreamResponse.body;
         if (!body) {
@@ -519,13 +521,8 @@ export function buildAnthropicHandler(
               } else if (line.startsWith('data: ') && currentEventType) {
                 try {
                   const data = JSON.parse(line.slice(6));
-                  if (
-                    currentEventType === 'message_start' &&
-                    data.message
-                  ) {
+                  if (currentEventType === 'message_start' && data.message) {
                     responseModelName = data.message.model || responseModelName;
-                    inputTokens =
-                      data.message.usage?.input_tokens || inputTokens;
                   } else if (currentEventType === 'content_block_delta') {
                     if (ttft === -1) {
                       ttft = Date.now() - start;
@@ -534,8 +531,10 @@ export function buildAnthropicHandler(
                       outputContent += data.delta.text || '';
                     }
                   } else if (currentEventType === 'message_delta') {
-                    outputTokens =
-                      data.usage?.output_tokens || outputTokens;
+                    usage = data.usage;
+                    inputTokens = usage?.input_tokens || inputTokens;
+                    outputTokens = usage?.output_tokens || outputTokens;
+                    responseCost = usage?.cost;
                   }
                 } catch {
                   // Skip non-JSON data lines
@@ -556,19 +555,21 @@ export function buildAnthropicHandler(
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
 
           const price =
-            options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? getLLMCostDecimalWithCustomPrice(
-                  inputTokens,
-                  outputTokens,
-                  customInputPrice,
-                  customOutputPrice
-                )
-              : getLLMCostDecimalV2(
-                  modelProvider,
-                  modelName,
-                  inputTokens,
-                  outputTokens
-                );
+            responseCost !== undefined
+              ? new Prisma.Decimal(responseCost)
+              : options.isCustomRoute && (customInputPrice || customOutputPrice)
+                ? getLLMCostDecimalWithCustomPrice(
+                    inputTokens,
+                    outputTokens,
+                    customInputPrice,
+                    customOutputPrice
+                  )
+                : getLLMCostDecimalV2(
+                    modelProvider,
+                    modelName,
+                    inputTokens,
+                    outputTokens
+                  );
 
           await prisma.aIGatewayLogs.update({
             where: { id: logId },
@@ -583,8 +584,7 @@ export function buildAnthropicHandler(
               responsePayload: {
                 content: outputContent,
                 usage: {
-                  input_tokens: inputTokens,
-                  output_tokens: outputTokens,
+                  ...usage,
                 },
               },
             },
@@ -604,8 +604,10 @@ export function buildAnthropicHandler(
 
         logP.then(async ({ id: logId }) => {
           const responseModelName = responseBody.model || modelName;
-          const inputTokens = responseBody.usage?.input_tokens || 0;
-          const outputTokens = responseBody.usage?.output_tokens || 0;
+          const usage = responseBody.usage;
+          const inputTokens = usage?.input_tokens || 0;
+          const outputTokens = usage?.output_tokens || 0;
+          const responseCost = usage?.cost;
 
           const contentBlocks = responseBody.content || [];
           const outputContent = contentBlocks
@@ -617,19 +619,21 @@ export function buildAnthropicHandler(
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
 
           const price =
-            options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? getLLMCostDecimalWithCustomPrice(
-                  inputTokens,
-                  outputTokens,
-                  customInputPrice,
-                  customOutputPrice
-                )
-              : getLLMCostDecimalV2(
-                  modelProvider,
-                  modelName,
-                  inputTokens,
-                  outputTokens
-                );
+            responseCost !== undefined
+              ? new Prisma.Decimal(responseCost)
+              : options.isCustomRoute && (customInputPrice || customOutputPrice)
+                ? getLLMCostDecimalWithCustomPrice(
+                    inputTokens,
+                    outputTokens,
+                    customInputPrice,
+                    customOutputPrice
+                  )
+                : getLLMCostDecimalV2(
+                    modelProvider,
+                    modelName,
+                    inputTokens,
+                    outputTokens
+                  );
 
           await prisma.aIGatewayLogs.update({
             where: { id: logId },
@@ -642,7 +646,7 @@ export function buildAnthropicHandler(
               price,
               responsePayload: {
                 content: outputContent,
-                usage: responseBody.usage,
+                usage,
               },
             },
           });
@@ -662,8 +666,7 @@ export function buildAnthropicHandler(
           type: 'error',
           error: {
             type: 'server_error',
-            message:
-              error instanceof Error ? error.message : 'Unknown error',
+            message: error instanceof Error ? error.message : 'Unknown error',
           },
         });
       }
