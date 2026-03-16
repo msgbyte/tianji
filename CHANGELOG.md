@@ -1,5 +1,12 @@
 
 
+## [1.31.17](https://github.com/msgbyte/tianji/compare/v1.31.16...v1.31.17) (2026-03-16)
+
+### Bug Fixes
+
+* increase model pricing query limit from 10 to 50 for improved data retrieval ([e371ca2](https://github.com/msgbyte/tianji/commit/e371ca247c62791c8da410ad2b44efc664c0b896))
+* update response cost handling in Anthropic API integration for accurate pricing calculations ([41be2ad](https://github.com/msgbyte/tianji/commit/41be2ad22cc834cb07888dfb88f4afb70df621f0))
+
 ## [1.31.16](https://github.com/msgbyte/tianji/compare/v1.31.15...v1.31.16) (2026-03-15)
 
 ### Features
