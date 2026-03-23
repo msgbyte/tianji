@@ -32,7 +32,7 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
 
-    const { startDate, endDate, unit } = useGlobalRangeDate();
+    const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
     const [type, setType] = useState<
       '$all_event' | 'inputToken' | 'outputToken' | 'price'
     >('price');
@@ -117,11 +117,12 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
 
     const trpcUtils = trpc.useUtils();
     const handleRefresh = useEvent(async () => {
+      refresh();
       trpcUtils.insights.query.reset({
         workspaceId,
         insightId: props.gatewayId,
         insightType: 'aigateway',
-      } as any); // use partial type to avoid reset more info.
+      } as any);
     });
 
     return (

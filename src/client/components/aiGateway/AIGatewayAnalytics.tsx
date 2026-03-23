@@ -26,10 +26,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
     const { t } = useTranslation();
     const { gatewayId } = props;
     const workspaceId = useCurrentWorkspaceId();
-    const { startDate, endDate, unit } = useGlobalRangeDate();
+    const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
 
     const trpcUtils = trpc.useUtils();
     const handleRefresh = useEvent(async () => {
+      refresh();
       trpcUtils.insights.query.reset({
         workspaceId,
         insightId: gatewayId,
