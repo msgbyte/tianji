@@ -1,5 +1,16 @@
 
 
+## [1.31.18](https://github.com/msgbyte/tianji/compare/v1.31.17...v1.31.18) (2026-03-24)
+
+### Features
+
+* add cache input token tracking in AIGateway ([eafbf3d](https://github.com/msgbyte/tianji/commit/eafbf3d5ec03e83cea1e582b644ad8cda47e4a24))
+
+### Bug Fixes
+
+* add refresh functionality to date range hooks in AIGateway components for improved data updates ([8816c8e](https://github.com/msgbyte/tianji/commit/8816c8e956f52ed7c4465c13382d31723741faf8))
+* update token initialization in AI Gateway handlers to default to zero for improved handling ([87e5115](https://github.com/msgbyte/tianji/commit/87e5115c65468e61dde1fd127e14ce92ecec5eba))
+
 ## [1.31.17](https://github.com/msgbyte/tianji/compare/v1.31.16...v1.31.17) (2026-03-16)
 
 ### Bug Fixes
