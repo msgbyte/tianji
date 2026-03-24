@@ -26,6 +26,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
           { name: '$all_event', math: 'events' },
           { name: 'inputToken', math: 'events' },
           { name: 'outputToken', math: 'events' },
+          { name: 'cacheInputToken', math: 'events' },
           { name: 'price', math: 'events' },
         ],
         filters: [],
@@ -48,6 +49,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
               '$all_event',
               'inputToken',
               'outputToken',
+              'cacheInputToken',
               'price',
             ];
             const counts = metric?.data || [];
@@ -65,7 +67,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
     return (
       <LoadingView isLoading={isLoading}>
         <div className="mb-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
             {summaryData.map((metric) => {
               let label = '';
               let formattedValue = '';
@@ -81,6 +83,10 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
                   break;
                 case 'outputToken':
                   label = t('Total Output Tokens');
+                  formattedValue = metric.total.toLocaleString();
+                  break;
+                case 'cacheInputToken':
+                  label = t('Total Cache Input Tokens');
                   formattedValue = metric.total.toLocaleString();
                   break;
                 case 'price':

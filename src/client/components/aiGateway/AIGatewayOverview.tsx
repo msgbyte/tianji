@@ -34,7 +34,11 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
 
     const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
     const [type, setType] = useState<
-      '$all_event' | 'inputToken' | 'outputToken' | 'price'
+      | '$all_event'
+      | 'inputToken'
+      | 'outputToken'
+      | 'cacheInputToken'
+      | 'price'
     >('price');
     const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
 
@@ -85,6 +89,13 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
         return {
           value: {
             label: t('AIGateway Output Token'),
+            color: colors.blue[500],
+          },
+        };
+      } else if (type === 'cacheInputToken') {
+        return {
+          value: {
+            label: t('AIGateway Cache Input Token'),
             color: colors.blue[500],
           },
         };
@@ -162,6 +173,9 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
                     </SelectItem>
                     <SelectItem value="outputToken">
                       {t('Output Token')}
+                    </SelectItem>
+                    <SelectItem value="cacheInputToken">
+                      {t('Cache Input Token')}
                     </SelectItem>
                     <SelectItem value="price">{t('Price')}</SelectItem>
                   </SelectContent>

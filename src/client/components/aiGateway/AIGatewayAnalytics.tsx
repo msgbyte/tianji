@@ -304,7 +304,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                 <CardTitle>{t('Token Usage by User')}</CardTitle>
                 <p className="text-muted-foreground text-sm">
                   {t(
-                    'Total token consumption (input + output) distribution across different users'
+                    'Total token consumption (input + output + cache input) distribution across different users'
                   )}
                 </p>
               </CardHeader>
@@ -317,6 +317,11 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   metrics={[
                     { name: 'inputToken', math: 'events', alias: 'inputToken' },
                     { name: 'outputToken', math: 'events', alias: 'outputToken' },
+                    {
+                      name: 'cacheInputToken',
+                      math: 'events',
+                      alias: 'cacheInputToken',
+                    },
                   ]}
                   filters={[]}
                   groups={[{ value: 'userId', type: 'string' }]}

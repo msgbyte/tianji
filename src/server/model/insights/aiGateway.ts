@@ -24,9 +24,14 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
 
         // For standard fields, directly count
         if (
-          ['inputToken', 'outputToken', 'price', 'duration', 'ttft'].includes(
-            item.name
-          )
+          [
+            'inputToken',
+            'outputToken',
+            'cacheInputToken',
+            'price',
+            'duration',
+            'ttft',
+          ].includes(item.name)
         ) {
           return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
         }
@@ -119,6 +124,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         'stream',
         'inputToken',
         'outputToken',
+        'cacheInputToken',
         'duration',
         'ttft',
         'price',

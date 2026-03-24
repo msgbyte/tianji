@@ -977,6 +977,7 @@ model AIGatewayLogs {
   gatewayId       String              @db.VarChar(30)
   inputToken      Int                 @default(0) @db.Integer
   outputToken     Int                 @default(0) @db.Integer
+  cacheInputToken Int                 @default(0) @db.Integer
   stream          Boolean             @default(false) @db.Boolean // stream response or not
   modelName       String
   status          AIGatewayLogsStatus

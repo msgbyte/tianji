@@ -30,6 +30,7 @@ export const AIGatewayLogsModelSchema = z.object({
   gatewayId: z.string(),
   inputToken: z.number().int(),
   outputToken: z.number().int(),
+  cacheInputToken: z.number().int().default(0),
   stream: z.boolean(),
   modelName: z.string(),
   status: z.nativeEnum(AIGatewayLogsStatus),
