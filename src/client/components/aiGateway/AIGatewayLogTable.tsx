@@ -17,7 +17,7 @@ import { Button } from '../ui/button';
 import dayjs from 'dayjs';
 import { Empty } from 'antd';
 import { useEvent } from '@/hooks/useEvent';
-import { Card, CardContent } from '../ui/card';
+import { CodeBlock } from '../CodeBlock';
 import { AIGatewayStatus } from './AIGatewayStatus';
 
 interface AIGatewayLogTableProps {
@@ -65,15 +65,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
 
     const renderJsonData = (data: any) => {
       try {
-        return (
-          <Card>
-            <CardContent className="p-2">
-              <pre className="max-h-80 overflow-auto whitespace-pre-wrap text-xs">
-                {JSON.stringify(data, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
-        );
+        return <CodeBlock code={JSON.stringify(data, null, 2)} />;
       } catch (err) {
         return <div className="text-red-500">{String(err)}</div>;
       }
