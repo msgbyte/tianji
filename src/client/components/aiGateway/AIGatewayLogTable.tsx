@@ -148,8 +148,11 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
 
                   <SheetDataSection label="Tokens">
                     {selectedItem.inputToken}↑ | {selectedItem.outputToken}↓
-                    {selectedItem.cacheInputToken > 0 && (
-                      <> | {selectedItem.cacheInputToken} cached</>
+                    {selectedItem.cacheReadInputToken > 0 && (
+                      <> | {selectedItem.cacheReadInputToken} cache read</>
+                    )}
+                    {selectedItem.cacheWriteInputToken > 0 && (
+                      <> | {selectedItem.cacheWriteInputToken} cache write</>
                     )}
                   </SheetDataSection>
 

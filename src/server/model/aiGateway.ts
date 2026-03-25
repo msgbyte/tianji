@@ -95,7 +95,8 @@ export function buildOpenAIHandler(
           stream,
           inputToken: 0,
           outputToken: 0,
-          cacheInputToken: 0,
+          cacheReadInputToken: 0,
+          cacheWriteInputToken: 0,
           duration: 0,
           ttft: 0,
           requestPayload: payload,
@@ -181,8 +182,9 @@ export function buildOpenAIHandler(
               calcOpenAIToken(outputContent, modelName),
           ]);
 
-          const cacheInputToken =
+          const cacheReadInputToken =
             get(usage, ['prompt_tokens_details', 'cached_tokens']) ?? 0;
+          const cacheWriteInputToken = 0;
 
           const customInputPrice = gatewayInfo?.customModelInputPrice;
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
@@ -211,7 +213,9 @@ export function buildOpenAIHandler(
                       modelProvider,
                       modelPriceName,
                       inputToken,
-                      outputToken
+                      outputToken,
+                      cacheReadInputToken,
+                      cacheWriteInputToken
                     );
 
           await prisma.aIGatewayLogs.update({
@@ -223,7 +227,8 @@ export function buildOpenAIHandler(
               modelName: responseModelName,
               inputToken,
               outputToken,
-              cacheInputToken,
+              cacheReadInputToken,
+              cacheWriteInputToken,
               duration,
               ttft,
               price,
@@ -267,8 +272,9 @@ export function buildOpenAIHandler(
                 : Promise.resolve(0)),
           ]);
 
-          const cacheInputToken =
+          const cacheReadInputToken =
             response.usage?.prompt_tokens_details?.cached_tokens ?? 0;
+          const cacheWriteInputToken = 0;
 
           const customInputPrice = gatewayInfo?.customModelInputPrice;
           const customOutputPrice = gatewayInfo?.customModelOutputPrice;
@@ -297,7 +303,9 @@ export function buildOpenAIHandler(
                       modelProvider,
                       modelPriceName,
                       inputToken,
-                      outputToken
+                      outputToken,
+                      cacheReadInputToken,
+                      cacheWriteInputToken
                     );
 
           await prisma.aIGatewayLogs.update({
@@ -308,7 +316,8 @@ export function buildOpenAIHandler(
               status: AIGatewayLogsStatus.Success,
               inputToken,
               outputToken,
-              cacheInputToken,
+              cacheReadInputToken,
+              cacheWriteInputToken,
               duration,
               modelName: responseModelName,
               price,
@@ -418,7 +427,8 @@ export function buildAnthropicHandler(
           stream,
           inputToken: 0,
           outputToken: 0,
-          cacheInputToken: 0,
+          cacheReadInputToken: 0,
+          cacheWriteInputToken: 0,
           duration: 0,
           ttft: 0,
           requestPayload: payload,
@@ -492,7 +502,8 @@ export function buildAnthropicHandler(
 
         let inputTokens = 0;
         let outputTokens = 0;
-        let cacheInputTokens = 0;
+        let cacheReadInputTokens = 0;
+        let cacheWriteInputTokens = 0;
         let outputContent = '';
         let ttft = -1;
         let responseModelName = modelName;
@@ -534,9 +545,6 @@ export function buildAnthropicHandler(
                   const data = JSON.parse(line.slice(6));
                   if (currentEventType === 'message_start' && data.message) {
                     responseModelName = data.message.model || responseModelName;
-                    cacheInputTokens =
-                      data.message.usage?.cache_read_input_tokens ||
-                      cacheInputTokens;
                   } else if (currentEventType === 'content_block_delta') {
                     if (ttft === -1) {
                       ttft = Date.now() - start;
@@ -548,6 +556,12 @@ export function buildAnthropicHandler(
                     usage = data.usage;
                     inputTokens = usage?.input_tokens || inputTokens;
                     outputTokens = usage?.output_tokens || outputTokens;
+                    cacheReadInputTokens =
+                      data.message.usage?.cache_read_input_tokens ||
+                      cacheReadInputTokens;
+                    cacheWriteInputTokens =
+                      data.message.usage?.cache_creation_input_tokens ||
+                      cacheWriteInputTokens;
                     responseCost = usage?.cost;
                   }
                 } catch {
@@ -582,7 +596,9 @@ export function buildAnthropicHandler(
                     modelProvider,
                     modelName,
                     inputTokens,
-                    outputTokens
+                    outputTokens,
+                    cacheReadInputTokens,
+                    cacheWriteInputTokens
                   );
 
           await prisma.aIGatewayLogs.update({
@@ -592,7 +608,8 @@ export function buildAnthropicHandler(
               modelName: responseModelName,
               inputToken: inputTokens,
               outputToken: outputTokens,
-              cacheInputToken: cacheInputTokens,
+              cacheReadInputToken: cacheReadInputTokens,
+              cacheWriteInputToken: cacheWriteInputTokens,
               duration,
               ttft,
               price,
@@ -622,7 +639,9 @@ export function buildAnthropicHandler(
           const usage = responseBody.usage;
           const inputTokens = usage?.input_tokens || 0;
           const outputTokens = usage?.output_tokens || 0;
-          const cacheInputTokens = usage?.cache_read_input_tokens || 0;
+          const cacheReadInputTokens = usage?.cache_read_input_tokens || 0;
+          const cacheWriteInputTokens =
+            usage?.cache_creation_input_tokens || 0;
           const responseCost = usage?.cost;
 
           const contentBlocks = responseBody.content || [];
@@ -648,7 +667,9 @@ export function buildAnthropicHandler(
                     modelProvider,
                     modelName,
                     inputTokens,
-                    outputTokens
+                    outputTokens,
+                    cacheReadInputTokens,
+                    cacheWriteInputTokens
                   );
 
           await prisma.aIGatewayLogs.update({
@@ -658,7 +679,8 @@ export function buildAnthropicHandler(
               modelName: responseModelName,
               inputToken: inputTokens,
               outputToken: outputTokens,
-              cacheInputToken: cacheInputTokens,
+              cacheReadInputToken: cacheReadInputTokens,
+              cacheWriteInputToken: cacheWriteInputTokens,
               duration,
               price,
               responsePayload: {

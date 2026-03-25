@@ -54,7 +54,9 @@ export function getLLMCostDecimalV2(
   provider: string,
   model: string,
   inputToken: number,
-  outputToken: number
+  outputToken: number,
+  cacheReadInputToken?: number,
+  cacheWriteInputToken?: number
 ): Prisma.Decimal {
   const input = new Prisma.Decimal(inputToken);
   const output = new Prisma.Decimal(outputToken);
@@ -64,7 +66,6 @@ export function getLLMCostDecimalV2(
     contextWindowsV2[provider as keyof typeof contextWindowsV2];
 
   if (!providerData || !providerData.models) {
-    // if can not found this provider in contextWindowsV2, return 0 to indicate this provider is not supported
     return new Prisma.Decimal(0);
   }
 
@@ -74,18 +75,34 @@ export function getLLMCostDecimalV2(
   ] as any;
 
   if (!modelData || !modelData.cost) {
-    // if can not found this model in provider models, return 0 to indicate this model is not supported
     return new Prisma.Decimal(0);
   }
 
   const cost = modelData.cost;
 
   if (typeof cost.input === 'number' && typeof cost.output === 'number') {
-    // Convert from per million tokens to per token (assuming the cost is per million tokens)
-    return input
+    let totalCost = input
       .mul(cost.input)
       .div(1_000_000)
       .add(output.mul(cost.output).div(1_000_000));
+
+    if (cacheReadInputToken && typeof cost.cache_read === 'number') {
+      totalCost = totalCost.add(
+        new Prisma.Decimal(cacheReadInputToken)
+          .mul(cost.cache_read)
+          .div(1_000_000)
+      );
+    }
+
+    if (cacheWriteInputToken && typeof cost.cache_write === 'number') {
+      totalCost = totalCost.add(
+        new Prisma.Decimal(cacheWriteInputToken)
+          .mul(cost.cache_write)
+          .div(1_000_000)
+      );
+    }
+
+    return totalCost;
   } else {
     return new Prisma.Decimal(0);
   }

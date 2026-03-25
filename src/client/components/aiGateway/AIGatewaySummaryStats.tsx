@@ -26,7 +26,8 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
           { name: '$all_event', math: 'events' },
           { name: 'inputToken', math: 'events' },
           { name: 'outputToken', math: 'events' },
-          { name: 'cacheInputToken', math: 'events' },
+          { name: 'cacheReadInputToken', math: 'events' },
+          { name: 'cacheWriteInputToken', math: 'events' },
           { name: 'price', math: 'events' },
         ],
         filters: [],
@@ -44,22 +45,35 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
             return [];
           }
 
-          return data.map((metric, index) => {
-            const metricNames = [
-              '$all_event',
-              'inputToken',
-              'outputToken',
-              'cacheInputToken',
-              'price',
-            ];
+          const metricNames = [
+            '$all_event',
+            'inputToken',
+            'outputToken',
+            'cacheReadInputToken',
+            'cacheWriteInputToken',
+            'price',
+          ];
+          const totals: Record<string, number> = {};
+          data.forEach((metric, index) => {
             const counts = metric?.data || [];
-            const total = counts.reduce((sum, item) => sum + item.value, 0);
-
-            return {
-              name: metricNames[index],
-              total,
-            };
+            totals[metricNames[index]] = counts.reduce(
+              (sum, item) => sum + item.value,
+              0
+            );
           });
+
+          return [
+            { name: '$all_event', total: totals['$all_event'] ?? 0 },
+            {
+              name: 'inputToken',
+              total:
+                (totals['inputToken'] ?? 0) +
+                (totals['cacheReadInputToken'] ?? 0) +
+                (totals['cacheWriteInputToken'] ?? 0),
+            },
+            { name: 'outputToken', total: totals['outputToken'] ?? 0 },
+            { name: 'price', total: totals['price'] ?? 0 },
+          ];
         },
       }
     );
@@ -67,7 +81,7 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
     return (
       <LoadingView isLoading={isLoading}>
         <div className="mb-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {summaryData.map((metric) => {
               let label = '';
               let formattedValue = '';
@@ -83,10 +97,6 @@ export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
                   break;
                 case 'outputToken':
                   label = t('Total Output Tokens');
-                  formattedValue = metric.total.toLocaleString();
-                  break;
-                case 'cacheInputToken':
-                  label = t('Total Cache Input Tokens');
                   formattedValue = metric.total.toLocaleString();
                   break;
                 case 'price':

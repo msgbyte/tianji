@@ -37,7 +37,8 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
       | '$all_event'
       | 'inputToken'
       | 'outputToken'
-      | 'cacheInputToken'
+      | 'cacheReadInputToken'
+      | 'cacheWriteInputToken'
       | 'price'
     >('price');
     const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
@@ -92,10 +93,17 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
             color: colors.blue[500],
           },
         };
-      } else if (type === 'cacheInputToken') {
+      } else if (type === 'cacheReadInputToken') {
         return {
           value: {
-            label: t('AIGateway Cache Input Token'),
+            label: t('AIGateway Cache Read Token'),
+            color: colors.blue[500],
+          },
+        };
+      } else if (type === 'cacheWriteInputToken') {
+        return {
+          value: {
+            label: t('AIGateway Cache Write Token'),
             color: colors.blue[500],
           },
         };
@@ -174,8 +182,11 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
                     <SelectItem value="outputToken">
                       {t('Output Token')}
                     </SelectItem>
-                    <SelectItem value="cacheInputToken">
-                      {t('Cache Input Token')}
+                    <SelectItem value="cacheReadInputToken">
+                      {t('Cache Read Token')}
+                    </SelectItem>
+                    <SelectItem value="cacheWriteInputToken">
+                      {t('Cache Write Token')}
                     </SelectItem>
                     <SelectItem value="price">{t('Price')}</SelectItem>
                   </SelectContent>

@@ -75,8 +75,13 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
         size: 120,
         cell: (props) => renderNullableValue(props.getValue()),
       }),
-      columnHelper.accessor('cacheInputToken', {
-        header: t('Cache Input Tokens'),
+      columnHelper.accessor('cacheReadInputToken', {
+        header: t('Cache Read Tokens'),
+        size: 140,
+        cell: (props) => renderNullableValue(props.getValue()),
+      }),
+      columnHelper.accessor('cacheWriteInputToken', {
+        header: t('Cache Write Tokens'),
         size: 140,
         cell: (props) => renderNullableValue(props.getValue()),
       }),

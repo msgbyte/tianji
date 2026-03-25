@@ -318,9 +318,14 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     { name: 'inputToken', math: 'events', alias: 'inputToken' },
                     { name: 'outputToken', math: 'events', alias: 'outputToken' },
                     {
-                      name: 'cacheInputToken',
+                      name: 'cacheReadInputToken',
                       math: 'events',
-                      alias: 'cacheInputToken',
+                      alias: 'cacheReadInputToken',
+                    },
+                    {
+                      name: 'cacheWriteInputToken',
+                      math: 'events',
+                      alias: 'cacheWriteInputToken',
                     },
                   ]}
                   filters={[]}
