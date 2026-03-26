@@ -1,5 +1,12 @@
 
 
+## [1.31.19](https://github.com/msgbyte/tianji/compare/v1.31.18...v1.31.19) (2026-03-26)
+
+### Others
+
+* rename cache input token to cache read token and add cache write token for improved clarity and tracking ([7cd02a4](https://github.com/msgbyte/tianji/commit/7cd02a4061fef4479773effaba43aef1f06dd384))
+* replace Card component with CodeBlock for improved JSON data rendering in AIGatewayLogTable ([10efc96](https://github.com/msgbyte/tianji/commit/10efc966df762b054a76b0d537344857b5fcdeb7))
+
 ## [1.31.18](https://github.com/msgbyte/tianji/compare/v1.31.17...v1.31.18) (2026-03-24)
 
 ### Features
