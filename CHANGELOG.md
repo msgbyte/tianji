@@ -1,5 +1,12 @@
 
 
+## [1.31.20](https://github.com/msgbyte/tianji/compare/v1.31.19...v1.31.20) (2026-03-27)
+
+### Bug Fixes
+
+* fix a bug which calc aigateway usage incorrect ([2d5d979](https://github.com/msgbyte/tianji/commit/2d5d97946fadc63f3a68ac61c4597c021255c0ab))
+* update hosted service URL from app-tianji.msgbyte.com to app.tianji.dev across multiple documentation files ([35b74cd](https://github.com/msgbyte/tianji/commit/35b74cdd2b69a97c0057324e56e892c23f6c55a1))
+
 ## [1.31.19](https://github.com/msgbyte/tianji/compare/v1.31.18...v1.31.19) (2026-03-26)
 
 ### Others
