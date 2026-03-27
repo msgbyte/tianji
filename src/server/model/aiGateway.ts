@@ -557,10 +557,9 @@ export function buildAnthropicHandler(
                     inputTokens = usage?.input_tokens || inputTokens;
                     outputTokens = usage?.output_tokens || outputTokens;
                     cacheReadInputTokens =
-                      data.message.usage?.cache_read_input_tokens ||
-                      cacheReadInputTokens;
+                      usage?.cache_read_input_tokens || cacheReadInputTokens;
                     cacheWriteInputTokens =
-                      data.message.usage?.cache_creation_input_tokens ||
+                      usage?.cache_creation_input_tokens ||
                       cacheWriteInputTokens;
                     responseCost = usage?.cost;
                   }
@@ -640,8 +639,7 @@ export function buildAnthropicHandler(
           const inputTokens = usage?.input_tokens || 0;
           const outputTokens = usage?.output_tokens || 0;
           const cacheReadInputTokens = usage?.cache_read_input_tokens || 0;
-          const cacheWriteInputTokens =
-            usage?.cache_creation_input_tokens || 0;
+          const cacheWriteInputTokens = usage?.cache_creation_input_tokens || 0;
           const responseCost = usage?.cost;
 
           const contentBlocks = responseBody.content || [];
