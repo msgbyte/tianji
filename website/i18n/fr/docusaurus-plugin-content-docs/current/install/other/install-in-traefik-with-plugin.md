@@ -90,7 +90,7 @@ services:
 
 - **tianjiHost** : L'URL complète de votre serveur Tianji
   - Exemple : `https://tianji.your-domain.com`
-  - Si vous utilisez le service hébergé officiel : `https://app-tianji.msgbyte.com`
+  - Si vous utilisez le service hébergé officiel : `https://app.tianji.dev`
 
 - **websiteId** : L'ID du site Web créé dans Tianji
   - Peut être trouvé dans les paramètres du site Web de votre panneau d'administration Tianji

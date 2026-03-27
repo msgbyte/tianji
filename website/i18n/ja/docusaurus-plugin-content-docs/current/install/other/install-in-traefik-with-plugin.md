@@ -90,7 +90,7 @@ services:
 
 - **tianjiHost**: Tianjiサーバーの完全なURL
   - 例: `https://tianji.your-domain.com`
-  - 公式ホストサービスを使用している場合: `https://app-tianji.msgbyte.com`
+  - 公式ホストサービスを使用している場合: `https://app.tianji.dev`
 
 - **websiteId**: Tianjiで作成されたウェブサイトID
   - Tianjiの管理パネルのウェブサイト設定で確認可能

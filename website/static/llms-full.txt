@@ -2088,7 +2088,7 @@ services:
 
 - **tianjiHost**: The complete URL of your Tianji server
   - Example: `https://tianji.your-domain.com`
-  - If using the official hosted service: `https://app-tianji.msgbyte.com`
+  - If using the official hosted service: `https://app.tianji.dev`
 
 - **websiteId**: The website ID created in Tianji
   - Can be found in the website settings of your Tianji admin panel

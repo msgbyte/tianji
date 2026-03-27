@@ -90,7 +90,7 @@ services:
 
 - **tianjiHost**: 您的 Tianji 服务器的完整 URL
   - 示例: `https://tianji.your-domain.com`
-  - 如果使用官方托管服务: `https://app-tianji.msgbyte.com`
+  - 如果使用官方托管服务: `https://app.tianji.dev`
 
 - **websiteId**: 在 Tianji 中创建的网站 ID
   - 可以在您的 Tianji 管理面板的网站设置中找到

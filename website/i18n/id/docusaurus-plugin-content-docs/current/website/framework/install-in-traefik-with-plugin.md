@@ -90,7 +90,7 @@ services:
 
 - **tianjiHost**: URL lengkap dari server Tianji Anda
   - Contoh: `https://tianji.your-domain.com`
-  - Jika menggunakan layanan resmi yang dihosting: `https://app-tianji.msgbyte.com`
+  - Jika menggunakan layanan resmi yang dihosting: `https://app.tianji.dev`
 
 - **websiteId**: ID situs web yang dibuat di Tianji
   - Dapat ditemukan dalam pengaturan situs web dari panel admin Tianji Anda

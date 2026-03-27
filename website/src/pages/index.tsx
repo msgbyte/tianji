@@ -42,7 +42,7 @@ function HomepageHeader() {
         <div className="flex flex-col gap-2">
           <Link
             // to="/docs/intro"
-            to="https://app-tianji.msgbyte.com/"
+            to="https://app.tianji.dev/"
             // className="cursor-pointer rounded-full bg-blue-500 px-8 py-3 text-lg font-bold text-white hover:bg-blue-800 hover:text-white hover:no-underline"
             data-tianji-event="homepage-getstart"
           >
