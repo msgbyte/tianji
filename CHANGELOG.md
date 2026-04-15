@@ -1,5 +1,16 @@
 
 
+## [1.31.21](https://github.com/msgbyte/tianji/compare/v1.31.20...v1.31.21) (2026-04-15)
+
+### Features
+
+* add WorkerStatsSection and WorkerHourlyCharts components for enhanced worker performance visualization ([7e3e6b9](https://github.com/msgbyte/tianji/commit/7e3e6b9a55b73e113b68a9233c4c59090bc68674))
+* implement SurveyResultCount component to display survey response counts and update survey list rendering ([33a3c29](https://github.com/msgbyte/tianji/commit/33a3c296f79362f830089712db9534bd72ea6212))
+
+### Document
+
+* Add one-click "Add to Kiro" install badge ([#262](https://github.com/msgbyte/tianji/issues/262)) ([cecee1c](https://github.com/msgbyte/tianji/commit/cecee1cd39c4c9cc92ec8e356610db5e968c16ea))
+
 ## [1.31.20](https://github.com/msgbyte/tianji/compare/v1.31.19...v1.31.20) (2026-03-27)
 
 ### Bug Fixes
