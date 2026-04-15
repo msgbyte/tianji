@@ -486,6 +486,120 @@ export const workerRouter = router({
         value: Number(item.count),
       }));
     }),
+
+  // Get hourly execution stats for charts (last 24 hours)
+  getExecutionHourlyStats: workspaceProcedure
+    .input(
+      z.object({
+        workerId: z.cuid2(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          date: z.string(),
+          count: z.number(),
+          successCount: z.number(),
+          failedCount: z.number(),
+          avgDuration: z.number(),
+          p75Duration: z.number(),
+          p90Duration: z.number(),
+          p99Duration: z.number(),
+          avgMemoryUsed: z.number(),
+          p75MemoryUsed: z.number(),
+          p90MemoryUsed: z.number(),
+          p99MemoryUsed: z.number(),
+          avgCpuTime: z.number(),
+          p75CpuTime: z.number(),
+          p90CpuTime: z.number(),
+          p99CpuTime: z.number(),
+        })
+      )
+    )
+    .query(async ({ input }) => {
+      const { workerId, workspaceId } = input;
+
+      const worker = await prisma.functionWorker.findUnique({
+        where: {
+          id: workerId,
+          workspaceId,
+        },
+      });
+
+      if (!worker) {
+        throw new Error('Worker not found');
+      }
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setHours(startDate.getHours() - 24);
+
+      const hourlyData = await prisma.$queryRaw<
+        Array<{
+          hour: Date;
+          count: bigint;
+          successCount: bigint;
+          failedCount: bigint;
+          avgDuration: number | null;
+          p75Duration: number | null;
+          p90Duration: number | null;
+          p99Duration: number | null;
+          avgMemoryUsed: number | null;
+          p75MemoryUsed: number | null;
+          p90MemoryUsed: number | null;
+          p99MemoryUsed: number | null;
+          avgCpuTime: number | null;
+          p75CpuTime: number | null;
+          p90CpuTime: number | null;
+          p99CpuTime: number | null;
+        }>
+      >`
+        SELECT
+          DATE_TRUNC('hour', "createdAt") as hour,
+          COUNT(*)::int as count,
+          COUNT(CASE WHEN status = 'Success' THEN 1 END)::int as "successCount",
+          COUNT(CASE WHEN status = 'Failed' THEN 1 END)::int as "failedCount",
+          AVG(duration) as "avgDuration",
+          PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY duration) as "p75Duration",
+          PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY duration) as "p90Duration",
+          PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY duration) as "p99Duration",
+          AVG("memoryUsed") as "avgMemoryUsed",
+          PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "memoryUsed") as "p75MemoryUsed",
+          PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY "memoryUsed") as "p90MemoryUsed",
+          PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY "memoryUsed") as "p99MemoryUsed",
+          AVG("cpuTime") as "avgCpuTime",
+          PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "cpuTime") as "p75CpuTime",
+          PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY "cpuTime") as "p90CpuTime",
+          PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY "cpuTime") as "p99CpuTime"
+        FROM "FunctionWorkerExecution"
+        WHERE "workerId" = ${workerId}
+          AND "createdAt" >= ${startDate}
+          AND "createdAt" <= ${endDate}
+        GROUP BY DATE_TRUNC('hour', "createdAt")
+        ORDER BY hour ASC
+      `;
+
+      const toNum = (v: number | null) => Math.round(Number(v ?? 0));
+
+      return hourlyData.map((item) => ({
+        date: item.hour.toISOString(),
+        count: Number(item.count),
+        successCount: Number(item.successCount),
+        failedCount: Number(item.failedCount),
+        avgDuration: toNum(item.avgDuration),
+        p75Duration: toNum(item.p75Duration),
+        p90Duration: toNum(item.p90Duration),
+        p99Duration: toNum(item.p99Duration),
+        avgMemoryUsed: toNum(item.avgMemoryUsed),
+        p75MemoryUsed: toNum(item.p75MemoryUsed),
+        p90MemoryUsed: toNum(item.p90MemoryUsed),
+        p99MemoryUsed: toNum(item.p99MemoryUsed),
+        avgCpuTime: toNum(item.avgCpuTime),
+        p75CpuTime: toNum(item.p75CpuTime),
+        p90CpuTime: toNum(item.p90CpuTime),
+        p99CpuTime: toNum(item.p99CpuTime),
+      }));
+    }),
   testCode: workspaceAdminProcedure
     .input(
       z.object({

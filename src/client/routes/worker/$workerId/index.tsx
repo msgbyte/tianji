@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
@@ -48,6 +48,10 @@ import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail
 import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
 import { WorkerRevisionsSection } from '@/components/worker/WorkerRevisionsSection';
 
+const LazyWorkerStatsSection = React.lazy(
+  () => import('@/components/worker/WorkerStatsSection')
+);
+
 export const Route = createFileRoute('/worker/$workerId/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
@@ -95,21 +99,6 @@ function PageComponent() {
 
   const selectedExecution =
     selectedExecutionIndex >= 0 ? executions[selectedExecutionIndex] : null;
-
-  const { data: stats } = trpc.worker.getExecutionStats.useQuery(
-    {
-      workspaceId,
-      workerId,
-      days: 7,
-    },
-    {
-      trpc: {
-        context: {
-          skipBatch: true,
-        },
-      },
-    }
-  );
 
   const deleteMutation = trpc.worker.delete.useMutation({
     onError: defaultErrorHandler,
@@ -406,117 +395,15 @@ function PageComponent() {
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-4">
-            {/* Cron Information */}
-            {worker.enableCron && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <LuActivity className="h-5 w-5" />
-                    <span>{t('Cron Schedule')}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <div className="text-muted-foreground text-sm font-medium">
-                        {t('Expression')}
-                      </div>
-                      <div className="font-mono text-sm">
-                        {worker.cronExpression}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground text-sm font-medium">
-                        {t('Status')}
-                      </div>
-                      <div className="text-sm">
-                        {worker.active
-                          ? t('Running')
-                          : t('Stopped (Worker Inactive)')}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {stats && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Total Executions')}
-                    </CardTitle>
-                    <LuActivity className="text-muted-foreground h-4 w-4" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.totalExecutions}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Success Rate')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.totalExecutions > 0
-                        ? `${Math.round((stats.successExecutions / stats.totalExecutions) * 100)}%`
-                        : '0%'}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Avg Duration')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.avgDuration
-                        ? `${Math.round(stats.avgDuration)}ms`
-                        : '-'}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Avg Memory Usage')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.avgMemoryUsed
-                        ? `${Math.round(stats.avgMemoryUsed / 1024)}KB`
-                        : '-'}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Avg CPU Time')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.avgCpuTime
-                        ? `${Math.round(stats.avgCpuTime / 1000)}μs`
-                        : '-'}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            <Suspense fallback={<Loading />}>
+              <LazyWorkerStatsSection
+                workspaceId={workspaceId}
+                workerId={workerId}
+                enableCron={worker.enableCron}
+                cronExpression={worker.cronExpression}
+                active={worker.active}
+              />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
