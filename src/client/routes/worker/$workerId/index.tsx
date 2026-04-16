@@ -391,6 +391,7 @@ function PageComponent() {
             <WorkerRevisionsSection
               workspaceId={workspaceId}
               workerId={workerId}
+              onRollback={refetch}
             />
           </TabsContent>
 

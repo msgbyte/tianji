@@ -621,6 +621,71 @@ export const workerRouter = router({
       return execution;
     }),
 
+  rollbackToRevision: workspaceAdminProcedure
+    .meta(
+      buildWorkerOpenapi({
+        method: 'POST',
+        path: '/{workerId}/rollback',
+        summary: 'Rollback worker to a specific revision',
+      })
+    )
+    .input(
+      z.object({
+        workerId: z.string().cuid2(),
+        revisionId: z.string().cuid2(),
+      })
+    )
+    .output(FunctionWorkerModelSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { workerId, revisionId, workspaceId } = input;
+
+      const worker = await prisma.functionWorker.findUnique({
+        where: {
+          id: workerId,
+          workspaceId,
+        },
+      });
+
+      if (!worker) {
+        throw new Error('Worker not found');
+      }
+
+      const revision = await prisma.functionWorkerRevision.findUnique({
+        where: {
+          id: revisionId,
+          workerId,
+        },
+      });
+
+      if (!revision) {
+        throw new Error('Revision not found');
+      }
+
+      if (revision.code === worker.code) {
+        return worker;
+      }
+
+      const updatedWorker = await workerCronManager.upsert({
+        id: workerId,
+        workspaceId,
+        name: worker.name,
+        description: worker.description ?? undefined,
+        code: revision.code,
+        active: worker.active,
+        enableCron: worker.enableCron,
+        cronExpression: worker.cronExpression,
+      });
+
+      await createAuditLog({
+        workspaceId,
+        relatedId: workerId,
+        relatedType: WorkspaceAuditLogType.FunctionWorker,
+        content: `Rolled back worker: ${worker.name} to revision #${revision.revision} by ${ctx.user?.username}(${ctx.user?.id})`,
+      });
+
+      return updatedWorker;
+    }),
+
   getRevisions: workspaceProcedure
     .meta(
       buildWorkerOpenapi({
