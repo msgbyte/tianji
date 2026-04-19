@@ -1,5 +1,11 @@
 
 
+## [1.31.22](https://github.com/msgbyte/tianji/compare/v1.31.21...v1.31.22) (2026-04-19)
+
+### Features
+
+* add rollback functionality to WorkerRevisionsSection with confirmation dialog and update TRPC router for revision rollback ([ddc5e0a](https://github.com/msgbyte/tianji/commit/ddc5e0a87aaa36c12cfae1e6dcde6631b615c5fe))
+
 ## [1.31.21](https://github.com/msgbyte/tianji/compare/v1.31.20...v1.31.21) (2026-04-15)
 
 ### Features
