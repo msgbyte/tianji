@@ -126,7 +126,7 @@ if (env.allowOpenapi) {
 
 // Custom domain: only for root path so /p/:slug and /status/:slug are not intercepted
 app.use('/*', async (req, res, next) => {
-  if (req.method === 'GET' && req.accepts('html')) {
+  if (req.method === 'GET' && req.originalUrl === '/' && req.accepts('html')) {
     const customDomain = customDomainManager.findPageDomain(req.hostname);
     if (customDomain) {
       if (customDomain.type === 'static') {
