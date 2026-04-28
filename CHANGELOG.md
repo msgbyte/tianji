@@ -1,5 +1,11 @@
 
 
+## [1.31.23](https://github.com/msgbyte/tianji/compare/v1.31.22...v1.31.23) (2026-04-28)
+
+### Features
+
+* add provider analytics to AIGatewayAnalytics and log model provider in AIGatewayLogs ([c01435d](https://github.com/msgbyte/tianji/commit/c01435d70ea71b8cfb8110de59a98c2227baf27b))
+
 ## [1.31.22](https://github.com/msgbyte/tianji/compare/v1.31.21...v1.31.22) (2026-04-19)
 
 ### Features
