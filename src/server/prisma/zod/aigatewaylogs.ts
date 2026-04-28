@@ -34,6 +34,7 @@ export const AIGatewayLogsModelSchema = z.object({
   cacheWriteInputToken: z.number().int(),
   stream: z.boolean(),
   modelName: z.string(),
+  modelProvider: z.string(),
   status: z.nativeEnum(AIGatewayLogsStatus),
   duration: z.number().int(),
   ttft: z.number().int(),

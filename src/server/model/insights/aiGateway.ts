@@ -121,6 +121,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
       [
         'gatewayId',
         'modelName',
+        'modelProvider',
         'status',
         'stream',
         'inputToken',

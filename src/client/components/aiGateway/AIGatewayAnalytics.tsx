@@ -70,6 +70,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
         <Tabs defaultValue="performance" className="w-full">
           <TabsList>
             <TabsTrigger value="performance">{t('Performance')}</TabsTrigger>
+            <TabsTrigger value="providers">{t('Providers')}</TabsTrigger>
             <TabsTrigger value="models">{t('Models')}</TabsTrigger>
             <TabsTrigger value="users">{t('Users')}</TabsTrigger>
             <TabsTrigger value="errors">{t('Errors')}</TabsTrigger>
@@ -215,6 +216,153 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Provider Analytics */}
+          <TabsContent value="providers" className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('Request Count by Provider')}</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    {t(
+                      'Total request count distribution across different upstream providers (e.g. openai, openrouter, anthropic)'
+                    )}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <InsightQueryChart
+                    className="h-[300px] w-full"
+                    workspaceId={workspaceId}
+                    insightId={gatewayId}
+                    insightType="aigateway"
+                    metrics={[{ name: '$all_event', math: 'events' }]}
+                    filters={[]}
+                    groups={[{ value: 'modelProvider', type: 'string' }]}
+                    time={timeConfig}
+                    chartType="pie"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('Cost by Provider')}</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    {t(
+                      'Total cost distribution across different upstream providers'
+                    )}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <InsightQueryChart
+                    className="h-[300px] w-full"
+                    workspaceId={workspaceId}
+                    insightId={gatewayId}
+                    insightType="aigateway"
+                    metrics={[{ name: 'price', math: 'events' }]}
+                    filters={[]}
+                    groups={[{ value: 'modelProvider', type: 'string' }]}
+                    time={timeConfig}
+                    chartType="bar"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Provider Request Trend')}</CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  {t(
+                    'Request volume over time grouped by upstream providers'
+                  )}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <InsightQueryChart
+                  className="h-[300px] w-full"
+                  workspaceId={workspaceId}
+                  insightId={gatewayId}
+                  insightType="aigateway"
+                  metrics={[{ name: '$all_event', math: 'events' }]}
+                  filters={[]}
+                  groups={[{ value: 'modelProvider', type: 'string' }]}
+                  time={timeConfig}
+                  chartType="line"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Token Usage by Provider')}</CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  {t(
+                    'Total token consumption (input + output + cache) distribution across different upstream providers'
+                  )}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <InsightQueryChart
+                  className="h-[400px] w-full"
+                  workspaceId={workspaceId}
+                  insightId={gatewayId}
+                  insightType="aigateway"
+                  metrics={[
+                    { name: 'inputToken', math: 'events', alias: 'inputToken' },
+                    {
+                      name: 'outputToken',
+                      math: 'events',
+                      alias: 'outputToken',
+                    },
+                    {
+                      name: 'cacheReadInputToken',
+                      math: 'events',
+                      alias: 'cacheReadInputToken',
+                    },
+                    {
+                      name: 'cacheWriteInputToken',
+                      math: 'events',
+                      alias: 'cacheWriteInputToken',
+                    },
+                  ]}
+                  filters={[]}
+                  groups={[{ value: 'modelProvider', type: 'string' }]}
+                  time={timeConfig}
+                  chartType="bar"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('Average Response Time by Provider')}</CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  {t(
+                    'Average response time (duration) comparison across different upstream providers'
+                  )}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <InsightQueryChart
+                  className="h-[300px] w-full"
+                  workspaceId={workspaceId}
+                  insightId={gatewayId}
+                  insightType="aigateway"
+                  metrics={[{ name: 'duration', math: 'avg' }]}
+                  filters={[]}
+                  groups={[{ value: 'modelProvider', type: 'string' }]}
+                  time={timeConfig}
+                  chartType="bar"
+                  valueProcessor={defaultValueProcessor.alwaysPositive}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Model Analytics */}

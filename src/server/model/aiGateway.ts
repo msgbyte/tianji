@@ -85,6 +85,8 @@ export function buildOpenAIHandler(
         : payload.model;
 
     const start = Date.now();
+    const modelProvider =
+      options.modelProvider ?? (options.isCustomRoute ? 'custom' : 'openai');
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
       const _log = await prisma.aIGatewayLogs.create({
@@ -92,6 +94,7 @@ export function buildOpenAIHandler(
           workspaceId,
           gatewayId,
           modelName,
+          modelProvider,
           stream,
           inputToken: 0,
           outputToken: 0,
@@ -115,7 +118,6 @@ export function buildOpenAIHandler(
         baseURL: baseUrl,
         defaultHeaders: options.header?.(req),
       });
-      const modelProvider = options.modelProvider ?? 'openai';
       const modelPriceName = options.modelPriceName
         ? options.modelPriceName(modelName)
         : modelName;
@@ -416,7 +418,8 @@ export function buildAnthropicHandler(
         : payload.model;
 
     const start = Date.now();
-    const modelProvider = options.modelProvider ?? 'anthropic';
+    const modelProvider =
+      options.modelProvider ?? (options.isCustomRoute ? 'custom' : 'anthropic');
 
     const logP = new Promise<AIGatewayLogs>(async (resolve) => {
       const _log = await prisma.aIGatewayLogs.create({
@@ -424,6 +427,7 @@ export function buildAnthropicHandler(
           workspaceId,
           gatewayId,
           modelName,
+          modelProvider,
           stream,
           inputToken: 0,
           outputToken: 0,

@@ -40,6 +40,19 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
           );
         },
       }),
+      columnHelper.accessor('modelProvider', {
+        header: t('Provider'),
+        size: 100,
+        cell: (props) => {
+          const val = props.getValue();
+          if (!val) {
+            return (
+              <span className="text-muted-foreground opacity-50">-</span>
+            );
+          }
+          return val;
+        },
+      }),
       columnHelper.accessor('modelName', {
         header: t('Model'),
         size: 120,
