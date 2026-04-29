@@ -427,7 +427,9 @@ export async function verifyUserApiKey(apiKey: string) {
   }
 
   if (!result) {
-    throw new Error('Api Key not found');
+    throw new Error(
+      'Api Key not found, input api key: ' + apiKey.slice(0, 10) + '...'
+    );
   }
 
   prisma.userApiKey
