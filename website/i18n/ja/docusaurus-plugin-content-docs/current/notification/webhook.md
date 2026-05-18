@@ -37,7 +37,7 @@ _i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
         },
         {
             "type": "image",
-            "url": "https://tianji.msgbyte.com/img/social-card.png"
+            "url": "https://tianji.dev/img/social-card.png"
         }
     ],
     "time": "2024-06-19T15:41:09.390Z"

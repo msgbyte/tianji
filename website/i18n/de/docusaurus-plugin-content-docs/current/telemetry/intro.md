@@ -61,4 +61,4 @@ Wenn Sie keine eigene Lösung entwickeln möchten, empfehle ich Tianji. Als Open
 
 GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
-Offizielle Website: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Offizielle Website: [https://tianji.dev/](https://tianji.dev/)

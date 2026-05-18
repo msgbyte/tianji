@@ -57,7 +57,7 @@ export function generateSMTPHTML(
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center">
-                    <img src="https://tianji.msgbyte.com/img/logo@128.png" width="64" height="64" alt="Tianji" style="display: block; border: 0; height: auto; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border-radius: 6px; margin-top: 16px;" />
+                    <img src="https://tianji.dev/img/logo@128.png" width="64" height="64" alt="Tianji" style="display: block; border: 0; height: auto; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border-radius: 6px; margin-top: 16px;" />
                   </td>
                 </tr>
                 <tr>
@@ -148,17 +148,17 @@ export function generateSMTPHTML(
                 <tr>
                   <td align="center" style="padding-bottom: 16px;">
                     <a href="https://github.com/msgbyte/tianji" target="_blank" style="display: inline-block; margin: 0 6px;">
-                      <img src="https://tianji.msgbyte.com/img/social/github.png" width="24" height="24" alt="GitHub" style="border: 0; height: auto; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; color: #0f172a;" />
+                      <img src="https://tianji.dev/img/social/github.png" width="24" height="24" alt="GitHub" style="border: 0; height: auto; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; color: #0f172a;" />
                     </a>
                     <a href="https://twitter.com/moonrailgun" target="_blank" style="display: inline-block; margin: 0 6px;">
-                      <img src="https://tianji.msgbyte.com/img/social/x.png" width="24" height="24" alt="Twitter" style="border: 0; height: auto; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; color: #0f172a;" />
+                      <img src="https://tianji.dev/img/social/x.png" width="24" height="24" alt="Twitter" style="border: 0; height: auto; line-height: 100%; max-width: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; color: #0f172a;" />
                     </a>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding-bottom: 16px;">
                     <a href="https://github.com/msgbyte/tianji" style="display: inline-block; font-size: 14px; color: #0f172a; text-decoration: none; margin: 0 8px;" target="_blank">GitHub</a>
-                    <a href="https://tianji.msgbyte.com/docs/intro" style="display: inline-block; font-size: 14px; color: #0f172a; text-decoration: none; margin: 0 8px;" target="_blank">Docs</a>
+                    <a href="https://tianji.dev/docs/intro" style="display: inline-block; font-size: 14px; color: #0f172a; text-decoration: none; margin: 0 8px;" target="_blank">Docs</a>
                   </td>
                 </tr>
                 <tr>

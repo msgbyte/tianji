@@ -53,7 +53,7 @@ describe('generateSMTPHTML', () => {
     // Verify brand information exists
     expect(result).toContain('Tianji');
     expect(result).toContain('Insight into everything');
-    expect(result).toContain('https://tianji.msgbyte.com/img/logo@128.png');
+    expect(result).toContain('https://tianji.dev/img/logo@128.png');
   });
 
   it('should include footer and social media links', () => {
@@ -87,7 +87,7 @@ describe.runIf(
       body: '<p>This is a test email from Tianji automated tests</p>',
       button: {
         title: 'Visit Tianji',
-        url: 'https://tianji.msgbyte.com',
+        url: 'https://tianji.dev',
       },
     };
 

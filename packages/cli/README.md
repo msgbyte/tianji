@@ -250,8 +250,8 @@ Check that your `src/index.ts` has a default export function.
 
 ## Learn More
 
-- [Tianji Documentation](https://tianji.msgbyte.com/docs)
-- [Worker Documentation](https://tianji.msgbyte.com/docs/dev)
+- [Tianji Documentation](https://tianji.dev/docs)
+- [Worker Documentation](https://tianji.dev/docs/dev)
 
 ## License
 

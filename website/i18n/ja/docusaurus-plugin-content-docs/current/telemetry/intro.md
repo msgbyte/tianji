@@ -61,4 +61,4 @@ router.get(
 
 GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
-公式ウェブサイト: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+公式ウェブサイト: [https://tianji.dev/](https://tianji.dev/)

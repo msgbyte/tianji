@@ -19,7 +19,7 @@ Utilisation de tianji-reporter :
   --name string
         Le nom d'identification de cette machine
   --url string
-        L'URL http de tianji, par exemple : https://tianji.msgbyte.com
+        L'URL http de tianji, par exemple : https://tianji.dev
   --vnstat
         Utiliser vnstat pour les statistiques de trafic, uniquement sous Linux
   --workspace string

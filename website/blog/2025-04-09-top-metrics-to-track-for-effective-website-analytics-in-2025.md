@@ -22,7 +22,7 @@ Second, performance metrics directly correlate with business outcomes. A 100ms d
 
 Third, content strategy depends on granular audience understanding. Generic content satisfies no one. Analytics reveal which documentation pages prevent support tickets, which tutorials drive feature adoption, and which blog posts attract qualified users.
 
-The complexity of modern tech stacks demands simplified monitoring solutions. [Tianji's integrated approach](https://tianji.msgbyte.com/) helps developers consolidate multiple monitoring needs in one platform, eliminating the need to juggle separate tools for each metric.
+The complexity of modern tech stacks demands simplified monitoring solutions. [Tianji's integrated approach](https://tianji.dev/) helps developers consolidate multiple monitoring needs in one platform, eliminating the need to juggle separate tools for each metric.
 
 ## Metric 1: Unique Visitors and Session Counts
 
@@ -45,7 +45,7 @@ Sudden drops in session counts often signal technical issues before users report
 *   Schedule maintenance during genuine low-traffic windows
 *   Allocate support resources based on actual usage patterns
 
-[Tianji's tracking script](https://tianji.msgbyte.com/docs/website/track-script) provides a lightweight solution for capturing visitor data without the performance penalties that often accompany analytics implementations.
+[Tianji's tracking script](https://tianji.dev/docs/website/track-script) provides a lightweight solution for capturing visitor data without the performance penalties that often accompany analytics implementations.
 
 ## Metric 2: Bounce Rate and Time on Page
 
@@ -66,7 +66,7 @@ Different content types have distinct benchmark ranges:
 | Tutorial Pages | 30-50% | 4-8 minutes | Bounce rate > 60%, Time < 2 minutes |
 | Landing Pages | 40-60% | 1-2 minutes | Bounce rate > 75%, Time < 30 seconds |
 
-When these metrics indicate potential problems, [Tianji's monitoring capabilities](https://tianji.msgbyte.com/docs/monitor/custom-script) can help identify specific technical issues affecting user engagement, from slow API responses to client-side rendering problems.
+When these metrics indicate potential problems, [Tianji's monitoring capabilities](https://tianji.dev/docs/monitor/custom-script) can help identify specific technical issues affecting user engagement, from slow API responses to client-side rendering problems.
 
 ## Metric 3: Conversion Rate and Goal Completions
 
@@ -87,7 +87,7 @@ Developer-focused conversions worth tracking include:
 
 Setting up proper conversion funnels requires identifying distinct stages in the user journey. For a developer tool, this might include: landing page view → documentation visit → trial signup → API key generation → first successful API call → repeated usage. Each step should be tracked as both an individual event and part of the complete funnel.
 
-The technical implementation requires careful consideration of when and how events fire. Client-side events might miss server errors, while server-side tracking might miss client interactions. [Tianji's event tracking capabilities](https://tianji.msgbyte.com/docs/events/track) provide solutions for capturing these important user interactions across both client and server environments.
+The technical implementation requires careful consideration of when and how events fire. Client-side events might miss server errors, while server-side tracking might miss client interactions. [Tianji's event tracking capabilities](https://tianji.dev/docs/events/track) provide solutions for capturing these important user interactions across both client and server environments.
 
 ## Metric 4: Traffic Sources and Referral Paths
 
@@ -109,7 +109,7 @@ To analyze referral paths effectively:
 4.  Determine which sources drive valuable conversions, not just traffic
 5.  Implement proper UTM parameters for campaigns to ensure accurate attribution
 
-For technical products, GitHub stars, Hacker News mentions, and developer forum discussions often drive more qualified traffic than general social media. [Tianji's telemetry features](https://tianji.msgbyte.com/docs/telemetry/intro) help track these user interactions across multiple touchpoints, providing a complete picture of how developers discover and engage with your tools.
+For technical products, GitHub stars, Hacker News mentions, and developer forum discussions often drive more qualified traffic than general social media. [Tianji's telemetry features](https://tianji.dev/docs/telemetry/intro) help track these user interactions across multiple touchpoints, providing a complete picture of how developers discover and engage with your tools.
 
 ## Metric 5: Uptime and Server Response Time
 
@@ -127,7 +127,7 @@ Poor uptime and slow response times create cascading effects across other metric
 
 Technical improvements include implementing CDNs for static assets, optimizing database queries through proper indexing, leveraging edge caching for frequently accessed resources, and implementing circuit breakers to prevent cascading failures.
 
-[Tianji's server status reporter](https://tianji.msgbyte.com/docs/server-status/server-status-reporter) provides a straightforward solution for tracking these critical metrics without complex setup, making it accessible for teams without dedicated DevOps resources.
+[Tianji's server status reporter](https://tianji.dev/docs/server-status/server-status-reporter) provides a straightforward solution for tracking these critical metrics without complex setup, making it accessible for teams without dedicated DevOps resources.
 
 ## Metric 6: Custom Events and Telemetry Data
 
@@ -148,7 +148,7 @@ Valuable custom events for developers include:
 
 Telemetry differs from traditional web analytics by capturing cross-platform behavior and technical performance metrics. While web analytics might show a user visited your documentation, telemetry reveals they subsequently installed your SDK, encountered an integration error, consulted specific documentation pages, and successfully implemented your solution.
 
-Privacy considerations require implementing data minimization principles. Collect only what serves clear analytical purposes, anonymize where possible, and provide transparent opt-out mechanisms. [Tianji's application tracking capabilities](https://tianji.msgbyte.com/docs/application/tracking) offer comprehensive telemetry collection while respecting user privacy through configurable data collection policies.
+Privacy considerations require implementing data minimization principles. Collect only what serves clear analytical purposes, anonymize where possible, and provide transparent opt-out mechanisms. [Tianji's application tracking capabilities](https://tianji.dev/docs/application/tracking) offer comprehensive telemetry collection while respecting user privacy through configurable data collection policies.
 
 ## Choosing the Right Tools for 2025
 
@@ -180,4 +180,4 @@ The analytics landscape offers distinct tradeoffs between different approaches:
 
 Consolidated tooling offers significant technical advantages. Reduced implementation overhead means fewer scripts impacting page performance. Consistent data collection methodologies eliminate discrepancies between tools measuring similar metrics. Simplified troubleshooting allows faster resolution when tracking issues arise.
 
-The most effective approach often combines a core integrated platform for primary metrics with specialized tools for specific needs. [Tianji's documentation](https://tianji.msgbyte.com/docs/intro) demonstrates its all-in-one approach to analytics, monitoring, and telemetry, providing a foundation that can be extended with specialized tools when necessary.
+The most effective approach often combines a core integrated platform for primary metrics with specialized tools for specific needs. [Tianji's documentation](https://tianji.dev/docs/intro) demonstrates its all-in-one approach to analytics, monitoring, and telemetry, providing a foundation that can be extended with specialized tools when necessary.

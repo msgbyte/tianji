@@ -26,7 +26,7 @@ describe('http', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       payload: {
-        url: 'https://tianji.msgbyte.com',
+        url: 'https://tianji.dev',
         method: 'GET',
         timeout: 30,
         contentType: 'application/json',

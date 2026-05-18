@@ -19,7 +19,7 @@ tianji-reporter の使用法:
   --name string
         このマシンの識別名
   --url string
-        Tianji の http URL 例: https://tianji.msgbyte.com
+        Tianji の http URL 例: https://tianji.dev
   --vnstat
         トラフィック統計に vnstat を使用。Linux のみ
   --workspace string

@@ -37,7 +37,7 @@ Le système Tianji enverra une requête POST avec le contenu d'exemple ci-dessou
         },
         {
             "type": "image",
-            "url": "https://tianji.msgbyte.com/img/social-card.png"
+            "url": "https://tianji.dev/img/social-card.png"
         }
     ],
     "time": "2024-06-19T15:41:09.390Z"

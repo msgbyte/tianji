@@ -77,7 +77,7 @@ For detailed authentication instructions and code examples, see the [Authenticat
 - **Website:** [tianji.dev](https://tianji.dev/)
 - **GitHub:** [github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
 - **Community:** [Join our Discord](https://discord.gg/8Vv47wAEej)
-- **Cloud:** [Try Tianji Cloud](https://tianji.msgbyte.com/)
+- **Cloud:** [Try Tianji Cloud](https://tianji.dev/)
 
 ---
 

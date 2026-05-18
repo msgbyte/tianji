@@ -40,7 +40,7 @@ Synthetic monitoring takes this approach further by simulating complete user jou
 
 Server-level metrics provide early warning signs of impending problems. CPU utilization, memory consumption, disk I/O, and network throughput often show patterns of degradation before complete failure occurs. For example, steadily increasing memory usage might indicate a resource leak that will eventually crash your application.
 
-Establishing performance baselines helps distinguish between normal operation and concerning anomalies. By understanding typical load patterns throughout the day and week, you can set appropriate thresholds that trigger alerts only when metrics deviate significantly from expected values. Understanding which metrics to prioritize is crucial, as [our guide to server status reporting](https://tianji.msgbyte.com/docs/server-status/server-status-reporter) explains in detail.
+Establishing performance baselines helps distinguish between normal operation and concerning anomalies. By understanding typical load patterns throughout the day and week, you can set appropriate thresholds that trigger alerts only when metrics deviate significantly from expected values. Understanding which metrics to prioritize is crucial, as [our guide to server status reporting](https://tianji.dev/docs/server-status/server-status-reporter) explains in detail.
 
 Historical data analysis reveals gradual trends that might otherwise go unnoticed. A database that's slowly approaching connection limits or storage capacity might function normally for weeks before suddenly failing. Tracking these metrics over time allows you to address resource constraints before they cause downtime.
 
@@ -152,7 +152,7 @@ Runbooks for common scenarios ensure consistent response regardless of which tea
 
 Incident management platforms should integrate with your monitoring tools to maintain a complete timeline of events. This integration creates a historical record that helps identify patterns across multiple incidents and improves future response procedures.
 
-Post-incident analysis should be a formal process after any significant downtime. Review what monitoring signals were present before the incident, whether alerts provided adequate warning, and how response procedures could be improved. Comprehensive monitoring extends beyond server metrics to include [user behavior tracking across platforms](https://tianji.msgbyte.com/docs/telemetry/intro) , providing context for performance issues.
+Post-incident analysis should be a formal process after any significant downtime. Review what monitoring signals were present before the incident, whether alerts provided adequate warning, and how response procedures could be improved. Comprehensive monitoring extends beyond server metrics to include [user behavior tracking across platforms](https://tianji.dev/docs/telemetry/intro) , providing context for performance issues.
 
 ## How Tianji Simplifies Uptime Monitoring
 
@@ -168,7 +168,7 @@ The platform's timeline view synchronizes events across different monitoring typ
 
 Implementing comprehensive server monitoring traditionally requires complex agent configuration and management. Tianji simplifies this process with its lightweight reporter tool, which can be deployed in minutes using Docker containers. This approach minimizes the performance impact on monitored systems while providing detailed visibility into critical metrics.
 
-Setting up the [Tianji server status reporter](https://tianji.msgbyte.com/docs/server-status/server-status-reporter) takes just minutes and provides immediate visibility into critical system metrics. The reporter collects essential data points including CPU utilization, memory consumption, disk usage, and network throughput without requiring extensive configuration.
+Setting up the [Tianji server status reporter](https://tianji.dev/docs/server-status/server-status-reporter) takes just minutes and provides immediate visibility into critical system metrics. The reporter collects essential data points including CPU utilization, memory consumption, disk usage, and network throughput without requiring extensive configuration.
 
 For teams managing multiple servers or microservices, Tianji's centralized configuration management simplifies deployment across your infrastructure. You can define monitoring parameters once and apply them consistently across all systems, ensuring uniform visibility regardless of environment complexity.
 

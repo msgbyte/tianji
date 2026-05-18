@@ -49,7 +49,7 @@ export const FeedIntegration: React.FC<{
               {t('Check here to learn more')}:{' '}
               <a
                 className="text-blue-500 underline"
-                href="https://tianji.msgbyte.com/docs/feed/sentry"
+                href="https://tianji.dev/docs/feed/sentry"
                 target="_blank"
               >
                 {t('Document')}

@@ -61,4 +61,4 @@ Si vous préférez ne pas développer votre propre solution, je recommande Tianj
 
 GitHub : [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
-Site officiel : [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Site officiel : [https://tianji.dev/](https://tianji.dev/)

@@ -62,4 +62,4 @@ If you prefer not to develop your own solution, I recommend Tianji. As an open-s
 
 GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
-Official Website: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Official Website: [https://tianji.dev/](https://tianji.dev/)

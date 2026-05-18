@@ -61,4 +61,4 @@ Jika Anda lebih suka tidak mengembangkan solusi Anda sendiri, saya merekomendasi
 
 GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
 
-Situs Resmi: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Situs Resmi: [https://tianji.dev/](https://tianji.dev/)

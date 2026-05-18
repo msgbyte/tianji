@@ -35,4 +35,4 @@ The `.tianjirc` file contains the project configuration:
 
 ## Learn More
 
-Visit [Tianji Documentation](https://tianji.msgbyte.com/docs) to learn more about workers.
+Visit [Tianji Documentation](https://tianji.dev/docs) to learn more about workers.

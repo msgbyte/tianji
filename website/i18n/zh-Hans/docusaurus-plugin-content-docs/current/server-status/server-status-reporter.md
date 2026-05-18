@@ -19,7 +19,7 @@ tianji-reporter 的用法：
   --name string
         该机器的标识名称
   --url string
-        天机的 http 地址，例如：https://tianji.msgbyte.com
+        天机的 http 地址，例如：https://tianji.dev
   --vnstat
         使用 vnstat 进行流量统计，仅限 Linux
   --workspace string

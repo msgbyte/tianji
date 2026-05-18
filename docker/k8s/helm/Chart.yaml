@@ -1,7 +1,7 @@
 apiVersion: v2
 name: tianji
 description: All-in-One Insight Hub
-icon: https://tianji.msgbyte.com/img/logo.svg
+icon: https://tianji.dev/img/logo.svg
 maintainers:
   - name: moonrailgun
     email: moonrailgun@gmail.com

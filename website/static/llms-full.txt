@@ -1725,7 +1725,7 @@ Tianji system will send a POST request with below example content.
         },
         {
             "type": "image",
-            "url": "https://tianji.msgbyte.com/img/social-card.png"
+            "url": "https://tianji.dev/img/social-card.png"
         }
     ],
     "time": "2024-06-19T15:41:09.390Z"
@@ -1813,7 +1813,7 @@ Usage of tianji-reporter:
   --name string
         The identification name for this machine
   --url string
-        The http url of tianji, for example: https://tianji.msgbyte.com
+        The http url of tianji, for example: https://tianji.dev
   --vnstat
         Use vnstat for traffic statistics, linux only
   --workspace string
@@ -1941,7 +1941,7 @@ If you prefer not to develop your own solution, I recommend Tianji. As an open-s
 
 GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
 
-Official Website: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Official Website: [https://tianji.dev/](https://tianji.dev/)
 
 
 ===== FILE: docs/telemetry/params.md =====

@@ -57,4 +57,4 @@ Si prefieres no desarrollar tu propia solución, te recomiendo Tianji. Como un p
 
 GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
 
-Sitio web oficial: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Sitio web oficial: [https://tianji.dev/](https://tianji.dev/)

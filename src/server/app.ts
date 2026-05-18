@@ -111,7 +111,7 @@ if (env.allowOpenapi) {
             apiDescriptionUrl="/open/_document"
             router="hash"
             layout="responsive"
-            logo="https://tianji.msgbyte.com/img/logo.svg"
+            logo="https://tianji.dev/img/logo.svg"
           />
           <style>
             a[href^='https://stoplight.io'] {
