@@ -1,5 +1,16 @@
 
 
+## [1.31.26](https://github.com/msgbyte/tianji/compare/v1.31.25...v1.31.26) (2026-05-26)
+
+### Features
+
+* enhance SecretInput component with clear button and interaction handling ([4993f4c](https://github.com/msgbyte/tianji/commit/4993f4c20aa047f2848934225258020ba0bc04ff))
+
+### Others
+
+* update deploy website config ([73799d1](https://github.com/msgbyte/tianji/commit/73799d1d5dc2425532287af98ddbfb2ffb61fbff))
+* update Tianji URLs to point to the new domain tianji.dev ([db04ca0](https://github.com/msgbyte/tianji/commit/db04ca00fbc6be82028100c79c484c01904f3295))
+
 ## [1.31.25](https://github.com/msgbyte/tianji/compare/v1.31.24...v1.31.25) (2026-05-07)
 
 ### Others
