@@ -1,5 +1,5 @@
 ---
-name: tianji
+name: tianji-data-query
 description: >
   Query website analytics, monitor uptime, survey results, telemetry data,
   feed events, application stats, and more from the Tianji platform via its
