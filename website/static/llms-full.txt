@@ -144,7 +144,7 @@ API keys can only access workspaces that the user belongs to. If you need to acc
 ```json
 {
   "error": {
-    "code": "FORBIDDEN",
+    "code": "FORBIDDEN", 
     "message": "Insufficient access"
   }
 }
@@ -276,11 +276,11 @@ initOpenapiSDK('https://your-tianji-domain.com', {
 async function getSystemConfig() {
   try {
     const config = await openApiClient.GlobalService.globalConfig();
-
+    
     console.log('Allow registration:', config.allowRegister);
     console.log('AI features enabled:', config.ai.enable);
     console.log('Billing enabled:', config.enableBilling);
-
+    
     return config;
   } catch (error) {
     console.error('Failed to get system configuration:', error);
@@ -363,11 +363,9 @@ reportApplicationScreenView();
 reportApplicationScreenView('Checkout', { cartItems: 3 });
 ```
 
-## User Identification
+#### Intergate with expo-router
 
-Identify users in your application to track their behavior across sessions:
-
-```ts
+```tsx
 
 // Identify a user with their information
 identifyApplicationUser({
@@ -464,7 +462,7 @@ ALLOW_OPENAPI=true
 
 ## Prepare Database struct
 
-Now you can visit database, and you can visit
+Now you can visit database, and you can visit 
 
 ```bash
 cd src/server && pnpm db:migrate:apply
@@ -499,7 +497,7 @@ initTianjiTracker({
   url: backendUrl,
   websiteId,
 });
-
+    
 reportEvent('Demo Event', {
   foo: 'bar',
 });
@@ -956,7 +954,7 @@ Now you can search tianji with `helm search` command.
 helm search repo tianji
 ```
 
-## Install
+## Install 
 
 Then, feel free to install with one command:
 
@@ -1101,8 +1099,8 @@ you can fill the form quickly to install.
 
 and only just need to wait for a moment. then you can open your own Tianji in your browser.
 
-> Url: `http://<your-ip>:12345`
-> Default username: `admin`
+> Url: `http://<your-ip>:12345`  
+> Default username: `admin`  
 > Default password: `admin`
 
 
@@ -1110,17 +1108,17 @@ and only just need to wait for a moment. then you can open your own Tianji in yo
 
 # Telemetry
 
-## About Anonymous Telemetry
+## About Anonymous Telemetry  
 
-To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.
+To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.  
 
-We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:
+We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:  
 
-- **Completely Anonymous**: We do not collect any personally identifiable information or service content.
-- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.
-- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.
+- **Completely Anonymous**: We do not collect any personally identifiable information or service content.  
+- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.  
+- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.  
 
-Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:
+Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:  
 
 ```bash
 DISABLE_ANONYMOUS_TELEMETRY=1
@@ -1240,6 +1238,8 @@ Join our thriving community to connect with fellow users, share experiences, and
 # Integration with MCP
 
 <a href="https://cursor.com/install-mcp?name=tianji&config=eyJ0eXBlIjoic3RkaW8iLCJjb21tYW5kIjoibnB4IC15IHRpYW5qaS1tY3Atc2VydmVyIiwiZW52Ijp7IlRJQU5KSV9CQVNFX1VSTCI6IiIsIlRJQU5KSV9BUElfS0VZIjoiIiwiVElBTkpJX1dPUktTUEFDRV9JRCI6IiJ9fQ%3D%3D"><em><img src="https://cursor.com/deeplink/mcp-install-light.svg" alt="Add tianji MCP server to Cursor" height="32" /></em></a>
+<br />
+[![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=tianji&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tianji-mcp-server%22%5D%2C%22env%22%3A%7B%22TIANJI_BASE_URL%22%3A%22https%3A%2F%2Ftianji.example.com%22%2C%22TIANJI_API_KEY%22%3A%22%3Cyour-api-key%3E%22%2C%22TIANJI_WORKSPACE_ID%22%3A%22%3Cyour-workspace-id%3E%22%7D%7D)
 
 ## Introduction
 
@@ -1522,8 +1522,8 @@ done
 // Send heartbeat every 60 seconds
 setInterval(async () => {
   try {
-    await fetch('https://tianji.example.com/api/push/<your-push-token>', {
-      method: 'POST'
+    await fetch('https://tianji.example.com/api/push/<your-push-token>', { 
+      method: 'POST' 
     });
     console.log('Heartbeat sent successfully');
   } catch (error) {
@@ -1585,7 +1585,7 @@ class ServiceMonitor:
     def __init__(self, push_url):
         self.push_url = push_url
         self.running = True
-
+        
     def start_heartbeat(self):
         def heartbeat_loop():
             while self.running:
@@ -1594,7 +1594,7 @@ class ServiceMonitor:
                     time.sleep(30)  # Send every 30 seconds
                 except Exception as e:
                     print(f"Heartbeat failed: {e}")
-
+        
         thread = threading.Thread(target=heartbeat_loop)
         thread.daemon = True
         thread.start()
@@ -1622,7 +1622,7 @@ def sync_data():
     try:
         # Your data sync logic here
         result = perform_data_sync()
-
+        
         if result.success:
             requests.post(
                 'https://tianji.example.com/api/push/<your-push-token>',
@@ -1835,7 +1835,7 @@ its will auto download reporter and create linux service in your machine. so its
 if you wanna uninstall reporter service, you can use this command like:
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
-```
+``` 
 
 The main change is to append `-s uninstall` to your install command.
 
@@ -1864,6 +1864,181 @@ Please make sure your reverse proxy add websocket support
 ## Why my machine is always offline?
 
 Please check your server datetime.
+
+
+===== FILE: docs/skill/installation.md =====
+
+# Installation
+
+The skill is just three files. Any modern AI agent (Cursor, Claude Code, Codex, Copilot CLI...) already knows where its own skills directory is — so installation can be as simple as pasting one prompt.
+
+## One-Click Installation (via AI Agent)
+
+Paste the prompt below into your AI agent. It will download the files into the correct skills directory for its platform, then ask you for any missing configuration.
+
+```
+Please install the Tianji Data Query Skill into your skills directory:
+
+https://github.com/msgbyte/tianji/tree/master/skills/tianji-data-query
+
+After downloading, check whether these environment variables are set:
+  - TIANJI_BASE_URL
+  - TIANJI_API_KEY
+  - TIANJI_WORKSPACE_ID
+
+If any are missing, ask me for the values.
+```
+
+That's it. The agent picks its own skills directory, fetches the files, and prompts you for credentials when needed.
+
+## Manual Installation
+
+If you'd rather install it by hand, pick the target directory for your agent and run:
+
+```bash
+DEST="$HOME/.cursor/skills/tianji-data-query"   # or whatever your agent uses
+mkdir -p "$DEST/references"
+
+BASE="https://raw.githubusercontent.com/msgbyte/tianji/master/skills/tianji-data-query"
+curl -fSL "$BASE/SKILL.md"                          -o "$DEST/SKILL.md"
+curl -fSL "$BASE/references/api-endpoints.md"       -o "$DEST/references/api-endpoints.md"
+curl -fSL "$BASE/references/openapi-readonly.json"  -o "$DEST/references/openapi-readonly.json"
+```
+
+### Skills directory by agent
+
+| Agent | Directory |
+|-------|-----------|
+| Cursor (personal) | `~/.cursor/skills/tianji-data-query/` |
+| Cursor (project)  | `<project-root>/.cursor/skills/tianji-data-query/` |
+| Claude Code       | `~/.claude/skills/tianji-data-query/` |
+| Codex             | `~/.codex/skills/tianji-data-query/` |
+| Codex (alt)       | `~/.agents/skills/tianji-data-query/` |
+
+## Required Environment Variables
+
+The skill expects three values. Export them in your shell rc, or set them in your agent's skill config:
+
+```bash
+# Tianji instance base URL
+TIANJI_BASE_URL=https://tianji.example.com
+
+# API key for authentication
+TIANJI_API_KEY=your_api_key_here
+
+# Default workspace ID
+TIANJI_WORKSPACE_ID=your_workspace_id_here
+```
+
+### Getting an API Key
+
+1. Log in to your Tianji instance and click your **profile picture** in the top right corner.
+2. Select **Profile** from the dropdown menu.
+3. Find the **API Keys** section.
+4. Click **Create new key** and follow the prompts.
+
+## Next Steps
+
+After installation, head back to [Integration with Agent Skill](./skill.md) to see usage examples, the comparison with the MCP Server, and how the skill handles sensitive data.
+
+
+===== FILE: docs/skill/skill.md =====
+
+# Integration with Agent Skill
+
+## Introduction
+
+The **Tianji Data Query Skill** is a lightweight, agent-agnostic skill bundle that lets AI agents (Cursor, Claude Code, Codex, Copilot CLI, etc.) query the Tianji platform directly through its read-only OpenAPI.
+
+It follows the [agentskills.io](https://agentskills.io/specification) specification — a single `SKILL.md` plus reference files. No long-running process, no extra runtime.
+
+:::tip Get started
+See the [Installation Guide](./installation.md) for one-click and manual setup.
+:::
+
+**What it covers:** 69 GET endpoints across 14 service domains:
+
+- **Website** — traffic stats, pageviews, geo distribution, Lighthouse reports
+- **Monitor** — uptime status, recent check data, monitor events
+- **Survey** — survey responses, result stats, AI categories
+- **Telemetry** — custom event counts, telemetry pageviews, metrics
+- **Feed** — channels, event streams, feed states
+- **Application** — app store reviews, app info, event stats
+- **Billing / AI Gateway / Worker / Page / Workspace / Global / AuditLog**
+
+## Skill vs MCP Server
+
+Tianji offers two ways to integrate with AI agents. Pick the one that fits your workflow:
+
+| | Agent Skill | [MCP Server](/docs/mcp) |
+|--|--|--|
+| **Form** | Plain documentation files (`SKILL.md` + references) | A long-running Node.js process |
+| **Runtime** | None — agent uses `curl` or built-in HTTP tools | `npx tianji-mcp-server` |
+| **Coverage** | 69 GET endpoints (read-only, full surface) | A curated subset of tools (read + some write) |
+| **Setup** | Drop files into the agent's skills directory | Add MCP config to the agent's config file |
+| **Best for** | Cursor / Claude Code / Codex / any agent following the agentskills.io spec | Agents with first-class MCP support |
+
+You can use both at the same time without conflict.
+
+## Usage Examples
+
+Once installed, you can ask your AI agent natural-language questions and it will pick the right endpoint:
+
+### Example 1: Website traffic overview
+
+```
+User: Show me the pageviews of my main website over the past 7 days.
+
+Agent: [Calls GET /open/workspace/{workspaceId}/website/all to find the site]
+       [Then GET /open/workspace/{workspaceId}/website/{websiteId}/pageviews
+        with startAt/endAt covering 7 days]
+       Your main website received 12,438 pageviews over the past 7 days,
+       with a peak of 2,103 on Tuesday. Top referrer: google.com (43%).
+```
+
+### Example 2: Monitor health check
+
+```
+User: Are any of my monitors down right now?
+
+Agent: [Calls GET /open/workspace/{workspaceId}/monitor/all]
+       [Then GET /open/workspace/{workspaceId}/monitor/{monitorId}/status
+        for each monitor]
+       2 monitors are currently DOWN:
+       - api.example.com (HTTP 503, last UP 12 min ago)
+       - db-replica (TCP timeout, last UP 1h ago)
+       The other 8 monitors are healthy.
+```
+
+### Example 3: Survey result analysis
+
+```
+User: Summarise the responses to the "Q4 Customer Feedback" survey.
+
+Agent: [Calls GET /open/workspace/{workspaceId}/survey/all to resolve the ID]
+       [Then GET /open/workspace/{workspaceId}/survey/{surveyId}/stats]
+       [Then GET /open/workspace/{workspaceId}/survey/{surveyId}/result/list
+        with a pagination cursor]
+       "Q4 Customer Feedback" received 218 responses. Average satisfaction
+       4.3/5. Top theme: dashboard performance (mentioned 47 times). Most
+       requested feature: dark mode (31 mentions).
+```
+
+## Sensitive Data Handling
+
+Some endpoints may return platform-stored secrets (e.g. `modelApiKey`, `customModelBaseUrl` in AI Gateway responses) or PII (workspace members, audit logs, billing).
+
+The skill instructs agents to:
+
+- **Never display** `apiKey`, `modelApiKey`, `secret`, `token`, `password`, or `credential` fields.
+- **Redact or omit** these fields when summarising responses.
+- For workspace members / audit logs, only surface non-sensitive metadata (names, roles, timestamps) unless the user explicitly requests full detail.
+
+The bundled `openapi-readonly.json` also pre-redacts these fields at the schema level, so agents cannot accidentally rely on their structure.
+
+## Source
+
+The skill source lives in the Tianji repository under [`skills/tianji-data-query/`](https://github.com/msgbyte/tianji/tree/master/skills/tianji-data-query). Pull requests welcome.
 
 
 ===== FILE: docs/special-thanks.md =====
@@ -1923,9 +2098,9 @@ router.get(
     const ip = req.ip;
     const referer = req.header['referer'];
     const userAgent = req.headers['user-agent'];
-
+    
     // Store it in your database
-
+    
     const blankGifBuffer = Buffer.from(
       'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
       'base64'
@@ -1939,7 +2114,7 @@ If you prefer not to develop your own solution, I recommend Tianji. As an open-s
 
 ![](/img/telemetry/2.png)
 
-GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
+GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
 Official Website: [https://tianji.dev/](https://tianji.dev/)
 
@@ -2155,6 +2330,41 @@ the script look like below:
 
 you can get this script code from your **Tianji** website list
 
+## Script Attributes
+
+The tracker script supports the following `data-*` attributes on the `<script>` tag:
+
+| Attribute | Required | Default | Description |
+|---|---|---|---|
+| `data-website-id` | **Yes** | — | The unique website ID for associating tracking data. The tracker will not initialize without this. |
+| `data-host-url` | No | Script `src` origin | The backend server URL. If omitted, it is automatically derived from the script's `src` path. |
+| `data-auto-track` | No | `true` | Automatically track page views and route changes. Set to `"false"` to disable. |
+| `data-do-not-track` | No | — | When set, respects the browser's Do Not Track (DNT) setting and disables tracking if DNT is enabled. |
+| `data-domains` | No | — | A comma-separated list of domains to track (e.g. `"example.com,www.example.com"`). Tracking is only active when the current hostname matches one of these domains. |
+
+### Full Example
+
+```html
+<script
+  async
+  defer
+  src="https://example.com/tracker.js"
+  data-website-id="clxxxxxxxxxxxxxxxxxx"
+  data-host-url="https://analytics.example.com"
+  data-auto-track="true"
+  data-do-not-track="true"
+  data-domains="example.com,www.example.com"
+></script>
+```
+
+### Disable Tracking via localStorage
+
+You can also disable tracking at runtime by setting a localStorage flag:
+
+```javascript
+localStorage.setItem('tianji.disabled', '1');
+```
+
 ## Report Event
 
 **Tianji** provide a simple way to report user click event, its easy to help you track which action user like and often to use.
@@ -2178,8 +2388,8 @@ Now, when user click this button, your dashboard will receive new event
 You can attach additional data to your events by using `data-tianji-event-{key}` attributes. Any attribute matching this pattern will be collected and sent with the event.
 
 ```html
-<button
-  data-tianji-event="purchase"
+<button 
+  data-tianji-event="purchase" 
   data-tianji-event-product="Premium Plan"
   data-tianji-event-price="99"
   data-tianji-event-currency="USD">
@@ -2335,7 +2545,7 @@ We use your personal data to:
 
 - **Provide, Improve, and Develop the Platform**: We process your data primarily to ensure the proper functioning of our website. We may also use your data to improve our website and offer you the best possible experience. Specifically, we:
   - Operate and maintain your `tianji.msgbye.com` account, allowing you to access and use the Platform. Your email address and password are used to identify you when you log in.
-
+  
 - **Maintain a Safe and Secure Environment**: We process your data to enhance the security of our Platform, ensuring a safe experience for all users.
 
 ## How We Share Your Personal Data
@@ -2343,7 +2553,7 @@ We use your personal data to:
 We do not sell your personal data to external parties.
 
 - **Through Your Profile**: Any personal data you choose to disclose in your public profile on `tianji.msgbye.com` will be visible to other users. They may view your profile information and interact with any public prompts you share.
-
+  
 - **Compliance with Laws**: We may disclose your personal data to courts, law enforcement agencies, or government authorities if required to:
   - Comply with legal obligations or processes.
   - Respond to claims against `tianji.msgbye.com`.
@@ -2358,3 +2568,4 @@ We do not sell your personal data to external parties.
 ## Contact Information
 
 For questions or complaints about this Privacy Policy or our practices, please contact us by email at `moonrailgun@gmail.com`.
+

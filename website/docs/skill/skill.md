@@ -28,7 +28,7 @@ See the [Installation Guide](./installation.md) for one-click and manual setup.
 
 Tianji offers two ways to integrate with AI agents. Pick the one that fits your workflow:
 
-| | Agent Skill | [MCP Server](../mcp/mcp.md) |
+| | Agent Skill | [MCP Server](/docs/mcp) |
 |--|--|--|
 | **Form** | Plain documentation files (`SKILL.md` + references) | A long-running Node.js process |
 | **Runtime** | None — agent uses `curl` or built-in HTTP tools | `npx tianji-mcp-server` |

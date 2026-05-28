@@ -30,6 +30,8 @@ Webhook - https://tianji.dev/docs/notification/webhook
 Deploy Reporter as DaemonSet - https://tianji.dev/docs/server-status/kubernetes/reporter-daemonset
 Server Status Page - https://tianji.dev/docs/server-status/server-status-page
 Server Status Reporter - https://tianji.dev/docs/server-status/server-status-reporter
+Installation - https://tianji.dev/docs/skill/installation
+Integration with Agent Skill - https://tianji.dev/docs/skill/skill
 Special thanks - https://tianji.dev/docs/special-thanks
 Introduce - https://tianji.dev/docs/telemetry/intro
 Parameters - https://tianji.dev/docs/telemetry/params
