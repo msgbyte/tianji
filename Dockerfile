@@ -11,6 +11,8 @@ RUN cd reporter && CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-
 # The current Chromium version in Alpine 3.20 is causing timeout issues with Puppeteer. Downgrading to Alpine 3.19 fixes the issue. See #11640, #12637, #12189
 FROM node:22.14.0-alpine3.20 AS base
 
+ENV TZ=Asia/Shanghai
+
 RUN npm install -g pnpm@9.7.1
 
 # For apprise
@@ -24,7 +26,9 @@ RUN apk upgrade --no-cache --available glib \
       font-noto-emoji \
     && apk add --no-cache \
       --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
-      font-wqy-zenhei
+      font-wqy-zenhei \
+    && apk add --no-cache tzdata \
+    && ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo "$TZ" > /etc/timezone
 
 # For zeromq
 RUN apk add --update --no-cache curl cmake
