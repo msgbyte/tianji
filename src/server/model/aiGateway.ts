@@ -364,6 +364,144 @@ export function buildOpenAIHandler(
   };
 }
 
+interface ModelsHandlerOptions {
+  baseUrl?: string;
+  isCustomRoute?: boolean;
+  header?: (req: Request) => Record<string, string>;
+}
+
+/**
+ * Forward the OpenAI-compatible `GET /v1/models` endpoint so external clients
+ * can discover available models through the gateway.
+ */
+export function buildOpenAIModelsHandler(
+  options: ModelsHandlerOptions
+): RequestHandler {
+  return async (req, res) => {
+    const { workspaceId, gatewayId } = z
+      .object({
+        workspaceId: z.string(),
+        gatewayId: z.string(),
+      })
+      .parse(req.params);
+
+    const apiKey = (req.headers.authorization ?? '').replace('Bearer ', '');
+    let modelApiKey = apiKey;
+    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
+    if (gatewayInfo?.modelApiKey) {
+      await verifyUserApiKey(apiKey);
+      modelApiKey = gatewayInfo.modelApiKey;
+    }
+
+    const baseUrl =
+      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
+        ? gatewayInfo?.customModelBaseUrl
+        : options.baseUrl;
+
+    try {
+      const openai = new OpenAI({
+        apiKey: modelApiKey,
+        baseURL: baseUrl,
+        defaultHeaders: options.header?.(req),
+      });
+
+      const list = await openai.models.list();
+
+      res.json({
+        object: 'list',
+        data: list.data,
+      });
+    } catch (error) {
+      console.error('OpenAI models API error:', error);
+      const status = get(error, 'status', 500) as number;
+      res.status(typeof status === 'number' ? status : 500).json({
+        error: {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: 'server_error',
+        },
+      });
+    }
+  };
+}
+
+/**
+ * Forward the native Anthropic `GET /v1/models` endpoint. Anthropic requires the
+ * `x-api-key` and `anthropic-version` headers instead of a Bearer token.
+ */
+export function buildAnthropicModelsHandler(
+  options: ModelsHandlerOptions
+): RequestHandler {
+  return async (req, res) => {
+    const { workspaceId, gatewayId } = z
+      .object({
+        workspaceId: z.string(),
+        gatewayId: z.string(),
+      })
+      .parse(req.params);
+
+    const apiKey =
+      (req.headers['x-api-key'] as string) ??
+      (req.headers.authorization ?? '').replace('Bearer ', '');
+    let modelApiKey = apiKey;
+    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
+    if (gatewayInfo?.modelApiKey) {
+      await verifyUserApiKey(apiKey);
+      modelApiKey = gatewayInfo.modelApiKey;
+    }
+
+    const baseUrl =
+      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
+        ? gatewayInfo?.customModelBaseUrl
+        : options.baseUrl;
+
+    try {
+      const queryString = new URLSearchParams(
+        req.query as Record<string, string>
+      ).toString();
+      const upstreamUrl = `${baseUrl}/models${
+        queryString ? `?${queryString}` : ''
+      }`;
+      const anthropicVersion =
+        (req.headers['anthropic-version'] as string) ||
+        DEFAULT_ANTHROPIC_VERSION;
+
+      const headers: Record<string, string> = {
+        'content-type': 'application/json',
+        'x-api-key': modelApiKey,
+        'anthropic-version': anthropicVersion,
+        ...options.header?.(req),
+      };
+
+      const betaHeader = req.headers['anthropic-beta'];
+      if (betaHeader) {
+        headers['anthropic-beta'] = String(betaHeader);
+      }
+
+      const upstreamResponse = await fetch(upstreamUrl, {
+        method: 'GET',
+        headers,
+      });
+
+      const body = await upstreamResponse.text();
+      res.status(upstreamResponse.status);
+      res.setHeader(
+        'content-type',
+        upstreamResponse.headers.get('content-type') || 'application/json'
+      );
+      res.end(body);
+    } catch (error) {
+      console.error('Anthropic models proxy error:', error);
+      res.status(500).json({
+        type: 'error',
+        error: {
+          type: 'server_error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
+    }
+  };
+}
+
 const anthropicRequestSchema = z
   .object({
     model: z.string(),

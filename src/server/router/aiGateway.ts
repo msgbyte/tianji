@@ -2,6 +2,8 @@ import { Router } from 'express';
 import {
   buildOpenAIHandler,
   buildAnthropicHandler,
+  buildOpenAIModelsHandler,
+  buildAnthropicModelsHandler,
 } from '../model/aiGateway.js';
 
 export const aiGatewayRouter = Router();
@@ -85,6 +87,51 @@ aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/custom/v1/messages',
   buildAnthropicHandler({
     isCustomRoute: true,
+  })
+);
+//#endregion
+
+//#region Models list API (/v1/models)
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/openai/v1/models',
+  buildOpenAIModelsHandler({})
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/deepseek/v1/models',
+  buildOpenAIModelsHandler({
+    baseUrl: 'https://api.deepseek.com',
+  })
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/openrouter/v1/models',
+  buildOpenAIModelsHandler({
+    baseUrl: 'https://openrouter.ai/api/v1',
+    header: (req) => {
+      return {
+        'HTTP-Referer': req.headers['HTTP-Referer']
+          ? String(req.headers['HTTP-Referer'])
+          : 'https://tianji.dev/',
+        'X-Title': req.headers['X-Title']
+          ? String(req.headers['X-Title'])
+          : 'Tianji',
+      };
+    },
+  })
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/custom/v1/models',
+  buildOpenAIModelsHandler({
+    isCustomRoute: true,
+  })
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/anthropic/v1/models',
+  buildAnthropicModelsHandler({
+    baseUrl: 'https://api.anthropic.com/v1',
   })
 );
 //#endregion
