@@ -187,6 +187,9 @@ export const env = {
     Number(process.env.WORKER_EXECUTION_CLEAR_DAYS) || 0,
   workerExecutionPayloadClearDays:
     Number(process.env.WORKER_EXECUTION_PAYLOAD_CLEAR_DAYS) || 0,
+  // Auto disable a monitor that has been continuously down for N days. 0 = disabled.
+  autoDisableMonitorDays:
+    Number(process.env.AUTO_DISABLE_MONITOR_DAYS) || 0,
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {

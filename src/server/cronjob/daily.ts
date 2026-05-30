@@ -8,6 +8,7 @@ import { sendNotification } from '../model/notification/index.js';
 import { get } from 'lodash-es';
 import { token } from '../model/notification/token/index.js';
 import { Prisma } from '@prisma/client';
+import { monitorManager } from '../model/monitor/index.js';
 
 type WebsiteEventCountSqlReturn = {
   workspace_id: string;
@@ -468,5 +469,91 @@ export async function clearAIGatewayPayloadDaily() {
   logger.info(
     '[clearAIGatewayPayloadDaily] Clear completed, update record:',
     res.count
+  );
+}
+
+/**
+ * Auto disable monitors that have been continuously down for N days.
+ * A monitor is considered "continuously down" only if all of its records
+ * within the window have value < 0, and it has at least one record.
+ * Newly created monitors (createdAt within the window) are skipped.
+ * Controlled by AUTO_DISABLE_MONITOR_DAYS env (0 = disabled).
+ */
+export async function autoDisableContinuousDownMonitorDaily() {
+  const days = env.autoDisableMonitorDays;
+  if (days <= 0) {
+    return;
+  }
+
+  const cutoff = dayjs().subtract(days, 'days').toDate();
+  logger.info(
+    '[autoDisableContinuousDownMonitorDaily] Start scan, cutoff:',
+    cutoff.toISOString()
+  );
+
+  const candidates = await prisma.$queryRaw<
+    { id: string; name: string; workspaceId: string }[]
+  >`
+    SELECT m.id, m.name, m."workspaceId"
+    FROM "Monitor" m
+    WHERE m.active = true
+      AND m."createdAt" < ${cutoff}
+      AND EXISTS (
+        SELECT 1 FROM "MonitorData" md
+        WHERE md."monitorId" = m.id
+          AND md."createdAt" >= ${cutoff}
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM "MonitorData" md
+        WHERE md."monitorId" = m.id
+          AND md."createdAt" >= ${cutoff}
+          AND md.value >= 0
+      );
+  `;
+
+  if (candidates.length === 0) {
+    logger.info(
+      '[autoDisableContinuousDownMonitorDaily] No monitor needs to be auto disabled'
+    );
+    return;
+  }
+
+  logger.info(
+    `[autoDisableContinuousDownMonitorDaily] Found ${candidates.length} monitor(s) to auto disable`
+  );
+
+  let successCount = 0;
+  for (const candidate of candidates) {
+    try {
+      await prisma.monitor.update({
+        where: { id: candidate.id },
+        data: { active: false },
+      });
+
+      const runner = monitorManager.getRunner(candidate.id);
+      runner?.stopMonitor();
+
+      await prisma.monitorEvent.create({
+        data: {
+          monitorId: candidate.id,
+          type: 'DOWN',
+          message: `Monitor [${candidate.name}] has been auto disabled because it was continuously down for ${days} day(s).`,
+        },
+      });
+
+      successCount++;
+      logger.info(
+        `[autoDisableContinuousDownMonitorDaily] Disabled monitor: id=${candidate.id} name=${candidate.name} workspaceId=${candidate.workspaceId}`
+      );
+    } catch (err) {
+      logger.error(
+        `[autoDisableContinuousDownMonitorDaily] Disable monitor failed: id=${candidate.id}`,
+        err
+      );
+    }
+  }
+
+  logger.info(
+    `[autoDisableContinuousDownMonitorDaily] Completed, disabled ${successCount}/${candidates.length} monitor(s)`
   );
 }

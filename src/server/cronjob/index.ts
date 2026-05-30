@@ -4,6 +4,7 @@ import { FeedChannelNotifyFrequency } from '@prisma/client';
 import { env } from '../utils/env.js';
 import { checkWorkspaceUsage } from '../model/billing/cronjob.js';
 import {
+  autoDisableContinuousDownMonitorDaily,
   clearAIGatewayLogsDaily,
   clearAIGatewayPayloadDaily,
   clearAuditLogDaily,
@@ -33,6 +34,7 @@ export function initCronjob() {
 
           const dailyTasks = [
             () => statDailyUsage(),
+            () => autoDisableContinuousDownMonitorDaily(),
             () => clearMonitorDataDaily(),
             () => clearMonitorEventDaily(),
             () => clearAuditLogDaily(),
