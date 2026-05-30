@@ -1,5 +1,19 @@
 
 
+## [1.31.27](https://github.com/msgbyte/tianji/compare/v1.31.26...v1.31.27) (2026-05-30)
+
+### Features
+
+* add models list API handlers for OpenAI and Anthropic ([c0fe7c5](https://github.com/msgbyte/tianji/commit/c0fe7c5a3f44ac940ffb0cca44300dc1fdf8e0f0))
+* implement auto-disable functionality for continuously down monitors ([a20ac02](https://github.com/msgbyte/tianji/commit/a20ac024f5400d66a49a61c265ee274eaa1991aa))
+
+### Others
+
+* change skills position and add skill document ([6174760](https://github.com/msgbyte/tianji/commit/617476040a9b35221947b53c1bf6edb330d38674))
+* update deploy website action ([0e0358a](https://github.com/msgbyte/tianji/commit/0e0358a1f6ddefeaeec1f73d68d046632b9c4347))
+* update deploy website config ([374cb50](https://github.com/msgbyte/tianji/commit/374cb50e4a026185483779056715a7ee13d17f86))
+* update website ([90487ce](https://github.com/msgbyte/tianji/commit/90487cec5c5c7fabf86f6f542d724c57a593dab1))
+
 ## [1.31.26](https://github.com/msgbyte/tianji/compare/v1.31.25...v1.31.26) (2026-05-26)
 
 ### Features
