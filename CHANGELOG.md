@@ -1,5 +1,16 @@
 
 
+## [1.31.28](https://github.com/msgbyte/tianji/compare/v1.31.27...v1.31.28) (2026-06-02)
+
+### Features
+
+* **aiGateway:** add openai responses support ([7dd7549](https://github.com/msgbyte/tianji/commit/7dd7549ce86822b4d4f0d8e0cf6ad85ad3128e8f))
+* **aigateway:** add tpot monitoring ([84ef6bc](https://github.com/msgbyte/tianji/commit/84ef6bcd989546d3dd6f550b9a9c6379f7a55d85))
+
+### Bug Fixes
+
+* **aiGateway:** add scrolling to edit forms ([1e9e029](https://github.com/msgbyte/tianji/commit/1e9e029deeee66c733eb2172f11a8e359249d017))
+
 ## [1.31.27](https://github.com/msgbyte/tianji/compare/v1.31.26...v1.31.27) (2026-05-30)
 
 ### Features
