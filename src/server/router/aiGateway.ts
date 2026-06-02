@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   buildOpenAIHandler,
+  buildOpenAIResponsesHandler,
   buildAnthropicHandler,
   buildOpenAIModelsHandler,
   buildAnthropicModelsHandler,
@@ -11,6 +12,13 @@ export const aiGatewayRouter = Router();
 aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/openai/v1/chat/completions',
   buildOpenAIHandler({
+    modelProvider: 'openai',
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/openai/v1/responses',
+  buildOpenAIResponsesHandler({
     modelProvider: 'openai',
   })
 );
@@ -52,6 +60,13 @@ aiGatewayRouter.post(
 aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/custom/v1/chat/completions',
   buildOpenAIHandler({
+    isCustomRoute: true,
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/custom/v1/responses',
+  buildOpenAIResponsesHandler({
     isCustomRoute: true,
   })
 );
@@ -184,4 +199,5 @@ aiGatewayRouter.post(
     isCustomRoute: true,
   })
 );
+
 //#endregion

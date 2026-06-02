@@ -65,6 +65,75 @@ const openaiRequestSchema = z
   })
   .passthrough();
 
+export const openaiResponsesRequestSchema = z
+  .object({
+    model: z.string(),
+    input: z.any(),
+    stream: z.boolean().optional(),
+  })
+  .passthrough();
+
+export function getOpenAIResponsesUsage(response: any) {
+  const usage = response?.usage ?? {};
+  return {
+    inputToken: usage.input_tokens ?? 0,
+    outputToken: usage.output_tokens ?? 0,
+    cacheReadInputToken:
+      usage.input_tokens_details?.cached_tokens ??
+      usage.input_token_details?.cached_tokens ??
+      0,
+    cacheWriteInputToken: 0,
+  };
+}
+
+export function getOpenAIResponsesOutputText(response: any): string {
+  if (typeof response?.output_text === 'string') {
+    return response.output_text;
+  }
+
+  const output = Array.isArray(response?.output) ? response.output : [];
+  return output
+    .flatMap((item: any) => (Array.isArray(item?.content) ? item.content : []))
+    .map((content: any) => {
+      if (typeof content?.text === 'string') {
+        return content.text;
+      }
+
+      if (typeof content?.text?.value === 'string') {
+        return content.text.value;
+      }
+
+      return '';
+    })
+    .join('');
+}
+
+export function getOpenAIResponsesStreamDelta(event: any): string {
+  if (
+    event?.type === 'response.output_text.delta' &&
+    typeof event.delta === 'string'
+  ) {
+    return event.delta;
+  }
+
+  return '';
+}
+
+export function getOpenAIResponsesCompletedResponse(event: any) {
+  if (
+    (event?.type === 'response.completed' || event?.type === 'response.done') &&
+    event.response
+  ) {
+    return event.response;
+  }
+
+  return undefined;
+}
+
+function stringifyResponseInput(input: unknown): string {
+  return typeof input === 'string' ? input : JSON.stringify(input);
+}
+
 interface OpenaiHandlerOptions {
   baseUrl?: string;
   modelProvider?: string;
@@ -369,6 +438,277 @@ export function buildOpenAIHandler(
       // Handle API error
       console.error('OpenAI API error:', error);
       res.status(500).json({
+        error: {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: 'server_error',
+        },
+      });
+
+      const duration = Date.now() - start;
+      logP.then(async ({ id: logId }) => {
+        await prisma.aIGatewayLogs.update({
+          where: {
+            id: logId,
+          },
+          data: {
+            status: AIGatewayLogsStatus.Failed,
+            duration,
+            responsePayload: {
+              error: String(error),
+            },
+          },
+        });
+      });
+    }
+  };
+}
+
+export function buildOpenAIResponsesHandler(
+  options: OpenaiHandlerOptions
+): RequestHandler {
+  return async (req, res) => {
+    const payload = openaiResponsesRequestSchema.parse(req.body);
+    const { stream } = payload;
+    const { workspaceId, gatewayId } = z
+      .object({
+        workspaceId: z.string(),
+        gatewayId: z.string(),
+      })
+      .parse(req.params);
+    const apiKey = (req.headers.authorization ?? '').replace('Bearer ', '');
+    let modelApiKey = apiKey;
+    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
+    let userId: string | null = null;
+    if (gatewayInfo?.modelApiKey) {
+      const user = await verifyUserApiKey(apiKey);
+      userId = user.id;
+      modelApiKey = gatewayInfo.modelApiKey;
+    }
+
+    const baseUrl =
+      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
+        ? gatewayInfo?.customModelBaseUrl
+        : options.baseUrl;
+    const modelName =
+      options.isCustomRoute && gatewayInfo?.customModelName
+        ? gatewayInfo?.customModelName
+        : payload.model;
+
+    const start = Date.now();
+    const modelProvider =
+      options.modelProvider ?? (options.isCustomRoute ? 'custom' : 'openai');
+
+    const logP = new Promise<AIGatewayLogs>(async (resolve) => {
+      const _log = await prisma.aIGatewayLogs.create({
+        data: {
+          workspaceId,
+          gatewayId,
+          modelName,
+          modelProvider,
+          stream: Boolean(stream),
+          inputToken: 0,
+          outputToken: 0,
+          cacheReadInputToken: 0,
+          cacheWriteInputToken: 0,
+          duration: 0,
+          ttft: 0,
+          tpot: -1,
+          requestPayload: payload,
+          responsePayload: {},
+          userId,
+          status: AIGatewayLogsStatus.Pending,
+        },
+      });
+
+      resolve(_log);
+    });
+
+    try {
+      const openai = new OpenAI({
+        apiKey: modelApiKey,
+        baseURL: baseUrl,
+        defaultHeaders: options.header?.(req),
+      });
+      const modelPriceName = options.modelPriceName
+        ? options.modelPriceName(modelName)
+        : modelName;
+
+      promAIGatewayRequestCounter.inc({ modelProvider });
+
+      const requestPayload = {
+        ...payload,
+        model: modelName,
+      };
+
+      if (stream) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+
+        const responseStream = await (openai as any).responses.create({
+          ...requestPayload,
+          stream: true,
+        });
+
+        let outputContent = '';
+        let ttft = -1;
+        let completedResponse: any;
+        let responseModelName = modelName;
+
+        for await (const event of responseStream) {
+          if (ttft === -1) {
+            ttft = Date.now() - start;
+          }
+
+          outputContent += getOpenAIResponsesStreamDelta(event);
+          const response = getOpenAIResponsesCompletedResponse(event);
+          if (response) {
+            completedResponse = response;
+            responseModelName = response.model ?? responseModelName;
+          }
+
+          res.write(`data: ${JSON.stringify(event)}\n\n`);
+
+          if (res.flush) {
+            res.flush();
+          }
+        }
+
+        res.write('data: [DONE]\n\n');
+        res.end();
+        const duration = Date.now() - start;
+
+        logP.then(async ({ id: logId }) => {
+          const finalOutputContent =
+            getOpenAIResponsesOutputText(completedResponse) || outputContent;
+          const usage = getOpenAIResponsesUsage(completedResponse);
+          const [inputToken, outputToken] = await Promise.all([
+            usage.inputToken ||
+              calcOpenAIToken(stringifyResponseInput(payload.input), modelName),
+            usage.outputToken || calcOpenAIToken(finalOutputContent, modelName),
+          ]);
+
+          const customInputPrice = gatewayInfo?.customModelInputPrice;
+          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const price =
+            options.isCustomRoute && (customInputPrice || customOutputPrice)
+              ? getLLMCostDecimalWithCustomPrice(
+                  inputToken,
+                  outputToken,
+                  customInputPrice,
+                  customOutputPrice
+                )
+              : getLLMCostDecimalV2(
+                  modelProvider,
+                  modelPriceName,
+                  inputToken,
+                  outputToken,
+                  usage.cacheReadInputToken,
+                  usage.cacheWriteInputToken
+                );
+          const tpot = calcAIGatewayTpot({
+            stream: true,
+            status: AIGatewayLogsStatus.Success,
+            duration,
+            ttft,
+            outputToken,
+          });
+
+          await prisma.aIGatewayLogs.update({
+            where: {
+              id: logId,
+            },
+            data: {
+              status: AIGatewayLogsStatus.Success,
+              modelName: responseModelName,
+              inputToken,
+              outputToken,
+              cacheReadInputToken: usage.cacheReadInputToken,
+              cacheWriteInputToken: usage.cacheWriteInputToken,
+              duration,
+              ttft,
+              tpot,
+              price,
+              responsePayload: {
+                content: finalOutputContent,
+                response: completedResponse ?? {},
+              },
+            },
+          });
+
+          checkQuotaAlert(workspaceId, gatewayId, Number(price)).catch(
+            (error) => {
+              logger.error('Error checking quota alert:', error);
+            }
+          );
+        });
+      } else {
+        const response = await (openai as any).responses.create({
+          ...requestPayload,
+          stream: false,
+        });
+
+        const responseModelName = response.model ?? modelName;
+
+        res.json(response);
+        const duration = Date.now() - start;
+
+        logP.then(async ({ id: logId }) => {
+          const outputContent = getOpenAIResponsesOutputText(response);
+          const usage = getOpenAIResponsesUsage(response);
+          const [inputToken, outputToken] = await Promise.all([
+            usage.inputToken ||
+              calcOpenAIToken(stringifyResponseInput(payload.input), modelName),
+            usage.outputToken || calcOpenAIToken(outputContent, modelName),
+          ]);
+
+          const customInputPrice = gatewayInfo?.customModelInputPrice;
+          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const price =
+            options.isCustomRoute && (customInputPrice || customOutputPrice)
+              ? getLLMCostDecimalWithCustomPrice(
+                  inputToken,
+                  outputToken,
+                  customInputPrice,
+                  customOutputPrice
+                )
+              : getLLMCostDecimalV2(
+                  modelProvider,
+                  modelPriceName,
+                  inputToken,
+                  outputToken,
+                  usage.cacheReadInputToken,
+                  usage.cacheWriteInputToken
+                );
+
+          await prisma.aIGatewayLogs.update({
+            where: {
+              id: logId,
+            },
+            data: {
+              status: AIGatewayLogsStatus.Success,
+              inputToken,
+              outputToken,
+              cacheReadInputToken: usage.cacheReadInputToken,
+              cacheWriteInputToken: usage.cacheWriteInputToken,
+              duration,
+              modelName: responseModelName,
+              price,
+              responsePayload: { ...response },
+            },
+          });
+
+          checkQuotaAlert(workspaceId, gatewayId, Number(price)).catch(
+            (error) => {
+              logger.error('Error checking quota alert:', error);
+            }
+          );
+        });
+      }
+    } catch (error) {
+      console.error('OpenAI Responses API error:', error);
+      const status = get(error, 'status', 500) as number;
+      res.status(typeof status === 'number' ? status : 500).json({
         error: {
           message: error instanceof Error ? error.message : 'Unknown error',
           type: 'server_error',
