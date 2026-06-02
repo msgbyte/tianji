@@ -71,6 +71,22 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
       }
     };
 
+    const renderNullableTiming = (value: number, suffix: string) => {
+      if (value === -1) {
+        return <span className="opacity-40">(null)</span>;
+      }
+
+      return `${value} ${suffix}`;
+    };
+
+    const renderOutputTpsText = (tpot: number) => {
+      if (tpot <= 0) {
+        return <span className="opacity-40">(null)</span>;
+      }
+
+      return `${(1000 / tpot).toFixed(2)} token/s`;
+    };
+
     return (
       <div className="flex flex-1 flex-col overflow-hidden">
         <VirtualizedInfiniteDataTable
@@ -135,7 +151,15 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
                   </SheetDataSection>
 
                   <SheetDataSection label="TTFT">
-                    {selectedItem.ttft} ms
+                    {renderNullableTiming(selectedItem.ttft, 'ms')}
+                  </SheetDataSection>
+
+                  <SheetDataSection label="TPOT">
+                    {renderNullableTiming(selectedItem.tpot, 'ms/token')}
+                  </SheetDataSection>
+
+                  <SheetDataSection label="Output TPS">
+                    {renderOutputTpsText(selectedItem.tpot)}
                   </SheetDataSection>
 
                   <SheetDataSection label="Tokens">

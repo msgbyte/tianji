@@ -105,7 +105,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
 
           {/* Performance Analytics */}
           <TabsContent value="performance" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
               <Card>
                 <CardHeader>
                   <CardTitle>{t('Response Time Percentiles')}</CardTitle>
@@ -154,6 +154,35 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                       { name: 'ttft', math: 'p50', alias: 'p50' },
                       { name: 'ttft', math: 'p90', alias: 'p90' },
                       { name: 'ttft', math: 'p99', alias: 'p99' },
+                    ]}
+                    filters={[]}
+                    groups={[]}
+                    time={timeConfig}
+                    chartType="line"
+                    valueProcessor={defaultValueProcessor.alwaysPositive}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('Output Token Latency')}</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    {t(
+                      'TPOT percentiles (P50, P90, P99) showing streaming generation latency over time'
+                    )}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <InsightQueryChart
+                    className="h-[300px] w-full"
+                    workspaceId={workspaceId}
+                    insightId={gatewayId}
+                    insightType="aigateway"
+                    metrics={[
+                      { name: 'tpot', math: 'p50', alias: 'p50' },
+                      { name: 'tpot', math: 'p90', alias: 'p90' },
+                      { name: 'tpot', math: 'p99', alias: 'p99' },
                     ]}
                     filters={[]}
                     groups={[]}

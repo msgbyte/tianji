@@ -31,6 +31,27 @@ export const { get: getGatewayInfoCache, del: clearGatewayInfoCache } =
     }
   );
 
+export function calcAIGatewayTpot(args: {
+  stream: boolean;
+  status: AIGatewayLogsStatus;
+  duration: number;
+  ttft: number;
+  outputToken: number;
+}) {
+  if (!args.stream || args.status !== AIGatewayLogsStatus.Success) {
+    return -1;
+  }
+
+  if (args.ttft < 0 || args.outputToken <= 1 || args.duration < args.ttft) {
+    return -1;
+  }
+
+  return Math.max(
+    1,
+    Math.round((args.duration - args.ttft) / (args.outputToken - 1))
+  );
+}
+
 const openaiRequestSchema = z
   .object({
     model: z.string(),
@@ -102,6 +123,7 @@ export function buildOpenAIHandler(
           cacheWriteInputToken: 0,
           duration: 0,
           ttft: 0,
+          tpot: -1,
           requestPayload: payload,
           responsePayload: {},
           userId,
@@ -219,6 +241,13 @@ export function buildOpenAIHandler(
                       cacheReadInputToken,
                       cacheWriteInputToken
                     );
+          const tpot = calcAIGatewayTpot({
+            stream: true,
+            status: AIGatewayLogsStatus.Success,
+            duration,
+            ttft,
+            outputToken,
+          });
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -233,6 +262,7 @@ export function buildOpenAIHandler(
               cacheWriteInputToken,
               duration,
               ttft,
+              tpot,
               price,
               responsePayload: {
                 content: outputContent,
@@ -573,6 +603,7 @@ export function buildAnthropicHandler(
           cacheWriteInputToken: 0,
           duration: 0,
           ttft: 0,
+          tpot: -1,
           requestPayload: payload,
           responsePayload: {},
           userId,
@@ -741,6 +772,13 @@ export function buildAnthropicHandler(
                     cacheReadInputTokens,
                     cacheWriteInputTokens
                   );
+          const tpot = calcAIGatewayTpot({
+            stream: true,
+            status: AIGatewayLogsStatus.Success,
+            duration,
+            ttft,
+            outputToken: outputTokens,
+          });
 
           await prisma.aIGatewayLogs.update({
             where: { id: logId },
@@ -753,6 +791,7 @@ export function buildAnthropicHandler(
               cacheWriteInputToken: cacheWriteInputTokens,
               duration,
               ttft,
+              tpot,
               price,
               responsePayload: {
                 content: outputContent,

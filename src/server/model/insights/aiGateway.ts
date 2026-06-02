@@ -7,6 +7,17 @@ import { processGroupedTimeSeriesData } from './utils.js';
 
 const { sql, raw } = Prisma;
 
+const AIGATEWAY_NUMERIC_METRIC_FIELDS = [
+  'inputToken',
+  'outputToken',
+  'cacheReadInputToken',
+  'cacheWriteInputToken',
+  'price',
+  'duration',
+  'ttft',
+  'tpot',
+];
+
 export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
     return 'AIGatewayLogs';
@@ -23,17 +34,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         }
 
         // For standard fields, directly count
-        if (
-          [
-            'inputToken',
-            'outputToken',
-            'cacheReadInputToken',
-            'cacheWriteInputToken',
-            'price',
-            'duration',
-            'ttft',
-          ].includes(item.name)
-        ) {
+        if (AIGATEWAY_NUMERIC_METRIC_FIELDS.includes(item.name)) {
           return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
         }
       } else if (item.math === 'sessions') {
@@ -42,10 +43,28 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
           return sql`count(distinct "gatewayId") as ${raw(`"${alias}"`)}`;
         }
       } else if (item.math === 'avg') {
+        if (!AIGATEWAY_NUMERIC_METRIC_FIELDS.includes(item.name)) {
+          return null;
+        }
+
+        if (item.name === 'tpot') {
+          return sql`AVG("AIGatewayLogs"."tpot") FILTER (WHERE "AIGatewayLogs"."tpot" > -1) as ${raw(`"${alias}"`)}`;
+        }
+
         return sql`AVG("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
       } else if (item.math.startsWith('p')) {
+        if (!AIGATEWAY_NUMERIC_METRIC_FIELDS.includes(item.name)) {
+          return null;
+        }
+
         const percentile = Number(item.math.replace('p', '')) / 100;
-        return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${raw(`"${item.name}"`)}) AS ${raw(`"${alias}"`)}`;
+        const valueField = sql`"AIGatewayLogs"."${raw(item.name)}"`;
+
+        if (item.name === 'tpot') {
+          return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${valueField}) FILTER (WHERE "AIGatewayLogs"."tpot" > -1) AS ${raw(`"${alias}"`)}`;
+        }
+
+        return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${valueField}) AS ${raw(`"${alias}"`)}`;
       }
 
       return null;
@@ -130,6 +149,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         'cacheWriteInputToken',
         'duration',
         'ttft',
+        'tpot',
         'price',
         'userId',
       ].includes(name)

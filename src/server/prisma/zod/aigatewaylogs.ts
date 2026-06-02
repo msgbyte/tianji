@@ -38,6 +38,7 @@ export const AIGatewayLogsModelSchema = z.object({
   status: z.nativeEnum(AIGatewayLogsStatus),
   duration: z.number().int(),
   ttft: z.number().int(),
+  tpot: z.number().int(),
   price: z.number(),
   requestPayload: jsonSchema,
   responsePayload: jsonSchema,
