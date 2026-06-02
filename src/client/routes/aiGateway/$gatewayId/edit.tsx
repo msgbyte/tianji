@@ -8,6 +8,7 @@ import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AIGatewayEditForm,
   AIGatewayEditFormValues,
@@ -68,12 +69,12 @@ function AIGatewayEditComponent() {
     <CommonWrapper
       header={<h1 className="text-xl font-bold">{t('Edit AI Gateway')}</h1>}
     >
-      <div className="p-4">
+      <ScrollArea className="h-full overflow-hidden p-4">
         <AIGatewayEditForm
           defaultValues={gatewayInfo ?? undefined}
           onSubmit={handleSubmit}
         />
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }

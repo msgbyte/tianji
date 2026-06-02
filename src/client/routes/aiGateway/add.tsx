@@ -6,6 +6,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AIGatewayEditForm,
   AIGatewayEditFormValues,
@@ -50,9 +51,9 @@ function AIGatewayAddComponent() {
     <CommonWrapper
       header={<h1 className="text-xl font-bold">{t('Add AI Gateway')}</h1>}
     >
-      <div className="p-4">
+      <ScrollArea className="h-full overflow-hidden p-4">
         <AIGatewayEditForm onSubmit={handleSubmit} />
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }
