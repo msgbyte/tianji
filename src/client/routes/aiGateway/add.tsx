@@ -1,6 +1,5 @@
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -11,6 +10,7 @@ import {
   AIGatewayEditForm,
   AIGatewayEditFormValues,
 } from '@/components/aiGateway/AIGatewayEditForm';
+import { parseAIGatewayCustomModelStrategy } from '@/components/aiGateway/AIGatewayStrategyEditor.utils';
 
 export const Route = createFileRoute('/aiGateway/add')({
   beforeLoad: routeAuthBeforeLoad,
@@ -33,6 +33,9 @@ function AIGatewayAddComponent() {
       modelApiKey: values.modelApiKey ?? null,
       customModelBaseUrl: values.customModelBaseUrl ?? null,
       customModelName: values.customModelName ?? null,
+      customModelStrategy: parseAIGatewayCustomModelStrategy(
+        values.customModelStrategy
+      ),
       customModelInputPrice: values.customModelInputPrice ?? null,
       customModelOutputPrice: values.customModelOutputPrice ?? null,
     });

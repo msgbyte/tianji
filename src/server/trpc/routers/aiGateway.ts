@@ -23,11 +23,51 @@ const modelPricingData = await import(
   }
 ).then((res) => res.default);
 
+const aiGatewayCustomModelPriceSchema = z
+  .object({
+    inputTokenMin: z.number().int().nonnegative().optional(),
+    inputTokenMax: z.number().int().nonnegative().nullable().optional(),
+    input: z.number().nullable().optional(),
+    output: z.number().nullable().optional(),
+    cacheRead: z.number().nullable().optional(),
+    cacheWrite: z.number().nullable().optional(),
+  })
+  .passthrough();
+
+const aiGatewayCustomModelStrategySchema = z
+  .object({
+    price: z
+      .union([
+        aiGatewayCustomModelPriceSchema,
+        z.array(aiGatewayCustomModelPriceSchema),
+      ])
+      .optional(),
+  })
+  .passthrough();
+
+const aiGatewayModelPricingCostSchema = z
+  .object({
+    input: z.number().optional(),
+    output: z.number().optional(),
+    cache_read: z.number().optional(),
+    cache_write: z.number().optional(),
+    context_over_200k: z
+      .object({
+        input: z.number().optional(),
+        output: z.number().optional(),
+        cache_read: z.number().optional(),
+        cache_write: z.number().optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
 const aiGatewayCreateSchema = z.object({
   name: z.string().max(100),
   modelApiKey: z.string().nullable(),
   customModelBaseUrl: z.string().nullable(),
   customModelName: z.string().nullable(),
+  customModelStrategy: aiGatewayCustomModelStrategySchema.nullable(),
   customModelInputPrice: z.number().nullable(),
   customModelOutputPrice: z.number().nullable(),
 });
@@ -123,6 +163,7 @@ export const aiGatewayRouter = router({
         modelApiKey,
         customModelBaseUrl,
         customModelName,
+        customModelStrategy,
         customModelInputPrice,
         customModelOutputPrice,
       } = input;
@@ -134,6 +175,7 @@ export const aiGatewayRouter = router({
           modelApiKey,
           customModelBaseUrl,
           customModelName,
+          customModelStrategy,
           customModelInputPrice,
           customModelOutputPrice,
         },
@@ -174,6 +216,7 @@ export const aiGatewayRouter = router({
         modelApiKey,
         customModelBaseUrl,
         customModelName,
+        customModelStrategy,
         customModelInputPrice,
         customModelOutputPrice,
       } = input;
@@ -188,6 +231,7 @@ export const aiGatewayRouter = router({
           modelApiKey,
           customModelBaseUrl,
           customModelName,
+          customModelStrategy,
           customModelInputPrice,
           customModelOutputPrice,
         },
@@ -337,13 +381,7 @@ export const aiGatewayRouter = router({
                   })
                   .optional(),
                 open_weights: z.boolean().optional(),
-                cost: z
-                  .object({
-                    input: z.number().optional(),
-                    output: z.number().optional(),
-                    cache_read: z.number().optional(),
-                  })
-                  .optional(),
+                cost: aiGatewayModelPricingCostSchema.optional(),
                 limit: z
                   .object({
                     context: z.number().optional(),

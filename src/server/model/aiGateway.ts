@@ -5,11 +5,7 @@ import { calcMessagesToken, calcOpenAIToken } from '../model/openai.js';
 import { z } from 'zod';
 import OpenAI from 'openai';
 import { AIGatewayLogs, AIGatewayLogsStatus, Prisma } from '@prisma/client';
-import {
-  getLLMCostDecimalV2,
-  getLLMCostDecimalWithCustomPrice,
-  getOpenRouterCostDecimal,
-} from '../utils/llm.js';
+import { getLLMCostDecimalV2, getOpenRouterCostDecimal } from '../utils/llm.js';
 import { get } from 'lodash-es';
 import { verifyUserApiKey } from '../model/user.js';
 import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
@@ -50,6 +46,162 @@ export function calcAIGatewayTpot(args: {
     1,
     Math.round((args.duration - args.ttft) / (args.outputToken - 1))
   );
+}
+
+type CustomModelPriceValue =
+  | Prisma.Decimal
+  | number
+  | string
+  | null
+  | undefined;
+
+type CustomModelPriceConfig = Record<string, unknown>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function toDecimal(value: unknown): Prisma.Decimal | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  try {
+    return new Prisma.Decimal(value as any);
+  } catch {
+    return null;
+  }
+}
+
+function toNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+function getTierBoundary(
+  price: CustomModelPriceConfig,
+  keys: string[]
+): number | null {
+  for (const key of keys) {
+    if (key in price) {
+      return toNumber(price[key]);
+    }
+  }
+
+  return null;
+}
+
+function isMatchingPriceTier(
+  price: CustomModelPriceConfig,
+  inputToken: number
+) {
+  const min =
+    getTierBoundary(price, [
+      'inputTokenMin',
+      'inputTokenStart',
+      'minInputToken',
+    ]) ?? 0;
+  const max = getTierBoundary(price, [
+    'inputTokenMax',
+    'inputTokenEnd',
+    'maxInputToken',
+  ]);
+
+  return inputToken >= min && (max === null || inputToken <= max);
+}
+
+function resolveStrategyPrice(
+  customModelStrategy: unknown,
+  inputToken: number
+): CustomModelPriceConfig | null {
+  if (!isRecord(customModelStrategy)) {
+    return null;
+  }
+
+  const price = customModelStrategy.price;
+
+  if (Array.isArray(price)) {
+    return (
+      price.find(
+        (item): item is CustomModelPriceConfig =>
+          isRecord(item) && isMatchingPriceTier(item, inputToken)
+      ) ?? null
+    );
+  }
+
+  return isRecord(price) ? price : null;
+}
+
+function calcPriceFromConfig(args: {
+  inputToken: number;
+  outputToken: number;
+  cacheReadInputToken?: number;
+  cacheWriteInputToken?: number;
+  price: CustomModelPriceConfig;
+}): Prisma.Decimal | null {
+  const inputPrice = toDecimal(args.price.input);
+  const outputPrice = toDecimal(args.price.output);
+  const cacheReadPrice = toDecimal(
+    args.price.cacheRead ?? args.price.cache_read
+  );
+  const cacheWritePrice = toDecimal(
+    args.price.cacheWrite ?? args.price.cache_write
+  );
+
+  if (!inputPrice && !outputPrice && !cacheReadPrice && !cacheWritePrice) {
+    return null;
+  }
+
+  return new Prisma.Decimal(0)
+    .add(inputPrice ? inputPrice.mul(args.inputToken).div(1_000_000) : 0)
+    .add(outputPrice ? outputPrice.mul(args.outputToken).div(1_000_000) : 0)
+    .add(
+      cacheReadPrice
+        ? cacheReadPrice.mul(args.cacheReadInputToken ?? 0).div(1_000_000)
+        : 0
+    )
+    .add(
+      cacheWritePrice
+        ? cacheWritePrice.mul(args.cacheWriteInputToken ?? 0).div(1_000_000)
+        : 0
+    );
+}
+
+export function calcAIGatewayCustomModelPrice(args: {
+  inputToken: number;
+  outputToken: number;
+  cacheReadInputToken?: number;
+  cacheWriteInputToken?: number;
+  customModelStrategy?: unknown;
+  customModelInputPrice?: CustomModelPriceValue;
+  customModelOutputPrice?: CustomModelPriceValue;
+}): Prisma.Decimal | null {
+  const strategyPrice = resolveStrategyPrice(
+    args.customModelStrategy,
+    args.inputToken
+  );
+  const strategyCost = strategyPrice
+    ? calcPriceFromConfig({
+        ...args,
+        price: strategyPrice,
+      })
+    : null;
+
+  if (strategyCost) {
+    return strategyCost;
+  }
+
+  return calcPriceFromConfig({
+    ...args,
+    price: {
+      input: args.customModelInputPrice,
+      output: args.customModelOutputPrice,
+    },
+  });
 }
 
 const openaiRequestSchema = z
@@ -279,8 +431,17 @@ export function buildOpenAIHandler(
             get(usage, ['prompt_tokens_details', 'cached_tokens']) ?? 0;
           const cacheWriteInputToken = 0;
 
-          const customInputPrice = gatewayInfo?.customModelInputPrice;
-          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const customPrice = options.isCustomRoute
+            ? calcAIGatewayCustomModelPrice({
+                inputToken,
+                outputToken,
+                cacheReadInputToken,
+                cacheWriteInputToken,
+                customModelStrategy: gatewayInfo?.customModelStrategy,
+                customModelInputPrice: gatewayInfo?.customModelInputPrice,
+                customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
+              })
+            : null;
 
           const responseCost = get(usage, 'cost');
           const price =
@@ -294,14 +455,8 @@ export function buildOpenAIHandler(
                     inputToken,
                     outputToken
                   )
-                : options.isCustomRoute &&
-                    (customInputPrice || customOutputPrice)
-                  ? getLLMCostDecimalWithCustomPrice(
-                      inputToken,
-                      outputToken,
-                      customInputPrice,
-                      customOutputPrice
-                    )
+                : customPrice
+                  ? customPrice
                   : getLLMCostDecimalV2(
                       modelProvider,
                       modelPriceName,
@@ -377,8 +532,17 @@ export function buildOpenAIHandler(
             response.usage?.prompt_tokens_details?.cached_tokens ?? 0;
           const cacheWriteInputToken = 0;
 
-          const customInputPrice = gatewayInfo?.customModelInputPrice;
-          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const customPrice = options.isCustomRoute
+            ? calcAIGatewayCustomModelPrice({
+                inputToken,
+                outputToken,
+                cacheReadInputToken,
+                cacheWriteInputToken,
+                customModelStrategy: gatewayInfo?.customModelStrategy,
+                customModelInputPrice: gatewayInfo?.customModelInputPrice,
+                customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
+              })
+            : null;
 
           const responseCost = get(response, ['usage', 'cost']);
           const price =
@@ -392,14 +556,8 @@ export function buildOpenAIHandler(
                     inputToken,
                     outputToken
                   )
-                : options.isCustomRoute &&
-                    (customInputPrice || customOutputPrice)
-                  ? getLLMCostDecimalWithCustomPrice(
-                      inputToken,
-                      outputToken,
-                      customInputPrice,
-                      customOutputPrice
-                    )
+                : customPrice
+                  ? customPrice
                   : getLLMCostDecimalV2(
                       modelProvider,
                       modelPriceName,
@@ -588,24 +746,27 @@ export function buildOpenAIResponsesHandler(
             usage.outputToken || calcOpenAIToken(finalOutputContent, modelName),
           ]);
 
-          const customInputPrice = gatewayInfo?.customModelInputPrice;
-          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
-          const price =
-            options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? getLLMCostDecimalWithCustomPrice(
-                  inputToken,
-                  outputToken,
-                  customInputPrice,
-                  customOutputPrice
-                )
-              : getLLMCostDecimalV2(
-                  modelProvider,
-                  modelPriceName,
-                  inputToken,
-                  outputToken,
-                  usage.cacheReadInputToken,
-                  usage.cacheWriteInputToken
-                );
+          const customPrice = options.isCustomRoute
+            ? calcAIGatewayCustomModelPrice({
+                inputToken,
+                outputToken,
+                cacheReadInputToken: usage.cacheReadInputToken,
+                cacheWriteInputToken: usage.cacheWriteInputToken,
+                customModelStrategy: gatewayInfo?.customModelStrategy,
+                customModelInputPrice: gatewayInfo?.customModelInputPrice,
+                customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
+              })
+            : null;
+          const price = customPrice
+            ? customPrice
+            : getLLMCostDecimalV2(
+                modelProvider,
+                modelPriceName,
+                inputToken,
+                outputToken,
+                usage.cacheReadInputToken,
+                usage.cacheWriteInputToken
+              );
           const tpot = calcAIGatewayTpot({
             stream: true,
             status: AIGatewayLogsStatus.Success,
@@ -662,24 +823,27 @@ export function buildOpenAIResponsesHandler(
             usage.outputToken || calcOpenAIToken(outputContent, modelName),
           ]);
 
-          const customInputPrice = gatewayInfo?.customModelInputPrice;
-          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
-          const price =
-            options.isCustomRoute && (customInputPrice || customOutputPrice)
-              ? getLLMCostDecimalWithCustomPrice(
-                  inputToken,
-                  outputToken,
-                  customInputPrice,
-                  customOutputPrice
-                )
-              : getLLMCostDecimalV2(
-                  modelProvider,
-                  modelPriceName,
-                  inputToken,
-                  outputToken,
-                  usage.cacheReadInputToken,
-                  usage.cacheWriteInputToken
-                );
+          const customPrice = options.isCustomRoute
+            ? calcAIGatewayCustomModelPrice({
+                inputToken,
+                outputToken,
+                cacheReadInputToken: usage.cacheReadInputToken,
+                cacheWriteInputToken: usage.cacheWriteInputToken,
+                customModelStrategy: gatewayInfo?.customModelStrategy,
+                customModelInputPrice: gatewayInfo?.customModelInputPrice,
+                customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
+              })
+            : null;
+          const price = customPrice
+            ? customPrice
+            : getLLMCostDecimalV2(
+                modelProvider,
+                modelPriceName,
+                inputToken,
+                outputToken,
+                usage.cacheReadInputToken,
+                usage.cacheWriteInputToken
+              );
 
           await prisma.aIGatewayLogs.update({
             where: {
@@ -1091,19 +1255,23 @@ export function buildAnthropicHandler(
         const duration = Date.now() - start;
 
         logP.then(async ({ id: logId }) => {
-          const customInputPrice = gatewayInfo?.customModelInputPrice;
-          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const customPrice = options.isCustomRoute
+            ? calcAIGatewayCustomModelPrice({
+                inputToken: inputTokens,
+                outputToken: outputTokens,
+                cacheReadInputToken: cacheReadInputTokens,
+                cacheWriteInputToken: cacheWriteInputTokens,
+                customModelStrategy: gatewayInfo?.customModelStrategy,
+                customModelInputPrice: gatewayInfo?.customModelInputPrice,
+                customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
+              })
+            : null;
 
           const price =
             responseCost !== undefined
               ? new Prisma.Decimal(responseCost)
-              : options.isCustomRoute && (customInputPrice || customOutputPrice)
-                ? getLLMCostDecimalWithCustomPrice(
-                    inputTokens,
-                    outputTokens,
-                    customInputPrice,
-                    customOutputPrice
-                  )
+              : customPrice
+                ? customPrice
                 : getLLMCostDecimalV2(
                     modelProvider,
                     modelName,
@@ -1169,19 +1337,23 @@ export function buildAnthropicHandler(
             .map((b: any) => b.text)
             .join('');
 
-          const customInputPrice = gatewayInfo?.customModelInputPrice;
-          const customOutputPrice = gatewayInfo?.customModelOutputPrice;
+          const customPrice = options.isCustomRoute
+            ? calcAIGatewayCustomModelPrice({
+                inputToken: inputTokens,
+                outputToken: outputTokens,
+                cacheReadInputToken: cacheReadInputTokens,
+                cacheWriteInputToken: cacheWriteInputTokens,
+                customModelStrategy: gatewayInfo?.customModelStrategy,
+                customModelInputPrice: gatewayInfo?.customModelInputPrice,
+                customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
+              })
+            : null;
 
           const price =
             responseCost !== undefined
               ? new Prisma.Decimal(responseCost)
-              : options.isCustomRoute && (customInputPrice || customOutputPrice)
-                ? getLLMCostDecimalWithCustomPrice(
-                    inputTokens,
-                    outputTokens,
-                    customInputPrice,
-                    customOutputPrice
-                  )
+              : customPrice
+                ? customPrice
                 : getLLMCostDecimalV2(
                     modelProvider,
                     modelName,

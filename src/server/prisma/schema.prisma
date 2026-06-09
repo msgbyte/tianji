@@ -955,8 +955,11 @@ model AIGateway {
   modelApiKey            String? // optional, if set, user can use this api key to request model
   customModelBaseUrl     String? // optional, if set, user can use this base url to request model in custom model
   customModelName        String? // optional, if set, user can use this name to request model in custom model
-  customModelInputPrice  Decimal? // optional, if set, user can use this price to calc cost in custom model(unit: usd, pre 1m token)
-  customModelOutputPrice Decimal? // optional, if set, user can use this price to calc cost in custom model(unit: usd, pre 1m token)
+  /// [Nullable<PrismaJson.CommonPayload>]
+  /// @zod.custom(imports.CommonPayloadSchema.nullish())
+  customModelStrategy    Json?    @db.Json // optional strategy object for custom model behavior, including price rules
+  customModelInputPrice  Decimal? // optional, deprecated custom input price fallback(unit: usd, pre 1m token)
+  customModelOutputPrice Decimal? // optional, deprecated custom output price fallback(unit: usd, pre 1m token)
   createdAt              DateTime @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime @updatedAt @db.Timestamptz(6)
 

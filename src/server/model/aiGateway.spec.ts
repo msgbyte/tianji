@@ -1,6 +1,7 @@
 import { AIGatewayLogsStatus } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
 import {
+  calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
   getOpenAIResponsesCompletedResponse,
   getOpenAIResponsesOutputText,
@@ -9,6 +10,81 @@ import {
   openaiResponsesRequestSchema,
 } from './aiGateway.js';
 import { aiGatewayRouter } from '../router/aiGateway.js';
+
+describe('calcAIGatewayCustomModelPrice', () => {
+  test('uses strategy price before deprecated SQL price fields', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      customModelStrategy: {
+        price: {
+          input: 3,
+          output: 15,
+          cacheRead: 0.3,
+        },
+      },
+      customModelInputPrice: 100,
+      customModelOutputPrice: 100,
+    });
+
+    expect(price?.toNumber()).toBe(0.03315);
+  });
+
+  test('selects the matching strategy price tier by input token count', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 250000,
+      outputToken: 1000,
+      cacheReadInputToken: 1000,
+      customModelStrategy: {
+        price: [
+          {
+            inputTokenMax: 200000,
+            input: 3,
+            output: 15,
+            cacheRead: 0.3,
+          },
+          {
+            inputTokenMin: 200001,
+            input: 6,
+            output: 22.5,
+            cacheRead: 0.6,
+          },
+        ],
+      },
+      customModelInputPrice: 3,
+      customModelOutputPrice: 15,
+    });
+
+    expect(price?.toNumber()).toBe(1.5231);
+  });
+
+  test('falls back to deprecated SQL price fields when strategy price is missing', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      customModelStrategy: null,
+      customModelInputPrice: 3,
+      customModelOutputPrice: 15,
+    });
+
+    expect(price?.toNumber()).toBe(0.033);
+  });
+
+  test('returns null when neither strategy nor deprecated SQL price fields are configured', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      customModelStrategy: null,
+      customModelInputPrice: null,
+      customModelOutputPrice: null,
+    });
+
+    expect(price).toBeNull();
+  });
+});
 
 describe('calcAIGatewayTpot', () => {
   test('returns -1 for non-streaming requests', () => {

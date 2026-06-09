@@ -24,12 +24,20 @@ import {
 } from '@/components/ui/collapsible';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { LuChevronsUpDown, LuCode } from 'react-icons/lu';
+import { AIGatewayStrategyEditor } from './AIGatewayStrategyEditor';
+import { isValidAIGatewayStrategyText } from './AIGatewayStrategyEditor.utils';
 
 const addFormSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }).max(100),
   modelApiKey: z.string().nullish(),
   customModelBaseUrl: z.string().url().or(z.literal('')).nullish(),
   customModelName: z.string().nullish(),
+  customModelStrategy: z
+    .string()
+    .nullish()
+    .refine(isValidAIGatewayStrategyText, {
+      message: 'Strategy must be a valid JSON object',
+    }),
   customModelInputPrice: z.number().nullish(),
   customModelOutputPrice: z.number().nullish(),
 });
@@ -51,8 +59,9 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
         modelApiKey: '',
         customModelBaseUrl: '',
         customModelName: '',
-        customModelInputPrice: 0,
-        customModelOutputPrice: 0,
+        customModelStrategy: '',
+        customModelInputPrice: null,
+        customModelOutputPrice: null,
       },
     });
 
@@ -62,7 +71,6 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
         form.reset();
       }
     );
-
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -177,64 +185,108 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                   />
                   <FormField
                     control={form.control}
-                    name="customModelInputPrice"
+                    name="customModelStrategy"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel optional={true}>
-                          {t('Custom Model Input Price (USD per 1M tokens)')}
+                          {t('Custom Model Strategy')}
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.01"
-                            {...field}
-                            value={field.value ?? 0}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              field.onChange(Number(value));
-                            }}
+                          <AIGatewayStrategyEditor
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Custom pricing for input tokens cost calculation. Price per 1 million input tokens in USD.'
+                            'Strategy JSON for custom model behavior. If price is set here, it is used before deprecated SQL price fields.'
                           )}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="customModelOutputPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel optional={true}>
-                          {t('Custom Model Output Price (USD per 1M tokens)')}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.03"
-                            {...field}
-                            value={field.value ?? 0}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              field.onChange(Number(value));
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {t(
-                            'Custom pricing for output tokens cost calculation. Price per 1 million output tokens in USD.'
-                          )}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <Collapsible
+                    className="border-border bg-muted/10 rounded-md border border-dashed"
+                  >
+                    <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left">
+                      <span className="text-sm font-medium">
+                        {t('Deprecated Price Fallback')}
+                      </span>
+                      <LuChevronsUpDown className="text-muted-foreground h-4 w-4" />
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent className="border-border space-y-4 border-t p-3">
+                      <FormField
+                        control={form.control}
+                        name="customModelInputPrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel optional={true}>
+                              {t(
+                                'Deprecated Custom Model Input Price (USD per 1M tokens)'
+                              )}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.01"
+                                {...field}
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  field.onChange(
+                                    value === '' ? null : Number(value)
+                                  );
+                                }}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {t(
+                                'Deprecated fallback for input tokens cost calculation. Prefer Custom Model Strategy price.'
+                              )}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="customModelOutputPrice"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel optional={true}>
+                              {t(
+                                'Deprecated Custom Model Output Price (USD per 1M tokens)'
+                              )}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.03"
+                                {...field}
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  field.onChange(
+                                    value === '' ? null : Number(value)
+                                  );
+                                }}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {t(
+                                'Deprecated fallback for output tokens cost calculation. Prefer Custom Model Strategy price.'
+                              )}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
                 </CollapsibleContent>
               </Collapsible>
             </CardContent>

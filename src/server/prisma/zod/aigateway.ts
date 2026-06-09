@@ -3,6 +3,12 @@ import * as imports from "./schemas/index.js"
 import { Decimal } from "decimal.js"
 import { CompleteAIGatewayLogs, RelatedAIGatewayLogsModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
 
+// Helper schema for JSON fields
+type Literal = boolean | number | string
+type Json = Literal | { [key: string]: Json } | Json[]
+const literalSchema = z.union([z.string(), z.number(), z.boolean()])
+const jsonSchema: z.ZodSchema<Json> = z.lazy(() => z.union([literalSchema, z.array(jsonSchema), z.record(z.string(), jsonSchema)]))
+
 // Helper schema for Decimal fields
 z
   .instanceof(Decimal)
@@ -24,6 +30,10 @@ export const AIGatewayModelSchema = z.object({
   modelApiKey: z.string().nullish(),
   customModelBaseUrl: z.string().nullish(),
   customModelName: z.string().nullish(),
+  /**
+   * [Nullable<PrismaJson.CommonPayload>]
+   */
+  customModelStrategy: imports.CommonPayloadSchema.nullish(),
   customModelInputPrice: z.number().nullish(),
   customModelOutputPrice: z.number().nullish(),
   createdAt: z.date(),
