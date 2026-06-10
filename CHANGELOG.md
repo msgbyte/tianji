@@ -1,5 +1,20 @@
 
 
+## [1.31.29](https://github.com/msgbyte/tianji/compare/v1.31.28...v1.31.29) (2026-06-10)
+
+### Features
+
+* **ai-gateway:** add custom model strategy pricing editor ([ef1c5f1](https://github.com/msgbyte/tianji/commit/ef1c5f1454ddfb71f365cf0afe13283f9655e47e))
+
+### Bug Fixes
+
+* **security:** harden templates and insight sql ([132ff67](https://github.com/msgbyte/tianji/commit/132ff67907df897d222829ea8ad1a018ff74df48))
+
+### Others
+
+* update model price list ([abf21c3](https://github.com/msgbyte/tianji/commit/abf21c326654d33f56605a1dc67121e7e7e06f60))
+* update translation ([b7a6efd](https://github.com/msgbyte/tianji/commit/b7a6efd08ebfaa95a0be2d369cee902d496a07c4))
+
 ## [1.31.28](https://github.com/msgbyte/tianji/compare/v1.31.27...v1.31.28) (2026-06-02)
 
 ### Features
