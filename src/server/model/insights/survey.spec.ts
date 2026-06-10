@@ -40,6 +40,80 @@ describe('SurveyInsightsSqlBuilder', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
+  test('escapes metric aliases as SQL identifiers', () => {
+    const builder = new SurveyInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+            alias: 'safe", (SELECT current_database()) as injected --',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = unwrapSQL(builder.build());
+    expect(sql).toContain(
+      'as "safe"", (SELECT current_database()) as injected --"'
+    );
+    expect(sql).not.toContain(
+      'as "safe", (SELECT current_database()) as injected --"'
+    );
+  });
+
+  test('escapes group aliases as SQL identifiers', () => {
+    const builder = new SurveyInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [
+          {
+            value: 'payloadKey", (SELECT current_database()) as injected --',
+            type: 'string',
+          },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = unwrapSQL(builder.build());
+    expect(sql).toContain(
+      'as "%payloadKey"", (SELECT current_database()) as injected --"'
+    );
+    expect(sql).not.toContain(
+      'as "%payloadKey", (SELECT current_database()) as injected --"'
+    );
+  });
+
   test('groups with custom bucket', () => {
     const builder = new SurveyInsightsSqlBuilder(
       {

@@ -35,6 +35,76 @@ describe('AIGatewayInsightsSqlBuilder', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('basic query count');
   });
 
+  test('escapes metric aliases as SQL identifiers', () => {
+    const builder = new AIGatewayInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+            alias: 'safe", (SELECT current_database()) as injected --',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1744273003917,
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = unwrapSQL(builder.build());
+    expect(sql).toContain(
+      'as "safe"", (SELECT current_database()) as injected --"'
+    );
+    expect(sql).not.toContain(
+      'as "safe", (SELECT current_database()) as injected --"'
+    );
+  });
+
+  test('does not use unknown group values as raw SQL columns', () => {
+    const builder = new AIGatewayInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1744273003917,
+          unit: 'day',
+        },
+        groups: [
+          {
+            value: 'modelName", (SELECT current_database()) as injected --',
+            type: 'string',
+          },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = unwrapSQL(builder.build());
+    expect(sql).not.toContain('current_database');
+    expect(sql).not.toContain('injected');
+  });
+
   test('basic query inputToken', () => {
     const builder = new AIGatewayInsightsSqlBuilder(
       {

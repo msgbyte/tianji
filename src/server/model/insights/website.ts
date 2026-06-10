@@ -9,6 +9,7 @@ import { processGroupedTimeSeriesData } from './utils.js';
 import { clickhouse } from '../../clickhouse/index.js';
 import { logger } from '../../utils/logger.js';
 import { clickhouseHealthManager } from '../../clickhouse/health.js';
+import { quoteSqlIdentifier } from '../../utils/sql.js';
 
 const { sql, raw } = Prisma;
 
@@ -24,24 +25,24 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       const alias = item.alias ?? item.name;
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as ${raw(`"${alias}"`)}`;
+          return sql`count(1) as ${quoteSqlIdentifier(alias)}`;
         }
 
         if (item.name === '$page_view') {
-          return sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
+          return sql`sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN 1 ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
+        return sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return sql`count(distinct "sessionId") as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct "sessionId") as ${quoteSqlIdentifier(alias)}`;
         }
 
         if (item.name === '$page_view') {
-          return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${raw(`"${alias}"`)}`;
+        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${quoteSqlIdentifier(alias)}`;
       }
 
       return null;
@@ -55,7 +56,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       for (const g of groups) {
         if (!g.customGroups) {
           groupSelectQueryArr.push(
-            sql`${this.getValueField(g.type)} as "%${raw(g.value)}"`
+            sql`${this.getValueField(g.type)} as ${quoteSqlIdentifier(`%${g.value}`)}`
           );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
@@ -64,7 +65,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
                 g.type,
                 cg.filterOperator,
                 cg.filterValue
-              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+              )} as ${quoteSqlIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
         }

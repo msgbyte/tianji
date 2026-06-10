@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { InsightsSqlBuilder } from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
+import { quoteSqlIdentifier, quoteSqlIdentifierPath } from '../../utils/sql.js';
 
 const { sql, raw } = Prisma;
 
@@ -18,6 +19,35 @@ const AIGATEWAY_NUMERIC_METRIC_FIELDS = [
   'tpot',
 ];
 
+const AIGATEWAY_STANDARD_FIELDS = [
+  'gatewayId',
+  'modelName',
+  'modelProvider',
+  'status',
+  'stream',
+  'inputToken',
+  'outputToken',
+  'cacheReadInputToken',
+  'cacheWriteInputToken',
+  'duration',
+  'ttft',
+  'tpot',
+  'price',
+  'userId',
+];
+
+function getAIGatewayFieldSql(name: string): Prisma.Sql | null {
+  if (!AIGATEWAY_STANDARD_FIELDS.includes(name)) {
+    return null;
+  }
+
+  if (name === 'status') {
+    return sql`${quoteSqlIdentifierPath('AIGatewayLogs', 'status')}::text`;
+  }
+
+  return quoteSqlIdentifierPath('AIGatewayLogs', name);
+}
+
 export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
   getTableName() {
     return 'AIGatewayLogs';
@@ -30,17 +60,18 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
 
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as "$all_event"`;
+          return sql`count(1) as ${quoteSqlIdentifier(alias)}`;
         }
 
         // For standard fields, directly count
         if (AIGATEWAY_NUMERIC_METRIC_FIELDS.includes(item.name)) {
-          return sql`sum("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
+          const valueField = quoteSqlIdentifierPath('AIGatewayLogs', item.name);
+          return sql`sum(${valueField}) as ${quoteSqlIdentifier(alias)}`;
         }
       } else if (item.math === 'sessions') {
         // AIGatewayLogs has no concept of sessions, but can be grouped by gatewayId
         if (item.name === '$all_event') {
-          return sql`count(distinct "gatewayId") as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct "gatewayId") as ${quoteSqlIdentifier(alias)}`;
         }
       } else if (item.math === 'avg') {
         if (!AIGATEWAY_NUMERIC_METRIC_FIELDS.includes(item.name)) {
@@ -48,23 +79,24 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
         }
 
         if (item.name === 'tpot') {
-          return sql`AVG("AIGatewayLogs"."tpot") FILTER (WHERE "AIGatewayLogs"."tpot" > -1) as ${raw(`"${alias}"`)}`;
+          return sql`AVG("AIGatewayLogs"."tpot") FILTER (WHERE "AIGatewayLogs"."tpot" > -1) as ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`AVG("AIGatewayLogs"."${raw(item.name)}") as ${raw(`"${alias}"`)}`;
+        const valueField = quoteSqlIdentifierPath('AIGatewayLogs', item.name);
+        return sql`AVG(${valueField}) as ${quoteSqlIdentifier(alias)}`;
       } else if (item.math.startsWith('p')) {
         if (!AIGATEWAY_NUMERIC_METRIC_FIELDS.includes(item.name)) {
           return null;
         }
 
         const percentile = Number(item.math.replace('p', '')) / 100;
-        const valueField = sql`"AIGatewayLogs"."${raw(item.name)}"`;
+        const valueField = quoteSqlIdentifierPath('AIGatewayLogs', item.name);
 
         if (item.name === 'tpot') {
-          return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${valueField}) FILTER (WHERE "AIGatewayLogs"."tpot" > -1) AS ${raw(`"${alias}"`)}`;
+          return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${valueField}) FILTER (WHERE "AIGatewayLogs"."tpot" > -1) AS ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${valueField}) AS ${raw(`"${alias}"`)}`;
+        return sql`PERCENTILE_CONT(${raw(`${percentile}`)}) WITHIN GROUP (ORDER BY ${valueField}) AS ${quoteSqlIdentifier(alias)}`;
       }
 
       return null;
@@ -79,16 +111,14 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
       for (const g of groups) {
         if (!g.customGroups) {
           // Handle different field types for grouping
-          let groupField: Prisma.Sql;
-          if (g.value === 'status') {
-            // Cast enum to text for grouping
-            groupField = sql`"AIGatewayLogs"."status"::text`;
-          } else {
-            // String fields (modelName, gatewayId, etc.)
-            groupField = sql`"AIGatewayLogs"."${raw(g.value)}"`;
+          const groupField = getAIGatewayFieldSql(g.value);
+          if (!groupField) {
+            continue;
           }
 
-          groupSelectQueryArr.push(sql`${groupField} as "%${raw(g.value)}"`);
+          groupSelectQueryArr.push(
+            sql`${groupField} as ${quoteSqlIdentifier(`%${g.value}`)}`
+          );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
             groupSelectQueryArr.push(
@@ -97,7 +127,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
                 g.type,
                 cg.filterOperator,
                 cg.filterValue
-              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+              )} as ${quoteSqlIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
         }
@@ -136,33 +166,9 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
     value: FilterInfoValue | null
   ): Prisma.Sql {
     // Process standard fields
-    if (
-      [
-        'gatewayId',
-        'modelName',
-        'modelProvider',
-        'status',
-        'stream',
-        'inputToken',
-        'outputToken',
-        'cacheReadInputToken',
-        'cacheWriteInputToken',
-        'duration',
-        'ttft',
-        'tpot',
-        'price',
-        'userId',
-      ].includes(name)
-    ) {
+    if (AIGATEWAY_STANDARD_FIELDS.includes(name)) {
       // Special handling for enum fields that need type casting
-      let valueField: Prisma.Sql;
-      if (name === 'status') {
-        // Cast enum to text for comparison
-        valueField = sql`"AIGatewayLogs"."status"::text`;
-      } else {
-        // String fields
-        valueField = sql`"AIGatewayLogs"."${raw(name)}"`;
-      }
+      const valueField = getAIGatewayFieldSql(name)!;
 
       return this.buildCommonFilterQueryOperator(
         type,
@@ -174,7 +180,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
     // Process JSON fields
     else if (name.startsWith('request.')) {
       const field = name.replace('request.', '');
-      const valueField = sql`("AIGatewayLogs"."requestPayload"->> '${field}')${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
+      const valueField = sql`("AIGatewayLogs"."requestPayload"->> ${field})${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
       return this.buildCommonFilterQueryOperator(
         type,
         operator,
@@ -183,7 +189,7 @@ export class AIGatewayInsightsSqlBuilder extends InsightsSqlBuilder {
       );
     } else if (name.startsWith('response.')) {
       const field = name.replace('response.', '');
-      const valueField = sql`("AIGatewayLogs"."responsePayload"->> '${field}')${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
+      const valueField = sql`("AIGatewayLogs"."responsePayload"->> ${field})${type === 'number' ? raw('::int') : type === 'boolean' ? raw('::boolean') : Prisma.empty}`;
       return this.buildCommonFilterQueryOperator(
         type,
         operator,

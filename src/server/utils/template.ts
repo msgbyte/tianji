@@ -1,7 +1,5 @@
-import { template, templateSettings } from 'lodash-es';
-
-const templateRegex = /{{([\s\S]+?)}}/g;
-templateSettings.interpolate = templateRegex;
+const templateRegex = /{{\s*([A-Za-z_][A-Za-z0-9_]*)\s*}}/g;
+const templateDetectorRegex = /{{\s*[A-Za-z_][A-Za-z0-9_]*\s*}}/;
 
 /**
  * @example
@@ -9,10 +7,13 @@ templateSettings.interpolate = templateRegex;
  * buildTemplate('hello {{ user }}!', { user: 'mustache' })
  * => 'hello mustache!'
  */
-export function formatString(raw: string, variable: Record<string, string>) {
-  return template(raw)(variable);
+export function formatString(raw: string, variable: Record<string, unknown>) {
+  return raw.replace(templateRegex, (_, key: string) => {
+    const value = variable[key];
+    return value === null || value === undefined ? '' : String(value);
+  });
 }
 
 export function hasTemplateRegex(raw: string) {
-  return templateRegex.test(raw);
+  return templateDetectorRegex.test(raw);
 }

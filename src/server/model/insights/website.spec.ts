@@ -40,6 +40,80 @@ describe('WebsiteInsightsSqlBuilder', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
+  test('escapes metric aliases as SQL identifiers', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+            alias: 'safe", (SELECT current_database()) as injected --',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = unwrapSQL(builder.build());
+    expect(sql).toContain(
+      'as "safe"", (SELECT current_database()) as injected --"'
+    );
+    expect(sql).not.toContain(
+      'as "safe", (SELECT current_database()) as injected --"'
+    );
+  });
+
+  test('escapes group aliases as SQL identifiers', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [
+          {
+            value: 'depth", (SELECT current_database()) as injected --',
+            type: 'number',
+          },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = unwrapSQL(builder.build());
+    expect(sql).toContain(
+      'as "%depth"", (SELECT current_database()) as injected --"'
+    );
+    expect(sql).not.toContain(
+      'as "%depth", (SELECT current_database()) as injected --"'
+    );
+  });
+
   test('groups with custom bucket', () => {
     const builder = new WebsiteInsightsSqlBuilder(
       {

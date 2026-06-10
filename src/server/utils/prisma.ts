@@ -5,6 +5,7 @@ import { maxDate } from './common.js';
 import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
 import { loadTelemetry } from '../model/telemetry.js';
 import { get } from 'lodash-es';
+import { assertQuotedSqlIdentifierPath } from './sql.js';
 
 export const POSTGRESQL_DATE_FORMATS = {
   minute: 'YYYY-MM-DD HH24:MI:00',
@@ -216,14 +217,17 @@ export function getDateQuery(
   unit: keyof typeof POSTGRESQL_DATE_FORMATS,
   timezone?: string
 ) {
-  if (timezone) {
-    return Prisma.sql([
-      `to_char(date_trunc('${unit}', ${field} at time zone '${timezone}'), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
-    ]);
+  if (!(unit in POSTGRESQL_DATE_FORMATS)) {
+    throw new Error(`Invalid date unit: ${unit}`);
   }
-  return Prisma.sql([
-    `to_char(date_trunc('${unit}', ${field}), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
-  ]);
+
+  const safeField = Prisma.raw(assertQuotedSqlIdentifierPath(field));
+  const format = POSTGRESQL_DATE_FORMATS[unit];
+
+  if (timezone) {
+    return Prisma.sql`to_char(date_trunc(${unit}, ${safeField} at time zone ${timezone}), ${format})`;
+  }
+  return Prisma.sql`to_char(date_trunc(${unit}, ${safeField}), ${format})`;
 }
 
 export function getTimestampIntervalQuery(field: string) {

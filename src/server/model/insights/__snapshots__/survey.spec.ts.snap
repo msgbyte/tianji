@@ -22,7 +22,7 @@ exports[`SurveyInsightsSqlBuilder > date type filters > sql with date filters 1`
 
 exports[`SurveyInsightsSqlBuilder > different metrics > sql with different metrics 1`] = `
 "select
-        to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , sum(case WHEN "SurveyResult"."payload"->>''rating'' IS NOT NULL AND "SurveyResult"."payload"->>''rating'' <> '' THEN 1 ELSE 0 END) as "rating" , sum(case WHEN "SurveyResult"."payload"->>''comment'' IS NOT NULL AND "SurveyResult"."payload"->>''comment'' <> '' THEN 1 ELSE 0 END) as "comment" , count(distinct "sessionId") as "$all_event"
+        to_char(date_trunc('day', "SurveyResult"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , sum(case WHEN "SurveyResult"."payload"->>'rating' IS NOT NULL AND "SurveyResult"."payload"->>'rating' <> '' THEN 1 ELSE 0 END) as "rating" , sum(case WHEN "SurveyResult"."payload"->>'comment' IS NOT NULL AND "SurveyResult"."payload"->>'comment' <> '' THEN 1 ELSE 0 END) as "comment" , count(distinct "sessionId") as "$all_event"
       from "SurveyResult" 
       where "SurveyResult"."surveyId" = 'cm658i2tqw96upkejldn8rpbs' AND "SurveyResult"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz
       group by 1
