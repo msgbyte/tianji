@@ -3,6 +3,8 @@ import { describe, expect, test } from 'vitest';
 import {
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
+  getAIGatewayUsage,
+  mergeAIGatewayStreamUsage,
   getOpenAIResponsesCompletedResponse,
   getOpenAIResponsesOutputText,
   getOpenAIResponsesStreamDelta,
@@ -29,6 +31,27 @@ describe('calcAIGatewayCustomModelPrice', () => {
     });
 
     expect(price?.toNumber()).toBe(0.03315);
+  });
+
+  test('includes cache write tokens from strategy price', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      cacheWriteInputToken: 300,
+      customModelStrategy: {
+        price: {
+          input: 3,
+          output: 15,
+          cacheRead: 0.3,
+          cacheWrite: 3.75,
+        },
+      },
+      customModelInputPrice: 100,
+      customModelOutputPrice: 100,
+    });
+
+    expect(price?.toNumber()).toBe(0.034275);
   });
 
   test('selects the matching strategy price tier by input token count', () => {
@@ -83,6 +106,88 @@ describe('calcAIGatewayCustomModelPrice', () => {
     });
 
     expect(price).toBeNull();
+  });
+});
+
+describe('getAIGatewayUsage', () => {
+  test('maps Anthropic cache creation tokens to cache write tokens', () => {
+    expect(
+      getAIGatewayUsage({
+        input_tokens: 12,
+        output_tokens: 5,
+        cache_read_input_tokens: 7,
+        cache_creation_input_tokens: 3,
+      })
+    ).toEqual({
+      inputToken: 12,
+      outputToken: 5,
+      cacheReadInputToken: 7,
+      cacheWriteInputToken: 3,
+    });
+  });
+
+  test('maps OpenAI-compatible cache write aliases', () => {
+    expect(
+      getAIGatewayUsage({
+        prompt_tokens: 20,
+        completion_tokens: 9,
+        prompt_tokens_details: {
+          cached_tokens: 4,
+          cache_creation_tokens: 6,
+        },
+      })
+    ).toEqual({
+      inputToken: 20,
+      outputToken: 9,
+      cacheReadInputToken: 4,
+      cacheWriteInputToken: 6,
+    });
+  });
+
+  test('maps direct cache write aliases', () => {
+    expect(
+      getAIGatewayUsage({
+        input_tokens: 20,
+        output_tokens: 9,
+        cache_read_input_tokens: 4,
+        cache_write_input_tokens: 6,
+      })
+    ).toEqual({
+      inputToken: 20,
+      outputToken: 9,
+      cacheReadInputToken: 4,
+      cacheWriteInputToken: 6,
+    });
+  });
+});
+
+describe('mergeAIGatewayStreamUsage', () => {
+  test('keeps Anthropic message_start cache usage when message_delta only reports output tokens', () => {
+    const initialUsage = mergeAIGatewayStreamUsage(
+      {
+        inputToken: 0,
+        outputToken: 0,
+        cacheReadInputToken: 0,
+        cacheWriteInputToken: 0,
+      },
+      {
+        input_tokens: 8,
+        output_tokens: 1,
+        cache_read_input_tokens: 1800,
+        cache_creation_input_tokens: 248,
+      }
+    );
+
+    expect(
+      mergeAIGatewayStreamUsage(initialUsage, {
+        output_tokens: 503,
+      })
+    ).toEqual({
+      inputToken: 8,
+      outputToken: 503,
+      cacheReadInputToken: 1800,
+      cacheWriteInputToken: 248,
+    });
   });
 });
 
@@ -210,6 +315,7 @@ describe('getOpenAIResponsesUsage', () => {
           total_tokens: 17,
           input_tokens_details: {
             cached_tokens: 7,
+            cache_creation_tokens: 4,
           },
         },
       })
@@ -217,7 +323,7 @@ describe('getOpenAIResponsesUsage', () => {
       inputToken: 12,
       outputToken: 5,
       cacheReadInputToken: 7,
-      cacheWriteInputToken: 0,
+      cacheWriteInputToken: 4,
     });
   });
 

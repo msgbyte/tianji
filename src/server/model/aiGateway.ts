@@ -225,17 +225,65 @@ export const openaiResponsesRequestSchema = z
   })
   .passthrough();
 
-export function getOpenAIResponsesUsage(response: any) {
-  const usage = response?.usage ?? {};
+function readUsageNumber(...values: unknown[]): number {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') {
+      continue;
+    }
+
+    const num = Number(value);
+    if (Number.isFinite(num)) {
+      return num;
+    }
+  }
+
+  return 0;
+}
+
+export function getAIGatewayUsage(usage: any) {
   return {
-    inputToken: usage.input_tokens ?? 0,
-    outputToken: usage.output_tokens ?? 0,
-    cacheReadInputToken:
-      usage.input_tokens_details?.cached_tokens ??
-      usage.input_token_details?.cached_tokens ??
-      0,
-    cacheWriteInputToken: 0,
+    inputToken: readUsageNumber(usage?.input_tokens, usage?.prompt_tokens),
+    outputToken: readUsageNumber(
+      usage?.output_tokens,
+      usage?.completion_tokens
+    ),
+    cacheReadInputToken: readUsageNumber(
+      usage?.cache_read_input_tokens,
+      usage?.input_tokens_details?.cached_tokens,
+      usage?.input_token_details?.cached_tokens,
+      usage?.prompt_tokens_details?.cached_tokens
+    ),
+    cacheWriteInputToken: readUsageNumber(
+      usage?.cache_creation_input_tokens,
+      usage?.cache_write_input_tokens,
+      usage?.input_tokens_details?.cache_creation_tokens,
+      usage?.input_tokens_details?.cache_write_tokens,
+      usage?.input_token_details?.cache_creation_tokens,
+      usage?.input_token_details?.cache_write_tokens,
+      usage?.prompt_tokens_details?.cache_creation_tokens,
+      usage?.prompt_tokens_details?.cache_write_tokens
+    ),
   };
+}
+
+export function mergeAIGatewayStreamUsage(
+  currentUsage: ReturnType<typeof getAIGatewayUsage>,
+  usage: any
+) {
+  const nextUsage = getAIGatewayUsage(usage);
+
+  return {
+    inputToken: nextUsage.inputToken || currentUsage.inputToken,
+    outputToken: nextUsage.outputToken || currentUsage.outputToken,
+    cacheReadInputToken:
+      nextUsage.cacheReadInputToken || currentUsage.cacheReadInputToken,
+    cacheWriteInputToken:
+      nextUsage.cacheWriteInputToken || currentUsage.cacheWriteInputToken,
+  };
+}
+
+export function getOpenAIResponsesUsage(response: any) {
+  return getAIGatewayUsage(response?.usage);
 }
 
 export function getOpenAIResponsesOutputText(response: any): string {
@@ -421,15 +469,16 @@ export function buildOpenAIHandler(
         const duration = Date.now() - start;
 
         logP.then(async ({ id: logId }) => {
+          const normalizedUsage = getAIGatewayUsage(usage);
           const [inputToken, outputToken] = await Promise.all([
-            usage.prompt_tokens ?? calcMessagesToken(messages, modelName),
-            usage.completion_tokens ??
+            normalizedUsage.inputToken ||
+              calcMessagesToken(messages, modelName),
+            normalizedUsage.outputToken ||
               calcOpenAIToken(outputContent, modelName),
           ]);
 
-          const cacheReadInputToken =
-            get(usage, ['prompt_tokens_details', 'cached_tokens']) ?? 0;
-          const cacheWriteInputToken = 0;
+          const cacheReadInputToken = normalizedUsage.cacheReadInputToken;
+          const cacheWriteInputToken = normalizedUsage.cacheWriteInputToken;
 
           const customPrice = options.isCustomRoute
             ? calcAIGatewayCustomModelPrice({
@@ -518,19 +567,19 @@ export function buildOpenAIHandler(
 
         logP.then(async ({ id: logId }) => {
           const content = get(response, ['choices', 0, 'message', 'content']);
+          const normalizedUsage = getAIGatewayUsage(response.usage);
 
           const [inputToken, outputToken] = await Promise.all([
-            response.usage?.prompt_tokens ??
+            normalizedUsage.inputToken ||
               calcMessagesToken(messages, modelName),
-            response.usage?.completion_tokens ??
+            normalizedUsage.outputToken ||
               (typeof content === 'string'
                 ? calcOpenAIToken(content, modelName)
                 : Promise.resolve(0)),
           ]);
 
-          const cacheReadInputToken =
-            response.usage?.prompt_tokens_details?.cached_tokens ?? 0;
-          const cacheWriteInputToken = 0;
+          const cacheReadInputToken = normalizedUsage.cacheReadInputToken;
+          const cacheWriteInputToken = normalizedUsage.cacheWriteInputToken;
 
           const customPrice = options.isCustomRoute
             ? calcAIGatewayCustomModelPrice({
@@ -1186,6 +1235,7 @@ export function buildAnthropicHandler(
         let responseModelName = modelName;
         let responseCost: number | undefined;
         let usage: Record<string, any> | undefined;
+        let streamUsage = getAIGatewayUsage(undefined);
 
         const body = upstreamResponse.body;
         if (!body) {
@@ -1222,6 +1272,19 @@ export function buildAnthropicHandler(
                   const data = JSON.parse(line.slice(6));
                   if (currentEventType === 'message_start' && data.message) {
                     responseModelName = data.message.model || responseModelName;
+                    usage = {
+                      ...(usage ?? {}),
+                      ...(data.message.usage ?? {}),
+                    };
+                    streamUsage = mergeAIGatewayStreamUsage(
+                      streamUsage,
+                      data.message.usage
+                    );
+                    inputTokens = streamUsage.inputToken;
+                    outputTokens = streamUsage.outputToken;
+                    cacheReadInputTokens = streamUsage.cacheReadInputToken;
+                    cacheWriteInputTokens = streamUsage.cacheWriteInputToken;
+                    responseCost = data.message.usage?.cost ?? responseCost;
                   } else if (currentEventType === 'content_block_delta') {
                     if (ttft === -1) {
                       ttft = Date.now() - start;
@@ -1230,15 +1293,19 @@ export function buildAnthropicHandler(
                       outputContent += data.delta.text || '';
                     }
                   } else if (currentEventType === 'message_delta') {
-                    usage = data.usage;
-                    inputTokens = usage?.input_tokens || inputTokens;
-                    outputTokens = usage?.output_tokens || outputTokens;
-                    cacheReadInputTokens =
-                      usage?.cache_read_input_tokens || cacheReadInputTokens;
-                    cacheWriteInputTokens =
-                      usage?.cache_creation_input_tokens ||
-                      cacheWriteInputTokens;
-                    responseCost = usage?.cost;
+                    usage = {
+                      ...(usage ?? {}),
+                      ...(data.usage ?? {}),
+                    };
+                    streamUsage = mergeAIGatewayStreamUsage(
+                      streamUsage,
+                      data.usage
+                    );
+                    inputTokens = streamUsage.inputToken;
+                    outputTokens = streamUsage.outputToken;
+                    cacheReadInputTokens = streamUsage.cacheReadInputToken;
+                    cacheWriteInputTokens = streamUsage.cacheWriteInputToken;
+                    responseCost = data.usage?.cost ?? responseCost;
                   }
                 } catch {
                   // Skip non-JSON data lines
@@ -1325,10 +1392,11 @@ export function buildAnthropicHandler(
         logP.then(async ({ id: logId }) => {
           const responseModelName = responseBody.model || modelName;
           const usage = responseBody.usage;
-          const inputTokens = usage?.input_tokens || 0;
-          const outputTokens = usage?.output_tokens || 0;
-          const cacheReadInputTokens = usage?.cache_read_input_tokens || 0;
-          const cacheWriteInputTokens = usage?.cache_creation_input_tokens || 0;
+          const normalizedUsage = getAIGatewayUsage(usage);
+          const inputTokens = normalizedUsage.inputToken;
+          const outputTokens = normalizedUsage.outputToken;
+          const cacheReadInputTokens = normalizedUsage.cacheReadInputToken;
+          const cacheWriteInputTokens = normalizedUsage.cacheWriteInputToken;
           const responseCost = usage?.cost;
 
           const contentBlocks = responseBody.content || [];

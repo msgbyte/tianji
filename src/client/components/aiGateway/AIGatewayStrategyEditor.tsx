@@ -102,6 +102,7 @@ export function AIGatewayStrategyEditor({
         input: null,
         output: null,
         cacheRead: null,
+        cacheWrite: null,
       },
     ]);
   };
@@ -170,7 +171,7 @@ export function AIGatewayStrategyEditor({
                 </AlertDescription>
               </Alert>
             ) : (
-              <Table className="min-w-[720px]">
+              <Table className="min-w-[840px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="min-w-32">
@@ -188,6 +189,9 @@ export function AIGatewayStrategyEditor({
                     <TableHead className="min-w-32">
                       {t('Cache Read / 1M')}
                     </TableHead>
+                    <TableHead className="min-w-32">
+                      {t('Cache Write / 1M')}
+                    </TableHead>
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -195,7 +199,7 @@ export function AIGatewayStrategyEditor({
                   {rows.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="text-muted-foreground h-16 text-center text-xs"
                       >
                         {t('No pricing rules configured.')}
@@ -281,6 +285,21 @@ export function AIGatewayStrategyEditor({
                           />
                         </TableCell>
                         <TableCell>
+                          <Input
+                            className="w-full min-w-24"
+                            type="number"
+                            step="0.01"
+                            value={row.cacheWrite ?? ''}
+                            onChange={(event) =>
+                              updateRow(
+                                index,
+                                'cacheWrite',
+                                parseInputNumber(event.target.value)
+                              )
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
                           <Button
                             type="button"
                             size="icon-sm"
@@ -343,7 +362,8 @@ export function AIGatewayStrategyEditor({
       "inputTokenMax": 200000,
       "input": 3,
       "output": 15,
-      "cacheRead": 0.3
+      "cacheRead": 0.3,
+      "cacheWrite": 3.75
     }
   ]
 }`}
