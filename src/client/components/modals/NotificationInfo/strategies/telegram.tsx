@@ -54,6 +54,15 @@ export const NotificationTelegram: React.FC = React.memo(() => {
             <Input />
           </Form.Item>
 
+          <Form.Item
+            className="flex-1"
+            name={['payload', 'messageId']}
+            noStyle={true}
+            rules={[{ required: false }]}
+          >
+            <Input />
+          </Form.Item>
+
           {token && (
             <AutoLoadingButton onClick={handleAutoGet}>
               {t('Auto Fetch')}
