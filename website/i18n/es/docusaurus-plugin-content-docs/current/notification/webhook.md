@@ -1,6 +1,6 @@
 ---
 sidebar_position: 5
-_i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
+_i18n_hash: 3656796ebf02a33e45fbef1ecb18923e
 ---
 # Webhook
 
@@ -8,7 +8,7 @@ Si necesitas un método de notificación más flexible, puedes intentar usar web
 
 ### Ejemplo de Resultado
 
-El sistema Tianji enviará una solicitud POST con el contenido del ejemplo a continuación.
+El sistema Tianji enviará una solicitud POST con el contenido del siguiente ejemplo.
 
 ```json
 {
@@ -21,16 +21,16 @@ El sistema Tianji enviará una solicitud POST con el contenido del ejemplo a con
         }
     },
     "title": "Prueba de Notificación Nueva Notificación",
-    "content": "Tianji: Perspectiva de todo\\nEsta es una Prueba de Notificación de Nueva Notificación\\n[imagen]",
+    "content": "Tianji: Perspectiva sobre todo\\nEsta es la Prueba de Notificación de Nueva Notificación\\n[imagen]",
     "raw": [
         {
             "type": "title",
             "level": 2,
-            "content": "Tianji: Perspectiva de todo"
+            "content": "Tianji: Perspectiva sobre todo"
         },
         {
             "type": "text",
-            "content": "Esta es una Prueba de Notificación de Nueva Notificación"
+            "content": "Esta es la Prueba de Notificación de Nueva Notificación"
         },
         {
             "type": "newline"

@@ -439,6 +439,31 @@ export async function clearAIGatewayLogsDaily() {
   );
 }
 
+export async function clearAIRouterLogsDaily() {
+  const days = env.aiGatewayLogClearDays;
+  if (days <= 0) {
+    return;
+  }
+
+  const date = dayjs().subtract(days, 'days').toDate();
+  logger.info(
+    '[clearAIRouterLogsDaily] Start clear AI Router logs before:',
+    date.toISOString()
+  );
+  const res = await prisma.aIRouterLogs.deleteMany({
+    where: {
+      createdAt: {
+        lte: date,
+      },
+    },
+  });
+
+  logger.info(
+    '[clearAIRouterLogsDaily] Clear completed, delete record:',
+    res.count
+  );
+}
+
 export async function clearAIGatewayPayloadDaily() {
   const days = env.aiGatewayPayloadClearDays;
   if (days <= 0) {

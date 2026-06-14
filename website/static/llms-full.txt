@@ -5,6 +5,407 @@ It preserves Markdown headings, links, and code fences; frontmatter and MDX ESM 
 
 ================================================================================
 
+===== FILE: docs/ai-router/intro.md =====
+
+# AI Router
+
+AI Router gives one stable AI endpoint for a group of AI Gateways. It routes each request through configured gateway routes, spreads traffic by weight inside the same tier, and falls back to the next tier when retryable failures happen.
+
+Use it when you want:
+
+- One endpoint for your application instead of hard-coding one AI provider.
+- Weighted traffic split across multiple gateways.
+- Fallback from a primary provider to backup providers during outages or rate limits.
+- A migration path where you can move traffic gradually by changing weights.
+
+## How it relates to AI Gateway
+
+AI Gateway is still the unit that stores provider credentials, custom base URLs, model pricing, quota alerts, and gateway logs. AI Router does not replace that.
+
+AI Router only decides which gateway route should receive the request.
+
+The runtime flow is:
+
+1. Your application calls an AI Router endpoint.
+2. AI Router finds the router by workspace ID and router ID.
+3. AI Router chooses an eligible gateway route from the first tier.
+4. The selected AI Gateway sends the request to the upstream AI provider.
+5. If the attempt succeeds, AI Router returns that response.
+6. If the attempt fails with a retryable error, AI Router tries another route in the same tier, then the next tier.
+
+## Prerequisites
+
+Before adding routes, create at least one AI Gateway with a stored model API key. Gateways without a stored key are not shown in the AI Router route picker.
+
+Runtime requests still need a Tianji API key:
+
+- For OpenAI-compatible endpoints, send `Authorization: Bearer <YOUR_TIANJI_API_KEY>`.
+- For Anthropic Messages endpoints, send `x-api-key: <YOUR_TIANJI_API_KEY>`.
+
+Tianji verifies the caller API key, then uses the stored AI Gateway provider key for the upstream request.
+
+## Create a router
+
+1. Open **AI Router** in the Tianji sidebar.
+2. Click **Add AI Router**.
+3. Enter a router name.
+4. Keep **Enabled** on if the router should accept runtime traffic.
+5. Save the router.
+
+After the router is created, open the **Routes** tab to configure tiers and gateway routes.
+
+## Tiers
+
+A tier is a fallback level.
+
+Requests always start at the first tier. If a retryable failure happens, AI Router keeps trying eligible routes in that tier. If every eligible route in the tier fails, AI Router moves to the next tier.
+
+Use multiple tiers when you want strict fallback order.
+
+Example:
+
+| Tier | Routes | Meaning |
+| --- | --- | --- |
+| Tier 1 | OpenAI primary, OpenRouter primary | Normal production traffic |
+| Tier 2 | DeepSeek backup | Backup after primary providers fail |
+| Tier 3 | Custom internal model | Last-resort fallback |
+
+Drag tiers to reorder them. The top tier is tried first.
+
+## Weights inside a tier
+
+Routes inside the same tier do not have a fixed order. They share traffic by weight.
+
+Example:
+
+| Route | Weight | Approximate first-attempt share |
+| --- | ---: | ---: |
+| Gateway A | 80 | 80% |
+| Gateway B | 20 | 20% |
+
+This is useful for:
+
+- Random traffic split across providers.
+- Gradual migration from one provider to another.
+- Canarying a new gateway with a small percentage of traffic.
+
+If you need strict order, put the routes in different tiers instead of the same tier.
+
+## Add a gateway route
+
+On the **Routes** tab:
+
+1. Click **Add Gateway** inside a tier.
+2. Select an existing AI Gateway.
+3. Select the provider mode for this route.
+4. Set the route options.
+5. Save.
+
+You can edit or delete a route later from the route card.
+
+### Provider
+
+Provider controls how AI Router calls the selected AI Gateway for this route. The same AI Gateway can be used in different routes with different provider modes if that matches your setup.
+
+Supported provider values:
+
+- `openai`
+- `deepseek`
+- `anthropic`
+- `openrouter`
+- `custom`
+
+For `custom`, AI Router uses the custom model settings stored on the selected AI Gateway, such as custom base URL and custom model name.
+
+### Weight
+
+Weight controls how traffic is distributed between routes in the same tier. Higher weight means the route is more likely to be tried first.
+
+Default: `100`.
+
+### Model Override
+
+Model Override is optional.
+
+When set, AI Router replaces the request `model` with this value before sending the request to the selected gateway route. Leave it empty if the application request should decide the model.
+
+### Timeout
+
+Timeout is the maximum time for one gateway attempt.
+
+Default: `30000ms`.
+
+If the attempt times out, AI Router treats it as retryable and can try the next eligible route.
+
+### Retryable Status Codes
+
+AI Router always treats network errors, timeouts, and these status codes as retryable:
+
+- `429`
+- `500`
+- `502`
+- `503`
+- `504`
+
+Use **Retryable Status Codes** to add more status codes for a route. For example, you can add `408` if a provider often reports request timeout as an HTTP response.
+
+Be careful with validation errors such as `400` or `401`. Those usually mean the request or key is wrong, and retrying another provider can hide the real problem.
+
+## Logs
+
+The **Logs** tab shows runtime attempts for a router:
+
+- Status: `Success`, `Failed`, or `Partial`.
+- Protocol: the matched request protocol.
+- Attempts: how many gateway routes were tried.
+- Final Gateway: the gateway that produced the final result.
+- Final Gateway Log: the linked AI Gateway log ID.
+- Duration.
+
+Use router logs to understand failover behavior. Use the linked AI Gateway logs to inspect token usage, upstream model details, cost, and provider response data.
+
+
+===== FILE: docs/ai-router/usage.md =====
+
+# AI Router usage
+
+AI Router exposes OpenAI-compatible and Anthropic-compatible endpoints under your Tianji server:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/<provider>/v1/...
+```
+
+The `<provider>` segment must match the provider mode you configured on the route.
+
+## Supported endpoints
+
+| Provider segment | Chat Completions | Responses | Anthropic Messages |
+| --- | --- | --- | --- |
+| `openai` | `/openai/v1/chat/completions` | `/openai/v1/responses` | - |
+| `deepseek` | `/deepseek/v1/chat/completions` | - | - |
+| `anthropic` | `/anthropic/v1/chat/completions` | - | `/anthropic/v1/messages` |
+| `openrouter` | `/openrouter/v1/chat/completions` | - | `/openrouter/v1/messages` |
+| `custom` | `/custom/v1/chat/completions` | `/custom/v1/responses` | `/custom/v1/messages` |
+
+## OpenAI Chat Completions
+
+Base URL for OpenAI SDK:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1
+```
+
+Node.js:
+
+```js
+
+const client = new OpenAI({
+  apiKey: process.env.TIANJI_API_KEY,
+  baseURL:
+    'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1',
+});
+
+const response = await client.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello from Tianji AI Router' }],
+});
+
+console.log(response.choices[0].message);
+```
+
+cURL:
+
+```bash
+curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1/chat/completions' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <YOUR_TIANJI_API_KEY>' \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello from Tianji AI Router"
+      }
+    ]
+  }'
+```
+
+## OpenAI Responses
+
+Base URL for OpenAI SDK:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1
+```
+
+Node.js:
+
+```js
+
+const client = new OpenAI({
+  apiKey: process.env.TIANJI_API_KEY,
+  baseURL:
+    'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1',
+});
+
+const response = await client.responses.create({
+  model: 'gpt-4o',
+  input: 'Write a short deployment checklist.',
+});
+
+console.log(response.output_text);
+```
+
+cURL:
+
+```bash
+curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1/responses' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <YOUR_TIANJI_API_KEY>' \
+  -d '{
+    "model": "gpt-4o",
+    "input": "Write a short deployment checklist."
+  }'
+```
+
+## Anthropic Messages
+
+Base URL for Anthropic SDK:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/anthropic
+```
+
+Node.js:
+
+```js
+
+const client = new Anthropic({
+  apiKey: process.env.TIANJI_API_KEY,
+  baseURL:
+    'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/anthropic',
+});
+
+const message = await client.messages.create({
+  model: 'claude-opus-4-20250514',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: 'Hello from Tianji AI Router' }],
+});
+
+console.log(message.content);
+```
+
+cURL:
+
+```bash
+curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/anthropic/v1/messages' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: <YOUR_TIANJI_API_KEY>' \
+  -H 'anthropic-version: 2023-06-01' \
+  -d '{
+    "model": "claude-opus-4-20250514",
+    "max_tokens": 1024,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello from Tianji AI Router"
+      }
+    ]
+  }'
+```
+
+## Custom provider routes
+
+Use the `custom` provider segment when the selected AI Gateway stores a custom base URL or custom model name.
+
+Examples:
+
+```bash
+/api/ai-router/<workspaceId>/<routerId>/custom/v1/chat/completions
+/api/ai-router/<workspaceId>/<routerId>/custom/v1/responses
+/api/ai-router/<workspaceId>/<routerId>/custom/v1/messages
+```
+
+The custom upstream details stay on AI Gateway. AI Router only selects the route and forwards the normalized request.
+
+## Recommended routing patterns
+
+### Active backup
+
+Use this when uptime matters more than traffic distribution.
+
+| Tier | Route | Weight |
+| --- | --- | ---: |
+| 1 | Primary OpenAI gateway | 100 |
+| 2 | OpenRouter gateway | 100 |
+| 3 | Custom fallback gateway | 100 |
+
+AI Router tries Tier 2 only after Tier 1 returns retryable failures.
+
+### Weighted split
+
+Use this when you want to share traffic across providers in normal operation.
+
+| Tier | Route | Weight |
+| --- | --- | ---: |
+| 1 | Gateway A | 80 |
+| 1 | Gateway B | 20 |
+
+Both routes are in the same tier, so there is no primary/secondary order. The weights decide which route is likely to be tried first.
+
+### Canary migration
+
+Use this when testing a new provider.
+
+| Tier | Route | Weight |
+| --- | --- | ---: |
+| 1 | Current provider | 95 |
+| 1 | New provider | 5 |
+| 2 | Stable fallback | 100 |
+
+Increase the new provider weight after you confirm quality and reliability in the logs.
+
+## Troubleshooting
+
+### No eligible AI Router nodes are available
+
+Check that:
+
+- The router is enabled.
+- At least one tier has enabled routes.
+- The selected AI Gateway still has a stored model API key.
+- The route provider supports the endpoint you are calling.
+
+### The router stops after one failed attempt
+
+AI Router only continues after retryable failures.
+
+Network errors, timeouts, `429`, `500`, `502`, `503`, and `504` are retryable by default. Add route-specific retryable status codes if a provider uses other temporary failure codes.
+
+### The wrong model is being used
+
+Check both places:
+
+- Route **Model Override**. If set, it replaces the request `model`.
+- AI Gateway custom model name. For `custom` routes, the gateway can replace the model with its custom model name.
+
+### The request returns 401 or 403
+
+Use a Tianji API key in the runtime request. Do not send the upstream provider key to AI Router when the gateway stores its own provider credential.
+
+For OpenAI-compatible endpoints, use:
+
+```bash
+Authorization: Bearer <YOUR_TIANJI_API_KEY>
+```
+
+For Anthropic Messages endpoints, use:
+
+```bash
+x-api-key: <YOUR_TIANJI_API_KEY>
+```
+
+
 ===== FILE: docs/api/authentication.md =====
 
 # Authentication

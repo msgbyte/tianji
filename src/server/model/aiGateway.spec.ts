@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
+  getAIGatewayErrorStatusCode,
   getAIGatewayUsage,
   mergeAIGatewayStreamUsage,
   getOpenAIResponsesCompletedResponse,
@@ -10,6 +11,7 @@ import {
   getOpenAIResponsesStreamDelta,
   getOpenAIResponsesUsage,
   openaiResponsesRequestSchema,
+  trackAIGatewayPendingLog,
 } from './aiGateway.js';
 import { aiGatewayRouter } from '../router/aiGateway.js';
 
@@ -394,6 +396,38 @@ describe('OpenAI Responses stream helpers', () => {
   });
 });
 
+describe('AI Gateway runtime metadata helpers', () => {
+  test('preserves numeric upstream error status codes', () => {
+    expect(getAIGatewayErrorStatusCode({ status: 400 })).toBe(400);
+    expect(getAIGatewayErrorStatusCode({ status: 401 })).toBe(401);
+    expect(getAIGatewayErrorStatusCode({ status: 403 })).toBe(403);
+    expect(getAIGatewayErrorStatusCode({ status: 404 })).toBe(404);
+    expect(getAIGatewayErrorStatusCode({ status: 422 })).toBe(422);
+    expect(getAIGatewayErrorStatusCode({ status: '429' })).toBe(500);
+  });
+
+  test('notifies request-scoped listeners when a gateway log is created', async () => {
+    const log = {
+      id: 'gateway-log1',
+    };
+    const observedLogs: unknown[] = [];
+    const req = {
+      __onAIGatewayLogCreated: (createdLog: unknown) => {
+        observedLogs.push(createdLog);
+      },
+    } as any;
+
+    const trackedLog = await trackAIGatewayPendingLog(
+      req,
+      Promise.resolve(log as any)
+    );
+
+    expect(trackedLog).toBe(log);
+    expect(observedLogs).toEqual([log]);
+    await expect(req.__aiGatewayLogPromise).resolves.toBe(log);
+  });
+});
+
 describe('aiGatewayRouter Responses routes', () => {
   function getPostRoutePaths() {
     return (aiGatewayRouter.stack as any[])
@@ -409,5 +443,24 @@ describe('aiGatewayRouter Responses routes', () => {
     expect(paths).toContain('/:workspaceId/:gatewayId/custom/v1/responses');
     expect(paths).not.toContain('/v1/:workspaceId/:gatewayId/openai/responses');
     expect(paths).not.toContain('/v1/:workspaceId/:gatewayId/custom/responses');
+  });
+});
+
+describe('aiGatewayRouter runtime route coverage', () => {
+  function getRoutePaths(method: 'get' | 'post') {
+    return (aiGatewayRouter.stack as any[])
+      .map((layer) => layer.route)
+      .filter((route) => route?.methods?.[method])
+      .map((route) => route.path);
+  }
+
+  test('keeps custom chat, messages, and responses paths', () => {
+    const postPaths = getRoutePaths('post');
+
+    expect(postPaths).toContain(
+      '/:workspaceId/:gatewayId/custom/v1/chat/completions'
+    );
+    expect(postPaths).toContain('/:workspaceId/:gatewayId/custom/v1/messages');
+    expect(postPaths).toContain('/:workspaceId/:gatewayId/custom/v1/responses');
   });
 });

@@ -7,6 +7,7 @@ import {
   autoDisableContinuousDownMonitorDaily,
   clearAIGatewayLogsDaily,
   clearAIGatewayPayloadDaily,
+  clearAIRouterLogsDaily,
   clearAuditLogDaily,
   clearMonitorDataDaily,
   clearMonitorEventDaily,
@@ -44,6 +45,7 @@ export function initCronjob() {
             () => resetDailyAlertFlags(),
             () => clearAIGatewayPayloadDaily(),
             () => clearAIGatewayLogsDaily(),
+            () => clearAIRouterLogsDaily(),
             () => clearWorkerExecutionDaily(),
             () => clearWorkerExecutionPayloadDaily(),
           ];

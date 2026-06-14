@@ -204,7 +204,7 @@ export function calcAIGatewayCustomModelPrice(args: {
   });
 }
 
-const openaiRequestSchema = z
+export const openaiRequestSchema = z
   .object({
     model: z.string(),
     messages: z.array(z.any()).nonempty(),
@@ -334,12 +334,135 @@ function stringifyResponseInput(input: unknown): string {
   return typeof input === 'string' ? input : JSON.stringify(input);
 }
 
+export type AIGatewayProtocol =
+  | 'openai-chat'
+  | 'openai-responses'
+  | 'anthropic-messages';
+
+export interface AIGatewayAttemptFailure {
+  statusCode?: number;
+  errorType: 'network' | 'timeout' | 'upstream' | 'unknown';
+  message: string;
+  responseBody?: unknown;
+}
+
+export interface AIGatewayAttemptResult {
+  ok: boolean;
+  committed: boolean;
+  logId?: string;
+  gatewayId: string;
+  statusCode?: number;
+  failure?: AIGatewayAttemptFailure;
+}
+
+export interface AIGatewayAttemptRuntimeOptions {
+  workspaceId: string;
+  gatewayId: string;
+  payloadOverride?: Record<string, unknown>;
+  deferErrorResponse?: boolean;
+  timeoutMs?: number;
+}
+
+export type AIGatewayLogCreatedCallback = (log: AIGatewayLogs) => void;
+
+export interface AIGatewayLogAwareRequest extends Request {
+  __onAIGatewayLogCreated?: AIGatewayLogCreatedCallback;
+  __aiGatewayLogPromise?: Promise<AIGatewayLogs>;
+}
+
 interface OpenaiHandlerOptions {
   baseUrl?: string;
   modelProvider?: string;
   modelPriceName?: (model: string) => string;
   isCustomRoute?: boolean;
   header?: (req: Request) => Record<string, string>;
+}
+
+export async function resolveAIGatewayModelApiKey(args: {
+  workspaceId: string;
+  gatewayId: string;
+  requestApiKey: string;
+}) {
+  const gatewayInfo = await getGatewayInfoCache(args.workspaceId, args.gatewayId);
+  let modelApiKey = args.requestApiKey;
+  let userId: string | null = null;
+
+  if (gatewayInfo?.modelApiKey) {
+    const user = await verifyUserApiKey(args.requestApiKey);
+    userId = user.id;
+    modelApiKey = gatewayInfo.modelApiKey;
+  }
+
+  return {
+    gatewayInfo,
+    modelApiKey,
+    userId,
+  };
+}
+
+export async function createAIGatewayPendingLog(args: {
+  workspaceId: string;
+  gatewayId: string;
+  modelName: string;
+  modelProvider: string;
+  stream: boolean | undefined;
+  requestPayload: unknown;
+  userId: string | null;
+}): Promise<AIGatewayLogs> {
+  return prisma.aIGatewayLogs.create({
+    data: {
+      workspaceId: args.workspaceId,
+      gatewayId: args.gatewayId,
+      modelName: args.modelName,
+      modelProvider: args.modelProvider,
+      stream: args.stream,
+      inputToken: 0,
+      outputToken: 0,
+      cacheReadInputToken: 0,
+      cacheWriteInputToken: 0,
+      duration: 0,
+      ttft: 0,
+      tpot: -1,
+      requestPayload: args.requestPayload as any,
+      responsePayload: {},
+      userId: args.userId,
+      status: AIGatewayLogsStatus.Pending,
+    },
+  });
+}
+
+export function getAIGatewayErrorStatusCode(error: unknown): number {
+  const status = get(error, 'status', 500);
+
+  return typeof status === 'number' ? status : 500;
+}
+
+export function notifyAIGatewayLogCreated(req: Request, log: AIGatewayLogs) {
+  const callback = (req as AIGatewayLogAwareRequest).__onAIGatewayLogCreated;
+
+  if (!callback) {
+    return;
+  }
+
+  try {
+    callback(log);
+  } catch (error) {
+    logger.warn('[ai-gateway] log-created callback failed', error);
+  }
+}
+
+export function trackAIGatewayPendingLog(
+  req: Request,
+  logPromise: Promise<AIGatewayLogs>
+): Promise<AIGatewayLogs> {
+  const trackedLogPromise = logPromise.then((log) => {
+    notifyAIGatewayLogCreated(req, log);
+    return log;
+  });
+
+  (req as AIGatewayLogAwareRequest).__aiGatewayLogPromise = trackedLogPromise;
+
+  return trackedLogPromise;
 }
 
 export function buildOpenAIHandler(
@@ -355,14 +478,12 @@ export function buildOpenAIHandler(
       })
       .parse(req.params);
     const apiKey = (req.headers.authorization ?? '').replace('Bearer ', '');
-    let modelApiKey = apiKey;
-    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
-    let userId: string | null = null;
-    if (gatewayInfo?.modelApiKey) {
-      const user = await verifyUserApiKey(apiKey);
-      userId = user.id;
-      modelApiKey = gatewayInfo.modelApiKey;
-    }
+    const { gatewayInfo, modelApiKey, userId } =
+      await resolveAIGatewayModelApiKey({
+        workspaceId,
+        gatewayId,
+        requestApiKey: apiKey,
+      });
 
     // Use custom settings from gateway if available
     const baseUrl =
@@ -378,30 +499,18 @@ export function buildOpenAIHandler(
     const modelProvider =
       options.modelProvider ?? (options.isCustomRoute ? 'custom' : 'openai');
 
-    const logP = new Promise<AIGatewayLogs>(async (resolve) => {
-      const _log = await prisma.aIGatewayLogs.create({
-        data: {
-          workspaceId,
-          gatewayId,
-          modelName,
-          modelProvider,
-          stream,
-          inputToken: 0,
-          outputToken: 0,
-          cacheReadInputToken: 0,
-          cacheWriteInputToken: 0,
-          duration: 0,
-          ttft: 0,
-          tpot: -1,
-          requestPayload: payload,
-          responsePayload: {},
-          userId,
-          status: AIGatewayLogsStatus.Pending,
-        },
-      });
-
-      resolve(_log);
-    });
+    const logP = trackAIGatewayPendingLog(
+      req,
+      createAIGatewayPendingLog({
+        workspaceId,
+        gatewayId,
+        modelName,
+        modelProvider,
+        stream,
+        requestPayload: payload,
+        userId,
+      })
+    );
 
     try {
       const openai = new OpenAI({
@@ -644,7 +753,8 @@ export function buildOpenAIHandler(
     } catch (error) {
       // Handle API error
       console.error('OpenAI API error:', error);
-      res.status(500).json({
+      const status = getAIGatewayErrorStatusCode(error);
+      res.status(status).json({
         error: {
           message: error instanceof Error ? error.message : 'Unknown error',
           type: 'server_error',
@@ -683,14 +793,12 @@ export function buildOpenAIResponsesHandler(
       })
       .parse(req.params);
     const apiKey = (req.headers.authorization ?? '').replace('Bearer ', '');
-    let modelApiKey = apiKey;
-    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
-    let userId: string | null = null;
-    if (gatewayInfo?.modelApiKey) {
-      const user = await verifyUserApiKey(apiKey);
-      userId = user.id;
-      modelApiKey = gatewayInfo.modelApiKey;
-    }
+    const { gatewayInfo, modelApiKey, userId } =
+      await resolveAIGatewayModelApiKey({
+        workspaceId,
+        gatewayId,
+        requestApiKey: apiKey,
+      });
 
     const baseUrl =
       options.isCustomRoute && gatewayInfo?.customModelBaseUrl
@@ -705,30 +813,18 @@ export function buildOpenAIResponsesHandler(
     const modelProvider =
       options.modelProvider ?? (options.isCustomRoute ? 'custom' : 'openai');
 
-    const logP = new Promise<AIGatewayLogs>(async (resolve) => {
-      const _log = await prisma.aIGatewayLogs.create({
-        data: {
-          workspaceId,
-          gatewayId,
-          modelName,
-          modelProvider,
-          stream: Boolean(stream),
-          inputToken: 0,
-          outputToken: 0,
-          cacheReadInputToken: 0,
-          cacheWriteInputToken: 0,
-          duration: 0,
-          ttft: 0,
-          tpot: -1,
-          requestPayload: payload,
-          responsePayload: {},
-          userId,
-          status: AIGatewayLogsStatus.Pending,
-        },
-      });
-
-      resolve(_log);
-    });
+    const logP = trackAIGatewayPendingLog(
+      req,
+      createAIGatewayPendingLog({
+        workspaceId,
+        gatewayId,
+        modelName,
+        modelProvider,
+        stream: Boolean(stream),
+        requestPayload: payload,
+        userId,
+      })
+    );
 
     try {
       const openai = new OpenAI({
@@ -920,8 +1016,7 @@ export function buildOpenAIResponsesHandler(
       }
     } catch (error) {
       console.error('OpenAI Responses API error:', error);
-      const status = get(error, 'status', 500) as number;
-      res.status(typeof status === 'number' ? status : 500).json({
+      res.status(getAIGatewayErrorStatusCode(error)).json({
         error: {
           message: error instanceof Error ? error.message : 'Unknown error',
           type: 'server_error',
@@ -1085,7 +1180,7 @@ export function buildAnthropicModelsHandler(
   };
 }
 
-const anthropicRequestSchema = z
+export const anthropicRequestSchema = z
   .object({
     model: z.string(),
     messages: z.array(z.any()).nonempty(),
@@ -1120,14 +1215,12 @@ export function buildAnthropicHandler(
     const apiKey =
       (req.headers['x-api-key'] as string) ??
       (req.headers.authorization ?? '').replace('Bearer ', '');
-    let modelApiKey = apiKey;
-    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
-    let userId: string | null = null;
-    if (gatewayInfo?.modelApiKey) {
-      const user = await verifyUserApiKey(apiKey);
-      userId = user.id;
-      modelApiKey = gatewayInfo.modelApiKey;
-    }
+    const { gatewayInfo, modelApiKey, userId } =
+      await resolveAIGatewayModelApiKey({
+        workspaceId,
+        gatewayId,
+        requestApiKey: apiKey,
+      });
 
     const baseUrl =
       options.isCustomRoute && gatewayInfo?.customModelBaseUrl
@@ -1142,29 +1235,18 @@ export function buildAnthropicHandler(
     const modelProvider =
       options.modelProvider ?? (options.isCustomRoute ? 'custom' : 'anthropic');
 
-    const logP = new Promise<AIGatewayLogs>(async (resolve) => {
-      const _log = await prisma.aIGatewayLogs.create({
-        data: {
-          workspaceId,
-          gatewayId,
-          modelName,
-          modelProvider,
-          stream,
-          inputToken: 0,
-          outputToken: 0,
-          cacheReadInputToken: 0,
-          cacheWriteInputToken: 0,
-          duration: 0,
-          ttft: 0,
-          tpot: -1,
-          requestPayload: payload,
-          responsePayload: {},
-          userId,
-          status: AIGatewayLogsStatus.Pending,
-        },
-      });
-      resolve(_log);
-    });
+    const logP = trackAIGatewayPendingLog(
+      req,
+      createAIGatewayPendingLog({
+        workspaceId,
+        gatewayId,
+        modelName,
+        modelProvider,
+        stream,
+        requestPayload: payload,
+        userId,
+      })
+    );
 
     try {
       promAIGatewayRequestCounter.inc({ modelProvider });

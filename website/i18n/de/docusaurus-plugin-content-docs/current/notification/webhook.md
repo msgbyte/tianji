@@ -1,14 +1,14 @@
 ---
 sidebar_position: 5
-_i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
+_i18n_hash: 3656796ebf02a33e45fbef1ecb18923e
 ---
 # Webhook
 
-Wenn Sie eine flexiblere Benachrichtigungsmethode benötigen, können Sie versuchen, benutzerdefinierte Webhooks zu verwenden, um Ihre Nachrichten zu benachrichtigen. Auf diese Weise können Sie die Benachrichtigungen von Tianji in jedes System integrieren.
+Wenn Sie eine flexiblere Benachrichtigungsmethode benötigen, können Sie versuchen, benutzerdefinierte Webhooks zu verwenden, um Ihre Nachrichten zu benachrichtigen. Auf diese Weise können Sie Benachrichtigungen von Tianji in jedes System integrieren.
 
 ### Beispielergebnis
 
-Das Tianji-System sendet eine POST-Anfrage mit dem folgenden Beispielinhalt.
+Das Tianji-System sendet eine POST-Anfrage mit folgendem Beispielinhalt.
 
 ```json
 {
@@ -20,17 +20,17 @@ Das Tianji-System sendet eine POST-Anfrage mit dem folgenden Beispielinhalt.
             "webhookUrl": "example.com"
         }
     },
-    "title": "Benachrichtigungstest für neue Benachrichtigung",
-    "content": "Tianji: Einblicke in alles\\nDies ist ein Benachrichtigungstest von der neuen Benachrichtigung\\n[Bild]",
+    "title": "Neue Benachrichtigung Benachrichtigungstest",
+    "content": "Tianji: Einblick in alles\\nDies ist ein Benachrichtigungstest von Neuer Benachrichtigung\\n[image]",
     "raw": [
         {
             "type": "title",
             "level": 2,
-            "content": "Tianji: Einblicke in alles"
+            "content": "Tianji: Einblick in alles"
         },
         {
             "type": "text",
-            "content": "Dies ist ein Benachrichtigungstest von der neuen Benachrichtigung"
+            "content": "Dies ist ein Benachrichtigungstest von Neuer Benachrichtigung"
         },
         {
             "type": "newline"

@@ -4,6 +4,8 @@ This file lists documentation titles with absolute URLs.
 
 ================================================================================
 
+AI Router - https://tianji.dev/docs/ai-router/intro
+AI Router usage - https://tianji.dev/docs/ai-router/usage
 Authentication - https://tianji.dev/docs/api/authentication
 API Getting Started - https://tianji.dev/docs/api/getting-started
 OpenAPI SDK Usage Guide - https://tianji.dev/docs/api/openapi-sdk

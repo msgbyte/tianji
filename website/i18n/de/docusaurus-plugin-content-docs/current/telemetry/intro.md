@@ -1,38 +1,38 @@
 ---
 sidebar_position: 1
-_i18n_hash: c61b6c9968c295ffdfdc1a484f853504
+_i18n_hash: 1eae5f5894f7cbf4de993993feab86a5
 ---
-# Einführung
+# Einleitung
 
 ## Hintergrund
 
-Als Content-Ersteller veröffentlichen wir unsere Artikel häufig auf verschiedenen Drittanbieter-Plattformen. Für diejenigen von uns, die ernsthaft mit ihrem Content umgehen, ist die Veröffentlichung jedoch erst der Anfang. Wir müssen die Leserzahlen unserer Artikel im Laufe der Zeit kontinuierlich überwachen. Leider sind unsere Datenerfassungsmöglichkeiten auf das beschränkt, was jede Plattform bietet, was stark von den eigenen Fähigkeiten der Plattform abhängt. Darüber hinaus sind die Leser- und Besucherdaten bei der Verteilung desselben Inhalts auf verschiedenen Plattformen völlig isoliert.
+Als Content-Ersteller publizieren wir oft unsere Artikel auf verschiedenen Drittanbieter-Plattformen. Doch für diejenigen unter uns, die ihren Content ernst nehmen, ist die Veröffentlichung erst der Anfang. Wir müssen kontinuierlich die Leserschaft unserer Artikel im Laufe der Zeit überwachen. Leider sind unsere Datensammelfähigkeiten auf das beschränkt, was jede Plattform bietet, was stark von den eigenen Fähigkeiten der Plattform abhängt. Darüber hinaus sind die Leserschafts- und Besuchsdaten vollständig isoliert, wenn wir denselben Inhalt auf verschiedenen Plattformen verteilen.
 
-Als Entwickler erstelle ich viele Softwareanwendungen. Sobald ich diese jedoch veröffentliche, verliere ich oft die Kontrolle darüber. Zum Beispiel habe ich nach der Veröffentlichung eines Befehlszeilenprogramms keine Möglichkeit zu wissen, wie Benutzer damit interagieren oder gar wie viele Benutzer meine Anwendung nutzen. In ähnlicher Weise konnte ich bei der Entwicklung einer Open-Source-Anwendung in der Vergangenheit nur durch GitHub-Sterne das Interesse einschätzen, wobei ich im Dunkeln darüber blieb, wie sie tatsächlich genutzt wurde.
+Als Entwickler erstelle ich viele Softwareanwendungen. Sobald ich diese Anwendungen veröffentliche, verliere ich jedoch oft die Kontrolle über sie. Zum Beispiel habe ich nach der Freigabe eines Befehlszeilenprogramms keine Möglichkeit mehr zu erfahren, wie Nutzer damit interagieren oder wie viele Nutzer meine Anwendung verwenden. Ähnlich verhält es sich beim Entwickeln einer Open-Source-Anwendung: In der Vergangenheit konnte ich das Interesse nur durch GitHub-Sterne abschätzen, was mir über die tatsächliche Nutzung im Dunkeln ließ.
 
-Daher benötigen wir eine einfache Lösung, die minimale Informationen sammelt und dabei persönliche Privatsphäre und andere Einschränkungen respektiert. Diese Lösung ist Telemetrie.
+Daher benötigen wir eine einfache Lösung, die minimale Informationen sammelt und die persönliche Privatsphäre und andere Einschränkungen respektiert. Diese Lösung ist Telemetrie.
 
 ## Telemetrie
 
-In der Computertechnik ist Telemetrie eine gängige Technologie, die die minimale und anonyme Meldung von Informationen beinhaltet, um Datenschutzbedenken zu berücksichtigen und gleichzeitig die grundlegenden Analysebedürfnisse von Content-Erstellern zu erfüllen.
+Im Bereich der Informatik ist Telemetrie eine gängige Technologie, die ein minimales und anonymes Informationen-Melden beinhaltet, um Datenschutzbedenken gerecht zu werden und dennoch die grundlegenden Analysebedürfnisse von Content-Erstellern zu erfüllen.
 
-Zum Beispiel sammelt das Next.js-Framework von React Informationen mithilfe von Telemetrie: [API-Referenz: Next.js CLI | Next.js (nextjs.org)](https://nextjs.org/docs/app/api-reference/next-cli#telemetry)
+Beispielsweise sammelt das React Next.js-Framework mithilfe von Telemetrie Informationen: [API Referenz: Next.js CLI | Next.js (nextjs.org)](https://nextjs.org/docs/app/api-reference/next-cli#telemetry)
 
-Alternativ ist es durch Einbetten eines 1px großen, leeren transparenten Pixelbilds in einen Artikel möglich, Besucherdaten auf Websites zu sammeln, über die wir keine Kontrolle haben. Moderne Browser und die meisten Websites blockieren das Einfügen benutzerdefinierter Skripte aufgrund potenzieller Sicherheitsrisiken. Ein Bild erscheint jedoch im Vergleich viel harmloser. Fast alle Websites erlauben das Laden von Bildern von Drittanbietern, wodurch Telemetrie möglich wird.
+Alternativ ist es möglich, durch das Einbetten eines 1px großen, leeren, transparenten Pixelbildes in einen Artikel Besucherdaten auf Webseiten zu sammeln, über die wir keine Kontrolle haben. Moderne Browser und die meisten Websites blockieren das Einfügen benutzerdefinierter Skripte aufgrund potenzieller Sicherheitsrisiken. Ein Bild erscheint im Vergleich viel harmloser. Fast alle Websites erlauben das Laden von Drittanbieter-Bildern, was Telemetrie möglich macht.
 
-## Welche Informationen können wir über ein Bild sammeln?
+## Welche Informationen können wir durch ein Bild sammeln?
 
-Überraschenderweise ermöglicht die Erhaltung einer einzelnen Bildanfrage die Sammlung mehr Informationen, als man erwarten könnte.
+Erstaunlicherweise ermöglicht uns der Empfang einer einzigen Bildanfrage, mehr Informationen zu sammeln, als man vermuten würde.
 
-Durch die Analyse von Netzwerkanfragen können wir die IP-Adresse des Benutzers, die Besuchszeit, den Referrer und den Gerätetyp erhalten. Dies ermöglicht es uns, Verkehrsmuster zu analysieren, wie z.B. Spitzenzeiten der Leserzahlen und Trends, demografische Verteilung und die Granularität des Verkehrs über verschiedene Plattformen. Diese Informationen sind besonders wertvoll für Marketing- und Promotionsaktivitäten.
+Durch die Analyse von Netzwerk-Anfragen können wir die IP-Adresse des Nutzers, die Besuchszeit, den Referrer und den Gerätetyp erhalten. Dies ermöglicht uns die Analyse von Verkehrsmustern, wie Spitzenlesezeiten und Trends, demografische Verteilung und Verkehrsdichte über verschiedene Plattformen hinweg. Diese Informationen sind besonders wertvoll für Marketing- und Werbeaktivitäten.
 
 ![](/img/telemetry/1.png)
 
 ## Wie können wir Telemetrie implementieren?
 
-Telemetrie ist eine unkomplizierte Technologie, die im Wesentlichen einen Endpunkt benötigt, um Internetanfragen zu empfangen. Aufgrund ihrer Einfachheit gibt es wenige dedizierte Tools für diesen Zweck. Viele betrachten möglicherweise Analysen als unwichtig oder werden durch die anfänglichen Hürden abgeschreckt. Dennoch ist der Bedarf an solchen Funktionen offensichtlich.
+Telemetrie ist eine unkomplizierte Technologie, die im Wesentlichen einen Endpunkt benötigt, um Internetanfragen zu empfangen. Aufgrund ihrer Einfachheit gibt es nur wenige dedizierte Werkzeuge für diesen Zweck. Viele betrachten Analysen möglicherweise nicht als wichtig oder werden durch die anfänglichen Barrieren abgeschreckt. Der Bedarf für eine solche Funktionalität ist jedoch offensichtlich.
 
-Die Entwicklung einer Telemetrie-Lösung ist einfach. Sie müssen lediglich ein Projekt erstellen, eine Route einrichten, Informationen aus dem Anfragekörper sammeln und ein leeres Bild zurückgeben.
+Die Entwicklung einer Telemetrielösung ist einfach. Sie müssen lediglich ein Projekt erstellen, eine Route einrichten, Informationen aus dem Anfrageinhalt sammeln und ein leeres Bild zurückgeben.
 
 Hier ist ein Beispiel mit Node.js:
 
@@ -55,10 +55,10 @@ router.get(
 );
 ```
 
-Wenn Sie keine eigene Lösung entwickeln möchten, empfehle ich Tianji. Als Open-Source-Projekt, das **Website-Analytik**, **Uptime-Überwachung** und **Server-Status** anbietet, hat Tianji kürzlich eine Telemetrie-Funktion eingeführt, um Content-Erstellern bei der Meldung von Telemetrie zu helfen und so eine bessere Datenerfassung zu ermöglichen. Vor allem bedeutet Open-Source, dass Sie die Kontrolle über Ihre Daten haben und den Verkehr von mehreren Plattformen an einem Ort aggregieren können, wodurch die Fragmentierung beim Betrachten derselben Informationen an verschiedenen Orten vermieden wird.
+Falls Sie keine eigene Lösung entwickeln möchten, empfehle ich Tianji. Als Open-Source-Projekt, das **Website-Analysen**, **Uptime-Monitoring** und **Server-Status** bietet, hat Tianji kürzlich eine Telemetrie-Funktion eingeführt, die Content-Ersteller beim Melden von Telemetrie unterstützt und so eine bessere Datenerhebung erleichtert. Am wichtigsten ist, dass Sie als Open-Source das volle Eigentum an Ihren Daten haben und den Datenverkehr von mehreren Plattformen an einem Ort zusammenfassen können, um eine Fragmentierung beim Betrachten derselben Informationen an verschiedenen Orten zu vermeiden.
 
 ![](/img/telemetry/2.png)
 
-GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
+GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
 
 Offizielle Website: [https://tianji.dev/](https://tianji.dev/)

@@ -125,6 +125,10 @@ model Workspace {
   warehouseDatabase      WarehouseDatabase[]
   warehouseDatabaseTable WarehouseDatabaseTable[]
   aiGateways             AIGateway[]
+  aiRouters              AIRouter[]
+  aiRouterTiers          AIRouterTier[]
+  aiRouterNodes          AIRouterNode[]
+  aiRouterLogs           AIRouterLogs[]
   aiGatewayQuotaAlerts   AIGatewayQuotaAlert[]
   workspaceConfigs       WorkspaceConfig[]
   shortLinks             ShortLink[]
@@ -965,7 +969,109 @@ model AIGateway {
 
   aiGatewayLogs        AIGatewayLogs[]
   aiGatewayQuotaAlerts AIGatewayQuotaAlert[]
+  aiRouterNodes        AIRouterNode[]
   workspace            Workspace             @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model AIRouter {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String
+  enabled     Boolean  @default(true) @db.Boolean
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  tiers     AIRouterTier[]
+  nodes     AIRouterNode[]
+  logs      AIRouterLogs[]
+
+  @@unique([workspaceId, id])
+  @@index([workspaceId])
+  @@index([enabled])
+}
+
+model AIRouterTier {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  routerId    String   @db.VarChar(30)
+  order       Int      @db.Integer
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter       @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+  nodes     AIRouterNode[]
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, routerId, id])
+  @@unique([routerId, order])
+  @@index([workspaceId])
+  @@index([routerId])
+}
+
+model AIRouterNode {
+  id                   String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId          String   @db.VarChar(30)
+  routerId             String   @db.VarChar(30)
+  tierId               String   @db.VarChar(30)
+  gatewayId            String   @db.VarChar(30)
+  provider             String   @default("openai")
+  order                Int      @db.Integer
+  enabled              Boolean  @default(true) @db.Boolean
+  weight               Int      @default(100) @db.Integer
+  modelOverride        String?
+  timeoutMs            Int      @default(30000) @db.Integer
+  retryableStatusCodes Int[]    @default([])
+  createdAt            DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter  @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+  tier      AIRouterTier @relation(fields: [workspaceId, routerId, tierId], references: [workspaceId, routerId, id], onUpdate: Cascade, onDelete: Cascade)
+  gateway   AIGateway @relation(fields: [gatewayId], references: [id], onUpdate: Cascade, onDelete: NoAction)
+
+  @@unique([routerId, tierId, order])
+  @@index([workspaceId])
+  @@index([routerId])
+  @@index([tierId])
+  @@index([gatewayId])
+  @@index([enabled])
+}
+
+enum AIRouterLogsStatus {
+  Success
+  Failed
+  Partial
+}
+
+model AIRouterLogs {
+  id                   String             @id @default(cuid()) @db.VarChar(30)
+  workspaceId          String             @db.VarChar(30)
+  routerId             String             @db.VarChar(30)
+  protocol             String
+  status               AIRouterLogsStatus
+  finalGatewayId       String?            @db.VarChar(30)
+  finalGatewayLogId    String?            @db.VarChar(30)
+  attemptGatewayIds    String[]           @default([])
+  attemptGatewayLogIds String[]           @default([])
+  /// [Nullable<PrismaJson.CommonPayload>]
+  /// @zod.custom(imports.CommonPayloadSchema.nullish())
+  attemptErrors        Json?              @db.Json
+  attemptCount         Int                @default(0) @db.Integer
+  duration             Int                @default(0) @db.Integer
+  createdAt            DateTime           @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter  @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([routerId])
+  @@index([protocol])
+  @@index([status])
+  @@index([createdAt])
+  @@index([workspaceId, createdAt])
+  @@index([routerId, createdAt])
 }
 
 enum AIGatewayLogsStatus {

@@ -1,36 +1,36 @@
 ---
 sidebar_position: 5
-_i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
+_i18n_hash: 3656796ebf02a33e45fbef1ecb18923e
 ---
 # Webhook
 
-より柔軟な通知方法が必要な場合は、カスタムWebhookを使用してメッセージを通知することができます。この方法で、天機の通知を任意のシステムに統合することができます。
+より柔軟な通知方法が必要な場合、カスタムウェブフックを使用してメッセージを通知することをお試しください。この方法で、天機の通知をあらゆるシステムに統合できます。
 
-### 例
+### 例の結果
 
-天機システムは、以下の例のような内容でPOSTリクエストを送信します。
+天機システムは、以下のような内容でPOSTリクエストを送信します。
 
 ```json
 {
     "notification": {
         "workspaceId": "xxxxxxxxxxx",
-        "name": "新しい通知",
+        "name": "新規通知",
         "type": "webhook",
         "payload": {
             "webhookUrl": "example.com"
         }
     },
-    "title": "新しい通知のテスト",
-    "content": "天機: すべての洞察\\nこれは新しい通知からの通知テストです\\n[image]",
+    "title": "新規通知通知テスト",
+    "content": "天機: すべてへの洞察\\nこれは新規通知からの通知テストです\\n[画像]",
     "raw": [
         {
             "type": "title",
             "level": 2,
-            "content": "天機: すべての洞察"
+            "content": "天機: すべてへの洞察"
         },
         {
             "type": "text",
-            "content": "これは新しい通知からの通知テストです"
+            "content": "これは新規通知からの通知テストです"
         },
         {
             "type": "newline"

@@ -1,7 +1,7 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
 import { Decimal } from "decimal.js"
-import { CompleteAIGatewayLogs, RelatedAIGatewayLogsModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
+import { CompleteAIGatewayLogs, RelatedAIGatewayLogsModelSchema, CompleteAIGatewayQuotaAlert, RelatedAIGatewayQuotaAlertModelSchema, CompleteAIRouterNode, RelatedAIRouterNodeModelSchema, CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
 
 // Helper schema for JSON fields
 type Literal = boolean | number | string
@@ -43,6 +43,7 @@ export const AIGatewayModelSchema = z.object({
 export interface CompleteAIGateway extends z.infer<typeof AIGatewayModelSchema> {
   aiGatewayLogs: CompleteAIGatewayLogs[]
   aiGatewayQuotaAlerts: CompleteAIGatewayQuotaAlert[]
+  aiRouterNodes: CompleteAIRouterNode[]
   workspace: CompleteWorkspace
 }
 
@@ -54,5 +55,6 @@ export interface CompleteAIGateway extends z.infer<typeof AIGatewayModelSchema> 
 export const RelatedAIGatewayModelSchema: z.ZodSchema<CompleteAIGateway> = z.lazy(() => AIGatewayModelSchema.extend({
   aiGatewayLogs: RelatedAIGatewayLogsModelSchema.array(),
   aiGatewayQuotaAlerts: RelatedAIGatewayQuotaAlertModelSchema.array(),
+  aiRouterNodes: RelatedAIRouterNodeModelSchema.array(),
   workspace: RelatedWorkspaceModelSchema,
 }))

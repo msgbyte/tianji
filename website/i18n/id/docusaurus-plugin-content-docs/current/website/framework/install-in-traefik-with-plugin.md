@@ -1,24 +1,24 @@
 ---
 sidebar_position: 2
-_i18n_hash: 8142a07cc46361e9e72d8c883ab7869a
+_i18n_hash: f85f95f54fdfadadf81712ccb1401e46
 ---
-# Install di Traefik dengan plugin
+# Instalasi di Traefik dengan plugin
 
-Tianji menyediakan plugin Traefik yang memungkinkan Anda untuk mengintegrasikan fungsi analitik situs web Tianji ke dalam proxy Traefik dengan mudah.
+Tianji menyediakan plugin Traefik yang memungkinkan Anda dengan mudah mengintegrasikan fungsionalitas analitik situs web Tianji ke dalam proxy Traefik Anda.
 
-## Ikhtisar Plugin
+## Gambaran Umum Plugin
 
-[traefik-tianji-plugin](https://github.com/msgbyte/traefik-tianji-plugin) adalah plugin middleware Traefik yang dikembangkan khusus untuk Tianji yang dapat secara otomatis menyuntikkan skrip pelacakan Tianji ke dalam situs web Anda tanpa memodifikasi kode situs web Anda untuk mulai mengumpulkan data pengunjung.
+[traefik-tianji-plugin](https://github.com/msgbyte/traefik-tianji-plugin) adalah plugin middleware Traefik yang dikembangkan khusus untuk Tianji yang dapat secara otomatis menyisipkan skrip pelacakan Tianji ke dalam situs web Anda tanpa mengubah kode situs web Anda untuk mulai mengumpulkan data pengunjung.
 
-## Instalasi Plugin
+## Memasang Plugin
 
-### 1. Tambahkan Plugin dalam Konfigurasi Statis
+### 1. Tambahkan Plugin pada Konfigurasi Statis
 
-Pertama, Anda perlu menambahkan referensi plugin dalam konfigurasi statis Traefik. Nomor versi plugin merujuk ke tag git.
+Pertama, Anda perlu menambahkan referensi plugin dalam konfigurasi statis Traefik. Nomor versi plugin merujuk pada tag git.
 
 #### Konfigurasi YAML
 
-Tambahkan yang berikut ini ke `traefik.yml` atau file konfigurasi statis Anda:
+Tambahkan yang berikut ke `traefik.yml` atau file konfigurasi statis Anda:
 
 ```yaml
 experimental:
@@ -43,13 +43,13 @@ experimental:
 --experimental.plugins.traefik-tianji-plugin.version=v0.2.1
 ```
 
-### 2. Konfigurasikan Middleware
+### 2. Konfigurasi Middleware
 
-Setelah memasang plugin, Anda perlu mengkonfigurasi middleware dalam konfigurasi dinamis.
+Setelah memasang plugin, Anda perlu mengonfigurasi middleware dalam konfigurasi dinamis.
 
 #### Konfigurasi Dinamis YAML
 
-Di dalam `config.yml` Anda atau file konfigurasi dinamis:
+Dalam `config.yml` atau file konfigurasi dinamis Anda:
 
 ```yaml
 http:
@@ -88,12 +88,12 @@ services:
 
 ### Parameter Wajib
 
-- **tianjiHost**: URL lengkap dari server Tianji Anda
+- **tianjiHost**: URL lengkap server Tianji Anda
   - Contoh: `https://tianji.your-domain.com`
-  - Jika menggunakan layanan resmi yang dihosting: `https://app.tianji.dev`
+  - Jika menggunakan layanan resmi: `https://app.tianji.dev`
 
 - **websiteId**: ID situs web yang dibuat di Tianji
-  - Dapat ditemukan dalam pengaturan situs web dari panel admin Tianji Anda
+  - Dapat ditemukan di pengaturan situs web dari panel admin Tianji Anda
 
 ### Parameter Opsional
 
@@ -101,7 +101,7 @@ Plugin ini juga mendukung parameter konfigurasi lainnya untuk menyesuaikan peril
 
 ## Menggunakan Middleware
 
-Setelah konfigurasi, Anda perlu menggunakan middleware ini dalam router Anda:
+Setelah konfigurasi, Anda perlu menggunakan middleware ini di router Anda:
 
 ### Konfigurasi YAML
 
@@ -124,16 +124,16 @@ labels:
 
 ## Cara Kerjanya
 
-1. Saat permintaan melewati proxy Traefik, plugin memeriksa konten respons
-2. Jika respons berupa konten HTML, plugin secara otomatis menyuntikkan skrip pelacakan Tianji
-3. Skrip mulai mengumpulkan data pengunjung dan mengirimkannya ke server Tianji saat halaman dimuat
+1. Ketika permintaan melewati proxy Traefik, plugin memeriksa konten respons
+2. Jika respons adalah konten HTML, plugin secara otomatis menyisipkan skrip pelacakan Tianji
+3. Skrip mulai mengumpulkan data pengunjung dan mengirimkannya ke server Tianji ketika halaman dimuat
 
 ## Catatan Penting
 
-- Pastikan bahwa alamat server Tianji dapat diakses dari browser klien
+- Pastikan alamat server Tianji dapat diakses dari browser klien
 - ID situs web harus valid, jika tidak data tidak dapat dikumpulkan dengan benar
-- Plugin hanya efektif saat tipe konten respons adalah HTML
-- Disarankan untuk menggunakan versi terbaru dari plugin untuk kinerja dan fitur optimal
+- Plugin hanya berfungsi ketika tipe konten respons adalah HTML
+- Disarankan untuk menggunakan versi terbaru dari plugin untuk kinerja dan fitur yang optimal
 
 ## Referensi
 

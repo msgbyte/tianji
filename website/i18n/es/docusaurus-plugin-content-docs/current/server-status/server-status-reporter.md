@@ -1,60 +1,59 @@
 ---
 sidebar_position: 1
-_i18n_hash: 21a5dc8265605536c8c328c551abdcc9
+_i18n_hash: 479219b036abf3d6006999bf96fd2ea9
 ---
-# Reporte de Estado del Servidor
+# Informe de estado del servidor
 
-puedes reportar el estado de tu servidor fácilmente con el reportero de tianji
+Puedes informar el estado de tu servidor fácilmente con tianji reporter.
 
-puedes descargarlo desde [https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases)
+Puedes descargarlo desde [https://github.com/msgbyte/tianji/releases](https://github.com/msgbyte/tianji/releases)
 
 ## Uso
 
 ```
 Uso de tianji-reporter:
   --interval int
-        Ingrese el INTERVALO, segundo (por defecto 5)
+        Ingrese el INTERVALO, en segundos (por defecto 5)
   --mode http
-        El modo de envío de datos de informe, puedes seleccionar: `http` o `udp`, por defecto es `http` (por defecto "http")
+        El modo de envío de los datos de informe, puedes seleccionar: `http` o `udp`, el valor predeterminado es `http` (por defecto "http")
   --name string
         El nombre de identificación para esta máquina
   --url string
-        La url http de tianji, por ejemplo: https://tianji.dev
+        La URL http de tianji, por ejemplo: https://tianji.dev
   --vnstat
-        Usar vnstat para estadísticas de tráfico, solo linux
+        Usar vnstat para estadísticas de tráfico, solo en Linux
   --workspace string
-        La ID del espacio de trabajo para tianji, esto debe ser un uuid
+        El id del espacio de trabajo para tianji, esto debe ser un uuid
 ```
 
-La **url** y el **workspace** son obligatorios, significa que reportarás tu servicio a qué host y a qué espacio de trabajo.
+Los campos **url** y **workspace** son obligatorios, significa que informarás tu servicio a qué host y en qué espacio de trabajo.
 
-Por defecto, el nombre del nodo del servidor será el mismo que el nombre de host, por lo que puedes personalizar tu nombre con `--name` lo cual puede ayudarte a identificar el servidor.
+Por defecto, el nombre del nodo del servidor será el mismo que el nombre del host, así que puedes personalizar tu nombre con `--name`, lo que te ayudará a identificar el servidor.
 
 ## Script de instalación automática
 
-Puedes obtener tu script de instalación automática en `Tianji` -> `Servidores` -> `Agregar` -> pestaña `Auto`
+Puedes obtener tu script de instalación automática en `Tianji` -> `Servidores` -> `Agregar` -> pestaña `Automático`
 
-Esto descargará automáticamente el reportero y creará un servicio de linux en tu máquina. por eso necesita permisos de root.
+Descargará automáticamente el reportero y creará un servicio de Linux en tu máquina, por lo que necesita permisos de root.
 
-### Desinstalar
+### Desinstalación
 
-si deseas desinstalar el servicio de reportero, puedes usar este comando como:
-
+Si deseas desinstalar el servicio de reporter, puedes usar este comando así:
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
 ``` 
 
-El cambio principal es agregar `-s uninstall` a tu comando de instalación.
+El cambio principal es añadir `-s uninstall` a tu comando de instalación.
 
 ## Kubernetes
 
-Si tus servidores están operando en un clúster de Kubernetes, puedes desplegar el reportero como un DaemonSet para que cada nodo reporte métricas automáticamente. Consulta [Desplegar Reportero como DaemonSet](./kubernetes/reporter-daemonset.md) para más detalles.
+Si tus servidores están ejecutándose en un clúster de Kubernetes, puedes desplegar el reportero como un DaemonSet para que cada nodo informe métricas automáticamente. Consulta [Desplegar Reportero como DaemonSet](./kubernetes/reporter-daemonset.md) para más detalles.
 
 ## Preguntas y Respuestas
 
-### ¿Cómo verificar el registro del servicio del reportero tianji?
+### ¿Cómo verificar el registro del servicio tianji reporter?
 
-Si instalas con el script de instalación automática, tianji te ayudará a instalar un servicio llamado `tianji-reporter` en tu máquina linux.
+Si instalas con el script de instalación automática, tianji te ayudará a instalar un servicio llamado `tianji-reporter` en tu máquina Linux.
 
 Puedes usar este comando para verificar el registro del reportero tianji:
 
@@ -62,12 +61,12 @@ Puedes usar este comando para verificar el registro del reportero tianji:
 journalctl -fu tianji-reporter.service
 ```
 
-### No he encontrado mi máquina en la pestaña de servidores aunque el reporte muestra éxito
+### No encuentro mi máquina en la pestaña de servidores aunque el informe muestra éxito
 
-Quizás tu tianji está detrás de un proxy inverso, por ejemplo `nginx`.
+Tal vez tu tianji esté detrás de un proxy inverso, por ejemplo `nginx`.
 
-Asegúrate de que tu proxy inverso agrega soporte para websockets.
+Por favor, asegúrate de que tu proxy inverso agregue soporte para websocket.
 
-## ¿Por qué mi máquina siempre está offline?
+## ¿Por qué mi máquina siempre está desconectada?
 
 Por favor, verifica la fecha y hora de tu servidor.

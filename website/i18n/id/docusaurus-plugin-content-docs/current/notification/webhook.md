@@ -1,36 +1,36 @@
 ---
 sidebar_position: 5
-_i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
+_i18n_hash: 3656796ebf02a33e45fbef1ecb18923e
 ---
 # Webhook
 
-Jika Anda memerlukan metode notifikasi yang lebih fleksibel, Anda dapat mencoba menggunakan webhook kustom untuk memberi tahu pesan Anda. Dengan cara ini, Anda dapat mengintegrasikan notifikasi Tianji ke dalam sistem apa pun.
+Jika Anda memerlukan metode pemberitahuan yang lebih fleksibel, Anda dapat mencoba menggunakan webhook kustom untuk memberitahukan pesan Anda. Dengan cara ini, Anda dapat mengintegrasikan pemberitahuan Tianji ke dalam sistem apapun.
 
 ### Contoh Hasil
 
-Sistem Tianji akan mengirimkan permintaan POST dengan isi contoh berikut.
+Sistem Tianji akan mengirimkan permintaan POST dengan konten contoh di bawah ini.
 
 ```json
 {
     "notification": {
         "workspaceId": "xxxxxxxxxxx",
-        "name": "Notifikasi Baru",
+        "name": "Pemberitahuan Baru",
         "type": "webhook",
         "payload": {
             "webhookUrl": "example.com"
         }
     },
-    "title": "Pengujian Notifikasi Notifikasi Baru",
-    "content": "Tianji: Wawasan ke segala hal\\nIni adalah Pengujian Notifikasi dari Notifikasi Baru\\n[image]",
+    "title": "Pengujian Pemberitahuan Baru",
+    "content": "Tianji: Wawasan ke dalam segala hal\\nIni adalah Pengujian Pemberitahuan dari Pemberitahuan Baru\\n[gambar]",
     "raw": [
         {
             "type": "title",
             "level": 2,
-            "content": "Tianji: Wawasan ke segala hal"
+            "content": "Tianji: Wawasan ke dalam segala hal"
         },
         {
             "type": "text",
-            "content": "Ini adalah Pengujian Notifikasi dari Notifikasi Baru"
+            "content": "Ini adalah Pengujian Pemberitahuan dari Pemberitahuan Baru"
         },
         {
             "type": "newline"

@@ -1,14 +1,14 @@
 ---
 sidebar_position: 5
-_i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
+_i18n_hash: 3656796ebf02a33e45fbef1ecb18923e
 ---
 # Webhook
 
-如果你需要更灵活的通知方式，可以尝试使用自定义Webhook来通知你的消息。这样，你可以将天机的通知集成到任何系统中。
+如果您需要更灵活的通知方式，可以尝试使用自定义webhook来通知您的消息。通过这种方式，您可以将Tianji的通知集成到任何系统中。
 
 ### 示例结果
 
-天机系统将发送一个包含以下示例内容的POST请求。
+Tianji系统将发送一个包含以下示例内容的POST请求。
 
 ```json
 {
@@ -20,17 +20,17 @@ _i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
             "webhookUrl": "example.com"
         }
     },
-    "title": "新通知测试",
-    "content": "天机：洞察一切\\n这是来自新通知的测试通知\\n[图片]",
+    "title": "新通知通知测试",
+    "content": "Tianji: 洞察一切\\n这是来自新通知的通知测试\\n[图片]",
     "raw": [
         {
             "type": "title",
             "level": 2,
-            "content": "天机：洞察一切"
+            "content": "Tianji: 洞察一切"
         },
         {
             "type": "text",
-            "content": "这是来自新通知的测试通知"
+            "content": "这是来自新通知的通知测试"
         },
         {
             "type": "newline"

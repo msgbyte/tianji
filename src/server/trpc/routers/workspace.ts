@@ -553,6 +553,7 @@ export const workspaceRouter = router({
         feed: z.number(),
         shortLink: z.number(),
         aiGateway: z.number(),
+        aiRouter: z.number(),
         functionWorker: z.number(),
       })
     )
@@ -574,6 +575,7 @@ export const workspaceRouter = router({
         feed,
         shortLink,
         aiGateway,
+        aiRouter,
         functionWorker,
       } = serviceCount;
 
@@ -588,6 +590,7 @@ export const workspaceRouter = router({
         feed,
         shortLink,
         aiGateway,
+        aiRouter,
         functionWorker,
       };
     }),
