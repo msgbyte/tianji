@@ -1,5 +1,15 @@
 
 
+## [1.32.0](https://github.com/msgbyte/tianji/compare/v1.31.29...v1.32.0) (2026-06-14)
+
+### Features
+
+* add ai route feature ([446263d](https://github.com/msgbyte/tianji/commit/446263d95e5d02d0db56b9bc62992788c9d73dc5))
+
+### Bug Fixes
+
+* **ai-gateway:** add cache write pricing support ([cd7dac9](https://github.com/msgbyte/tianji/commit/cd7dac950145516330927b0f22fde760304c03ff))
+
 ## [1.31.29](https://github.com/msgbyte/tianji/compare/v1.31.28...v1.31.29) (2026-06-10)
 
 ### Features
