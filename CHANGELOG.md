@@ -1,5 +1,16 @@
 
 
+## [1.32.1](https://github.com/msgbyte/tianji/compare/v1.32.0...v1.32.1) (2026-06-15)
+
+### Bug Fixes
+
+* **ai-router:** proxy dev runtime routes and log invalid requests ([33a18a4](https://github.com/msgbyte/tianji/commit/33a18a4238f271425810b31c3208d688f6f75aef))
+* **survey:** prefill field type in edit form ([1689941](https://github.com/msgbyte/tianji/commit/1689941c91157231860474db2d00949c79cf5012))
+
+### Others
+
+* remove unused index ([de8ab85](https://github.com/msgbyte/tianji/commit/de8ab85c0440b367936153c582e50e9a7b82bc66))
+
 ## [1.32.0](https://github.com/msgbyte/tianji/compare/v1.31.29...v1.32.0) (2026-06-14)
 
 ### Features
