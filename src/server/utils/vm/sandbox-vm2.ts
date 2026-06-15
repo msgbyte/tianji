@@ -24,11 +24,19 @@ async function createTempWorkerFile(
 
     // Create a sandbox with console logging
     const logger = [];
+    const serializeForParent = (value) => {
+      if (value === undefined || value === null || typeof value !== 'object') {
+        return value;
+      }
+
+      return JSON.parse(JSON.stringify(value));
+    };
 
     (async () => {
       try {
         const vm = new VM({
           timeout: 5000, // 5 seconds timeout
+          bufferAllocLimit: memoryLimitBytes,
           sandbox: {
             console: {
               log: (...args) => {
@@ -68,7 +76,12 @@ async function createTempWorkerFile(
         const usage = Date.now() - start;
 
         // Send the result back to the parent
-        parentPort.postMessage({ success: true, result, logger, usage });
+        parentPort.postMessage({
+          success: true,
+          result: serializeForParent(result),
+          logger: serializeForParent(logger),
+          usage
+        });
       } catch (error) {
         // Send the error back to the parent
         parentPort.postMessage({
@@ -87,7 +100,8 @@ async function createTempWorkerFile(
 // Function to run code in VM2 via worker threads
 export async function runCodeInVM2(
   code: string,
-  memoryLimitMB = env.sandbox.memoryLimit
+  memoryLimitMB = env.sandbox.memoryLimit,
+  executionTimeoutMs = 10000
 ): Promise<{ logger: any[][]; result: any; usage: number }> {
   const start = Date.now();
 
@@ -97,47 +111,65 @@ export async function runCodeInVM2(
   return new Promise((resolve, reject) => {
     // Create a worker
     const worker = new Worker(workerFilePath);
+    let settled = false;
+
+    const cleanup = () => {
+      fs.rmSync(workerFilePath, { force: true });
+    };
+
+    const finish = (callback: () => void) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      clearTimeout(timeout);
+      cleanup();
+      callback();
+    };
 
     // Set a timeout to kill the worker if it takes too long
     const timeout = setTimeout(() => {
-      worker.terminate();
-      fs.unlinkSync(workerFilePath);
-      reject(new Error('Execution timed out'));
-    }, 10000); // 10 seconds timeout
+      worker.terminate().catch(() => {});
+      finish(() => reject(new Error('Execution timed out')));
+    }, executionTimeoutMs);
 
     // Listen for messages from the worker
     worker.on('message', (message) => {
-      clearTimeout(timeout);
-
-      // Clean up the temporary worker file
-      fs.unlinkSync(workerFilePath);
-
       if (message.success) {
-        resolve({
-          logger: message.logger || [],
-          result: message.result,
-          usage: message.usage || Date.now() - start,
+        finish(() => {
+          resolve({
+            logger: message.logger || [],
+            result: message.result,
+            usage: message.usage || Date.now() - start,
+          });
         });
       } else {
         const error = new Error(message.error || 'Unknown error');
         // error.logger = message.logger || [];
-        reject(error);
+        finish(() => reject(error));
       }
     });
 
     // Handle worker errors
     worker.on('error', (error) => {
-      clearTimeout(timeout);
-      fs.unlinkSync(workerFilePath);
-      reject(error);
+      finish(() => reject(error));
     });
 
     // Handle worker exit
     worker.on('exit', (code) => {
-      clearTimeout(timeout);
+      if (settled) {
+        return;
+      }
+
       if (code !== 0) {
-        fs.unlinkSync(workerFilePath);
-        reject(new Error(`Worker stopped with exit code ${code}`));
+        finish(() =>
+          reject(new Error(`Worker stopped with exit code ${code}`))
+        );
+      } else {
+        finish(() =>
+          reject(new Error('Worker stopped before sending a result'))
+        );
       }
     });
   });

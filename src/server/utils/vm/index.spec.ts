@@ -188,8 +188,10 @@ describe('runCodeInIVM', () => {
     expect(result.result).toBe('complete');
   });
 
-  test.only('should support typescript code', async () => {
-    const code = `
+  test.runIf(process.env.ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT === 'true')(
+    'should support typescript code',
+    async () => {
+      const code = `
       (async () => {
         const a: number = 1;
         const b: number = 2;
@@ -197,7 +199,8 @@ describe('runCodeInIVM', () => {
         return a + b;
       })()
     `;
-    const result = await runCodeInIVM(code);
-    expect(result.result).toBe(3);
-  });
+      const result = await runCodeInIVM(code);
+      expect(result.result).toBe(3);
+    }
+  );
 });

@@ -982,8 +982,8 @@ importers:
         specifier: ^0.13.0
         version: 0.13.0
       vm2:
-        specifier: ^3.9.19
-        version: 3.9.19
+        specifier: ^3.11.5
+        version: 3.11.5
       winston:
         specifier: ^3.17.0
         version: 3.17.0
@@ -18158,10 +18158,9 @@ packages:
   vlq@1.0.1:
     resolution: {integrity: sha512-gQpnTgkubC6hQgdIcRdYGDSDc+SaujOdyesZQMv6JlfQee/9Mp0Qhnys6WxDWvQnL5WZdT7o2Ul187aSt0Rq+w==}
 
-  vm2@3.9.19:
-    resolution: {integrity: sha512-J637XF0DHDMV57R6JyVsTak7nIL8gy5KH4r1HiwWLf/4GBbb5MKL5y7LpmF4A8E2nR6XmzpmMFQ7V7ppPTmUQg==}
+  vm2@3.11.5:
+    resolution: {integrity: sha512-RSrkBiwrj6FRU+QdqNs6KG0XdlvJCjpQ4GXiqmMbrhmwfu5k/XIMpAer0L8f6iuf0uJ3a4T1xJN126Q8yf0VIA==}
     engines: {node: '>=6.0'}
-    deprecated: The library contains critical security issues and should not be used for production! The maintenance of the project has been discontinued. Consider migrating your code to isolated-vm.
     hasBin: true
 
   void-elements@3.1.0:
@@ -27231,45 +27230,45 @@ snapshots:
       mime-types: 3.0.1
       negotiator: 1.0.0
 
-  acorn-class-fields@0.3.7(acorn@8.14.1):
+  acorn-class-fields@0.3.7(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
-      acorn-private-class-elements: 0.2.7(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-private-class-elements: 0.2.7(acorn@8.15.0)
 
-  acorn-import-attributes@1.9.5(acorn@8.14.1):
+  acorn-import-attributes@1.9.5(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
 
-  acorn-jsx@5.3.2(acorn@8.14.1):
+  acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
 
-  acorn-private-class-elements@0.2.7(acorn@8.14.1):
+  acorn-private-class-elements@0.2.7(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
 
-  acorn-private-methods@0.3.3(acorn@8.14.1):
+  acorn-private-methods@0.3.3(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
-      acorn-private-class-elements: 0.2.7(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-private-class-elements: 0.2.7(acorn@8.15.0)
 
-  acorn-stage3@4.0.0(acorn@8.14.1):
+  acorn-stage3@4.0.0(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
-      acorn-class-fields: 0.3.7(acorn@8.14.1)
-      acorn-private-methods: 0.3.3(acorn@8.14.1)
-      acorn-static-class-features: 0.2.4(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-class-fields: 0.3.7(acorn@8.15.0)
+      acorn-private-methods: 0.3.3(acorn@8.15.0)
+      acorn-static-class-features: 0.2.4(acorn@8.15.0)
 
-  acorn-static-class-features@0.2.4(acorn@8.14.1):
+  acorn-static-class-features@0.2.4(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
-      acorn-private-class-elements: 0.2.7(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-private-class-elements: 0.2.7(acorn@8.15.0)
 
   acorn-walk@8.3.2: {}
 
   acorn-walk@8.3.4:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
 
   acorn@8.11.3: {}
 
@@ -30456,8 +30455,8 @@ snapshots:
 
   espree@10.3.0:
     dependencies:
-      acorn: 8.14.1
-      acorn-jsx: 5.3.2(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-jsx: 5.3.2(acorn@8.15.0)
       eslint-visitor-keys: 4.2.0
 
   esprima-next@5.8.4: {}
@@ -32137,9 +32136,9 @@ snapshots:
 
   i18next-scanner@4.6.0(typescript@5.7.2):
     dependencies:
-      acorn: 8.14.1
-      acorn-jsx: 5.3.2(acorn@8.14.1)
-      acorn-stage3: 4.0.0(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-jsx: 5.3.2(acorn@8.15.0)
+      acorn-stage3: 4.0.0(acorn@8.15.0)
       acorn-walk: 8.3.4
       chalk: 4.1.2
       clone-deep: 4.0.1
@@ -34313,8 +34312,8 @@ snapshots:
 
   micromark-extension-mdxjs@3.0.0:
     dependencies:
-      acorn: 8.14.1
-      acorn-jsx: 5.3.2(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-jsx: 5.3.2(acorn@8.15.0)
       micromark-extension-mdx-expression: 3.0.0
       micromark-extension-mdx-jsx: 3.0.1
       micromark-extension-mdx-md: 2.0.0
@@ -34740,14 +34739,14 @@ snapshots:
 
   mlly@1.6.1:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
       pathe: 1.1.2
       pkg-types: 1.0.3
       ufo: 1.6.1
 
   mlly@1.7.4:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.6.1
@@ -39584,7 +39583,7 @@ snapshots:
   terser@5.28.1:
     dependencies:
       '@jridgewell/source-map': 0.3.5
-      acorn: 8.14.1
+      acorn: 8.15.0
       commander: 2.20.3
       source-map-support: 0.5.21
 
@@ -40203,7 +40202,7 @@ snapshots:
 
   unplugin@1.16.1:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
       webpack-virtual-modules: 0.6.2
 
   update-browserslist-db@1.0.13(browserslist@4.22.2):
@@ -40598,9 +40597,9 @@ snapshots:
 
   vlq@1.0.1: {}
 
-  vm2@3.9.19:
+  vm2@3.11.5:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
       acorn-walk: 8.3.4
 
   void-elements@3.1.0: {}
@@ -40668,7 +40667,7 @@ snapshots:
   webpack-bundle-analyzer@4.10.2:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.14.1
+      acorn: 8.15.0
       acorn-walk: 8.3.4
       commander: 7.2.0
       debounce: 1.2.1
@@ -40754,8 +40753,8 @@ snapshots:
       '@webassemblyjs/ast': 1.12.1
       '@webassemblyjs/wasm-edit': 1.12.1
       '@webassemblyjs/wasm-parser': 1.12.1
-      acorn: 8.14.1
-      acorn-import-attributes: 1.9.5(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-import-attributes: 1.9.5(acorn@8.15.0)
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.17.1
