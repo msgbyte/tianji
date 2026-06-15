@@ -58,6 +58,12 @@ export default defineConfig({
       '/api/auth/': {
         target: 'http://localhost:12345',
       },
+      '/api/ai/': {
+        target: 'http://localhost:12345',
+      },
+      '/api/ai-router/': {
+        target: 'http://localhost:12345',
+      },
       '/api/workspace': {
         target: 'http://localhost:12345',
       },

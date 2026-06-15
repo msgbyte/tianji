@@ -736,15 +736,16 @@ function buildAIRouterRuntimeHandler(args: {
   schema: z.ZodType<Record<string, unknown>>;
 }): RequestHandler {
   return async (req, res) => {
+    const start = Date.now();
     const { workspaceId, routerId } = z
       .object({
         workspaceId: z.string(),
         routerId: z.string(),
       })
       .parse(req.params);
-    const requestPayload = args.schema.parse(req.body);
 
     try {
+      const requestPayload = args.schema.parse(req.body);
       const outcome = await runAIRouterAttempts({
         workspaceId,
         routerId,
@@ -805,6 +806,28 @@ function buildAIRouterRuntimeHandler(args: {
         },
       });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        const message = formatAIRouterValidationError(error);
+
+        await createAIRouterRuntimeFailureLog({
+          workspaceId,
+          routerId,
+          protocol: args.protocol,
+          statusCode: 400,
+          errorType: 'validation',
+          message,
+          duration: Date.now() - start,
+        });
+
+        res.status(400).json({
+          error: {
+            message,
+            type: 'invalid_request',
+          },
+        });
+        return;
+      }
+
       if (error instanceof AIRouterRuntimeError) {
         res.status(error.statusCode).json({
           error: {
@@ -820,6 +843,54 @@ function buildAIRouterRuntimeHandler(args: {
   };
 }
 
+async function createAIRouterRuntimeFailureLog(args: {
+  workspaceId: string;
+  routerId: string;
+  protocol: AIRouterProtocol;
+  statusCode: number;
+  errorType: string;
+  message: string;
+  duration: number;
+}) {
+  try {
+    const router = await prisma.aIRouter.findFirst({
+      where: {
+        id: args.routerId,
+        workspaceId: args.workspaceId,
+        enabled: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!router) {
+      return;
+    }
+
+    await prisma.aIRouterLogs.create({
+      data: buildAIRouterLogData({
+        workspaceId: args.workspaceId,
+        routerId: args.routerId,
+        protocol: args.protocol,
+        status: AIRouterLogsStatus.Failed,
+        attempts: [],
+        attemptErrors: [
+          compactObject({
+            statusCode: args.statusCode,
+            retryable: false,
+            errorType: args.errorType,
+            message: args.message,
+          }),
+        ],
+        duration: args.duration,
+      }),
+    });
+  } catch (error) {
+    logger.warn('[ai-router] failed to write runtime failure log', error);
+  }
+}
+
 function buildAIRouterLogData(args: {
   workspaceId: string;
   routerId: string;
@@ -827,6 +898,7 @@ function buildAIRouterLogData(args: {
   status: AIRouterLogsStatus;
   attempts: AIRouterAttemptSummary[];
   finalAttempt?: AIRouterAttemptSummary;
+  attemptErrors?: Record<string, unknown>[];
   duration: number;
 }): Prisma.AIRouterLogsUncheckedCreateInput {
   return {
@@ -840,10 +912,25 @@ function buildAIRouterLogData(args: {
     attemptGatewayLogIds: args.attempts.flatMap((attempt) =>
       attempt.gatewayLogId ? [attempt.gatewayLogId] : []
     ),
-    attemptErrors: serializeAIRouterAttemptErrors(args.attempts) as any,
+    attemptErrors: (args.attemptErrors ??
+      serializeAIRouterAttemptErrors(args.attempts)) as any,
     attemptCount: args.attempts.length,
     duration: Math.max(0, Math.round(args.duration)),
   };
+}
+
+function formatAIRouterValidationError(error: z.ZodError) {
+  const details = error.issues
+    .map((issue) => {
+      const path = issue.path.join('.');
+
+      return path ? `${path}: ${issue.message}` : issue.message;
+    })
+    .join('; ');
+
+  return details
+    ? `Invalid AI Router request payload: ${details}`
+    : 'Invalid AI Router request payload';
 }
 
 function toAIRouterRetryableErrorType(

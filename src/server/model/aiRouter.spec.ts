@@ -1,8 +1,9 @@
 import { AIRouterLogsStatus } from '@prisma/client';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   AI_ROUTER_PROTOCOLS,
   applyAIRouterModelOverride,
+  buildAIRouterOpenAIChatHandler,
   buildBufferedAIGatewayAttemptResult,
   createAIRouterAttemptRequest,
   getAIRouterProtocolForPath,
@@ -15,6 +16,11 @@ import {
   selectEligibleAIRouterNodes,
 } from './aiRouter.js';
 import { aiRouterRouter } from '../router/aiRouter.js';
+import { prisma } from './_client.js';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('AI Router protocol helpers', () => {
   test('exports stable protocol identifiers', () => {
@@ -921,6 +927,55 @@ describe('aiRouterRouter routes', () => {
     );
     expect(paths).toContain('/:workspaceId/:routerId/custom/v1/messages');
     expect(paths).toContain('/:workspaceId/:routerId/custom/v1/responses');
+  });
+
+  test('writes a failed router log when runtime payload validation fails', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+      id: 'router1',
+    } as any);
+    const createLog = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockResolvedValue({
+        id: 'router-log1',
+      } as any);
+
+    const handler = buildAIRouterOpenAIChatHandler();
+    const req = {
+      params: {
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+      },
+      body: {
+        model: 'gpt-4o-mini',
+      },
+    } as any;
+    const res = {
+      status: vi.fn(),
+      json: vi.fn(),
+    } as any;
+    res.status.mockReturnValue(res);
+
+    await handler(req, res, vi.fn());
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(createLog).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        status: AIRouterLogsStatus.Failed,
+        attemptGatewayIds: [],
+        attemptGatewayLogIds: [],
+        attemptCount: 0,
+      }),
+    });
+    expect(createLog.mock.calls[0][0].data.attemptErrors).toEqual([
+      expect.objectContaining({
+        statusCode: 400,
+        retryable: false,
+        errorType: 'validation',
+      }),
+    ]);
   });
 });
 
