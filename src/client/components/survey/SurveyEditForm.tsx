@@ -174,39 +174,40 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                       </FormItem>
                     )}
 
-                    <FormItem>
-                      <FormLabel>{t('Type')}</FormLabel>
-                      <FormControl>
-                        <Select
-                          defaultValue="text"
-                          onValueChange={(val) =>
-                            form.setValue(`payload.items.${i}.type`, val as any)
-                          }
-                        >
-                          <SelectTrigger
-                            className="w-[130px]"
-                            {...form.register(`payload.items.${i}.type`)}
+                    <FormField
+                      control={form.control}
+                      name={`payload.items.${i}.type`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('Type')}</FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
                           >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">{t('Text')}</SelectItem>
-                            <SelectItem value="email">{t('Email')}</SelectItem>
-                            <SelectItem value="url">{t('Url')}</SelectItem>
-                            <SelectItem value="imageUrl">
-                              {t('Image Url')}
-                            </SelectItem>
-                            <SelectItem value="hidden">
-                              {t('Hidden Field')}
-                            </SelectItem>
-                            {/* <SelectItem value="select">
-                              {t('Select')}
-                            </SelectItem> */}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                            <FormControl>
+                              <SelectTrigger className="w-[130px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="text">{t('Text')}</SelectItem>
+                              <SelectItem value="email">{t('Email')}</SelectItem>
+                              <SelectItem value="url">{t('Url')}</SelectItem>
+                              <SelectItem value="imageUrl">
+                                {t('Image Url')}
+                              </SelectItem>
+                              <SelectItem value="hidden">
+                                {t('Hidden Field')}
+                              </SelectItem>
+                              {/* <SelectItem value="select">
+                                {t('Select')}
+                              </SelectItem> */}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     {/* actions */}
                     <div className="grid min-w-10 grid-flow-col grid-cols-2 grid-rows-2 gap-0.5 self-end">
