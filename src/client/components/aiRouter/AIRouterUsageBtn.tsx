@@ -19,6 +19,10 @@ import {
 import { useCurrentWorkspaceId } from '@/store/user';
 import { useTranslation } from '@i18next-toolkit/react';
 import { LuCodeXml } from 'react-icons/lu';
+import {
+  ANTHROPIC_EXAMPLE_MODEL,
+  OPENAI_EXAMPLE_MODEL,
+} from '@/components/aiModelExamples';
 
 interface AIRouterUsageBtnProps {
   routerId: string;
@@ -124,7 +128,7 @@ function buildAIRouterExamples(args: {
   -H 'x-api-key: <YOUR_API_KEY>' \\
   -H 'anthropic-version: 2023-06-01' \\
   -d '{
-  "model": "claude-opus-4-20250514",
+  "model": "${ANTHROPIC_EXAMPLE_MODEL}",
   "max_tokens": 1024,
   "messages": [
     {
@@ -145,7 +149,7 @@ const client = new Anthropic({
 
 async function main() {
   const message = await client.messages.create({
-    model: 'claude-opus-4-20250514',
+    model: '${ANTHROPIC_EXAMPLE_MODEL}',
     max_tokens: 1024,
     messages: [{ role: 'user', content: 'Hello' }],
   });
@@ -166,7 +170,7 @@ main();`,
   -H 'Content-Type: application/json' \\
   -H 'Authorization: Bearer <YOUR_API_KEY>' \\
   -d '{
-  "model": "gpt-4o",
+  "model": "${OPENAI_EXAMPLE_MODEL}",
   "input": "Hello"
 }'`,
       },
@@ -181,7 +185,7 @@ const client = new OpenAI({
 
 async function main() {
   const response = await client.responses.create({
-    model: 'gpt-4o',
+    model: '${OPENAI_EXAMPLE_MODEL}',
     input: 'Hello',
   });
 
@@ -200,7 +204,7 @@ main();`,
   -H 'Content-Type: application/json' \\
   -H 'Authorization: Bearer <YOUR_API_KEY>' \\
   -d '{
-  "model": "gpt-4o",
+  "model": "${OPENAI_EXAMPLE_MODEL}",
   "messages": [
     {
       "role": "user",
@@ -220,7 +224,7 @@ const client = new OpenAI({
 
 async function main() {
   const response = await client.chat.completions.create({
-    model: 'gpt-4o',
+    model: '${OPENAI_EXAMPLE_MODEL}',
     messages: [{ role: 'user', content: 'Hello' }],
   });
 

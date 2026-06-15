@@ -11,6 +11,8 @@ import { mapValues } from 'lodash-es';
 // @ts-ignore
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions.mjs';
 
+const OPENAI_TEST_MODEL = 'gpt-5.5';
+
 const functions = {
   getCurrentDate: {
     name: 'getCurrentDate',
@@ -53,7 +55,7 @@ describe.runIf(env.openai.apiKey)('openai', () => {
   test('test openai tool choose', async () => {
     try {
       const chatCompletion = await openaiClient.chat.completions.create({
-        model: 'gpt-4',
+        model: OPENAI_TEST_MODEL,
         messages: [
           // { role: 'system', content: 'You are a helper who helps the user to perform functions.' },
           {

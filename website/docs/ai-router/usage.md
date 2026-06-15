@@ -42,7 +42,7 @@ const client = new OpenAI({
 });
 
 const response = await client.chat.completions.create({
-  model: 'gpt-4o',
+  model: 'gpt-5.5',
   messages: [{ role: 'user', content: 'Hello from Tianji AI Router' }],
 });
 
@@ -56,7 +56,7 @@ curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<router
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer <YOUR_TIANJI_API_KEY>' \
   -d '{
-    "model": "gpt-4o",
+    "model": "gpt-5.5",
     "messages": [
       {
         "role": "user",
@@ -86,7 +86,7 @@ const client = new OpenAI({
 });
 
 const response = await client.responses.create({
-  model: 'gpt-4o',
+  model: 'gpt-5.5',
   input: 'Write a short deployment checklist.',
 });
 
@@ -100,7 +100,7 @@ curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<router
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer <YOUR_TIANJI_API_KEY>' \
   -d '{
-    "model": "gpt-4o",
+    "model": "gpt-5.5",
     "input": "Write a short deployment checklist."
   }'
 ```
@@ -125,7 +125,7 @@ const client = new Anthropic({
 });
 
 const message = await client.messages.create({
-  model: 'claude-opus-4-20250514',
+  model: 'claude-opus-4-8',
   max_tokens: 1024,
   messages: [{ role: 'user', content: 'Hello from Tianji AI Router' }],
 });
@@ -141,7 +141,7 @@ curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<router
   -H 'x-api-key: <YOUR_TIANJI_API_KEY>' \
   -H 'anthropic-version: 2023-06-01' \
   -d '{
-    "model": "claude-opus-4-20250514",
+    "model": "claude-opus-4-8",
     "max_tokens": 1024,
     "messages": [
       {

@@ -20,6 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  ANTHROPIC_EXAMPLE_MODEL,
+  OPENAI_EXAMPLE_MODEL,
+  OPENROUTER_OPENAI_EXAMPLE_MODEL,
+} from '@/components/aiModelExamples';
 
 interface AIGatewayCodeExampleBtnProps {
   gatewayId: string;
@@ -54,7 +59,7 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
       () => ({
         openai: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openai',
-          defaultModel: 'gpt-4o',
+          defaultModel: OPENAI_EXAMPLE_MODEL,
           description: t('OpenAI API compatible'),
           label: 'OpenAI API',
         },
@@ -66,13 +71,13 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
         },
         openrouter: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openrouter',
-          defaultModel: 'openai/gpt-4o',
+          defaultModel: OPENROUTER_OPENAI_EXAMPLE_MODEL,
           description: t('OpenRouter API compatible'),
           label: 'OpenRouter API',
         },
         anthropic: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/anthropic',
-          defaultModel: 'claude-opus-4-20250514',
+          defaultModel: ANTHROPIC_EXAMPLE_MODEL,
           description: t('Anthropic API compatible'),
           label: 'Anthropic API',
         },

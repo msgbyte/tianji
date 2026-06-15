@@ -26,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { LuChevronsUpDown, LuCode } from 'react-icons/lu';
 import { AIGatewayStrategyEditor } from './AIGatewayStrategyEditor';
 import { isValidAIGatewayStrategyText } from './AIGatewayStrategyEditor.utils';
+import { OPENAI_EXAMPLE_MODEL } from '@/components/aiModelExamples';
 
 const addFormSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }).max(100),
@@ -169,7 +170,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="gpt-4o-mini"
+                            placeholder={OPENAI_EXAMPLE_MODEL}
                             {...field}
                             value={field.value ?? ''}
                           />
