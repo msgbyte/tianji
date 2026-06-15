@@ -1,5 +1,15 @@
 
 
+## [1.32.2](https://github.com/msgbyte/tianji/compare/v1.32.1...v1.32.2) (2026-06-15)
+
+### Bug Fixes
+
+* **vm:** upgrade and harden vm2 sandbox fallback ([0534445](https://github.com/msgbyte/tianji/commit/0534445a68d000ec40b6623597687bdf543ee838))
+
+### Others
+
+* **ai:** update example model names ([ac0d772](https://github.com/msgbyte/tianji/commit/ac0d772907305d876f8bea0f5d8569ec20d0ba1f))
+
 ## [1.32.1](https://github.com/msgbyte/tianji/compare/v1.32.0...v1.32.1) (2026-06-15)
 
 ### Bug Fixes
