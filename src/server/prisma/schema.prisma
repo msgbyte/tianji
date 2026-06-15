@@ -710,7 +710,6 @@ model MonitorData {
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
-  @@index([monitorId, createdAt(sort: Desc)])
   @@index([monitorId, createdAt, value])
 }
 
