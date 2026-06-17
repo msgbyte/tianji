@@ -19,7 +19,7 @@
   "author": "moonrailgun <moonrailgun@gmail.com>",
   "dependencies": {
     "dayjs": "^1.11.9",
-    "lodash-es": "^4.17.21"
+    "lodash-es": "^4.18.0"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",

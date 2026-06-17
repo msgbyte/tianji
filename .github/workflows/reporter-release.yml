@@ -22,7 +22,7 @@ jobs:
           project_path: ./reporter
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: 1.23.11
+          goversion: 1.25.11
           binary_name: "tianji-reporter"
           compress_assets: "OFF"
           asset_name: "tianji-reporter-${{ matrix.goos }}-${{ matrix.goarch }}"
@@ -44,7 +44,7 @@ jobs:
           ldflags: '-extldflags "-static"'
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: 1.23.11
+          goversion: 1.25.11
           binary_name: "tianji-reporter"
           compress_assets: "OFF"
           asset_name: "tianji-reporter-${{ matrix.goos }}-${{ matrix.goarch }}-alpine"
