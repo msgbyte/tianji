@@ -5,6 +5,7 @@ import {
   type RequestHandler,
   type Response,
 } from 'express';
+import OpenAI from 'openai';
 import { z } from 'zod';
 import {
   anthropicRequestSchema,
@@ -18,6 +19,7 @@ import {
 import type { AIGatewayLogAwareRequest } from './aiGateway.js';
 import { prisma } from './_client.js';
 import { logger } from '../utils/logger.js';
+import { verifyUserApiKey } from './user.js';
 
 export const AI_ROUTER_PROTOCOLS = {
   OPENAI_CHAT: 'openai-chat',
@@ -106,7 +108,9 @@ export function applyAIRouterModelOverride<T extends { model?: unknown }>(
 }
 
 export interface AIRouterGatewayEligibility {
+  id?: string;
   modelApiKey?: string | null;
+  customModelBaseUrl?: string | null;
 }
 
 export interface AIRouterNodeEligibility {
@@ -496,6 +500,12 @@ interface AIRouterAttemptExecutionArgs<
   payload: Record<string, unknown>;
 }
 
+interface AIRouterModelsListArgs<
+  TNode extends AIRouterAttemptNode = AIRouterAttemptNode,
+> {
+  node: TNode;
+}
+
 interface AIRouterRuntimeRouter<
   TNode extends AIRouterAttemptNode = AIRouterAttemptNode,
 > {
@@ -519,6 +529,21 @@ interface RunAIRouterAttemptsArgs<
   createLog?: (data: Prisma.AIRouterLogsUncheckedCreateInput) => Promise<TLog>;
   now?: () => number;
   random?: () => number;
+}
+
+export interface AIRouterModelsDiscoveryFailure {
+  gatewayId: string;
+  message: string;
+}
+
+interface RunAIRouterModelsDiscoveryArgs<
+  TNode extends AIRouterAttemptNode = AIRouterAttemptNode,
+> {
+  workspaceId: string;
+  routerId: string;
+  protocol: AIRouterProtocol;
+  loadRouter?: () => Promise<AIRouterRuntimeRouter<TNode> | null>;
+  listModels: (args: AIRouterModelsListArgs<TNode>) => Promise<unknown[]>;
 }
 
 export async function runAIRouterAttempts<
@@ -684,6 +709,93 @@ export async function runAIRouterAttempts<
   };
 }
 
+export async function runAIRouterModelsDiscovery<
+  TNode extends AIRouterAttemptNode = AIRouterAttemptNode,
+>(
+  args: RunAIRouterModelsDiscoveryArgs<TNode>
+): Promise<{
+  models: unknown[];
+  failures: AIRouterModelsDiscoveryFailure[];
+  gatewayCount: number;
+}> {
+  const loadRouter =
+    args.loadRouter ??
+    (async () =>
+      (await prisma.aIRouter.findFirst({
+        where: {
+          id: args.routerId,
+          workspaceId: args.workspaceId,
+          enabled: true,
+        },
+        include: {
+          tiers: {
+            include: {
+              nodes: {
+                include: {
+                  gateway: true,
+                },
+                orderBy: {
+                  order: 'asc',
+                },
+              },
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
+        },
+      })) as AIRouterRuntimeRouter<TNode> | null);
+
+  const router = await loadRouter();
+
+  if (!router) {
+    throw new AIRouterRuntimeError(
+      404,
+      'not_found',
+      'AI Router not found or disabled'
+    );
+  }
+
+  const models: unknown[] = [];
+  const modelIds = new Set<string>();
+  const failures: AIRouterModelsDiscoveryFailure[] = [];
+  let gatewayCount = 0;
+
+  for (const tier of getAIRouterRuntimeTiers(router)) {
+    const nodes = selectEligibleAIRouterNodes(tier.nodes, args.protocol);
+
+    for (const node of nodes) {
+      gatewayCount += 1;
+
+      try {
+        const nodeModels = await args.listModels({ node });
+
+        for (const model of nodeModels) {
+          const modelId = getAIRouterModelId(model);
+
+          if (!modelId || modelIds.has(modelId)) {
+            continue;
+          }
+
+          modelIds.add(modelId);
+          models.push(model);
+        }
+      } catch (error) {
+        failures.push({
+          gatewayId: node.gatewayId,
+          message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+  }
+
+  return {
+    models,
+    failures,
+    gatewayCount,
+  };
+}
+
 function getAIRouterRuntimeTiers<TNode extends AIRouterAttemptNode>(
   router: AIRouterRuntimeRouter<TNode>
 ): AIRouterAttemptTier<TNode>[] {
@@ -729,6 +841,270 @@ export function buildAIRouterAnthropicMessagesHandler(
     protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
     schema: anthropicRequestSchema,
   });
+}
+
+export function buildAIRouterOpenAIModelsHandler(): RequestHandler {
+  return buildAIRouterModelsHandler({
+    protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+    responseFormat: 'openai',
+  });
+}
+
+export function buildAIRouterAnthropicModelsHandler(): RequestHandler {
+  return buildAIRouterModelsHandler({
+    protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+    responseFormat: 'anthropic',
+  });
+}
+
+function buildAIRouterModelsHandler(args: {
+  protocol: AIRouterProtocol;
+  responseFormat: 'openai' | 'anthropic';
+}): RequestHandler {
+  return async (req, res) => {
+    const { workspaceId, routerId } = z
+      .object({
+        workspaceId: z.string(),
+        routerId: z.string(),
+      })
+      .parse(req.params);
+    const requestApiKey = getAIRouterModelsRequestApiKey(
+      req,
+      args.responseFormat
+    );
+    let verifyRequestApiKeyPromise: Promise<unknown> | undefined;
+    const verifyRequestApiKey = () => {
+      verifyRequestApiKeyPromise ??= verifyUserApiKey(requestApiKey);
+
+      return verifyRequestApiKeyPromise;
+    };
+
+    try {
+      const result = await runAIRouterModelsDiscovery({
+        workspaceId,
+        routerId,
+        protocol: args.protocol,
+        listModels: ({ node }) =>
+          listAIRouterNodeModels({
+            req,
+            node,
+            responseFormat: args.responseFormat,
+            requestApiKey,
+            verifyRequestApiKey,
+          }),
+      });
+
+      if (result.gatewayCount === 0) {
+        res.status(503).json({
+          error: {
+            message: 'No eligible AI Router nodes are available',
+            type: 'router_unavailable',
+          },
+        });
+        return;
+      }
+
+      if (result.models.length === 0 && result.failures.length > 0) {
+        res.status(502).json({
+          error: {
+            message: 'AI Router failed to discover models from every gateway',
+            type: 'router_failed',
+          },
+        });
+        return;
+      }
+
+      if (args.responseFormat === 'anthropic') {
+        res.json(formatAnthropicModelsList(result.models));
+        return;
+      }
+
+      res.json({
+        object: 'list',
+        data: result.models,
+      });
+    } catch (error) {
+      if (error instanceof AIRouterRuntimeError) {
+        res.status(error.statusCode).json({
+          error: {
+            message: error.message,
+            type: error.type,
+          },
+        });
+        return;
+      }
+
+      throw error;
+    }
+  };
+}
+
+async function listAIRouterNodeModels(args: {
+  req: Request;
+  node: AIRouterAttemptNode;
+  responseFormat: 'openai' | 'anthropic';
+  requestApiKey: string;
+  verifyRequestApiKey: () => Promise<unknown>;
+}): Promise<unknown[]> {
+  const modelProvider = getAIRouterNodeProvider(args.node);
+
+  if (!modelProvider) {
+    return [];
+  }
+
+  const gatewayApiKey = args.node.gateway?.modelApiKey?.trim();
+  const modelApiKey = gatewayApiKey || args.requestApiKey;
+
+  if (gatewayApiKey) {
+    await args.verifyRequestApiKey();
+  }
+
+  if (
+    modelProvider === 'anthropic' ||
+    (args.responseFormat === 'anthropic' && modelProvider !== 'openrouter')
+  ) {
+    return listAIRouterAnthropicModels({
+      req: args.req,
+      node: args.node,
+      modelProvider,
+      modelApiKey,
+    });
+  }
+
+  return listAIRouterOpenAIModels({
+    req: args.req,
+    node: args.node,
+    modelProvider,
+    modelApiKey,
+  });
+}
+
+async function listAIRouterOpenAIModels(args: {
+  req: Request;
+  node: AIRouterAttemptNode;
+  modelProvider: string;
+  modelApiKey: string;
+}): Promise<unknown[]> {
+  const openai = new OpenAI({
+    apiKey: args.modelApiKey,
+    baseURL: resolveAIRouterOpenAIModelsBaseUrl(args.node, args.modelProvider),
+    defaultHeaders:
+      args.modelProvider === 'openrouter'
+        ? buildOpenRouterHeaders(args.req)
+        : undefined,
+  });
+  const list = await openai.models.list();
+
+  return list.data;
+}
+
+async function listAIRouterAnthropicModels(args: {
+  req: Request;
+  node: AIRouterAttemptNode;
+  modelProvider: string;
+  modelApiKey: string;
+}): Promise<unknown[]> {
+  const baseUrl = resolveAIRouterAnthropicModelsBaseUrl(
+    args.node,
+    args.modelProvider
+  );
+  const queryString = new URLSearchParams(
+    args.req.query as Record<string, string>
+  ).toString();
+  const upstreamResponse = await fetch(
+    `${baseUrl}/models${queryString ? `?${queryString}` : ''}`,
+    {
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': args.modelApiKey,
+        'anthropic-version':
+          String(args.req.headers['anthropic-version'] ?? '') || '2023-06-01',
+      },
+    }
+  );
+
+  if (!upstreamResponse.ok) {
+    throw new Error(
+      `Models discovery failed with status ${upstreamResponse.status}`
+    );
+  }
+
+  const body = await upstreamResponse.json();
+
+  return Array.isArray(body?.data) ? body.data : [];
+}
+
+function resolveAIRouterOpenAIModelsBaseUrl(
+  node: AIRouterAttemptNode,
+  modelProvider: string
+) {
+  if (modelProvider === 'deepseek') {
+    return 'https://api.deepseek.com';
+  }
+
+  if (modelProvider === 'openrouter') {
+    return 'https://openrouter.ai/api/v1';
+  }
+
+  if (modelProvider === 'custom') {
+    return node.gateway?.customModelBaseUrl?.trim() || undefined;
+  }
+
+  return undefined;
+}
+
+function resolveAIRouterAnthropicModelsBaseUrl(
+  node: AIRouterAttemptNode,
+  modelProvider: string
+) {
+  if (modelProvider === 'anthropic') {
+    return 'https://api.anthropic.com/v1';
+  }
+
+  const baseUrl = node.gateway?.customModelBaseUrl?.trim();
+
+  if (baseUrl) {
+    return baseUrl;
+  }
+
+  throw new Error('Custom gateway base URL is required for models discovery');
+}
+
+function getAIRouterModelsRequestApiKey(
+  req: Request,
+  responseFormat: 'openai' | 'anthropic'
+) {
+  if (responseFormat === 'anthropic' && req.headers['x-api-key']) {
+    return String(req.headers['x-api-key']);
+  }
+
+  return String(req.headers.authorization ?? '').replace('Bearer ', '');
+}
+
+function formatAnthropicModelsList(models: unknown[]) {
+  const modelIds = models.flatMap((model) => {
+    const modelId = getAIRouterModelId(model);
+
+    return modelId ? [modelId] : [];
+  });
+
+  return {
+    data: models,
+    first_id: modelIds[0] ?? null,
+    last_id: modelIds[modelIds.length - 1] ?? null,
+    has_more: false,
+  };
+}
+
+function getAIRouterModelId(model: unknown): string | null {
+  if (!model || typeof model !== 'object') {
+    return null;
+  }
+
+  const id = (model as Record<string, unknown>).id;
+
+  return typeof id === 'string' && id ? id : null;
 }
 
 function buildAIRouterRuntimeHandler(args: {

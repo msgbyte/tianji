@@ -12,6 +12,7 @@ import {
   isAIRouterRetryableFailure,
   resolveAIRouterGatewayHandlerConfig,
   runAIRouterAttempts,
+  runAIRouterModelsDiscovery,
   selectAIRouterTierAttemptNodes,
   selectEligibleAIRouterNodes,
 } from './aiRouter.js';
@@ -897,11 +898,15 @@ describe('AI Router attempt request isolation', () => {
 });
 
 describe('aiRouterRouter routes', () => {
-  function getPostRoutePaths() {
+  function getRoutePaths(method: 'get' | 'post') {
     return (aiRouterRouter.stack as any[])
       .map((layer) => layer.route)
-      .filter((route) => route?.methods?.post)
+      .filter((route) => route?.methods?.[method])
       .map((route) => route.path);
+  }
+
+  function getPostRoutePaths() {
+    return getRoutePaths('post');
   }
 
   test('registers mirrored runtime paths', () => {
@@ -927,6 +932,16 @@ describe('aiRouterRouter routes', () => {
     );
     expect(paths).toContain('/:workspaceId/:routerId/custom/v1/messages');
     expect(paths).toContain('/:workspaceId/:routerId/custom/v1/responses');
+  });
+
+  test('registers mirrored models paths', () => {
+    const paths = getRoutePaths('get');
+
+    expect(paths).toContain('/:workspaceId/:routerId/openai/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/deepseek/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/anthropic/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/openrouter/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/custom/v1/models');
   });
 
   test('writes a failed router log when runtime payload validation fails', async () => {
@@ -975,6 +990,161 @@ describe('aiRouterRouter routes', () => {
         retryable: false,
         errorType: 'validation',
       }),
+    ]);
+  });
+});
+
+describe('AI Router models discovery', () => {
+  test('aggregates and deduplicates models from eligible nodes in tier order', async () => {
+    const calledGatewayIds: string[] = [];
+
+    const result = await runAIRouterModelsDiscovery({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      loadRouter: async () => ({
+        id: 'router1',
+        tiers: [
+          {
+            id: 'tier1',
+            order: 0,
+            nodes: [
+              {
+                id: 'node-openai',
+                gatewayId: 'gw-openai',
+                provider: 'openai',
+                enabled: true,
+                order: 0,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-openai',
+                  modelApiKey: 'sk-openai',
+                },
+              },
+              {
+                id: 'node-disabled',
+                gatewayId: 'gw-disabled',
+                provider: 'openai',
+                enabled: false,
+                order: 1,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-disabled',
+                  modelApiKey: 'sk-disabled',
+                },
+              },
+            ],
+          },
+          {
+            id: 'tier2',
+            order: 1,
+            nodes: [
+              {
+                id: 'node-custom',
+                gatewayId: 'gw-custom',
+                provider: 'custom',
+                enabled: true,
+                order: 0,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-custom',
+                  modelApiKey: 'sk-custom',
+                },
+              },
+            ],
+          },
+        ],
+      }),
+      listModels: async ({ node }) => {
+        calledGatewayIds.push(node.gatewayId);
+
+        if (node.gatewayId === 'gw-openai') {
+          return [
+            { id: 'gpt-4o', object: 'model' },
+            { id: 'shared-model', object: 'model' },
+          ];
+        }
+
+        return [
+          { id: 'shared-model', object: 'model', owned_by: 'custom' },
+          { id: 'custom-model', object: 'model' },
+        ];
+      },
+    });
+
+    expect(calledGatewayIds).toEqual(['gw-openai', 'gw-custom']);
+    expect(result.models).toEqual([
+      { id: 'gpt-4o', object: 'model' },
+      { id: 'shared-model', object: 'model' },
+      { id: 'custom-model', object: 'model' },
+    ]);
+    expect(result.failures).toEqual([]);
+  });
+
+  test('keeps available models when one eligible gateway fails discovery', async () => {
+    const result = await runAIRouterModelsDiscovery({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      loadRouter: async () => ({
+        id: 'router1',
+        nodes: [
+          {
+            id: 'node-bad',
+            gatewayId: 'gw-bad',
+            provider: 'openai',
+            enabled: true,
+            order: 0,
+            weight: 100,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw-bad',
+              modelApiKey: 'sk-bad',
+            },
+          },
+          {
+            id: 'node-good',
+            gatewayId: 'gw-good',
+            provider: 'custom',
+            enabled: true,
+            order: 1,
+            weight: 100,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw-good',
+              modelApiKey: 'sk-good',
+            },
+          },
+        ],
+      }),
+      listModels: async ({ node }) => {
+        if (node.gatewayId === 'gw-bad') {
+          throw new Error('models unavailable');
+        }
+
+        return [{ id: 'fallback-model', object: 'model' }];
+      },
+    });
+
+    expect(result.models).toEqual([{ id: 'fallback-model', object: 'model' }]);
+    expect(result.failures).toEqual([
+      {
+        gatewayId: 'gw-bad',
+        message: 'models unavailable',
+      },
     ]);
   });
 });

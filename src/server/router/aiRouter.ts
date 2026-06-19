@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
   buildAIRouterAnthropicMessagesHandler,
+  buildAIRouterAnthropicModelsHandler,
   buildAIRouterOpenAIChatHandler,
+  buildAIRouterOpenAIModelsHandler,
   buildAIRouterOpenAIResponsesHandler,
 } from '../model/aiRouter.js';
 
@@ -55,4 +57,29 @@ aiRouterRouter.post(
 aiRouterRouter.post(
   '/:workspaceId/:routerId/custom/v1/messages',
   buildAIRouterAnthropicMessagesHandler()
+);
+
+aiRouterRouter.get(
+  '/:workspaceId/:routerId/openai/v1/models',
+  buildAIRouterOpenAIModelsHandler()
+);
+
+aiRouterRouter.get(
+  '/:workspaceId/:routerId/deepseek/v1/models',
+  buildAIRouterOpenAIModelsHandler()
+);
+
+aiRouterRouter.get(
+  '/:workspaceId/:routerId/anthropic/v1/models',
+  buildAIRouterAnthropicModelsHandler()
+);
+
+aiRouterRouter.get(
+  '/:workspaceId/:routerId/openrouter/v1/models',
+  buildAIRouterOpenAIModelsHandler()
+);
+
+aiRouterRouter.get(
+  '/:workspaceId/:routerId/custom/v1/models',
+  buildAIRouterOpenAIModelsHandler()
 );
