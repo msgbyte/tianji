@@ -12,6 +12,7 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import { useTranslation } from '@i18next-toolkit/react';
 import dayjs from 'dayjs';
 import React, { useMemo } from 'react';
+import { LuRefreshCw } from 'react-icons/lu';
 
 interface AIRouterLogTableProps {
   routerId: string;
@@ -23,17 +24,24 @@ export const AIRouterLogTable: React.FC<AIRouterLogTableProps> = React.memo(
   ({ routerId }) => {
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-      trpc.aiRouter.logs.useInfiniteQuery(
-        {
-          workspaceId,
-          routerId,
-          limit: 20,
-        },
-        {
-          getNextPageParam: (lastPage) => lastPage.nextCursor,
-        }
-      );
+    const {
+      data,
+      fetchNextPage,
+      hasNextPage,
+      isFetching,
+      isFetchingNextPage,
+      isLoading,
+      refetch,
+    } = trpc.aiRouter.logs.useInfiniteQuery(
+      {
+        workspaceId,
+        routerId,
+        limit: 20,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
 
     const items = useMemo(
       () => data?.pages.flatMap((page) => page.items) ?? [],
@@ -42,6 +50,18 @@ export const AIRouterLogTable: React.FC<AIRouterLogTableProps> = React.memo(
 
     return (
       <div className="space-y-3">
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            Icon={LuRefreshCw}
+            loading={isFetching && !isFetchingNextPage}
+            onClick={() => void refetch()}
+          >
+            {t('Refresh')}
+          </Button>
+        </div>
+
         <div className="overflow-hidden rounded-md border">
           <Table>
             <TableHeader className="bg-muted/40">
