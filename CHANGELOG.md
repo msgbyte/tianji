@@ -1,5 +1,16 @@
 
 
+## [1.32.4](https://github.com/msgbyte/tianji/compare/v1.32.3...v1.32.4) (2026-06-20)
+
+### Features
+
+* **ai-router:** add logs refresh button ([089579c](https://github.com/msgbyte/tianji/commit/089579cc13ca326deace07f1f72beda2d65c6ed4))
+
+### Bug Fixes
+
+* **ai-gateway:** add stream keepalive pings ([907dd17](https://github.com/msgbyte/tianji/commit/907dd17f82aacdcbca4bb510e53425efceed09ff))
+* **server:** include execa in production deps ([c4960b6](https://github.com/msgbyte/tianji/commit/c4960b60a4e16dabe6709cd7823f99f2a7047cf5))
+
 ## [1.32.3](https://github.com/msgbyte/tianji/compare/v1.32.2...v1.32.3) (2026-06-20)
 
 ### Features
