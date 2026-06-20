@@ -1,6 +1,9 @@
 import { AIGatewayLogsStatus } from '@prisma/client';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
+  AI_GATEWAY_STREAM_PING_COMMENT,
+  AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+  buildAnthropicHandler,
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
   getAIGatewayErrorStatusCode,
@@ -11,9 +14,31 @@ import {
   getOpenAIResponsesStreamDelta,
   getOpenAIResponsesUsage,
   openaiResponsesRequestSchema,
+  startAIGatewayStreamKeepAlive,
   trackAIGatewayPendingLog,
+  writeAIGatewayAnthropicStreamError,
 } from './aiGateway.js';
 import { aiGatewayRouter } from '../router/aiGateway.js';
+import { prisma } from './_client.js';
+
+vi.mock('./_client.js', () => ({
+  prisma: {
+    aIGateway: {
+      findUnique: vi.fn(),
+    },
+    aIGatewayLogs: {
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.resetAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('calcAIGatewayCustomModelPrice', () => {
   test('uses strategy price before deprecated SQL price fields', () => {
@@ -276,6 +301,132 @@ describe('calcAIGatewayTpot', () => {
         outputToken: 10,
       })
     ).toBe(1);
+  });
+});
+
+describe('AI Gateway stream keepalive', () => {
+  test('writes SSE ping comments immediately and on the configured interval', () => {
+    vi.useFakeTimers();
+    const writes: string[] = [];
+    const res = {
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      flush: vi.fn(),
+    };
+
+    const stop = startAIGatewayStreamKeepAlive(res as any, {
+      intervalMs: AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+      writeInitial: true,
+    });
+
+    expect(writes).toEqual([AI_GATEWAY_STREAM_PING_COMMENT]);
+    expect(res.flush).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
+    expect(writes).toEqual([
+      AI_GATEWAY_STREAM_PING_COMMENT,
+      AI_GATEWAY_STREAM_PING_COMMENT,
+    ]);
+    expect(res.flush).toHaveBeenCalledTimes(2);
+
+    stop();
+    vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
+    expect(writes).toHaveLength(2);
+  });
+
+  test('stops keepalive when writing a ping fails', () => {
+    vi.useFakeTimers();
+    const res = {
+      write: vi.fn(() => {
+        throw new Error('client disconnected');
+      }),
+      flush: vi.fn(),
+    };
+
+    expect(() =>
+      startAIGatewayStreamKeepAlive(res as any, {
+        intervalMs: AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+        writeInitial: true,
+      })
+    ).not.toThrow();
+
+    expect(res.write).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
+    expect(res.write).toHaveBeenCalledTimes(1);
+    expect(res.flush).not.toHaveBeenCalled();
+  });
+
+  test('writes Anthropic-compatible stream errors for Messages clients', () => {
+    const writes: string[] = [];
+    const res = {
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      end: vi.fn(),
+    };
+
+    writeAIGatewayAnthropicStreamError(
+      res as any,
+      new Error('upstream overloaded')
+    );
+
+    expect(writes).toEqual([
+      'event: error\n',
+      'data: {"type":"error","error":{"type":"server_error","message":"upstream overloaded"}}\n\n',
+    ]);
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  test('Anthropic stream handler sends an initial ping before upstream responds', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    const fetchMock = vi.fn(() => new Promise<Response>(() => {}));
+
+    const writes: string[] = [];
+    const req = {
+      params: {
+        workspaceId: 'workspace1',
+        gatewayId: 'gateway1',
+      },
+      headers: {
+        'x-api-key': 'sk-test',
+      },
+      body: {
+        model: 'claude-3-5-sonnet-latest',
+        messages: [{ role: 'user', content: 'hello' }],
+        max_tokens: 16,
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: fetchMock as typeof fetch,
+    });
+    void handler(req as any, res as any, vi.fn());
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(res.flush).toHaveBeenCalledTimes(1);
   });
 });
 
