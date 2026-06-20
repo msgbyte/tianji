@@ -1,5 +1,16 @@
 
 
+## [1.32.3](https://github.com/msgbyte/tianji/compare/v1.32.2...v1.32.3) (2026-06-20)
+
+### Features
+
+* **ai-router:** add models endpoint aggregation ([0c6f5b8](https://github.com/msgbyte/tianji/commit/0c6f5b87878901acee601c3b7a2c6a0915baa79f))
+
+### Bug Fixes
+
+* **build:** remediate image cves and dev optimizer ([4dc5ea2](https://github.com/msgbyte/tianji/commit/4dc5ea2b8dd20ad62d2e15b1ab13a14114e9ea73))
+* **ci:** align pnpm version ([d9d3621](https://github.com/msgbyte/tianji/commit/d9d362100cf9d3ab7fa11a29225b9631f5e808da))
+
 ## [1.32.2](https://github.com/msgbyte/tianji/compare/v1.32.1...v1.32.2) (2026-06-15)
 
 ### Bug Fixes
