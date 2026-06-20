@@ -894,6 +894,9 @@ importers:
       eventemitter-strict:
         specifier: ^1.0.1
         version: 1.0.1
+      execa:
+        specifier: ^9.5.2
+        version: 9.5.2
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -1099,9 +1102,6 @@ importers:
       '@types/uuid':
         specifier: ^9.0.8
         version: 9.0.8
-      execa:
-        specifier: ^9.5.2
-        version: 9.5.2
       inquirer:
         specifier: ^12.5.0
         version: 12.5.0(@types/node@22.13.11)
