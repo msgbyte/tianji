@@ -13,7 +13,7 @@ import { logger } from '../utils/logger.js';
 import { promAIGatewayRequestCounter } from '../utils/prometheus/client.js';
 
 export const AI_GATEWAY_STREAM_PING_COMMENT = ': PING\n\n';
-export const AI_GATEWAY_STREAM_PING_INTERVAL_MS = 60_000;
+export const AI_GATEWAY_STREAM_PING_INTERVAL_MS = 25_000;
 
 type AIGatewayStreamResponse = Pick<Response, 'write'> & {
   flush?: () => void;
@@ -26,6 +26,7 @@ export function setAIGatewayStreamHeaders(res: Response) {
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
 }
 
 function writeAIGatewayStreamPing(res: AIGatewayStreamResponse) {

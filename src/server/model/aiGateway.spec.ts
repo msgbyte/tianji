@@ -14,6 +14,7 @@ import {
   getOpenAIResponsesStreamDelta,
   getOpenAIResponsesUsage,
   openaiResponsesRequestSchema,
+  setAIGatewayStreamHeaders,
   startAIGatewayStreamKeepAlive,
   trackAIGatewayPendingLog,
   writeAIGatewayAnthropicStreamError,
@@ -305,6 +306,31 @@ describe('calcAIGatewayTpot', () => {
 });
 
 describe('AI Gateway stream keepalive', () => {
+  test('uses a conservative ping interval below common proxy read timeouts', () => {
+    expect(AI_GATEWAY_STREAM_PING_INTERVAL_MS).toBeLessThanOrEqual(30_000);
+  });
+
+  test('flushes SSE headers before the first upstream byte', () => {
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+    };
+
+    setAIGatewayStreamHeaders(res as any);
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Type',
+      'text/event-stream'
+    );
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Cache-Control',
+      'no-cache, no-transform'
+    );
+    expect(res.setHeader).toHaveBeenCalledWith('Connection', 'keep-alive');
+    expect(res.setHeader).toHaveBeenCalledWith('X-Accel-Buffering', 'no');
+    expect(res.flushHeaders).toHaveBeenCalledTimes(1);
+  });
+
   test('writes SSE ping comments immediately and on the configured interval', () => {
     vi.useFakeTimers();
     const writes: string[] = [];
