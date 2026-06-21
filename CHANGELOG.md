@@ -1,5 +1,11 @@
 
 
+## [1.32.5](https://github.com/msgbyte/tianji/compare/v1.32.4...v1.32.5) (2026-06-21)
+
+### Bug Fixes
+
+* **ai-router:** add stream keepalive pings ([8f52442](https://github.com/msgbyte/tianji/commit/8f52442d93d153c0cd303f6a70034d93304b0e62))
+
 ## [1.32.4](https://github.com/msgbyte/tianji/compare/v1.32.3...v1.32.4) (2026-06-20)
 
 ### Features
