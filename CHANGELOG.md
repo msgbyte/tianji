@@ -1,5 +1,11 @@
 
 
+## [1.32.6](https://github.com/msgbyte/tianji/compare/v1.32.5...v1.32.6) (2026-06-21)
+
+### Bug Fixes
+
+* **ai-gateway:** flush stream keepalive headers ([49ec99b](https://github.com/msgbyte/tianji/commit/49ec99be9833176eb9b9911761db88a2249e9d94))
+
 ## [1.32.5](https://github.com/msgbyte/tianji/compare/v1.32.4...v1.32.5) (2026-06-21)
 
 ### Bug Fixes
