@@ -1,5 +1,6 @@
 import { AIRouterLogsStatus } from '@prisma/client';
 import { afterEach, describe, expect, test, vi } from 'vitest';
+import { AI_GATEWAY_STREAM_PING_COMMENT } from './aiGateway.js';
 import {
   AI_ROUTER_PROTOCOLS,
   applyAIRouterModelOverride,
@@ -20,6 +21,7 @@ import { aiRouterRouter } from '../router/aiRouter.js';
 import { prisma } from './_client.js';
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -991,6 +993,187 @@ describe('aiRouterRouter routes', () => {
         errorType: 'validation',
       }),
     ]);
+  });
+
+  test('streams keepalive pings while router attempts are still buffered', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
+    const runAttempts = vi.fn(
+      () =>
+        new Promise<Awaited<ReturnType<typeof runAIRouterAttempts>>>(
+          () => {}
+        )
+    );
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    void handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    await vi.waitFor(() => expect(runAttempts).toHaveBeenCalledTimes(1));
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(res.flush).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+  });
+
+  test('returns a streaming error when buffered router attempts fail after keepalive committed headers', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
+    const runAttempts = vi.fn(async () => ({
+      result: null,
+      finalResult: {
+        ok: false,
+        committed: false,
+        gatewayId: 'gw1',
+        statusCode: 504,
+        failure: {
+          message: 'AI Router gateway attempt timed out after 120000ms',
+          errorType: 'timeout',
+        },
+      },
+      log: {
+        id: 'router-log1',
+      },
+      attempts: [
+        {
+          gatewayId: 'gw1',
+          statusCode: 504,
+          retryable: true,
+          errorType: 'timeout',
+          message: 'AI Router gateway attempt timed out after 120000ms',
+        },
+      ],
+    }));
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(writes).toContain(
+      'data: {"error":{"message":"AI Router gateway attempt timed out after 120000ms","type":"router_failed"}}\n\n'
+    );
+    expect(writes).toContain('data: [DONE]\n\n');
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  test('returns a streaming server error when router execution throws after keepalive committed headers', async () => {
+    const runAttempts = vi.fn(async () => {
+      throw new Error('database unavailable');
+    });
+    const writes: string[] = [];
+    const next = vi.fn();
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      next
+    );
+
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(writes).toContain(
+      'data: {"error":{"message":"database unavailable","type":"server_error"}}\n\n'
+    );
+    expect(writes).toContain('data: [DONE]\n\n');
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledTimes(1);
   });
 });
 

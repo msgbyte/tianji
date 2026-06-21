@@ -15,6 +15,9 @@ import {
   getAIGatewayErrorStatusCode,
   openaiRequestSchema,
   openaiResponsesRequestSchema,
+  setAIGatewayStreamHeaders,
+  startAIGatewayStreamKeepAlive,
+  writeAIGatewayAnthropicStreamError,
 } from './aiGateway.js';
 import type { AIGatewayLogAwareRequest } from './aiGateway.js';
 import { prisma } from './_client.js';
@@ -294,6 +297,19 @@ interface AIRouterHandlerOptions {
   modelProvider?: string;
   isCustomRoute?: boolean;
   header?: (req: Request) => Record<string, string>;
+}
+
+type AIRouterRuntimeAttemptRunner = (
+  args: RunAIRouterAttemptsArgs
+) => Promise<{
+  result: AIRouterAttemptResult | null;
+  finalResult: AIRouterAttemptResult | null;
+  log: unknown;
+  attempts: AIRouterAttemptSummary[];
+}>;
+
+interface AIRouterRuntimeHandlerOptions {
+  runAttempts?: AIRouterRuntimeAttemptRunner;
 }
 
 export type AIRouterGatewayHandlerBuilder =
@@ -817,29 +833,32 @@ function getAIRouterRuntimeTiers<TNode extends AIRouterAttemptNode>(
 }
 
 export function buildAIRouterOpenAIChatHandler(
-  _options?: AIRouterHandlerOptions
+  options?: AIRouterRuntimeHandlerOptions
 ): RequestHandler {
   return buildAIRouterRuntimeHandler({
     protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
     schema: openaiRequestSchema,
+    runAttempts: options?.runAttempts,
   });
 }
 
 export function buildAIRouterOpenAIResponsesHandler(
-  _options?: AIRouterHandlerOptions
+  options?: AIRouterRuntimeHandlerOptions
 ): RequestHandler {
   return buildAIRouterRuntimeHandler({
     protocol: AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
     schema: openaiResponsesRequestSchema,
+    runAttempts: options?.runAttempts,
   });
 }
 
 export function buildAIRouterAnthropicMessagesHandler(
-  _options?: AIRouterHandlerOptions
+  options?: AIRouterRuntimeHandlerOptions
 ): RequestHandler {
   return buildAIRouterRuntimeHandler({
     protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
     schema: anthropicRequestSchema,
+    runAttempts: options?.runAttempts,
   });
 }
 
@@ -1110,6 +1129,7 @@ function getAIRouterModelId(model: unknown): string | null {
 function buildAIRouterRuntimeHandler(args: {
   protocol: AIRouterProtocol;
   schema: z.ZodType<Record<string, unknown>>;
+  runAttempts?: AIRouterRuntimeAttemptRunner;
 }): RequestHandler {
   return async (req, res) => {
     const start = Date.now();
@@ -1122,65 +1142,99 @@ function buildAIRouterRuntimeHandler(args: {
 
     try {
       const requestPayload = args.schema.parse(req.body);
-      const outcome = await runAIRouterAttempts({
-        workspaceId,
-        routerId,
-        protocol: args.protocol,
-        requestPayload,
-        executeAttempt: ({ node, payload }) => {
-          const gatewayHandler = buildAIRouterGatewayHandlerForNode({
-            protocol: args.protocol,
-            node,
-          });
+      const stream = requestPayload.stream === true;
+      let stopKeepAlive: (() => void) | undefined;
 
-          if (!gatewayHandler) {
-            const modelProvider = getAIRouterNodeProvider(node);
-
-            return Promise.resolve({
-              ok: false,
-              committed: false,
-              gatewayId: node.gatewayId,
-              statusCode: 400,
-              failure: {
-                message: `AI Router provider ${modelProvider ?? 'unknown'} cannot serve protocol ${args.protocol}`,
-                errorType: 'unknown',
-              },
-            });
-          }
-
-          return executeBufferedAIGatewayAttempt({
-            req,
-            node,
-            payload,
-            gatewayHandler,
-          });
-        },
-      });
-      const result = outcome.result ?? outcome.finalResult;
-
-      if (result?.response && (result.ok || !result.committed)) {
-        replayBufferedResponse(result.response, res);
-        return;
+      if (stream) {
+        setAIGatewayStreamHeaders(res);
+        stopKeepAlive = startAIGatewayStreamKeepAlive(res, {
+          writeInitial: true,
+        });
       }
 
-      if (outcome.attempts.length === 0) {
-        res.status(503).json({
-          error: {
-            message: 'No eligible AI Router nodes are available',
-            type: 'router_unavailable',
+      try {
+        const runAttempts = args.runAttempts ?? runAIRouterAttempts;
+        const outcome = await runAttempts({
+          workspaceId,
+          routerId,
+          protocol: args.protocol,
+          requestPayload,
+          executeAttempt: ({ node, payload }) => {
+            const gatewayHandler = buildAIRouterGatewayHandlerForNode({
+              protocol: args.protocol,
+              node,
+            });
+
+            if (!gatewayHandler) {
+              const modelProvider = getAIRouterNodeProvider(node);
+
+              return Promise.resolve({
+                ok: false,
+                committed: false,
+                gatewayId: node.gatewayId,
+                statusCode: 400,
+                failure: {
+                  message: `AI Router provider ${modelProvider ?? 'unknown'} cannot serve protocol ${args.protocol}`,
+                  errorType: 'unknown',
+                },
+              });
+            }
+
+            return executeBufferedAIGatewayAttempt({
+              req,
+              node,
+              payload,
+              gatewayHandler,
+            });
           },
         });
-        return;
-      }
+        const result = outcome.result ?? outcome.finalResult;
 
-      const lastAttempt = outcome.attempts[outcome.attempts.length - 1];
-      res.status(lastAttempt?.statusCode ?? 502).json({
-        error: {
+        if (result?.response && result.ok) {
+          replayBufferedResponse(result.response, res);
+          return;
+        }
+
+        if (result?.response && !result.committed && !stream) {
+          replayBufferedResponse(result.response, res);
+          return;
+        }
+
+        if (result?.response && !result.committed && stream) {
+          writeAIRouterStreamError(
+            res,
+            args.protocol,
+            getBufferedFailureMessage(result.response),
+            'router_failed'
+          );
+          return;
+        }
+
+        if (outcome.attempts.length === 0) {
+          writeAIRouterRuntimeErrorResponse({
+            res,
+            protocol: args.protocol,
+            stream,
+            statusCode: 503,
+            message: 'No eligible AI Router nodes are available',
+            type: 'router_unavailable',
+          });
+          return;
+        }
+
+        const lastAttempt = outcome.attempts[outcome.attempts.length - 1];
+        writeAIRouterRuntimeErrorResponse({
+          res,
+          protocol: args.protocol,
+          stream,
+          statusCode: lastAttempt?.statusCode ?? 502,
           message:
             lastAttempt?.message ?? 'AI Router exhausted all gateway attempts',
           type: 'router_failed',
-        },
-      });
+        });
+      } finally {
+        stopKeepAlive?.();
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         const message = formatAIRouterValidationError(error);
@@ -1205,18 +1259,83 @@ function buildAIRouterRuntimeHandler(args: {
       }
 
       if (error instanceof AIRouterRuntimeError) {
-        res.status(error.statusCode).json({
-          error: {
-            message: error.message,
-            type: error.type,
-          },
+        writeAIRouterRuntimeErrorResponse({
+          res,
+          protocol: args.protocol,
+          stream: res.headersSent,
+          statusCode: error.statusCode,
+          message: error.message,
+          type: error.type,
         });
+        return;
+      }
+
+      if (res.headersSent) {
+        writeAIRouterStreamError(
+          res,
+          args.protocol,
+          error instanceof Error ? error.message : 'Unknown error',
+          'server_error'
+        );
         return;
       }
 
       throw error;
     }
   };
+}
+
+function writeAIRouterRuntimeErrorResponse(args: {
+  res: Response;
+  protocol: AIRouterProtocol;
+  stream: boolean;
+  statusCode: number;
+  message: string;
+  type: string;
+}) {
+  if (args.stream || args.res.headersSent) {
+    writeAIRouterStreamError(
+      args.res,
+      args.protocol,
+      args.message,
+      args.type
+    );
+    return;
+  }
+
+  args.res.status(args.statusCode).json({
+    error: {
+      message: args.message,
+      type: args.type,
+    },
+  });
+}
+
+function writeAIRouterStreamError(
+  res: Response,
+  protocol: AIRouterProtocol,
+  message: string,
+  type: string
+) {
+  if (protocol === AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES) {
+    writeAIGatewayAnthropicStreamError(res, new Error(message));
+    return;
+  }
+
+  if (res.writableEnded || res.destroyed) {
+    return;
+  }
+
+  res.write(
+    `data: ${JSON.stringify({
+      error: {
+        message,
+        type,
+      },
+    })}\n\n`
+  );
+  res.write('data: [DONE]\n\n');
+  res.end();
 }
 
 async function createAIRouterRuntimeFailureLog(args: {
@@ -1676,10 +1795,12 @@ function replayBufferedResponse(
   snapshot: BufferedResponseSnapshot,
   res: Response
 ) {
-  res.status(snapshot.statusCode);
+  if (!res.headersSent) {
+    res.status(snapshot.statusCode);
 
-  for (const [name, value] of Object.entries(snapshot.headers)) {
-    res.setHeader(name, value);
+    for (const [name, value] of Object.entries(snapshot.headers)) {
+      res.setHeader(name, value);
+    }
   }
 
   for (const chunk of snapshot.chunks) {
