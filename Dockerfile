@@ -9,8 +9,8 @@ RUN apt update
 RUN cd reporter && CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o tianji-reporter .
 
 # Base ------------------------------
-# Keep Alpine current so Docker Hub scans pick up supported OS packages.
-FROM node:22.22-alpine3.24 AS base
+# Pin below Alpine 3.24 until Docker Hub static scans handle it reliably.
+FROM node:22.22-alpine3.23 AS base
 
 RUN npm install -g pnpm@10.27.0
 
