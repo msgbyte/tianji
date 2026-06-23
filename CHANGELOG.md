@@ -1,5 +1,12 @@
 
 
+## [1.32.7](https://github.com/msgbyte/tianji/compare/v1.32.6...v1.32.7) (2026-06-23)
+
+### Bug Fixes
+
+* **billing:** delay free tier quota tip ([de2d097](https://github.com/msgbyte/tianji/commit/de2d0974036af7876b83122427341641358752fb))
+* **docker:** downgrade node alpine base for hub scan ([ba5230c](https://github.com/msgbyte/tianji/commit/ba5230c21ab105cedee781255531c650e106eab3))
+
 ## [1.32.6](https://github.com/msgbyte/tianji/compare/v1.32.5...v1.32.6) (2026-06-21)
 
 ### Bug Fixes
