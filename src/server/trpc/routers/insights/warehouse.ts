@@ -13,6 +13,8 @@ import {
   getMysqlFieldType,
   getPostgresqlFieldType,
   extractSchemaFromUrl,
+  clearWarehouseTablesCache,
+  disposeWarehouseConnection,
   type WarehouseDriver,
 } from '../../../model/insights/warehouse/utils.js';
 import { upsertWarehouseTable } from '../../../model/insights/warehouse/connections.js';
@@ -97,6 +99,15 @@ export const warehouseRouter = router({
         }
 
         if (input.id) {
+          let previousConnectionUri: string | undefined;
+          if (typeof input.connectionUri === 'string') {
+            const previous = await prisma.warehouseDatabase.findUnique({
+              where: { id: input.id },
+              select: { connectionUri: true },
+            });
+            previousConnectionUri = previous?.connectionUri;
+          }
+
           const data: any = {
             name: input.name,
             description: input.description ?? '',
@@ -113,6 +124,14 @@ export const warehouseRouter = router({
           });
 
           if (typeof input.connectionUri === 'string') {
+            if (
+              previousConnectionUri &&
+              previousConnectionUri !== input.connectionUri
+            ) {
+              await disposeWarehouseConnection(previousConnectionUri);
+            }
+
+            clearWarehouseTablesCache(input.connectionUri);
             await upsertWarehouseTable(input.id, input.connectionUri);
           }
 
@@ -131,6 +150,7 @@ export const warehouseRouter = router({
             },
           });
 
+          clearWarehouseTablesCache(input.connectionUri);
           await upsertWarehouseTable(res.id, input.connectionUri);
           return res;
         }
@@ -142,6 +162,7 @@ export const warehouseRouter = router({
         const res = await prisma.warehouseDatabase.delete({
           where: { id: input.id },
         });
+        await disposeWarehouseConnection(res.connectionUri);
         return res;
       }),
   }),

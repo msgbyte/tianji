@@ -62,7 +62,29 @@ const subscribeInitializerList: [
 ][] = [];
 
 let i = 0;
-const subscribeFnMap: Record<string, SubscribeEventFn<any>> = {};
+const subscribeFnMap: Record<
+  string,
+  {
+    name: keyof SubscribeEventMap;
+    fn: SubscribeEventFn<any>;
+  }
+> = {};
+const socketSubscribeKeyMap = new WeakMap<Socket, Set<string>>();
+
+function getSubscribeKey(name: keyof SubscribeEventMap, cursor: number) {
+  return `${name}#${cursor}`;
+}
+
+function removeSubscription(key: string) {
+  const subscription = subscribeFnMap[key];
+  if (!subscription) {
+    return;
+  }
+
+  delete subscribeFnMap[key];
+  subscribeEventBus.off(subscription.name, subscription.fn);
+}
+
 socketEventBus.on('$subscribe', (eventData, socket, callback) => {
   const _workspaceId = socket.data.workspaceId;
   const { name } = eventData;
@@ -76,7 +98,12 @@ socketEventBus.on('$subscribe', (eventData, socket, callback) => {
 
   subscribeEventBus.on(name, fn);
 
-  subscribeFnMap[`${name}#${cursor}`] = fn;
+  const key = getSubscribeKey(name, cursor);
+  subscribeFnMap[key] = { name, fn };
+
+  const socketSubscribeKeys = socketSubscribeKeyMap.get(socket) ?? new Set();
+  socketSubscribeKeys.add(key);
+  socketSubscribeKeyMap.set(socket, socketSubscribeKeys);
 
   subscribeInitializerList.forEach(async ([_name, initializer]) => {
     if (_name === name) {
@@ -91,13 +118,31 @@ socketEventBus.on('$subscribe', (eventData, socket, callback) => {
 });
 socketEventBus.on('$unsubscribe', (eventData, socket, callback) => {
   const { name, cursor } = eventData;
+  const key = getSubscribeKey(name, cursor);
 
-  const fn = subscribeFnMap[`${name}#${cursor}`];
-  if (fn) {
-    delete subscribeFnMap[`${name}#${cursor}`];
-    subscribeEventBus.off(name, fn);
+  removeSubscription(key);
+
+  const socketSubscribeKeys = socketSubscribeKeyMap.get(socket);
+  if (socketSubscribeKeys) {
+    socketSubscribeKeys.delete(key);
+    if (socketSubscribeKeys.size === 0) {
+      socketSubscribeKeyMap.delete(socket);
+    }
   }
 });
+
+export function cleanupSocketSubscriptions(socket: Socket) {
+  const socketSubscribeKeys = socketSubscribeKeyMap.get(socket);
+  if (!socketSubscribeKeys) {
+    return;
+  }
+
+  for (const key of socketSubscribeKeys) {
+    removeSubscription(key);
+  }
+
+  socketSubscribeKeyMap.delete(socket);
+}
 
 /**
  * Listen for subscribed requests and return results immediately

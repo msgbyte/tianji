@@ -131,15 +131,19 @@ describe('runCodeInIVM', () => {
     });
   });
 
-  test('should properly cleanup isolate', async () => {
+  test('should collect resource metrics without exposing isolate handles', async () => {
     const code = '(async () => { return "cleanup test"; })()';
     const result = await runCodeInIVM(code);
 
-    expect(result.isolate).toBeDefined();
     expect(result.result).toBe('cleanup test');
-
-    // Check that isolate is marked for disposal
-    result.isolate.dispose();
+    expect(result).not.toHaveProperty('isolate');
+    expect(result.cpuTime).toEqual(expect.any(Number));
+    expect(result.cpuTime).toBeGreaterThanOrEqual(0);
+    expect(result.memoryUsage).toEqual(
+      expect.objectContaining({
+        used_heap_size: expect.any(Number),
+      })
+    );
   });
 
   test('should track execution time', async () => {

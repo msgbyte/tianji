@@ -32,7 +32,13 @@ describe('runCodeInVM', () => {
     expect(result.result).toBe(12);
     expect(result.logger[0][0]).toBe('log');
     expect(result.logger[0][2]).toBe('ivm route');
-    expect(result).toHaveProperty('isolate');
+    expect(result).not.toHaveProperty('isolate');
+    expect(result.cpuTime).toEqual(expect.any(Number));
+    expect(result.memoryUsage).toEqual(
+      expect.objectContaining({
+        used_heap_size: expect.any(Number),
+      })
+    );
   });
 
   test('uses VM2 when USE_VM2 is enabled', async () => {

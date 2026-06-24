@@ -49,11 +49,12 @@ export async function execWorker(
 
   try {
     const {
-      isolate,
       logger: logs,
       result,
       error,
       usage,
+      cpuTime,
+      memoryUsage,
     } = await runCodeInIVM(`
       (async () => {
         ${code}
@@ -61,9 +62,6 @@ export async function execWorker(
         return typeof fetch === 'function' ? fetch(${requestPayloadString}, ${contextString}) : 'fetch is not defined';
       })()
     `);
-
-    const cpuTime = Number(isolate.cpuTime); // unit: ns
-    const memoryUsage = await isolate.getHeapStatistics(); // unit: bytes
 
     const { used_heap_size } = memoryUsage;
 

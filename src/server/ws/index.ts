@@ -2,7 +2,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { jwtVerify } from '../middleware/auth.js';
-import { socketEventBus } from './shared.js';
+import { cleanupSocketSubscriptions, socketEventBus } from './shared.js';
 import { isCuid } from '../utils/common.js';
 import { logger } from '../utils/logger.js';
 import { getAuthSession, UserAuthPayload } from '../model/auth.js';
@@ -136,6 +136,10 @@ export function initSocketio(httpServer: HTTPServer) {
       socket.onAny((eventName, eventData, callback) => {
         // console.log('[Socket] receive:', { eventName, eventData });
         socketEventBus.emit(eventName, eventData, socket, callback);
+      });
+
+      socket.on('disconnect', () => {
+        cleanupSocketSubscriptions(socket);
       });
     });
 }
