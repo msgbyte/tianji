@@ -623,6 +623,51 @@ describe('AI Router buffered attempt mapping', () => {
     ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
   });
 
+  test('does not treat empty OpenAI chat tool call arrays as tool work', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [
+              {
+                message: {
+                  role: 'assistant',
+                  content: '',
+                  tool_calls: [],
+                },
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: true, hasToolWork: false, text: '' });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"choices":[{"delta":{"content":"","tool_calls":[]}}]}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: true, hasToolWork: false, text: '' });
+  });
+
   test('detects empty OpenAI responses and Anthropic message content', () => {
     expect(
       inspectAIRouterBufferedResponseContent(

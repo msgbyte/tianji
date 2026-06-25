@@ -1901,7 +1901,7 @@ function inspectOpenAIChatJsonContent(
 
     hasToolWork =
       hasToolWork ||
-      Array.isArray(message.tool_calls) ||
+      (Array.isArray(message.tool_calls) && message.tool_calls.length > 0) ||
       (message.function_call !== undefined && message.function_call !== null);
   }
 
@@ -2036,7 +2036,7 @@ function inspectOpenAIChatSSEContent(
 
       hasToolWork =
         hasToolWork ||
-        Array.isArray(delta.tool_calls) ||
+        (Array.isArray(delta.tool_calls) && delta.tool_calls.length > 0) ||
         (delta.function_call !== undefined && delta.function_call !== null);
     }
   }
