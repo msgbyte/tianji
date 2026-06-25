@@ -42,10 +42,10 @@ export async function execWorker(
   requestPayload?: Record<string, any>,
   context?: Record<string, any>
 ) {
-  const requestPayloadString = isPlainObject(requestPayload)
-    ? JSON.stringify(requestPayload)
-    : '{}';
-  const contextString = isPlainObject(context) ? JSON.stringify(context) : '{}';
+  const workerRequestPayload = isPlainObject(requestPayload)
+    ? requestPayload
+    : {};
+  const workerContext = isPlainObject(context) ? context : {};
 
   try {
     const {
@@ -59,9 +59,12 @@ export async function execWorker(
       (async () => {
         ${code}
 
-        return typeof fetch === 'function' ? fetch(${requestPayloadString}, ${contextString}) : 'fetch is not defined';
+        return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
       })()
-    `);
+    `, {
+      __requestPayload: workerRequestPayload,
+      __workerContext: workerContext,
+    });
 
     const { used_heap_size } = memoryUsage;
 

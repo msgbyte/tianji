@@ -63,7 +63,8 @@ export async function runCodeInVM(
  * Only run code with isolated-vm
  */
 export async function runCodeInIVM(
-  _code: string
+  _code: string,
+  globals: Record<string, any> = {}
 ): Promise<IVMExecutionResult> {
   const start = Date.now();
   // const transformedCode = await transformTypescriptCode(_code);
@@ -91,6 +92,7 @@ ${sourceCode}`;
     script = await isolate.compileScript(code);
 
     buildSandbox(context, {
+      globals,
       console: {
         log: (...args: any[]) => {
           logger.push(['log', Date.now(), ...args]);

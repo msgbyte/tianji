@@ -133,6 +133,7 @@ interface SandboxGlobals {
     warn: (...args: any[]) => void;
     error: (...args: any[]) => void;
   };
+  globals?: Record<string, any>;
 }
 
 const defaultSandboxGlobals = {
@@ -147,6 +148,9 @@ export function buildSandbox(context: Context, globals: SandboxGlobals = {}) {
   const jail = context.global;
   jail.setSync('global', jail.derefInto());
   jail.setSync('_ivm', ivm);
+  for (const [key, value] of Object.entries(globals.globals ?? {})) {
+    jail.setSync(key, makeTransferable(value));
+  }
   jail.setSync(
     'console',
     makeTransferable(globals.console ?? defaultSandboxGlobals)

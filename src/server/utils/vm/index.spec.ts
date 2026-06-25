@@ -146,6 +146,19 @@ describe('runCodeInIVM', () => {
     );
   });
 
+  test('should expose provided globals to sandbox code without embedding them in source', async () => {
+    const payload = {
+      data: 'x'.repeat(50_000),
+    };
+    const code = '(async () => { return __requestPayload.data.length; })()';
+    const result = await runCodeInIVM(code, {
+      __requestPayload: payload,
+    });
+
+    expect(result.result).toBe(50_000);
+    expect(result.error).toBeUndefined();
+  });
+
   test('should track execution time', async () => {
     const code = `
       (async () => {
