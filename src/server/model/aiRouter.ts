@@ -1191,18 +1191,31 @@ function buildAIRouterRuntimeHandler(args: {
           },
         });
         const result = outcome.result ?? outcome.finalResult;
+        const canReplayAttemptResponse = result
+          ? shouldReplayAIRouterAttemptResponse(result)
+          : false;
 
-        if (result?.response && result.ok) {
+        if (result?.response && result.ok && canReplayAttemptResponse) {
           replayBufferedResponse(result.response, res);
           return;
         }
 
-        if (result?.response && !result.committed && !stream) {
+        if (
+          result?.response &&
+          !result.committed &&
+          !stream &&
+          canReplayAttemptResponse
+        ) {
           replayBufferedResponse(result.response, res);
           return;
         }
 
-        if (result?.response && !result.committed && stream) {
+        if (
+          result?.response &&
+          !result.committed &&
+          stream &&
+          canReplayAttemptResponse
+        ) {
           writeAIRouterStreamError(
             res,
             args.protocol,
@@ -1285,6 +1298,10 @@ function buildAIRouterRuntimeHandler(args: {
       throw error;
     }
   };
+}
+
+function shouldReplayAIRouterAttemptResponse(result: AIRouterAttemptResult) {
+  return result.failure?.errorType !== 'empty_content';
 }
 
 function writeAIRouterRuntimeErrorResponse(args: {

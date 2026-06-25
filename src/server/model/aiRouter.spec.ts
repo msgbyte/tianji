@@ -1499,6 +1499,175 @@ describe('aiRouterRouter routes', () => {
     ]);
   });
 
+  test('returns router_failed when exhausted empty content has a buffered response', async () => {
+    const runAttempts = vi.fn(async () => ({
+      result: null,
+      finalResult: {
+        ok: false,
+        committed: false,
+        gatewayId: 'gw-empty',
+        statusCode: 502,
+        failure: {
+          message: 'AI Router gateway returned empty content',
+          errorType: 'empty_content',
+        },
+        response: {
+          statusCode: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+          chunks: [
+            Buffer.from('{"choices":[{"message":{"content":""}}]}'),
+          ],
+          jsonBody: {
+            choices: [{ message: { content: '' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        },
+      },
+      attempts: [
+        {
+          gatewayId: 'gw-empty',
+          statusCode: 502,
+          retryable: true,
+          errorType: 'empty_content',
+          message: 'AI Router gateway returned empty content',
+        },
+      ],
+      log: {
+        id: 'router-log1',
+      },
+    }));
+    const res = {
+      headersSent: false,
+      status: vi.fn(),
+      json: vi.fn(),
+      setHeader: vi.fn(),
+      write: vi.fn(),
+      end: vi.fn(),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.json).toHaveBeenCalledWith({
+      error: {
+        message: 'AI Router gateway returned empty content',
+        type: 'router_failed',
+      },
+    });
+    expect(res.write).not.toHaveBeenCalled();
+    expect(res.end).not.toHaveBeenCalled();
+  });
+
+  test('streams router_failed when exhausted empty content has a buffered response', async () => {
+    const runAttempts = vi.fn(async () => ({
+      result: null,
+      finalResult: {
+        ok: false,
+        committed: false,
+        gatewayId: 'gw-empty',
+        statusCode: 502,
+        failure: {
+          message: 'AI Router gateway returned empty content',
+          errorType: 'empty_content',
+        },
+        response: {
+          statusCode: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+          chunks: [
+            Buffer.from('{"choices":[{"message":{"content":""}}]}'),
+          ],
+          jsonBody: {
+            choices: [{ message: { content: '' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        },
+      },
+      attempts: [
+        {
+          gatewayId: 'gw-empty',
+          statusCode: 502,
+          retryable: true,
+          errorType: 'empty_content',
+          message: 'AI Router gateway returned empty content',
+        },
+      ],
+      log: {
+        id: 'router-log1',
+      },
+    }));
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(writes).toContain(
+      'data: {"error":{"message":"AI Router gateway returned empty content","type":"router_failed"}}\n\n'
+    );
+    expect(writes.join('')).not.toContain(
+      '{"choices":[{"message":{"content":""}}]}'
+    );
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
   test('streams keepalive pings while router attempts are still buffered', async () => {
     vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
     const runAttempts = vi.fn(
