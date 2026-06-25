@@ -1,5 +1,20 @@
 
 
+## [1.32.8](https://github.com/msgbyte/tianji/compare/v1.32.7...v1.32.8) (2026-06-25)
+
+### Features
+
+* **ai-router:** add empty content route option ([b8a69fe](https://github.com/msgbyte/tianji/commit/b8a69fe54459077538a3bb97c9c649662148b2d7))
+* **ai-router:** persist empty content failover setting ([f5d8321](https://github.com/msgbyte/tianji/commit/f5d8321a1687e97a92dfcf45c5f4539fc72d05ad))
+
+### Bug Fixes
+
+* **server:** release runtime resources ([0ae65b3](https://github.com/msgbyte/tianji/commit/0ae65b39a603b98b240160f9baf5f034473d89b4))
+
+### Document
+
+* **ai-router:** add empty content failover design ([8b45dd9](https://github.com/msgbyte/tianji/commit/8b45dd9005f495803d05d750fb44fa82d5cc54b3))
+
 ## [1.32.7](https://github.com/msgbyte/tianji/compare/v1.32.6...v1.32.7) (2026-06-23)
 
 ### Bug Fixes
