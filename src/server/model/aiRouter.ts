@@ -485,6 +485,7 @@ export interface AIRouterAttemptNode extends AIRouterNodeEligibility {
   modelOverride?: string | null;
   timeoutMs?: number | null;
   retryableStatusCodes?: number[];
+  failOnEmptyContent?: boolean | null;
   gateway: (AIRouterGatewayEligibility & { id: string }) | null;
 }
 
@@ -1182,6 +1183,7 @@ function buildAIRouterRuntimeHandler(args: {
 
             return executeBufferedAIGatewayAttempt({
               req,
+              protocol: args.protocol,
               node,
               payload,
               gatewayHandler,
@@ -1524,6 +1526,8 @@ export function createAIRouterAttemptRequest(args: {
 }
 
 export function buildBufferedAIGatewayAttemptResult(args: {
+  protocol?: AIRouterProtocol;
+  failOnEmptyContent?: boolean | null;
   gatewayId: string;
   logId?: string;
   response?: BufferedResponseSnapshot;
@@ -1578,6 +1582,26 @@ export function buildBufferedAIGatewayAttemptResult(args: {
       ? 500
       : args.response.statusCode;
   const ok = statusCode >= 200 && statusCode < 300 && !partialFailure;
+  const emptyContentFailure =
+    ok &&
+    args.failOnEmptyContent === true &&
+    args.protocol &&
+    isAIRouterBufferedResponseEmptyContent(args.protocol, args.response);
+
+  if (emptyContentFailure) {
+    return {
+      ok: false,
+      committed: false,
+      gatewayId: args.gatewayId,
+      logId: args.logId,
+      statusCode: 502,
+      failure: {
+        message: 'AI Router gateway returned empty content',
+        errorType: 'empty_content',
+      },
+      response: args.response,
+    };
+  }
 
   return {
     ok,
@@ -1599,6 +1623,7 @@ export function buildBufferedAIGatewayAttemptResult(args: {
 
 async function executeBufferedAIGatewayAttempt(args: {
   req: Request;
+  protocol: AIRouterProtocol;
   node: AIRouterAttemptNode;
   payload: Record<string, unknown>;
   gatewayHandler: RequestHandler;
@@ -1622,6 +1647,8 @@ async function executeBufferedAIGatewayAttempt(args: {
     const logId = await attemptRequest.getGatewayLogId();
 
     return buildBufferedAIGatewayAttemptResult({
+      protocol: args.protocol,
+      failOnEmptyContent: args.node.failOnEmptyContent,
       gatewayId: args.node.gatewayId,
       logId,
       response,
@@ -1630,6 +1657,8 @@ async function executeBufferedAIGatewayAttempt(args: {
     const logId = await attemptRequest.getGatewayLogId();
 
     return buildBufferedAIGatewayAttemptResult({
+      protocol: args.protocol,
+      failOnEmptyContent: args.node.failOnEmptyContent,
       gatewayId: args.node.gatewayId,
       logId,
       error,
@@ -1855,6 +1884,15 @@ export function inspectAIRouterBufferedResponseContent(
   }
 
   return inspectAIRouterSSEContent(protocol, snapshot.chunks);
+}
+
+function isAIRouterBufferedResponseEmptyContent(
+  protocol: AIRouterProtocol,
+  snapshot: BufferedResponseSnapshot
+) {
+  const inspection = inspectAIRouterBufferedResponseContent(protocol, snapshot);
+
+  return inspection.parsed && inspection.empty;
 }
 
 function inspectAIRouterJsonContent(

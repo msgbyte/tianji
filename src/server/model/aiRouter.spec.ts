@@ -4,6 +4,7 @@ import { AI_GATEWAY_STREAM_PING_COMMENT } from './aiGateway.js';
 import {
   AI_ROUTER_PROTOCOLS,
   applyAIRouterModelOverride,
+  buildAIRouterAnthropicMessagesHandler,
   buildAIRouterOpenAIChatHandler,
   buildBufferedAIGatewayAttemptResult,
   createAIRouterAttemptRequest,
@@ -24,6 +25,7 @@ import { prisma } from './_client.js';
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('AI Router protocol helpers', () => {
@@ -579,6 +581,68 @@ describe('AI Router retry helpers', () => {
 });
 
 describe('AI Router buffered attempt mapping', () => {
+  test('converts opted-in empty content into an uncommitted retryable failure', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      failOnEmptyContent: true,
+      gatewayId: 'gw-empty',
+      logId: 'log-empty',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+        chunks: [Buffer.from('{"choices":[{"message":{"content":""}}]}')],
+        jsonBody: {
+          choices: [{ message: { role: 'assistant', content: '' } }],
+        },
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: false,
+      gatewayId: 'gw-empty',
+      logId: 'log-empty',
+      statusCode: 502,
+      failure: {
+        message: 'AI Router gateway returned empty content',
+        errorType: 'empty_content',
+      },
+    });
+  });
+
+  test('allows empty content when failOnEmptyContent is disabled', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      failOnEmptyContent: false,
+      gatewayId: 'gw-empty',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+        chunks: [Buffer.from('{"choices":[{"message":{"content":""}}]}')],
+        jsonBody: {
+          choices: [{ message: { role: 'assistant', content: '' } }],
+        },
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      committed: true,
+      gatewayId: 'gw-empty',
+      statusCode: 200,
+    });
+  });
+
   test('detects empty OpenAI chat content while allowing tool calls', () => {
     expect(
       inspectAIRouterBufferedResponseContent(
@@ -1274,6 +1338,167 @@ describe('aiRouterRouter routes', () => {
     ]);
   });
 
+  test('passes empty content route settings through buffered runtime attempts', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+      id: 'router-empty-runtime',
+      nodes: [
+        {
+          id: 'node-empty',
+          gatewayId: 'gw-empty-runtime',
+          provider: 'anthropic',
+          enabled: true,
+          order: 0,
+          weight: 100,
+          modelOverride: null,
+          timeoutMs: 30000,
+          retryableStatusCodes: [],
+          failOnEmptyContent: true,
+          gateway: {
+            id: 'gw-empty-runtime',
+            modelApiKey: 'sk-empty-runtime',
+          },
+        },
+        {
+          id: 'node-good',
+          gatewayId: 'gw-good-runtime',
+          provider: 'anthropic',
+          enabled: true,
+          order: 1,
+          weight: 0,
+          modelOverride: null,
+          timeoutMs: 30000,
+          retryableStatusCodes: [],
+          failOnEmptyContent: true,
+          gateway: {
+            id: 'gw-good-runtime',
+            modelApiKey: 'sk-good-runtime',
+          },
+        },
+      ],
+    } as any);
+    vi.spyOn(prisma.aIGateway, 'findUnique').mockResolvedValue(null);
+    const quotaAlertFindFirst = vi
+      .spyOn(prisma.aIGatewayQuotaAlert, 'findFirst')
+      .mockResolvedValue(null);
+    let gatewayLogSeq = 0;
+    vi.spyOn(prisma.aIGatewayLogs, 'create').mockImplementation(
+      (async ({ data }: any) =>
+        ({
+          id: `gateway-log-${++gatewayLogSeq}`,
+          ...data,
+        }) as any) as any
+    );
+    vi.spyOn(prisma.aIGatewayLogs, 'update').mockResolvedValue({} as any);
+    const createRouterLog = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockImplementation((async ({ data }: any) => ({
+        id: 'router-log-empty-runtime',
+        ...data,
+      })) as any);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            content: [{ type: 'text', text: '' }],
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            content: [{ type: 'text', text: 'done' }],
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const handler = buildAIRouterAnthropicMessagesHandler();
+    const writes: Buffer[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      status: vi.fn(),
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: Buffer) => {
+        writes.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        res.headersSent = true;
+        return true;
+      }),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+      json: vi.fn(),
+    };
+    res.status.mockReturnValue(res);
+
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace-empty-runtime',
+          routerId: 'router-empty-runtime',
+        },
+        headers: {
+          'x-api-key': 'sk-request',
+        },
+        body: {
+          model: 'claude-3-5-haiku-latest',
+          max_tokens: 128,
+          messages: [{ role: 'user', content: 'hello' }],
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() =>
+      expect(quotaAlertFindFirst).toHaveBeenCalledTimes(2)
+    );
+    expect(Buffer.concat(writes).toString('utf8')).toContain(
+      '"text":"done"'
+    );
+    expect(createRouterLog.mock.calls[0][0].data).toMatchObject({
+      status: AIRouterLogsStatus.Success,
+      finalGatewayId: 'gw-good-runtime',
+      finalGatewayLogId: 'gateway-log-2',
+      attemptGatewayIds: ['gw-empty-runtime', 'gw-good-runtime'],
+      attemptGatewayLogIds: ['gateway-log-1', 'gateway-log-2'],
+      attemptCount: 2,
+    });
+    expect(createRouterLog.mock.calls[0][0].data.attemptErrors).toEqual([
+      {
+        gatewayId: 'gw-empty-runtime',
+        gatewayLogId: 'gateway-log-1',
+        statusCode: 502,
+        retryable: true,
+        errorType: 'empty_content',
+        message: 'AI Router gateway returned empty content',
+      },
+      {
+        gatewayId: 'gw-good-runtime',
+        gatewayLogId: 'gateway-log-2',
+        statusCode: 200,
+        retryable: false,
+      },
+    ]);
+  });
+
   test('streams keepalive pings while router attempts are still buffered', async () => {
     vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
     const runAttempts = vi.fn(
@@ -1612,6 +1837,122 @@ describe('AI Router models discovery', () => {
 });
 
 describe('AI Router orchestration', () => {
+  test('fails over and logs empty_content when an opted-in route returns empty content', async () => {
+    const attemptedGatewayIds: string[] = [];
+    const createdLogs: any[] = [];
+
+    const result = await runAIRouterAttempts({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      requestPayload: {
+        model: 'original-model',
+        messages: [{ role: 'user', content: 'hello' }],
+      },
+      loadRouter: async () => ({
+        id: 'router1',
+        nodes: [
+          {
+            id: 'node-empty',
+            gatewayId: 'gw-empty',
+            provider: 'openai',
+            enabled: true,
+            order: 0,
+            weight: 100,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            failOnEmptyContent: true,
+            gateway: {
+              id: 'gw-empty',
+              modelApiKey: 'sk-empty',
+            },
+          },
+          {
+            id: 'node-good',
+            gatewayId: 'gw-good',
+            provider: 'openai',
+            enabled: true,
+            order: 1,
+            weight: 100,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            failOnEmptyContent: true,
+            gateway: {
+              id: 'gw-good',
+              modelApiKey: 'sk-good',
+            },
+          },
+        ],
+      }),
+      executeAttempt: async ({ node }) => {
+        attemptedGatewayIds.push(node.gatewayId);
+
+        if (node.gatewayId === 'gw-empty') {
+          return {
+            ok: false,
+            committed: false,
+            gatewayId: 'gw-empty',
+            statusCode: 502,
+            logId: 'log-empty',
+            failure: {
+              message: 'AI Router gateway returned empty content',
+              errorType: 'empty_content',
+            },
+          };
+        }
+
+        return {
+          ok: true,
+          committed: true,
+          gatewayId: 'gw-good',
+          statusCode: 200,
+          logId: 'log-good',
+        };
+      },
+      createLog: async (data) => {
+        createdLogs.push(data);
+        return {
+          id: 'router-log1',
+          ...data,
+        };
+      },
+      now: () => 1000,
+      random: () => 0,
+    });
+
+    expect(attemptedGatewayIds).toEqual(['gw-empty', 'gw-good']);
+    expect(result.result).toMatchObject({
+      ok: true,
+      gatewayId: 'gw-good',
+    });
+    expect(createdLogs[0]).toMatchObject({
+      status: AIRouterLogsStatus.Success,
+      finalGatewayId: 'gw-good',
+      finalGatewayLogId: 'log-good',
+      attemptGatewayIds: ['gw-empty', 'gw-good'],
+      attemptGatewayLogIds: ['log-empty', 'log-good'],
+      attemptCount: 2,
+    });
+    expect(createdLogs[0].attemptErrors).toEqual([
+      {
+        gatewayId: 'gw-empty',
+        gatewayLogId: 'log-empty',
+        statusCode: 502,
+        retryable: true,
+        errorType: 'empty_content',
+        message: 'AI Router gateway returned empty content',
+      },
+      {
+        gatewayId: 'gw-good',
+        gatewayLogId: 'log-good',
+        statusCode: 200,
+        retryable: false,
+      },
+    ]);
+  });
+
   test('stops failover and writes Partial when an attempt has committed output', async () => {
     const attemptedGatewayIds: string[] = [];
     const createdLogs: any[] = [];
