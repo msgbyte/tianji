@@ -369,6 +369,7 @@ describe('AIRouterRouteEditor', () => {
               modelOverride: null,
               timeoutMs: 30000,
               retryableStatusCodes: [429, 500, 502, 503, 504],
+              failOnEmptyContent: false,
             },
           ],
         },
@@ -418,6 +419,43 @@ describe('AIRouterRouteEditor', () => {
               modelOverride: null,
               timeoutMs: 30000,
               retryableStatusCodes: [429, 502, 503, 504, 408],
+              failOnEmptyContent: false,
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  test('persists failOnEmptyContent when enabled on a gateway route', () => {
+    replaceTiersMutateAsync.mockResolvedValue(undefined);
+
+    render(<AIRouterRouteEditor routerId="router_1" tiers={[]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Add Gateway/ }));
+    fireEvent.click(screen.getByRole('option', { name: 'Primary Gateway' }));
+    fireEvent.click(screen.getByLabelText('Fail on empty content'));
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /Add Gateway/ }).at(-1)!
+    );
+
+    expect(replaceTiersMutateAsync).toHaveBeenCalledWith({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      tiers: [
+        {
+          order: 0,
+          nodes: [
+            {
+              gatewayId: 'gateway_1',
+              provider: 'openai',
+              order: 0,
+              enabled: true,
+              weight: 100,
+              modelOverride: null,
+              timeoutMs: 30000,
+              retryableStatusCodes: [429, 500, 502, 503, 504],
+              failOnEmptyContent: true,
             },
           ],
         },
@@ -493,6 +531,7 @@ describe('AIRouterRouteEditor', () => {
               modelOverride: 'new-model',
               timeoutMs: 30000,
               retryableStatusCodes: [429, 408],
+              failOnEmptyContent: false,
             },
           ],
         },
@@ -602,6 +641,7 @@ describe('AIRouterRouteEditor', () => {
               modelOverride: null,
               timeoutMs: 30000,
               retryableStatusCodes: [],
+              failOnEmptyContent: false,
             },
           ],
         },

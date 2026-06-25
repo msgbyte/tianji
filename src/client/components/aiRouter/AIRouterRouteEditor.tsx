@@ -50,6 +50,7 @@ type AIRouterNodeDraft = Pick<
   | 'modelOverride'
   | 'timeoutMs'
   | 'retryableStatusCodes'
+  | 'failOnEmptyContent'
 >;
 
 interface AIRouterTierView {
@@ -76,6 +77,7 @@ interface AddNodeFormState {
   modelOverride: string;
   timeoutMs: string;
   retryableStatusCodes: number[];
+  failOnEmptyContent: boolean;
 }
 
 const aiRouterProviderOptions = [
@@ -123,6 +125,7 @@ const defaultAddNodeFormState: AddNodeFormState = {
   modelOverride: '',
   timeoutMs: '30000',
   retryableStatusCodes: [429, 500, 502, 503, 504],
+  failOnEmptyContent: false,
 };
 
 export const AIRouterRouteEditor: React.FC<AIRouterRouteEditorProps> =
@@ -239,6 +242,7 @@ export const AIRouterRouteEditor: React.FC<AIRouterRouteEditorProps> =
             retryableStatusCodes: normalizeRetryableStatusCodes(
               addNodeForm.retryableStatusCodes
             ),
+            failOnEmptyContent: addNodeForm.failOnEmptyContent,
           };
 
           if (editingNodeIndex !== null) {
@@ -455,7 +459,7 @@ export const AIRouterRouteEditor: React.FC<AIRouterRouteEditorProps> =
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
+                                <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-5">
                                   <Metric
                                     label={t('Weight')}
                                     value={node.weight}
@@ -470,6 +474,14 @@ export const AIRouterRouteEditor: React.FC<AIRouterRouteEditorProps> =
                                       node.retryableStatusCodes.length > 0
                                         ? node.retryableStatusCodes.join(', ')
                                         : '-'
+                                    }
+                                  />
+                                  <Metric
+                                    label={t('Empty Content')}
+                                    value={
+                                      node.failOnEmptyContent
+                                        ? t('Failover')
+                                        : t('Allow')
                                     }
                                   />
                                   <Metric
@@ -749,6 +761,34 @@ export const AIRouterRouteEditor: React.FC<AIRouterRouteEditorProps> =
                 </div>
               </div>
 
+              <div className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
+                <div className="min-w-0">
+                  <label
+                    className="text-sm font-medium"
+                    htmlFor="failOnEmptyContent"
+                  >
+                    {t('Fail on empty content')}
+                  </label>
+                  <div className="text-muted-foreground mt-0.5 text-xs">
+                    {t(
+                      'Try the next route when the upstream response has no text output.'
+                    )}
+                  </div>
+                </div>
+                <Switch
+                  id="failOnEmptyContent"
+                  aria-label={t('Fail on empty content')}
+                  checked={addNodeForm.failOnEmptyContent}
+                  onCheckedChange={(failOnEmptyContent) =>
+                    setAddNodeForm((prev) => ({
+                      ...prev,
+                      failOnEmptyContent,
+                    }))
+                  }
+                  disabled={isSaving}
+                />
+              </div>
+
               <DialogFooter>
                 <Button
                   type="button"
@@ -788,6 +828,7 @@ function createNodeFormState(node: AIRouterNodeDraft): AddNodeFormState {
     retryableStatusCodes: normalizeRetryableStatusCodes(
       node.retryableStatusCodes ?? []
     ),
+    failOnEmptyContent: Boolean(node.failOnEmptyContent),
   };
 }
 
@@ -853,6 +894,7 @@ function normalizeTiersForMutation(tiers: AIRouterTierDraft[]) {
         retryableStatusCodes: normalizeRetryableStatusCodes(
           node.retryableStatusCodes
         ),
+        failOnEmptyContent: Boolean(node.failOnEmptyContent),
       })),
   }));
 }
