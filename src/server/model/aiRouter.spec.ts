@@ -8,6 +8,7 @@ import {
   buildBufferedAIGatewayAttemptResult,
   createAIRouterAttemptRequest,
   getAIRouterProtocolForPath,
+  inspectAIRouterBufferedResponseContent,
   isAIGatewayEligibleForAIRouter,
   isAIRouterNodeEligibleForProtocol,
   isAIRouterRetryableFailure,
@@ -578,6 +579,239 @@ describe('AI Router retry helpers', () => {
 });
 
 describe('AI Router buffered attempt mapping', () => {
+  test('detects empty OpenAI chat content while allowing tool calls', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [{ message: { role: 'assistant', content: '   ' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: true, hasToolWork: false, text: '' });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [
+              {
+                message: {
+                  role: 'assistant',
+                  content: '',
+                  tool_calls: [{ id: 'call_1', type: 'function' }],
+                },
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+  });
+
+  test('detects empty OpenAI responses and Anthropic message content', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            output_text: '',
+            output: [
+              {
+                type: 'message',
+                content: [{ type: 'output_text', text: '' }],
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toMatchObject({ parsed: true, empty: true });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            content: [{ type: 'text', text: '   ' }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toMatchObject({ parsed: true, empty: true });
+  });
+
+  test('treats protocol payloads without recognized content as unparsed', () => {
+    const unparsed = {
+      parsed: false,
+      empty: false,
+      hasToolWork: false,
+      text: '',
+    };
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [{ message: { role: 'assistant' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual(unparsed);
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            output: [
+              {
+                type: 'message',
+                content: [{ type: 'unknown' }],
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual(unparsed);
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            content: [{ type: 'image', source: {} }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual(unparsed);
+  });
+
+  test('detects OpenAI responses added output item tool work', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"type":"response.output_item.added","item":{"type":"function_call"}}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+  });
+
+  test('detects OpenAI responses file search tool work', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            output: [{ type: 'file_search_call' }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"type":"response.output_item.added","item":{"type":"file_search_call"}}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+  });
+
+  test('reads OpenAI chat SSE content from all choices', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"choices":[{"delta":{}},{"delta":{"content":"hello"}}]}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({
+      parsed: true,
+      empty: false,
+      hasToolWork: false,
+      text: 'hello',
+    });
+  });
+
   test('preserves non-retryable 4xx statuses as uncommitted failures', () => {
     const result = buildBufferedAIGatewayAttemptResult({
       gatewayId: 'gw1',

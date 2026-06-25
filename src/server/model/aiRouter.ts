@@ -1837,6 +1837,381 @@ function readJsonErrorMessage(value: unknown): string | null {
   return typeof message === 'string' && message ? message : null;
 }
 
+export interface AIRouterBufferedContentInspection {
+  parsed: boolean;
+  empty: boolean;
+  hasToolWork: boolean;
+  text: string;
+}
+
+export function inspectAIRouterBufferedResponseContent(
+  protocol: AIRouterProtocol,
+  snapshot: BufferedResponseSnapshot
+): AIRouterBufferedContentInspection {
+  const fromJson = inspectAIRouterJsonContent(protocol, snapshot.jsonBody);
+
+  if (fromJson.parsed) {
+    return fromJson;
+  }
+
+  return inspectAIRouterSSEContent(protocol, snapshot.chunks);
+}
+
+function inspectAIRouterJsonContent(
+  protocol: AIRouterProtocol,
+  body: unknown
+): AIRouterBufferedContentInspection {
+  if (protocol === AI_ROUTER_PROTOCOLS.OPENAI_CHAT) {
+    return inspectOpenAIChatJsonContent(body);
+  }
+
+  if (protocol === AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES) {
+    return inspectOpenAIResponsesJsonContent(body);
+  }
+
+  if (protocol === AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES) {
+    return inspectAnthropicMessagesJsonContent(body);
+  }
+
+  return unparsedAIRouterContentInspection();
+}
+
+function inspectOpenAIChatJsonContent(
+  body: unknown
+): AIRouterBufferedContentInspection {
+  if (!isAIRouterRecord(body) || !Array.isArray(body.choices)) {
+    return unparsedAIRouterContentInspection();
+  }
+
+  let parsed = false;
+  let text = '';
+  let hasToolWork = false;
+
+  for (const choice of body.choices) {
+    if (!isAIRouterRecord(choice) || !isAIRouterRecord(choice.message)) {
+      continue;
+    }
+
+    const message = choice.message;
+
+    if (typeof message.content === 'string') {
+      parsed = true;
+      text += message.content;
+    }
+
+    hasToolWork =
+      hasToolWork ||
+      Array.isArray(message.tool_calls) ||
+      (message.function_call !== undefined && message.function_call !== null);
+  }
+
+  return parsed || hasToolWork
+    ? parsedAIRouterContentInspection(text, hasToolWork)
+    : unparsedAIRouterContentInspection();
+}
+
+function inspectOpenAIResponsesJsonContent(
+  body: unknown
+): AIRouterBufferedContentInspection {
+  if (!isAIRouterRecord(body)) {
+    return unparsedAIRouterContentInspection();
+  }
+
+  const hasDirectText = typeof body.output_text === 'string';
+  let parsed = hasDirectText;
+  let text = hasDirectText ? body.output_text : '';
+  let hasToolWork = false;
+
+  if (Array.isArray(body.output)) {
+    for (const item of body.output) {
+      if (!isAIRouterRecord(item)) {
+        continue;
+      }
+
+      if (isOpenAIResponsesToolWorkType(item.type)) {
+        parsed = true;
+        hasToolWork = true;
+      }
+
+      if (hasDirectText || !Array.isArray(item.content)) {
+        continue;
+      }
+
+      for (const content of item.content) {
+        const contentText = getOpenAIResponsesContentText(content);
+
+        if (contentText !== null) {
+          parsed = true;
+          text += contentText;
+        }
+      }
+    }
+  }
+
+  return parsed
+    ? parsedAIRouterContentInspection(text, hasToolWork)
+    : unparsedAIRouterContentInspection();
+}
+
+function inspectAnthropicMessagesJsonContent(
+  body: unknown
+): AIRouterBufferedContentInspection {
+  if (!isAIRouterRecord(body) || !Array.isArray(body.content)) {
+    return unparsedAIRouterContentInspection();
+  }
+
+  let text = '';
+  let hasToolWork = false;
+  let parsed = false;
+
+  for (const content of body.content) {
+    if (!isAIRouterRecord(content)) {
+      continue;
+    }
+
+    if (content.type === 'text' && typeof content.text === 'string') {
+      parsed = true;
+      text += content.text;
+    }
+
+    if (content.type === 'tool_use') {
+      parsed = true;
+      hasToolWork = true;
+    }
+  }
+
+  return parsed
+    ? parsedAIRouterContentInspection(text, hasToolWork)
+    : unparsedAIRouterContentInspection();
+}
+
+function inspectAIRouterSSEContent(
+  protocol: AIRouterProtocol,
+  chunks: Buffer[]
+): AIRouterBufferedContentInspection {
+  const events = parseAIRouterSSEEvents(chunks);
+
+  if (events.length === 0) {
+    return unparsedAIRouterContentInspection();
+  }
+
+  if (protocol === AI_ROUTER_PROTOCOLS.OPENAI_CHAT) {
+    return inspectOpenAIChatSSEContent(events);
+  }
+
+  if (protocol === AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES) {
+    return inspectOpenAIResponsesSSEContent(events);
+  }
+
+  if (protocol === AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES) {
+    return inspectAnthropicMessagesSSEContent(events);
+  }
+
+  return unparsedAIRouterContentInspection();
+}
+
+function inspectOpenAIChatSSEContent(
+  events: unknown[]
+): AIRouterBufferedContentInspection {
+  let parsed = false;
+  let text = '';
+  let hasToolWork = false;
+
+  for (const event of events) {
+    if (!isAIRouterRecord(event) || !Array.isArray(event.choices)) {
+      continue;
+    }
+
+    for (const choice of event.choices) {
+      if (!isAIRouterRecord(choice) || !isAIRouterRecord(choice.delta)) {
+        continue;
+      }
+
+      const delta = choice.delta;
+
+      if (typeof delta.content === 'string') {
+        parsed = true;
+        text += delta.content;
+      }
+
+      hasToolWork =
+        hasToolWork ||
+        Array.isArray(delta.tool_calls) ||
+        (delta.function_call !== undefined && delta.function_call !== null);
+    }
+  }
+
+  return parsed || hasToolWork
+    ? parsedAIRouterContentInspection(text, hasToolWork)
+    : unparsedAIRouterContentInspection();
+}
+
+function inspectOpenAIResponsesSSEContent(
+  events: unknown[]
+): AIRouterBufferedContentInspection {
+  let parsed = false;
+  let text = '';
+  let hasToolWork = false;
+
+  for (const event of events) {
+    if (!isAIRouterRecord(event) || typeof event.type !== 'string') {
+      continue;
+    }
+
+    if (event.type === 'response.output_text.delta') {
+      parsed = true;
+
+      if (typeof event.delta === 'string') {
+        text += event.delta;
+      }
+    }
+
+    if (event.type === 'response.function_call_arguments.delta') {
+      parsed = true;
+      hasToolWork = true;
+    }
+
+    if (
+      event.type === 'response.output_item.added' ||
+      event.type === 'response.output_item.done'
+    ) {
+      const item = isAIRouterRecord(event.item)
+        ? event.item
+        : isAIRouterRecord(event.output_item)
+          ? event.output_item
+          : null;
+
+      if (item && isOpenAIResponsesToolWorkType(item.type)) {
+        parsed = true;
+        hasToolWork = true;
+      }
+    }
+  }
+
+  return parsed
+    ? parsedAIRouterContentInspection(text, hasToolWork)
+    : unparsedAIRouterContentInspection();
+}
+
+function inspectAnthropicMessagesSSEContent(
+  events: unknown[]
+): AIRouterBufferedContentInspection {
+  let parsed = false;
+  let text = '';
+  let hasToolWork = false;
+
+  for (const event of events) {
+    if (!isAIRouterRecord(event) || typeof event.type !== 'string') {
+      continue;
+    }
+
+    if (event.type === 'content_block_delta') {
+      const delta = event.delta;
+
+      if (isAIRouterRecord(delta) && delta.type === 'text_delta') {
+        if (typeof delta.text === 'string') {
+          parsed = true;
+          text += delta.text;
+        }
+      }
+    }
+
+    if (event.type === 'content_block_start') {
+      const contentBlock = event.content_block;
+
+      if (
+        isAIRouterRecord(contentBlock) &&
+        contentBlock.type === 'tool_use'
+      ) {
+        parsed = true;
+        hasToolWork = true;
+      }
+    }
+  }
+
+  return parsed
+    ? parsedAIRouterContentInspection(text, hasToolWork)
+    : unparsedAIRouterContentInspection();
+}
+
+function parseAIRouterSSEEvents(chunks: Buffer[]): unknown[] {
+  const events: unknown[] = [];
+  const text = Buffer.concat(chunks).toString('utf8');
+
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith('data: ')) {
+      continue;
+    }
+
+    const data = line.slice('data: '.length).trim();
+
+    if (!data || data === '[DONE]') {
+      continue;
+    }
+
+    try {
+      events.push(JSON.parse(data));
+    } catch {
+      continue;
+    }
+  }
+
+  return events;
+}
+
+function getOpenAIResponsesContentText(content: unknown): string | null {
+  if (!isAIRouterRecord(content)) {
+    return null;
+  }
+
+  if (typeof content.text === 'string') {
+    return content.text;
+  }
+
+  if (isAIRouterRecord(content.text) && typeof content.text.value === 'string') {
+    return content.text.value;
+  }
+
+  return null;
+}
+
+function isOpenAIResponsesToolWorkType(type: unknown): boolean {
+  return (
+    type === 'function_call' ||
+    type === 'tool_call' ||
+    type === 'web_search_call' ||
+    type === 'file_search_call' ||
+    type === 'computer_call'
+  );
+}
+
+function parsedAIRouterContentInspection(
+  text: string,
+  hasToolWork: boolean
+): AIRouterBufferedContentInspection {
+  const trimmedText = text.trim();
+
+  return {
+    parsed: true,
+    empty: !hasToolWork && trimmedText.length === 0,
+    hasToolWork,
+    text: trimmedText,
+  };
+}
+
+function unparsedAIRouterContentInspection(): AIRouterBufferedContentInspection {
+  return {
+    parsed: false,
+    empty: false,
+    hasToolWork: false,
+    text: '',
+  };
+}
+
+function isAIRouterRecord(value: unknown): value is Record<string, any> {
+  return Boolean(value && typeof value === 'object');
+}
+
 function compactObject<T extends Record<string, unknown>>(value: T) {
   return Object.fromEntries(
     Object.entries(value).filter(([, item]) => item !== undefined)
