@@ -1,5 +1,20 @@
 
 
+## [1.32.9](https://github.com/msgbyte/tianji/compare/v1.32.8...v1.32.9) (2026-06-25)
+
+### Features
+
+* **ai-router:** fail over empty content responses ([bb98bef](https://github.com/msgbyte/tianji/commit/bb98befb2a2bf8a7c05c961903b3a92054969109))
+
+### Bug Fixes
+
+* **ai-router:** avoid replaying empty content failures ([df685cd](https://github.com/msgbyte/tianji/commit/df685cd4edeb398e70c438c6ae3436c93c0fbd1c))
+* **ai-router:** ignore empty tool calls ([9f76b45](https://github.com/msgbyte/tianji/commit/9f76b45d85be93bfe440ac772cecd7575dc00db5))
+
+### Document
+
+* **ai-router:** explain empty content failover ([0158467](https://github.com/msgbyte/tianji/commit/01584679e4284cfcbde834f280a0431bf9fca8f5))
+
 ## [1.32.8](https://github.com/msgbyte/tianji/compare/v1.32.7...v1.32.8) (2026-06-25)
 
 ### Features
