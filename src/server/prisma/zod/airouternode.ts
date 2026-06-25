@@ -15,6 +15,7 @@ export const AIRouterNodeModelSchema = z.object({
   modelOverride: z.string().nullish(),
   timeoutMs: z.number().int(),
   retryableStatusCodes: z.number().int().array(),
+  failOnEmptyContent: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

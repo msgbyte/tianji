@@ -36,6 +36,7 @@ const aiRouterNodeInputSchema = z.object({
   modelOverride: z.string().nullable().default(null),
   timeoutMs: z.number().int().min(1000).max(300000).default(30000),
   retryableStatusCodes: z.array(z.number().int().min(100).max(599)).default([]),
+  failOnEmptyContent: z.boolean().default(false),
 });
 
 const aiRouterTierInputSchema = z.object({
@@ -345,6 +346,7 @@ export const aiRouterRouter = router({
                 modelOverride: node.modelOverride,
                 timeoutMs: node.timeoutMs,
                 retryableStatusCodes: node.retryableStatusCodes,
+                failOnEmptyContent: node.failOnEmptyContent,
               })),
             });
           }
