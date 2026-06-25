@@ -146,6 +146,14 @@ Use **Retryable Status Codes** to add more status codes for a route. For example
 
 Be careful with validation errors such as `400` or `401`. Those usually mean the request or key is wrong, and retrying another provider can hide the real problem.
 
+### Fail on Empty Content
+
+Fail on Empty Content is optional and defaults to off.
+
+When enabled for a gateway route, AI Router treats a successful upstream response with no assistant text content as a failed attempt. It then tries the next eligible route in the same tier, followed by lower tiers if needed.
+
+Tool-only responses are still treated as valid responses. This prevents function calling or tool-use requests from failing only because they did not produce assistant text.
+
 ## Logs
 
 The **Logs** tab shows runtime attempts for a router:
