@@ -1,5 +1,11 @@
 
 
+## [1.32.10](https://github.com/msgbyte/tianji/compare/v1.32.9...v1.32.10) (2026-06-25)
+
+### Bug Fixes
+
+* **worker:** avoid embedding payload in vm source ([af68fe0](https://github.com/msgbyte/tianji/commit/af68fe0aea1d094f7c4ae3b76526170e6170a97c))
+
 ## [1.32.9](https://github.com/msgbyte/tianji/compare/v1.32.8...v1.32.9) (2026-06-25)
 
 ### Features
