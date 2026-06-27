@@ -118,9 +118,10 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
         </CardHeader>
         <CardContent>
           <SimplePieChart
-            className="mx-auto max-h-[240px]"
+            className="mx-auto min-h-[260px] w-full"
             data={data}
             chartConfig={chartConfig}
+            showLegend={true}
           />
         </CardContent>
       </Card>
