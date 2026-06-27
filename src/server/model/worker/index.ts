@@ -9,15 +9,33 @@ import {
   promWorkerExecutionDuration,
   promWorkerCPUTime,
   promWorkerMemoryUsage,
+  promWorkerRequestPayloadSize,
 } from '../../utils/prometheus/client.js';
 import { createId } from '@paralleldrive/cuid2';
 import { createBatchWriter } from '../../utils/batchWriter.js';
+import { env } from '../../utils/env.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
   name: 'WorkerExecution',
   flush: (batch) =>
     prisma.functionWorkerExecution.createMany({ data: batch }).then(() => {}),
 });
+
+function shouldStoreWorkerRequestPayload(workerId?: string) {
+  if (!workerId) {
+    return true;
+  }
+
+  return !env.workerExecutionRequestPayloadDisabledWorkerIds.includes(workerId);
+}
+
+function getWorkerRequestPayloadSizeBytes(payload: Record<string, any>) {
+  try {
+    return Buffer.byteLength(JSON.stringify(payload) ?? '', 'utf8');
+  } catch {
+    return 0;
+  }
+}
 
 export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
   'worker',
@@ -42,10 +60,13 @@ export async function execWorker(
   requestPayload?: Record<string, any>,
   context?: Record<string, any>
 ) {
-  const workerRequestPayload = isPlainObject(requestPayload)
-    ? requestPayload
+  const workerRequestPayload: Record<string, any> = isPlainObject(requestPayload)
+    ? (requestPayload as Record<string, any>)
     : {};
   const workerContext = isPlainObject(context) ? context : {};
+  const shouldStoreRequestPayload = shouldStoreWorkerRequestPayload(workerId);
+  const requestPayloadSizeBytes =
+    getWorkerRequestPayloadSizeBytes(workerRequestPayload);
 
   try {
     const {
@@ -77,7 +98,7 @@ export async function execWorker(
       duration: usage,
       memoryUsed: used_heap_size,
       cpuTime,
-      requestPayload,
+      requestPayload: shouldStoreRequestPayload ? requestPayload : null,
       responsePayload: result,
       error: error ? String(error) : undefined,
       logs: Array.isArray(logs)
@@ -97,9 +118,17 @@ export async function execWorker(
     promWorkerMemoryUsage
       .labels(workerIdLabel, statusLabel)
       .observe(used_heap_size);
+    promWorkerRequestPayloadSize
+      .labels(workerIdLabel, statusLabel)
+      .observe(requestPayloadSizeBytes);
 
     if (workerId) {
-      execRecordWriter.enqueue(payload);
+      execRecordWriter.enqueue({
+        ...payload,
+        requestPayload: shouldStoreRequestPayload
+          ? payload.requestPayload
+          : Prisma.DbNull,
+      });
     }
 
     return payload;
@@ -110,18 +139,26 @@ export async function execWorker(
     const workerIdLabel = workerId || 'anonymous';
 
     promWorkerExecutionCounter.labels(workerIdLabel, 'Failed').inc();
+    promWorkerRequestPayloadSize
+      .labels(workerIdLabel, 'Failed')
+      .observe(requestPayloadSizeBytes);
 
     const payload = {
       workerId: workerId || '',
       status: FunctionWorkerExecutionStatus.Failed,
-      requestPayload,
+      requestPayload: shouldStoreRequestPayload ? requestPayload : null,
       error: String(e),
       logs: [],
       responsePayload: null,
     };
 
     if (workerId) {
-      execRecordWriter.enqueue(payload);
+      execRecordWriter.enqueue({
+        ...payload,
+        requestPayload: shouldStoreRequestPayload
+          ? payload.requestPayload
+          : Prisma.DbNull,
+      });
     }
 
     return payload;

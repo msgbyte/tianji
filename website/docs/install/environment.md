@@ -20,6 +20,7 @@ Tianji supports various environment variables to customize its behavior. You can
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
 | `ALPHA_MODE` | Enable alpha features | `false` | `true` |
 | `ENABLE_FUNCTION_WORKER` | Enable function worker | `false` | `true` |
+| `WORKER_EXECUTION_REQUEST_PAYLOAD_DISABLED_WORKER_IDS` | Comma-separated worker IDs whose execution request payloads are not persisted. Payloads are still passed to worker code. | - | `worker-id-1,worker-id-2` |
 | `REGISTER_AUTO_JOIN_WORKSPACE_ID` | Auto-join workspace ID for new users | - | `workspace-id-123` |
 
 ## Cache Configuration
