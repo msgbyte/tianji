@@ -84,15 +84,16 @@ export const WorkerHourlyCharts: React.FC<{
   const startDate = dayjs().subtract(24, 'hour').startOf('hour');
   const endDate = dayjs().endOf('hour');
 
-  const { data: hourlyStats } = trpc.worker.getExecutionHourlyStats.useQuery(
-    { workspaceId, workerId },
-    {
-      trpc: {
-        context: { skipBatch: true },
-      },
-      refetchInterval: 5 * 60 * 1000,
-    }
-  );
+  const { data: hourlyStats, isLoading } =
+    trpc.worker.getExecutionHourlyStats.useQuery(
+      { workspaceId, workerId },
+      {
+        trpc: {
+          context: { skipBatch: true },
+        },
+        refetchInterval: 5 * 60 * 1000,
+      }
+    );
 
   const countData = useMemo(() => {
     if (!hourlyStats || hourlyStats.length === 0) return [];
@@ -155,6 +156,18 @@ export const WorkerHourlyCharts: React.FC<{
       'hour'
     );
   }, [hourlyStats, startDate.valueOf(), endDate.valueOf()]);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex h-40 items-center justify-center">
+          <span className="text-muted-foreground text-sm">
+            {t('Loading...')}
+          </span>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!hourlyStats || hourlyStats.length === 0) {
     return (
