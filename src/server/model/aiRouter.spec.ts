@@ -1,6 +1,7 @@
 import { AIRouterLogsStatus } from '@prisma/client';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { AI_GATEWAY_STREAM_PING_COMMENT } from './aiGateway.js';
+import { AIRouterLogsModelSchema } from '../prisma/zod/index.js';
 import {
   AI_ROUTER_PROTOCOLS,
   applyAIRouterModelOverride,
@@ -21,6 +22,7 @@ import {
 } from './aiRouter.js';
 import { aiRouterRouter } from '../router/aiRouter.js';
 import { prisma } from './_client.js';
+import { buildCursorResponseSchema } from '../utils/schema.js';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -1847,6 +1849,41 @@ describe('aiRouterRouter routes', () => {
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();
     expect(res.end).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AI Router logs output schema', () => {
+  test('accepts attempt error arrays returned from router logs', () => {
+    const schema = buildCursorResponseSchema(AIRouterLogsModelSchema);
+
+    const result = schema.safeParse({
+      items: [
+        {
+          id: 'cmqf8x7n628ynpvll25aflog1',
+          workspaceId: 'cm3pzndpk0001thybosby3rhz',
+          routerId: 'cmqf8x7n628ynpvll25afeneq',
+          protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+          status: AIRouterLogsStatus.Success,
+          finalGatewayId: 'cmqf8x7n628ynpvll25afgw1',
+          finalGatewayLogId: 'cmqf8x7n628ynpvll25afgl1',
+          attemptGatewayIds: ['cmqf8x7n628ynpvll25afgw1'],
+          attemptGatewayLogIds: ['cmqf8x7n628ynpvll25afgl1'],
+          attemptErrors: [
+            {
+              gatewayId: 'cmqf8x7n628ynpvll25afgw1',
+              gatewayLogId: 'cmqf8x7n628ynpvll25afgl1',
+              statusCode: 200,
+              retryable: false,
+            },
+          ],
+          attemptCount: 1,
+          duration: 123,
+          createdAt: new Date('2026-06-28T00:00:00.000Z'),
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
   });
 });
 

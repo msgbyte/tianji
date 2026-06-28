@@ -18,7 +18,7 @@ declare global {
 
   namespace PrismaJson {
     type CommonPayload = Record<string, any>;
-    type Nullable<T> = Record<string, any> | null | undefined;
+    type Nullable<T> = T | null | undefined;
     type DashboardLayout = {
       layouts: Record<string, any[]>;
       items: any[];

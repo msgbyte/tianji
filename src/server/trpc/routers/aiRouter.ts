@@ -408,7 +408,7 @@ export const aiRouterRouter = router({
       );
 
       return {
-        items,
+        items: items.map(serializeAIRouterLogModel),
         nextCursor,
       };
     }),
@@ -492,6 +492,33 @@ function serializeAIRouterTierModel<
       gateway: serializeAIGatewayModel(node.gateway),
     })),
   };
+}
+
+function serializeAIRouterLogModel<
+  T extends {
+    attemptErrors?: unknown;
+  },
+>(log: T) {
+  return {
+    ...log,
+    attemptErrors: normalizeAIRouterAttemptErrors(log.attemptErrors),
+  };
+}
+
+function normalizeAIRouterAttemptErrors(attemptErrors: unknown) {
+  if (Array.isArray(attemptErrors)) {
+    return attemptErrors.filter(isRecord);
+  }
+
+  if (isRecord(attemptErrors)) {
+    return [attemptErrors];
+  }
+
+  return null;
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function buildAIRouterOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {

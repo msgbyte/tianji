@@ -20,9 +20,9 @@ export const AIRouterLogsModelSchema = z.object({
   attemptGatewayIds: z.string().array(),
   attemptGatewayLogIds: z.string().array(),
   /**
-   * [Nullable<PrismaJson.CommonPayload>]
+   * [Nullable<PrismaJson.CommonPayload[]>]
    */
-  attemptErrors: imports.CommonPayloadSchema.nullish(),
+  attemptErrors: imports.CommonPayloadSchema.array().nullish(),
   attemptCount: z.number().int(),
   duration: z.number().int(),
   createdAt: z.date(),
