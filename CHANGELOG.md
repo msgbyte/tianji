@@ -1,5 +1,17 @@
 
 
+## [1.32.11](https://github.com/msgbyte/tianji/compare/v1.32.10...v1.32.11) (2026-06-28)
+
+### Features
+
+* **application:** add pie chart segment details ([64ec9cb](https://github.com/msgbyte/tianji/commit/64ec9cb6bc77ccd3f0a98e5cb2bc6da7afd0dbf1))
+* **worker:** add request payload metrics and controls ([b35fe6a](https://github.com/msgbyte/tianji/commit/b35fe6a8df09f5667b2ae5b5a148e9962bb94d49))
+
+### Bug Fixes
+
+* **ai-router:** normalize router log attempt errors ([f600d39](https://github.com/msgbyte/tianji/commit/f600d39204b608abbda32e00d08c688b674f714f))
+* **worker:** show loading before hourly stats resolve ([6b2abf9](https://github.com/msgbyte/tianji/commit/6b2abf9626c53670e5e34d1510abca09dd64ff7b))
+
 ## [1.32.10](https://github.com/msgbyte/tianji/compare/v1.32.9...v1.32.10) (2026-06-25)
 
 ### Bug Fixes
