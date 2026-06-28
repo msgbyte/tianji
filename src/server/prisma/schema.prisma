@@ -1055,7 +1055,7 @@ model AIRouterLogs {
   finalGatewayLogId    String?            @db.VarChar(30)
   attemptGatewayIds    String[]           @default([])
   attemptGatewayLogIds String[]           @default([])
-  /// [Nullable<PrismaJson.CommonPayload[]>]
+  /// [Nullable<Array<PrismaJson.CommonPayload>>]
   /// @zod.custom(imports.CommonPayloadSchema.array().nullish())
   attemptErrors        Json?              @db.Json
   attemptCount         Int                @default(0) @db.Integer
