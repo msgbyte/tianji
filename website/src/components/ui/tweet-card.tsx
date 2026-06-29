@@ -9,6 +9,7 @@ import {
 import { getTweet, type Tweet } from 'react-tweet/api';
 
 import { cn } from '../../lib/utils';
+import { normalizeTweetForReactTweet } from './tweet-utils';
 
 interface TwitterIconProps {
   className?: string;
@@ -231,7 +232,7 @@ export const MagicTweet = ({
   components?: TwitterComponents;
   className?: string;
 }) => {
-  const enrichedTweet = enrichTweet(tweet);
+  const enrichedTweet = enrichTweet(normalizeTweetForReactTweet(tweet));
   return (
     <div
       className={cn(
