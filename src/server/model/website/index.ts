@@ -3,6 +3,7 @@ import {
   flattenJSON,
   hashUuid,
   isCuid,
+  isUuid,
   parseToken,
 } from '../../utils/common.js';
 import { prisma } from '../_client.js';
@@ -36,6 +37,13 @@ import { promWebsiteSessionErrorCounter } from '../../utils/prometheus/client.js
 interface WebsiteEventBatchItem {
   event: Prisma.WebsiteEventCreateManyInput;
   eventData?: Prisma.WebsiteEventDataCreateManyInput[];
+}
+
+export class WebsiteNotFoundError extends Error {
+  constructor(public readonly websiteId: string) {
+    super(`Website not found: ${websiteId}.`);
+    this.name = 'WebsiteNotFoundError';
+  }
 }
 
 const websiteEventWriter = createBatchWriter<WebsiteEventBatchItem>({
@@ -78,17 +86,6 @@ export async function findSession(
   // Verify payload
   const { payload } = body;
 
-  // Check if cache token is passed
-  const cacheToken = req.headers['x-tianji-cache'] as string;
-
-  if (cacheToken) {
-    const result = parseToken(cacheToken);
-
-    if (result) {
-      return result as any;
-    }
-  }
-
   const {
     website: websiteId,
     hostname,
@@ -110,7 +107,35 @@ export async function findSession(
   const website = await loadWebsite(websiteId);
 
   if (!website) {
-    throw new Error(`Website not found: ${websiteId}.`);
+    throw new WebsiteNotFoundError(websiteId);
+  }
+
+  // Check if cache token is passed. The token only skips client/session
+  // detection when it still belongs to this website and the session exists.
+  const cacheToken = req.headers['x-tianji-cache'] as string;
+
+  if (cacheToken) {
+    const result = parseToken(cacheToken);
+
+    if (
+      result &&
+      typeof result === 'object' &&
+      'id' in result &&
+      'websiteId' in result &&
+      typeof result.id === 'string' &&
+      typeof result.websiteId === 'string' &&
+      isUuid(result.id) &&
+      result.websiteId === websiteId
+    ) {
+      const session = await loadSession(result.id);
+
+      if (session && session.websiteId === websiteId) {
+        return {
+          ...session,
+          workspaceId: website.workspaceId,
+        };
+      }
+    }
   }
 
   const {
