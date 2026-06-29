@@ -1,5 +1,14 @@
 
 
+## [1.32.12](https://github.com/msgbyte/tianji/compare/v1.32.11...v1.32.12) (2026-06-29)
+
+### Bug Fixes
+
+* **prisma:** avoid json array type generation bug ([f2780f5](https://github.com/msgbyte/tianji/commit/f2780f55a597a73fda3c960121750cbac248edff))
+* **website:** guard tweet entity arrays ([5151796](https://github.com/msgbyte/tianji/commit/51517964ebba66fafbff5ff3a9df3cae2a38821c))
+* **website:** remove deleted homepage tweet ([0c50a04](https://github.com/msgbyte/tianji/commit/0c50a04c8fbb2ee9982614b2a38f41be839dca53))
+* **website:** return 404 for unknown website events ([8b9092e](https://github.com/msgbyte/tianji/commit/8b9092e7f677c361a09b54af828c7949d3e00d57))
+
 ## [1.32.11](https://github.com/msgbyte/tianji/compare/v1.32.10...v1.32.11) (2026-06-28)
 
 ### Features
