@@ -1,5 +1,11 @@
 
 
+## [1.32.14](https://github.com/msgbyte/tianji/compare/v1.32.13...v1.32.14) (2026-06-30)
+
+### Bug Fixes
+
+* **ai-router:** handle stream error failover ([b82b3f3](https://github.com/msgbyte/tianji/commit/b82b3f3da426509bd7fb25a3128f8630e718dda5))
+
 ## [1.32.13](https://github.com/msgbyte/tianji/compare/v1.32.12...v1.32.13) (2026-06-30)
 
 ### Bug Fixes
