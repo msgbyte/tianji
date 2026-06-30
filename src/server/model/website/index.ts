@@ -34,7 +34,7 @@ import { createBatchWriter } from '../../utils/batchWriter.js';
 import { createId } from '@paralleldrive/cuid2';
 import { promWebsiteSessionErrorCounter } from '../../utils/prometheus/client.js';
 
-interface WebsiteEventBatchItem {
+export interface WebsiteEventBatchItem {
   event: Prisma.WebsiteEventCreateManyInput;
   eventData?: Prisma.WebsiteEventDataCreateManyInput[];
 }
@@ -46,21 +46,95 @@ export class WebsiteNotFoundError extends Error {
   }
 }
 
+async function filterBatchByExistingSessions(batch: WebsiteEventBatchItem[]) {
+  const sessionIds = [...new Set(batch.map((b) => b.event.sessionId))];
+  const sessions = await prisma.websiteSession.findMany({
+    where: {
+      id: {
+        in: sessionIds,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  const existingSessionIds = new Set(sessions.map((session) => session.id));
+  const filteredBatch = batch.filter((b) =>
+    existingSessionIds.has(b.event.sessionId)
+  );
+  const droppedBatch = batch.filter(
+    (b) => !existingSessionIds.has(b.event.sessionId)
+  );
+  const droppedCount = batch.length - filteredBatch.length;
+
+  if (droppedCount > 0) {
+    const websiteIds = [...new Set(droppedBatch.map((b) => b.event.websiteId))];
+    const droppedSessionIds = [
+      ...new Set(droppedBatch.map((b) => b.event.sessionId)),
+    ];
+
+    logger.warn(
+      `[WebsiteEvent] Dropped ${droppedCount} item(s) because their sessions no longer exist.`,
+      {
+        websiteIds,
+        sessionIds: droppedSessionIds.slice(0, 10),
+        sessionIdCount: droppedSessionIds.length,
+      }
+    );
+  }
+
+  return filteredBatch;
+}
+
+async function writeWebsiteEventBatch(batch: WebsiteEventBatchItem[]) {
+  const events = batch.map((b) => b.event);
+  const allEventData = batch.flatMap((b) => b.eventData ?? []);
+
+  if (allEventData.length > 0) {
+    await prisma.$transaction([
+      prisma.websiteEvent.createMany({ data: events }),
+      prisma.websiteEventData.createMany({ data: allEventData }),
+    ]);
+  } else {
+    await prisma.websiteEvent.createMany({ data: events });
+  }
+}
+
+function isPrismaErrorCode(err: unknown, code: string) {
+  return (
+    err instanceof Prisma.PrismaClientKnownRequestError && err.code === code
+  );
+}
+
+export async function persistWebsiteEventBatch(
+  batch: WebsiteEventBatchItem[]
+) {
+  const filteredBatch = await filterBatchByExistingSessions(batch);
+
+  if (filteredBatch.length === 0) {
+    return;
+  }
+
+  try {
+    await writeWebsiteEventBatch(filteredBatch);
+  } catch (err) {
+    if (!isPrismaErrorCode(err, 'P2003')) {
+      throw err;
+    }
+
+    const retryBatch = await filterBatchByExistingSessions(filteredBatch);
+
+    if (retryBatch.length === 0) {
+      return;
+    }
+
+    await writeWebsiteEventBatch(retryBatch);
+  }
+}
+
 const websiteEventWriter = createBatchWriter<WebsiteEventBatchItem>({
   name: 'WebsiteEvent',
-  flush: async (batch) => {
-    const events = batch.map((b) => b.event);
-    const allEventData = batch.flatMap((b) => b.eventData ?? []);
-
-    if (allEventData.length > 0) {
-      await prisma.$transaction([
-        prisma.websiteEvent.createMany({ data: events }),
-        prisma.websiteEventData.createMany({ data: allEventData }),
-      ]);
-    } else {
-      await prisma.websiteEvent.createMany({ data: events });
-    }
-  },
+  flush: persistWebsiteEventBatch,
 });
 
 export interface WebsiteEventPayload {
@@ -127,13 +201,19 @@ export async function findSession(
       isUuid(result.id) &&
       result.websiteId === websiteId
     ) {
-      const session = await loadSession(result.id);
+      const session = await loadLiveSession(result.id);
 
       if (session && session.websiteId === websiteId) {
+        await updateWebsiteSessionCache(result.id)(session);
+
         return {
           ...session,
           workspaceId: website.workspaceId,
         };
+      }
+
+      if (!session) {
+        await delWebsiteSessionCache(result.id);
       }
     }
   }
@@ -156,7 +236,7 @@ export async function findSession(
   const sessionId = hashUuid(websiteId, hostname!, ip, userAgent!);
 
   // Find session
-  let session = await loadSession(sessionId);
+  let session = await loadLiveSession(sessionId);
 
   // Create a session if not found
   if (!session) {
@@ -187,7 +267,10 @@ export async function findSession(
       if (
         (err as Prisma.PrismaClientKnownRequestError).code === 'P2002'
       ) {
-        promWebsiteSessionErrorCounter.inc({ type: 'p2002', endpoint: 'session_upsert' });
+        promWebsiteSessionErrorCounter.inc({
+          type: 'p2002',
+          endpoint: 'session_upsert',
+        });
         session = await prisma.websiteSession.findUnique({
           where: { id: sessionId },
         });
@@ -195,6 +278,8 @@ export async function findSession(
       if (!session) throw err;
     }
   }
+
+  await updateWebsiteSessionCache(sessionId)(session);
 
   const res: WebsiteSession & { workspaceId: string } = {
     id: sessionId,
@@ -243,15 +328,21 @@ export async function loadWebsite(websiteId: string): Promise<Website | null> {
 
 export { delWebsiteCache };
 
-const { get: getSessionFromCache, del: delWebsiteSessionCache } =
+async function loadLiveSession(
+  sessionId: string
+): Promise<WebsiteSession | null> {
+  return prisma.websiteSession.findUnique({
+    where: {
+      id: sessionId,
+    },
+  });
+}
+
+const { del: delWebsiteSessionCache, update: updateWebsiteSessionCache } =
   buildQueryWithCache(
     'websiteSession',
     async (sessionId: string): Promise<WebsiteSession | null> => {
-      const session = await prisma.websiteSession.findUnique({
-        where: {
-          id: sessionId,
-        },
-      });
+      const session = await loadLiveSession(sessionId);
 
       if (!session) {
         return null;
@@ -260,10 +351,6 @@ const { get: getSessionFromCache, del: delWebsiteSessionCache } =
       return session;
     }
   );
-
-async function loadSession(sessionId: string): Promise<WebsiteSession | null> {
-  return getSessionFromCache(sessionId);
-}
 
 export { delWebsiteSessionCache };
 
