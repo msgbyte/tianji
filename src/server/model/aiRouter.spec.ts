@@ -645,6 +645,43 @@ describe('AI Router buffered attempt mapping', () => {
     });
   });
 
+  test('converts buffered stream error payload into an uncommitted retryable failure', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      failOnEmptyContent: true,
+      gatewayId: 'gw-stream-error',
+      logId: 'log-stream-error',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'text/event-stream',
+        },
+        chunks: [
+          Buffer.from(AI_GATEWAY_STREAM_PING_COMMENT),
+          Buffer.from(
+            'data: {"error":{"message":"LLM returned empty response from stream","type":"server_error"}}\n\n'
+          ),
+          Buffer.from('data: [DONE]\n\n'),
+        ],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: false,
+      gatewayId: 'gw-stream-error',
+      logId: 'log-stream-error',
+      statusCode: 502,
+      failure: {
+        message: 'LLM returned empty response from stream',
+        errorType: 'upstream',
+      },
+    });
+  });
+
   test('detects empty OpenAI chat content while allowing tool calls', () => {
     expect(
       inspectAIRouterBufferedResponseContent(

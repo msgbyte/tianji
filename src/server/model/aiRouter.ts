@@ -1219,7 +1219,8 @@ function buildAIRouterRuntimeHandler(args: {
           writeAIRouterStreamError(
             res,
             args.protocol,
-            getBufferedFailureMessage(result.response),
+            result.failure?.message ??
+              getBufferedFailureMessage(result.response),
             'router_failed'
           );
           return;
@@ -1592,13 +1593,22 @@ export function buildBufferedAIGatewayAttemptResult(args: {
     };
   }
 
+  const streamFailureMessage = readSSEErrorMessage(args.response.chunks);
   const statusCode =
     args.response.statusCode >= 200 &&
     args.response.statusCode < 300 &&
     partialFailure
       ? 500
-      : args.response.statusCode;
-  const ok = statusCode >= 200 && statusCode < 300 && !partialFailure;
+      : args.response.statusCode >= 200 &&
+          args.response.statusCode < 300 &&
+          streamFailureMessage
+        ? 502
+        : args.response.statusCode;
+  const ok =
+    statusCode >= 200 &&
+    statusCode < 300 &&
+    !partialFailure &&
+    !streamFailureMessage;
   const emptyContentFailure =
     ok &&
     args.failOnEmptyContent === true &&
@@ -1631,7 +1641,8 @@ export function buildBufferedAIGatewayAttemptResult(args: {
       : {
           message: partialFailure
             ? 'AI Gateway attempt ended after partial output'
-            : getBufferedFailureMessage(args.response),
+            : streamFailureMessage ??
+              getBufferedFailureMessage(args.response),
           errorType: 'upstream',
         },
     response: args.response,
@@ -1863,6 +1874,12 @@ function getBufferedFailureMessage(snapshot: BufferedResponseSnapshot): string {
     return jsonMessage;
   }
 
+  const sseMessage = readSSEErrorMessage(snapshot.chunks);
+
+  if (sseMessage) {
+    return sseMessage;
+  }
+
   const text = Buffer.concat(snapshot.chunks).toString('utf8').trim();
 
   return text || `AI Gateway attempt failed with status ${snapshot.statusCode}`;
@@ -1881,6 +1898,47 @@ function readJsonErrorMessage(value: unknown): string | null {
     record.type;
 
   return typeof message === 'string' && message ? message : null;
+}
+
+function readSSEErrorMessage(chunks: Buffer[]): string | null {
+  for (const event of parseAIRouterSSEEvents(chunks)) {
+    const message = readSSEEventErrorMessage(event);
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return null;
+}
+
+function readSSEEventErrorMessage(value: unknown): string | null {
+  if (!isAIRouterRecord(value)) {
+    return null;
+  }
+
+  const error = value.error;
+
+  if (typeof error === 'string' && error) {
+    return error;
+  }
+
+  if (isAIRouterRecord(error)) {
+    const nestedError = error.error;
+    const message =
+      error.message ??
+      (isAIRouterRecord(nestedError) ? nestedError.message : undefined);
+
+    if (typeof message === 'string' && message) {
+      return message;
+    }
+  }
+
+  if (value.type === 'error' && typeof value.message === 'string') {
+    return value.message;
+  }
+
+  return null;
 }
 
 export interface AIRouterBufferedContentInspection {
