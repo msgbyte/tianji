@@ -1,5 +1,11 @@
 
 
+## [1.32.13](https://github.com/msgbyte/tianji/compare/v1.32.12...v1.32.13) (2026-06-30)
+
+### Bug Fixes
+
+* **website:** handle stale event sessions ([a249e79](https://github.com/msgbyte/tianji/commit/a249e79cfc2aef82143f0ff387c030bf9e8fcd35))
+
 ## [1.32.12](https://github.com/msgbyte/tianji/compare/v1.32.11...v1.32.12) (2026-06-29)
 
 ### Bug Fixes
