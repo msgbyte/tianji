@@ -6,7 +6,6 @@ import { useAIGatewayLogColumns } from './useAIGatewayLogColumns';
 import {
   Sheet,
   SheetContent,
-  SheetDataSection,
   SheetFooter,
   SheetHeader,
   SheetTitle,
@@ -14,11 +13,9 @@ import {
 import { useTranslation } from '@i18next-toolkit/react';
 import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
-import dayjs from 'dayjs';
 import { Empty } from 'antd';
 import { useEvent } from '@/hooks/useEvent';
-import { CodeBlock } from '../CodeBlock';
-import { AIGatewayStatus } from './AIGatewayStatus';
+import { AIGatewayLogDetail } from './AIGatewayLogDetail';
 
 interface AIGatewayLogTableProps {
   gatewayId: string;
@@ -63,30 +60,6 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
 
     const selectedItem = selectedIndex >= 0 ? flatData[selectedIndex] : null;
 
-    const renderJsonData = (data: any) => {
-      try {
-        return <CodeBlock code={JSON.stringify(data, null, 2)} />;
-      } catch (err) {
-        return <div className="text-red-500">{String(err)}</div>;
-      }
-    };
-
-    const renderNullableTiming = (value: number, suffix: string) => {
-      if (value === -1) {
-        return <span className="opacity-40">(null)</span>;
-      }
-
-      return `${value} ${suffix}`;
-    };
-
-    const renderOutputTpsText = (tpot: number) => {
-      if (tpot <= 0) {
-        return <span className="opacity-40">(null)</span>;
-      }
-
-      return `${(1000 / tpot).toFixed(2)} token/s`;
-    };
-
     return (
       <div className="flex flex-1 flex-col overflow-hidden">
         <VirtualizedInfiniteDataTable
@@ -115,71 +88,7 @@ export const AIGatewayLogTable: React.FC<AIGatewayLogTableProps> = React.memo(
 
             <ScrollArea className="flex-1 py-4 pr-2">
               {selectedItem ? (
-                <div>
-                  <SheetDataSection label="ID">
-                    {selectedItem.id}
-                  </SheetDataSection>
-                  <SheetDataSection label={t('Statue')}>
-                    <AIGatewayStatus status={selectedItem.status} />
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('Model')}>
-                    {selectedItem.modelName ?? (
-                      <span className="opacity-40">(null)</span>
-                    )}
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('User')}>
-                    {selectedItem.userId ?? (
-                      <span className="opacity-40">-</span>
-                    )}
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('Created At')}>
-                    {dayjs(selectedItem.createdAt).format(
-                      'YYYY-MM-DD HH:mm:ss'
-                    )}
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('Price')}>
-                    <span className="mr-1 opacity-60">$</span>
-                    {selectedItem.price}
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('Duration')}>
-                    {selectedItem.duration} ms
-                  </SheetDataSection>
-
-                  <SheetDataSection label="TTFT">
-                    {renderNullableTiming(selectedItem.ttft, 'ms')}
-                  </SheetDataSection>
-
-                  <SheetDataSection label="TPOT">
-                    {renderNullableTiming(selectedItem.tpot, 'ms/token')}
-                  </SheetDataSection>
-
-                  <SheetDataSection label="Output TPS">
-                    {renderOutputTpsText(selectedItem.tpot)}
-                  </SheetDataSection>
-
-                  <SheetDataSection label="Tokens">
-                    {selectedItem.inputToken}↑ | {selectedItem.outputToken}↓
-                    {selectedItem.cacheReadInputToken > 0 && (
-                      <> | {selectedItem.cacheReadInputToken} cache read</>
-                    )}
-                    {selectedItem.cacheWriteInputToken > 0 && (
-                      <> | {selectedItem.cacheWriteInputToken} cache write</>
-                    )}
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('Request Payload')}>
-                    {renderJsonData(selectedItem.requestPayload)}
-                  </SheetDataSection>
-
-                  <SheetDataSection label={t('Response Payload')}>
-                    {renderJsonData(selectedItem.responsePayload)}
-                  </SheetDataSection>
-                </div>
+                <AIGatewayLogDetail item={selectedItem} />
               ) : (
                 <Empty />
               )}

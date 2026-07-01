@@ -157,7 +157,10 @@ function PageComponent() {
             className="mt-4 w-full flex-1 overflow-hidden"
           >
             <div className="h-full overflow-auto">
-              <AIRouterLogTable routerId={routerId} />
+              <AIRouterLogTable
+                routerId={routerId}
+                gateways={getAIRouterGateways(router)}
+              />
             </div>
           </TabsContent>
 
@@ -176,6 +179,19 @@ function PageComponent() {
 }
 
 type AIRouterInfo = NonNullable<AppRouterOutput['aiRouter']['info']>;
+
+function getAIRouterGateways(router: AIRouterInfo) {
+  const gatewayById = new Map<string, { id: string; name: string }>();
+
+  for (const node of router.tiers.flatMap((tier) => tier.nodes)) {
+    gatewayById.set(node.gateway.id, {
+      id: node.gateway.id,
+      name: node.gateway.name,
+    });
+  }
+
+  return [...gatewayById.values()];
+}
 
 function Overview({ router }: { router: AIRouterInfo }) {
   const { t } = useTranslation();
