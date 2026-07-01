@@ -1,5 +1,11 @@
 
 
+## [1.32.16](https://github.com/msgbyte/tianji/compare/v1.32.15...v1.32.16) (2026-07-01)
+
+### Bug Fixes
+
+* **website:** log session lookup failures ([9d5430d](https://github.com/msgbyte/tianji/commit/9d5430d7469836b293ec71db201e854cc8261d9c))
+
 ## [1.32.15](https://github.com/msgbyte/tianji/compare/v1.32.14...v1.32.15) (2026-07-01)
 
 ### Features
