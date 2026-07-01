@@ -39,6 +39,28 @@ describe('website router', () => {
     ).toBe(true);
   });
 
+  test('logs the website id when session lookup rejects the request', async () => {
+    const websiteId = 'not-a-cuid';
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => logger);
+
+    const { body, status } = await app.post('/api/website/send').send({
+      type: 'event',
+      payload: {
+        website: websiteId,
+        hostname: 'example.com',
+        url: '/',
+      },
+    });
+
+    expect(status).toBe(400);
+    expect(body.error).toContain('Invalid website ID.');
+    expect(
+      warnSpy.mock.calls.some((call) =>
+        call.some((arg) => JSON.stringify(arg).includes(websiteId))
+      )
+    ).toBe(true);
+  });
+
   test('does not trust a cache token for a different website id', async () => {
     const websiteId = createId();
     const staleToken = createToken({

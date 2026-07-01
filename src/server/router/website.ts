@@ -53,8 +53,16 @@ function handleFindSessionError(
     return;
   }
 
+  const message = error instanceof Error ? error.message : 'Unknown error';
+
+  logger.warn('[Website] Failed to find session for request', {
+    endpoint,
+    websiteId: requestWebsiteId,
+    error: message,
+  });
+
   res.status(400).json({
-    error: error instanceof Error ? error.message : 'Unknown error',
+    error: message,
   });
 }
 
