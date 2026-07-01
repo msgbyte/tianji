@@ -1,5 +1,11 @@
 
 
+## [1.32.15](https://github.com/msgbyte/tianji/compare/v1.32.14...v1.32.15) (2026-07-01)
+
+### Features
+
+* **ai-router:** show gateway log details from router logs ([0450a5b](https://github.com/msgbyte/tianji/commit/0450a5bba83c4e6c45b393927419719253418969))
+
 ## [1.32.14](https://github.com/msgbyte/tianji/compare/v1.32.13...v1.32.14) (2026-06-30)
 
 ### Bug Fixes
