@@ -61,6 +61,34 @@ It's good to specialize in one thing, if we are experts in related abilities we 
 
 ![](./website/static/img/preview/6.png)
 
+## Setup
+
+### Docker Compose
+
+Run the included Compose stack from the repository root:
+
+```bash
+docker compose up -d
+```
+
+This starts both the `tianji` application and its `postgres` database. The application is available at `http://localhost:12345` by default.
+
+### Environment
+
+For local source development, create the server environment file before starting the dev server:
+
+```bash
+cp .env.example src/server/.env
+```
+
+At minimum, configure `DATABASE_URL` with the PostgreSQL connection string used by the server, for example:
+
+```ini
+DATABASE_URL="postgresql://tianji:tianji@localhost:5432/tianji?schema=public"
+```
+
+`OPENAPI_KEY` is only needed for the translation auto-generation command below.
+
 ## Translation
 
 ### Add a new translation
