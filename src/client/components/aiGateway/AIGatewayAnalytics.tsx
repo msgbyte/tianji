@@ -19,6 +19,7 @@ import { LoadingView } from '../LoadingView';
 import { DateUnit, getDateArray } from '@tianji/shared';
 import type { InsightsRawData } from '@/hooks/useInsightsData';
 import type { ChartConfig } from '../ui/chart';
+import { createAIGatewayUserLabelFormatter } from './AIGatewayUserLabel';
 
 // Status color tokens used in the Errors tab.
 // Keep the success/failure colors aligned with the rest of the app
@@ -38,6 +39,13 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
     const { gatewayId } = props;
     const workspaceId = useCurrentWorkspaceId();
     const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
+    const { data: workspaceMembers = [] } = trpc.workspace.members.useQuery({
+      workspaceId,
+    });
+    const userLabelFormatter = useMemo(
+      () => createAIGatewayUserLabelFormatter(workspaceMembers),
+      [workspaceMembers]
+    );
 
     const trpcUtils = trpc.useUtils();
     const handleRefresh = useEvent(async () => {
@@ -473,6 +481,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     time={timeConfig}
                     chartType="bar"
                     valueProcessor={defaultValueProcessor.alwaysPositive}
+                    groupValueFormatter={userLabelFormatter}
                   />
                 </CardContent>
               </Card>
@@ -498,6 +507,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                     time={timeConfig}
                     chartType="bar"
                     valueProcessor={defaultValueProcessor.alwaysPositive}
+                    groupValueFormatter={userLabelFormatter}
                   />
                 </CardContent>
               </Card>
@@ -537,6 +547,7 @@ export const AIGatewayAnalytics: React.FC<AIGatewayAnalyticsProps> = React.memo(
                   time={timeConfig}
                   chartType="bar"
                   valueProcessor={defaultValueProcessor.alwaysPositive}
+                  groupValueFormatter={userLabelFormatter}
                 />
               </CardContent>
             </Card>
