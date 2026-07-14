@@ -56,6 +56,10 @@ export async function testAIGatewayCustomConnection(
   dependencies: AIGatewayConnectivityDependencies = {}
 ): Promise<TestAIGatewayCustomConnectionResult> {
   const modelApiKey = input.modelApiKey.trim();
+  if (!modelApiKey) {
+    throw new Error('API key is required');
+  }
+
   const createClient =
     dependencies.createClient ??
     ((options: AIGatewayConnectivityClientOptions) => new OpenAI(options));

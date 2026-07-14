@@ -18,6 +18,26 @@ function createFakeClient(modelIds: string[] = []) {
 }
 
 describe('testAIGatewayCustomConnection', () => {
+  test('rejects a blank API key before creating the client', async () => {
+    const { client, list, create } = createFakeClient();
+    const createClient = vi.fn(() => client);
+
+    await expect(
+      testAIGatewayCustomConnection(
+        {
+          modelApiKey: '   ',
+          customModelBaseUrl: null,
+          customModelName: 'configured-model',
+        },
+        { createClient }
+      )
+    ).rejects.toThrow('API key is required');
+
+    expect(createClient).not.toHaveBeenCalled();
+    expect(list).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+  });
+
   test('uses the configured model without requesting the model list', async () => {
     const { client, list, create } = createFakeClient();
     const createClient = vi.fn(() => client);
