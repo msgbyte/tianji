@@ -10,7 +10,11 @@ import { InsightType } from '@/store/insights';
 import { DateUnit, FilterInfo, GroupInfo, MetricsInfo } from '@tianji/shared';
 import { getUserTimezone } from '@/api/model/user';
 import { ChartConfig } from '../ui/chart';
-import { InsightsRawData, useInsightsData } from '@/hooks/useInsightsData';
+import {
+  GroupValueFormatter,
+  InsightsRawData,
+  useInsightsData,
+} from '@/hooks/useInsightsData';
 
 interface InsightQueryChartProps {
   className?: string;
@@ -33,6 +37,7 @@ interface InsightQueryChartProps {
   chartConfig?: ChartConfig;
 
   valueProcessor?: (value: number) => number;
+  groupValueFormatter?: GroupValueFormatter;
 }
 export const InsightQueryChart: React.FC<InsightQueryChartProps> = React.memo(
   (props) => {
@@ -49,6 +54,7 @@ export const InsightQueryChart: React.FC<InsightQueryChartProps> = React.memo(
       chartType,
       chartConfig,
       valueProcessor,
+      groupValueFormatter,
     } = props;
 
     const { data: rawData = [], isLoading } = trpc.insights.query.useQuery(
@@ -83,6 +89,7 @@ export const InsightQueryChart: React.FC<InsightQueryChartProps> = React.memo(
       groups,
       time,
       valueProcessor,
+      groupValueFormatter,
     });
 
     // Use simple data for backward compatibility when it's a single series

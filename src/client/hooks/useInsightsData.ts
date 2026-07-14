@@ -12,7 +12,8 @@ import { ChartConfig } from '@/components/ui/chart';
  */
 function generateSeriesName(
   item: InsightsRawData,
-  groups: Pick<GroupInfo, 'value'>[]
+  groups: Pick<GroupInfo, 'value'>[],
+  groupValueFormatter?: GroupValueFormatter
 ): string {
   // Use alias if available, otherwise use name
   let name = item.alias ?? item.name;
@@ -20,7 +21,11 @@ function generateSeriesName(
   if (groups.length > 0) {
     const groupSuffixes = groups
       .map((group) => {
-        return get(item, group.value);
+        const value = get(item, group.value);
+
+        return value && groupValueFormatter
+          ? groupValueFormatter(String(value), group)
+          : value;
       })
       .filter(Boolean) // Remove null/undefined values
       .join('-');
@@ -48,6 +53,11 @@ export interface ProcessedChartData {
   [key: string]: string | number;
 }
 
+export type GroupValueFormatter = (
+  value: string,
+  group: Pick<GroupInfo, 'value'>
+) => string;
+
 export interface UseInsightsDataOptions {
   data: InsightsRawData[];
   groups: Pick<GroupInfo, 'value'>[];
@@ -57,6 +67,7 @@ export interface UseInsightsDataOptions {
     unit: DateUnit;
   };
   valueProcessor?: (value: number) => number;
+  groupValueFormatter?: GroupValueFormatter;
 }
 
 /**
@@ -73,7 +84,7 @@ export function processInsightsData(options: UseInsightsDataOptions): {
   isMultiSeries: boolean;
   seriesCount: number;
 } {
-  const { data, groups, time, valueProcessor } = options;
+  const { data, groups, time, valueProcessor, groupValueFormatter } = options;
 
   if (!data || data.length === 0) {
     return {
@@ -130,7 +141,7 @@ export function processInsightsData(options: UseInsightsDataOptions): {
       const dataPoint = item.data.find((d) => d.date === date);
       const value = dataPoint?.value ?? 0;
       const processedValue = valueProcessor?.(value) ?? value;
-      const name = generateSeriesName(item, groups);
+      const name = generateSeriesName(item, groups, groupValueFormatter);
 
       res.push({
         date,
@@ -193,6 +204,7 @@ export function useInsightsData(options: UseInsightsDataOptions) {
       options.time.endAt,
       options.time.unit,
       options.valueProcessor,
+      options.groupValueFormatter,
     ]
   );
 }
