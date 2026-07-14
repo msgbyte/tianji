@@ -26,9 +26,9 @@ user-ID-to-display-label map and passes a stable formatter to each of the three
 user charts.
 
 `InsightQueryChart` forwards an optional group-value formatter to
-`useInsightsData`. During series-name generation, the formatter changes only
-the display value used in chart data keys and chart configuration labels. It
-does not change the query, grouping, metric values, or raw response.
+`useInsightsData`. Chart data keeps its raw, stable series keys, while the
+formatter changes only the corresponding chart configuration labels. It does
+not change the query, grouping, metric values, or raw response.
 
 The formatter is optional, so every existing chart without it preserves its
 current behavior.
@@ -57,6 +57,7 @@ An unknown or removed user never produces an empty label.
 Focused unit tests for insights data processing will verify:
 
 - a supplied formatter changes grouped series labels;
+- formatted labels do not change the underlying series keys;
 - grouped data values remain unchanged;
 - processing without a formatter remains backward compatible;
 - an unresolved ID stays visible through the formatter's fallback.

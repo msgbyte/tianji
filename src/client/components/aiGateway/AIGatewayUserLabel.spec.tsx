@@ -23,4 +23,12 @@ describe('createAIGatewayUserLabelFormatter', () => {
 
     expect(format('removed-user')).toBe('removed-user');
   });
+
+  it('keeps the raw ID when both nickname and username are blank', () => {
+    const format = createAIGatewayUserLabelFormatter([
+      { userId: 'user-3', user: { nickname: null, username: '   ' } },
+    ]);
+
+    expect(format('user-3')).toBe('user-3');
+  });
 });

@@ -18,16 +18,16 @@ const options = {
 };
 
 describe('processInsightsData group labels', () => {
-  it('formats grouped series labels without changing values', () => {
+  it('formats grouped series labels without changing stable data keys', () => {
     const result = processInsightsData({
       ...options,
       groupValueFormatter: (value) => `Ada (${value})`,
     });
 
     expect(result.chartData).toEqual([
-      { date: '2026-07-14', '$all_event-Ada (user-1)': 3 },
+      { date: '2026-07-14', '$all_event-user-1': 3 },
     ]);
-    expect(result.chartConfig['$all_event-Ada (user-1)']?.label).toBe(
+    expect(result.chartConfig['$all_event-user-1']?.label).toBe(
       '$all_event-Ada (user-1)'
     );
   });

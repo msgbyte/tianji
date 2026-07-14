@@ -128,6 +128,7 @@ export function processInsightsData(options: UseInsightsDataOptions): {
 
   // For complex case (groups or multiple metrics), process full chart data
   const res: { date: string }[] = [];
+  const seriesLabels = new Map<string, string>();
 
   // Collect all unique dates from all data series
   const allDates = new Set<string>();
@@ -141,7 +142,10 @@ export function processInsightsData(options: UseInsightsDataOptions): {
       const dataPoint = item.data.find((d) => d.date === date);
       const value = dataPoint?.value ?? 0;
       const processedValue = valueProcessor?.(value) ?? value;
-      const name = generateSeriesName(item, groups, groupValueFormatter);
+      const name = generateSeriesName(item, groups);
+      const label = generateSeriesName(item, groups, groupValueFormatter);
+
+      seriesLabels.set(name, label);
 
       res.push({
         date,
@@ -162,7 +166,7 @@ export function processInsightsData(options: UseInsightsDataOptions): {
           return {
             ...prev,
             [curr]: {
-              label: curr,
+              label: seriesLabels.get(curr) ?? curr,
               color: pickColorWithNum(i),
             },
           };

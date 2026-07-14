@@ -11,9 +11,13 @@ export function createAIGatewayUserLabelFormatter(
 ) {
   const labels = new Map(
     members.map((member) => {
-      const name = member.user.nickname?.trim() || member.user.username;
+      const name =
+        member.user.nickname?.trim() || member.user.username.trim() || null;
 
-      return [member.userId, `${name} (${member.userId})`] as const;
+      return [
+        member.userId,
+        name ? `${name} (${member.userId})` : member.userId,
+      ] as const;
     })
   );
 
