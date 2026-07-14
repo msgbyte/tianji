@@ -110,6 +110,52 @@ describe('testAIGatewayCustomConnection', () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  test.each([
+    { id: '   ' },
+    { id: 123 },
+    { id: { value: 'model' } },
+    {},
+    null,
+  ])('rejects an invalid first model id: $id', async (firstModel) => {
+    const { client, create } = createFakeClient();
+    client.models.list = vi.fn(async () => ({
+      data: [firstModel],
+    })) as AIGatewayConnectivityClient['models']['list'];
+
+    await expect(
+      testAIGatewayCustomConnection(
+        {
+          modelApiKey: 'sk-current',
+          customModelBaseUrl: null,
+          customModelName: null,
+        },
+        { createClient: () => client }
+      )
+    ).rejects.toThrow('No valid models available from upstream');
+
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  test('rejects a model response whose data field is not an array', async () => {
+    const { client, create } = createFakeClient();
+    client.models.list = vi.fn(async () => ({
+      data: null,
+    })) as unknown as AIGatewayConnectivityClient['models']['list'];
+
+    await expect(
+      testAIGatewayCustomConnection(
+        {
+          modelApiKey: 'sk-current',
+          customModelBaseUrl: null,
+          customModelName: null,
+        },
+        { createClient: () => client }
+      )
+    ).rejects.toThrow('No valid models available from upstream');
+
+    expect(create).not.toHaveBeenCalled();
+  });
+
   test('redacts the API key from upstream errors', async () => {
     const { client, create } = createFakeClient();
     create.mockRejectedValueOnce(

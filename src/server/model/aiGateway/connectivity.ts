@@ -78,7 +78,20 @@ export async function testAIGatewayCustomConnection(
     let model = normalizeOptionalString(input.customModelName);
     if (!model) {
       const models = await client.models.list();
-      model = models.data[0]?.id;
+      if (!Array.isArray(models.data)) {
+        throw new Error('No valid models available from upstream');
+      }
+      if (models.data.length === 0) {
+        throw new Error('No models available from upstream');
+      }
+      const firstModelId = models.data[0]?.id;
+      if (
+        typeof firstModelId !== 'string' ||
+        !firstModelId.trim()
+      ) {
+        throw new Error('No valid models available from upstream');
+      }
+      model = firstModelId.trim();
     }
 
     if (!model) {
