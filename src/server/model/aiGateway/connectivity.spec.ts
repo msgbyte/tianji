@@ -127,4 +127,25 @@ describe('testAIGatewayCustomConnection', () => {
       )
     ).rejects.toThrow('Authentication rejected credential [REDACTED]');
   });
+
+  test('redacts the API key from the selected model after using the raw model upstream', async () => {
+    const { client, create } = createFakeClient();
+    const apiKey = 'sk-sensitive';
+    const rawModel = `provider/${apiKey}/model`;
+
+    const result = await testAIGatewayCustomConnection(
+      {
+        modelApiKey: apiKey,
+        customModelBaseUrl: null,
+        customModelName: rawModel,
+      },
+      { createClient: () => client }
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ model: rawModel })
+    );
+    expect(result.model).toBe('provider/[REDACTED]/model');
+    expect(JSON.stringify(result)).not.toContain(apiKey);
+  });
 });

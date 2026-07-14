@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { redactSecret } from './redactSecret.js';
 
 export interface AIGatewayConnectivityClientOptions {
   apiKey: string;
@@ -48,7 +49,7 @@ function normalizeOptionalString(value: string | null): string | undefined {
 
 function getSafeErrorMessage(error: unknown, secret: string): string {
   const message = error instanceof Error ? error.message : String(error);
-  return secret ? message.split(secret).join('[REDACTED]') : message;
+  return redactSecret(message, secret);
 }
 
 export async function testAIGatewayCustomConnection(
@@ -92,7 +93,7 @@ export async function testAIGatewayCustomConnection(
     });
 
     return {
-      model,
+      model: redactSecret(model, modelApiKey),
       durationMs: Math.max(0, now() - startedAt),
     };
   } catch (error) {

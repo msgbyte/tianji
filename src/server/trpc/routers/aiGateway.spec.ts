@@ -127,6 +127,31 @@ describe('aiGatewayRouter.testConnection', () => {
     expect(JSON.stringify(result)).not.toContain('sk-current');
   });
 
+  test('redacts the submitted API key from a successful service result', async () => {
+    const workspaceId = createId();
+    const apiKey = 'sk-sensitive';
+    mocks.findGateway.mockResolvedValue({ id: 'gateway_1' });
+    mocks.testConnection.mockResolvedValue({
+      model: `provider/${apiKey}/model`,
+      durationMs: 42,
+    });
+    const caller = await createCaller();
+
+    const result = await caller.testConnection({
+      workspaceId,
+      gatewayId: 'gateway_1',
+      modelApiKey: apiKey,
+      customModelBaseUrl: null,
+      customModelName: null,
+    });
+
+    expect(result).toEqual({
+      model: 'provider/[REDACTED]/model',
+      durationMs: 42,
+    });
+    expect(JSON.stringify(result)).not.toContain(apiKey);
+  });
+
   test('maps upstream failures to a BAD_GATEWAY error', async () => {
     const workspaceId = createId();
     mocks.findGateway.mockResolvedValue({ id: 'gateway_1' });

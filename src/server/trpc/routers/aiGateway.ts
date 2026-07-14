@@ -16,6 +16,7 @@ import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { clearGatewayInfoCache } from '../../model/aiGateway.js';
 import { clearQuotaAlertCacheForGateway } from '../../model/aiGateway/quotaAlert.js';
 import { testAIGatewayCustomConnection } from '../../model/aiGateway/connectivity.js';
+import { redactSecret } from '../../model/aiGateway/redactSecret.js';
 import { logger } from '../../utils/logger.js';
 
 const modelPricingData = await import(
@@ -288,11 +289,16 @@ export const aiGatewayRouter = router({
       }
 
       try {
-        return await testAIGatewayCustomConnection({
+        const result = await testAIGatewayCustomConnection({
           modelApiKey,
           customModelBaseUrl,
           customModelName,
         });
+
+        return {
+          ...result,
+          model: redactSecret(result.model, modelApiKey),
+        };
       } catch (error) {
         throw new TRPCError({
           code: 'BAD_GATEWAY',
