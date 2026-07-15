@@ -45,6 +45,10 @@ export const languages = [
     label: '简体中文',
     key: 'zh-CN',
   },
+  {
+    label: '한국어',
+    key: 'ko',
+  },
 ];
 
 export function initI18N() {
