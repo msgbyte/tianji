@@ -38,6 +38,8 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Check LLM model data
+        run: pnpm check:llm
       - name: Check Type
         run: pnpm check:type
       - name: Check Build

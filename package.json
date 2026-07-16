@@ -22,6 +22,7 @@
     "build:tracker": "tsx scripts/build-tracker.ts",
     "build:geo": "tsx scripts/build-geo.ts",
     "build:llm": "tsx scripts/fetch-llm-model.ts && tsx scripts/fetch-llm-model-v2.ts",
+    "check:llm": "tsx scripts/check-llm-model.ts",
     "build:openapi": "tsx --tsconfig ./tsconfig.base.json ./scripts/build-openapi-schema.ts && cd packages/client-sdk && pnpm generate:client",
     "check:type": "pnpm -r check:type",
     "release": "release-it",
