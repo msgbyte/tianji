@@ -16,6 +16,7 @@ import {
   parseAIGatewayCustomModelStrategy,
   stringifyAIGatewayCustomModelStrategy,
 } from '@/components/aiGateway/AIGatewayStrategyEditor.utils';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/aiGateway/$gatewayId/edit')({
   beforeLoad: routeAuthBeforeLoad,
@@ -35,6 +36,15 @@ function AIGatewayEditComponent() {
   });
 
   const updateGatewayMutation = trpc.aiGateway.update.useMutation({
+    onError: defaultErrorHandler,
+  });
+
+  const testConnectionMutation = trpc.aiGateway.testConnection.useMutation({
+    onSuccess: ({ model, durationMs }) => {
+      toast.success(t('Connection successful'), {
+        description: `${t('Model')}: ${model} · ${durationMs} ms`,
+      });
+    },
     onError: defaultErrorHandler,
   });
 
@@ -60,6 +70,16 @@ function AIGatewayEditComponent() {
       params: {
         gatewayId: res.id || gatewayId,
       },
+    });
+  });
+
+  const handleTestConnection = useEvent((values: AIGatewayEditFormValues) => {
+    testConnectionMutation.mutate({
+      workspaceId,
+      gatewayId,
+      modelApiKey: values.modelApiKey?.trim() ?? '',
+      customModelBaseUrl: values.customModelBaseUrl?.trim() || null,
+      customModelName: values.customModelName?.trim() || null,
     });
   });
 
@@ -93,6 +113,8 @@ function AIGatewayEditComponent() {
               : undefined
           }
           onSubmit={handleSubmit}
+          onTestConnection={handleTestConnection}
+          isTestingConnection={testConnectionMutation.isPending}
         />
       </ScrollArea>
     </CommonWrapper>

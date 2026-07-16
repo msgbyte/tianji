@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import {
   OpenApiMetaInfo,
   router,
@@ -14,6 +15,8 @@ import { fetchDataByCursor } from '../../utils/prisma.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { clearGatewayInfoCache } from '../../model/aiGateway.js';
 import { clearQuotaAlertCacheForGateway } from '../../model/aiGateway/quotaAlert.js';
+import { testAIGatewayCustomConnection } from '../../model/aiGateway/connectivity.js';
+import { redactSecret } from '../../model/aiGateway/redactSecret.js';
 import { logger } from '../../utils/logger.js';
 
 const modelPricingData = await import(
@@ -248,6 +251,64 @@ export const aiGatewayRouter = router({
           ? Number(aiGateway.customModelOutputPrice)
           : null,
       };
+    }),
+
+  testConnection: workspaceAdminProcedure
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        modelApiKey: z.string().trim().min(1, 'Model API Key is required'),
+        customModelBaseUrl: z.string().trim().url().nullable(),
+        customModelName: z.string().nullable(),
+      })
+    )
+    .output(
+      z.object({
+        model: z.string(),
+        durationMs: z.number().nonnegative(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const {
+        workspaceId,
+        gatewayId,
+        modelApiKey,
+        customModelBaseUrl,
+        customModelName,
+      } = input;
+      const gateway = await prisma.aIGateway.findFirst({
+        where: { id: gatewayId, workspaceId },
+        select: { id: true },
+      });
+
+      if (!gateway) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'AI Gateway not found',
+        });
+      }
+
+      try {
+        const result = await testAIGatewayCustomConnection({
+          modelApiKey,
+          customModelBaseUrl,
+          customModelName,
+        });
+
+        return {
+          ...result,
+          model: redactSecret(result.model, modelApiKey),
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'BAD_GATEWAY',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'AI Gateway connection test failed',
+          cause: error,
+        });
+      }
     }),
 
   delete: workspaceAdminProcedure

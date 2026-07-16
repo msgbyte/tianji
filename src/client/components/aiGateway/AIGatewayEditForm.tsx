@@ -48,6 +48,8 @@ export type AIGatewayEditFormValues = z.infer<typeof addFormSchema>;
 interface AIGatewayEditFormProps {
   defaultValues?: AIGatewayEditFormValues;
   onSubmit: (values: AIGatewayEditFormValues) => Promise<void>;
+  onTestConnection?: (values: AIGatewayEditFormValues) => void;
+  isTestingConnection?: boolean;
 }
 export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
   (props) => {
@@ -72,6 +74,25 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
         form.reset();
       }
     );
+
+    const handleTestConnection = async () => {
+      const isValid = await form.trigger();
+      if (!isValid) {
+        return;
+      }
+
+      const values = form.getValues();
+      if (!values.modelApiKey?.trim()) {
+        form.setError('modelApiKey', {
+          type: 'manual',
+          message: 'Model API Key is required',
+        });
+        return;
+      }
+
+      props.onTestConnection?.({ ...values });
+    };
+
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -292,10 +313,20 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
               </Collapsible>
             </CardContent>
 
-            <CardFooter>
+            <CardFooter className="gap-2">
               <Button type="submit" loading={isLoading}>
                 {props.defaultValues ? t('Update') : t('Create')}
               </Button>
+              {props.onTestConnection && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  loading={props.isTestingConnection}
+                  onClick={handleTestConnection}
+                >
+                  {t('Test Connection')}
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </form>

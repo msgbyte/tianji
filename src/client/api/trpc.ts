@@ -22,6 +22,7 @@ export type AppRouterInput = inferRouterInputs<AppRouter>;
 export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 
 const url = '/trpc';
+const sensitiveOperationPaths = new Set(['aiGateway.testConnection']);
 
 function headers() {
   const timezone = getUserTimezone();
@@ -36,9 +37,15 @@ function headers() {
 export const trpcClient = trpc.createClient({
   links: [
     loggerLink({
-      enabled: (opts) =>
-        (isDev && typeof window !== 'undefined') ||
-        (opts.direction === 'down' && opts.result instanceof Error),
+      enabled: (opts) => {
+        const { path } = opts as typeof opts & { path: string };
+
+        return (
+          !sensitiveOperationPaths.has(path) &&
+          ((isDev && typeof window !== 'undefined') ||
+            (opts.direction === 'down' && opts.result instanceof Error))
+        );
+      },
     }),
     splitLink({
       condition(op) {
