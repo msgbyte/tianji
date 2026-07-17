@@ -131,6 +131,23 @@ describe('AIGatewayDuplicateDialog', () => {
     expect(mocks.duplicate).not.toHaveBeenCalled();
   });
 
+  test('keeps the default copy name within the server length limit', () => {
+    render(
+      <AIGatewayDuplicateDialog
+        gatewayId="gateway_1"
+        gatewayName={'a'.repeat(100)}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+    const defaultName = screen.getByLabelText('AI Gateway Name').getAttribute(
+      'value'
+    );
+    expect(defaultName).toHaveLength(100);
+    expect(defaultName).toMatch(/ - Copy$/);
+  });
+
   test('prevents closing or resubmitting while pending', () => {
     const { rerender } = render(
       <AIGatewayDuplicateDialog

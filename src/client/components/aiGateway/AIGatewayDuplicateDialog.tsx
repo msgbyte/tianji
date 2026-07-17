@@ -23,6 +23,16 @@ interface AIGatewayDuplicateDialogProps {
   gatewayName: string;
 }
 
+const MAX_GATEWAY_NAME_LENGTH = 100;
+const COPY_NAME_SUFFIX = ' - Copy';
+
+function buildDuplicateName(gatewayName: string) {
+  return `${gatewayName.slice(
+    0,
+    MAX_GATEWAY_NAME_LENGTH - COPY_NAME_SUFFIX.length
+  )}${COPY_NAME_SUFFIX}`;
+}
+
 export function AIGatewayDuplicateDialog({
   gatewayId,
   gatewayName,
@@ -44,7 +54,7 @@ export function AIGatewayDuplicateDialog({
     }
 
     setOpen(nextOpen);
-    setName(nextOpen ? `${gatewayName} - Copy` : '');
+    setName(nextOpen ? buildDuplicateName(gatewayName) : '');
   });
 
   const handleDuplicate = useEvent(async () => {
@@ -112,7 +122,7 @@ export function AIGatewayDuplicateDialog({
               id="ai-gateway-duplicate-name"
               className="col-span-3"
               value={name}
-              maxLength={100}
+              maxLength={MAX_GATEWAY_NAME_LENGTH}
               onChange={(event) => setName(event.target.value)}
             />
           </div>
