@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => {
     getWorkspaceUser: vi.fn(async () => ({ role: 'owner' })),
     promStartTimer: vi.fn(() => endRequest),
     findGateway: vi.fn(),
+    createGateway: vi.fn(),
     testConnection: vi.fn(),
   };
 });
@@ -38,7 +39,10 @@ vi.mock('../../utils/prometheus/client.js', () => ({
 
 vi.mock('../../model/_client.js', () => ({
   prisma: {
-    aIGateway: { findFirst: mocks.findGateway },
+    aIGateway: {
+      findFirst: mocks.findGateway,
+      create: mocks.createGateway,
+    },
   },
 }));
 
@@ -170,5 +174,96 @@ describe('aiGatewayRouter.testConnection', () => {
       code: 'BAD_GATEWAY',
       message: 'Authentication failed',
     });
+  });
+});
+
+describe('aiGatewayRouter.duplicate', () => {
+  test('rejects a gateway outside the current workspace', async () => {
+    const workspaceId = createId();
+    mocks.findGateway.mockResolvedValue(null);
+    const caller = await createCaller();
+
+    await expect(
+      caller.duplicate({
+        workspaceId,
+        gatewayId: 'gateway_1',
+        name: 'Gateway Copy',
+      })
+    ).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+      message: 'AI Gateway not found',
+    });
+
+    expect(mocks.findGateway).toHaveBeenCalledWith({
+      where: { id: 'gateway_1', workspaceId },
+      select: {
+        modelApiKey: true,
+        customModelBaseUrl: true,
+        customModelName: true,
+        customModelStrategy: true,
+        customModelInputPrice: true,
+        customModelOutputPrice: true,
+      },
+    });
+    expect(mocks.createGateway).not.toHaveBeenCalled();
+  });
+
+  test('copies gateway configuration server-side and returns no secret', async () => {
+    const workspaceId = createId();
+    const apiKey = 'sk-sensitive-duplicate';
+    mocks.findGateway.mockResolvedValue({
+      modelApiKey: apiKey,
+      customModelBaseUrl: 'https://models.example.com/v1',
+      customModelName: 'model-a',
+      customModelStrategy: { price: { input: 1 } },
+      customModelInputPrice: 2,
+      customModelOutputPrice: 3,
+    });
+    mocks.createGateway.mockResolvedValue({
+      id: 'gateway_copy',
+      name: 'Gateway Copy',
+    });
+    const caller = await createCaller();
+
+    const result = await caller.duplicate({
+      workspaceId,
+      gatewayId: 'gateway_1',
+      name: '  Gateway Copy  ',
+    });
+
+    expect(mocks.createGateway).toHaveBeenCalledWith({
+      data: {
+        workspaceId,
+        name: 'Gateway Copy',
+        modelApiKey: apiKey,
+        customModelBaseUrl: 'https://models.example.com/v1',
+        customModelName: 'model-a',
+        customModelStrategy: { price: { input: 1 } },
+        customModelInputPrice: 2,
+        customModelOutputPrice: 3,
+      },
+      select: { id: true, name: true },
+    });
+    expect(result).toEqual({ id: 'gateway_copy', name: 'Gateway Copy' });
+    expect(JSON.stringify(result)).not.toContain(apiKey);
+  });
+
+  test.each([
+    ['empty', ''],
+    ['whitespace-only', '   '],
+    ['overlength', 'a'.repeat(101)],
+  ])('rejects a %s gateway name', async (_label, name) => {
+    const caller = await createCaller();
+
+    await expect(
+      caller.duplicate({
+        workspaceId: createId(),
+        gatewayId: 'gateway_1',
+        name,
+      })
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+
+    expect(mocks.findGateway).not.toHaveBeenCalled();
+    expect(mocks.createGateway).not.toHaveBeenCalled();
   });
 });

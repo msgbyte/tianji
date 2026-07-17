@@ -75,6 +75,11 @@ const aiGatewayCreateSchema = z.object({
   customModelOutputPrice: z.number().nullable(),
 });
 
+const aiGatewayDuplicateOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
 export const aiGatewayRouter = router({
   all: workspaceProcedure
     .meta({
@@ -309,6 +314,57 @@ export const aiGatewayRouter = router({
           cause: error,
         });
       }
+    }),
+
+  duplicate: workspaceAdminProcedure
+    .meta(
+      buildAIGatewayOpenapi({
+        method: 'POST',
+        path: '/duplicate',
+        summary: 'Duplicate gateway',
+      })
+    )
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        name: z.string().trim().min(1).max(100),
+      })
+    )
+    .output(aiGatewayDuplicateOutputSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, gatewayId, name } = input;
+      const source = await prisma.aIGateway.findFirst({
+        where: { id: gatewayId, workspaceId },
+        select: {
+          modelApiKey: true,
+          customModelBaseUrl: true,
+          customModelName: true,
+          customModelStrategy: true,
+          customModelInputPrice: true,
+          customModelOutputPrice: true,
+        },
+      });
+
+      if (!source) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'AI Gateway not found',
+        });
+      }
+
+      return prisma.aIGateway.create({
+        data: {
+          workspaceId,
+          name,
+          modelApiKey: source.modelApiKey,
+          customModelBaseUrl: source.customModelBaseUrl,
+          customModelName: source.customModelName,
+          customModelStrategy: source.customModelStrategy,
+          customModelInputPrice: source.customModelInputPrice,
+          customModelOutputPrice: source.customModelOutputPrice,
+        },
+        select: { id: true, name: true },
+      });
     }),
 
   delete: workspaceAdminProcedure
