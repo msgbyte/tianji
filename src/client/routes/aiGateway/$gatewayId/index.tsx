@@ -3,6 +3,7 @@ import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 import { AIGatewayAnalytics } from '@/components/aiGateway/AIGatewayAnalytics';
 import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
+import { AIGatewayDuplicateDialog } from '@/components/aiGateway/AIGatewayDuplicateDialog';
 import { useState, useRef } from 'react';
 import { SearchInput } from '@/components/ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -88,6 +89,11 @@ function PageComponent() {
 
               {hasAdminPermission && (
                 <>
+                  <AIGatewayDuplicateDialog
+                    gatewayId={gatewayId}
+                    gatewayName={gateway.name}
+                  />
+
                   <Button
                     size="icon"
                     variant="outline"
