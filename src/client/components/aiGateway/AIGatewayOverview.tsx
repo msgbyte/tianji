@@ -161,7 +161,12 @@ export const AIGatewayOverview: React.FC<AIGatewayOverviewProps> = React.memo(
           </div>
         </div>
 
-        <AIGatewaySummaryStats gatewayId={props.gatewayId} />
+        <AIGatewaySummaryStats
+          gatewayId={props.gatewayId}
+          startDate={startDate}
+          endDate={endDate}
+          unit={unit}
+        />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">

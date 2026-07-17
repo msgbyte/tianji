@@ -1,21 +1,25 @@
 import React from 'react';
+import { Dayjs } from 'dayjs';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { Card } from '../ui/card';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
+import { DateUnit } from '../../utils/date';
 import { getUserTimezone } from '@/api/model/user';
 import { LoadingView } from '../LoadingView';
 
 interface AIGatewaySummaryStatsProps {
   gatewayId: string;
+  startDate: Dayjs;
+  endDate: Dayjs;
+  unit: DateUnit;
 }
 
 export const AIGatewaySummaryStats: React.FC<AIGatewaySummaryStatsProps> =
   React.memo((props) => {
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
-    const { startDate, endDate, unit } = useGlobalRangeDate();
+    const { startDate, endDate, unit } = props;
 
     const { data: summaryData = [], isLoading } = trpc.insights.query.useQuery(
       {
