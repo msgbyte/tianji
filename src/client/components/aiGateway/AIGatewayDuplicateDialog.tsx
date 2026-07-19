@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { LuCopy } from 'react-icons/lu';
 import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -13,7 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +19,8 @@ import { Label } from '@/components/ui/label';
 interface AIGatewayDuplicateDialogProps {
   gatewayId: string;
   gatewayName: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const MAX_GATEWAY_NAME_LENGTH = 100;
@@ -36,25 +36,29 @@ function buildDuplicateName(gatewayName: string) {
 export function AIGatewayDuplicateDialog({
   gatewayId,
   gatewayName,
+  open,
+  onOpenChange,
 }: AIGatewayDuplicateDialogProps) {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const trpcUtils = trpc.useUtils();
-  const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
 
   const duplicateMutation = trpc.aiGateway.duplicate.useMutation({
     onError: defaultErrorHandler,
   });
 
+  useEffect(() => {
+    setName(open ? buildDuplicateName(gatewayName) : '');
+  }, [gatewayName, open]);
+
   const handleOpenChange = useEvent((nextOpen: boolean) => {
     if (duplicateMutation.isPending) {
       return;
     }
 
-    setOpen(nextOpen);
-    setName(nextOpen ? buildDuplicateName(gatewayName) : '');
+    onOpenChange(nextOpen);
   });
 
   const handleDuplicate = useEvent(async () => {
@@ -71,8 +75,7 @@ export function AIGatewayDuplicateDialog({
       });
 
       await trpcUtils.aiGateway.all.refetch({ workspaceId });
-      setOpen(false);
-      setName('');
+      onOpenChange(false);
       navigate({
         to: '/aiGateway/$gatewayId',
         params: { gatewayId: duplicate.id },
@@ -84,15 +87,6 @@ export function AIGatewayDuplicateDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild={true}>
-        <Button
-          size="icon"
-          variant="outline"
-          Icon={LuCopy}
-          aria-label={t('Duplicate')}
-          title={t('Duplicate')}
-        />
-      </DialogTrigger>
       <DialogContent
         onEscapeKeyDown={(event) => {
           if (duplicateMutation.isPending) {
