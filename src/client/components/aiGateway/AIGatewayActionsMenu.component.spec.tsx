@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   onEdit: vi.fn(),
   onDelete: vi.fn(),
   duplicateDialogProps: { current: null as any },
+  useRealAlertConfirm: false,
 }));
 
 vi.mock('@i18next-toolkit/react', () => ({
@@ -22,22 +23,39 @@ vi.mock('@/components/aiGateway/AIGatewayDuplicateDialog', () => ({
   },
 }));
 
-vi.mock('@/components/AlertConfirm', () => ({
-  AlertConfirm: ({
-    children,
-    onConfirm,
-  }: React.PropsWithChildren<{ onConfirm: () => void }>) => (
-    <div>
-      {children}
-      <button onClick={onConfirm}>Confirm delete</button>
-    </div>
-  ),
-}));
+vi.mock('@/components/AlertConfirm', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/components/AlertConfirm')>();
+
+  return {
+    AlertConfirm: ({
+      children,
+      onConfirm,
+      ...props
+    }: React.ComponentProps<typeof actual.AlertConfirm>) => {
+      if (mocks.useRealAlertConfirm) {
+        return (
+          <actual.AlertConfirm onConfirm={onConfirm} {...props}>
+            {children}
+          </actual.AlertConfirm>
+        );
+      }
+
+      return (
+        <div>
+          {children}
+          <button onClick={onConfirm}>Confirm delete</button>
+        </div>
+      );
+    },
+  };
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.onDelete.mockResolvedValue(undefined);
   mocks.duplicateDialogProps.current = null;
+  mocks.useRealAlertConfirm = false;
 });
 
 function renderMenu() {
@@ -104,6 +122,25 @@ describe('AIGatewayActionsMenu', () => {
     await userEvent.click(
       screen.getByRole('button', { name: 'Confirm delete' })
     );
+    expect(mocks.onDelete).toHaveBeenCalledOnce();
+  });
+
+  test('opens the real delete confirmation before deleting', async () => {
+    mocks.useRealAlertConfirm = true;
+    renderMenu();
+    await openMenu();
+
+    await userEvent.click(screen.getByText('Delete'));
+
+    expect(
+      await screen.findByRole('alertdialog', {
+        name: 'Delete AI Gateway Primary Gateway',
+      })
+    ).toBeInTheDocument();
+    expect(mocks.onDelete).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
     expect(mocks.onDelete).toHaveBeenCalledOnce();
   });
 });
