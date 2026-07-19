@@ -4,6 +4,25 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { AIGatewayDuplicateDialog } from './AIGatewayDuplicateDialog';
 
+function DuplicateDialogHarness(props: {
+  gatewayId?: string;
+  gatewayName?: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>Open duplicate dialog</button>
+      <AIGatewayDuplicateDialog
+        gatewayId={props.gatewayId ?? 'gateway_1'}
+        gatewayName={props.gatewayName ?? 'Primary Gateway'}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
+  );
+}
+
 const mocks = vi.hoisted(() => ({
   duplicate: vi.fn(),
   refetchGateways: vi.fn(),
@@ -57,15 +76,20 @@ beforeEach(() => {
 });
 
 describe('AIGatewayDuplicateDialog', () => {
-  test('uses a default copy name and submits only safe fields', async () => {
-    render(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName="Primary Gateway"
-      />
-    );
+  test('does not render a standalone duplicate trigger while closed', () => {
+    render(<DuplicateDialogHarness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    expect(
+      screen.queryByRole('button', { name: 'Duplicate' })
+    ).not.toBeInTheDocument();
+  });
+
+  test('uses a default copy name and submits only safe fields', async () => {
+    render(<DuplicateDialogHarness />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open duplicate dialog' })
+    );
     const nameInput = screen.getByLabelText('AI Gateway Name');
     expect(nameInput).toHaveValue('Primary Gateway - Copy');
 
@@ -88,14 +112,11 @@ describe('AIGatewayDuplicateDialog', () => {
   });
 
   test('refreshes the list and navigates to the duplicate on success', async () => {
-    render(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName="Primary Gateway"
-      />
-    );
+    render(<DuplicateDialogHarness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open duplicate dialog' })
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Duplicate gateway' }));
 
     await waitFor(() => {
@@ -113,14 +134,11 @@ describe('AIGatewayDuplicateDialog', () => {
   });
 
   test('does not submit an empty name', () => {
-    render(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName="Primary Gateway"
-      />
-    );
+    render(<DuplicateDialogHarness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open duplicate dialog' })
+    );
     fireEvent.change(screen.getByLabelText('AI Gateway Name'), {
       target: { value: '   ' },
     });
@@ -133,13 +151,12 @@ describe('AIGatewayDuplicateDialog', () => {
 
   test('keeps the default copy name within the server length limit', () => {
     render(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName={'a'.repeat(100)}
-      />
+      <DuplicateDialogHarness gatewayName={'a'.repeat(100)} />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open duplicate dialog' })
+    );
 
     const defaultName = screen.getByLabelText('AI Gateway Name').getAttribute(
       'value'
@@ -149,21 +166,13 @@ describe('AIGatewayDuplicateDialog', () => {
   });
 
   test('prevents closing or resubmitting while pending', () => {
-    const { rerender } = render(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName="Primary Gateway"
-      />
+    const { rerender } = render(<DuplicateDialogHarness />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open duplicate dialog' })
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
 
     mocks.isPending = true;
-    rerender(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName="Primary Gateway"
-      />
-    );
+    rerender(<DuplicateDialogHarness />);
 
     expect(
       screen.getByRole('button', { name: 'Duplicate gateway' })
@@ -178,14 +187,11 @@ describe('AIGatewayDuplicateDialog', () => {
 
   test('keeps the dialog and entered name when duplication fails', async () => {
     mocks.duplicate.mockRejectedValue(new Error('database unavailable'));
-    render(
-      <AIGatewayDuplicateDialog
-        gatewayId="gateway_1"
-        gatewayName="Primary Gateway"
-      />
-    );
+    render(<DuplicateDialogHarness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open duplicate dialog' })
+    );
     const nameInput = screen.getByLabelText('AI Gateway Name');
     fireEvent.change(nameInput, { target: { value: 'Retry Name' } });
     fireEvent.click(screen.getByRole('button', { name: 'Duplicate gateway' }));
