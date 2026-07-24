@@ -1,17 +1,58 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
+  autoDisableContinuousDownMonitorDaily,
   clearAIRouterLogsDaily,
   dailyUpdateApplicationStoreInfo,
 } from './daily.js';
 import { prisma } from '../model/_client.js';
 import { env } from '../utils/env.js';
+import { monitorManager } from '../model/monitor/index.js';
 
 const originalAiGatewayLogClearDays = env.aiGatewayLogClearDays;
+const originalAutoDisableMonitorDays = env.autoDisableMonitorDays;
 
 afterEach(() => {
   env.aiGatewayLogClearDays = originalAiGatewayLogClearDays;
+  env.autoDisableMonitorDays = originalAutoDisableMonitorDays;
   vi.restoreAllMocks();
   vi.useRealTimers();
+});
+
+describe('autoDisableContinuousDownMonitorDaily', () => {
+  test('uses synchronized stop when automatically disabling a monitor', async () => {
+    env.autoDisableMonitorDays = 3;
+    vi.spyOn(prisma, '$queryRaw').mockResolvedValue([
+      {
+        id: 'monitor-a',
+        name: 'API',
+        workspaceId: 'workspace-a',
+      },
+    ]);
+    const setActive = vi
+      .spyOn(monitorManager, 'setActive')
+      .mockResolvedValue({
+        monitor: {
+          id: 'monitor-a',
+          workspaceId: 'workspace-a',
+          name: 'API',
+          active: false,
+        } as any,
+        runner: undefined,
+      });
+    const update = vi
+      .spyOn(prisma.monitor, 'update')
+      .mockResolvedValue({} as any);
+    vi.spyOn(prisma.monitorEvent, 'create').mockResolvedValue({} as any);
+
+    await autoDisableContinuousDownMonitorDaily();
+
+    expect(setActive).toHaveBeenCalledWith(
+      'workspace-a',
+      'monitor-a',
+      false
+    );
+    expect(update).not.toHaveBeenCalled();
+  });
 });
 
 describe('clearAIRouterLogsDaily', () => {

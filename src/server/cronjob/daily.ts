@@ -550,13 +550,11 @@ export async function autoDisableContinuousDownMonitorDaily() {
   let successCount = 0;
   for (const candidate of candidates) {
     try {
-      await prisma.monitor.update({
-        where: { id: candidate.id },
-        data: { active: false },
-      });
-
-      const runner = monitorManager.getRunner(candidate.id);
-      runner?.stopMonitor();
+      await monitorManager.setActive(
+        candidate.workspaceId,
+        candidate.id,
+        false
+      );
 
       await prisma.monitorEvent.create({
         data: {

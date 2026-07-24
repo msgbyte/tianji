@@ -304,7 +304,7 @@ export const workspaceRouter = router({
         get(prev, ['settings', 'timezone']) !== settings.timezone
       ) {
         // should be restart all monitor
-        monitorManager.restartWithWorkspaceId(workspaceId);
+        await monitorManager.restartWithWorkspaceId(workspaceId);
       }
 
       clearWorkspaceSettingsCache(workspaceId);

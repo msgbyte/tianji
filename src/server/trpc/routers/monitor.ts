@@ -402,30 +402,21 @@ export const monitorRouter = router({
       const { workspaceId, monitorId, active } = input;
       const user = ctx.user;
 
-      const monitor = await prisma.monitor.update({
-        where: {
-          workspaceId,
-          id: monitorId,
-        },
-        data: {
-          active,
-        },
-        include: {
-          notifications: true,
-        },
-      });
-      let runner = monitorManager.getRunner(monitorId);
-      if (!runner) {
-        runner = await monitorManager.createRunner(monitor);
-      }
+      const { monitor } = await monitorManager.setActive(
+        workspaceId,
+        monitorId,
+        active
+      );
 
       if (active === true) {
-        runner.startMonitor();
-        runner.createEvent(
-          'UP',
-          `Monitor [${monitor.name}] has been manual start`
-        );
-        createAuditLog({
+        await prisma.monitorEvent.create({
+          data: {
+            monitorId,
+            type: 'UP',
+            message: `Monitor [${monitor.name}] has been manual start`,
+          },
+        });
+        await createAuditLog({
           workspaceId: workspaceId,
           relatedId: monitorId,
           relatedType: 'Monitor',
@@ -434,12 +425,14 @@ export const monitorRouter = router({
           )}(${String(user.id)})`,
         });
       } else {
-        runner.stopMonitor();
-        runner.createEvent(
-          'DOWN',
-          `Monitor [${monitor.name}] has been manual stop`
-        );
-        createAuditLog({
+        await prisma.monitorEvent.create({
+          data: {
+            monitorId,
+            type: 'DOWN',
+            message: `Monitor [${monitor.name}] has been manual stop`,
+          },
+        });
+        await createAuditLog({
           workspaceId: workspaceId,
           relatedId: monitorId,
           relatedType: 'Monitor',
