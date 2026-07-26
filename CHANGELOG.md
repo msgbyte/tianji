@@ -1,5 +1,29 @@
 
 
+## [1.32.17](https://github.com/msgbyte/tianji/compare/v1.32.16...v1.32.17) (2026-07-26)
+
+### Features
+
+* **ai-gateway:** add connectivity testing ([#271](https://github.com/msgbyte/tianji/issues/271)) ([47884d4](https://github.com/msgbyte/tianji/commit/47884d423017a45cc33ab2625187a7abdf487a33))
+* **ai-gateway:** add duplicate gateway action ([#272](https://github.com/msgbyte/tianji/issues/272)) ([410fd20](https://github.com/msgbyte/tianji/commit/410fd2015ff5f82ad2b1bc45fe0d789ed3ed2082))
+* **ai-gateway:** group actions under more menu ([#274](https://github.com/msgbyte/tianji/issues/274)) ([1069628](https://github.com/msgbyte/tianji/commit/1069628a344ce56cdf084574301e61618db41550))
+* **analytics:** show user names in usage charts ([#269](https://github.com/msgbyte/tianji/issues/269)) ([c11a4c0](https://github.com/msgbyte/tianji/commit/c11a4c0c8f773da99af387b5024e002057e844ff))
+* **i18n:** add client translation workflow script ([67314bb](https://github.com/msgbyte/tianji/commit/67314bb7a805c1cb7978035a48d72268ffa274df))
+* **monitor:** add optional redis lifecycle sync ([2dcac83](https://github.com/msgbyte/tianji/commit/2dcac83ffe769494f1d716b3c8a9ef66cbf643bb))
+
+### Bug Fixes
+
+* **ai-gateway:** sync summary stats with selected date range ([#273](https://github.com/msgbyte/tianji/issues/273)) ([c1eca44](https://github.com/msgbyte/tianji/commit/c1eca44841e2d810c9fe53af7e6238a17cc1c936))
+
+### Document
+
+* **i18n:** design translation wrapper script ([b4e60a3](https://github.com/msgbyte/tianji/commit/b4e60a32e11b3522b5170e473cf7f20d06b818fc))
+* **readme:** add docker compose setup instructions ([#270](https://github.com/msgbyte/tianji/issues/270)) ([1d65fa9](https://github.com/msgbyte/tianji/commit/1d65fa9e385635a127b19f7e7487f90affe9625a))
+
+### Others
+
+* update llm model data ([db569f6](https://github.com/msgbyte/tianji/commit/db569f6780a41edf41fab09b666f5fb02ce8b721))
+
 ## [1.32.16](https://github.com/msgbyte/tianji/compare/v1.32.15...v1.32.16) (2026-07-01)
 
 ### Bug Fixes
