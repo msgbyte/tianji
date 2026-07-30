@@ -30,10 +30,12 @@ container environment and performs no Infisical network requests.
 
 ## Image architecture
 
-Only `Dockerfile` is changed. During the image build, a pinned version of the
-official `@infisical/sdk` package and a small Node.js bootstrap wrapper are
-installed in an isolated directory outside the Tianji workspace. The repository
-package manifests and application source remain unchanged.
+The bootstrap wrapper is maintained as
+`scripts/docker/infisical-bootstrap.mjs`. During the image build, `Dockerfile`
+installs a pinned version of the official `@infisical/sdk` package in an
+isolated directory outside the Tianji workspace and copies the wrapper into
+that directory. The repository package manifests and Tianji application source
+remain unchanged.
 
 The Docker command invokes the wrapper around the existing Tianji server
 startup command. The reporter process keeps its existing startup behavior.

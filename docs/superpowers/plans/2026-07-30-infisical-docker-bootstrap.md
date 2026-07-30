@@ -4,9 +4,10 @@
 
 **Goal:** Make the Tianji Docker image optionally fetch Infisical secrets and expose them only to the container startup process tree.
 
-**Architecture:** Add a small `infisical-bootstrap` image stage that embeds an
-ESM bootstrap program with a Dockerfile heredoc and installs the pinned official
-SDK into `/opt/infisical-bootstrap`. Copy that isolated directory into the final
+**Architecture:** Maintain the ESM bootstrap program in
+`scripts/docker/infisical-bootstrap.mjs`. Add an `infisical-bootstrap` image
+stage that installs the pinned official SDK into `/opt/infisical-bootstrap` and
+copies the external script there. Copy that isolated directory into the final
 image and replace the final command with the bootstrap program wrapping the
 existing command; the disabled branch immediately spawns the original command
 without contacting Infisical.
@@ -15,7 +16,7 @@ without contacting Infisical.
 
 ## Global Constraints
 
-- Modify only `Dockerfile`; do not modify Tianji package manifests or application source.
+- Modify only `Dockerfile` and `scripts/docker/infisical-bootstrap.mjs`; do not modify Tianji package manifests or application source.
 - Do not modify JSON files in `src/client/public/locales`.
 - Treat `INFISICAL_US_CLIENT_SECRET_ENC` as the Universal Auth client secret without decoding.
 - Do not write fetched secrets to disk or print secret keys or values.
@@ -30,9 +31,11 @@ without contacting Infisical.
 - Modify: `Dockerfile`
   - Add a directly buildable `infisical-bootstrap` stage.
   - Pin and install the Infisical SDK in an isolated runtime directory.
-  - Embed `/opt/infisical-bootstrap/run.mjs`.
+  - Copy the maintained bootstrap script to `/opt/infisical-bootstrap/run.mjs`.
   - Copy the isolated bootstrap runtime into the final image.
   - Wrap the existing `CMD` without changing its inner Tianji command.
+- Create: `scripts/docker/infisical-bootstrap.mjs`
+  - Validate bootstrap configuration, load secrets, and manage the child process.
 - Temporary fake package: `/tmp/tianji-infisical-sdk-fake`
   - Mounted over the image's `@infisical/sdk` directory at the external network
     boundary.
@@ -43,6 +46,7 @@ without contacting Infisical.
 **Files:**
 
 - Modify: `Dockerfile`
+- Create: `scripts/docker/infisical-bootstrap.mjs`
 - Test: temporary executable harness outside the repository
 
 **Interfaces:**
@@ -80,16 +84,14 @@ RUN npm install \
 
 The stage must contain no Tianji application files or credentials.
 
-- [ ] **Step 3: Embed the minimal bootstrap implementation**
+- [ ] **Step 3: Create the maintainable bootstrap implementation**
 
-Add a BuildKit heredoc in the `infisical-bootstrap` stage at
-`/opt/infisical-bootstrap/run.mjs`. Add
-`# syntax=docker/dockerfile:1` as the first Dockerfile line, then embed:
+Create `scripts/docker/infisical-bootstrap.mjs` with:
 
-```dockerfile
-COPY <<'EOF' /opt/infisical-bootstrap/run.mjs
+```js
 import { spawn } from 'node:child_process';
 import { InfisicalSDK } from '@infisical/sdk';
+import { constants as osConstants } from 'node:os';
 
 const prefix = '[infisical-bootstrap]';
 const bootstrapKeys = [
@@ -196,7 +198,11 @@ const signalHandlers = new Map(
     signal,
     () => {
       if (child.pid) {
-        child.kill(signal);
+        try {
+          child.kill(signal);
+        } catch {
+          // The child may have exited between the signal and this handler.
+        }
       }
     },
   ])
@@ -221,17 +227,21 @@ child.once('error', () => {
 child.once('exit', (code, signal) => {
   removeSignalHandlers();
   if (signal) {
-    process.kill(process.pid, signal);
-    return;
+    process.exit(128 + (osConstants.signals[signal] ?? 0));
   }
   process.exit(code ?? 1);
 });
-EOF
 ```
 
 This code rejects an empty command, validates before constructing the client,
 sanitizes SDK errors, validates the response, overrides inherited values,
 strips bootstrap variables, forwards signals, and propagates child exit status.
+
+In the `infisical-bootstrap` Docker stage, copy the maintained file:
+
+```dockerfile
+COPY scripts/docker/infisical-bootstrap.mjs ./run.mjs
+```
 
 - [ ] **Step 4: Build the isolated stage**
 
@@ -454,6 +464,6 @@ committed design and plan documents remain separate history entries.
 - [ ] **Step 11: Commit the implementation**
 
 ```bash
-git add Dockerfile
-git commit -m "feat(docker): bootstrap secrets from infisical"
+git add Dockerfile scripts/docker/infisical-bootstrap.mjs
+git commit -m "refactor(docker): extract infisical bootstrap script"
 ```
