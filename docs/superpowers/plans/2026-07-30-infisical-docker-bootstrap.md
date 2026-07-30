@@ -12,13 +12,24 @@ image and replace the final command with the bootstrap program wrapping the
 existing command; the disabled branch immediately spawns the original command
 without contacting Infisical.
 
-**Tech Stack:** Docker BuildKit Dockerfile syntax, Node.js 22, `@infisical/sdk@5.0.2`, Node `child_process`.
+**Tech Stack:** Docker BuildKit Dockerfile syntax, Node.js 22,
+`@infisical/sdk@5.0.2`, Node `child_process`, Node `crypto`.
+
+> **2026-07-31 compatibility amendment:** The Flow reference implementation
+> established that `INFISICAL_US_CLIENT_SECRET_ENC` is encrypted rather than a
+> directly usable Universal Auth secret. The wrapper now decrypts its
+> Flow-compatible AES-256-GCM wire format in memory, applies 15-second SDK
+> operation timeouts, and supports optional `INFISICAL_SITE_URL`. This
+> amendment supersedes older direct-secret examples later in this historical
+> implementation plan.
 
 ## Global Constraints
 
-- Modify only `Dockerfile` and `scripts/docker/infisical-bootstrap.mjs`; do not modify Tianji package manifests or application source.
+- Modify only Docker bootstrap files and their tests; do not modify Tianji
+  package manifests or application source.
 - Do not modify JSON files in `src/client/public/locales`.
-- Treat `INFISICAL_US_CLIENT_SECRET_ENC` as the Universal Auth client secret without decoding.
+- Decrypt `INFISICAL_US_CLIENT_SECRET_ENC` using the Flow-compatible
+  AES-256-GCM wire format before Universal Auth.
 - Do not write fetched secrets to disk or print secret keys or values.
 - Preserve the original Docker startup behavior when bootstrap is disabled or absent.
 - Load only the exact configured secret path, with reference expansion and without recursive child-path loading.
@@ -36,6 +47,9 @@ without contacting Infisical.
   - Wrap the existing `CMD` without changing its inner Tianji command.
 - Create: `scripts/docker/infisical-bootstrap.mjs`
   - Validate bootstrap configuration, load secrets, and manage the child process.
+- Create: `scripts/docker/infisical-bootstrap.test.mjs`
+  - Exercise encrypted-secret compatibility, site URL selection, and SDK
+    timeouts with Node's built-in test runner.
 - Temporary fake package: `/tmp/tianji-infisical-sdk-fake`
   - Mounted over the image's `@infisical/sdk` directory at the external network
     boundary.

@@ -19,10 +19,12 @@ The Docker container accepts these bootstrap environment variables:
 - `INFISICAL_US_ENV`
 - `INFISICAL_US_PROJECT_ID`
 - `INFISICAL_US_SECRET_PATH`
+- `INFISICAL_SITE_URL` (optional, defaults to Infisical Cloud)
 
-For the first version, `INFISICAL_US_CLIENT_SECRET_ENC` is passed directly to
-Infisical Universal Auth as the client secret. No decoding or decryption is
-performed.
+`INFISICAL_US_CLIENT_SECRET_ENC` uses the Flow-compatible, Base64-encoded
+AES-256-GCM wire format: one version byte, a 12-byte IV, a 16-byte
+authentication tag, and the ciphertext. The wrapper decrypts it in memory and
+passes only the plaintext result to Infisical Universal Auth.
 
 Bootstrap is enabled only when `INFISICAL_US_BOOTSTRAP_ENABLED` has a supported
 truthy value. If it is absent or disabled, the wrapper starts Tianji with the
@@ -46,18 +48,20 @@ When bootstrap is enabled, the wrapper:
 
 1. Validates all required bootstrap variables and fails with the names of any
    missing variables.
-2. Authenticates to the default US Infisical service with Universal Auth.
-3. Lists secrets from the configured project, environment, and exact secret
+2. Decrypts the Universal Auth client secret in memory.
+3. Authenticates to the configured Infisical site with Universal Auth.
+4. Lists secrets from the configured project, environment, and exact secret
    path.
-4. Expands secret references but does not recursively read child paths.
-5. Builds a child environment from the container environment plus the fetched
+5. Expands secret references but does not recursively read child paths.
+6. Builds a child environment from the container environment plus the fetched
    secrets. Fetched values override existing variables with the same names.
-6. Removes all `INFISICAL_US_*` bootstrap variables from the child environment.
-7. Starts the original Tianji migration and server command with inherited
+7. Removes all `INFISICAL_US_*` bootstrap variables from the child environment.
+8. Starts the original Tianji migration and server command with inherited
    standard input, output, and error streams.
-8. Forwards termination signals and exits with the Tianji command's status.
+9. Forwards termination signals and exits with the Tianji command's status.
 
 No `.env` or other secret file is created.
+Authentication and secret-listing operations each have a 15-second timeout.
 
 ## Logging and failures
 
@@ -83,6 +87,9 @@ Automated checks cover:
 - missing enabled configuration fails before application startup;
 - fetched secrets override matching container variables;
 - bootstrap variables are absent from the application environment;
+- Flow-compatible encrypted client secrets are decrypted before authentication;
+- custom and default Infisical site URLs are passed to the SDK;
+- authentication and secret loading time out after 15 seconds;
 - no secret names or values appear in logs;
 - child exit status and termination signals are propagated.
 
