@@ -15,6 +15,7 @@ import { initClickHouse } from './clickhouse/index.js';
 import { flushAllBatchWriters } from './utils/batchWriter.js';
 import { logSystemInfo } from './utils/system.js';
 import { monitorBroadcast } from './model/monitor/broadcast.js';
+import { workerCronBroadcast } from './model/worker/broadcast.js';
 
 logSystemInfo();
 
@@ -59,7 +60,18 @@ async function startServer() {
   }
 
   if (env.enableFunctionWorker) {
-    workerCronManager.startAll();
+    await workerCronBroadcast.start(
+      (event) => workerCronManager.handleBroadcast(event),
+      () => workerCronManager.reconcileAll()
+    );
+    if (isShuttingDown) {
+      return;
+    }
+
+    await workerCronManager.startAll();
+    if (isShuttingDown) {
+      return;
+    }
   }
 
   httpServer.listen(port, () => {
@@ -83,7 +95,10 @@ async function gracefulShutdown(signal: string) {
   // Stop accepting new connections
   httpServer.close();
 
-  await monitorBroadcast.close();
+  await Promise.all([
+    monitorBroadcast.close(),
+    workerCronBroadcast.close(),
+  ]);
 
   // Flush all pending batch writes
   await flushAllBatchWriters();

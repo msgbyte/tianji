@@ -3,6 +3,10 @@ import { prisma } from '../_client.js';
 import { WorkerCronRunner } from './cronRunner.js';
 import { logger } from '../../utils/logger.js';
 import { delWorkerCache } from './index.js';
+import {
+  workerCronBroadcast,
+  type WorkerCronBroadcastEvent,
+} from './broadcast.js';
 
 export type WorkerCronUpsertData = Pick<
   FunctionWorker,
@@ -15,115 +19,130 @@ export type WorkerCronUpsertData = Pick<
 
 export class WorkerCronManager {
   private workerRunners: Record<string, WorkerCronRunner> = {};
+  private lifecycleTails = new Map<string, Promise<void>>();
   private isStarted = false;
+
+  private runLifecycle<T>(
+    workerId: string,
+    operation: () => Promise<T>
+  ): Promise<T> {
+    const previous = this.lifecycleTails.get(workerId) ?? Promise.resolve();
+    const result = previous.catch(() => undefined).then(operation);
+    const tail = result.then(
+      () => undefined,
+      () => undefined
+    );
+    this.lifecycleTails.set(workerId, tail);
+
+    return result.finally(() => {
+      if (this.lifecycleTails.get(workerId) === tail) {
+        this.lifecycleTails.delete(workerId);
+      }
+    });
+  }
 
   /**
    * Create or update worker cron job
    */
   async upsert(data: WorkerCronUpsertData): Promise<FunctionWorker> {
-    let worker: FunctionWorker;
     const { id, workspaceId, ...others } = data;
 
     if (id) {
-      const existingWorker = await prisma.functionWorker.findUnique({
-        where: {
-          id,
-          workspaceId,
-        },
-      });
-
-      if (!existingWorker) {
-        throw new Error('Worker not found');
-      }
-
-      const shouldCreateRevision =
-        others.code !== undefined && others.code !== existingWorker.code;
-
-      const updateResult = await prisma.$transaction(async (tx) => {
-        const nextRevision = shouldCreateRevision
-          ? existingWorker.revision + 1
-          : existingWorker.revision;
-
-        const updatedWorker = await tx.functionWorker.update({
+      return this.runLifecycle(id, async () => {
+        const existingWorker = await prisma.functionWorker.findUnique({
           where: {
             id,
             workspaceId,
           },
-          data: {
-            ...others,
-            revision: nextRevision,
-          },
         });
 
-        delWorkerCache(id, workspaceId);
+        if (!existingWorker) {
+          throw new Error('Worker not found');
+        }
 
-        if (shouldCreateRevision) {
-          await tx.functionWorkerRevision.create({
+        const shouldCreateRevision =
+          others.code !== undefined && others.code !== existingWorker.code;
+
+        const worker = await prisma.$transaction(async (tx) => {
+          const nextRevision = shouldCreateRevision
+            ? existingWorker.revision + 1
+            : existingWorker.revision;
+
+          const updatedWorker = await tx.functionWorker.update({
+            where: {
+              id,
+              workspaceId,
+            },
             data: {
-              workerId: updatedWorker.id,
-              revision: updatedWorker.revision,
-              code: updatedWorker.code,
+              ...others,
+              revision: nextRevision,
             },
           });
-        }
-        return updatedWorker;
-      });
 
-      worker = updateResult;
-    } else {
-      worker = await prisma.$transaction(async (tx) => {
-        const createdWorker = await tx.functionWorker.create({
-          data: {
-            ...others,
-            revision: 1,
-            workspaceId,
-          },
+          delWorkerCache(id, workspaceId);
+
+          if (shouldCreateRevision) {
+            await tx.functionWorkerRevision.create({
+              data: {
+                workerId: updatedWorker.id,
+                revision: updatedWorker.revision,
+                code: updatedWorker.code,
+              },
+            });
+          }
+          return updatedWorker;
         });
 
-        await tx.functionWorkerRevision.create({
-          data: {
-            workerId: createdWorker.id,
-            revision: createdWorker.revision,
-            code: createdWorker.code,
-          },
-        });
+        void workerCronBroadcast.publish('update', workspaceId, worker.id);
+        await this.applyWorkerStateUnlocked(worker);
 
-        return createdWorker;
+        return worker;
       });
     }
 
-    // Stop and remove old runner if exists
-    if (this.workerRunners[worker.id]) {
-      await this.workerRunners[worker.id].stopCron();
-      delete this.workerRunners[worker.id];
-    }
+    const worker = await prisma.$transaction(async (tx) => {
+      const createdWorker = await tx.functionWorker.create({
+        data: {
+          ...others,
+          revision: 1,
+          workspaceId,
+        },
+      });
 
-    // Create new runner if cron is enabled
-    if (worker.active && worker.enableCron && worker.cronExpression) {
-      const runner = await this.createRunner(worker);
-      await runner.startCron();
-    }
+      await tx.functionWorkerRevision.create({
+        data: {
+          workerId: createdWorker.id,
+          revision: createdWorker.revision,
+          code: createdWorker.code,
+        },
+      });
 
-    return worker;
+      return createdWorker;
+    });
+
+    return this.runLifecycle(worker.id, async () => {
+      void workerCronBroadcast.publish('create', workspaceId, worker.id);
+      await this.applyWorkerStateUnlocked(worker);
+
+      return worker;
+    });
   }
 
   async delete(workspaceId: string, workerId: string) {
-    const runner = this.getRunner(workerId);
-    if (runner) {
-      await runner.stopCron();
-      delete this.workerRunners[workerId];
-    }
+    return this.runLifecycle(workerId, async () => {
+      const worker = await prisma.functionWorker.delete({
+        where: {
+          workspaceId,
+          id: workerId,
+        },
+      });
 
-    const res = await prisma.functionWorker.delete({
-      where: {
-        workspaceId,
-        id: workerId,
-      },
+      delWorkerCache(workerId, workspaceId);
+      await this.removeRunner(workerId);
+      void workerCronBroadcast.publish('delete', workspaceId, workerId);
+
+      return worker;
     });
-
-    delWorkerCache(workerId, workspaceId);
-
-    return res;
   }
 
   /**
@@ -137,7 +156,62 @@ export class WorkerCronManager {
 
     this.isStarted = true;
 
-    const workers = await prisma.functionWorker.findMany({
+    try {
+      await this.reconcileAll();
+      logger.info(
+        `Started ${Object.keys(this.workerRunners).length} worker cron jobs.`
+      );
+    } catch (err) {
+      this.isStarted = false;
+      throw err;
+    }
+  }
+
+  getRunner(workerId: string): WorkerCronRunner | undefined {
+    return this.workerRunners[workerId];
+  }
+
+  private async removeRunner(workerId: string): Promise<void> {
+    const runner = this.getRunner(workerId);
+    if (!runner) {
+      return;
+    }
+
+    await runner.stopCron();
+    delete this.workerRunners[workerId];
+  }
+
+  async reconcile(workspaceId: string, workerId: string): Promise<void> {
+    return this.runLifecycle(workerId, () =>
+      this.reconcileUnlocked(workspaceId, workerId)
+    );
+  }
+
+  private async reconcileUnlocked(
+    workspaceId: string,
+    workerId: string
+  ): Promise<void> {
+    const worker = await prisma.functionWorker.findUnique({
+      where: {
+        id: workerId,
+        workspaceId,
+      },
+    });
+
+    if (
+      !worker?.active ||
+      !worker.enableCron ||
+      !worker.cronExpression
+    ) {
+      await this.removeRunner(workerId);
+      return;
+    }
+
+    await this.applyWorkerStateUnlocked(worker);
+  }
+
+  async reconcileAll(): Promise<void> {
+    const activeWorkers = await prisma.functionWorker.findMany({
       where: {
         active: true,
         enableCron: true,
@@ -145,25 +219,46 @@ export class WorkerCronManager {
           not: null,
         },
       },
+      select: {
+        id: true,
+        workspaceId: true,
+      },
+    });
+    const workers = new Map<string, string>();
+
+    Object.values(this.workerRunners).forEach((runner) => {
+      workers.set(runner.worker.id, runner.worker.workspaceId);
+    });
+    activeWorkers.forEach((worker) => {
+      workers.set(worker.id, worker.workspaceId);
     });
 
-    Promise.all(
-      workers.map(async (worker) => {
+    await Promise.all(
+      Array.from(workers, async ([workerId, workspaceId]) => {
         try {
-          const runner = await this.createRunner(worker);
-          this.workerRunners[worker.id] = runner;
-          await runner.startCron();
+          await this.reconcile(workspaceId, workerId);
         } catch (err) {
-          logger.error('Start worker cron error:', String(err));
+          logger.error('Reconcile worker cron error:', String(err));
         }
       })
-    ).then(() => {
-      logger.info(`Started ${workers.length} worker cron jobs.`);
-    });
+    );
   }
 
-  getRunner(workerId: string): WorkerCronRunner | undefined {
-    return this.workerRunners[workerId];
+  async handleBroadcast(event: WorkerCronBroadcastEvent): Promise<void> {
+    await this.reconcile(event.workspaceId, event.workerId);
+  }
+
+  private async applyWorkerStateUnlocked(
+    worker: FunctionWorker
+  ): Promise<WorkerCronRunner | undefined> {
+    if (!worker.active || !worker.enableCron || !worker.cronExpression) {
+      await this.removeRunner(worker.id);
+      return undefined;
+    }
+
+    const runner = await this.createRunner(worker);
+    await runner.startCron();
+    return runner;
   }
 
   /**
@@ -181,16 +276,13 @@ export class WorkerCronManager {
    * Create runner
    */
   async createRunner(worker: FunctionWorker) {
-    if (this.workerRunners[worker.id]) {
-      await this.workerRunners[worker.id].stopCron();
-    }
-
     const workspace = await prisma.workspace.findUniqueOrThrow({
       where: {
         id: worker.workspaceId,
       },
     });
 
+    await this.removeRunner(worker.id);
     const runner = (this.workerRunners[worker.id] = new WorkerCronRunner(
       workspace,
       worker
