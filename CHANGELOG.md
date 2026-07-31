@@ -1,5 +1,15 @@
 
 
+## [1.32.18](https://github.com/msgbyte/tianji/compare/v1.32.17...v1.32.18) (2026-07-31)
+
+### Features
+
+* **worker:** synchronize cron lifecycle across instances ([#276](https://github.com/msgbyte/tianji/issues/276)) ([031f76a](https://github.com/msgbyte/tianji/commit/031f76a7cb6c5b70509c6bcd36a7972fc3f60558))
+
+### Others
+
+* **ai-gateway:** update llm model pricing ([0b2929d](https://github.com/msgbyte/tianji/commit/0b2929d31375223d4caed3b895c49ffec586e27e))
+
 ## [1.32.17](https://github.com/msgbyte/tianji/compare/v1.32.16...v1.32.17) (2026-07-26)
 
 ### Features
