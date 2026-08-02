@@ -1,5 +1,11 @@
 
 
+## [1.32.19](https://github.com/msgbyte/tianji/compare/v1.32.18...v1.32.19) (2026-08-02)
+
+### Bug Fixes
+
+* **ci:** build arm64 image natively ([04e6e1e](https://github.com/msgbyte/tianji/commit/04e6e1e34f7b119cdfc8a9d6dab70306a11a4166))
+
 ## [1.32.18](https://github.com/msgbyte/tianji/compare/v1.32.17...v1.32.18) (2026-07-31)
 
 ### Features
