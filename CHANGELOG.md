@@ -1,5 +1,11 @@
 
 
+## [1.32.20](https://github.com/msgbyte/tianji/compare/v1.32.19...v1.32.20) (2026-08-02)
+
+### Bug Fixes
+
+* **ci:** publish multi-arch images by digest ([1546705](https://github.com/msgbyte/tianji/commit/1546705b0843d99894a8cf0cd67616ab3e5c69a3))
+
 ## [1.32.19](https://github.com/msgbyte/tianji/compare/v1.32.18...v1.32.19) (2026-08-02)
 
 ### Bug Fixes
