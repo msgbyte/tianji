@@ -5,6 +5,7 @@ import { Loading } from '@/components/Loading';
 import { trpc } from '@/api/trpc';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { setUserInfo } from '@/store/user';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export const Route = createFileRoute('/invitation/accept/$token')({
   component: AcceptInvitationPage,
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/invitation/accept/$token')({
 function AcceptInvitationPage() {
   const { token } = Route.useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: session, isLoading: isLoadingSession } =
     trpc.user.info.useQuery();
   const [acceptStatus, setAcceptStatus] = useState<
@@ -86,11 +88,11 @@ function AcceptInvitationPage() {
     return (
       <Result
         status="error"
-        title="Failed to process invitation"
+        title={t('Failed to process invitation')}
         subTitle={errorMessage}
         extra={
           <Link to="/">
-            <Button>Return to Home</Button>
+            <Button>{t('Return to Home')}</Button>
           </Link>
         }
       />
@@ -101,8 +103,11 @@ function AcceptInvitationPage() {
     return (
       <Result
         status="info"
-        title="Please Login First"
-        subTitle={`You are invited to join workspace "${invitationInfo?.workspace}". Please login or register to accept the invitation.`}
+        title={t('Please Login First')}
+        subTitle={t(
+          'You are invited to join workspace "{{workspace}}". Please login or register to accept the invitation.',
+          { workspace: invitationInfo?.workspace }
+        )}
         extra={
           <Link
             to="/login"
@@ -110,7 +115,7 @@ function AcceptInvitationPage() {
               redirect: `/invitation/accept/${token}`,
             }}
           >
-            <Button>Login/Register</Button>
+            <Button>{t('Login/Register')}</Button>
           </Link>
         }
       />
@@ -121,11 +126,14 @@ function AcceptInvitationPage() {
     return (
       <Result
         status="success"
-        title="Invitation Accepted"
-        subTitle={`You have successfully joined workspace "${invitationInfo?.workspace}". Redirecting...`}
+        title={t('Invitation Accepted')}
+        subTitle={t(
+          'You have successfully joined workspace "{{workspace}}". Redirecting...',
+          { workspace: invitationInfo?.workspace }
+        )}
         extra={
           <Link to="/">
-            <Button>Access Now</Button>
+            <Button>{t('Access Now')}</Button>
           </Link>
         }
       />

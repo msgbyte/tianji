@@ -25,7 +25,7 @@ export const InstallScript: React.FC = React.memo(() => {
     <div>
       <Select value={commandType} onValueChange={setCommandType}>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Command" />
+          <SelectValue placeholder={t('Command')} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="install">{t('Install')}</SelectItem>

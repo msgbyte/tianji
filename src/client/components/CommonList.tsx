@@ -10,6 +10,7 @@ import { Empty } from 'antd';
 import { globalEventBus } from '@/utils/event';
 import { Spinner } from './ui/spinner';
 import { formatNumber } from '@/utils/common';
+import { useTranslation } from '@i18next-toolkit/react';
 
 export interface CommonListItem {
   id: string;
@@ -31,6 +32,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
   const { direction = 'vertical' } = props;
   const { location } = useRouterState();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { searchText, setSearchText, searchResult } = useFuseSearch(
     props.items,
@@ -62,7 +64,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
             <div className="relative">
               <LuSearch className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
               <Input
-                placeholder="Search"
+                placeholder={t('Search')}
                 className="pl-8"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}

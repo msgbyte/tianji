@@ -126,7 +126,9 @@ export function usePlans(options: UsePlanOptions) {
           >
             <CardHeader>
               <CardTitle>{plan.name}</CardTitle>
-              <CardDescription>${plan.price} per month</CardDescription>
+              <CardDescription>
+                ${plan.price} {t('per month')}
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
               <ul className="space-y-2">

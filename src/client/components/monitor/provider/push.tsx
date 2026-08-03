@@ -1,7 +1,7 @@
 import { Form, Input, InputNumber, Typography, Switch, Tooltip } from 'antd';
 import React from 'react';
 import { MonitorProvider } from './types';
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import { LuInfo, LuRefreshCw } from 'react-icons/lu';
@@ -206,7 +206,7 @@ const MonitorPush: React.FC = React.memo(() => {
 MonitorPush.displayName = 'MonitorPush';
 
 export const pushProvider: MonitorProvider = {
-  label: 'Push',
+  label: t('Push'),
   name: 'push',
   form: MonitorPush,
   valueLabel: 'value',

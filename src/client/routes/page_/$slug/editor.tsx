@@ -305,7 +305,7 @@ function PageComponent() {
 
         {isSelectMode && (
           <span className="text-muted-foreground text-xs">
-            Click on an element to select it
+            {t('Click on an element to select it')}
           </span>
         )}
       </WebPreviewNavigation>
@@ -392,7 +392,7 @@ function PageComponent() {
   const renderHeader = (centerContent?: React.ReactNode) => (
     <div className="border-b px-4 py-3">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">HTML Editor</h1>
+        <h1 className="text-lg font-semibold">{t('HTML Editor')}</h1>
 
         {centerContent}
 

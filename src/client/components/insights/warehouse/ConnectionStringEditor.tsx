@@ -255,7 +255,7 @@ export const ConnectionStringEditor: React.FC<ConnectionStringEditorProps> = (
 
         <div className="space-y-2">
           <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 font-mono text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            Connection URI: {composedUri || '-'}
+            {t('Connection URI:')} {composedUri || '-'}
           </div>
         </div>
       </TabsContent>

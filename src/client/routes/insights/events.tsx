@@ -156,7 +156,9 @@ function PageComponent() {
     return (
       <div className="rounded p-2 text-xs">
         {entries.length === 0 ? (
-          <div className="text-muted-foreground py-2 text-center">No Data</div>
+          <div className="text-muted-foreground py-2 text-center">
+            {t('No Data')}
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
             {entries.map(([key, value]) => (
@@ -247,7 +249,7 @@ function PageComponent() {
 
           {insightType !== 'survey' && (
             <div className="ml-4 flex items-center gap-1">
-              <span className="text-xs text-gray-500">Grid</span>
+              <span className="text-xs text-gray-500">{t('Grid')}</span>
               <Switch checked={jsonMode} onCheckedChange={setJsonMode} />
               <span className="text-xs text-gray-500">JSON</span>
             </div>

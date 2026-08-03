@@ -75,7 +75,7 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
       const callId = part.toolCallId;
 
       if (part.state === 'input-streaming') {
-        return <div key={callId}>Loading confirmation request...</div>;
+        return <div key={callId}>{t('Loading confirmation request...')}</div>;
       } else if (part.state === 'input-available') {
         return (
           <div key={callId}>
@@ -111,10 +111,16 @@ export const AIResponseItem: React.FC<AIResponseItemProps> = React.memo(
         );
       } else if (part.state === 'output-available') {
         return (
-          <div key={callId}>Location access allowed: {String(part.output)}</div>
+          <div key={callId}>
+            {t('Location access allowed:')} {String(part.output)}
+          </div>
         );
       } else if (part.state === 'output-error') {
-        return <div key={callId}>Error: {String(part.errorText)}</div>;
+        return (
+          <div key={callId}>
+            {t('Error:')} {String(part.errorText)}
+          </div>
+        );
       }
     }
 

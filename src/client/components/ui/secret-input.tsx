@@ -2,6 +2,7 @@ import * as React from 'react';
 import { LuX } from 'react-icons/lu';
 import { cn } from '@/utils/style';
 import { Input } from './input';
+import { t } from '@i18next-toolkit/react';
 
 export interface SecretInputProps
   extends Omit<
@@ -83,7 +84,7 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
           <button
             type="button"
             tabIndex={-1}
-            aria-label="Clear"
+            aria-label={t('Clear')}
             onClick={(e) => {
               e.preventDefault();
               handleChange('');

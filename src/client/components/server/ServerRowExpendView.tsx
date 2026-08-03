@@ -173,8 +173,8 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
         <Tabs defaultValue="docker">
           <TabsList>
             <TabsTrigger value="docker">Docker</TabsTrigger>
-            <TabsTrigger value="process">Process</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="process">{t('Process')}</TabsTrigger>
+            <TabsTrigger value="history">{t('History')}</TabsTrigger>
           </TabsList>
           <TabsContent value="docker">
             {!row.payload.docker ? (
@@ -197,14 +197,18 @@ export const ServerRowExpendView: React.FC<{ row: ServerStatusInfo }> =
           <TabsContent value="process">
             <div className="space-y-4">
               <div>
-                <div className="mb-2 font-medium">Top CPU Processes</div>
+                <div className="mb-2 font-medium">
+                  {t('Top CPU Processes')}
+                </div>
                 <DataTable
                   columns={cpuColumns}
                   data={row.payload.top_cpu_processes ?? []}
                 />
               </div>
               <div>
-                <div className="mb-2 font-medium">Top Memory Processes</div>
+                <div className="mb-2 font-medium">
+                  {t('Top Memory Processes')}
+                </div>
                 <DataTable
                   columns={memColumns}
                   data={row.payload.top_memory_processes ?? []}

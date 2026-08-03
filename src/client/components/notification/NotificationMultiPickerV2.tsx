@@ -159,7 +159,8 @@ export const NotificationMultiPickerV2: React.FC<NotificationMultiPickerV2Props>
                     ))}
                   {selectedNotifications.length > maxDisplayItems && (
                     <div className="bg-secondary flex items-center rounded px-2 py-1 text-xs">
-                      +{selectedNotifications.length - maxDisplayItems} more
+                      +{selectedNotifications.length - maxDisplayItems}{' '}
+                      {t('more')}
                     </div>
                   )}
                 </div>

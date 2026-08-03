@@ -1,5 +1,6 @@
 import { cn } from '@/utils/style';
 import type { HTMLAttributes } from 'react';
+import { t } from '@i18next-toolkit/react';
 
 type LoaderIconProps = {
   size?: number;
@@ -13,7 +14,7 @@ const LoaderIcon = ({ size = 16 }: LoaderIconProps) => (
     viewBox="0 0 16 16"
     width={size}
   >
-    <title>Loader</title>
+    <title>{t('Loader')}</title>
     <g clipPath="url(#clip0_2393_1490)">
       <path d="M8 0V4" stroke="currentColor" strokeWidth="1.5" />
       <path

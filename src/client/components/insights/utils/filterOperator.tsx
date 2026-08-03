@@ -274,7 +274,7 @@ const FilterBetween: React.FC<FilterComponentProps> = React.memo((props) => {
         onBlur={handleSubmit}
       />
 
-      <span> and </span>
+      <span> {t('and')} </span>
 
       <Input
         type="number"
@@ -301,11 +301,11 @@ const FilterBoolean: React.FC<FilterComponentProps> = React.memo((props) => {
     >
       <div className="flex items-center space-x-2">
         <RadioGroupItem value="true" />
-        <Label>True</Label>
+        <Label>{t('True')}</Label>
       </div>
       <div className="flex items-center space-x-2">
         <RadioGroupItem value="false" />
-        <Label>False</Label>
+        <Label>{t('False')}</Label>
       </div>
     </RadioGroup>
   );

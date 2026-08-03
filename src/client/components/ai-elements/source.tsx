@@ -8,6 +8,7 @@ import {
 import { cn } from '@/utils/style';
 import { BookIcon, ChevronDownIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
+import { t } from '@i18next-toolkit/react';
 
 export type SourcesProps = ComponentProps<'div'>;
 
@@ -31,7 +32,9 @@ export const SourcesTrigger = ({
   <CollapsibleTrigger className="flex items-center gap-2" {...props}>
     {children ?? (
       <>
-        <p className="font-medium">Used {count} sources</p>
+        <p className="font-medium">
+          {t('Used {{count}} sources', { count })}
+        </p>
         <ChevronDownIcon className="h-4 w-4" />
       </>
     )}

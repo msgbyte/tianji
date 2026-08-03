@@ -3,7 +3,7 @@ import { get } from 'lodash-es';
 import React, { useMemo } from 'react';
 import { trpc } from '../../api/trpc';
 import { getMonitorProvider, getProviderDisplay } from './provider';
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import {
   ChartConfig,
   ChartContainer,
@@ -26,7 +26,7 @@ import { useStatusPageStore } from './StatusPage/store';
 
 const chartConfig = {
   value: {
-    label: <span className="text-sm font-bold">Result</span>,
+    label: <span className="text-sm font-bold">{t('Result')}</span>,
   },
 } satisfies ChartConfig;
 

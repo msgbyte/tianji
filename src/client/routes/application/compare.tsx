@@ -69,7 +69,7 @@ function ApplicationCompare() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="appstore">Appstore</SelectItem>
+              <SelectItem value="appstore">{t('Appstore')}</SelectItem>
               <SelectItem value="googleplay">Google Play</SelectItem>
             </SelectContent>
           </Select>

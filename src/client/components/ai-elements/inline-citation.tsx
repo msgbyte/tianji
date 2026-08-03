@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/hover-card';
 import { cn } from '@/utils/style';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
+import { t } from '@i18next-toolkit/react';
 import {
   type ComponentProps,
   createContext,
@@ -74,7 +75,7 @@ export const InlineCitationCardTrigger = ({
           {sources.length > 1 && `+${sources.length - 1}`}
         </>
       ) : (
-        'unknown'
+        t('unknown')
       )}
     </Badge>
   </HoverCardTrigger>
@@ -200,7 +201,7 @@ export const InlineCitationCarouselPrev = ({
 
   return (
     <button
-      aria-label="Previous"
+      aria-label={t('Previous')}
       className={cn('shrink-0', className)}
       onClick={handleClick}
       type="button"
@@ -227,7 +228,7 @@ export const InlineCitationCarouselNext = ({
 
   return (
     <button
-      aria-label="Next"
+      aria-label={t('Next')}
       className={cn('shrink-0', className)}
       onClick={handleClick}
       type="button"

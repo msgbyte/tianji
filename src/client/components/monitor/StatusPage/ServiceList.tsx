@@ -42,7 +42,7 @@ export const MonitorStatusPageServiceList: React.FC<MonitorStatusPageServiceList
         ...props.value,
         {
           key: uuid(),
-          title: 'Default',
+          title: t('Default'),
           children: [],
         },
       ]);

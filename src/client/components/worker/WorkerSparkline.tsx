@@ -4,6 +4,7 @@ import { Sparkline } from '@/components/chart/Sparkline';
 import React from 'react';
 import { getDateArray } from '@tianji/shared';
 import dayjs from 'dayjs';
+import { t } from '@i18next-toolkit/react';
 
 export const WorkerSparkline: React.FC<{ workerId: string }> = React.memo(
   ({ workerId }) => {
@@ -56,7 +57,9 @@ export const WorkerSparkline: React.FC<{ workerId: string }> = React.memo(
     if (isLoading) {
       return (
         <div className="flex h-6 w-20 items-center justify-center">
-          <span className="text-muted-foreground text-xs">Loading...</span>
+          <span className="text-muted-foreground text-xs">
+            {t('Loading...')}
+          </span>
         </div>
       );
     }
@@ -64,7 +67,7 @@ export const WorkerSparkline: React.FC<{ workerId: string }> = React.memo(
     if (!data || data.length === 0) {
       return (
         <div className="flex h-6 w-20 items-center justify-center">
-          <span className="text-muted-foreground text-xs">No data</span>
+          <span className="text-muted-foreground text-xs">{t('No data')}</span>
         </div>
       );
     }

@@ -1,4 +1,4 @@
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -53,7 +53,7 @@ export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
 
 function generateDefaultItem() {
   return {
-    label: 'New Field',
+    label: t('New Field'),
     name: 'field_' + generateRandomString(4),
     type: 'text' as const,
   };
@@ -302,7 +302,9 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                       <FormLabel>{t('Feed Template')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="survey {{_surveyName}} receive a new record."
+                          placeholder={t(
+                            'survey {{_surveyName}} receive a new record.'
+                          )}
                           {...field}
                         />
                       </FormControl>

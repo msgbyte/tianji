@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/api/trpc';
 import { TimeEventChart } from '@/components/chart/TimeEventChart';
@@ -9,11 +9,11 @@ import { getDateArray } from '@tianji/shared';
 
 const countChartConfig: ChartConfig = {
   successCount: {
-    label: 'Success',
+    label: t('Success'),
     color: 'hsl(var(--chart-2))',
   },
   failedCount: {
-    label: 'Failed',
+    label: t('Failed'),
     color: 'hsl(var(--chart-5))',
   },
 };

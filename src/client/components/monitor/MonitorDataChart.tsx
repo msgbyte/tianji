@@ -6,7 +6,7 @@ import { useSocketSubscribeList } from '../../api/socketio';
 import { trpc } from '../../api/trpc';
 import { useCurrentWorkspaceId } from '../../store/user';
 import { getMonitorProvider, getProviderDisplay } from './provider';
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import {
   ChartConfig,
   ChartContainer,
@@ -27,7 +27,7 @@ import { CustomizedErrorArea } from './CustomizedErrorArea';
 
 const chartConfig = {
   value: {
-    label: <span className="text-sm font-bold">Result</span>,
+    label: <span className="text-sm font-bold">{t('Result')}</span>,
   },
 } satisfies ChartConfig;
 

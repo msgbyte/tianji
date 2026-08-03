@@ -52,7 +52,7 @@ export const AIResponseMessages: React.FC<AIResponseMessagesProps> = React.memo(
                 isLastMessage &&
                 ['ready', 'error'].includes(status) && (
                   <MessageActions>
-                    <MessageAction onClick={onRegenerate} label="Retry">
+                    <MessageAction onClick={onRegenerate} label={t('Retry')}>
                       <LuRefreshCcw className="size-3" />
                     </MessageAction>
                     <MessageAction
@@ -65,7 +65,7 @@ export const AIResponseMessages: React.FC<AIResponseMessagesProps> = React.memo(
                         );
                         toast.success(t('Copied'));
                       }}
-                      label="Copy"
+                      label={t('Copy')}
                     >
                       <LuCopy className="size-3" />
                     </MessageAction>
