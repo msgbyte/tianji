@@ -16,6 +16,7 @@ import {
 import { prisma } from '../../model/_client.js';
 import {
   EVENT_COLUMNS,
+  EVENT_TYPE,
   FILTER_COLUMNS,
   OPENAPI_TAG,
   SESSION_COLUMNS,
@@ -150,6 +151,8 @@ export const websiteRouter = router({
           websiteId: {
             in: [...websiteIds],
           },
+          eventType: EVENT_TYPE.pageView,
+          eventName: null,
           createdAt: {
             gte: dayjs().subtract(1, 'day').toDate(),
           },
