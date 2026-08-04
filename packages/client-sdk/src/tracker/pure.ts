@@ -5,6 +5,7 @@
 
 import { IdentifyPayload } from '../types';
 import { BatchManager, BatchItem } from '../utils/batch-manager';
+import { DEFAULT_WEBSITE_BATCH_DELAY } from './core';
 
 /**
  * Website event payload interface
@@ -80,7 +81,7 @@ export interface WebsiteTrackingOptions {
    */
   websiteId: string;
   /**
-   * Batch delay in milliseconds (optional, defaults to 200ms)
+   * Batch delay in milliseconds (optional, defaults to 1000ms)
    */
   batchDelay?: number;
   /**
@@ -102,7 +103,7 @@ export function initWebsiteTracking(_options: WebsiteTrackingOptions) {
 
   // Initialize batch manager
   batchManager = new BatchManager({
-    batchDelay: _options.batchDelay,
+    batchDelay: _options.batchDelay ?? DEFAULT_WEBSITE_BATCH_DELAY,
     disableBatch: _options.disableBatch,
     onBatchSend: async (items) => {
       await sendBatchRequest(_options.serverUrl, items);

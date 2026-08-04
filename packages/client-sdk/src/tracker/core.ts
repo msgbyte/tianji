@@ -4,6 +4,8 @@
 
 import { BatchManager, BatchItem } from '../utils/batch-manager';
 
+export const DEFAULT_WEBSITE_BATCH_DELAY = 1_000;
+
 export interface WebsiteEventPayload {
   website: string;
   hostname?: string;
@@ -55,7 +57,7 @@ export function createTrackerCore(options: TrackerCoreOptions) {
   const {
     serverUrl,
     websiteId,
-    batchDelay = 200,
+    batchDelay = DEFAULT_WEBSITE_BATCH_DELAY,
     disableBatch = false,
   } = options;
   const endpoint = `${serverUrl}/api/website/send`;
