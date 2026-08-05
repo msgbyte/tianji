@@ -1,5 +1,23 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`WebsiteInsightsSqlBuilder > builds complete ClickHouse SQL with a normal timezone > clickhouse sql with normal timezone 1`] = `
+{
+  "query": "select
+        formatDateTime(toStartOfDay("WebsiteEvent"."createdAt", {field0:String}), '%Y-%m-%d') date , count(1) as "$all_event"
+      from "WebsiteEvent"
+      where "WebsiteEvent"."websiteId" = {field1:String} AND "WebsiteEvent"."createdAt" BETWEEN toDateTime({field2:String}, 'UTC') AND toDateTime({field3:String}, 'UTC') AND (1 = 1)
+      group by 1
+      order by 1 desc
+      limit 1000",
+  "query_params": {
+    "field0": "Asia/Shanghai",
+    "field1": "cly5yay7a001v5tp6xdkzmygh",
+    "field2": "2025-02-10 16:00:00",
+    "field3": "2025-03-13 15:59:59",
+  },
+}
+`;
+
 exports[`WebsiteInsightsSqlBuilder > combined filters and groups > sql with filters and groups 1`] = `
 "select
         to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "WebsiteEventData"."stringValue" as "%browser" , count(1) as "$all_event"

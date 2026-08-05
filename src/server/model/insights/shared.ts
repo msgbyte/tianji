@@ -105,20 +105,19 @@ export abstract class InsightsSqlBuilder {
       CLICKHOUSE_DATE_FORMATS[unit as keyof typeof CLICKHOUSE_DATE_FORMATS];
 
     // ClickHouse uses different functions for date manipulation
-    // Use raw for string literals to avoid parameter binding issues
     if (unit === 'minute') {
-      return sql`formatDateTime(toStartOfMinute(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
+      return sql`formatDateTime(toStartOfMinute(${raw(field)}, ${timezone}), '${raw(format)}')`;
     } else if (unit === 'hour') {
-      return sql`formatDateTime(toStartOfHour(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
+      return sql`formatDateTime(toStartOfHour(${raw(field)}, ${timezone}), '${raw(format)}')`;
     } else if (unit === 'day') {
-      return sql`formatDateTime(toStartOfDay(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
+      return sql`formatDateTime(toStartOfDay(${raw(field)}, ${timezone}), '${raw(format)}')`;
     } else if (unit === 'month') {
-      return sql`formatDateTime(toStartOfMonth(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
+      return sql`formatDateTime(toStartOfMonth(${raw(field)}, ${timezone}), '${raw(format)}')`;
     } else if (unit === 'year') {
-      return sql`formatDateTime(toStartOfYear(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
+      return sql`formatDateTime(toStartOfYear(${raw(field)}, ${timezone}), '${raw(format)}')`;
     }
 
-    return sql`formatDateTime(toStartOfDay(${raw(field)}, '${raw(timezone)}'), '${raw(format)}')`;
+    return sql`formatDateTime(toStartOfDay(${raw(field)}, ${timezone}), '${raw(format)}')`;
   }
 
   protected buildGroupByText(length: number): string {
