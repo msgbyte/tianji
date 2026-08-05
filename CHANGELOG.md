@@ -1,5 +1,19 @@
 
 
+## [1.32.21](https://github.com/msgbyte/tianji/compare/v1.32.20...v1.32.21) (2026-08-05)
+
+### Bug Fixes
+
+* **authorization:** scope feed and warehouse operations by workspace ([#278](https://github.com/msgbyte/tianji/issues/278)) ([22567b4](https://github.com/msgbyte/tianji/commit/22567b4b0e1ba89bf572f171b8109be1d14d0fc6))
+* **i18n:** translate client interface copy ([a9ba3fb](https://github.com/msgbyte/tianji/commit/a9ba3fbbd389f11e5574dfe285c034e57e2a3bb1))
+* **insights:** bind ClickHouse timezone parameters ([#277](https://github.com/msgbyte/tianji/issues/277)) ([44e3ec0](https://github.com/msgbyte/tianji/commit/44e3ec09bf3fe0d11321d392e3bb3ddb9e7b18db))
+* **website:** count sidebar page views ([15a51f4](https://github.com/msgbyte/tianji/commit/15a51f42654a94506b90bfe2e765a3d1315ebf7e))
+
+### Others
+
+* **i18n:** update translation catalogs ([71af96f](https://github.com/msgbyte/tianji/commit/71af96f30eea021bb85acf20dca827145242d1a8))
+* **tracker:** increase website batch window ([604915e](https://github.com/msgbyte/tianji/commit/604915efd9bdbc9fb00ff57c374606ca22a3e185))
+
 ## [1.32.20](https://github.com/msgbyte/tianji/compare/v1.32.19...v1.32.20) (2026-08-02)
 
 ### Bug Fixes
