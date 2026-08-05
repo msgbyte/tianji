@@ -24,6 +24,7 @@ import { delFeedEventNotifyCache } from '../../../model/feed/shared.js';
 import { getWorkspaceTierLimit } from '../../../model/billing/limit.js';
 import { isWorkspacePaused } from '../../../model/billing/workspace.js';
 import { feedStateRouter } from './state.js';
+import { requireWorkspaceFeedChannel } from './shared.js';
 
 const PublicFeedChannelSchema = FeedChannelModelSchema.pick({
   id: true,
@@ -209,7 +210,9 @@ export const feedRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const { channelId, cursor, limit, archived } = input;
+      const { workspaceId, channelId, cursor, limit, archived } = input;
+
+      await requireWorkspaceFeedChannel(workspaceId, channelId);
 
       const { items, nextCursor } = await fetchDataByCursor(prisma.feedEvent, {
         where: {
@@ -589,7 +592,9 @@ export const feedRouter = router({
     )
     .output(z.void())
     .mutation(async ({ input }) => {
-      const { channelId, eventId } = input;
+      const { workspaceId, channelId, eventId } = input;
+
+      await requireWorkspaceFeedChannel(workspaceId, channelId);
 
       await prisma.feedEvent.update({
         data: {
@@ -616,7 +621,9 @@ export const feedRouter = router({
     )
     .output(z.void())
     .mutation(async ({ input }) => {
-      const { channelId, eventId } = input;
+      const { workspaceId, channelId, eventId } = input;
+
+      await requireWorkspaceFeedChannel(workspaceId, channelId);
 
       await prisma.feedEvent.update({
         data: {
@@ -642,7 +649,9 @@ export const feedRouter = router({
     )
     .output(z.number())
     .mutation(async ({ input }) => {
-      const { channelId } = input;
+      const { workspaceId, channelId } = input;
+
+      await requireWorkspaceFeedChannel(workspaceId, channelId);
 
       const res = await prisma.feedEvent.deleteMany({
         where: {
