@@ -15,6 +15,7 @@ import {
   feedStateUpsert,
 } from '../../../model/feed/state.js';
 import { FeedStateStatus } from '@prisma/client';
+import { requireWorkspaceFeedChannel } from './shared.js';
 
 export const feedStateRouter = router({
   all: workspaceProcedure
@@ -33,7 +34,9 @@ export const feedStateRouter = router({
     )
     .output(FeedStateModelSchema.array())
     .query(async ({ input }) => {
-      const { channelId, limit } = input;
+      const { workspaceId, channelId, limit } = input;
+
+      await requireWorkspaceFeedChannel(workspaceId, channelId);
 
       const states = await prisma.feedState.findMany({
         where: {
@@ -129,6 +132,8 @@ export const feedStateRouter = router({
     .output(FeedStateModelSchema)
     .mutation(async ({ input }) => {
       const { workspaceId, channelId, stateId } = input;
+
+      await requireWorkspaceFeedChannel(workspaceId, channelId);
 
       const state = await feedStateResolve(workspaceId, channelId, stateId);
 

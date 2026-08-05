@@ -32,6 +32,7 @@ export const insightCohortsRouter = router({
         const res = await prisma.warehouseCohorts.update({
           where: {
             id: input.id,
+            workspaceId: input.workspaceId,
           },
           data: {
             name: input.name,
@@ -60,7 +61,7 @@ export const insightCohortsRouter = router({
     .output(WarehouseCohortsModelSchema)
     .mutation(async ({ input }) => {
       const res = await prisma.warehouseCohorts.delete({
-        where: { id: input.id },
+        where: { id: input.id, workspaceId: input.workspaceId },
       });
 
       return res as unknown as z.infer<typeof WarehouseCohortsModelSchema>;
