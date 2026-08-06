@@ -1,10 +1,15 @@
 import React from 'react';
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, test, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { SurveyEditForm } from './SurveyEditForm';
 
+const advancedModeStorageKey = 'tianji:survey:advanced-mode';
+
 vi.mock('@i18next-toolkit/react', () => ({
+  t: (key: string) => key,
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -117,6 +122,10 @@ vi.mock('@/components/ui/select', () => {
 });
 
 describe('SurveyEditForm', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   test('renders an existing field type from edit defaults', () => {
     render(
       <SurveyEditForm
@@ -145,5 +154,30 @@ describe('SurveyEditForm', () => {
       'email'
     );
     expect(screen.getByTestId('mock-select-value')).toHaveTextContent('Email');
+  });
+
+  test('restores Advanced Mode when it was enabled previously', () => {
+    localStorage.setItem(advancedModeStorageKey, 'true');
+
+    render(
+      <TooltipProvider>
+        <SurveyEditForm onSubmit={vi.fn()} />
+      </TooltipProvider>
+    );
+
+    expect(screen.getByRole('switch')).toBeChecked();
+  });
+
+  test('persists the Advanced Mode selection', async () => {
+    const user = userEvent.setup();
+    render(
+      <TooltipProvider>
+        <SurveyEditForm onSubmit={vi.fn()} />
+      </TooltipProvider>
+    );
+
+    await user.click(screen.getByRole('switch'));
+
+    expect(localStorage.getItem(advancedModeStorageKey)).toBe('true');
   });
 });

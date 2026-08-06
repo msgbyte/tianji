@@ -24,12 +24,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import React, { useState } from 'react';
+import React from 'react';
+import { useLocalStorageState } from 'ahooks';
 import { TipIcon } from '../TipIcon';
 import { cn } from '@/utils/style';
 import { Switch } from '../ui/switch';
 import { FeedChannelPicker } from '../feed/FeedChannelPicker';
 import { Textarea } from '../ui/textarea';
+
+const advancedModeStorageKey = 'tianji:survey:advanced-mode';
 
 const addFormSchema = z.object({
   name: z.string(),
@@ -67,7 +70,10 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
 
-    const [advancedMode, setAdvancedMode] = useState(false);
+    const [advancedMode = false, setAdvancedMode] =
+      useLocalStorageState<boolean>(advancedModeStorageKey, {
+        defaultValue: false,
+      });
 
     const form = useForm<SurveyEditFormValues>({
       resolver: zodResolver(addFormSchema),
@@ -141,7 +147,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                 <div className="flex items-center justify-end gap-2">
                   <Switch
                     checked={advancedMode}
-                    onCheckedChange={(checked) => setAdvancedMode(checked)}
+                    onCheckedChange={setAdvancedMode}
                   />
                   <div className="text-sm">{t('Advanced Mode')}</div>
                 </div>

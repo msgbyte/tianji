@@ -5,6 +5,7 @@
 - Run `pnpm install` in the repo root to bootstrap all workspace packages.
 - Use `pnpm dev` to start the server and client concurrently for local development.
 - Run `pnpm build` to generate production assets.
+- Prefer reusing existing hooks, components, utilities, and other project assets instead of creating new implementations.
 
 ## Translation Files
 When generating code, **do not modify** any JSON files in `src/client/public/locales`. These translations are managed separately.
