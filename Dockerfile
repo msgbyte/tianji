@@ -8,6 +8,19 @@ COPY ./reporter/ ./reporter/
 RUN apt update
 RUN cd reporter && CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o tianji-reporter .
 
+# Infisical bootstrap ------------------------------
+FROM node:22.22-alpine3.23 AS infisical-bootstrap
+WORKDIR /opt/infisical-bootstrap
+
+RUN npm install \
+      --omit=dev \
+      --ignore-scripts \
+      --no-audit \
+      --no-fund \
+      @infisical/sdk@5.0.2
+
+COPY scripts/docker/infisical-bootstrap.mjs ./run.mjs
+
 # Base ------------------------------
 # Pin below Alpine 3.24 until Docker Hub static scans handle it reliably.
 FROM node:22.22-alpine3.23 AS base
@@ -50,6 +63,8 @@ RUN pnpm build:static
 FROM base AS app
 WORKDIR /app/tianji
 
+COPY --from=infisical-bootstrap /opt/infisical-bootstrap /opt/infisical-bootstrap
+
 # We don't need the standalone Chromium in alpine.
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -89,4 +104,4 @@ EXPOSE 12345
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:12345/health || exit 1
 
-CMD ["sh", "-c", "(cd /app/tianji/src/server && ./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx ./clickhouse/scripts/apply.ts && NODE_ENV=production node ./dist/src/server/main.js) & sleep 10; /usr/local/bin/tianji-reporter --url \"http://localhost:12345\" --workspace \"clnzoxcy10001vy2ohi4obbi0\" --name \"tianji-container\" --silent > /dev/null & wait -n"]
+CMD ["node", "/opt/infisical-bootstrap/run.mjs", "sh", "-c", "(cd /app/tianji/src/server && ./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx ./clickhouse/scripts/apply.ts && NODE_ENV=production node ./dist/src/server/main.js) & sleep 10; /usr/local/bin/tianji-reporter --url \"http://localhost:12345\" --workspace \"clnzoxcy10001vy2ohi4obbi0\" --name \"tianji-container\" --silent > /dev/null & wait -n"]
