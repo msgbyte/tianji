@@ -133,36 +133,26 @@ export const websiteRouter = router({
     .output(z.record(z.string(), z.number()))
     .query(async ({ input }) => {
       const { workspaceId } = input;
-
-      const websiteIds = (
-        await prisma.website.findMany({
-          where: {
-            workspaceId,
-          },
-          select: {
-            id: true,
-          },
-        })
-      ).map((item) => item.id);
-
-      const res = await prisma.websiteEvent.groupBy({
-        by: ['websiteId'],
-        where: {
-          websiteId: {
-            in: [...websiteIds],
-          },
-          eventType: EVENT_TYPE.pageView,
-          eventName: null,
-          createdAt: {
-            gte: dayjs().subtract(1, 'day').toDate(),
-          },
-        },
-        _count: true,
-      });
+      const startAt = dayjs().subtract(1, 'day').toDate();
+      const res = await prisma.$queryRaw<
+        { websiteId: string; visitorCount: bigint }[]
+      >`
+        select
+          "WebsiteEvent"."websiteId",
+          count(distinct "WebsiteEvent"."sessionId") as "visitorCount"
+        from "WebsiteEvent"
+        join "Website"
+          on "WebsiteEvent"."websiteId" = "Website"."id"
+        where "Website"."workspaceId" = ${workspaceId}
+          and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+          and "WebsiteEvent"."eventName" is null
+          and "WebsiteEvent"."createdAt" >= ${startAt}
+        group by "WebsiteEvent"."websiteId"
+      `;
 
       return res.reduce<Record<string, number>>((prev, item) => {
         if (item.websiteId) {
-          prev[item.websiteId] = item._count;
+          prev[item.websiteId] = Number(item.visitorCount);
         }
 
         return prev;

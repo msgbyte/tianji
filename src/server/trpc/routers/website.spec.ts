@@ -58,7 +58,7 @@ afterEach(async () => {
 });
 
 describe('websiteRouter.allOverview', () => {
-  test('counts only page views from the previous 24 hours', async () => {
+  test('counts unique page-view visitors from the previous 24 hours', async () => {
     const workspace = await prisma.workspace.create({
       data: {
         name: 'PV Test Workspace',
@@ -79,6 +79,16 @@ describe('websiteRouter.allOverview', () => {
         hostname: 'example.com',
       },
     });
+    const secondSessionId = randomUUID();
+    const customEventSessionId = randomUUID();
+    const oldSessionId = randomUUID();
+    await prisma.websiteSession.createMany({
+      data: [secondSessionId, customEventSessionId, oldSessionId].map((id) => ({
+        id,
+        websiteId: website.id,
+        hostname: 'example.com',
+      })),
+    });
     const now = Date.now();
 
     await prisma.websiteEvent.createMany({
@@ -96,6 +106,24 @@ describe('websiteRouter.allOverview', () => {
           id: createId(),
           websiteId: website.id,
           sessionId: session.id,
+          urlPath: '/another-recent-page',
+          eventType: EVENT_TYPE.pageView,
+          eventName: null,
+          createdAt: new Date(now - 30 * 60 * 1000),
+        },
+        {
+          id: createId(),
+          websiteId: website.id,
+          sessionId: secondSessionId,
+          urlPath: '/second-visitor-page',
+          eventType: EVENT_TYPE.pageView,
+          eventName: null,
+          createdAt: new Date(now - 60 * 60 * 1000),
+        },
+        {
+          id: createId(),
+          websiteId: website.id,
+          sessionId: customEventSessionId,
           urlPath: '/recent-custom',
           eventType: EVENT_TYPE.customEvent,
           eventName: 'click',
@@ -104,7 +132,7 @@ describe('websiteRouter.allOverview', () => {
         {
           id: createId(),
           websiteId: website.id,
-          sessionId: session.id,
+          sessionId: customEventSessionId,
           urlPath: '/recent-unnamed-custom',
           eventType: EVENT_TYPE.customEvent,
           eventName: null,
@@ -113,7 +141,7 @@ describe('websiteRouter.allOverview', () => {
         {
           id: createId(),
           websiteId: website.id,
-          sessionId: session.id,
+          sessionId: oldSessionId,
           urlPath: '/old-page',
           eventType: EVENT_TYPE.pageView,
           eventName: null,
@@ -125,6 +153,6 @@ describe('websiteRouter.allOverview', () => {
     const caller = await createCaller();
     const result = await caller.allOverview({ workspaceId: workspace.id });
 
-    expect(result).toEqual({ [website.id]: 1 });
+    expect(result).toEqual({ [website.id]: 2 });
   });
 });

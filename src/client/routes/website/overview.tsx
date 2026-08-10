@@ -65,7 +65,7 @@ function WebsiteOverviewComponent() {
 
         <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
           {websites.map((website) => {
-            const eventCount = overviewData[website.id] ?? 0;
+            const visitorCount = overviewData[website.id] ?? 0;
 
             return (
               <Card
@@ -100,10 +100,10 @@ function WebsiteOverviewComponent() {
                   <div className="flex items-center gap-2 text-sm">
                     <LuActivity className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">
-                      {formatNumber(eventCount)}
+                      {formatNumber(visitorCount)}
                     </span>
                     <span className="text-muted-foreground">
-                      {t('events in 24h')}
+                      {t('visitors in 24h')}
                     </span>
                   </div>
                 </CardContent>
