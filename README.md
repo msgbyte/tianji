@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/pulsemcp%2Fmsgbyte-tianji.svg)](https://mcptoplist.com/server/pulsemcp%2Fmsgbyte-tianji)
+
 [![CI](https://github.com/msgbyte/tianji/actions/workflows/ci.yaml/badge.svg)](https://github.com/msgbyte/tianji/actions/workflows/ci.yaml)
 [![Build Reporter Release](https://github.com/msgbyte/tianji/actions/workflows/reporter-release.yml/badge.svg)](https://github.com/msgbyte/tianji/actions/workflows/reporter-release.yml)
 [![Docker Build CI](https://github.com/msgbyte/tianji/actions/workflows/ci-docker.yaml/badge.svg)](https://github.com/msgbyte/tianji/actions/workflows/ci-docker.yaml)
