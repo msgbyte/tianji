@@ -1,5 +1,19 @@
 
 
+## [1.32.22](https://github.com/msgbyte/tianji/compare/v1.32.21...v1.32.22) (2026-08-13)
+
+### Features
+
+* **survey:** remember advanced mode preference ([c0b9117](https://github.com/msgbyte/tianji/commit/c0b9117a48678888a495858d4aae4539d0d92b41))
+
+### Bug Fixes
+
+* **website:** show unique visitors in overview ([3ef2123](https://github.com/msgbyte/tianji/commit/3ef21237f8c2501b3d65e5b7906b929a2af04b68))
+
+### Others
+
+* **ai-gateway:** update llm model pricing ([836d205](https://github.com/msgbyte/tianji/commit/836d205f3af22afe6d64cf4e66f954e2f0838dd5))
+
 ## [1.32.21](https://github.com/msgbyte/tianji/compare/v1.32.20...v1.32.21) (2026-08-05)
 
 ### Bug Fixes
