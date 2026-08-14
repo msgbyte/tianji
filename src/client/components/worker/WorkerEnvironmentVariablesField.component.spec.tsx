@@ -7,11 +7,13 @@ import { describe, expect, test, vi } from 'vitest';
 import { Form } from '@/components/ui/form';
 import type { WorkerEditFormValues } from './WorkerEditForm';
 import {
+  parseWorkerEnvironmentVariablesText,
   WorkerEnvironmentVariablesField,
   type WorkerEnvironmentVariableFormValue,
 } from './WorkerEnvironmentVariablesField';
 
 vi.mock('@i18next-toolkit/react', () => ({
+  t: (key: string) => key,
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -109,6 +111,17 @@ function renderEnvironmentFields(
 }
 
 describe('WorkerEnvironmentVariablesField', () => {
+  test('parses KEY=VALUE text and lets the last duplicate win', () => {
+    expect(
+      parseWorkerEnvironmentVariablesText(
+        '# comment\nAPI_URL=https://old.example.com\nEMPTY=\nAPI_URL=https://new.example.com'
+      )
+    ).toEqual([
+      { key: 'API_URL', value: 'https://new.example.com' },
+      { key: 'EMPTY', value: '' },
+    ]);
+  });
+
   test('shows a Text value but never populates an existing Secret input', () => {
     renderEnvironmentFields([
       {
@@ -172,6 +185,30 @@ describe('WorkerEnvironmentVariablesField', () => {
     ]);
   });
 
+  test('submits an empty string when an existing Secret is explicitly cleared', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    renderEnvironmentFields(
+      [{ id: 'secret', key: 'TOKEN', type: 'Secret', hasValue: true }],
+      onSubmit
+    );
+    const valueInput = screen.getByLabelText('TOKEN value');
+
+    await user.type(valueInput, 'replacement');
+    await user.clear(valueInput);
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(onSubmit).toHaveBeenCalledWith([
+      {
+        id: 'secret',
+        key: 'TOKEN',
+        type: 'Secret',
+        hasValue: true,
+        value: '',
+      },
+    ]);
+  });
+
   test('adds and removes environment variable rows', async () => {
     const user = userEvent.setup();
     renderEnvironmentFields([]);
@@ -191,7 +228,33 @@ describe('WorkerEnvironmentVariablesField', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('clears the old value and requires a fresh value when type changes', async () => {
+  test('imports text and overwrites existing values, including Secrets', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    renderEnvironmentFields(
+      [
+        { id: 'secret', key: 'TOKEN', type: 'Secret', hasValue: true },
+        { id: 'keep', key: 'KEEP', type: 'Text', value: 'unchanged' },
+      ],
+      onSubmit
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Import Text' }));
+    await user.type(
+      screen.getByLabelText('Environment variables text'),
+      'TOKEN=plain-text{enter}NEW_KEY=new-value'
+    );
+    await user.click(screen.getByRole('button', { name: 'Import' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(onSubmit).toHaveBeenCalledWith([
+      { id: 'secret', key: 'TOKEN', type: 'Text', value: 'plain-text' },
+      { id: 'keep', key: 'KEEP', type: 'Text', value: 'unchanged' },
+      { key: 'NEW_KEY', type: 'Text', value: 'new-value' },
+    ]);
+  });
+
+  test('clears the old value when type changes', async () => {
     const user = userEvent.setup();
     renderEnvironmentFields([
       { id: 'text', key: 'TOKEN', type: 'Text', value: 'old-text' },
@@ -200,7 +263,7 @@ describe('WorkerEnvironmentVariablesField', () => {
     await user.click(screen.getByRole('option', { name: 'Secret' }));
 
     expect(screen.getByLabelText('TOKEN value')).toHaveValue('');
-    expect(screen.getByLabelText('TOKEN value')).toBeRequired();
+    expect(screen.getByLabelText('TOKEN value')).not.toBeRequired();
     expect(
       screen.queryByText('A secret value is configured')
     ).not.toBeInTheDocument();

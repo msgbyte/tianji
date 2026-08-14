@@ -263,6 +263,52 @@ describe('WorkerEditForm server snapshot updates', () => {
   });
 });
 
+describe('WorkerEditForm empty environment values', () => {
+  test.each([
+    {
+      type: 'Text' as const,
+      environmentVariables: [
+        {
+          id: 'env-text',
+          key: 'EMPTY_TEXT',
+          type: 'Text' as const,
+          value: '',
+        },
+      ],
+    },
+    {
+      type: 'Secret' as const,
+      environmentVariables: [
+        { key: 'EMPTY_SECRET', type: 'Secret' as const, value: '' },
+      ],
+    },
+  ])(
+    'submits an explicitly empty $type value',
+    async ({ environmentVariables }) => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+      render(
+        <WorkerEditForm
+          defaultValues={{
+            ...createDefaultValues('server-value'),
+            environmentVariables,
+          }}
+          onSubmit={onSubmit}
+        />
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Create Worker' }));
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({ environmentVariables })
+        );
+      });
+    }
+  );
+});
+
 describe('Worker edit route cache refresh', () => {
   test('refreshes both exact worker queries before navigation', async () => {
     const user = userEvent.setup();

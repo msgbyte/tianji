@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   loadWorkerEnvironment,
+  loadWorkerEnvironmentForExecution,
   resolveWorkerEnvironment,
+  resolveWorkerEnvironmentForExecution,
   syncWorkerEnvironmentVariables,
   toSafeWorkerEnvironmentVariable,
   workerEnvironmentVariablesInputSchema,
@@ -54,6 +56,25 @@ describe('worker environment runtime resolution', () => {
     });
   });
 
+  test('separates non-empty Secret values for execution log redaction', async () => {
+    prismaMocks.findMany.mockResolvedValue([
+      { key: 'API_URL', type: 'Text', value: 'https://example.com' },
+      { key: 'TOKEN', type: 'Secret', value: 'runtime-secret' },
+      { key: 'EMPTY_TOKEN', type: 'Secret', value: '' },
+    ]);
+
+    await expect(
+      loadWorkerEnvironmentForExecution('worker-a')
+    ).resolves.toEqual({
+      environment: {
+        API_URL: 'https://example.com',
+        TOKEN: 'runtime-secret',
+        EMPTY_TOKEN: '',
+      },
+      secretValues: ['runtime-secret'],
+    });
+  });
+
   test('preserves a same-type saved Secret when its draft value is omitted', async () => {
     prismaMocks.findMany.mockResolvedValue([
       {
@@ -69,6 +90,31 @@ describe('worker environment runtime resolution', () => {
         { id: 'env_secret', key: 'RENAMED_TOKEN', type: 'Secret' },
       ])
     ).resolves.toEqual({ RENAMED_TOKEN: 'saved-secret' });
+  });
+
+  test('resolves draft Secret replacements for execution log redaction', async () => {
+    prismaMocks.findMany.mockResolvedValue([
+      {
+        id: 'env_secret',
+        key: 'TOKEN',
+        type: 'Secret',
+        value: 'saved-secret',
+      },
+    ]);
+
+    await expect(
+      resolveWorkerEnvironmentForExecution('worker-a', [
+        {
+          id: 'env_secret',
+          key: 'TOKEN',
+          type: 'Secret',
+          value: 'draft-secret',
+        },
+      ])
+    ).resolves.toEqual({
+      environment: { TOKEN: 'draft-secret' },
+      secretValues: ['draft-secret'],
+    });
   });
 
   test('rejects a new Secret draft without a value', async () => {

@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => {
     createAuditLog: vi.fn(),
     execWorker: vi.fn(),
     execStoredWorker: vi.fn(),
-    resolveWorkerEnvironment: vi.fn(),
+    resolveWorkerEnvironmentForExecution: vi.fn(),
   };
 });
 
@@ -63,7 +63,8 @@ vi.mock('../../model/worker/index.js', () => ({
 
 vi.mock('../../model/worker/environment.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../model/worker/environment.js')>()),
-  resolveWorkerEnvironment: mocks.resolveWorkerEnvironment,
+  resolveWorkerEnvironmentForExecution:
+    mocks.resolveWorkerEnvironmentForExecution,
 }));
 
 vi.mock('../../model/worker/manager.js', () => ({
@@ -112,7 +113,10 @@ beforeEach(() => {
   mocks.createAuditLog.mockResolvedValue(undefined);
   mocks.execWorker.mockResolvedValue({ status: 'Success' });
   mocks.execStoredWorker.mockResolvedValue({ status: 'Success' });
-  mocks.resolveWorkerEnvironment.mockResolvedValue({});
+  mocks.resolveWorkerEnvironmentForExecution.mockResolvedValue({
+    environment: {},
+    secretValues: [],
+  });
 });
 
 afterEach(() => {
@@ -214,7 +218,10 @@ describe('workerRouter environment variables', () => {
       { id: createId(), key: 'TOKEN', type: 'Secret' as const },
     ];
     mocks.findWorker.mockResolvedValue({ id: storedWorker.id });
-    mocks.resolveWorkerEnvironment.mockResolvedValue({ TOKEN: 'saved-secret' });
+    mocks.resolveWorkerEnvironmentForExecution.mockResolvedValue({
+      environment: { TOKEN: 'saved-secret' },
+      secretValues: ['saved-secret'],
+    });
     const caller = await createCaller();
 
     await caller.testCode({
@@ -228,7 +235,7 @@ describe('workerRouter environment variables', () => {
       where: { id: storedWorker.id, workspaceId },
       select: { id: true },
     });
-    expect(mocks.resolveWorkerEnvironment).toHaveBeenCalledWith(
+    expect(mocks.resolveWorkerEnvironmentForExecution).toHaveBeenCalledWith(
       storedWorker.id,
       drafts
     );
@@ -237,7 +244,8 @@ describe('workerRouter environment variables', () => {
       undefined,
       undefined,
       { type: 'test' },
-      { TOKEN: 'saved-secret' }
+      { TOKEN: 'saved-secret' },
+      ['saved-secret']
     );
   });
 
@@ -251,7 +259,7 @@ describe('workerRouter environment variables', () => {
       caller.testCode({ workspaceId, workerId, code: 'return true;' })
     ).rejects.toThrow('Worker not found');
 
-    expect(mocks.resolveWorkerEnvironment).not.toHaveBeenCalled();
+    expect(mocks.resolveWorkerEnvironmentForExecution).not.toHaveBeenCalled();
     expect(mocks.execWorker).not.toHaveBeenCalled();
   });
 });

@@ -24,7 +24,7 @@ import { OpenApiMeta } from 'trpc-to-openapi';
 import { TRPCError } from '@trpc/server';
 import {
   toSafeWorkerEnvironmentVariable,
-  resolveWorkerEnvironment,
+  resolveWorkerEnvironmentForExecution,
   workerEnvironmentVariablesInputSchema,
 } from '../../model/worker/environment.js';
 
@@ -672,16 +672,18 @@ export const workerRouter = router({
         }
       }
 
-      const environment = await resolveWorkerEnvironment(
-        workerId,
-        environmentVariables
-      );
+      const { environment, secretValues } =
+        await resolveWorkerEnvironmentForExecution(
+          workerId,
+          environmentVariables
+        );
       const execution = await execWorker(
         code,
         undefined,
         payload,
         { type: 'test' },
-        environment
+        environment,
+        secretValues
       );
 
       return execution;

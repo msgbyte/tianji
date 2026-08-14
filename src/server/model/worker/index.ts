@@ -14,7 +14,7 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 import { createBatchWriter } from '../../utils/batchWriter.js';
 import { env } from '../../utils/env.js';
-import { loadWorkerEnvironment } from './environment.js';
+import { loadWorkerEnvironmentForExecution } from './environment.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
   name: 'WorkerExecution',
@@ -36,6 +36,34 @@ function getWorkerRequestPayloadSizeBytes(payload: Record<string, any>) {
   } catch {
     return 0;
   }
+}
+
+function redactWorkerLogString(value: string, secretValues: string[]) {
+  return secretValues.reduce(
+    (redacted, secret) => redacted.replaceAll(secret, '[secret]'),
+    value
+  );
+}
+
+function redactWorkerLogValue(value: any, secretValues: string[]): any {
+  if (typeof value === 'string') {
+    return redactWorkerLogString(value, secretValues);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => redactWorkerLogValue(item, secretValues));
+  }
+
+  if (isPlainObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        redactWorkerLogString(key, secretValues),
+        redactWorkerLogValue(item, secretValues),
+      ])
+    );
+  }
+
+  return value;
 }
 
 export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
@@ -60,7 +88,8 @@ export async function execWorker(
   workerId?: string,
   requestPayload?: Record<string, any>,
   context?: Record<string, any>,
-  environment: Record<string, string> = {}
+  environment: Record<string, string> = {},
+  secretValues: string[] = []
 ) {
   const workerRequestPayload: Record<string, any> = isPlainObject(requestPayload)
     ? (requestPayload as Record<string, any>)
@@ -72,6 +101,9 @@ export async function execWorker(
   const shouldStoreRequestPayload = shouldStoreWorkerRequestPayload(workerId);
   const requestPayloadSizeBytes =
     getWorkerRequestPayloadSizeBytes(workerRequestPayload);
+  const secretsToRedact = [...new Set(secretValues.filter(Boolean))].sort(
+    (left, right) => right.length - left.length
+  );
 
   try {
     const {
@@ -107,7 +139,11 @@ export async function execWorker(
       responsePayload: result,
       error: error ? String(error) : undefined,
       logs: Array.isArray(logs)
-        ? logs.map((log) => log.map((item) => item ?? null)) // make sure log item is not undefined
+        ? logs.map((log) =>
+            log.map(
+              (item) => redactWorkerLogValue(item ?? null, secretsToRedact)
+            )
+          )
         : [],
     };
 
@@ -175,13 +211,15 @@ export async function execStoredWorker(
   requestPayload?: Record<string, any>,
   context?: Record<string, any>
 ) {
-  const environment = await loadWorkerEnvironment(worker.id);
+  const { environment, secretValues } =
+    await loadWorkerEnvironmentForExecution(worker.id);
 
   return execWorker(
     worker.code,
     worker.id,
     requestPayload,
     context,
-    environment
+    environment,
+    secretValues
   );
 }

@@ -58,6 +58,11 @@ export type SafeWorkerEnvironmentVariable =
   | { id: string; key: string; type: 'Text'; value: string }
   | { id: string; key: string; type: 'Secret'; hasValue: boolean };
 
+export type ResolvedWorkerEnvironment = {
+  environment: Record<string, string>;
+  secretValues: string[];
+};
+
 type WorkerEnvironmentVariableRow = {
   id: string;
   key: string;
@@ -124,12 +129,32 @@ export async function loadWorkerEnvironment(
   return Object.fromEntries(rows.map(({ key, value }) => [key, value]));
 }
 
-export async function resolveWorkerEnvironment(
+export async function loadWorkerEnvironmentForExecution(
+  workerId: string
+): Promise<ResolvedWorkerEnvironment> {
+  const rows = await prisma.functionWorkerEnvironmentVariable.findMany({
+    where: { workerId },
+    select: { key: true, type: true, value: true },
+  });
+
+  return {
+    environment: Object.fromEntries(
+      rows.map(({ key, value }) => [key, value])
+    ),
+    secretValues: rows.flatMap(({ type, value }) =>
+      type === 'Secret' && value.length > 0 ? [value] : []
+    ),
+  };
+}
+
+export async function resolveWorkerEnvironmentForExecution(
   workerId?: string,
   drafts?: WorkerEnvironmentVariableInput[]
-): Promise<Record<string, string>> {
+): Promise<ResolvedWorkerEnvironment> {
   if (drafts === undefined) {
-    return workerId ? loadWorkerEnvironment(workerId) : {};
+    return workerId
+      ? loadWorkerEnvironmentForExecution(workerId)
+      : { environment: {}, secretValues: [] };
   }
 
   const existingRows: WorkerEnvironmentVariableRow[] = workerId
@@ -138,17 +163,34 @@ export async function resolveWorkerEnvironment(
       })
     : [];
   const existingById = validateWorkerEnvironmentInputs(existingRows, drafts);
+  const resolved = drafts.map((draft) => ({
+    key: draft.key,
+    type: draft.type,
+    value:
+      draft.value === undefined
+        ? (existingById.get(draft.id as string)?.value as string)
+        : draft.value,
+  }));
 
-  return Object.fromEntries(
-    drafts.map((draft) => {
-      const value =
-        draft.value === undefined
-          ? existingById.get(draft.id as string)?.value
-          : draft.value;
+  return {
+    environment: Object.fromEntries(
+      resolved.map(({ key, value }) => [key, value])
+    ),
+    secretValues: resolved.flatMap(({ type, value }) =>
+      type === 'Secret' && value.length > 0 ? [value] : []
+    ),
+  };
+}
 
-      return [draft.key, value as string];
-    })
+export async function resolveWorkerEnvironment(
+  workerId?: string,
+  drafts?: WorkerEnvironmentVariableInput[]
+): Promise<Record<string, string>> {
+  const { environment } = await resolveWorkerEnvironmentForExecution(
+    workerId,
+    drafts
   );
+  return environment;
 }
 
 export function toSafeWorkerEnvironmentVariable(

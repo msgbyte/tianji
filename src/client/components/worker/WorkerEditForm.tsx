@@ -61,7 +61,7 @@ const environmentVariableSchema: z.ZodType<WorkerEnvironmentVariableFormValue> =
       id: z.string().optional(),
       key: environmentVariableKeySchema,
       type: z.literal('Text'),
-      value: z.string().min(1, 'A value is required'),
+      value: z.string(),
     }),
     z.object({
       id: z.string().optional(),
@@ -72,7 +72,11 @@ const environmentVariableSchema: z.ZodType<WorkerEnvironmentVariableFormValue> =
     }),
   ])
     .superRefine((value, ctx) => {
-      if (value.type === 'Secret' && !value.hasValue && !value.value) {
+      if (
+        value.type === 'Secret' &&
+        !value.hasValue &&
+        value.value === undefined
+      ) {
         ctx.addIssue({
           code: 'custom',
           message: 'A value is required',
