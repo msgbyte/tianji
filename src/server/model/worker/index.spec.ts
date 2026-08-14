@@ -109,8 +109,15 @@ describe('execWorker', () => {
 
     await execWorker(
       'async function fetch(params) { return { length: params.data.length }; }',
-      undefined,
-      largePayload
+      {
+        scope: {
+          kind: 'worker',
+          workspaceId: 'workspace-a',
+          workerId: 'worker-a',
+        },
+        requestPayload: largePayload,
+        context: { type: 'manual' },
+      }
     );
 
     const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
@@ -216,8 +223,15 @@ describe('execWorker', () => {
 
     const execution = await execWorker(
       'async function fetch(params) { return params; }',
-      'worker_disabled',
-      requestPayload
+      {
+        scope: {
+          kind: 'worker',
+          workspaceId: 'workspace-a',
+          workerId: 'worker_disabled',
+        },
+        requestPayload,
+        context: { type: 'manual' },
+      }
     );
 
     const [, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
@@ -242,8 +256,15 @@ describe('execWorker', () => {
 
     const execution = await execWorker(
       'async function fetch(params) { return params; }',
-      'worker_enabled',
-      requestPayload
+      {
+        scope: {
+          kind: 'worker',
+          workspaceId: 'workspace-a',
+          workerId: 'worker_enabled',
+        },
+        requestPayload,
+        context: { type: 'manual' },
+      }
     );
 
     expect(execution.requestPayload).toBe(requestPayload);
@@ -260,8 +281,15 @@ describe('execWorker', () => {
 
     await execWorker(
       'async function fetch(params) { return params; }',
-      'worker_metrics',
-      requestPayload
+      {
+        scope: {
+          kind: 'worker',
+          workspaceId: 'workspace-a',
+          workerId: 'worker_metrics',
+        },
+        requestPayload,
+        context: { type: 'manual' },
+      }
     );
 
     expect(promWorkerMemoryUsageLabelsMock).toHaveBeenCalledWith(
@@ -275,6 +303,63 @@ describe('execWorker', () => {
     );
     expect(promWorkerRequestPayloadSizeObserveMock).toHaveBeenCalledWith(
       Buffer.byteLength(JSON.stringify(requestPayload), 'utf8')
+    );
+  });
+
+  test('installs KV globals without embedding worker scope identities in the VM source', async () => {
+    const workspaceId = 'workspace-source-secret';
+    const workerId = 'worker-source-secret';
+
+    await execWorker('async function fetch() { return true; }', {
+      scope: { kind: 'worker', workspaceId, workerId },
+      requestPayload: { event: 'manual' },
+      context: { type: 'manual' },
+    });
+
+    const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
+
+    expect(source).toContain('globalThis.kv = Object.freeze(');
+    expect(source).not.toContain(workspaceId);
+    expect(source).not.toContain(workerId);
+    expect(globals).toEqual(
+      expect.objectContaining({
+        __workerKV: expect.anything(),
+        __workspaceKV: expect.anything(),
+      })
+    );
+  });
+
+  test('does not persist test scope executions and records anonymous metrics', async () => {
+    await execWorker('async function fetch() { return true; }', {
+      scope: {
+        kind: 'test',
+        workspaceId: 'workspace-a',
+        executionId: 'test-a',
+      },
+      requestPayload: { event: 'test' },
+      context: { type: 'manual' },
+    });
+
+    expect(enqueueMock).not.toHaveBeenCalled();
+    expect(promWorkerExecutionCounterLabelsMock).toHaveBeenCalledWith(
+      'anonymous',
+      'Success'
+    );
+    expect(promWorkerExecutionDurationLabelsMock).toHaveBeenCalledWith(
+      'anonymous',
+      'Success'
+    );
+    expect(promWorkerCPUTimeLabelsMock).toHaveBeenCalledWith(
+      'anonymous',
+      'Success'
+    );
+    expect(promWorkerMemoryUsageLabelsMock).toHaveBeenCalledWith(
+      'anonymous',
+      'Success'
+    );
+    expect(promWorkerRequestPayloadSizeLabelsMock).toHaveBeenCalledWith(
+      'anonymous',
+      'Success'
     );
   });
 });

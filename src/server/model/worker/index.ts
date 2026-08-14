@@ -14,6 +14,11 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 import { createBatchWriter } from '../../utils/batchWriter.js';
 import { env } from '../../utils/env.js';
+import {
+  createWorkerKVFacade,
+  type WorkerKVExecutionScope,
+} from './kv.js';
+import { createSandboxProxy } from '../../utils/vm/sandbox.js';
 import { loadWorkerEnvironmentForExecution } from './environment.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
@@ -80,30 +85,51 @@ export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
   }
 );
 
+export interface ExecWorkerOptions {
+  scope: WorkerKVExecutionScope;
+  requestPayload?: Record<string, any>;
+  context?: Record<string, any>;
+  environment?: Record<string, string>;
+  secretValues?: string[];
+}
+
 /**
  * execute a worker code in isolated-vm
  */
 export async function execWorker(
   code: string,
-  workerId?: string,
-  requestPayload?: Record<string, any>,
-  context?: Record<string, any>,
-  environment: Record<string, string> = {},
-  secretValues: string[] = []
+  options: ExecWorkerOptions
 ) {
+  const workerId =
+    options.scope.kind === 'worker' ? options.scope.workerId : undefined;
+  const requestPayload = options.requestPayload;
+  const context = options.context;
   const workerRequestPayload: Record<string, any> = isPlainObject(requestPayload)
     ? (requestPayload as Record<string, any>)
     : {};
   const workerContext = {
     ...(isPlainObject(context) ? context : {}),
-    env: isPlainObject(environment) ? environment : {},
+    env: isPlainObject(options.environment) ? options.environment : {},
   };
   const shouldStoreRequestPayload = shouldStoreWorkerRequestPayload(workerId);
   const requestPayloadSizeBytes =
     getWorkerRequestPayloadSizeBytes(workerRequestPayload);
-  const secretsToRedact = [...new Set(secretValues.filter(Boolean))].sort(
+  const secretsToRedact = [
+    ...new Set((options.secretValues ?? []).filter(Boolean)),
+  ].sort(
     (left, right) => right.length - left.length
   );
+  const kv = createWorkerKVFacade(options.scope);
+  const workerKVProxy = createSandboxProxy({
+    get: kv.get,
+    set: kv.set,
+    delete: kv.delete,
+  });
+  const workspaceKVProxy = createSandboxProxy({
+    get: kv.workspace.get,
+    set: kv.workspace.set,
+    delete: kv.workspace.delete,
+  });
 
   try {
     const {
@@ -115,6 +141,15 @@ export async function execWorker(
       memoryUsage,
     } = await runCodeInIVM(`
       (async () => {
+        const __workerKVScope = reproxy(__workerKV);
+        const __workspaceKVScope = reproxy(__workspaceKV);
+        globalThis.kv = Object.freeze({
+          get: (...args) => __workerKVScope.get(...args),
+          set: (...args) => __workerKVScope.set(...args),
+          delete: (...args) => __workerKVScope.delete(...args),
+          workspace: __workspaceKVScope,
+        });
+
         ${code}
 
         return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
@@ -122,6 +157,8 @@ export async function execWorker(
     `, {
       __requestPayload: workerRequestPayload,
       __workerContext: workerContext,
+      __workerKV: workerKVProxy,
+      __workspaceKV: workspaceKVProxy,
     });
 
     const { used_heap_size } = memoryUsage;
@@ -207,19 +244,22 @@ export async function execWorker(
 }
 
 export async function execStoredWorker(
-  worker: { id: string; code: string },
+  worker: { id: string; workspaceId: string; code: string },
   requestPayload?: Record<string, any>,
   context?: Record<string, any>
 ) {
   const { environment, secretValues } =
     await loadWorkerEnvironmentForExecution(worker.id);
 
-  return execWorker(
-    worker.code,
-    worker.id,
+  return execWorker(worker.code, {
+    scope: {
+      kind: 'worker',
+      workspaceId: worker.workspaceId,
+      workerId: worker.id,
+    },
     requestPayload,
     context,
     environment,
-    secretValues
-  );
+    secretValues,
+  });
 }
