@@ -39,6 +39,22 @@ describe('worker environment variable contract', () => {
     expect(result).not.toHaveProperty('value');
   });
 
+  test('reports an empty stored Secret as having a value', () => {
+    expect(
+      toSafeWorkerEnvironmentVariable({
+        id: 'env_empty_secret',
+        key: 'EMPTY_TOKEN',
+        type: 'Secret',
+        value: '',
+      })
+    ).toEqual({
+      id: 'env_empty_secret',
+      key: 'EMPTY_TOKEN',
+      type: 'Secret',
+      hasValue: true,
+    });
+  });
+
   test.each(['1TOKEN', 'API-TOKEN', 'API TOKEN'])('rejects invalid key %s', (key) => {
     expect(() =>
       workerEnvironmentVariablesInputSchema.parse([

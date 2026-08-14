@@ -68,6 +68,6 @@ export function toSafeWorkerEnvironmentVariable(
     id: row.id,
     key: row.key,
     type: 'Secret',
-    hasValue: Boolean(row.value),
+    hasValue: true,
   };
 }
