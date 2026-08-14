@@ -205,10 +205,30 @@ describe('workerRouter environment variables', () => {
 
     await caller.execute({ workspaceId, workerId: storedWorker.id, payload });
 
+    expect(mocks.findWorker).toHaveBeenCalledWith({
+      where: { id: storedWorker.id, workspaceId },
+    });
     expect(mocks.execStoredWorker).toHaveBeenCalledWith(storedWorker, payload, {
       type: 'manual',
     });
     expect(mocks.execWorker).not.toHaveBeenCalled();
+  });
+
+  test('denies manual execution when the worker belongs to another workspace', async () => {
+    const workspaceId = createId();
+    const workerId = createId();
+    mocks.findWorker.mockResolvedValue(null);
+    const caller = await createCaller();
+
+    await expect(
+      caller.execute({ workspaceId, workerId })
+    ).rejects.toThrow('Worker not found');
+
+    expect(mocks.findWorker).toHaveBeenCalledWith({
+      where: { id: workerId, workspaceId },
+    });
+    expect(mocks.execStoredWorker).not.toHaveBeenCalled();
+    expect(mocks.createAuditLog).not.toHaveBeenCalled();
   });
 
   test('resolves authorized saved and draft environment for test-code execution', async () => {
