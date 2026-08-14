@@ -72,5 +72,23 @@ declare function request(config: AxiosConfig): Promise<RequestReturn>;
 
 const request = async (config: AxiosConfig): Promise<RequestReturn> => {};
 
+type KVValue =
+  | null
+  | string
+  | number
+  | boolean
+  | KVValue[]
+  | { [key: string]: KVValue };
+
+interface KVScope {
+  get<T extends KVValue = KVValue>(key: string): Promise<T | undefined>;
+  set(key: string, value: KVValue, ttl?: number): Promise<void>;
+  delete(key: string): Promise<boolean>;
+}
+
+declare const kv: KVScope & {
+  workspace: KVScope;
+};
+
 declare function fetch(params: Record<string, any>, ctx: FetchContext): Promise<string>;
 `;
