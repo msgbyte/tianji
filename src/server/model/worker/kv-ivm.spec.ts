@@ -201,6 +201,35 @@ describe('Worker KV isolated-vm bridge', () => {
     );
   });
 
+  it('replaces oversized keys and UTF-8 values before copying bridge arguments', async () => {
+    const execution = await executeKVWorker(`
+      async function fetch() {
+        const results = [];
+        try {
+          await kv.get('x'.repeat(257));
+          results.push('accepted-key');
+        } catch (error) {
+          results.push(error.message);
+        }
+
+        try {
+          await kv.set('large', '\u00e9'.repeat(131_072));
+          results.push('accepted-value');
+        } catch (error) {
+          results.push(error.message);
+        }
+
+        return results;
+      }
+    `);
+
+    expect(execution.error).toBeUndefined();
+    expect(execution.responsePayload).toEqual([
+      'WORKER_KV_INVALID_KEY',
+      'WORKER_KV_INVALID_VALUE',
+    ]);
+  });
+
   it('hides bridge globals and inherited methods from public KV scopes', async () => {
     const execution = await executeKVWorker(`
       async function fetch() {

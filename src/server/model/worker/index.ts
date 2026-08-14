@@ -16,6 +16,8 @@ import { createBatchWriter } from '../../utils/batchWriter.js';
 import { env } from '../../utils/env.js';
 import {
   createWorkerKVFacade,
+  WORKER_KV_MAX_KEY_LENGTH,
+  WORKER_KV_MAX_VALUE_BYTES,
   type WorkerKVExecutionScope,
   type WorkerKVScope,
 } from './kv.js';
@@ -179,6 +181,7 @@ export async function execWorker(
           const numberIsFinite = Number.isFinite;
           const numberIsSafeInteger = Number.isSafeInteger;
           const numberToString = Function.prototype.call.bind(Number.prototype.toString);
+          const stringCharCodeAt = Function.prototype.call.bind(String.prototype.charCodeAt);
           const jsonStringify = JSON.stringify;
           const reflectApply = Reflect.apply;
           const WeakSetConstructor = WeakSet;
@@ -341,29 +344,68 @@ export async function execWorker(
                 return undefined;
               }
               const encoded = jsonStringify(normalized);
-              return typeof encoded === 'string' ? encoded : undefined;
+              if (typeof encoded !== 'string') {
+                return undefined;
+              }
+
+              let encodedBytes = 0;
+              for (let index = 0; index < encoded.length; index += 1) {
+                const codeUnit = stringCharCodeAt(encoded, index);
+                if (codeUnit <= 0x7f) {
+                  encodedBytes += 1;
+                } else if (codeUnit <= 0x7ff) {
+                  encodedBytes += 2;
+                } else if (
+                  codeUnit >= 0xd800 &&
+                  codeUnit <= 0xdbff &&
+                  index + 1 < encoded.length
+                ) {
+                  const nextCodeUnit = stringCharCodeAt(encoded, index + 1);
+                  if (nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff) {
+                    encodedBytes += 4;
+                    index += 1;
+                  } else {
+                    encodedBytes += 3;
+                  }
+                } else {
+                  encodedBytes += 3;
+                }
+
+                if (encodedBytes > ${WORKER_KV_MAX_VALUE_BYTES}) {
+                  return undefined;
+                }
+              }
+
+              return encoded;
             } catch {
               return undefined;
             }
           };
 
+          const encodeKey = (key) =>
+            typeof key === 'string' &&
+            key.length > 0 &&
+            key.length <= ${WORKER_KV_MAX_KEY_LENGTH}
+              ? key
+              : '';
+
           const createScope = (bridge) => {
             const scope = objectCreate(null);
             scope.get = (key) => invoke(
               bridge.get,
-              [typeof key === 'string' ? key : '']
+              [encodeKey(key)]
             );
             scope.set = (key, value, ttl) => invoke(
               bridge.set,
               [
-                typeof key === 'string' ? key : '',
+                encodeKey(key),
                 encodeValue(value),
                 ttl === undefined || typeof ttl === 'number' ? ttl : 0,
               ]
             );
             scope.delete = (key) => invoke(
               bridge.delete,
-              [typeof key === 'string' ? key : '']
+              [encodeKey(key)]
             );
             return objectFreeze(scope);
           };

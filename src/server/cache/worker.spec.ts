@@ -48,6 +48,25 @@ describe('createWorkerCacheManager', () => {
     expect(maintenance).toHaveBeenCalledTimes(3);
   });
 
+  it('actively removes expired Worker entries from the shared memory store', async () => {
+    vi.useFakeTimers();
+    try {
+      const store = new Map();
+      const shared = new Keyv({ store, namespace: 'tianji-cache' });
+      const worker = createWorkerCacheManager(shared);
+
+      await worker.set('worker-key', 'value', 1_000);
+      expect(store.size).toBe(1);
+
+      await vi.advanceTimersByTimeAsync(1_000);
+
+      expect(store.size).toBe(0);
+      await expect(shared.get('worker-key')).resolves.toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it.each(['get', 'set', 'delete'] as const)(
     'uses a strict Redis adapter view for %s without mutating the shared adapter',
     async (method) => {
@@ -137,9 +156,11 @@ describe('createWorkerKVPostgresCleanup', () => {
     expect(isWorkerKVPostgresStore(maintenance.mock.calls[0][0])).toBe(true);
   });
 
-  it('gates PostgreSQL and issues a bounded prefix-restricted expiry delete', async () => {
+  it('gates PostgreSQL and scans one bounded prefix range before deleting expiry rows', async () => {
     const postgresStore = {};
-    const execute = vi.fn(async (_query: unknown) => 3);
+    const execute = vi.fn(async (_query: unknown) => [
+      { lastKey: null, scannedCount: 0, deletedCount: 0 },
+    ]);
     const cleanup = createWorkerKVPostgresCleanup({
       isPostgresStore: (store) => store === postgresStore,
       execute,
@@ -161,25 +182,67 @@ describe('createWorkerKVPostgresCleanup', () => {
     };
     const sql = query.strings.join('?').replace(/\s+/g, ' ').trim();
 
-    expect(sql).toContain('DELETE FROM "cache"."cache"');
+    expect(sql).toContain('WITH worker_kv_batch AS MATERIALIZED');
+    expect(sql).toContain('WHERE "key" > ? AND "key" < ?');
+    expect(sql).toContain('LIMIT ? FOR UPDATE SKIP LOCKED');
+    expect(sql).toContain('DELETE FROM "cache"."cache" AS target');
     expect(sql).toContain(
-      'WHERE ( "key" LIKE ? OR "key" LIKE ? OR "key" LIKE ? )'
+      "WHEN jsonb_typeof(candidate.\"value\"::jsonb -> 'expires') = 'number'"
     );
     expect(sql).toContain(
-      "WHEN jsonb_typeof(\"value\"::jsonb -> 'expires') = 'number'"
+      'THEN (candidate."value"::jsonb ->> \'expires\')::bigint < ?'
     );
-    expect(sql).toContain(
-      'THEN ("value"::jsonb ->> \'expires\')::bigint < ?'
-    );
-    expect(sql).toContain('LIMIT ?');
-    expect(sql).toContain('FOR UPDATE SKIP LOCKED');
     expect(query.values).toEqual([
-      'tianji-cache:worker-kv:v1:%',
-      'tianji-cache:workspace-kv:v1:%',
-      'tianji-cache:worker-kv-test:v1:%',
-      1_765_843_200_000,
+      'tianji-cache:worker-kv:v1:',
+      'tianji-cache:worker-kv:v1:\uffff',
       100,
+      1_765_843_200_000,
     ]);
+  });
+
+  it('continues a full prefix batch by cursor and rotates after a short batch', async () => {
+    const postgresStore = {};
+    let currentTime = 10_000;
+    const execute = vi
+      .fn()
+      .mockResolvedValueOnce([
+        {
+          lastKey: 'tianji-cache:worker-kv:v1:last-key',
+          scannedCount: 100,
+          deletedCount: 10,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          lastKey: 'tianji-cache:worker-kv:v1:tail',
+          scannedCount: 2,
+          deletedCount: 1,
+        },
+      ])
+      .mockResolvedValueOnce([
+        { lastKey: null, scannedCount: 0, deletedCount: 0 },
+      ]);
+    const cleanup = createWorkerKVPostgresCleanup({
+      isPostgresStore: (store) => store === postgresStore,
+      execute,
+      now: () => currentTime,
+      intervalMs: 60_000,
+      batchSize: 100,
+      warn: vi.fn(),
+    });
+
+    await cleanup(postgresStore);
+    currentTime += 60_000;
+    await cleanup(postgresStore);
+    currentTime += 60_000;
+    await cleanup(postgresStore);
+
+    const values = execute.mock.calls.map(
+      (call) => (call[0] as { values: readonly unknown[] }).values
+    );
+    expect(values[0][0]).toBe('tianji-cache:worker-kv:v1:');
+    expect(values[1][0]).toBe('tianji-cache:worker-kv:v1:last-key');
+    expect(values[2][0]).toBe('tianji-cache:workspace-kv:v1:');
   });
 
   it('rate limits attempts and shares one in-flight cleanup', async () => {

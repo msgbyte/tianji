@@ -10,9 +10,9 @@ export const WORKER_KV_POSTGRES_CLEANUP_INTERVAL_MS = 60_000;
 export const WORKER_KV_POSTGRES_CLEANUP_BATCH_SIZE = 100;
 
 const WORKER_KV_POSTGRES_PREFIXES = [
-  `${WORKER_KV_KEYV_NAMESPACE}:worker-kv:v1:%`,
-  `${WORKER_KV_KEYV_NAMESPACE}:workspace-kv:v1:%`,
-  `${WORKER_KV_KEYV_NAMESPACE}:worker-kv-test:v1:%`,
+  `${WORKER_KV_KEYV_NAMESPACE}:worker-kv:v1:`,
+  `${WORKER_KV_KEYV_NAMESPACE}:workspace-kv:v1:`,
+  `${WORKER_KV_KEYV_NAMESPACE}:worker-kv-test:v1:`,
 ] as const;
 const WORKER_KV_POSTGRES_CLEANUP_WARNING =
   '[Worker KV] PostgreSQL expiry cleanup failed';
@@ -23,11 +23,18 @@ export function isWorkerKVPostgresStore(store: unknown) {
 
 type SuccessfulStoreOperation = (store: unknown) => void;
 
+interface WorkerOperationStore {
+  get(key: string): unknown;
+  set(key: string, value: unknown, ttl?: number): unknown;
+  delete(key: string): unknown;
+  clear(): unknown;
+}
+
 class SharedKeyvStoreAdapter {
   namespace?: string;
 
   constructor(
-    private readonly operationStore: KeyvStoreAdapter | Map<unknown, unknown>,
+    private readonly operationStore: WorkerOperationStore,
     private readonly sharedStore: KeyvStoreAdapter | Map<unknown, unknown>,
     private readonly onSuccessfulStoreOperation: SuccessfulStoreOperation
   ) {}
@@ -41,13 +48,13 @@ class SharedKeyvStoreAdapter {
   }
 
   async get(key: string) {
-    const value = await (this.operationStore as any).get(key);
+    const value = await this.operationStore.get(key);
     this.reportSuccess();
     return value;
   }
 
   async set(key: string, value: unknown, ttl?: number) {
-    const result = await (this.operationStore as any).set(key, value, ttl);
+    const result = await this.operationStore.set(key, value, ttl);
     if (result !== false) {
       this.reportSuccess();
     }
@@ -55,20 +62,77 @@ class SharedKeyvStoreAdapter {
   }
 
   async delete(key: string) {
-    const deleted = await (this.operationStore as any).delete(key);
+    const deleted = await this.operationStore.delete(key);
     this.reportSuccess();
     return deleted;
   }
 
   async clear() {
-    await (this.operationStore as any).clear();
+    await this.operationStore.clear();
     this.reportSuccess();
+  }
+}
+
+class WorkerMemoryStoreAdapter {
+  namespace?: string;
+  private readonly expiryTimers = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
+
+  constructor(private readonly store: Map<unknown, unknown>) {}
+
+  async get(key: string) {
+    return this.store.get(key);
+  }
+
+  async set(key: string, value: unknown, ttl?: number) {
+    this.clearExpiryTimer(key);
+    this.store.set(key, value);
+
+    if (typeof ttl === 'number' && ttl > 0) {
+      const timer = setTimeout(() => {
+        if (this.store.get(key) === value) {
+          this.store.delete(key);
+        }
+        this.expiryTimers.delete(key);
+      }, ttl);
+      timer.unref?.();
+      this.expiryTimers.set(key, timer);
+    }
+
+    return true;
+  }
+
+  async delete(key: string) {
+    this.clearExpiryTimer(key);
+    return this.store.delete(key);
+  }
+
+  async clear() {
+    for (const timer of this.expiryTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.expiryTimers.clear();
+    this.store.clear();
+  }
+
+  private clearExpiryTimer(key: string) {
+    const timer = this.expiryTimers.get(key);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.expiryTimers.delete(key);
+    }
   }
 }
 
 function createWorkerOperationStore(
   sharedStore: KeyvStoreAdapter | Map<unknown, unknown>
 ) {
+  if (sharedStore instanceof Map) {
+    return new WorkerMemoryStoreAdapter(sharedStore);
+  }
+
   if (!(sharedStore instanceof KeyvRedis)) {
     return sharedStore;
   }
@@ -121,6 +185,8 @@ export function createWorkerKVPostgresCleanup(
 ) {
   let inFlight: Promise<void> | undefined;
   let nextAllowedAt = Number.NEGATIVE_INFINITY;
+  let prefixIndex = 0;
+  const cursors = new Map<string, string>();
 
   return (store: unknown): Promise<void> => {
     if (!dependencies.isPostgresStore(store)) {
@@ -137,29 +203,33 @@ export function createWorkerKVPostgresCleanup(
     }
     nextAllowedAt = now + dependencies.intervalMs;
 
-    const [privatePrefix, workspacePrefix, testPrefix] =
-      WORKER_KV_POSTGRES_PREFIXES;
+    const prefix = WORKER_KV_POSTGRES_PREFIXES[prefixIndex];
+    const cursor = cursors.get(prefix) ?? prefix;
+    const prefixUpperBound = `${prefix}\uffff`;
     const query = Prisma.sql`
-      WITH expired_worker_kv AS (
-        SELECT "key"
+      WITH worker_kv_batch AS MATERIALIZED (
+        SELECT "key", "value"
         FROM "cache"."cache"
-        WHERE (
-          "key" LIKE ${privatePrefix}
-          OR "key" LIKE ${workspacePrefix}
-          OR "key" LIKE ${testPrefix}
-        )
-        AND CASE
-          WHEN jsonb_typeof("value"::jsonb -> 'expires') = 'number'
-          THEN ("value"::jsonb ->> 'expires')::bigint < ${now}
-          ELSE false
-        END
+        WHERE "key" > ${cursor}
+          AND "key" < ${prefixUpperBound}
         ORDER BY "key"
-        FOR UPDATE SKIP LOCKED
         LIMIT ${dependencies.batchSize}
+        FOR UPDATE SKIP LOCKED
+      ), deleted_worker_kv AS (
+        DELETE FROM "cache"."cache" AS target
+        USING worker_kv_batch AS candidate
+        WHERE target."key" = candidate."key"
+          AND CASE
+            WHEN jsonb_typeof(candidate."value"::jsonb -> 'expires') = 'number'
+            THEN (candidate."value"::jsonb ->> 'expires')::bigint < ${now}
+            ELSE false
+          END
+        RETURNING target."key"
       )
-      DELETE FROM "cache"."cache" AS target
-      USING expired_worker_kv AS expired
-      WHERE target."key" = expired."key"
+      SELECT
+        (SELECT "key" FROM worker_kv_batch ORDER BY "key" DESC LIMIT 1) AS "lastKey",
+        (SELECT COUNT(*)::int FROM worker_kv_batch) AS "scannedCount",
+        (SELECT COUNT(*)::int FROM deleted_worker_kv) AS "deletedCount"
     `;
 
     let execution: Promise<unknown>;
@@ -170,7 +240,22 @@ export function createWorkerKVPostgresCleanup(
     }
 
     const cleanup = execution
-      .then(() => undefined)
+      .then((result) => {
+        const row = Array.isArray(result) ? result[0] : undefined;
+        const lastKey =
+          row && typeof row.lastKey === 'string' ? row.lastKey : undefined;
+        const scannedCount =
+          row && typeof row.scannedCount !== 'undefined'
+            ? Number(row.scannedCount)
+            : 0;
+
+        if (lastKey !== undefined && scannedCount >= dependencies.batchSize) {
+          cursors.set(prefix, lastKey);
+        } else {
+          cursors.delete(prefix);
+          prefixIndex = (prefixIndex + 1) % WORKER_KV_POSTGRES_PREFIXES.length;
+        }
+      })
       .catch(() => {
         dependencies.warn(WORKER_KV_POSTGRES_CLEANUP_WARNING);
       })
@@ -187,7 +272,7 @@ export function createWorkerKVPostgresCleanup(
 
 const cleanupWorkerKVPostgres = createWorkerKVPostgresCleanup({
   isPostgresStore: isWorkerKVPostgresStore,
-  execute: (query) => prisma.$executeRaw(query),
+  execute: (query) => prisma.$queryRaw(query),
   now: Date.now,
   intervalMs: WORKER_KV_POSTGRES_CLEANUP_INTERVAL_MS,
   batchSize: WORKER_KV_POSTGRES_CLEANUP_BATCH_SIZE,

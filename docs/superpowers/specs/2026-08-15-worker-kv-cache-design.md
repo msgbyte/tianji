@@ -123,11 +123,13 @@ backend errors to the sandbox.
 
 The facade is injected into `runCodeInIVM()` through null-prototype host objects.
 Before isolated-vm copies arguments, an isolate-side wrapper validates values
-and builds a descriptor-safe, null-prototype copy before JSON encoding. This
-rejects accessors, hidden serialization hooks, and inherited `toJSON` hooks
-without executing them. Invalid values invoke the host with only clone-safe
-sentinel data, so the host still performs authoritative validation and consumes
-the shared call budget. Valid values are parsed and validated again on the host
+and builds a descriptor-safe, null-prototype copy before JSON encoding. It also
+checks key length and counts the encoded value's UTF-8 bytes before either
+argument crosses the isolate boundary. This rejects oversized transfers,
+accessors, hidden serialization hooks, and inherited `toJSON` hooks without
+executing them. Invalid values invoke the host with only clone-safe sentinel
+data, so the host still performs authoritative validation and consumes the
+shared call budget. Valid values are parsed and validated again on the host
 before storage. Raw bridge globals are deleted inside a nested installer before
 Worker code runs, and Worker source executes in a separate nested async scope so
 its hoisted declarations and shadowed built-ins cannot intercept installation.
@@ -170,13 +172,17 @@ tied to the lifecycle of any one Worker.
 Because `@keyv/postgres` stores expiry inside its serialized value, PostgreSQL
 deployments also run bounded expiry maintenance against the existing
 `cache.cache` table. After a successful Worker KV store operation, at most once
-per minute per process, Tianji schedules one 100-row delete through the existing
-Prisma connection. The parameterized query selects only expired rows whose keys
-begin with the versioned Worker-private, Workspace-shared, or Worker-test
-prefixes under `tianji-cache`; it uses one in-process single flight and
-`FOR UPDATE SKIP LOCKED`. Redis and memory-only deployments do not run this SQL.
-Cleanup failure is contained, rate limited, and logged only as a stable generic
-warning, so it cannot fail an otherwise valid Worker operation.
+per minute per process, Tianji scans one keyset-paginated 100-row range through
+the existing Prisma connection. The three versioned Worker-private,
+Workspace-shared, and Worker-test prefixes have independent cursors and are
+visited in rotation. Expiry JSON is evaluated only inside the materialized
+100-row batch, and expired rows in that batch are deleted with
+`FOR UPDATE SKIP LOCKED`. Redis deployments rely on native TTL. Memory-only
+deployments use per-key, unref'ed expiry timers in the Worker forwarding adapter
+so high-cardinality and one-time test keys are actively removed instead of
+remaining in the shared `Map` until a future read. Cleanup failure is contained,
+rate limited, and logged only as a stable generic warning, so it cannot fail an
+otherwise valid Worker operation.
 
 ## Resource Limits
 
