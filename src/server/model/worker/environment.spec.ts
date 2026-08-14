@@ -1,9 +1,23 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
+  loadWorkerEnvironment,
+  resolveWorkerEnvironment,
   syncWorkerEnvironmentVariables,
   toSafeWorkerEnvironmentVariable,
   workerEnvironmentVariablesInputSchema,
 } from './environment.js';
+
+const prismaMocks = vi.hoisted(() => ({
+  findMany: vi.fn(),
+}));
+
+vi.mock('../_client.js', () => ({
+  prisma: {
+    functionWorkerEnvironmentVariable: {
+      findMany: prismaMocks.findMany,
+    },
+  },
+}));
 
 const tx = {
   functionWorkerEnvironmentVariable: {
@@ -16,10 +30,54 @@ const tx = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  prismaMocks.findMany.mockResolvedValue([]);
   tx.functionWorkerEnvironmentVariable.findMany.mockResolvedValue([]);
   tx.functionWorkerEnvironmentVariable.create.mockResolvedValue({});
   tx.functionWorkerEnvironmentVariable.update.mockResolvedValue({});
   tx.functionWorkerEnvironmentVariable.deleteMany.mockResolvedValue({ count: 0 });
+});
+
+describe('worker environment runtime resolution', () => {
+  test('loads Text and Secret values as a plain runtime map', async () => {
+    prismaMocks.findMany.mockResolvedValue([
+      { key: 'API_URL', value: 'https://example.com' },
+      { key: 'TOKEN', value: 'runtime-secret' },
+    ]);
+
+    await expect(loadWorkerEnvironment('worker-a')).resolves.toEqual({
+      API_URL: 'https://example.com',
+      TOKEN: 'runtime-secret',
+    });
+    expect(prismaMocks.findMany).toHaveBeenCalledWith({
+      where: { workerId: 'worker-a' },
+      select: { key: true, value: true },
+    });
+  });
+
+  test('preserves a same-type saved Secret when its draft value is omitted', async () => {
+    prismaMocks.findMany.mockResolvedValue([
+      {
+        id: 'env_secret',
+        key: 'TOKEN',
+        type: 'Secret',
+        value: 'saved-secret',
+      },
+    ]);
+
+    await expect(
+      resolveWorkerEnvironment('worker-a', [
+        { id: 'env_secret', key: 'RENAMED_TOKEN', type: 'Secret' },
+      ])
+    ).resolves.toEqual({ RENAMED_TOKEN: 'saved-secret' });
+  });
+
+  test('rejects a new Secret draft without a value', async () => {
+    await expect(
+      resolveWorkerEnvironment(undefined, [
+        { key: 'TOKEN', type: 'Secret' },
+      ])
+    ).rejects.toThrow('A value is required for a new Secret');
+  });
 });
 
 describe('worker environment variable contract', () => {

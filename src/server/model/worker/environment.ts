@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { prisma } from '../_client.js';
 
 const environmentKeySchema = z
   .string()
@@ -51,6 +52,70 @@ type WorkerEnvironmentVariableRow = {
   type: 'Text' | 'Secret';
   value: string;
 };
+
+function validateWorkerEnvironmentInputs(
+  existingRows: WorkerEnvironmentVariableRow[],
+  inputs: WorkerEnvironmentVariableInput[]
+) {
+  const existingById = new Map(existingRows.map((row) => [row.id, row]));
+
+  for (const input of inputs) {
+    if (!input.id) {
+      if (input.value === undefined) {
+        throw new Error('A value is required for a new Secret');
+      }
+      continue;
+    }
+
+    const existing = existingById.get(input.id);
+    if (!existing) {
+      throw new Error('Environment variable not found');
+    }
+    if (input.type !== existing.type && input.value === undefined) {
+      throw new Error('A value is required when changing variable type');
+    }
+  }
+
+  return existingById;
+}
+
+export async function loadWorkerEnvironment(
+  workerId: string
+): Promise<Record<string, string>> {
+  const rows = await prisma.functionWorkerEnvironmentVariable.findMany({
+    where: { workerId },
+    select: { key: true, value: true },
+  });
+
+  return Object.fromEntries(rows.map(({ key, value }) => [key, value]));
+}
+
+export async function resolveWorkerEnvironment(
+  workerId?: string,
+  drafts?: WorkerEnvironmentVariableInput[]
+): Promise<Record<string, string>> {
+  if (drafts === undefined) {
+    return workerId ? loadWorkerEnvironment(workerId) : {};
+  }
+
+  const existingRows: WorkerEnvironmentVariableRow[] = workerId
+    ? await prisma.functionWorkerEnvironmentVariable.findMany({
+        where: { workerId },
+      })
+    : [];
+  const existingById = validateWorkerEnvironmentInputs(existingRows, drafts);
+
+  return Object.fromEntries(
+    drafts.map((draft) => {
+      const value =
+        draft.value === undefined
+          ? existingById.get(draft.id as string)?.value
+          : draft.value;
+
+      return [draft.key, value as string];
+    })
+  );
+}
 
 export function toSafeWorkerEnvironmentVariable(
   row: WorkerEnvironmentVariableRow
@@ -107,24 +172,7 @@ export async function syncWorkerEnvironmentVariables(
   const existingRows = await tx.functionWorkerEnvironmentVariable.findMany({
     where: { workerId },
   });
-  const existingById = new Map(existingRows.map((row) => [row.id, row]));
-
-  for (const input of inputs) {
-    if (!input.id) {
-      if (input.value === undefined) {
-        throw new Error('A value is required for a new Secret');
-      }
-      continue;
-    }
-
-    const existing = existingById.get(input.id);
-    if (!existing) {
-      throw new Error('Environment variable not found');
-    }
-    if (input.type !== existing.type && input.value === undefined) {
-      throw new Error('A value is required when changing variable type');
-    }
-  }
+  validateWorkerEnvironmentInputs(existingRows, inputs);
 
   const submittedIds = new Set(
     inputs.flatMap((input) => (input.id ? [input.id] : []))

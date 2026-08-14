@@ -14,6 +14,7 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 import { createBatchWriter } from '../../utils/batchWriter.js';
 import { env } from '../../utils/env.js';
+import { loadWorkerEnvironment } from './environment.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
   name: 'WorkerExecution',
@@ -58,12 +59,16 @@ export async function execWorker(
   code: string,
   workerId?: string,
   requestPayload?: Record<string, any>,
-  context?: Record<string, any>
+  context?: Record<string, any>,
+  environment: Record<string, string> = {}
 ) {
   const workerRequestPayload: Record<string, any> = isPlainObject(requestPayload)
     ? (requestPayload as Record<string, any>)
     : {};
-  const workerContext = isPlainObject(context) ? context : {};
+  const workerContext = {
+    ...(isPlainObject(context) ? context : {}),
+    env: isPlainObject(environment) ? environment : {},
+  };
   const shouldStoreRequestPayload = shouldStoreWorkerRequestPayload(workerId);
   const requestPayloadSizeBytes =
     getWorkerRequestPayloadSizeBytes(workerRequestPayload);
@@ -163,4 +168,20 @@ export async function execWorker(
 
     return payload;
   }
+}
+
+export async function execStoredWorker(
+  worker: { id: string; code: string },
+  requestPayload?: Record<string, any>,
+  context?: Record<string, any>
+) {
+  const environment = await loadWorkerEnvironment(worker.id);
+
+  return execWorker(
+    worker.code,
+    worker.id,
+    requestPayload,
+    context,
+    environment
+  );
 }

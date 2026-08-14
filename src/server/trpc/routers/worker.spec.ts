@@ -17,6 +17,9 @@ const mocks = vi.hoisted(() => {
     findEnvironmentVariables: vi.fn(),
     upsertWorker: vi.fn(),
     createAuditLog: vi.fn(),
+    execWorker: vi.fn(),
+    execStoredWorker: vi.fn(),
+    resolveWorkerEnvironment: vi.fn(),
   };
 });
 
@@ -54,7 +57,13 @@ vi.mock('../../model/auditLog.js', () => ({
 }));
 
 vi.mock('../../model/worker/index.js', () => ({
-  execWorker: vi.fn(),
+  execWorker: mocks.execWorker,
+  execStoredWorker: mocks.execStoredWorker,
+}));
+
+vi.mock('../../model/worker/environment.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../model/worker/environment.js')>()),
+  resolveWorkerEnvironment: mocks.resolveWorkerEnvironment,
 }));
 
 vi.mock('../../model/worker/manager.js', () => ({
@@ -101,6 +110,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getWorkspaceUser.mockResolvedValue({ role: 'owner' });
   mocks.createAuditLog.mockResolvedValue(undefined);
+  mocks.execWorker.mockResolvedValue({ status: 'Success' });
+  mocks.execStoredWorker.mockResolvedValue({ status: 'Success' });
+  mocks.resolveWorkerEnvironment.mockResolvedValue({});
 });
 
 afterEach(() => {
@@ -178,5 +190,68 @@ describe('workerRouter environment variables', () => {
       ],
     });
     expect(JSON.stringify(result)).not.toContain(secret);
+  });
+
+  test('executes a stored worker with fresh saved environment resolution', async () => {
+    const workspaceId = createId();
+    const storedWorker = worker(workspaceId);
+    const payload = { action: 'run' };
+    mocks.findWorker.mockResolvedValue(storedWorker);
+    const caller = await createCaller();
+
+    await caller.execute({ workspaceId, workerId: storedWorker.id, payload });
+
+    expect(mocks.execStoredWorker).toHaveBeenCalledWith(storedWorker, payload, {
+      type: 'manual',
+    });
+    expect(mocks.execWorker).not.toHaveBeenCalled();
+  });
+
+  test('resolves authorized saved and draft environment for test-code execution', async () => {
+    const workspaceId = createId();
+    const storedWorker = worker(workspaceId);
+    const drafts = [
+      { id: createId(), key: 'TOKEN', type: 'Secret' as const },
+    ];
+    mocks.findWorker.mockResolvedValue({ id: storedWorker.id });
+    mocks.resolveWorkerEnvironment.mockResolvedValue({ TOKEN: 'saved-secret' });
+    const caller = await createCaller();
+
+    await caller.testCode({
+      workspaceId,
+      workerId: storedWorker.id,
+      code: storedWorker.code,
+      environmentVariables: drafts,
+    });
+
+    expect(mocks.findWorker).toHaveBeenCalledWith({
+      where: { id: storedWorker.id, workspaceId },
+      select: { id: true },
+    });
+    expect(mocks.resolveWorkerEnvironment).toHaveBeenCalledWith(
+      storedWorker.id,
+      drafts
+    );
+    expect(mocks.execWorker).toHaveBeenCalledWith(
+      storedWorker.code,
+      undefined,
+      undefined,
+      { type: 'test' },
+      { TOKEN: 'saved-secret' }
+    );
+  });
+
+  test('does not resolve saved environment for a worker outside the workspace', async () => {
+    const workspaceId = createId();
+    const workerId = createId();
+    mocks.findWorker.mockResolvedValue(null);
+    const caller = await createCaller();
+
+    await expect(
+      caller.testCode({ workspaceId, workerId, code: 'return true;' })
+    ).rejects.toThrow('Worker not found');
+
+    expect(mocks.resolveWorkerEnvironment).not.toHaveBeenCalled();
+    expect(mocks.execWorker).not.toHaveBeenCalled();
   });
 });

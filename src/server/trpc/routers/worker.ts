@@ -12,7 +12,10 @@ import {
   FunctionWorkerExecutionModelSchema,
 } from '../../prisma/zod/index.js';
 import { createAuditLog } from '../../model/auditLog.js';
-import { execWorker } from '../../model/worker/index.js';
+import {
+  execStoredWorker,
+  execWorker,
+} from '../../model/worker/index.js';
 import { WorkspaceAuditLogType } from '@prisma/client';
 import { env } from '../../utils/env.js';
 import { workerCronManager } from '../../model/worker/manager.js';
@@ -21,6 +24,7 @@ import { OpenApiMeta } from 'trpc-to-openapi';
 import { TRPCError } from '@trpc/server';
 import {
   toSafeWorkerEnvironmentVariable,
+  resolveWorkerEnvironment,
   workerEnvironmentVariablesInputSchema,
 } from '../../model/worker/environment.js';
 
@@ -323,7 +327,7 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
-      const execution = await execWorker(worker.code, workerId, payload, {
+      const execution = await execStoredWorker(worker, payload, {
         type: 'manual',
       });
 
@@ -645,15 +649,40 @@ export const workerRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { code, payload = undefined } = input;
+      const {
+        code,
+        payload = undefined,
+        workerId,
+        environmentVariables,
+        workspaceId,
+      } = input;
 
       if (!env.enableFunctionWorker) {
         throw new Error('Function worker is not enabled');
       }
 
-      const execution = await execWorker(code, undefined, payload, {
-        type: 'test',
-      });
+      if (workerId) {
+        const worker = await prisma.functionWorker.findUnique({
+          where: { id: workerId, workspaceId },
+          select: { id: true },
+        });
+
+        if (!worker) {
+          throw new Error('Worker not found');
+        }
+      }
+
+      const environment = await resolveWorkerEnvironment(
+        workerId,
+        environmentVariables
+      );
+      const execution = await execWorker(
+        code,
+        undefined,
+        payload,
+        { type: 'test' },
+        environment
+      );
 
       return execution;
     }),

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
 import { runCodeInIVM } from '../../utils/vm/index.js';
-import { execWorker } from './index.js';
+import { execStoredWorker, execWorker } from './index.js';
 import { env } from '../../utils/env.js';
 
 const {
@@ -16,6 +16,7 @@ const {
   promWorkerMemoryUsageObserveMock,
   promWorkerRequestPayloadSizeLabelsMock,
   promWorkerRequestPayloadSizeObserveMock,
+  loadWorkerEnvironmentMock,
 } = vi.hoisted(() => {
   const promWorkerExecutionCounterIncMock = vi.fn();
   const promWorkerExecutionDurationObserveMock = vi.fn();
@@ -45,8 +46,13 @@ const {
     promWorkerRequestPayloadSizeLabelsMock: vi.fn(() => ({
       observe: promWorkerRequestPayloadSizeObserveMock,
     })),
+    loadWorkerEnvironmentMock: vi.fn(),
   };
 });
+
+vi.mock('./environment.js', () => ({
+  loadWorkerEnvironment: loadWorkerEnvironmentMock,
+}));
 
 vi.mock('../../utils/vm/index.js', () => ({
   runCodeInIVM: vi.fn(async () => ({
@@ -90,6 +96,7 @@ describe('execWorker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     env.workerExecutionRequestPayloadDisabledWorkerIds = [];
+    loadWorkerEnvironmentMock.mockResolvedValue({});
   });
 
   test('passes request payload without embedding it into the VM source', async () => {
@@ -112,6 +119,49 @@ describe('execWorker', () => {
         __requestPayload: largePayload,
       })
     );
+  });
+
+  test('passes environment variables through context.env without embedding values in source', async () => {
+    await execWorker(
+      'async function fetch(payload, context) { return context.env.TOKEN; }',
+      undefined,
+      undefined,
+      { type: 'test' },
+      { TOKEN: 'runtime-secret' }
+    );
+
+    const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
+    expect(source).not.toContain('runtime-secret');
+    expect(globals?.__workerContext).toEqual({
+      type: 'test',
+      env: { TOKEN: 'runtime-secret' },
+    });
+  });
+
+  test('loads current environment on every stored execution', async () => {
+    const storedWorker = {
+      id: 'worker-stored',
+      code: 'async function fetch(payload, context) { return context.env.TOKEN; }',
+    };
+    loadWorkerEnvironmentMock
+      .mockResolvedValueOnce({ TOKEN: 'first-secret' })
+      .mockResolvedValueOnce({ TOKEN: 'second-secret' });
+
+    await execStoredWorker(storedWorker, undefined, { type: 'manual' });
+    await execStoredWorker(storedWorker, undefined, { type: 'manual' });
+
+    expect(loadWorkerEnvironmentMock).toHaveBeenCalledTimes(2);
+    expect(loadWorkerEnvironmentMock).toHaveBeenNthCalledWith(1, 'worker-stored');
+    expect(loadWorkerEnvironmentMock).toHaveBeenNthCalledWith(2, 'worker-stored');
+    expect(
+      vi.mocked(runCodeInIVM).mock.calls[0]?.[1]?.__workerContext.env
+    ).toEqual({ TOKEN: 'first-secret' });
+    expect(
+      vi.mocked(runCodeInIVM).mock.calls[1]?.[1]?.__workerContext.env
+    ).toEqual({ TOKEN: 'second-secret' });
+    const storedExecutions = JSON.stringify(enqueueMock.mock.calls);
+    expect(storedExecutions).not.toContain('first-secret');
+    expect(storedExecutions).not.toContain('second-secret');
   });
 
   test('does not persist request payload for disabled worker ids', async () => {
