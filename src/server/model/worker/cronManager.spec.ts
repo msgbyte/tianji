@@ -31,6 +31,12 @@ const mocks = vi.hoisted(() => {
     functionWorkerRevision: {
       create: vi.fn(),
     },
+    functionWorkerEnvironmentVariable: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     workspace: {
       findUniqueOrThrow: vi.fn(),
     },
@@ -45,6 +51,7 @@ const mocks = vi.hoisted(() => {
     workerCronBroadcast: {
       publish: vi.fn(async () => undefined),
     },
+    syncWorkerEnvironmentVariables: vi.fn(async () => undefined),
   };
 });
 
@@ -57,6 +64,9 @@ vi.mock('./index.js', () => ({
 }));
 vi.mock('./broadcast.js', () => ({
   workerCronBroadcast: mocks.workerCronBroadcast,
+}));
+vi.mock('./environment.js', () => ({
+  syncWorkerEnvironmentVariables: mocks.syncWorkerEnvironmentVariables,
 }));
 
 import { WorkerCronManager } from './cronManager.js';
@@ -343,6 +353,55 @@ describe('WorkerCronManager lifecycle synchronization', () => {
     expect(manager.getRunner('worker-a')?.worker.cronExpression).toBe(
       '*/30 * * * *'
     );
+  });
+
+  test('synchronizes environment variables inside the worker update transaction', async () => {
+    const manager = new WorkerCronManager();
+    const environmentVariables = [
+      { key: 'API_URL', type: 'Text' as const, value: 'https://example.com' },
+    ];
+    let inTransaction = false;
+    mocks.prisma.functionWorker.findUnique.mockResolvedValue(oldWorker);
+    mocks.prisma.functionWorker.update.mockImplementation(async () => {
+      expect(inTransaction).toBe(true);
+      return updatedWorker;
+    });
+    mocks.syncWorkerEnvironmentVariables.mockImplementation(async () => {
+      expect(inTransaction).toBe(true);
+    });
+    mocks.prisma.$transaction.mockImplementation(async (operation: any) => {
+      inTransaction = true;
+      try {
+        return await operation(mocks.prisma);
+      } finally {
+        inTransaction = false;
+      }
+    });
+
+    await manager.upsert({
+      ...upsertInput,
+      id: 'worker-a',
+      environmentVariables,
+    });
+
+    expect(mocks.syncWorkerEnvironmentVariables).toHaveBeenCalledWith(
+      mocks.prisma,
+      'worker-a',
+      environmentVariables
+    );
+  });
+
+  test('leaves environment variables untouched when an update omits them', async () => {
+    const manager = new WorkerCronManager();
+    mocks.prisma.functionWorker.findUnique.mockResolvedValue(oldWorker);
+    mocks.prisma.functionWorker.update.mockResolvedValue(updatedWorker);
+
+    await manager.upsert({
+      ...upsertInput,
+      id: 'worker-a',
+    });
+
+    expect(mocks.syncWorkerEnvironmentVariables).not.toHaveBeenCalled();
   });
 
   test('delete publishes only after successful persistence', async () => {

@@ -71,3 +71,102 @@ export function toSafeWorkerEnvironmentVariable(
     hasValue: true,
   };
 }
+
+type WorkerEnvironmentVariableTransaction = {
+  functionWorkerEnvironmentVariable: {
+    findMany(args: {
+      where: { workerId: string };
+    }): Promise<WorkerEnvironmentVariableRow[]>;
+    create(args: {
+      data: {
+        workerId: string;
+        key: string;
+        type: 'Text' | 'Secret';
+        value: string;
+      };
+    }): Promise<unknown>;
+    update(args: {
+      where: { id: string; workerId: string };
+      data: {
+        key: string;
+        type: 'Text' | 'Secret';
+        value?: string;
+      };
+    }): Promise<unknown>;
+    deleteMany(args: {
+      where: { workerId: string; id: { in: string[] } };
+    }): Promise<unknown>;
+  };
+};
+
+export async function syncWorkerEnvironmentVariables(
+  tx: WorkerEnvironmentVariableTransaction,
+  workerId: string,
+  inputs: WorkerEnvironmentVariableInput[]
+): Promise<void> {
+  const existingRows = await tx.functionWorkerEnvironmentVariable.findMany({
+    where: { workerId },
+  });
+  const existingById = new Map(existingRows.map((row) => [row.id, row]));
+
+  for (const input of inputs) {
+    if (!input.id) {
+      if (input.value === undefined) {
+        throw new Error('A value is required for a new Secret');
+      }
+      continue;
+    }
+
+    const existing = existingById.get(input.id);
+    if (!existing) {
+      throw new Error('Environment variable not found');
+    }
+    if (input.type !== existing.type && input.value === undefined) {
+      throw new Error('A value is required when changing variable type');
+    }
+  }
+
+  const submittedIds = new Set(
+    inputs.flatMap((input) => (input.id ? [input.id] : []))
+  );
+  const deletedIds = existingRows
+    .filter((row) => !submittedIds.has(row.id))
+    .map((row) => row.id);
+
+  if (deletedIds.length > 0) {
+    await tx.functionWorkerEnvironmentVariable.deleteMany({
+      where: {
+        workerId,
+        id: { in: deletedIds },
+      },
+    });
+  }
+
+  for (const input of inputs) {
+    if (!input.id) {
+      if (input.value === undefined) {
+        throw new Error('A value is required for a new Secret');
+      }
+
+      await tx.functionWorkerEnvironmentVariable.create({
+        data: {
+          workerId,
+          key: input.key,
+          type: input.type,
+          value: input.value,
+        },
+      });
+      continue;
+    }
+
+    const data =
+      input.type === 'Secret' && input.value === undefined
+        ? { key: input.key, type: input.type }
+        : { key: input.key, type: input.type, value: input.value };
+
+    await tx.functionWorkerEnvironmentVariable.update({
+      where: { id: input.id, workerId },
+      data,
+    });
+  }
+}

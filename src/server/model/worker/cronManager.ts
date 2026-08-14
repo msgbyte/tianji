@@ -4,6 +4,10 @@ import { WorkerCronRunner } from './cronRunner.js';
 import { logger } from '../../utils/logger.js';
 import { delWorkerCache } from './index.js';
 import {
+  syncWorkerEnvironmentVariables,
+  type WorkerEnvironmentVariableInput,
+} from './environment.js';
+import {
   workerCronBroadcast,
   type WorkerCronBroadcastEvent,
 } from './broadcast.js';
@@ -15,6 +19,7 @@ export type WorkerCronUpsertData = Pick<
   id?: string;
   active?: boolean;
   description?: string;
+  environmentVariables?: WorkerEnvironmentVariableInput[];
 };
 
 export class WorkerCronManager {
@@ -45,7 +50,7 @@ export class WorkerCronManager {
    * Create or update worker cron job
    */
   async upsert(data: WorkerCronUpsertData): Promise<FunctionWorker> {
-    const { id, workspaceId, ...others } = data;
+    const { id, workspaceId, environmentVariables, ...others } = data;
 
     if (id) {
       return this.runLifecycle(id, async () => {
@@ -78,6 +83,14 @@ export class WorkerCronManager {
               revision: nextRevision,
             },
           });
+
+          if (environmentVariables !== undefined) {
+            await syncWorkerEnvironmentVariables(
+              tx,
+              updatedWorker.id,
+              environmentVariables
+            );
+          }
 
           delWorkerCache(id, workspaceId);
 
@@ -116,6 +129,12 @@ export class WorkerCronManager {
           code: createdWorker.code,
         },
       });
+
+      await syncWorkerEnvironmentVariables(
+        tx,
+        createdWorker.id,
+        environmentVariables ?? []
+      );
 
       return createdWorker;
     });
