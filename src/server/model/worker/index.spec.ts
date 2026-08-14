@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
 import { runCodeInIVM } from '../../utils/vm/index.js';
-import { execWorker } from './index.js';
+import { execStoredWorker, execWorker } from './index.js';
 import { env } from '../../utils/env.js';
 
 const {
@@ -16,6 +16,7 @@ const {
   promWorkerMemoryUsageObserveMock,
   promWorkerRequestPayloadSizeLabelsMock,
   promWorkerRequestPayloadSizeObserveMock,
+  loadWorkerEnvironmentForExecutionMock,
 } = vi.hoisted(() => {
   const promWorkerExecutionCounterIncMock = vi.fn();
   const promWorkerExecutionDurationObserveMock = vi.fn();
@@ -45,8 +46,13 @@ const {
     promWorkerRequestPayloadSizeLabelsMock: vi.fn(() => ({
       observe: promWorkerRequestPayloadSizeObserveMock,
     })),
+    loadWorkerEnvironmentForExecutionMock: vi.fn(),
   };
 });
+
+vi.mock('./environment.js', () => ({
+  loadWorkerEnvironmentForExecution: loadWorkerEnvironmentForExecutionMock,
+}));
 
 vi.mock('../../utils/vm/index.js', () => ({
   runCodeInIVM: vi.fn(async () => ({
@@ -90,6 +96,10 @@ describe('execWorker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     env.workerExecutionRequestPayloadDisabledWorkerIds = [];
+    loadWorkerEnvironmentForExecutionMock.mockResolvedValue({
+      environment: {},
+      secretValues: [],
+    });
   });
 
   test('passes request payload without embedding it into the VM source', async () => {
@@ -112,6 +122,92 @@ describe('execWorker', () => {
         __requestPayload: largePayload,
       })
     );
+  });
+
+  test('passes environment variables through context.env without embedding values in source', async () => {
+    await execWorker(
+      'async function fetch(payload, context) { return context.env.TOKEN; }',
+      undefined,
+      undefined,
+      { type: 'test' },
+      { TOKEN: 'runtime-secret' }
+    );
+
+    const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
+    expect(source).not.toContain('runtime-secret');
+    expect(globals?.__workerContext).toEqual({
+      type: 'test',
+      env: { TOKEN: 'runtime-secret' },
+    });
+  });
+
+  test('redacts Secret values from string and nested object logs', async () => {
+    vi.mocked(runCodeInIVM).mockResolvedValueOnce({
+      logger: [
+        [
+          'log',
+          123,
+          'token=runtime-secret',
+          { token: 'runtime-secret', 'runtime-secret': true },
+        ],
+      ],
+      result: { ok: true },
+      usage: 1,
+      cpuTime: 1,
+      memoryUsage: { used_heap_size: 1 } as any,
+    });
+
+    const execution = await execWorker(
+      'async function fetch() {}',
+      undefined,
+      undefined,
+      { type: 'test' },
+      { TOKEN: 'runtime-secret', LABEL: 'visible-text' },
+      ['runtime-secret']
+    );
+
+    expect(execution.logs).toEqual([
+      ['log', 123, 'token=[secret]', { token: '[secret]', '[secret]': true }],
+    ]);
+    expect(JSON.stringify(execution.logs)).not.toContain('runtime-secret');
+  });
+
+  test('loads current environment on every stored execution', async () => {
+    const storedWorker = {
+      id: 'worker-stored',
+      code: 'async function fetch(payload, context) { return context.env.TOKEN; }',
+    };
+    loadWorkerEnvironmentForExecutionMock
+      .mockResolvedValueOnce({
+        environment: { TOKEN: 'first-secret' },
+        secretValues: ['first-secret'],
+      })
+      .mockResolvedValueOnce({
+        environment: { TOKEN: 'second-secret' },
+        secretValues: ['second-secret'],
+      });
+
+    await execStoredWorker(storedWorker, undefined, { type: 'manual' });
+    await execStoredWorker(storedWorker, undefined, { type: 'manual' });
+
+    expect(loadWorkerEnvironmentForExecutionMock).toHaveBeenCalledTimes(2);
+    expect(loadWorkerEnvironmentForExecutionMock).toHaveBeenNthCalledWith(
+      1,
+      'worker-stored'
+    );
+    expect(loadWorkerEnvironmentForExecutionMock).toHaveBeenNthCalledWith(
+      2,
+      'worker-stored'
+    );
+    expect(
+      vi.mocked(runCodeInIVM).mock.calls[0]?.[1]?.__workerContext.env
+    ).toEqual({ TOKEN: 'first-secret' });
+    expect(
+      vi.mocked(runCodeInIVM).mock.calls[1]?.[1]?.__workerContext.env
+    ).toEqual({ TOKEN: 'second-secret' });
+    const storedExecutions = JSON.stringify(enqueueMock.mock.calls);
+    expect(storedExecutions).not.toContain('first-secret');
+    expect(storedExecutions).not.toContain('second-secret');
   });
 
   test('does not persist request payload for disabled worker ids', async () => {
