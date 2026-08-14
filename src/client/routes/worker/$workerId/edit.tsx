@@ -26,22 +26,23 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
+  const trpcUtils = trpc.useUtils();
+  const workerQueryInput = { workspaceId, workerId };
 
-  const { data: worker, isLoading } = trpc.worker.get.useQuery({
-    workspaceId,
-    workerId,
-  });
+  const { data: worker, isLoading } =
+    trpc.worker.get.useQuery(workerQueryInput);
   const {
     data: environmentVariables,
     isLoading: isEnvironmentLoading,
-  } = trpc.worker.getEnvironmentVariables.useQuery({
-    workspaceId,
-    workerId,
-  });
+  } = trpc.worker.getEnvironmentVariables.useQuery(workerQueryInput);
 
   const updateMutation = trpc.worker.upsert.useMutation({
     onError: defaultErrorHandler,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await Promise.all([
+        trpcUtils.worker.get.refetch(workerQueryInput),
+        trpcUtils.worker.getEnvironmentVariables.refetch(workerQueryInput),
+      ]);
       toast.success(t('Worker updated successfully'));
       navigate({
         to: '/worker/$workerId',
@@ -79,6 +80,7 @@ function PageComponent() {
     >
       <ScrollArea className="h-full overflow-hidden p-4">
         <WorkerEditForm
+          key={workerId}
           workerId={workerId}
           defaultValues={{
             name: worker.name,

@@ -143,20 +143,31 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
     const [showTestResult, setShowTestResult] = useState(false);
     const navigate = useNavigate();
 
-    const form = useForm<WorkerEditFormValues>({
-      resolver: zodResolver(formSchema),
-      defaultValues: {
+    const defaultValues = React.useMemo(
+      () => ({
         name: '',
         description: '',
         code: defaultCode,
         active: true,
         enableCron: false,
         cronExpression: '',
-        visibility: 'Public',
+        visibility: 'Public' as const,
         environmentVariables: [],
         ...props.defaultValues,
-      },
+      }),
+      [props.defaultValues]
+    );
+    const form = useForm<WorkerEditFormValues>({
+      resolver: zodResolver(formSchema),
+      defaultValues,
     });
+    const { isDirty } = form.formState;
+
+    useEffect(() => {
+      if (!isDirty) {
+        form.reset(defaultValues);
+      }
+    }, [defaultValues, form, isDirty]);
 
     const enableCron = form.watch('enableCron');
     const cronExpressionValue = form.watch('cronExpression');

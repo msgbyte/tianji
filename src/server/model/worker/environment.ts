@@ -26,6 +26,7 @@ export const workerEnvironmentVariablesInputSchema = z
   .array(workerEnvironmentVariableInputSchema)
   .superRefine((items, ctx) => {
     const keys = new Set<string>();
+    const ids = new Set<string>();
     items.forEach((item, index) => {
       if (keys.has(item.key)) {
         ctx.addIssue({
@@ -35,6 +36,17 @@ export const workerEnvironmentVariablesInputSchema = z
         });
       }
       keys.add(item.key);
+
+      if (item.id) {
+        if (ids.has(item.id)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Environment variable IDs must be unique',
+            path: [index, 'id'],
+          });
+        }
+        ids.add(item.id);
+      }
     });
   });
 
@@ -58,6 +70,7 @@ function validateWorkerEnvironmentInputs(
   inputs: WorkerEnvironmentVariableInput[]
 ) {
   const existingById = new Map(existingRows.map((row) => [row.id, row]));
+  const submittedIds = new Set<string>();
 
   for (const input of inputs) {
     if (!input.id) {
@@ -66,6 +79,10 @@ function validateWorkerEnvironmentInputs(
       }
       continue;
     }
+    if (submittedIds.has(input.id)) {
+      throw new Error('Environment variable IDs must be unique');
+    }
+    submittedIds.add(input.id);
 
     const existing = existingById.get(input.id);
     if (!existing) {
@@ -77,6 +94,23 @@ function validateWorkerEnvironmentInputs(
   }
 
   return existingById;
+}
+
+function reserveTemporaryEnvironmentKey(
+  rowId: string,
+  occupiedKeys: Set<string>
+) {
+  const base = `__tianji_environment_staging__:${rowId}`;
+  let candidate = base;
+  let suffix = 0;
+
+  while (occupiedKeys.has(candidate)) {
+    suffix += 1;
+    candidate = `${base}:${suffix}`;
+  }
+
+  occupiedKeys.add(candidate);
+  return candidate;
 }
 
 export async function loadWorkerEnvironment(
@@ -172,7 +206,7 @@ export async function syncWorkerEnvironmentVariables(
   const existingRows = await tx.functionWorkerEnvironmentVariable.findMany({
     where: { workerId },
   });
-  validateWorkerEnvironmentInputs(existingRows, inputs);
+  const existingById = validateWorkerEnvironmentInputs(existingRows, inputs);
 
   const submittedIds = new Set(
     inputs.flatMap((input) => (input.id ? [input.id] : []))
@@ -188,6 +222,28 @@ export async function syncWorkerEnvironmentVariables(
         id: { in: deletedIds },
       },
     });
+  }
+
+  const occupiedKeys = new Set(existingRows.map((row) => row.key));
+  for (const input of inputs) {
+    if (!input.id) {
+      continue;
+    }
+
+    const existing = existingById.get(input.id) as WorkerEnvironmentVariableRow;
+    if (existing.key === input.key) {
+      continue;
+    }
+
+    const temporaryKey = reserveTemporaryEnvironmentKey(
+      existing.id,
+      occupiedKeys
+    );
+    await tx.functionWorkerEnvironmentVariable.update({
+      where: { id: existing.id, workerId },
+      data: { key: temporaryKey, type: existing.type },
+    });
+    occupiedKeys.delete(existing.key);
   }
 
   for (const input of inputs) {

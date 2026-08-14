@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   getWorker: vi.fn(),
   execWorker: vi.fn(),
   execStoredWorker: vi.fn(),
+  loggerError: vi.fn(),
 }));
 
 vi.mock('../model/worker/index.js', () => ({
@@ -18,7 +19,33 @@ vi.mock('../utils/env.js', () => ({
   env: { enableFunctionWorker: true },
 }));
 
+vi.mock('../utils/logger.js', () => ({
+  logger: { error: mocks.loggerError },
+}));
+
 import { workerRouter } from './worker.js';
+
+const worker = {
+  id: 'worker-a',
+  workspaceId: 'workspace-a',
+  name: 'HTTP Worker',
+  description: null,
+  code: 'async function fetch(payload, context) { return context.env.TOKEN; }',
+  revision: 1,
+  active: true,
+  enableCron: false,
+  cronExpression: null,
+  visibility: 'Public',
+  createdAt: new Date('2026-08-15T00:00:00.000Z'),
+  updatedAt: new Date('2026-08-15T00:00:00.000Z'),
+};
+
+function createApp() {
+  const app = express();
+  app.use(express.json());
+  app.use(workerRouter);
+  return app;
+}
 
 describe('public HTTP worker execution', () => {
   beforeEach(() => {
@@ -29,26 +56,9 @@ describe('public HTTP worker execution', () => {
   });
 
   test('delegates the loaded worker and HTTP request data to stored execution', async () => {
-    const worker = {
-      id: 'worker-a',
-      workspaceId: 'workspace-a',
-      name: 'HTTP Worker',
-      description: null,
-      code: 'async function fetch(payload, context) { return context.env.TOKEN; }',
-      revision: 1,
-      active: true,
-      enableCron: false,
-      cronExpression: null,
-      visibility: 'Public',
-      createdAt: new Date('2026-08-15T00:00:00.000Z'),
-      updatedAt: new Date('2026-08-15T00:00:00.000Z'),
-    };
     mocks.getWorker.mockResolvedValue(worker);
-    const app = express();
-    app.use(express.json());
-    app.use(workerRouter);
 
-    const response = await request(app)
+    const response = await request(createApp())
       .post('/workspace-a/worker-a?queryValue=from-query')
       .set('x-worker-test', 'header-value')
       .send({ bodyValue: 'from-body' });
@@ -70,5 +80,28 @@ describe('public HTTP worker execution', () => {
       }
     );
     expect(mocks.execWorker).not.toHaveBeenCalled();
+  });
+
+  test('keeps rejected environment-load details out of the public response', async () => {
+    const environmentLoadError = new Error(
+      'database connection failed for internal-hostname'
+    );
+    mocks.getWorker.mockResolvedValue(worker);
+    mocks.execStoredWorker.mockRejectedValue(environmentLoadError);
+
+    const response = await request(createApp()).get(
+      '/workspace-a/worker-a'
+    );
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      success: false,
+      error: 'Internal server error during worker execution',
+    });
+    expect(JSON.stringify(response.body)).not.toContain('internal-hostname');
+    expect(mocks.loggerError).toHaveBeenCalledWith(
+      'Worker execution error:',
+      environmentLoadError
+    );
   });
 });

@@ -147,6 +147,27 @@ describe('worker environment variable contract', () => {
       ])
     ).toThrow('Environment variable keys must be unique');
   });
+
+  test('rejects duplicate submitted ids', () => {
+    const duplicateId = 'tz4a98xxat96iws9zmbrgj3a';
+
+    expect(() =>
+      workerEnvironmentVariablesInputSchema.parse([
+        {
+          id: duplicateId,
+          key: 'FIRST_KEY',
+          type: 'Text',
+          value: 'one',
+        },
+        {
+          id: duplicateId,
+          key: 'SECOND_KEY',
+          type: 'Text',
+          value: 'two',
+        },
+      ])
+    ).toThrow('Environment variable IDs must be unique');
+  });
 });
 
 describe('syncWorkerEnvironmentVariables', () => {
@@ -208,6 +229,35 @@ describe('syncWorkerEnvironmentVariables', () => {
     ).rejects.toThrow('Environment variable not found');
   });
 
+  test('rejects duplicate submitted ids before writing', async () => {
+    tx.functionWorkerEnvironmentVariable.findMany.mockResolvedValue([
+      {
+        id: 'env_text',
+        key: 'FIRST_KEY',
+        type: 'Text',
+        value: 'old',
+      },
+    ]);
+
+    await expect(
+      syncWorkerEnvironmentVariables(tx, 'worker-a', [
+        {
+          id: 'env_text',
+          key: 'FIRST_KEY',
+          type: 'Text',
+          value: 'one',
+        },
+        {
+          id: 'env_text',
+          key: 'SECOND_KEY',
+          type: 'Text',
+          value: 'two',
+        },
+      ])
+    ).rejects.toThrow('Environment variable IDs must be unique');
+    expect(tx.functionWorkerEnvironmentVariable.update).not.toHaveBeenCalled();
+  });
+
   test('deletes stored rows omitted from the submitted collection', async () => {
     tx.functionWorkerEnvironmentVariable.findMany.mockResolvedValue([
       { id: 'env_omit', workerId: 'worker-a', key: 'TOKEN', type: 'Text', value: 'old' },
@@ -233,5 +283,68 @@ describe('syncWorkerEnvironmentVariables', () => {
         value: 'https://example.com',
       },
     });
+  });
+
+  test('stages changed keys before applying a two-row swap', async () => {
+    const existingRows = [
+      {
+        id: 'env_first',
+        key: 'FIRST_KEY',
+        type: 'Text' as const,
+        value: 'one',
+      },
+      {
+        id: 'env_second',
+        key: 'SECOND_KEY',
+        type: 'Text' as const,
+        value: 'two',
+      },
+    ];
+    const keysById = new Map(
+      existingRows.map((row) => [row.id, row.key] as const)
+    );
+    tx.functionWorkerEnvironmentVariable.findMany.mockResolvedValue(
+      existingRows
+    );
+    tx.functionWorkerEnvironmentVariable.update.mockImplementation(
+      async ({ where, data }) => {
+        const conflictingRow = [...keysById.entries()].find(
+          ([id, key]) => id !== where.id && key === data.key
+        );
+        if (conflictingRow) {
+          throw new Error('Unique constraint failed on workerId and key');
+        }
+
+        keysById.set(where.id, data.key);
+        return {};
+      }
+    );
+
+    await syncWorkerEnvironmentVariables(tx, 'worker-a', [
+      {
+        id: 'env_first',
+        key: 'SECOND_KEY',
+        type: 'Text',
+        value: 'one',
+      },
+      {
+        id: 'env_second',
+        key: 'FIRST_KEY',
+        type: 'Text',
+        value: 'two',
+      },
+    ]);
+
+    expect(Object.fromEntries(keysById)).toEqual({
+      env_first: 'SECOND_KEY',
+      env_second: 'FIRST_KEY',
+    });
+    const updateKeys =
+      tx.functionWorkerEnvironmentVariable.update.mock.calls.map(
+        ([{ data }]) => data.key
+      );
+    expect(updateKeys.slice(0, 2)).not.toContain('FIRST_KEY');
+    expect(updateKeys.slice(0, 2)).not.toContain('SECOND_KEY');
+    expect(updateKeys.slice(-2)).toEqual(['SECOND_KEY', 'FIRST_KEY']);
   });
 });

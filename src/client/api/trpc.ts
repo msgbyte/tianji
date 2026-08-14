@@ -22,7 +22,11 @@ export type AppRouterInput = inferRouterInputs<AppRouter>;
 export type AppRouterOutput = inferRouterOutputs<AppRouter>;
 
 const url = '/trpc';
-const sensitiveOperationPaths = new Set(['aiGateway.testConnection']);
+const sensitiveOperationPaths = new Set([
+  'aiGateway.testConnection',
+  'worker.testCode',
+  'worker.upsert',
+]);
 
 function headers() {
   const timezone = getUserTimezone();

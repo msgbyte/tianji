@@ -79,7 +79,6 @@ workerRouter.all(
       res.status(500).json({
         success: false,
         error: 'Internal server error during worker execution',
-        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
