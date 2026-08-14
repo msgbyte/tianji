@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { param, validate } from '../middleware/validate.js';
-import { execWorker, getWorker } from '../model/worker/index.js';
+import { execStoredWorker, getWorker } from '../model/worker/index.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../utils/env.js';
 import { FunctionWorkerVisibility } from '@prisma/client';
@@ -52,9 +52,8 @@ workerRouter.all(
       }
 
       // Execute the worker
-      const execution = await execWorker(
-        worker.code,
-        workerId,
+      const execution = await execStoredWorker(
+        worker,
         requestPayload,
         {
           type: 'http',
