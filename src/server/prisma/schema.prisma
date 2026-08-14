@@ -1138,6 +1138,11 @@ enum FunctionWorkerVisibility {
   Private
 }
 
+enum FunctionWorkerEnvironmentVariableType {
+  Text
+  Secret
+}
+
 model FunctionWorker {
   id             String                   @id @default(cuid()) @db.VarChar(30)
   workspaceId    String                   @db.VarChar(30)
@@ -1156,8 +1161,24 @@ model FunctionWorker {
 
   executions FunctionWorkerExecution[]
   revisions  FunctionWorkerRevision[]
+  environmentVariables FunctionWorkerEnvironmentVariable[]
 
   @@index([workspaceId])
+}
+
+model FunctionWorkerEnvironmentVariable {
+  id        String                                @id @default(cuid()) @db.VarChar(30)
+  workerId  String                                @db.VarChar(30)
+  key       String                                @db.VarChar(255)
+  type      FunctionWorkerEnvironmentVariableType
+  value     String
+  createdAt DateTime                              @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime                              @updatedAt @db.Timestamptz(6)
+
+  worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([workerId, key])
+  @@index([workerId])
 }
 
 enum FunctionWorkerExecutionStatus {
