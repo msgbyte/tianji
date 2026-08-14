@@ -123,7 +123,6 @@ describe('execWorker', () => {
     const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
 
     expect(source).not.toContain(largePayload.data);
-    expect(source.length).toBeLessThan(5_000);
     expect(globals).toEqual(
       expect.objectContaining({
         __requestPayload: largePayload,
@@ -134,10 +133,15 @@ describe('execWorker', () => {
   test('passes environment variables through context.env without embedding values in source', async () => {
     await execWorker(
       'async function fetch(payload, context) { return context.env.TOKEN; }',
-      undefined,
-      undefined,
-      { type: 'test' },
-      { TOKEN: 'runtime-secret' }
+      {
+        scope: {
+          kind: 'test',
+          workspaceId: 'workspace-a',
+          executionId: 'environment-test',
+        },
+        context: { type: 'test' },
+        environment: { TOKEN: 'runtime-secret' },
+      }
     );
 
     const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
@@ -166,11 +170,16 @@ describe('execWorker', () => {
 
     const execution = await execWorker(
       'async function fetch() {}',
-      undefined,
-      undefined,
-      { type: 'test' },
-      { TOKEN: 'runtime-secret', LABEL: 'visible-text' },
-      ['runtime-secret']
+      {
+        scope: {
+          kind: 'test',
+          workspaceId: 'workspace-a',
+          executionId: 'redaction-test',
+        },
+        context: { type: 'test' },
+        environment: { TOKEN: 'runtime-secret', LABEL: 'visible-text' },
+        secretValues: ['runtime-secret'],
+      }
     );
 
     expect(execution.logs).toEqual([
@@ -182,6 +191,7 @@ describe('execWorker', () => {
   test('loads current environment on every stored execution', async () => {
     const storedWorker = {
       id: 'worker-stored',
+      workspaceId: 'workspace-a',
       code: 'async function fetch(payload, context) { return context.env.TOKEN; }',
     };
     loadWorkerEnvironmentForExecutionMock
@@ -306,7 +316,7 @@ describe('execWorker', () => {
     );
   });
 
-  test('installs KV globals without embedding worker scope identities in the VM source', async () => {
+  test('passes KV bridges without embedding worker scope identities in the VM source', async () => {
     const workspaceId = 'workspace-source-secret';
     const workerId = 'worker-source-secret';
 
@@ -318,7 +328,6 @@ describe('execWorker', () => {
 
     const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
 
-    expect(source).toContain('globalThis.kv = Object.freeze(');
     expect(source).not.toContain(workspaceId);
     expect(source).not.toContain(workerId);
     expect(globals).toEqual(

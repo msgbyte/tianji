@@ -1,4 +1,5 @@
-import { getCacheManager } from '../../cache/index.js';
+import { createHash } from 'node:crypto';
+import { getWorkerCacheManager } from '../../cache/index.js';
 
 export const WORKER_KV_DEFAULT_TTL_MS = 10 * 60 * 1000;
 export const WORKER_KV_MIN_TTL_MS = 1_000;
@@ -49,7 +50,7 @@ export class WorkerKVError extends Error {
 }
 
 type WorkerKVDependencies = {
-  getCacheManager?: typeof getCacheManager;
+  getCacheManager?: typeof getWorkerCacheManager;
   operationTimeoutMs?: number;
 };
 
@@ -63,34 +64,118 @@ function validateKey(key: string) {
   }
 }
 
-function validateValue(value: unknown, visited = new WeakSet<object>()): value is WorkerKVValue {
+const INVALID_WORKER_KV_VALUE = Symbol('INVALID_WORKER_KV_VALUE');
+
+function hasSerializationHook(prototype: object | null) {
+  let current = prototype;
+  while (current !== null) {
+    if (Object.getOwnPropertyDescriptor(current, 'toJSON') !== undefined) {
+      return true;
+    }
+    current = Object.getPrototypeOf(current);
+  }
+  return false;
+}
+
+function isArrayIndex(key: string, length: number) {
+  const index = Number(key);
+  return (
+    Number.isSafeInteger(index) &&
+    index >= 0 &&
+    index < length &&
+    String(index) === key
+  );
+}
+
+function normalizeValue(
+  value: unknown,
+  activePath = new WeakSet<object>()
+): WorkerKVValue | typeof INVALID_WORKER_KV_VALUE {
   if (value === null || typeof value === 'string' || typeof value === 'boolean') {
-    return true;
+    return value;
   }
 
   if (typeof value === 'number') {
-    return Number.isFinite(value);
+    return Number.isFinite(value) ? value : INVALID_WORKER_KV_VALUE;
   }
 
   if (typeof value !== 'object') {
-    return false;
+    return INVALID_WORKER_KV_VALUE;
   }
 
-  if (visited.has(value)) {
-    return false;
+  if (activePath.has(value)) {
+    return INVALID_WORKER_KV_VALUE;
   }
-  visited.add(value);
+  activePath.add(value);
 
-  if (Array.isArray(value)) {
-    return value.every((entry) => validateValue(entry, visited));
+  try {
+    if (Object.getOwnPropertySymbols(value).length > 0) {
+      return INVALID_WORKER_KV_VALUE;
+    }
+
+    if (Array.isArray(value)) {
+      const prototype = Object.getPrototypeOf(value);
+      if (
+        prototype !== Array.prototype ||
+        hasSerializationHook(prototype)
+      ) {
+        return INVALID_WORKER_KV_VALUE;
+      }
+
+      const normalized: WorkerKVValue[] = new Array(value.length);
+      Object.setPrototypeOf(normalized, null);
+      for (const key of Object.getOwnPropertyNames(value)) {
+        if (key === 'length') {
+          continue;
+        }
+        if (!isArrayIndex(key, value.length)) {
+          return INVALID_WORKER_KV_VALUE;
+        }
+
+        const descriptor = Object.getOwnPropertyDescriptor(value, key);
+        if (descriptor === undefined || !Object.hasOwn(descriptor, 'value')) {
+          return INVALID_WORKER_KV_VALUE;
+        }
+        const entry = normalizeValue(descriptor.value, activePath);
+        if (entry === INVALID_WORKER_KV_VALUE) {
+          return INVALID_WORKER_KV_VALUE;
+        }
+        normalized[Number(key)] = entry;
+      }
+      return normalized;
+    }
+
+    const prototype = Object.getPrototypeOf(value);
+    if (
+      (prototype !== Object.prototype && prototype !== null) ||
+      hasSerializationHook(prototype)
+    ) {
+      return INVALID_WORKER_KV_VALUE;
+    }
+
+    const normalized = Object.create(null) as Record<string, WorkerKVValue>;
+    for (const key of Object.getOwnPropertyNames(value)) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (
+        descriptor === undefined ||
+        !descriptor.enumerable ||
+        !Object.hasOwn(descriptor, 'value')
+      ) {
+        return INVALID_WORKER_KV_VALUE;
+      }
+
+      const entry = normalizeValue(descriptor.value, activePath);
+      if (entry === INVALID_WORKER_KV_VALUE) {
+        return INVALID_WORKER_KV_VALUE;
+      }
+      normalized[key] = entry;
+    }
+    return normalized;
+  } catch {
+    return INVALID_WORKER_KV_VALUE;
+  } finally {
+    activePath.delete(value);
   }
-
-  const prototype = Object.getPrototypeOf(value);
-  if (prototype !== Object.prototype && prototype !== null) {
-    return false;
-  }
-
-  return Object.values(value).every((entry) => validateValue(entry, visited));
 }
 
 function validateTtl(ttl: number | undefined) {
@@ -105,13 +190,14 @@ function validateTtl(ttl: number | undefined) {
 }
 
 function encodeValue(value: WorkerKVValue) {
-  if (!validateValue(value)) {
+  const normalized = normalizeValue(value);
+  if (normalized === INVALID_WORKER_KV_VALUE) {
     throw new WorkerKVError('WORKER_KV_INVALID_VALUE');
   }
 
   let encoded: string;
   try {
-    encoded = JSON.stringify(value);
+    encoded = JSON.stringify(normalized);
   } catch {
     throw new WorkerKVError('WORKER_KV_INVALID_VALUE');
   }
@@ -123,11 +209,15 @@ function encodeValue(value: WorkerKVValue) {
   return encoded;
 }
 
+function encodeKey(key: string) {
+  return createHash('sha256').update(key, 'utf16le').digest('hex');
+}
+
 export function createWorkerKVFacade(
   scope: WorkerKVExecutionScope,
   dependencies: WorkerKVDependencies = {}
 ): WorkerKVFacade {
-  const cacheManager = dependencies.getCacheManager ?? getCacheManager;
+  const cacheManager = dependencies.getCacheManager ?? getWorkerCacheManager;
   const operationTimeoutMs =
     dependencies.operationTimeoutMs ?? WORKER_KV_OPERATION_TIMEOUT_MS;
   const privatePrefix =
@@ -185,7 +275,7 @@ export function createWorkerKVFacade(
         validateKey(key);
 
         const cache = await runBackend(cacheManager());
-        const cached = await runBackend(cache.get(`${prefix}${key}`));
+        const cached = await runBackend(cache.get(`${prefix}${encodeKey(key)}`));
         if (cached === undefined) {
           return undefined;
         }
@@ -205,13 +295,16 @@ export function createWorkerKVFacade(
         consumeWrite(Buffer.byteLength(encoded));
 
         const cache = await runBackend(cacheManager());
-        await runBackend(
+        const stored = await runBackend(
           cache.set(
-            `${prefix}${key}`,
+            `${prefix}${encodeKey(key)}`,
             encoded,
             ttl ?? WORKER_KV_DEFAULT_TTL_MS
           )
         );
+        if (stored === false) {
+          throw new WorkerKVError('WORKER_KV_UNAVAILABLE');
+        }
       },
 
       async delete(key: string) {
@@ -219,7 +312,7 @@ export function createWorkerKVFacade(
         validateKey(key);
 
         const cache = await runBackend(cacheManager());
-        return runBackend(cache.delete(`${prefix}${key}`));
+        return runBackend(cache.delete(`${prefix}${encodeKey(key)}`));
       },
     };
   }

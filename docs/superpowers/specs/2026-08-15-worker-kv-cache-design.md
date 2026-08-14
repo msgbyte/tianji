@@ -8,8 +8,13 @@ short-lived state with another Worker in the same Workspace.
 
 Tianji already has a shared Keyv cache manager. It uses Redis when `REDIS_URL`
 is configured, PostgreSQL otherwise, and an in-process map in memory-only
-deployments. Workers should reuse this capability without receiving direct
-access to Keyv or to Tianji's internal cache keys.
+deployments. Workers reuse the configured store and namespace through a
+Worker-only Keyv wrapper with `throwOnErrors: true`. Because `@keyv/redis` also
+has an adapter-level error policy, Redis deployments use a strict adapter view
+over the configured shared client. Neither path opens a second backend
+connection nor changes the shared manager's error behavior.
+Workers do not receive direct access to Keyv or to Tianji's internal cache
+keys.
 
 ## Goals
 
@@ -95,23 +100,39 @@ override either identity.
 Add a Worker-specific KV facade outside the isolate. The facade receives a
 trusted execution scope containing the Workspace ID, Worker ID, execution type,
 and test namespace where applicable. It validates every operation, constructs a
-logical key, and delegates to the existing `getCacheManager()`.
+logical key, and delegates to a strict Keyv wrapper over the store returned by
+the existing `getCacheManager()`.
 
-Logical keys use versioned namespaces:
+Logical keys use versioned namespaces and a SHA-256 hex digest of the validated
+user key's UTF-16LE code units. Hashing code units preserves the existing
+JavaScript `string.length` contract without collapsing distinct accepted lone
+surrogates:
 
 ```text
-worker-kv:v1:<workspaceId>:<workerId>:<userKey>
-workspace-kv:v1:<workspaceId>:<userKey>
+worker-kv:v1:<workspaceId>:<workerId>:<sha256(userKey)>
+workspace-kv:v1:<workspaceId>:<sha256(userKey)>
 ```
 
-The existing Keyv namespace remains responsible for the final physical prefix.
-The facade never exposes constructed keys, backend clients, or backend errors to
-the sandbox.
+Test scopes retain their execution identity before the same digest. Hashing only
+the user-controlled suffix keeps maximum-length and NUL-containing logical keys
+safe for PostgreSQL's `VARCHAR(255)` key column. With the schema's 30-character
+identity bounds, the longest current physical key is 167 characters. The
+existing `tianji-cache` Keyv namespace remains responsible for the final
+physical prefix. The facade never exposes constructed keys, backend clients, or
+backend errors to the sandbox.
 
-The facade is injected into `runCodeInIVM()` as a host object. Its methods use
-the existing isolated-vm reference bridge and return only transferable plain
-values. The Worker editor's sandbox declaration is updated so the API has type
-checking and completion.
+The facade is injected into `runCodeInIVM()` through null-prototype host objects.
+Before isolated-vm copies arguments, an isolate-side wrapper validates values
+and builds a descriptor-safe, null-prototype copy before JSON encoding. This
+rejects accessors, hidden serialization hooks, and inherited `toJSON` hooks
+without executing them. Invalid values invoke the host with only clone-safe
+sentinel data, so the host still performs authoritative validation and consumes
+the shared call budget. Valid values are parsed and validated again on the host
+before storage. Raw bridge globals are deleted inside a nested installer before
+Worker code runs, and Worker source executes in a separate nested async scope so
+its hoisted declarations and shadowed built-ins cannot intercept installation.
+The public `kv` scopes expose no inherited methods. The Worker editor's sandbox
+declaration is updated so the API has type checking and completion.
 
 ## Data and TTL Semantics
 
@@ -142,9 +163,20 @@ remain subject to the normal TTL and are not promised to be available to a
 later test execution.
 
 Updating or rolling back a Worker preserves its cache because the Worker ID is
-unchanged. Deleting a Worker does not scan the backend for its private keys;
-those entries become unreadable according to their TTL, which is at most one
-day. Workspace entries are not tied to the lifecycle of any one Worker.
+unchanged. Deleting a Worker does not run an unbounded per-Worker scan; those
+entries become unreadable and expire within one day. Workspace entries are not
+tied to the lifecycle of any one Worker.
+
+Because `@keyv/postgres` stores expiry inside its serialized value, PostgreSQL
+deployments also run bounded expiry maintenance against the existing
+`cache.cache` table. After a successful Worker KV store operation, at most once
+per minute per process, Tianji schedules one 100-row delete through the existing
+Prisma connection. The parameterized query selects only expired rows whose keys
+begin with the versioned Worker-private, Workspace-shared, or Worker-test
+prefixes under `tianji-cache`; it uses one in-process single flight and
+`FOR UPDATE SKIP LOCKED`. Redis and memory-only deployments do not run this SQL.
+Cleanup failure is contained, rate limited, and logged only as a stable generic
+warning, so it cannot fail an otherwise valid Worker operation.
 
 ## Resource Limits
 
@@ -168,6 +200,14 @@ timeouts reject the Worker API call. A backend failure is never converted into
 a cache miss because callers may use the cache for idempotency or duplicate
 suppression. Worker code can explicitly catch an error when best-effort cache
 behavior is appropriate.
+
+Worker operations use a strict Keyv wrapper over a forwarding view of the
+already-configured store. For Redis, that forwarding path uses a second strict
+adapter instance over the same client and copies the existing namespace and key
+options; Worker operations still use the same configured client and never open a
+second connection. This preserves the shared singleton's existing error behavior
+for non-Worker consumers while making rejected adapter operations and false
+write results fail closed for Workers.
 
 Errors returned to the isolate are stable and sanitized. They identify the
 operation category without including physical keys, cached values, database
@@ -194,13 +234,21 @@ proof that a write did not occur.
 Add focused tests covering:
 
 - Private and Workspace logical key construction.
+- SHA-256 determinism, distinct-key behavior, 256-character and NUL-containing
+  keys, and the PostgreSQL physical-key bound.
 - Isolation across Workers and across Workspaces.
 - Default TTL, the 1-second minimum, and the 1-day maximum.
 - Key, JSON value, finite-number, per-value, operation-count, and cumulative
   write validations.
 - Missing entries, deletion results, and last-write-wins behavior.
 - Sanitized backend failure and timeout errors.
-- `kv` and `kv.workspace` calls across the isolated-vm bridge.
+- Real Keyv rejection behavior and false write results.
+- PostgreSQL cleanup gating, prefix and expiry restrictions, bounded batches,
+  rate limiting, single flight, and safe failure.
+- `kv` and `kv.workspace` calls through actual `execWorker`/isolated-vm,
+  including clone-sensitive values, serialization hooks, repeated references,
+  call accounting, hidden raw/inherited bridge surfaces, hoisted declarations,
+  and shadowed built-ins.
 - Correct identity propagation for HTTP, manual, and cron execution.
 - Per-execution test namespaces that cannot access live cache entries.
 - Editor sandbox declarations matching the runtime API.

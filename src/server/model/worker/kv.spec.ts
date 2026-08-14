@@ -30,7 +30,7 @@ describe('createWorkerKVFacade', () => {
 
     await kv.set('state', { count: 1 });
     expect(cache.set).toHaveBeenCalledWith(
-      'worker-kv:v1:workspace-a:worker-a:state',
+      'worker-kv:v1:workspace-a:worker-a:dad186f4c202034323be080a40febbd1f2655343ce274f085df8459ec8094dc6',
       JSON.stringify({ count: 1 }),
       10 * 60 * 1000
     );
@@ -38,7 +38,7 @@ describe('createWorkerKVFacade', () => {
 
     await kv.workspace.set('token', 'shared', 1_000);
     expect(cache.set).toHaveBeenLastCalledWith(
-      'workspace-kv:v1:workspace-a:token',
+      'workspace-kv:v1:workspace-a:68d7e994d91be4f25f36860f72027e3d9903d3d827faf143402b43b6df2e4e8b',
       JSON.stringify('shared'),
       1_000
     );
@@ -79,13 +79,13 @@ describe('createWorkerKVFacade', () => {
 
     expect(cache.set).toHaveBeenNthCalledWith(
       1,
-      'worker-kv-test:v1:workspace-a:execution-a:private:state',
+      'worker-kv-test:v1:workspace-a:execution-a:private:dad186f4c202034323be080a40febbd1f2655343ce274f085df8459ec8094dc6',
       JSON.stringify('private'),
       10 * 60 * 1000
     );
     expect(cache.set).toHaveBeenNthCalledWith(
       2,
-      'worker-kv-test:v1:workspace-a:execution-a:workspace:shared',
+      'worker-kv-test:v1:workspace-a:execution-a:workspace:f4a9c3550ea6fd37b8ac7f0c69ee5a5feda055548ccd392d26f0104cd32049f0',
       JSON.stringify('workspace'),
       10 * 60 * 1000
     );
@@ -122,18 +122,43 @@ describe('createWorkerKVFacade', () => {
     await expect(kv.get('x'.repeat(257))).rejects.toMatchObject({
       code: 'WORKER_KV_INVALID_KEY',
     });
-    await expect(kv.set('key', Number.NaN)).rejects.toMatchObject({
-      code: 'WORKER_KV_INVALID_VALUE',
-    });
-    await expect(kv.set('key', new Date() as any)).rejects.toMatchObject({
-      code: 'WORKER_KV_INVALID_VALUE',
-    });
+    const invalidValues = [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      undefined,
+      () => undefined,
+      Symbol('invalid'),
+      1n,
+      new Date(),
+      new Uint8Array([1, 2, 3]),
+      new (class CustomValue {
+        count = 1;
+      })(),
+    ];
+    for (const value of invalidValues) {
+      await expect(kv.set('key', value as any)).rejects.toMatchObject({
+        code: 'WORKER_KV_INVALID_VALUE',
+      });
+    }
     await expect(kv.set('key', 'value', 999)).rejects.toMatchObject({
       code: 'WORKER_KV_INVALID_TTL',
     });
     await expect(kv.set('key', 'value', 86_400_001)).rejects.toMatchObject({
       code: 'WORKER_KV_INVALID_TTL',
     });
+  });
+
+  it('accepts the exact minimum and maximum TTL boundaries', async () => {
+    const { cache } = createCache();
+    const kv = createFacade(cache);
+
+    await kv.set('minimum', 'value', 1_000);
+    await kv.workspace.set('maximum', 'value', 86_400_000);
+
+    expect(cache.set.mock.calls.map((call) => call[2])).toEqual([
+      1_000,
+      86_400_000,
+    ]);
   });
 
   it('rejects cyclic and oversized values before writing them', async () => {
@@ -149,6 +174,55 @@ describe('createWorkerKVFacade', () => {
       code: 'WORKER_KV_INVALID_VALUE',
     });
     expect(cache.set).not.toHaveBeenCalled();
+  });
+
+  it('accepts repeated references that are not cyclic', async () => {
+    const kv = createFacade();
+    const shared = { count: 1 };
+
+    await kv.set('repeated', { first: shared, second: shared });
+
+    await expect(kv.get('repeated')).resolves.toEqual({
+      first: { count: 1 },
+      second: { count: 1 },
+    });
+  });
+
+  it('rejects hidden serialization hooks before they can transform a value', async () => {
+    const { cache } = createCache();
+    const kv = createFacade(cache);
+    const value = { original: true };
+    Object.defineProperty(value, 'toJSON', {
+      value: () => ({ transformed: true }),
+    });
+
+    await expect(kv.set('hidden-hook', value)).rejects.toMatchObject({
+      code: 'WORKER_KV_INVALID_VALUE',
+    });
+    expect(cache.set).not.toHaveBeenCalled();
+  });
+
+  it('keeps distinct accepted UTF-16 key strings physically distinct', async () => {
+    const { cache } = createCache();
+    const kv = createFacade(cache);
+
+    await kv.set('\ud800', 'first');
+    await kv.set('\ud801', 'second');
+
+    expect(cache.set.mock.calls[0][0]).not.toBe(cache.set.mock.calls[1][0]);
+  });
+
+  it('treats a false backend write result as unavailable', async () => {
+    const cache = {
+      get: vi.fn(),
+      set: vi.fn(async () => false),
+      delete: vi.fn(),
+    };
+    const kv = createFacade(cache);
+
+    await expect(kv.set('key', 'value')).rejects.toMatchObject({
+      code: 'WORKER_KV_UNAVAILABLE',
+    });
   });
 
   it('limits all private and workspace calls to one shared execution budget', async () => {

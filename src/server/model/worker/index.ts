@@ -17,6 +17,7 @@ import { env } from '../../utils/env.js';
 import {
   createWorkerKVFacade,
   type WorkerKVExecutionScope,
+  type WorkerKVScope,
 } from './kv.js';
 import { createSandboxProxy } from '../../utils/vm/sandbox.js';
 import { loadWorkerEnvironmentForExecution } from './environment.js';
@@ -93,6 +94,25 @@ export interface ExecWorkerOptions {
   secretValues?: string[];
 }
 
+function createWorkerKVBridge(scope: WorkerKVScope) {
+  return Object.assign(Object.create(null), {
+    get: scope.get,
+    set: async (key: string, encodedValue: unknown, ttl?: number) => {
+      let value: unknown;
+      if (typeof encodedValue === 'string') {
+        try {
+          value = JSON.parse(encodedValue);
+        } catch {
+          value = undefined;
+        }
+      }
+
+      return scope.set(key, value as never, ttl);
+    },
+    delete: scope.delete,
+  });
+}
+
 /**
  * execute a worker code in isolated-vm
  */
@@ -120,16 +140,10 @@ export async function execWorker(
     (left, right) => right.length - left.length
   );
   const kv = createWorkerKVFacade(options.scope);
-  const workerKVProxy = createSandboxProxy({
-    get: kv.get,
-    set: kv.set,
-    delete: kv.delete,
-  });
-  const workspaceKVProxy = createSandboxProxy({
-    get: kv.workspace.get,
-    set: kv.workspace.set,
-    delete: kv.workspace.delete,
-  });
+  const workerKVProxy = createSandboxProxy(createWorkerKVBridge(kv));
+  const workspaceKVProxy = createSandboxProxy(
+    createWorkerKVBridge(kv.workspace)
+  );
 
   try {
     const {
@@ -141,18 +155,233 @@ export async function execWorker(
       memoryUsage,
     } = await runCodeInIVM(`
       (async () => {
-        const __workerKVScope = reproxy(__workerKV);
-        const __workspaceKVScope = reproxy(__workspaceKV);
-        globalThis.kv = Object.freeze({
-          get: (...args) => __workerKVScope.get(...args),
-          set: (...args) => __workerKVScope.set(...args),
-          delete: (...args) => __workerKVScope.delete(...args),
-          workspace: __workspaceKVScope,
-        });
+        (() => {
+          const privateBridge = reproxy(globalThis.__workerKV);
+          const workspaceBridge = reproxy(globalThis.__workspaceKV);
+          delete globalThis.__workerKV;
+          delete globalThis.__workspaceKV;
 
-        ${code}
+          const objectCreate = Object.create;
+          const objectFreeze = Object.freeze;
+          const objectGetPrototypeOf = Object.getPrototypeOf;
+          const objectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+          const objectGetOwnPropertyNames = Object.getOwnPropertyNames;
+          const objectGetOwnPropertySymbols = Object.getOwnPropertySymbols;
+          const objectSetPrototypeOf = Object.setPrototypeOf;
+          const objectPrototype = Object.prototype;
+          const objectHasOwn = Function.prototype.call.bind(Object.prototype.hasOwnProperty);
+          const ErrorConstructor = Error;
+          const StringConstructor = String;
+          const ArrayConstructor = Array;
+          const arrayIsArray = Array.isArray;
+          const arrayPrototype = Array.prototype;
+          const NumberConstructor = Number;
+          const numberIsFinite = Number.isFinite;
+          const numberIsSafeInteger = Number.isSafeInteger;
+          const numberToString = Function.prototype.call.bind(Number.prototype.toString);
+          const jsonStringify = JSON.stringify;
+          const reflectApply = Reflect.apply;
+          const WeakSetConstructor = WeakSet;
+          const weakSetHas = Function.prototype.call.bind(WeakSet.prototype.has);
+          const weakSetAdd = Function.prototype.call.bind(WeakSet.prototype.add);
+          const weakSetDelete = Function.prototype.call.bind(WeakSet.prototype.delete);
+          const allowedErrorCodes = [
+            'WORKER_KV_INVALID_KEY',
+            'WORKER_KV_INVALID_VALUE',
+            'WORKER_KV_INVALID_TTL',
+            'WORKER_KV_LIMIT_EXCEEDED',
+            'WORKER_KV_TIMEOUT',
+            'WORKER_KV_UNAVAILABLE',
+          ];
 
-        return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
+          const sanitizeError = (error) => {
+            const message = error && typeof error.message === 'string'
+              ? error.message
+              : StringConstructor(error);
+            for (let index = 0; index < allowedErrorCodes.length; index += 1) {
+              const code = allowedErrorCodes[index];
+              if (message === code || message === 'Error: ' + code) {
+                return code;
+              }
+            }
+            return 'WORKER_KV_UNAVAILABLE';
+          };
+
+          const invoke = async (method, args) => {
+            try {
+              return await reflectApply(method, undefined, args);
+            } catch (error) {
+              const code = sanitizeError(error);
+              const sanitized = new ErrorConstructor(code);
+              sanitized.name = 'WorkerKVError';
+              sanitized.code = code;
+              throw sanitized;
+            }
+          };
+
+          const invalidValue = objectFreeze(objectCreate(null));
+
+          const hasSerializationHook = (prototype) => {
+            let current = prototype;
+            while (current !== null) {
+              if (objectGetOwnPropertyDescriptor(current, 'toJSON') !== undefined) {
+                return true;
+              }
+              current = objectGetPrototypeOf(current);
+            }
+            return false;
+          };
+
+          const isArrayIndex = (key, length) => {
+            const index = NumberConstructor(key);
+            return (
+              numberIsSafeInteger(index) &&
+              index >= 0 &&
+              index < length &&
+              numberToString(index) === key
+            );
+          };
+
+          const normalizeValue = (value, activePath) => {
+            if (
+              value === null ||
+              typeof value === 'string' ||
+              typeof value === 'boolean'
+            ) {
+              return value;
+            }
+            if (typeof value === 'number') {
+              return numberIsFinite(value) ? value : invalidValue;
+            }
+            if (typeof value !== 'object') {
+              return invalidValue;
+            }
+            if (weakSetHas(activePath, value)) {
+              return invalidValue;
+            }
+            weakSetAdd(activePath, value);
+
+            try {
+              if (objectGetOwnPropertySymbols(value).length > 0) {
+                return invalidValue;
+              }
+              if (arrayIsArray(value)) {
+                const prototype = objectGetPrototypeOf(value);
+                if (
+                  prototype !== arrayPrototype ||
+                  hasSerializationHook(prototype)
+                ) {
+                  return invalidValue;
+                }
+
+                const normalized = new ArrayConstructor(value.length);
+                objectSetPrototypeOf(normalized, null);
+                const propertyNames = objectGetOwnPropertyNames(value);
+                for (let index = 0; index < propertyNames.length; index += 1) {
+                  const key = propertyNames[index];
+                  if (key === 'length') {
+                    continue;
+                  }
+                  if (!isArrayIndex(key, value.length)) {
+                    return invalidValue;
+                  }
+
+                  const descriptor = objectGetOwnPropertyDescriptor(value, key);
+                  if (descriptor === undefined || !objectHasOwn(descriptor, 'value')) {
+                    return invalidValue;
+                  }
+                  const entry = normalizeValue(descriptor.value, activePath);
+                  if (entry === invalidValue) {
+                    return invalidValue;
+                  }
+                  normalized[NumberConstructor(key)] = entry;
+                }
+                return normalized;
+              }
+
+              const prototype = objectGetPrototypeOf(value);
+              if (
+                (prototype !== objectPrototype && prototype !== null) ||
+                hasSerializationHook(prototype)
+              ) {
+                return invalidValue;
+              }
+
+              const normalized = objectCreate(null);
+              const propertyNames = objectGetOwnPropertyNames(value);
+              for (let index = 0; index < propertyNames.length; index += 1) {
+                const key = propertyNames[index];
+                const descriptor = objectGetOwnPropertyDescriptor(value, key);
+                if (
+                  descriptor === undefined ||
+                  !descriptor.enumerable ||
+                  !objectHasOwn(descriptor, 'value')
+                ) {
+                  return invalidValue;
+                }
+
+                const entry = normalizeValue(descriptor.value, activePath);
+                if (entry === invalidValue) {
+                  return invalidValue;
+                }
+                normalized[key] = entry;
+              }
+              return normalized;
+            } catch {
+              return invalidValue;
+            } finally {
+              weakSetDelete(activePath, value);
+            }
+          };
+
+          const encodeValue = (value) => {
+            try {
+              const normalized = normalizeValue(value, new WeakSetConstructor());
+              if (normalized === invalidValue) {
+                return undefined;
+              }
+              const encoded = jsonStringify(normalized);
+              return typeof encoded === 'string' ? encoded : undefined;
+            } catch {
+              return undefined;
+            }
+          };
+
+          const createScope = (bridge) => {
+            const scope = objectCreate(null);
+            scope.get = (key) => invoke(
+              bridge.get,
+              [typeof key === 'string' ? key : '']
+            );
+            scope.set = (key, value, ttl) => invoke(
+              bridge.set,
+              [
+                typeof key === 'string' ? key : '',
+                encodeValue(value),
+                ttl === undefined || typeof ttl === 'number' ? ttl : 0,
+              ]
+            );
+            scope.delete = (key) => invoke(
+              bridge.delete,
+              [typeof key === 'string' ? key : '']
+            );
+            return objectFreeze(scope);
+          };
+
+          const privateScope = createScope(privateBridge);
+          const publicKV = objectCreate(null);
+          publicKV.get = privateScope.get;
+          publicKV.set = privateScope.set;
+          publicKV.delete = privateScope.delete;
+          publicKV.workspace = createScope(workspaceBridge);
+          globalThis.kv = objectFreeze(publicKV);
+        })();
+
+        return (async () => {
+          ${code}
+
+          return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
+        })();
       })()
     `, {
       __requestPayload: workerRequestPayload,
