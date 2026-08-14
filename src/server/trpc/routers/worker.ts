@@ -18,6 +18,11 @@ import { env } from '../../utils/env.js';
 import { workerCronManager } from '../../model/worker/manager.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
+import { TRPCError } from '@trpc/server';
+import {
+  toSafeWorkerEnvironmentVariable,
+  workerEnvironmentVariablesInputSchema,
+} from '../../model/worker/environment.js';
 
 export const workerRouter = router({
   // Get all workers in workspace
@@ -73,6 +78,33 @@ export const workerRouter = router({
       return worker;
     }),
 
+  getEnvironmentVariables: workspaceProcedure
+    .input(
+      z.object({
+        workerId: z.cuid2(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { workerId, workspaceId } = input;
+
+      const worker = await prisma.functionWorker.findUnique({
+        where: { id: workerId, workspaceId },
+        select: { id: true },
+      });
+
+      if (!worker) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Worker not found' });
+      }
+
+      const environmentVariables =
+        await prisma.functionWorkerEnvironmentVariable.findMany({
+          where: { workerId },
+          orderBy: { createdAt: 'asc' },
+        });
+
+      return environmentVariables.map(toSafeWorkerEnvironmentVariable);
+    }),
+
   // Create or update worker
   upsert: workspaceAdminProcedure
     .meta(
@@ -91,6 +123,7 @@ export const workerRouter = router({
         active: z.boolean().default(true),
         enableCron: z.boolean().default(false),
         cronExpression: z.string().optional(),
+        environmentVariables: workerEnvironmentVariablesInputSchema.optional(),
       })
     )
     .output(FunctionWorkerModelSchema)
@@ -103,6 +136,7 @@ export const workerRouter = router({
         active,
         enableCron,
         cronExpression,
+        environmentVariables,
         workspaceId,
       } = input;
 
@@ -153,6 +187,7 @@ export const workerRouter = router({
         active,
         enableCron,
         cronExpression: cronExpression || null,
+        environmentVariables,
       });
 
       await createAuditLog({
@@ -605,6 +640,8 @@ export const workerRouter = router({
       z.object({
         code: z.string(),
         payload: z.record(z.string(), z.any()).optional(),
+        workerId: z.cuid2().optional(),
+        environmentVariables: workerEnvironmentVariablesInputSchema.optional(),
       })
     )
     .mutation(async ({ input }) => {
