@@ -27,6 +27,7 @@ import {
   resolveWorkerEnvironmentForExecution,
   workerEnvironmentVariablesInputSchema,
 } from '../../model/worker/environment.js';
+import { createId } from '@paralleldrive/cuid2';
 
 export const workerRouter = router({
   // Get all workers in workspace
@@ -677,14 +678,13 @@ export const workerRouter = router({
           workerId,
           environmentVariables
         );
-      const execution = await execWorker(
-        code,
-        undefined,
-        payload,
-        { type: 'test' },
+      const execution = await execWorker(code, {
+        scope: { kind: 'test', workspaceId, executionId: createId() },
+        requestPayload: payload,
+        context: { type: 'test' },
         environment,
-        secretValues
-      );
+        secretValues,
+      });
 
       return execution;
     }),

@@ -205,10 +205,30 @@ describe('workerRouter environment variables', () => {
 
     await caller.execute({ workspaceId, workerId: storedWorker.id, payload });
 
+    expect(mocks.findWorker).toHaveBeenCalledWith({
+      where: { id: storedWorker.id, workspaceId },
+    });
     expect(mocks.execStoredWorker).toHaveBeenCalledWith(storedWorker, payload, {
       type: 'manual',
     });
     expect(mocks.execWorker).not.toHaveBeenCalled();
+  });
+
+  test('denies manual execution when the worker belongs to another workspace', async () => {
+    const workspaceId = createId();
+    const workerId = createId();
+    mocks.findWorker.mockResolvedValue(null);
+    const caller = await createCaller();
+
+    await expect(
+      caller.execute({ workspaceId, workerId })
+    ).rejects.toThrow('Worker not found');
+
+    expect(mocks.findWorker).toHaveBeenCalledWith({
+      where: { id: workerId, workspaceId },
+    });
+    expect(mocks.execStoredWorker).not.toHaveBeenCalled();
+    expect(mocks.createAuditLog).not.toHaveBeenCalled();
   });
 
   test('resolves authorized saved and draft environment for test-code execution', async () => {
@@ -241,12 +261,33 @@ describe('workerRouter environment variables', () => {
     );
     expect(mocks.execWorker).toHaveBeenCalledWith(
       storedWorker.code,
-      undefined,
-      undefined,
-      { type: 'test' },
-      { TOKEN: 'saved-secret' },
-      ['saved-secret']
+      {
+        scope: {
+          kind: 'test',
+          workspaceId,
+          executionId: expect.any(String),
+        },
+        requestPayload: undefined,
+        context: { type: 'test' },
+        environment: { TOKEN: 'saved-secret' },
+        secretValues: ['saved-secret'],
+      }
     );
+  });
+
+  test('creates a fresh workspace-scoped identity for every code test', async () => {
+    const workspaceId = createId();
+    const caller = await createCaller();
+
+    await caller.testCode({ workspaceId, code: 'return true;' });
+    await caller.testCode({ workspaceId, code: 'return true;' });
+
+    const firstScope = mocks.execWorker.mock.calls[0][1].scope;
+    const secondScope = mocks.execWorker.mock.calls[1][1].scope;
+    expect(firstScope).toMatchObject({ kind: 'test', workspaceId });
+    expect(firstScope.executionId).toEqual(expect.any(String));
+    expect(secondScope).toMatchObject({ kind: 'test', workspaceId });
+    expect(secondScope.executionId).not.toBe(firstScope.executionId);
   });
 
   test('does not resolve saved environment for a worker outside the workspace', async () => {

@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { runCodeInIVM } from './index.js';
+import { createSandboxProxy } from './sandbox.js';
 
 describe('runCodeInIVM', () => {
   test('should execute simple code and return result', async () => {
@@ -157,6 +158,33 @@ describe('runCodeInIVM', () => {
 
     expect(result.result).toBe(50_000);
     expect(result.error).toBeUndefined();
+  });
+
+  test('calls async methods through a sandbox proxy', async () => {
+    const host = createSandboxProxy({
+      get: async (key: string) => ({ key, value: 42 }),
+    });
+    const result = await runCodeInIVM(
+      `(async () => reproxy(__host).get('answer'))()`,
+      { __host: host }
+    );
+
+    expect(result.error).toBeUndefined();
+    expect(result.result).toEqual({ key: 'answer', value: 42 });
+  });
+
+  test('propagates sanitized async proxy rejections', async () => {
+    const host = createSandboxProxy({
+      get: async () => {
+        throw new Error('WORKER_KV_UNAVAILABLE');
+      },
+    });
+    const result = await runCodeInIVM(
+      `(async () => reproxy(__host).get('answer'))()`,
+      { __host: host }
+    );
+
+    expect(String(result.error)).toContain('WORKER_KV_UNAVAILABLE');
   });
 
   test('should track execution time', async () => {

@@ -52,18 +52,14 @@ workerRouter.all(
       }
 
       // Execute the worker
-      const execution = await execStoredWorker(
-        worker,
-        requestPayload,
-        {
+      const execution = await execStoredWorker(worker, requestPayload, {
           type: 'http',
           request: {
             method: req.method,
             url: req.url,
             headers: { ...req.headers },
           },
-        }
-      );
+      });
 
       const response = execution.responsePayload;
 

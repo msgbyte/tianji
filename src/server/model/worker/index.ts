@@ -14,6 +14,14 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 import { createBatchWriter } from '../../utils/batchWriter.js';
 import { env } from '../../utils/env.js';
+import {
+  createWorkerKVFacade,
+  WORKER_KV_MAX_KEY_LENGTH,
+  WORKER_KV_MAX_VALUE_BYTES,
+  type WorkerKVExecutionScope,
+  type WorkerKVScope,
+} from './kv.js';
+import { createSandboxProxy } from '../../utils/vm/sandbox.js';
 import { loadWorkerEnvironmentForExecution } from './environment.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
@@ -80,29 +88,63 @@ export const { get: getWorker, del: delWorkerCache } = buildQueryWithCache(
   }
 );
 
+export interface ExecWorkerOptions {
+  scope: WorkerKVExecutionScope;
+  requestPayload?: Record<string, any>;
+  context?: Record<string, any>;
+  environment?: Record<string, string>;
+  secretValues?: string[];
+}
+
+function createWorkerKVBridge(scope: WorkerKVScope) {
+  return Object.assign(Object.create(null), {
+    get: scope.get,
+    set: async (key: string, encodedValue: unknown, ttl?: number) => {
+      let value: unknown;
+      if (typeof encodedValue === 'string') {
+        try {
+          value = JSON.parse(encodedValue);
+        } catch {
+          value = undefined;
+        }
+      }
+
+      return scope.set(key, value as never, ttl);
+    },
+    delete: scope.delete,
+  });
+}
+
 /**
  * execute a worker code in isolated-vm
  */
 export async function execWorker(
   code: string,
-  workerId?: string,
-  requestPayload?: Record<string, any>,
-  context?: Record<string, any>,
-  environment: Record<string, string> = {},
-  secretValues: string[] = []
+  options: ExecWorkerOptions
 ) {
+  const workerId =
+    options.scope.kind === 'worker' ? options.scope.workerId : undefined;
+  const requestPayload = options.requestPayload;
+  const context = options.context;
   const workerRequestPayload: Record<string, any> = isPlainObject(requestPayload)
     ? (requestPayload as Record<string, any>)
     : {};
   const workerContext = {
     ...(isPlainObject(context) ? context : {}),
-    env: isPlainObject(environment) ? environment : {},
+    env: isPlainObject(options.environment) ? options.environment : {},
   };
   const shouldStoreRequestPayload = shouldStoreWorkerRequestPayload(workerId);
   const requestPayloadSizeBytes =
     getWorkerRequestPayloadSizeBytes(workerRequestPayload);
-  const secretsToRedact = [...new Set(secretValues.filter(Boolean))].sort(
+  const secretsToRedact = [
+    ...new Set((options.secretValues ?? []).filter(Boolean)),
+  ].sort(
     (left, right) => right.length - left.length
+  );
+  const kv = createWorkerKVFacade(options.scope);
+  const workerKVProxy = createSandboxProxy(createWorkerKVBridge(kv));
+  const workspaceKVProxy = createSandboxProxy(
+    createWorkerKVBridge(kv.workspace)
   );
 
   try {
@@ -115,13 +157,279 @@ export async function execWorker(
       memoryUsage,
     } = await runCodeInIVM(`
       (async () => {
-        ${code}
+        (() => {
+          const privateBridge = reproxy(globalThis.__workerKV);
+          const workspaceBridge = reproxy(globalThis.__workspaceKV);
+          delete globalThis.__workerKV;
+          delete globalThis.__workspaceKV;
 
-        return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
+          const objectCreate = Object.create;
+          const objectFreeze = Object.freeze;
+          const objectGetPrototypeOf = Object.getPrototypeOf;
+          const objectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+          const objectGetOwnPropertyNames = Object.getOwnPropertyNames;
+          const objectGetOwnPropertySymbols = Object.getOwnPropertySymbols;
+          const objectSetPrototypeOf = Object.setPrototypeOf;
+          const objectPrototype = Object.prototype;
+          const objectHasOwn = Function.prototype.call.bind(Object.prototype.hasOwnProperty);
+          const ErrorConstructor = Error;
+          const StringConstructor = String;
+          const ArrayConstructor = Array;
+          const arrayIsArray = Array.isArray;
+          const arrayPrototype = Array.prototype;
+          const NumberConstructor = Number;
+          const numberIsFinite = Number.isFinite;
+          const numberIsSafeInteger = Number.isSafeInteger;
+          const numberToString = Function.prototype.call.bind(Number.prototype.toString);
+          const stringCharCodeAt = Function.prototype.call.bind(String.prototype.charCodeAt);
+          const jsonStringify = JSON.stringify;
+          const reflectApply = Reflect.apply;
+          const WeakSetConstructor = WeakSet;
+          const weakSetHas = Function.prototype.call.bind(WeakSet.prototype.has);
+          const weakSetAdd = Function.prototype.call.bind(WeakSet.prototype.add);
+          const weakSetDelete = Function.prototype.call.bind(WeakSet.prototype.delete);
+          const allowedErrorCodes = [
+            'WORKER_KV_INVALID_KEY',
+            'WORKER_KV_INVALID_VALUE',
+            'WORKER_KV_INVALID_TTL',
+            'WORKER_KV_LIMIT_EXCEEDED',
+            'WORKER_KV_TIMEOUT',
+            'WORKER_KV_UNAVAILABLE',
+          ];
+
+          const sanitizeError = (error) => {
+            const message = error && typeof error.message === 'string'
+              ? error.message
+              : StringConstructor(error);
+            for (let index = 0; index < allowedErrorCodes.length; index += 1) {
+              const code = allowedErrorCodes[index];
+              if (message === code || message === 'Error: ' + code) {
+                return code;
+              }
+            }
+            return 'WORKER_KV_UNAVAILABLE';
+          };
+
+          const invoke = async (method, args) => {
+            try {
+              return await reflectApply(method, undefined, args);
+            } catch (error) {
+              const code = sanitizeError(error);
+              const sanitized = new ErrorConstructor(code);
+              sanitized.name = 'WorkerKVError';
+              sanitized.code = code;
+              throw sanitized;
+            }
+          };
+
+          const invalidValue = objectFreeze(objectCreate(null));
+
+          const hasSerializationHook = (prototype) => {
+            let current = prototype;
+            while (current !== null) {
+              if (objectGetOwnPropertyDescriptor(current, 'toJSON') !== undefined) {
+                return true;
+              }
+              current = objectGetPrototypeOf(current);
+            }
+            return false;
+          };
+
+          const isArrayIndex = (key, length) => {
+            const index = NumberConstructor(key);
+            return (
+              numberIsSafeInteger(index) &&
+              index >= 0 &&
+              index < length &&
+              numberToString(index) === key
+            );
+          };
+
+          const normalizeValue = (value, activePath) => {
+            if (
+              value === null ||
+              typeof value === 'string' ||
+              typeof value === 'boolean'
+            ) {
+              return value;
+            }
+            if (typeof value === 'number') {
+              return numberIsFinite(value) ? value : invalidValue;
+            }
+            if (typeof value !== 'object') {
+              return invalidValue;
+            }
+            if (weakSetHas(activePath, value)) {
+              return invalidValue;
+            }
+            weakSetAdd(activePath, value);
+
+            try {
+              if (objectGetOwnPropertySymbols(value).length > 0) {
+                return invalidValue;
+              }
+              if (arrayIsArray(value)) {
+                const prototype = objectGetPrototypeOf(value);
+                if (
+                  prototype !== arrayPrototype ||
+                  hasSerializationHook(prototype)
+                ) {
+                  return invalidValue;
+                }
+
+                const normalized = new ArrayConstructor(value.length);
+                objectSetPrototypeOf(normalized, null);
+                const propertyNames = objectGetOwnPropertyNames(value);
+                for (let index = 0; index < propertyNames.length; index += 1) {
+                  const key = propertyNames[index];
+                  if (key === 'length') {
+                    continue;
+                  }
+                  if (!isArrayIndex(key, value.length)) {
+                    return invalidValue;
+                  }
+
+                  const descriptor = objectGetOwnPropertyDescriptor(value, key);
+                  if (descriptor === undefined || !objectHasOwn(descriptor, 'value')) {
+                    return invalidValue;
+                  }
+                  const entry = normalizeValue(descriptor.value, activePath);
+                  if (entry === invalidValue) {
+                    return invalidValue;
+                  }
+                  normalized[NumberConstructor(key)] = entry;
+                }
+                return normalized;
+              }
+
+              const prototype = objectGetPrototypeOf(value);
+              if (
+                (prototype !== objectPrototype && prototype !== null) ||
+                hasSerializationHook(prototype)
+              ) {
+                return invalidValue;
+              }
+
+              const normalized = objectCreate(null);
+              const propertyNames = objectGetOwnPropertyNames(value);
+              for (let index = 0; index < propertyNames.length; index += 1) {
+                const key = propertyNames[index];
+                const descriptor = objectGetOwnPropertyDescriptor(value, key);
+                if (
+                  descriptor === undefined ||
+                  !descriptor.enumerable ||
+                  !objectHasOwn(descriptor, 'value')
+                ) {
+                  return invalidValue;
+                }
+
+                const entry = normalizeValue(descriptor.value, activePath);
+                if (entry === invalidValue) {
+                  return invalidValue;
+                }
+                normalized[key] = entry;
+              }
+              return normalized;
+            } catch {
+              return invalidValue;
+            } finally {
+              weakSetDelete(activePath, value);
+            }
+          };
+
+          const encodeValue = (value) => {
+            try {
+              const normalized = normalizeValue(value, new WeakSetConstructor());
+              if (normalized === invalidValue) {
+                return undefined;
+              }
+              const encoded = jsonStringify(normalized);
+              if (typeof encoded !== 'string') {
+                return undefined;
+              }
+
+              let encodedBytes = 0;
+              for (let index = 0; index < encoded.length; index += 1) {
+                const codeUnit = stringCharCodeAt(encoded, index);
+                if (codeUnit <= 0x7f) {
+                  encodedBytes += 1;
+                } else if (codeUnit <= 0x7ff) {
+                  encodedBytes += 2;
+                } else if (
+                  codeUnit >= 0xd800 &&
+                  codeUnit <= 0xdbff &&
+                  index + 1 < encoded.length
+                ) {
+                  const nextCodeUnit = stringCharCodeAt(encoded, index + 1);
+                  if (nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff) {
+                    encodedBytes += 4;
+                    index += 1;
+                  } else {
+                    encodedBytes += 3;
+                  }
+                } else {
+                  encodedBytes += 3;
+                }
+
+                if (encodedBytes > ${WORKER_KV_MAX_VALUE_BYTES}) {
+                  return undefined;
+                }
+              }
+
+              return encoded;
+            } catch {
+              return undefined;
+            }
+          };
+
+          const encodeKey = (key) =>
+            typeof key === 'string' &&
+            key.length > 0 &&
+            key.length <= ${WORKER_KV_MAX_KEY_LENGTH}
+              ? key
+              : '';
+
+          const createScope = (bridge) => {
+            const scope = objectCreate(null);
+            scope.get = (key) => invoke(
+              bridge.get,
+              [encodeKey(key)]
+            );
+            scope.set = (key, value, ttl) => invoke(
+              bridge.set,
+              [
+                encodeKey(key),
+                encodeValue(value),
+                ttl === undefined || typeof ttl === 'number' ? ttl : 0,
+              ]
+            );
+            scope.delete = (key) => invoke(
+              bridge.delete,
+              [encodeKey(key)]
+            );
+            return objectFreeze(scope);
+          };
+
+          const privateScope = createScope(privateBridge);
+          const publicKV = objectCreate(null);
+          publicKV.get = privateScope.get;
+          publicKV.set = privateScope.set;
+          publicKV.delete = privateScope.delete;
+          publicKV.workspace = createScope(workspaceBridge);
+          globalThis.kv = objectFreeze(publicKV);
+        })();
+
+        return (async () => {
+          ${code}
+
+          return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
+        })();
       })()
     `, {
       __requestPayload: workerRequestPayload,
       __workerContext: workerContext,
+      __workerKV: workerKVProxy,
+      __workspaceKV: workspaceKVProxy,
     });
 
     const { used_heap_size } = memoryUsage;
@@ -207,19 +515,22 @@ export async function execWorker(
 }
 
 export async function execStoredWorker(
-  worker: { id: string; code: string },
+  worker: { id: string; workspaceId: string; code: string },
   requestPayload?: Record<string, any>,
   context?: Record<string, any>
 ) {
   const { environment, secretValues } =
     await loadWorkerEnvironmentForExecution(worker.id);
 
-  return execWorker(
-    worker.code,
-    worker.id,
+  return execWorker(worker.code, {
+    scope: {
+      kind: 'worker',
+      workspaceId: worker.workspaceId,
+      workerId: worker.id,
+    },
     requestPayload,
     context,
     environment,
-    secretValues
-  );
+    secretValues,
+  });
 }
