@@ -491,6 +491,87 @@ export async function getWebsiteOnlineUserCount(
   return Number(res?.[0].x ?? 0);
 }
 
+export async function getWorkspaceWebsiteVisitorCounts(
+  workspaceId: string,
+  startAt: Date
+): Promise<Record<string, number>> {
+  const websiteIds = (
+    await prisma.website.findMany({
+      where: {
+        workspaceId,
+      },
+      select: {
+        id: true,
+      },
+    })
+  ).map((website) => website.id);
+
+  if (websiteIds.length === 0) {
+    return {};
+  }
+
+  if (clickhouseHealthManager.isClickHouseHealthy()) {
+    try {
+      const result = await clickhouse.query({
+        query: `
+          select
+            websiteId,
+            uniqExact(sessionId) as visitorCount
+          from WebsiteEvent
+          where websiteId in {websiteIds:Array(String)}
+            and eventType = {eventType:UInt64}
+            and eventName is null
+            and createdAt >= toDateTime({startAt:String}, 'UTC')
+          group by websiteId
+        `,
+        query_params: {
+          websiteIds,
+          eventType: EVENT_TYPE.pageView,
+          startAt: dayjs(startAt).utc().format('YYYY-MM-DD HH:mm:ss'),
+        },
+      });
+      const { data } = await result.json<{
+        websiteId: string;
+        visitorCount: string;
+      }>();
+
+      return data.reduce<Record<string, number>>((prev, item) => {
+        prev[item.websiteId] = Number(item.visitorCount);
+        return prev;
+      }, {});
+    } catch (error) {
+      logger.warn(
+        `ClickHouse getWorkspaceWebsiteVisitorCounts failed, falling back to PostgreSQL: ${error}`
+      );
+      clickhouseHealthManager.forceHealthCheck().catch(() => {});
+    }
+  }
+
+  const res = await prisma.$queryRaw<
+    { websiteId: string; visitorCount: bigint }[]
+  >`
+    select
+      "WebsiteEvent"."websiteId",
+      count(distinct "WebsiteEvent"."sessionId") as "visitorCount"
+    from "WebsiteEvent"
+    join "Website"
+      on "WebsiteEvent"."websiteId" = "Website"."id"
+    where "Website"."workspaceId" = ${workspaceId}
+      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      and "WebsiteEvent"."eventName" is null
+      and "WebsiteEvent"."createdAt" >= ${startAt}
+    group by "WebsiteEvent"."websiteId"
+  `;
+
+  return res.reduce<Record<string, number>>((prev, item) => {
+    if (item.websiteId) {
+      prev[item.websiteId] = Number(item.visitorCount);
+    }
+
+    return prev;
+  }, {});
+}
+
 export async function getWebsiteSessionMetrics(
   websiteId: string,
   column: string,

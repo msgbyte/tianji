@@ -8,7 +8,10 @@ const mocks = vi.hoisted(() => {
   const endRequest = vi.fn();
 
   return {
+    clickhouseQuery: vi.fn(),
     endRequest,
+    forceClickhouseHealthCheck: vi.fn(async () => false),
+    isClickhouseHealthy: vi.fn(() => false),
     jwtVerify: vi.fn(() => ({
       id: 'user-id',
       username: 'user',
@@ -31,6 +34,17 @@ vi.mock('../../utils/prometheus/client.js', () => ({
 vi.mock('../../mq/producer.js', () => ({
   sendBuildLighthouseMessageQueue: vi.fn(),
 }));
+vi.mock('../../clickhouse/index.js', () => ({
+  clickhouse: {
+    query: mocks.clickhouseQuery,
+  },
+}));
+vi.mock('../../clickhouse/health.js', () => ({
+  clickhouseHealthManager: {
+    forceHealthCheck: mocks.forceClickhouseHealthCheck,
+    isClickHouseHealthy: mocks.isClickhouseHealthy,
+  },
+}));
 
 async function createCaller() {
   const { websiteRouter } = await import('./website.js');
@@ -45,7 +59,10 @@ async function createCaller() {
 
 let workspaceId: string | undefined;
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.isClickhouseHealthy.mockReturnValue(false);
+});
 afterEach(async () => {
   if (workspaceId) {
     await prisma.workspace.delete({
@@ -58,6 +75,77 @@ afterEach(async () => {
 });
 
 describe('websiteRouter.allOverview', () => {
+  test('prefers ClickHouse visitor counts when ClickHouse is healthy', async () => {
+    const workspace = await prisma.workspace.create({
+      data: {
+        name: 'ClickHouse Overview Workspace',
+      },
+    });
+    workspaceId = workspace.id;
+    const website = await prisma.website.create({
+      data: {
+        name: 'ClickHouse Overview Website',
+        domain: 'clickhouse.example.com',
+        workspaceId: workspace.id,
+      },
+    });
+
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockResolvedValue({
+      json: async () => ({
+        data: [{ websiteId: website.id, visitorCount: '7' }],
+      }),
+    });
+
+    const caller = await createCaller();
+    const result = await caller.allOverview({ workspaceId: workspace.id });
+
+    expect(result).toEqual({ [website.id]: 7 });
+  });
+
+  test('falls back to PostgreSQL when the ClickHouse query fails', async () => {
+    const workspace = await prisma.workspace.create({
+      data: {
+        name: 'ClickHouse Fallback Workspace',
+      },
+    });
+    workspaceId = workspace.id;
+    const website = await prisma.website.create({
+      data: {
+        name: 'ClickHouse Fallback Website',
+        domain: 'fallback.example.com',
+        workspaceId: workspace.id,
+      },
+    });
+    const session = await prisma.websiteSession.create({
+      data: {
+        id: randomUUID(),
+        websiteId: website.id,
+        hostname: 'fallback.example.com',
+      },
+    });
+    await prisma.websiteEvent.create({
+      data: {
+        id: createId(),
+        websiteId: website.id,
+        sessionId: session.id,
+        urlPath: '/recent-page',
+        eventType: EVENT_TYPE.pageView,
+        eventName: null,
+      },
+    });
+
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockRejectedValue(
+      new Error('ClickHouse unavailable')
+    );
+
+    const caller = await createCaller();
+    const result = await caller.allOverview({ workspaceId: workspace.id });
+
+    expect(result).toEqual({ [website.id]: 1 });
+  });
+
   test('counts unique page-view visitors from the previous 24 hours', async () => {
     const workspace = await prisma.workspace.create({
       data: {

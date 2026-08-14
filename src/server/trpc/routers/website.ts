@@ -11,6 +11,7 @@ import {
   getWorkspaceWebsitePageview,
   getWorkspaceWebsiteSession,
   getWorkspaceWebsiteStats,
+  getWorkspaceWebsiteVisitorCounts,
   delWebsiteCache,
 } from '../../model/website/index.js';
 import { prisma } from '../../model/_client.js';
@@ -134,29 +135,8 @@ export const websiteRouter = router({
     .query(async ({ input }) => {
       const { workspaceId } = input;
       const startAt = dayjs().subtract(1, 'day').toDate();
-      const res = await prisma.$queryRaw<
-        { websiteId: string; visitorCount: bigint }[]
-      >`
-        select
-          "WebsiteEvent"."websiteId",
-          count(distinct "WebsiteEvent"."sessionId") as "visitorCount"
-        from "WebsiteEvent"
-        join "Website"
-          on "WebsiteEvent"."websiteId" = "Website"."id"
-        where "Website"."workspaceId" = ${workspaceId}
-          and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
-          and "WebsiteEvent"."eventName" is null
-          and "WebsiteEvent"."createdAt" >= ${startAt}
-        group by "WebsiteEvent"."websiteId"
-      `;
 
-      return res.reduce<Record<string, number>>((prev, item) => {
-        if (item.websiteId) {
-          prev[item.websiteId] = Number(item.visitorCount);
-        }
-
-        return prev;
-      }, {});
+      return getWorkspaceWebsiteVisitorCounts(workspaceId, startAt);
     }),
   info: workspaceProcedure
     .meta(
