@@ -33,7 +33,7 @@ function isTransferable(data: any): data is ivm.Transferable {
   );
 }
 
-function proxyObject(
+export function createSandboxProxy(
   obj: Record<string, any>,
   forbiddenKeys: string[] = []
 ): Record<string, any> {
@@ -83,7 +83,7 @@ export function copyObject(
   }
 
   if (obj instanceof Response) {
-    return proxyObject(obj, ['clone']);
+    return createSandboxProxy(obj, ['clone']);
   }
 
   if (isSemiTransferable(obj)) {
