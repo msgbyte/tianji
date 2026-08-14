@@ -13,6 +13,7 @@ import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
 import { NavigationBlocker } from '@/components/NavigationBlocker';
 import { AppRouterOutput, defaultErrorHandler, trpc } from '@/api/trpc';
 import { useEvent } from '@/hooks/useEvent';
+import { buildWorkerTestCodeInput } from '@/components/worker/workerTestCodeInput';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -178,11 +179,16 @@ function PageComponent() {
 
   const handleTestExecution = useEvent(
     async (payload?: Record<string, any>) => {
-      const result = await testCodeMutation.mutateAsync({
-        workspaceId,
-        code,
-        payload,
-      });
+      const result = await testCodeMutation.mutateAsync(
+        buildWorkerTestCodeInput(
+          { workerId },
+          {
+            workspaceId,
+            code,
+            payload,
+          }
+        )
+      );
       return result;
     }
   );

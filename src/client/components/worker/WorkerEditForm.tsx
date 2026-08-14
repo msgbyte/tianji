@@ -47,6 +47,7 @@ import {
   WorkerEnvironmentVariablesField,
   type WorkerEnvironmentVariableFormValue,
 } from './WorkerEnvironmentVariablesField';
+import { buildWorkerTestCodeInput } from './workerTestCodeInput';
 
 const environmentVariableKeySchema = z
   .string()
@@ -196,11 +197,16 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
 
     const [handleTestCode, isTestLoading] = useEventWithLoading(async () => {
       const code = form.getValues('code');
-      await testCodeMutation.mutateAsync({
-        workspaceId,
-        code,
-        environmentVariables: form.getValues('environmentVariables'),
-      });
+      await testCodeMutation.mutateAsync(
+        buildWorkerTestCodeInput(
+          { workerId: props.workerId },
+          {
+            workspaceId,
+            code,
+            environmentVariables: form.getValues('environmentVariables'),
+          }
+        )
+      );
     });
 
     return (
