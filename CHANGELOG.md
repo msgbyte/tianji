@@ -1,5 +1,16 @@
 
 
+## [1.32.23](https://github.com/msgbyte/tianji/compare/v1.32.22...v1.32.23) (2026-08-14)
+
+### Features
+
+* **worker:** add function environment variables ([#281](https://github.com/msgbyte/tianji/issues/281)) ([4bbd91d](https://github.com/msgbyte/tianji/commit/4bbd91dae42cebaf3a94651356e5f2935c8a786a))
+* **worker:** add scoped worker kv cache ([#282](https://github.com/msgbyte/tianji/issues/282)) ([1667784](https://github.com/msgbyte/tianji/commit/1667784a3cd5ab12813a1587edbda8c5f286ea2f))
+
+### Bug Fixes
+
+* **website:** prefer clickhouse for overview visitors ([4687d5b](https://github.com/msgbyte/tianji/commit/4687d5bf0f0a20a801cff95280f1aa5e38465992))
+
 ## [1.32.22](https://github.com/msgbyte/tianji/compare/v1.32.21...v1.32.22) (2026-08-13)
 
 ### Features
