@@ -43,6 +43,42 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Spinner } from '../ui/spinner';
 import { useCronPreview } from './useCronPreview';
 import { useNavigate } from '@tanstack/react-router';
+import {
+  WorkerEnvironmentVariablesField,
+  type WorkerEnvironmentVariableFormValue,
+} from './WorkerEnvironmentVariablesField';
+
+const environmentVariableKeySchema = z
+  .string()
+  .min(1, 'Environment variable key is required')
+  .max(255)
+  .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, 'Invalid environment variable key');
+
+const environmentVariableSchema: z.ZodType<WorkerEnvironmentVariableFormValue> =
+  z.discriminatedUnion('type', [
+    z.object({
+      id: z.string().optional(),
+      key: environmentVariableKeySchema,
+      type: z.literal('Text'),
+      value: z.string().min(1, 'A value is required'),
+    }),
+    z.object({
+      id: z.string().optional(),
+      key: environmentVariableKeySchema,
+      type: z.literal('Secret'),
+      value: z.string().optional(),
+      hasValue: z.boolean().optional(),
+    }),
+  ])
+    .superRefine((value, ctx) => {
+      if (value.type === 'Secret' && !value.hasValue && !value.value) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'A value is required',
+          path: ['value'],
+        });
+      }
+    });
 
 const formSchema = z
   .object({
@@ -53,6 +89,21 @@ const formSchema = z
     enableCron: z.boolean().default(false),
     cronExpression: z.string().optional(),
     visibility: z.enum(['Public', 'Private']).default('Public'),
+    environmentVariables: z.array(environmentVariableSchema).superRefine(
+      (items, ctx) => {
+        const keys = new Set<string>();
+        items.forEach((item, index) => {
+          if (keys.has(item.key)) {
+            ctx.addIssue({
+              code: 'custom',
+              message: 'Environment variable keys must be unique',
+              path: [index, 'key'],
+            });
+          }
+          keys.add(item.key);
+        });
+      }
+    ),
   })
   .refine(
     (data) => {
@@ -101,6 +152,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
         enableCron: false,
         cronExpression: '',
         visibility: 'Public',
+        environmentVariables: [],
         ...props.defaultValues,
       },
     });
@@ -147,6 +199,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
       await testCodeMutation.mutateAsync({
         workspaceId,
         code,
+        environmentVariables: form.getValues('environmentVariables'),
       });
     });
 
@@ -435,12 +488,15 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
               </div>
             </CardContent>
 
-            <CardFooter>
-              <Button type="submit" loading={isLoading}>
-                {props.workerId ? t('Update Worker') : t('Create Worker')}
-              </Button>
-            </CardFooter>
           </Card>
+
+          <WorkerEnvironmentVariablesField />
+
+          <CardFooter className="justify-end px-0">
+            <Button type="submit" loading={isLoading}>
+              {props.workerId ? t('Update Worker') : t('Create Worker')}
+            </Button>
+          </CardFooter>
 
           <FullscreenModal
             isOpen={isFullscreen}

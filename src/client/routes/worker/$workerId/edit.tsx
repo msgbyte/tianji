@@ -31,6 +31,13 @@ function PageComponent() {
     workspaceId,
     workerId,
   });
+  const {
+    data: environmentVariables,
+    isLoading: isEnvironmentLoading,
+  } = trpc.worker.getEnvironmentVariables.useQuery({
+    workspaceId,
+    workerId,
+  });
 
   const updateMutation = trpc.worker.upsert.useMutation({
     onError: defaultErrorHandler,
@@ -53,11 +60,11 @@ function PageComponent() {
     });
   });
 
-  if (isLoading) {
+  if (isLoading || isEnvironmentLoading) {
     return <Loading />;
   }
 
-  if (!worker) {
+  if (!worker || !environmentVariables) {
     return <ErrorTip />;
   }
 
@@ -81,6 +88,7 @@ function PageComponent() {
             enableCron: worker.enableCron || false,
             cronExpression: worker.cronExpression || '',
             visibility: worker.visibility || 'Public',
+            environmentVariables,
           }}
           onSubmit={handleSubmit}
         />
