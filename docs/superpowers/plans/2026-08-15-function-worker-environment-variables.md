@@ -102,7 +102,7 @@ describe('worker environment variable contract', () => {
 
 - [ ] **Step 2: Run the test and verify RED**
 
-Run: `pnpm --dir src/server exec vitest run src/model/worker/environment.spec.ts`
+Run: `pnpm --dir src/server exec vitest run model/worker/environment.spec.ts`
 
 Expected: FAIL because `./environment.js` does not exist.
 
@@ -195,7 +195,7 @@ Run:
 
 ```bash
 pnpm --dir src/server db:generate
-pnpm --dir src/server exec vitest run src/model/worker/environment.spec.ts
+pnpm --dir src/server exec vitest run model/worker/environment.spec.ts
 ```
 
 Expected: Prisma generation succeeds and the focused test passes.
@@ -280,7 +280,7 @@ In `cronManager.spec.ts`, add one test proving `environmentVariables` is synchro
 
 - [ ] **Step 2: Run focused tests and verify RED**
 
-Run: `pnpm --dir src/server exec vitest run src/model/worker/environment.spec.ts src/model/worker/cronManager.spec.ts`
+Run: `pnpm --dir src/server exec vitest run model/worker/environment.spec.ts model/worker/cronManager.spec.ts`
 
 Expected: FAIL because synchronization and manager integration are missing.
 
@@ -303,7 +303,7 @@ Extend `WorkerCronUpsertData` with optional `environmentVariables`. Remove it be
 
 - [ ] **Step 5: Run focused tests and verify GREEN**
 
-Run: `pnpm --dir src/server exec vitest run src/model/worker/environment.spec.ts src/model/worker/cronManager.spec.ts`
+Run: `pnpm --dir src/server exec vitest run model/worker/environment.spec.ts model/worker/cronManager.spec.ts`
 
 Expected: all focused tests pass.
 
@@ -351,7 +351,7 @@ Also assert a worker from another workspace returns `NOT_FOUND`, and assert `ups
 
 - [ ] **Step 2: Run the router test and verify RED**
 
-Run: `pnpm --dir src/server exec vitest run src/trpc/routers/worker.spec.ts`
+Run: `pnpm --dir src/server exec vitest run trpc/routers/worker.spec.ts`
 
 Expected: FAIL because `getEnvironmentVariables` and the new input fields do not exist.
 
@@ -365,7 +365,7 @@ Extend `testCode` with optional `workerId` and environment inputs; Task 4 suppli
 
 - [ ] **Step 4: Run the router test and verify GREEN**
 
-Run: `pnpm --dir src/server exec vitest run src/trpc/routers/worker.spec.ts`
+Run: `pnpm --dir src/server exec vitest run trpc/routers/worker.spec.ts`
 
 Expected: all worker router tests pass.
 
@@ -428,7 +428,7 @@ In `worker.spec.ts`, assert manual execution calls `execStoredWorker(worker, pay
 Run:
 
 ```bash
-pnpm --dir src/server exec vitest run src/model/worker/environment.spec.ts src/model/worker/index.spec.ts src/model/worker/cronRunner.spec.ts src/trpc/routers/worker.spec.ts
+pnpm --dir src/server exec vitest run model/worker/environment.spec.ts model/worker/index.spec.ts model/worker/cronRunner.spec.ts trpc/routers/worker.spec.ts
 ```
 
 Expected: FAIL because the loaders, stored-worker wrapper, and environment argument are missing.
@@ -584,7 +584,7 @@ git commit -m "feat(worker): manage environment variables"
 - [ ] **Step 1: Run all focused server and client tests**
 
 ```bash
-pnpm --dir src/server exec vitest run src/model/worker/environment.spec.ts src/model/worker/index.spec.ts src/model/worker/cronRunner.spec.ts src/model/worker/cronManager.spec.ts src/trpc/routers/worker.spec.ts
+pnpm --dir src/server exec vitest run model/worker/environment.spec.ts model/worker/index.spec.ts model/worker/cronRunner.spec.ts model/worker/cronManager.spec.ts trpc/routers/worker.spec.ts
 pnpm --dir src/client exec vitest run --config vitest.component.config.ts components/worker/WorkerEnvironmentVariablesField.component.spec.tsx
 ```
 
