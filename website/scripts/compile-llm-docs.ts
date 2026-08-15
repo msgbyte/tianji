@@ -237,7 +237,7 @@ async function main() {
     routes.push({ title, url: absoluteUrl });
   }
 
-  const outputFull = chunksFull.join('\n');
+  const outputFull = `${chunksFull.join('\n').trimEnd()}\n`;
   const headerTitles = [
     '# Tianji Documentation Index',
     '',

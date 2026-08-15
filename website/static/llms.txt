@@ -40,5 +40,7 @@ Parameters - https://tianji.dev/docs/telemetry/params
 Use in Docusaurus - https://tianji.dev/docs/website/framework/docusaurus
 Install in Traefik with plugin - https://tianji.dev/docs/website/framework/install-in-traefik-with-plugin
 Tracker Script - https://tianji.dev/docs/website/track-script
+Worker Agent Reference - https://tianji.dev/docs/worker/agent-reference
+Worker Getting Started - https://tianji.dev/docs/worker/getting-started
 Markdown page example - https://tianji.dev/markdown-page
 Tianji Private Policy - https://tianji.dev/private-policy

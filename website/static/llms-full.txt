@@ -151,6 +151,14 @@ Use **Retryable Status Codes** to add more status codes for a route. For example
 
 Be careful with validation errors such as `400` or `401`. Those usually mean the request or key is wrong, and retrying another provider can hide the real problem.
 
+### Fail on Empty Content
+
+Fail on Empty Content is optional and defaults to off.
+
+When enabled for a gateway route, AI Router treats a successful upstream response with no assistant text content as a failed attempt. It then tries the next eligible route in the same tier, followed by lower tiers if needed.
+
+Tool-only responses are still treated as valid responses. This prevents function calling or tool-use requests from failing only because they did not produce assistant text.
+
 ## Logs
 
 The **Logs** tab shows runtime attempts for a router:
@@ -1204,6 +1212,7 @@ Tianji supports various environment variables to customize its behavior. You can
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
 | `ALPHA_MODE` | Enable alpha features | `false` | `true` |
 | `ENABLE_FUNCTION_WORKER` | Enable function worker | `false` | `true` |
+| `WORKER_EXECUTION_REQUEST_PAYLOAD_DISABLED_WORKER_IDS` | Comma-separated worker IDs whose execution request payloads are not persisted. Payloads are still passed to worker code. | - | `worker-id-1,worker-id-2` |
 | `REGISTER_AUTO_JOIN_WORKSPACE_ID` | Auto-join workspace ID for new users | - | `workspace-id-123` |
 
 ## Cache Configuration
@@ -2898,6 +2907,605 @@ You can add `data-domains` into your script. The value should be your root domai
 ```
 
 Then you can just see the events from these domains.
+
+
+===== FILE: docs/worker/agent-reference.md =====
+
+# Worker Agent Reference
+
+This page is a machine-oriented reference for coding agents that generate Tianji Worker source code. For the user-facing setup and operation guide, read [Worker Getting Started](./getting-started.md).
+
+Read this page completely before generating code. Do not infer Node.js, browser, or Cloudflare Worker APIs that are not declared here.
+
+## Give this page to an Agent
+
+If you are a Tianji user, copy this page's URL and send it to an Agent that can access web pages:
+
+```text
+Read this reference completely before writing code:
+https://tianji.dev/docs/worker/agent-reference
+```
+
+If the Agent cannot access the URL, copy and paste the entire page into the conversation instead. Then describe the Worker's purpose, input, environment-variable names, external APIs, temporary data, and expected output. Never include real Secret values.
+
+The [Worker Getting Started guide](./getting-started.md#ask-an-agent-to-write-your-worker) provides a ready-to-copy request template and the complete user workflow.
+
+## Choose the target
+
+There are two valid generation targets:
+
+| Target | Output |
+| --- | --- |
+| Tianji dashboard | One self-contained source file using plain JavaScript syntax |
+| Tianji CLI project | `src/index.ts`; TypeScript and bundled npm dependencies are allowed |
+
+Dashboard code should use plain JavaScript unless the Tianji instance explicitly enables `ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT`. A CLI project uses Vite to compile TypeScript before deployment.
+
+Generate a Module Worker. Do not generate the legacy global `function fetch(...) {}` format.
+
+```js
+
+  },
+};
+```
+
+## Runtime types
+
+Use this contract for reasoning and TypeScript generation:
+
+```ts
+type JsonValue =
+  | null
+  | string
+  | number
+  | boolean
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+interface WorkerRequestContext {
+  method: string;
+  url: string;
+  headers: Record<string, string | string[] | undefined>;
+}
+
+interface WorkerContext {
+  type: 'http' | 'cron' | 'manual' | 'test';
+  env: Record<string, string>;
+  request?: WorkerRequestContext;
+}
+
+interface TianjiWorker {
+  fetch(
+    payload: Record<string, unknown>,
+    context: WorkerContext
+  ): unknown | Promise<unknown>;
+}
+
+interface RequestConfig {
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  params?: Record<string, unknown>;
+  data?: unknown;
+  timeout?: number;
+}
+
+interface RequestResult {
+  status: number;
+  headers: Record<string, unknown>;
+  data: unknown;
+}
+
+declare function request(config: RequestConfig): Promise<RequestResult>;
+
+interface KVScope {
+  get<T extends JsonValue = JsonValue>(key: string): Promise<T | undefined>;
+  set(key: string, value: JsonValue, ttlMilliseconds?: number): Promise<void>;
+  delete(key: string): Promise<boolean>;
+}
+
+declare const kv: KVScope & { workspace: KVScope };
+```
+
+The types above document runtime globals. Do not include the `declare` statements in dashboard JavaScript output. A CLI TypeScript project may include declarations when type checking needs them.
+
+## Input contract
+
+- `payload` is always an object.
+- For HTTP execution, Tianji merges query parameters and the request body. Body fields overwrite query fields with the same name.
+- A cron execution without input receives `{}`.
+- Treat every payload field as untrusted. Check its type, required status, format, length, and allowed range before using it.
+- Do not assume query parameters have already been converted to numbers or booleans.
+- Reject or return a clear error for invalid input rather than silently constructing unsafe requests.
+
+`context.request` exists only when `context.type === 'http'`. Guard access to it:
+
+```js
+if (context.type !== 'http') {
+  return { error: 'HTTP trigger required' };
+}
+
+const method = context.request.method;
+```
+
+## Output contract
+
+- Return JSON-compatible objects and arrays, a string, or a number.
+- For an HTTP trigger, Tianji serializes object results as JSON.
+- Do not return secrets or internal error objects.
+- Normalize upstream API responses into a stable result owned by the worker.
+- Use `console.log`, `console.warn`, and `console.error` for execution logs.
+
+## Sandbox contract
+
+The Worker sandbox provides standard JavaScript built-ins, captured `console` methods, `request`, and `kv`.
+
+The sandbox is not Node.js and not a browser. Do not generate code that uses:
+
+- `process`, `Buffer`, filesystem, child processes, sockets, or other Node.js APIs.
+- DOM APIs, browser storage, or browser `fetch`.
+- Cloudflare Worker bindings or event handlers.
+- Undocumented globals.
+
+For outbound HTTP, use `request` with an Axios-style configuration:
+
+```js
+const response = await request({
+  method: 'POST',
+  url: context.env.API_URL,
+  headers: { Authorization: `Bearer ${context.env.API_TOKEN}` },
+  data: { value: payload.value },
+  timeout: 10_000,
+});
+```
+
+Check required URLs and credentials before calling `request`. Handle remote failures and avoid placing credentials in query strings.
+
+## Environment and Secret contract
+
+Environment values are available only through `context.env`:
+
+```js
+const apiUrl = context.env.API_URL;
+const apiToken = context.env.API_TOKEN;
+```
+
+Variable names match `^[A-Za-z_][A-Za-z0-9_]*$` and are unique within a worker.
+
+Text and Secret values are both strings at runtime. Secret values are replaced with `[secret]` in captured log strings, arrays, nested object values, and object keys. Empty Secret values are not redacted.
+
+Log redaction does not prevent exfiltration. Worker code can still return a secret or send it to an external service. Use a Secret only for its intended outbound request, and never intentionally log or return it.
+
+## KV contract
+
+`kv` stores data private to the current worker. `kv.workspace` shares data across workers in the same workspace and must be used only when cross-worker sharing is intentional.
+
+```js
+const cached = await kv.get('result');
+await kv.set('result', { ok: true }, 60_000);
+const deleted = await kv.delete('result');
+```
+
+KV limits apply to each execution:
+
+| Limit | Value |
+| --- | ---: |
+| Default TTL | 10 minutes |
+| Minimum TTL | 1 second |
+| Maximum TTL | 24 hours |
+| Key length | 1-256 characters |
+| Value size | 256 KiB of JSON |
+| Calls across both scopes | 50 |
+| Total data written across both scopes | 1 MiB |
+| Timeout for one KV operation | 2 seconds |
+
+Values must be JSON-compatible. Functions, symbols, `undefined`, `BigInt`, non-finite numbers, class instances, custom `toJSON` methods, symbol properties, accessors, non-enumerable properties, and cyclic data are invalid.
+
+KV failures expose one stable error code:
+
+```text
+WORKER_KV_INVALID_KEY
+WORKER_KV_INVALID_VALUE
+WORKER_KV_INVALID_TTL
+WORKER_KV_LIMIT_EXCEEDED
+WORKER_KV_TIMEOUT
+WORKER_KV_UNAVAILABLE
+```
+
+KV is cache storage, not durable storage. Always handle `undefined` from `get`. Test executions use isolated KV namespaces and cannot read or modify the deployed worker's KV data.
+
+## Trigger contract
+
+Generate code that supports only the requested triggers and handles unexpected triggers explicitly.
+
+- HTTP: `context.type === 'http'`; `context.request` is present.
+- Cron: `context.type === 'cron'`; payload is normally `{}`.
+- Manual: `context.type === 'manual'`.
+- Editor test: `context.type === 'test'`; test KV is isolated.
+
+Cron expressions have a minimum interval of one minute. Execution uses the workspace timezone or UTC if none is configured.
+
+The public HTTP route is:
+
+```text
+/api/worker/<workspace-id>/<worker-id>
+```
+
+Only active, public workers can execute through this route. It does not require a Tianji API key. Treat the endpoint as public and the payload as attacker-controlled. Private workers are rejected by the public route and can be tested through authenticated Tianji operations.
+
+## Generation checklist
+
+Before returning generated Worker code, verify all of the following:
+
+1. The output uses a default-exported object with exactly one `async fetch(payload, context)` method.
+2. It matches the requested dashboard JavaScript or CLI TypeScript target.
+3. Every payload field is validated before use.
+4. Configuration and credentials come from named `context.env` keys.
+5. No real credential or placeholder that resembles a real credential is embedded in source.
+6. Outbound HTTP uses `request`, validates required configuration, sets a timeout, and handles failures.
+7. Temporary private data uses `kv`; `kv.workspace` appears only when cross-worker sharing was explicitly requested.
+8. KV keys, values, TTLs, and operation counts stay within the documented limits.
+9. The result is JSON-compatible and does not expose secrets or unnecessary upstream response data.
+10. The code does not use Node.js, browser, Cloudflare, or undocumented runtime APIs.
+11. At least one valid and one invalid test payload are described separately from the source code.
+12. The agent does not deploy, overwrite remote code, change visibility, or add Secret values without explicit user authorization.
+
+## Prompt template
+
+```text
+Read the Tianji Worker Agent Reference completely. Generate Worker source code
+using only its documented runtime contract.
+
+Target: <dashboard JavaScript or CLI TypeScript>
+Triggers: <http, cron, manual, or test>
+Input: <fields, types, required fields, and validation rules>
+Environment: <context.env variable names; never include real values>
+External APIs: <method, endpoint behavior, authentication, and timeout>
+KV: <private or workspace scope, keys, values, and TTL; or none>
+Output: <stable JSON response schema>
+Failures: <invalid input, missing configuration, remote errors, missing KV>
+
+Return the source code first, followed by valid and invalid test payloads.
+Do not deploy, overwrite remote code, or include real Secret values.
+```
+
+## Agent-readable documentation
+
+Tianji publishes a documentation index at [`/llms.txt`](https://tianji.dev/llms.txt) and the complete documentation corpus at [`/llms-full.txt`](https://tianji.dev/llms-full.txt). This reference and the user-facing guide are included in the full corpus.
+
+
+===== FILE: docs/worker/getting-started.md =====
+
+# Worker Getting Started
+
+Tianji Worker lets you run small functions without maintaining a separate service. A worker can receive HTTP requests, run on a schedule, call external APIs, read environment variables, and store short-lived data.
+
+This guide walks you through creating and publishing your first worker in the Tianji dashboard. If you want an AI coding agent to generate the source code, see the [Worker Agent Reference](./agent-reference.md).
+
+## Before you start
+
+Worker is disabled by default on self-hosted Tianji instances. Add this environment variable to the Tianji server and restart it:
+
+```bash
+ENABLE_FUNCTION_WORKER=true
+```
+
+After Worker is enabled, open **Worker** from the Tianji sidebar.
+
+## Ask an Agent to write your Worker
+
+You do not need to write the Worker code by hand. Give the [Worker Agent Reference](./agent-reference.md) to your coding agent so it can learn Tianji's runtime and generate compatible code.
+
+### If your Agent can open web pages
+
+Copy the following prompt, replace the placeholders, and send it to your Agent:
+
+```text
+First, read the Tianji Worker Agent Reference completely:
+https://tianji.dev/docs/worker/agent-reference
+
+Then create a Tianji Worker for me.
+
+Target: dashboard JavaScript
+Purpose: <what the Worker should do>
+Input: <payload fields and validation rules>
+Environment variables: <variable names only; do not include Secret values>
+External APIs: <APIs the Worker should call, or none>
+Temporary data: <what to store in KV, or none>
+Output: <the expected result>
+
+Return the Worker source code and example test payloads. Do not deploy it.
+```
+
+For example, you can replace `Purpose` with “receive a GitHub webhook and forward a short message to my team webhook,” then list the required payload fields and environment-variable names.
+
+### If your Agent cannot open web pages
+
+1. Open the [Worker Agent Reference](./agent-reference.md).
+2. Copy the entire page.
+3. Paste it into your conversation with the Agent.
+4. Add your Worker requirements using the prompt above.
+
+Do not paste real API keys or passwords into the conversation. Give the Agent environment-variable names such as `API_TOKEN`; add the actual values later as **Secret** variables in Tianji.
+
+After the Agent returns code:
+
+1. Review the environment-variable names it requires.
+2. Paste the code into the Tianji Worker editor.
+3. Add Text and Secret variables in Tianji.
+4. Run the provided valid and invalid test payloads.
+5. Save and activate the worker only after the results are correct.
+
+## Create your first worker
+
+1. Open **Worker** in the dashboard.
+2. Click **Add Worker**.
+3. Enter a name and an optional description.
+4. Paste the following code into the editor.
+
+```js
+
+    return {
+      message: `Hello, ${name}!`,
+      trigger: context.type,
+      timestamp: new Date().toISOString(),
+    };
+  },
+};
+```
+
+Every worker exports a `fetch` method. Tianji calls it with:
+
+- `payload`: input values sent to the worker.
+- `context`: information about the trigger, request, and configured environment variables.
+
+The value returned by `fetch` becomes the worker result.
+
+## Test before saving
+
+Use the editor's **Test** action with this payload:
+
+```json
+{
+  "name": "Tianji"
+}
+```
+
+The result should look similar to:
+
+```json
+{
+  "message": "Hello, Tianji!",
+  "trigger": "test",
+  "timestamp": "2026-08-16T00:00:00.000Z"
+}
+```
+
+Use `console.log`, `console.warn`, or `console.error` while debugging. Tianji displays these messages in the execution details.
+
+## Call a worker over HTTP
+
+Save the worker, keep it **Active**, and make sure it is **Public**. Its endpoint is:
+
+```text
+https://<your-tianji-host>/api/worker/<workspace-id>/<worker-id>
+```
+
+You can pass values as query parameters:
+
+```bash
+curl 'https://<your-tianji-host>/api/worker/<workspace-id>/<worker-id>?name=Tianji'
+```
+
+Or send a JSON request body:
+
+```bash
+curl --request POST \
+  --header 'Content-Type: application/json' \
+  --data '{"name":"Tianji"}' \
+  'https://<your-tianji-host>/api/worker/<workspace-id>/<worker-id>'
+```
+
+The endpoint accepts any HTTP method. Query parameters and request-body fields are merged into `payload`; body fields take precedence when the same key appears in both places.
+
+A public worker can be called by anyone who has its URL and does not require a Tianji API key. Validate all input and never return credentials. Private workers cannot be called through the public endpoint, but you can test them from the authenticated dashboard.
+
+## Handle different triggers
+
+`context.type` tells you why the worker is running:
+
+| Type | When it is used |
+| --- | --- |
+| `http` | The public HTTP endpoint called the worker |
+| `cron` | A configured schedule triggered the worker |
+| `manual` | A user ran the saved worker from Tianji |
+| `test` | A user tested code in the editor |
+
+For HTTP calls, `context.request` contains the request method, URL, and headers:
+
+```js
+
+    }
+
+    return {
+      method: context.request.method,
+      payload,
+    };
+  },
+};
+```
+
+## Add environment variables and secrets
+
+Open the worker's environment-variable section and add:
+
+- **Text** variables for non-sensitive settings such as a base URL.
+- **Secret** variables for API keys, tokens, and passwords.
+
+Read both types from `context.env`:
+
+```js
+const apiBaseUrl = context.env.API_BASE_URL;
+const apiToken = context.env.API_TOKEN;
+```
+
+Variable names can contain letters, numbers, and underscores, but must start with a letter or underscore. Names must be unique within a worker.
+
+Tianji replaces configured Secret values with `[secret]` in captured logs. A worker can still send or return a secret, so do not log or return credentials intentionally.
+
+## Call an external API
+
+Use the global `request` function for outbound HTTP requests:
+
+```js
+
+    const apiToken = context.env.API_TOKEN;
+
+    if (!apiBaseUrl || !apiToken) {
+      throw new Error('API configuration is missing');
+    }
+
+    const response = await request({
+      method: 'GET',
+      url: `${apiBaseUrl}/items`,
+      params: { query: String(payload.query ?? '') },
+      headers: { Authorization: `Bearer ${apiToken}` },
+      timeout: 10_000,
+    });
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  },
+};
+```
+
+`request` accepts an Axios-style configuration and returns `status`, `headers`, and `data`. The browser `fetch` API is not available in the Worker sandbox.
+
+## Store short-lived data
+
+Use the global `kv` object when a worker needs temporary state:
+
+```js
+
+    const current = (await kv.get(key)) ?? 0;
+    const next = Number(current) + 1;
+
+    await kv.set(key, next, 60 * 60 * 1000);
+
+    return { count: next };
+  },
+};
+```
+
+The available operations are:
+
+- `kv.get(key)`
+- `kv.set(key, value, ttlMilliseconds?)`
+- `kv.delete(key)`
+
+Data stored with `kv` is private to the current worker. Use `kv.workspace` only when multiple workers in the same workspace intentionally share temporary data.
+
+KV is a cache rather than a durable database. Entries expire and may be evicted, so your worker must handle missing values. The default TTL is 10 minutes and the maximum TTL is 24 hours. See the [Worker Agent Reference](./agent-reference.md#kv-contract) for the complete limits and error codes.
+
+## Run on a schedule
+
+Enable **Cron Schedule** in the worker editor and enter a cron expression. The minimum interval is one minute. Schedules use the workspace timezone, or UTC when no workspace timezone is configured.
+
+Common expressions:
+
+| Expression | Meaning |
+| --- | --- |
+| `*/5 * * * *` | Every 5 minutes |
+| `0 * * * *` | At the start of every hour |
+| `0 9 * * 1-5` | At 09:00, Monday through Friday |
+
+You can restrict a worker to scheduled runs:
+
+```js
+
+    }
+
+    const webhookUrl = context.env.WEBHOOK_URL;
+    if (!webhookUrl) {
+      throw new Error('WEBHOOK_URL is not configured');
+    }
+
+    const response = await request({
+      method: 'POST',
+      url: webhookUrl,
+      data: { executedAt: new Date().toISOString() },
+      timeout: 10_000,
+    });
+
+    return { delivered: response.status >= 200 && response.status < 300 };
+  },
+};
+```
+
+## Develop with the CLI
+
+The dashboard is the quickest way to create a worker. Use the CLI when you want a local TypeScript project, third-party dependencies, version control, and a repeatable build.
+
+Build and link the current CLI from the Tianji repository:
+
+```bash
+git clone https://github.com/msgbyte/tianji.git
+cd tianji
+pnpm install
+pnpm --dir packages/cli build
+cd packages/cli
+pnpm link --global
+```
+
+Then create and deploy a project from your projects directory:
+
+```bash
+tianji login
+tianji worker init my-worker
+cd my-worker
+npm install
+npm run build
+tianji worker deploy
+```
+
+`tianji login` asks for your Tianji server URL, workspace ID, and API key. The deploy command builds `src/index.ts`, uploads `dist/index.js`, and records the remote worker ID in `.tianjirc`.
+
+To download an existing worker into an empty directory:
+
+```bash
+tianji worker pull <worker-id>
+npm install
+```
+
+Pulling into an existing project does not replace `src/index.ts` unless you explicitly pass `--overwrite`. Configure environment variables, secrets, visibility, and cron in the dashboard. Do not put credentials in source code or `.tianjirc`.
+
+## Troubleshooting
+
+### `Function worker is not enabled`
+
+Set `ENABLE_FUNCTION_WORKER=true` on the Tianji server and restart it.
+
+### `fetch is not defined`
+
+Make sure the worker has a default export containing a `fetch` method, as shown in the first example.
+
+### `Worker is private`
+
+Private workers cannot run through the public HTTP endpoint. Test the worker from the authenticated dashboard, or make it public only when unauthenticated link access is intended.
+
+### TypeScript causes a syntax error in the dashboard
+
+Use plain JavaScript in the dashboard. TypeScript syntax requires the server option `ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT`. CLI projects compile TypeScript before uploading it.
+
+### A KV value disappears
+
+KV data expires and may be evicted. Use an external durable database when the data must not be lost.
+
+## Generate a worker with an Agent
+
+Follow [Ask an Agent to write your Worker](#ask-an-agent-to-write-your-worker) to give the reference to your Agent. The [Worker Agent Reference](./agent-reference.md) provides the precise runtime contract, type definitions, sandbox restrictions, KV limits, generation checklist, and a more detailed prompt template.
 
 
 ===== FILE: src/pages/markdown-page.md =====
