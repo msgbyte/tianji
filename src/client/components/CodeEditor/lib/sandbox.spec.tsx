@@ -8,5 +8,8 @@ describe('Worker sandbox declarations', () => {
     expect(sandboxGlobal).toContain('ttl?: number');
     expect(sandboxGlobal).toContain('declare const kv: KVScope &');
     expect(sandboxGlobal).toContain('workspace: KVScope');
+    expect(sandboxGlobal).toContain('env: Record<string, string>');
+    expect(sandboxGlobal).toContain('interface TianjiWorker');
+    expect(sandboxGlobal).toContain('fetch: WorkerFunction');
   });
 });

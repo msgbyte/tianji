@@ -118,7 +118,19 @@ vi.mock('@/components/ErrorTip', () => ({ ErrorTip: () => null }));
 vi.mock('@/utils/route', () => ({ routeAuthBeforeLoad: vi.fn() }));
 
 vi.mock('@/components/CodeEditor', () => ({
-  CodeEditor: () => null,
+  CodeEditor: ({
+    value,
+    onChange,
+  }: {
+    value?: string;
+    onChange?: (value: string) => void;
+  }) => (
+    <textarea
+      aria-label="Code editor"
+      value={value}
+      onChange={(event) => onChange?.(event.target.value)}
+    />
+  ),
 }));
 
 vi.mock('@/components/ui/fullscreen-modal', () => ({
@@ -203,6 +215,39 @@ describe('WorkerEditForm test-code input', () => {
         },
       ],
     });
+  });
+});
+
+describe('WorkerEditForm worker entry migration', () => {
+  test('migrates a legacy fetch function with one click', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <WorkerEditForm
+        defaultValues={{
+          ...createDefaultValues('server-value'),
+          code: `async function fetch(payload, context) {
+  return { payload, context };
+}`,
+        }}
+        onSubmit={vi.fn().mockResolvedValue(undefined)}
+      />
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: 'Migrate to Module Worker' })
+    );
+
+    expect(screen.getByLabelText('Code editor')).toHaveValue(
+      `export default {
+  async fetch(payload, context) {
+    return { payload, context };
+  },
+} satisfies TianjiWorker;`
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Migrate to Module Worker' })
+    ).not.toBeInTheDocument();
   });
 });
 

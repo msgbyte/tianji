@@ -1,6 +1,6 @@
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
-import { useEventWithLoading } from '@/hooks/useEvent';
+import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { z } from 'zod';
 import {
@@ -27,6 +27,7 @@ import {
   LuClock,
   LuTriangleAlert,
   LuExternalLink,
+  LuSparkles,
 } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
@@ -48,6 +49,10 @@ import {
   type WorkerEnvironmentVariableFormValue,
 } from './WorkerEnvironmentVariablesField';
 import { buildWorkerTestCodeInput } from './workerTestCodeInput';
+import {
+  canMigrateLegacyWorkerCode,
+  migrateLegacyWorkerCode,
+} from './workerCodeMigration';
 
 const environmentVariableKeySchema = z
   .string()
@@ -123,9 +128,11 @@ const formSchema = z
     }
   );
 
-const defaultCode = `async function fetch(payload) {
-  return 'Hello, World!';
-}
+const defaultCode = `export default {
+  async fetch(payload, context) {
+    return 'Hello, World!';
+  },
+} satisfies TianjiWorker;
 `;
 
 export type WorkerEditFormValues = z.infer<typeof formSchema>;
@@ -166,6 +173,8 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
       defaultValues,
     });
     const { isDirty } = form.formState;
+    const workerCode = form.watch('code');
+    const canMigrateWorkerCode = canMigrateLegacyWorkerCode(workerCode);
 
     useEffect(() => {
       if (!isDirty) {
@@ -224,6 +233,13 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
       );
     });
 
+    const handleMigrateWorkerCode = useEvent(() => {
+      form.setValue('code', migrateLegacyWorkerCode(form.getValues('code')), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    });
+
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -276,6 +292,17 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                       {t('JavaScript Code')}
                       {!props.workerId && (
                         <div className="flex items-center space-x-2">
+                          {canMigrateWorkerCode && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              Icon={LuSparkles}
+                              onClick={handleMigrateWorkerCode}
+                            >
+                              {t('Migrate to Module Worker')}
+                            </Button>
+                          )}
                           <Button
                             type="button"
                             variant="outline"
@@ -526,8 +553,10 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
           >
             <CodeEditor
               height="100%"
-              value={form.watch('code')}
-              onChange={(value) => form.setValue('code', value)}
+              value={workerCode}
+              onChange={(value) =>
+                form.setValue('code', value, { shouldDirty: true })
+              }
               codeValidator={codeValidator}
             />
           </FullscreenModal>

@@ -23,6 +23,7 @@ import {
 } from './kv.js';
 import { createSandboxProxy } from '../../utils/vm/sandbox.js';
 import { loadWorkerEnvironmentForExecution } from './environment.js';
+import { transformWorkerModuleCode } from '../../utils/vm/utils.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
   name: 'WorkerExecution',
@@ -115,6 +116,10 @@ function createWorkerKVBridge(scope: WorkerKVScope) {
   });
 }
 
+function isModuleWorkerCode(code: string) {
+  return /^\s*export\s/m.test(code);
+}
+
 /**
  * execute a worker code in isolated-vm
  */
@@ -148,6 +153,22 @@ export async function execWorker(
   );
 
   try {
+    const transformedModuleCode = isModuleWorkerCode(code)
+      ? await transformWorkerModuleCode(code)
+      : undefined;
+    const usesModuleWorker =
+      transformedModuleCode !== undefined &&
+      /\bmodule\.exports\s*=/.test(transformedModuleCode);
+    const executableCode = usesModuleWorker
+      ? `
+        const __tianjiWorkerModule = (() => {
+          const module = { exports: {} };
+          const exports = module.exports;
+          ${transformedModuleCode}
+          return module.exports;
+        })();
+      `
+      : code;
     const {
       logger: logs,
       result,
@@ -420,9 +441,21 @@ export async function execWorker(
         })();
 
         return (async () => {
-          ${code}
+          ${executableCode}
 
-          return typeof fetch === 'function' ? fetch(__requestPayload, __workerContext) : 'fetch is not defined';
+          const handler = ${usesModuleWorker ? `(
+            typeof __tianjiWorkerModule.default === 'function'
+              ? __tianjiWorkerModule.default
+              : __tianjiWorkerModule.default &&
+                  typeof __tianjiWorkerModule.default.fetch === 'function'
+                ? __tianjiWorkerModule.default.fetch
+                : typeof __tianjiWorkerModule.fetch === 'function'
+                  ? __tianjiWorkerModule.fetch
+                  : undefined
+          )` : `(typeof fetch === 'function' ? fetch : undefined)`};
+          return typeof handler === 'function'
+            ? handler(__requestPayload, __workerContext)
+            : 'fetch is not defined';
         })();
       })()
     `, {

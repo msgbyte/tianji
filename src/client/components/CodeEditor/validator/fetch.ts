@@ -1,3 +1,5 @@
+import { hasModuleWorkerEntry } from '../../worker/workerCodeMigration';
+
 export type ValidatorFn = (code: string) => ValidatorResult;
 
 export interface ValidatorResult {
@@ -7,6 +9,10 @@ export interface ValidatorResult {
 
 export function fetchValidator(code: string): ValidatorResult {
   const errors: string[] = [];
+
+  if (hasModuleWorkerEntry(code)) {
+    return { isValid: true, errors };
+  }
 
   // Check for fetch function declaration using multiple patterns
   const fetchPatterns = [
@@ -25,7 +31,7 @@ export function fetchValidator(code: string): ValidatorResult {
 
   if (!hasFetchFunction) {
     errors.push(
-      'A fetch function must be declared. Example: function fetch() { ... }'
+      'A worker must be defined. Example: export default { async fetch(payload, context) { ... } } satisfies TianjiWorker'
     );
   }
 

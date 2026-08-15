@@ -52,6 +52,7 @@ interface RequestReturn {
 
 interface FetchContext {
   type: 'http' | 'cron' | 'manual' | 'test';
+  env: Record<string, string>;
   request?: {
     method: string;
     url: string;
@@ -90,5 +91,19 @@ declare const kv: KVScope & {
   workspace: KVScope;
 };
 
-declare function fetch(params: Record<string, any>, ctx: FetchContext): Promise<string>;
+type WorkerPayload = Record<string, any>;
+type WorkerResult = unknown;
+type WorkerFunction = (
+  payload: WorkerPayload,
+  context: FetchContext
+) => WorkerResult | Promise<WorkerResult>;
+
+interface TianjiWorker {
+  fetch: WorkerFunction;
+}
+
+declare function fetch(
+  payload: WorkerPayload,
+  context: FetchContext
+): WorkerResult | Promise<WorkerResult>;
 `;

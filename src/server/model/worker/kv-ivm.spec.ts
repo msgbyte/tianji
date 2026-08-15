@@ -4,7 +4,10 @@ import { execWorker } from './index.js';
 
 let executionIndex = 0;
 
-async function executeKVWorker(code: string) {
+async function executeKVWorker(
+  code: string,
+  requestPayload: Record<string, unknown> = {}
+) {
   executionIndex += 1;
   return execWorker(code, {
     scope: {
@@ -12,7 +15,7 @@ async function executeKVWorker(code: string) {
       workspaceId: 'workspace-ivm',
       executionId: `execution-${executionIndex}`,
     },
-    requestPayload: {},
+    requestPayload,
     context: { type: 'test' },
   });
 }
@@ -21,6 +24,61 @@ describe('Worker KV isolated-vm bridge', () => {
   beforeAll(() => {
     env.cache.memoryOnly = true;
     env.enableFunctionWorkerTypescriptSupport = false;
+  });
+
+  it('executes a default-exported Module Worker', async () => {
+    const execution = await executeKVWorker(
+      `export default {
+        async fetch(payload, context) {
+          return { payload, type: context.type };
+        },
+      } satisfies TianjiWorker;`,
+      { message: 'hello' }
+    );
+
+    expect(execution.error).toBeUndefined();
+    expect(execution.responsePayload).toEqual({
+      payload: { message: 'hello' },
+      type: 'test',
+    });
+  });
+
+  it('executes the default export shape emitted by the CLI build', async () => {
+    const execution = await executeKVWorker(
+      `const worker = {
+        async fetch(payload) {
+          return payload.message;
+        },
+      };
+      export { worker as default };`,
+      { message: 'built-module' }
+    );
+
+    expect(execution.error).toBeUndefined();
+    expect(execution.responsePayload).toBe('built-module');
+  });
+
+  it('continues to execute legacy fetch declarations', async () => {
+    const execution = await executeKVWorker(
+      `async function fetch(payload) { return payload.message; }`,
+      { message: 'legacy' }
+    );
+
+    expect(execution.error).toBeUndefined();
+    expect(execution.responsePayload).toBe('legacy');
+  });
+
+  it('does not mistake export examples in comments for a Module Worker', async () => {
+    const execution = await executeKVWorker(
+      `/*
+      export default { fetch() {} }
+      */
+      async function fetch(payload) { return payload.message; }`,
+      { message: 'legacy-comment' }
+    );
+
+    expect(execution.error).toBeUndefined();
+    expect(execution.responsePayload).toBe('legacy-comment');
   });
 
   it('persists valid objects and repeated references through execWorker', async () => {

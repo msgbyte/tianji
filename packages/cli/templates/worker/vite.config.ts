@@ -12,8 +12,7 @@ export default defineConfig({
       output: {
         // Don't wrap in any function
         format: 'es',
-        // Don't use exports
-        exports: 'none',
+        exports: 'default',
       },
       // Disable tree-shaking to preserve all code
       treeshake: false,

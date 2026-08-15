@@ -31,3 +31,14 @@ export async function transformTypescriptCode(sourceCode: string) {
 
   return res.code;
 }
+
+export async function transformWorkerModuleCode(sourceCode: string) {
+  const res = await esbuildTransform(sourceCode, {
+    loader: 'ts',
+    format: 'cjs',
+    target: 'esnext',
+    minify: false,
+  });
+
+  return res.code;
+}

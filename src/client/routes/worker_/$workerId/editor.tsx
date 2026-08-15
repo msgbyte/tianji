@@ -17,7 +17,13 @@ import { buildWorkerTestCodeInput } from '@/components/worker/workerTestCodeInpu
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { LuActivity, LuArrowLeft, LuRefreshCw, LuRocket } from 'react-icons/lu';
+import {
+  LuActivity,
+  LuArrowLeft,
+  LuRefreshCw,
+  LuRocket,
+  LuSparkles,
+} from 'react-icons/lu';
 import { Allotment } from 'allotment';
 import {
   Sheet,
@@ -27,6 +33,10 @@ import {
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
+import {
+  canMigrateLegacyWorkerCode,
+  migrateLegacyWorkerCode,
+} from '@/components/worker/workerCodeMigration';
 
 import 'allotment/dist/style.css';
 
@@ -124,6 +134,11 @@ function PageComponent() {
     return code !== worker.code;
   }, [code, worker]);
 
+  const canMigrateWorkerCode = useMemo(
+    () => canMigrateLegacyWorkerCode(code),
+    [code]
+  );
+
   const handleSave = useEvent(async () => {
     if (!worker || !hasAdminPermission || !isCodeDirty) {
       return;
@@ -141,6 +156,10 @@ function PageComponent() {
     });
     toast.success(t('Worker updated successfully'));
     refetchWorker();
+  });
+
+  const handleMigrateWorkerCode = useEvent(() => {
+    setCode((currentCode) => migrateLegacyWorkerCode(currentCode));
   });
 
   const handleLogRefresh = useEvent(() => {
@@ -256,6 +275,16 @@ function PageComponent() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {hasAdminPermission && canMigrateWorkerCode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  Icon={LuSparkles}
+                  onClick={handleMigrateWorkerCode}
+                >
+                  {t('Migrate to Module Worker')}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
