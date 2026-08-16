@@ -1,5 +1,19 @@
 
 
+## [1.32.24](https://github.com/msgbyte/tianji/compare/v1.32.23...v1.32.24) (2026-08-16)
+
+### Features
+
+* **worker:** support module worker syntax ([ce32bab](https://github.com/msgbyte/tianji/commit/ce32bab58236c10061720786b1130c2d60426f3f))
+
+### Bug Fixes
+
+* **worker:** restore revision rollback action ([be9f814](https://github.com/msgbyte/tianji/commit/be9f814727f4b05a08f26eac6af5af163d81e6ba))
+
+### Document
+
+* **worker:** add user and agent guides ([68277c7](https://github.com/msgbyte/tianji/commit/68277c7e5c93b95ed2b9117173284c997657fc4d))
+
 ## [1.32.23](https://github.com/msgbyte/tianji/compare/v1.32.22...v1.32.23) (2026-08-14)
 
 ### Features
