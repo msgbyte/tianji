@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useUserInfo,
+} from '@/store/user';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +65,7 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const userId = useUserInfo()?.id;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedExecutionIndex, setSelectedExecutionIndex] =
@@ -138,9 +143,10 @@ function PageComponent() {
     () => canMigrateLegacyWorkerCode(code),
     [code]
   );
+  const canEdit = hasAdminPermission || worker?.owner?.id === userId;
 
   const handleSave = useEvent(async () => {
-    if (!worker || !hasAdminPermission || !isCodeDirty) {
+    if (!worker || !canEdit || !isCodeDirty) {
       return;
     }
 
@@ -269,13 +275,23 @@ function PageComponent() {
               </div>
 
               <div className="text-muted-foreground text-xs">
+                {t('Creator')}:{' '}
+                {worker.creator?.nickname ??
+                  worker.creator?.username ??
+                  t('Unknown')}
+                {' · '}
+                {t('Owner')}:{' '}
+                {worker.owner?.nickname ??
+                  worker.owner?.username ??
+                  t('Unknown')}
+                {' · '}
                 {t('Last updated at {{time}}', {
                   time: dayjs(worker.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
                 })}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {hasAdminPermission && canMigrateWorkerCode && (
+              {canEdit && canMigrateWorkerCode && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -294,7 +310,7 @@ function PageComponent() {
               >
                 {t('Refresh')}
               </Button>
-              {hasAdminPermission && (
+              {canEdit && (
                 <Button
                   variant="default"
                   size="sm"
@@ -313,7 +329,7 @@ function PageComponent() {
         <Allotment>
           <Allotment.Pane>
             <CodeEditor
-              readOnly={!hasAdminPermission || updateMutation.isPending}
+              readOnly={!canEdit || updateMutation.isPending}
               height="100%"
               value={code}
               onChange={setCode}
@@ -352,7 +368,7 @@ function PageComponent() {
                   isActive={worker.active}
                   disabled={isCodeDirty}
                   onPreviewLoaded={handleLogRefresh}
-                  onTest={hasAdminPermission ? handleTestExecution : undefined}
+                  onTest={canEdit ? handleTestExecution : undefined}
                   variant="split"
                 />
               </Allotment.Pane>

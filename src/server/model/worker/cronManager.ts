@@ -17,6 +17,9 @@ export type WorkerCronUpsertData = Pick<
   'workspaceId' | 'name' | 'code' | 'enableCron' | 'cronExpression'
 > & {
   id?: string;
+  creatorId?: string;
+  ownerId?: string;
+  operatorId?: string;
   active?: boolean;
   description?: string;
   environmentVariables?: WorkerEnvironmentVariableInput[];
@@ -50,7 +53,14 @@ export class WorkerCronManager {
    * Create or update worker cron job
    */
   async upsert(data: WorkerCronUpsertData): Promise<FunctionWorker> {
-    const { id, workspaceId, environmentVariables, ...others } = data;
+    const {
+      id,
+      workspaceId,
+      creatorId,
+      operatorId,
+      environmentVariables,
+      ...others
+    } = data;
 
     if (id) {
       return this.runLifecycle(id, async () => {
@@ -98,6 +108,7 @@ export class WorkerCronManager {
             await tx.functionWorkerRevision.create({
               data: {
                 workerId: updatedWorker.id,
+                operatorId,
                 revision: updatedWorker.revision,
                 code: updatedWorker.code,
               },
@@ -119,12 +130,14 @@ export class WorkerCronManager {
           ...others,
           revision: 1,
           workspaceId,
+          creatorId,
         },
       });
 
       await tx.functionWorkerRevision.create({
         data: {
           workerId: createdWorker.id,
+          operatorId,
           revision: createdWorker.revision,
           code: createdWorker.code,
         },

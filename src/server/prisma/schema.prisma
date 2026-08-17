@@ -36,6 +36,9 @@ model User {
   workspaces          WorkspacesOnUsers[]
   apiKeys             UserApiKey[]
   workspaceInvitation WorkspaceInvitation[]
+  functionWorkersCreated FunctionWorker[] @relation("FunctionWorkerCreator")
+  functionWorkersOwned   FunctionWorker[] @relation("FunctionWorkerOwner")
+  functionWorkerRevisionsOperated FunctionWorkerRevision[] @relation("FunctionWorkerRevisionOperator")
 }
 
 model UserApiKey {
@@ -1146,6 +1149,8 @@ enum FunctionWorkerEnvironmentVariableType {
 model FunctionWorker {
   id             String                   @id @default(cuid()) @db.VarChar(30)
   workspaceId    String                   @db.VarChar(30)
+  creatorId      String?                  @db.VarChar(30)
+  ownerId        String?                  @db.VarChar(30)
   name           String
   description    String?
   code           String
@@ -1158,12 +1163,16 @@ model FunctionWorker {
   updatedAt      DateTime                 @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  creator User? @relation("FunctionWorkerCreator", fields: [creatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  owner   User? @relation("FunctionWorkerOwner", fields: [ownerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
   executions FunctionWorkerExecution[]
   revisions  FunctionWorkerRevision[]
   environmentVariables FunctionWorkerEnvironmentVariable[]
 
   @@index([workspaceId])
+  @@index([creatorId])
+  @@index([ownerId])
 }
 
 model FunctionWorkerEnvironmentVariable {
@@ -1209,16 +1218,19 @@ model FunctionWorkerExecution {
 }
 
 model FunctionWorkerRevision {
-  id        String   @id @default(cuid()) @db.VarChar(30)
-  workerId  String   @db.VarChar(30)
-  revision  Int
-  code      String
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  id         String   @id @default(cuid()) @db.VarChar(30)
+  workerId   String   @db.VarChar(30)
+  operatorId String?  @db.VarChar(30)
+  revision   Int
+  code       String
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
 
-  worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  worker   FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  operator User?          @relation("FunctionWorkerRevisionOperator", fields: [operatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
   @@unique([workerId, revision])
   @@index([workerId, createdAt])
+  @@index([operatorId])
 }
 
 model WarehouseCohorts {

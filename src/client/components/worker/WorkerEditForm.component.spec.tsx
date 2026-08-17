@@ -39,6 +39,17 @@ const mocks = vi.hoisted(() => ({
     createdAt: new Date('2026-08-15T00:00:00.000Z'),
     updatedAt: new Date('2026-08-15T00:00:00.000Z'),
   },
+  workspaceMembers: [
+    {
+      userId: 'userid123',
+      role: 'readOnly',
+      user: {
+        username: 'user',
+        nickname: 'Worker Owner',
+        avatar: 'https://example.com/avatar.png',
+      },
+    },
+  ],
 }));
 
 vi.mock('@i18next-toolkit/react', () => ({
@@ -80,11 +91,17 @@ vi.mock('@/api/trpc', () => ({
         }),
       },
     },
+    workspace: {
+      members: {
+        useQuery: () => ({ data: mocks.workspaceMembers }),
+      },
+    },
   },
 }));
 
 vi.mock('@/store/user', () => ({
   useCurrentWorkspaceId: () => 'workspace-a',
+  useHasAdminPermission: () => true,
 }));
 
 vi.mock('@tanstack/react-router', () => ({
@@ -352,6 +369,42 @@ describe('WorkerEditForm empty environment values', () => {
       });
     }
   );
+});
+
+describe('WorkerEditForm owner field', () => {
+  test('hides the owner field when creating a worker', () => {
+    render(
+      <WorkerEditForm
+        defaultValues={createDefaultValues('server-value')}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText('Owner')).not.toBeInTheDocument();
+  });
+
+  test('shows the owner field when editing a worker', () => {
+    render(
+      <WorkerEditForm
+        workerId="worker-a"
+        defaultValues={{
+          ...createDefaultValues('server-value'),
+          ownerId: 'userid123',
+        }}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    const codeLabel = screen.getByText('JavaScript Code');
+    const ownerLabel = screen.getByText('Owner');
+
+    expect(ownerLabel).toBeInTheDocument();
+    expect(screen.getByText('Worker Owner')).toBeInTheDocument();
+    expect(
+      codeLabel.compareDocumentPosition(ownerLabel) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
 });
 
 describe('Worker edit route cache refresh', () => {

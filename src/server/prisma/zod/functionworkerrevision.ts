@@ -1,10 +1,11 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteFunctionWorker, RelatedFunctionWorkerModelSchema } from "./index.js"
+import { CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteUser, RelatedUserModelSchema } from "./index.js"
 
 export const FunctionWorkerRevisionModelSchema = z.object({
   id: z.string(),
   workerId: z.string(),
+  operatorId: z.string().nullish(),
   revision: z.number().int(),
   code: z.string(),
   createdAt: z.date(),
@@ -12,6 +13,7 @@ export const FunctionWorkerRevisionModelSchema = z.object({
 
 export interface CompleteFunctionWorkerRevision extends z.infer<typeof FunctionWorkerRevisionModelSchema> {
   worker: CompleteFunctionWorker
+  operator?: CompleteUser | null
 }
 
 /**
@@ -21,4 +23,5 @@ export interface CompleteFunctionWorkerRevision extends z.infer<typeof FunctionW
  */
 export const RelatedFunctionWorkerRevisionModelSchema: z.ZodSchema<CompleteFunctionWorkerRevision> = z.lazy(() => FunctionWorkerRevisionModelSchema.extend({
   worker: RelatedFunctionWorkerModelSchema,
+  operator: RelatedUserModelSchema.nullish(),
 }))

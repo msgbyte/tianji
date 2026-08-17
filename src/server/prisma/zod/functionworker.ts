@@ -1,11 +1,13 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
 import { FunctionWorkerVisibility } from "@prisma/client"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema, CompleteFunctionWorkerEnvironmentVariable, RelatedFunctionWorkerEnvironmentVariableModelSchema } from "./index.js"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteUser, RelatedUserModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema, CompleteFunctionWorkerEnvironmentVariable, RelatedFunctionWorkerEnvironmentVariableModelSchema } from "./index.js"
 
 export const FunctionWorkerModelSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
+  creatorId: z.string().nullish(),
+  ownerId: z.string().nullish(),
   name: z.string(),
   description: z.string().nullish(),
   code: z.string(),
@@ -20,6 +22,8 @@ export const FunctionWorkerModelSchema = z.object({
 
 export interface CompleteFunctionWorker extends z.infer<typeof FunctionWorkerModelSchema> {
   workspace: CompleteWorkspace
+  creator?: CompleteUser | null
+  owner?: CompleteUser | null
   executions: CompleteFunctionWorkerExecution[]
   revisions: CompleteFunctionWorkerRevision[]
   environmentVariables: CompleteFunctionWorkerEnvironmentVariable[]
@@ -32,6 +36,8 @@ export interface CompleteFunctionWorker extends z.infer<typeof FunctionWorkerMod
  */
 export const RelatedFunctionWorkerModelSchema: z.ZodSchema<CompleteFunctionWorker> = z.lazy(() => FunctionWorkerModelSchema.extend({
   workspace: RelatedWorkspaceModelSchema,
+  creator: RelatedUserModelSchema.nullish(),
+  owner: RelatedUserModelSchema.nullish(),
   executions: RelatedFunctionWorkerExecutionModelSchema.array(),
   revisions: RelatedFunctionWorkerRevisionModelSchema.array(),
   environmentVariables: RelatedFunctionWorkerEnvironmentVariableModelSchema.array(),

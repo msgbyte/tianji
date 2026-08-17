@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useCurrentWorkspaceId } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+} from '@/store/user';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { CommonHeader } from '@/components/CommonHeader';
@@ -25,6 +28,7 @@ function PageComponent() {
   const { workerId } = Route.useParams<{ workerId: string }>();
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
   const navigate = useNavigate();
   const trpcUtils = trpc.useUtils();
   const workerQueryInput = { workspaceId, workerId };
@@ -54,8 +58,11 @@ function PageComponent() {
   const handleSubmit = useEvent(async (values: WorkerEditFormValues) => {
     if (!worker) return;
 
+    const { ownerId, ...workerValues } = values;
+
     await updateMutation.mutateAsync({
-      ...values,
+      ...workerValues,
+      ...(hasAdminPermission ? { ownerId } : {}),
       id: worker.id,
       workspaceId,
     });
@@ -90,6 +97,7 @@ function PageComponent() {
             enableCron: worker.enableCron || false,
             cronExpression: worker.cronExpression || '',
             visibility: worker.visibility || 'Public',
+            ownerId: worker.ownerId ?? undefined,
             environmentVariables,
           }}
           onSubmit={handleSubmit}

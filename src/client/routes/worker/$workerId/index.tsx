@@ -2,7 +2,11 @@ import React, { Suspense, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useUserInfo,
+} from '@/store/user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -63,6 +67,7 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const userId = useUserInfo()?.id;
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [showExecutionResult, setShowExecutionResult] = useState(false);
   const [selectedExecutionIndex, setSelectedExecutionIndex] = useState(-1);
@@ -200,10 +205,13 @@ function PageComponent() {
     return <ErrorTip />;
   }
 
+  const canEdit = hasAdminPermission || worker.owner?.id === userId;
+
   return (
     <CommonWrapper
       header={
         <CommonHeader
+          desc={`${t('Creator')}: ${worker.creator?.nickname ?? worker.creator?.username ?? t('Unknown')} · ${t('Owner')}: ${worker.owner?.nickname ?? worker.owner?.username ?? t('Unknown')}`}
           title={
             <div className="flex items-center space-x-2">
               <span>{worker.name}</span>
@@ -223,7 +231,7 @@ function PageComponent() {
           }
           actions={
             <div className="flex items-center space-x-2">
-              {hasAdminPermission && (
+              {canEdit && (
                 <>
                   <Button
                     variant="outline"
@@ -252,16 +260,18 @@ function PageComponent() {
                     onClick={handleEdit}
                   />
 
-                  <AlertConfirm
-                    title={t('Delete Worker')}
-                    description={t(
-                      'Are you sure you want to delete this worker? This action cannot be undone.'
-                    )}
-                    onConfirm={handleDelete}
-                  >
-                    <Button variant="outline" size="icon" Icon={LuTrash} />
-                  </AlertConfirm>
                 </>
+              )}
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Delete Worker')}
+                  description={t(
+                    'Are you sure you want to delete this worker? This action cannot be undone.'
+                  )}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
               )}
             </div>
           }
@@ -391,6 +401,7 @@ function PageComponent() {
             <WorkerRevisionsSection
               workspaceId={workspaceId}
               workerId={workerId}
+              canEdit={canEdit}
               onRollback={refetch}
             />
           </TabsContent>
