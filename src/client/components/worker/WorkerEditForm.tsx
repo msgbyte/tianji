@@ -31,7 +31,10 @@ import {
 } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
-import { useCurrentWorkspaceId } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+} from '@/store/user';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
 import {
   Dialog,
@@ -53,6 +56,7 @@ import {
   canMigrateLegacyWorkerCode,
   migrateLegacyWorkerCode,
 } from './workerCodeMigration';
+import { UserSelect } from '@/components/UserSelect';
 
 const environmentVariableKeySchema = z
   .string()
@@ -99,6 +103,7 @@ const formSchema = z
     enableCron: z.boolean().default(false),
     cronExpression: z.string().optional(),
     visibility: z.enum(['Public', 'Private']).default('Public'),
+    ownerId: z.cuid2().optional(),
     environmentVariables: z.array(environmentVariableSchema).superRefine(
       (items, ctx) => {
         const keys = new Set<string>();
@@ -149,6 +154,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
+    const hasAdminPermission = useHasAdminPermission();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [testResult, setTestResult] = useState<any>(null);
     const [showTestResult, setShowTestResult] = useState(false);
@@ -167,6 +173,10 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
         ...props.defaultValues,
       }),
       [props.defaultValues]
+    );
+    const { data: workspaceMembers = [] } = trpc.workspace.members.useQuery(
+      { workspaceId },
+      { enabled: hasAdminPermission }
     );
     const form = useForm<WorkerEditFormValues>({
       resolver: zodResolver(formSchema),
@@ -366,6 +376,35 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                   </FormItem>
                 )}
               />
+
+              {hasAdminPermission && props.workerId && (
+                <FormField
+                  control={form.control}
+                  name="ownerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Owner')}</FormLabel>
+                      <UserSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder={t('Select owner')}
+                        users={workspaceMembers.map((member) => ({
+                          id: member.userId,
+                          username: member.user.username,
+                          nickname: member.user.nickname,
+                          avatar: member.user.avatar,
+                        }))}
+                      />
+                      <FormDescription>
+                        {t(
+                          'The owner can edit this worker regardless of workspace role.'
+                        )}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

@@ -28,6 +28,32 @@ import {
   workerEnvironmentVariablesInputSchema,
 } from '../../model/worker/environment.js';
 import { createId } from '@paralleldrive/cuid2';
+import { getWorkspaceUser } from '../../model/workspace.js';
+import { ROLES } from '@tianji/shared';
+
+const workerUserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  nickname: z.string().nullable(),
+  avatar: z.string().nullable(),
+});
+
+const FunctionWorkerWithMaintainersSchema = FunctionWorkerModelSchema.extend({
+  creator: workerUserSchema.nullable(),
+  owner: workerUserSchema.nullable(),
+});
+
+const FunctionWorkerRevisionWithOperatorSchema =
+  FunctionWorkerRevisionModelSchema.extend({
+    operator: workerUserSchema.nullable(),
+  });
+
+const functionWorkerUserSelect = {
+  id: true,
+  username: true,
+  nickname: true,
+  avatar: true,
+} as const;
 
 export const workerRouter = router({
   // Get all workers in workspace
@@ -39,7 +65,7 @@ export const workerRouter = router({
         summary: 'Get all workers in workspace',
       })
     )
-    .output(z.array(FunctionWorkerModelSchema))
+    .output(z.array(FunctionWorkerWithMaintainersSchema))
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
@@ -49,6 +75,10 @@ export const workerRouter = router({
         },
         orderBy: {
           updatedAt: 'desc',
+        },
+        include: {
+          creator: { select: functionWorkerUserSelect },
+          owner: { select: functionWorkerUserSelect },
         },
       });
 
@@ -69,7 +99,7 @@ export const workerRouter = router({
         workerId: z.cuid2(),
       })
     )
-    .output(FunctionWorkerModelSchema.nullable())
+    .output(FunctionWorkerWithMaintainersSchema.nullable())
     .query(async ({ input }) => {
       const { workerId, workspaceId } = input;
 
@@ -77,6 +107,10 @@ export const workerRouter = router({
         where: {
           id: workerId,
           workspaceId,
+        },
+        include: {
+          creator: { select: functionWorkerUserSelect },
+          owner: { select: functionWorkerUserSelect },
         },
       });
 
@@ -111,7 +145,7 @@ export const workerRouter = router({
     }),
 
   // Create or update worker
-  upsert: workspaceAdminProcedure
+  upsert: workspaceProcedure
     .meta(
       buildWorkerOpenapi({
         method: 'POST',
@@ -129,6 +163,7 @@ export const workerRouter = router({
         enableCron: z.boolean().default(false),
         cronExpression: z.string().optional(),
         environmentVariables: workerEnvironmentVariablesInputSchema.optional(),
+        ownerId: z.cuid2().optional(),
       })
     )
     .output(FunctionWorkerModelSchema)
@@ -142,8 +177,45 @@ export const workerRouter = router({
         enableCron,
         cronExpression,
         environmentVariables,
+        ownerId,
         workspaceId,
       } = input;
+
+      const workspaceUser = await getWorkspaceUser(workspaceId, ctx.user.id);
+      const hasAdminPermission = isWorkspaceAdmin(workspaceUser?.role);
+      let currentOwnerId: string | null = null;
+
+      if (id) {
+        const existingWorker = await prisma.functionWorker.findUnique({
+          where: { id, workspaceId },
+          select: { ownerId: true },
+        });
+
+        if (!existingWorker) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Worker not found' });
+        }
+
+        currentOwnerId = existingWorker.ownerId;
+        if (!hasAdminPermission && currentOwnerId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+      } else if (!hasAdminPermission) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+
+      if (ownerId !== undefined && ownerId !== currentOwnerId) {
+        if (!hasAdminPermission) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+
+        const ownerWorkspaceUser = await getWorkspaceUser(workspaceId, ownerId);
+        if (!ownerWorkspaceUser) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Worker owner must be a workspace member',
+          });
+        }
+      }
 
       // Validate cron expression if provided
       if (enableCron && cronExpression) {
@@ -185,6 +257,9 @@ export const workerRouter = router({
 
       const worker = await workerCronManager.upsert({
         id,
+        creatorId: id ? undefined : ctx.user.id,
+        operatorId: ctx.user.id,
+        ownerId: id ? ownerId : (ownerId ?? ctx.user.id),
         workspaceId,
         name,
         description,
@@ -251,7 +326,7 @@ export const workerRouter = router({
     }),
 
   // Toggle worker active status
-  toggleActive: workspaceAdminProcedure
+  toggleActive: workspaceProcedure
     .meta(
       buildWorkerOpenapi({
         method: 'PATCH',
@@ -280,9 +355,12 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
+      await assertCanEditWorker(workspaceId, ctx.user.id, worker.ownerId);
+
       // Use workerCronManager.upsert to update both database and cron manager state
       const updatedWorker = await workerCronManager.upsert({
         id: workerId,
+        operatorId: ctx.user.id,
         workspaceId,
         name: worker.name,
         description: worker.description ?? undefined,
@@ -640,7 +718,7 @@ export const workerRouter = router({
         p99CpuTime: toNum(item.p99CpuTime),
       }));
     }),
-  testCode: workspaceAdminProcedure
+  testCode: workspaceProcedure
     .input(
       z.object({
         code: z.string(),
@@ -649,7 +727,7 @@ export const workerRouter = router({
         environmentVariables: workerEnvironmentVariablesInputSchema.optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const {
         code,
         payload = undefined,
@@ -665,12 +743,18 @@ export const workerRouter = router({
       if (workerId) {
         const worker = await prisma.functionWorker.findUnique({
           where: { id: workerId, workspaceId },
-          select: { id: true },
+          select: { id: true, ownerId: true },
         });
 
         if (!worker) {
           throw new Error('Worker not found');
         }
+
+        await assertCanEditWorker(workspaceId, ctx.user.id, worker.ownerId);
+      } else {
+        // Draft code is not associated with a worker owner, so testing it
+        // remains restricted to workspace administrators.
+        await assertCanEditWorker(workspaceId, ctx.user.id, null);
       }
 
       const { environment, secretValues } =
@@ -689,7 +773,7 @@ export const workerRouter = router({
       return execution;
     }),
 
-  rollbackToRevision: workspaceAdminProcedure
+  rollbackToRevision: workspaceProcedure
     .meta(
       buildWorkerOpenapi({
         method: 'POST',
@@ -718,6 +802,8 @@ export const workerRouter = router({
         throw new Error('Worker not found');
       }
 
+      await assertCanEditWorker(workspaceId, ctx.user.id, worker.ownerId);
+
       const revision = await prisma.functionWorkerRevision.findUnique({
         where: {
           id: revisionId,
@@ -735,6 +821,7 @@ export const workerRouter = router({
 
       const updatedWorker = await workerCronManager.upsert({
         id: workerId,
+        operatorId: ctx.user.id,
         workspaceId,
         name: worker.name,
         description: worker.description ?? undefined,
@@ -767,7 +854,7 @@ export const workerRouter = router({
         workerId: z.string().cuid2(),
       })
     )
-    .output(z.array(FunctionWorkerRevisionModelSchema))
+    .output(z.array(FunctionWorkerRevisionWithOperatorSchema))
     .query(async ({ input }) => {
       const { workerId, workspaceId } = input;
 
@@ -786,6 +873,9 @@ export const workerRouter = router({
         where: {
           workerId,
         },
+        include: {
+          operator: { select: functionWorkerUserSelect },
+        },
         orderBy: {
           revision: 'desc',
         },
@@ -794,6 +884,25 @@ export const workerRouter = router({
       return revisions;
     }),
 });
+
+function isWorkspaceAdmin(role?: string): boolean {
+  return role === ROLES.owner || role === ROLES.admin;
+}
+
+async function assertCanEditWorker(
+  workspaceId: string,
+  userId: string,
+  ownerId: string | null
+): Promise<void> {
+  if (ownerId === userId) {
+    return;
+  }
+
+  const workspaceUser = await getWorkspaceUser(workspaceId, userId);
+  if (!isWorkspaceAdmin(workspaceUser?.role)) {
+    throw new TRPCError({ code: 'FORBIDDEN' });
+  }
+}
 
 function buildWorkerOpenapi(meta: OpenApiMetaInfo): OpenApiMeta {
   return {

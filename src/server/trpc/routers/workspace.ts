@@ -236,6 +236,7 @@ export const workspaceRouter = router({
             user: z.object({
               username: z.string(),
               nickname: z.string().nullable(),
+              avatar: z.string().nullable(),
               email: z.string().nullable(),
               emailVerified: z.date().nullable(),
             }),
@@ -255,6 +256,7 @@ export const workspaceRouter = router({
             select: {
               username: true,
               nickname: true,
+              avatar: true,
               email: true,
               emailVerified: true,
             },

@@ -25,16 +25,19 @@ import {
 } from 'react-icons/lu';
 import { SimpleTooltip } from '@/components/ui/tooltip';
 import dayjs from 'dayjs';
+import { UserIdentity } from '@/components/UserSelect';
 
 interface WorkerRevisionsSectionProps {
   workspaceId: string;
   workerId: string;
+  canEdit?: boolean;
   onRollback?: () => void;
 }
 
 export const WorkerRevisionsSection: React.FC<WorkerRevisionsSectionProps> = ({
   workspaceId,
   workerId,
+  canEdit = false,
   onRollback,
 }) => {
   const { t } = useTranslation();
@@ -200,10 +203,18 @@ export const WorkerRevisionsSection: React.FC<WorkerRevisionsSectionProps> = ({
                                 <Badge variant="outline">{t('Base')}</Badge>
                               )}
                             </div>
-                            <div className="text-muted-foreground text-xs">
-                              {createdAt.isValid()
-                                ? createdAt.format('YYYY-MM-DD HH:mm:ss')
-                                : ''}
+                            <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                              <span>
+                                {createdAt.isValid()
+                                  ? createdAt.format('YYYY-MM-DD HH:mm:ss')
+                                  : ''}
+                              </span>
+                              <span>·</span>
+                              {revision.operator ? (
+                                <UserIdentity user={revision.operator} />
+                              ) : (
+                                <span>{t('Unknown')}</span>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
@@ -227,7 +238,7 @@ export const WorkerRevisionsSection: React.FC<WorkerRevisionsSectionProps> = ({
                                 Icon={LuDiff}
                               />
                             </SimpleTooltip>
-                            {!isLatest && (
+                            {canEdit && !isLatest && (
                               <AlertConfirm
                                 title={t('Rollback to Revision #{{num}}', {
                                   num: revision.revision,

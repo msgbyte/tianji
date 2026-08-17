@@ -326,6 +326,7 @@ describe('WorkerCronManager lifecycle synchronization', () => {
     const result = await manager.upsert({
       ...upsertInput,
       id: 'worker-a',
+      operatorId: 'user-a',
     });
 
     expect(result).toBe(updatedWorker);
@@ -337,14 +338,43 @@ describe('WorkerCronManager lifecycle synchronization', () => {
     expect(manager.getRunner('worker-a')?.worker.code).toBe(
       'return "new";'
     );
+    expect(mocks.prisma.functionWorkerRevision.create).toHaveBeenCalledWith({
+      data: {
+        workerId: 'worker-a',
+        operatorId: 'user-a',
+        revision: 2,
+        code: 'return "new";',
+      },
+    });
   });
 
   test('successful create publishes the generated worker id', async () => {
     const manager = new WorkerCronManager();
     mocks.prisma.functionWorker.create.mockResolvedValue(updatedWorker);
 
-    await manager.upsert(upsertInput);
+    await manager.upsert({
+      ...upsertInput,
+      creatorId: 'user-a',
+      ownerId: 'user-b',
+      operatorId: 'user-a',
+    });
 
+    expect(mocks.prisma.functionWorker.create).toHaveBeenCalledWith({
+      data: {
+        ...upsertInput,
+        revision: 1,
+        creatorId: 'user-a',
+        ownerId: 'user-b',
+      },
+    });
+    expect(mocks.prisma.functionWorkerRevision.create).toHaveBeenCalledWith({
+      data: {
+        workerId: 'worker-a',
+        operatorId: 'user-a',
+        revision: 2,
+        code: 'return "new";',
+      },
+    });
     expect(mocks.workerCronBroadcast.publish).toHaveBeenCalledWith(
       'create',
       'workspace-a',

@@ -11,10 +11,14 @@ const mocks = vi.hoisted(() => {
       username: 'user',
       role: 'user',
     })),
-    getWorkspaceUser: vi.fn(async () => ({ role: 'owner' })),
+    getWorkspaceUser: vi.fn(
+      async (_workspaceId: string, _userId: string) => ({ role: 'owner' })
+    ),
     promStartTimer: vi.fn(() => endRequest),
     findWorker: vi.fn(),
+    findWorkers: vi.fn(),
     findEnvironmentVariables: vi.fn(),
+    findWorkerRevisions: vi.fn(),
     upsertWorker: vi.fn(),
     createAuditLog: vi.fn(),
     execWorker: vi.fn(),
@@ -45,9 +49,13 @@ vi.mock('../../model/_client.js', () => ({
   prisma: {
     functionWorker: {
       findUnique: mocks.findWorker,
+      findMany: mocks.findWorkers,
     },
     functionWorkerEnvironmentVariable: {
       findMany: mocks.findEnvironmentVariables,
+    },
+    functionWorkerRevision: {
+      findMany: mocks.findWorkerRevisions,
     },
   },
 }));
@@ -94,6 +102,8 @@ function worker(workspaceId: string, id = createId()) {
   return {
     id,
     workspaceId,
+    creatorId: null,
+    ownerId: null,
     name: 'Worker',
     description: null,
     code: 'return true;',
@@ -181,6 +191,9 @@ describe('workerRouter environment variables', () => {
 
     expect(mocks.upsertWorker).toHaveBeenCalledWith({
       id: undefined,
+      creatorId: 'user-id',
+      operatorId: 'user-id',
+      ownerId: 'user-id',
       workspaceId,
       name: savedWorker.name,
       description: undefined,
@@ -194,6 +207,214 @@ describe('workerRouter environment variables', () => {
       ],
     });
     expect(JSON.stringify(result)).not.toContain(secret);
+  });
+
+  test('returns each revision with its operator identity', async () => {
+    const workspaceId = createId();
+    const workerId = createId();
+    const operatorId = createId();
+    const operator = {
+      id: operatorId,
+      username: 'operator',
+      nickname: 'Worker Operator',
+      avatar: 'https://example.com/operator.png',
+    };
+    mocks.findWorker.mockResolvedValue({ id: workerId });
+    mocks.findWorkerRevisions.mockResolvedValue([
+      {
+        id: createId(),
+        workerId,
+        operatorId,
+        revision: 1,
+        code: 'return true;',
+        createdAt: new Date('2026-08-17T00:00:00.000Z'),
+        operator,
+      },
+    ]);
+    const caller = await createCaller();
+
+    const result = await caller.getRevisions({ workspaceId, workerId });
+
+    expect(result[0]?.operator).toEqual(operator);
+    expect(mocks.findWorkerRevisions).toHaveBeenCalledWith({
+      where: { workerId },
+      include: {
+        operator: {
+          select: {
+            id: true,
+            username: true,
+            nickname: true,
+            avatar: true,
+          },
+        },
+      },
+      orderBy: { revision: 'desc' },
+    });
+  });
+
+  test('returns creator and owner profiles for workspace worker queries', async () => {
+    const workspaceId = createId();
+    const savedWorker = worker(workspaceId);
+    const creator = {
+      id: 'user-id',
+      username: 'user',
+      nickname: 'Maintainer',
+      avatar: null,
+    };
+    const owner = {
+      id: 'owner-id',
+      username: 'owner',
+      nickname: null,
+      avatar: null,
+    };
+    mocks.findWorker.mockResolvedValue({ ...savedWorker, creator, owner });
+    const caller = await createCaller();
+
+    const result = await caller.get({ workspaceId, workerId: savedWorker.id });
+
+    expect(result?.creator).toEqual(creator);
+    expect(result?.owner).toEqual(owner);
+    expect(mocks.findWorker).toHaveBeenCalledWith({
+      where: { id: savedWorker.id, workspaceId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            username: true,
+            nickname: true,
+            avatar: true,
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+            username: true,
+            nickname: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  });
+
+  test('allows a readonly worker owner to update the worker', async () => {
+    const workspaceId = createId();
+    const savedWorker = {
+      ...worker(workspaceId),
+      ownerId: 'user-id',
+    };
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    mocks.findWorker.mockResolvedValue({ ownerId: 'user-id' });
+    mocks.upsertWorker.mockResolvedValue(savedWorker);
+    const caller = await createCaller();
+
+    await caller.upsert({
+      id: savedWorker.id,
+      workspaceId,
+      name: savedWorker.name,
+      code: savedWorker.code,
+    });
+
+    expect(mocks.upsertWorker).toHaveBeenCalledWith(
+      expect.objectContaining({ id: savedWorker.id, ownerId: undefined })
+    );
+  });
+
+  test('denies a readonly non-owner from updating the worker', async () => {
+    const workspaceId = createId();
+    const savedWorker = worker(workspaceId);
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    mocks.findWorker.mockResolvedValue({ ownerId: 'another-user' });
+    const caller = await createCaller();
+
+    await expect(
+      caller.upsert({
+        id: savedWorker.id,
+        workspaceId,
+        name: savedWorker.name,
+        code: savedWorker.code,
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(mocks.upsertWorker).not.toHaveBeenCalled();
+  });
+
+  test('does not trust a requested ownerId when authorizing an update', async () => {
+    const workspaceId = createId();
+    const requestUserId = createId();
+    const savedWorker = worker(workspaceId);
+    mocks.jwtVerify.mockReturnValueOnce({
+      id: requestUserId,
+      username: 'user',
+      role: 'user',
+    });
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    mocks.findWorker.mockResolvedValue({ ownerId: 'another-user' });
+    const caller = await createCaller();
+
+    await expect(
+      caller.upsert({
+        id: savedWorker.id,
+        workspaceId,
+        ownerId: requestUserId,
+        name: savedWorker.name,
+        code: savedWorker.code,
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(mocks.upsertWorker).not.toHaveBeenCalled();
+  });
+
+  test('allows an admin to assign a readonly workspace member as owner', async () => {
+    const workspaceId = createId();
+    const readonlyUserId = createId();
+    const savedWorker = worker(workspaceId);
+    mocks.getWorkspaceUser.mockImplementation(async (_workspaceId, userId) =>
+      userId === readonlyUserId ? { role: 'readOnly' } : { role: 'admin' }
+    );
+    mocks.findWorker.mockResolvedValue({ ownerId: 'user-id' });
+    mocks.upsertWorker.mockResolvedValue({
+      ...savedWorker,
+      ownerId: readonlyUserId,
+    });
+    const caller = await createCaller();
+
+    await caller.upsert({
+      id: savedWorker.id,
+      workspaceId,
+      ownerId: readonlyUserId,
+      name: savedWorker.name,
+      code: savedWorker.code,
+    });
+
+    expect(mocks.getWorkspaceUser).toHaveBeenCalledWith(
+      workspaceId,
+      readonlyUserId
+    );
+    expect(mocks.upsertWorker).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerId: readonlyUserId })
+    );
+  });
+
+  test('denies a readonly owner from transferring ownership', async () => {
+    const workspaceId = createId();
+    const nextOwnerId = createId();
+    const savedWorker = {
+      ...worker(workspaceId),
+      ownerId: 'user-id',
+    };
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    mocks.findWorker.mockResolvedValue({ ownerId: 'user-id' });
+    const caller = await createCaller();
+
+    await expect(
+      caller.upsert({
+        id: savedWorker.id,
+        workspaceId,
+        ownerId: nextOwnerId,
+        name: savedWorker.name,
+        code: savedWorker.code,
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(mocks.upsertWorker).not.toHaveBeenCalled();
   });
 
   test('executes a stored worker with fresh saved environment resolution', async () => {
@@ -237,7 +458,10 @@ describe('workerRouter environment variables', () => {
     const drafts = [
       { id: createId(), key: 'TOKEN', type: 'Secret' as const },
     ];
-    mocks.findWorker.mockResolvedValue({ id: storedWorker.id });
+    mocks.findWorker.mockResolvedValue({
+      id: storedWorker.id,
+      ownerId: 'user-id',
+    });
     mocks.resolveWorkerEnvironmentForExecution.mockResolvedValue({
       environment: { TOKEN: 'saved-secret' },
       secretValues: ['saved-secret'],
@@ -253,7 +477,7 @@ describe('workerRouter environment variables', () => {
 
     expect(mocks.findWorker).toHaveBeenCalledWith({
       where: { id: storedWorker.id, workspaceId },
-      select: { id: true },
+      select: { id: true, ownerId: true },
     });
     expect(mocks.resolveWorkerEnvironmentForExecution).toHaveBeenCalledWith(
       storedWorker.id,
@@ -273,6 +497,58 @@ describe('workerRouter environment variables', () => {
         secretValues: ['saved-secret'],
       }
     );
+  });
+
+  test('allows a readonly worker owner to test saved worker code', async () => {
+    const workspaceId = createId();
+    const storedWorker = worker(workspaceId);
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    mocks.findWorker.mockResolvedValue({
+      id: storedWorker.id,
+      ownerId: 'user-id',
+    });
+    const caller = await createCaller();
+
+    await caller.testCode({
+      workspaceId,
+      workerId: storedWorker.id,
+      code: storedWorker.code,
+    });
+
+    expect(mocks.execWorker).toHaveBeenCalledOnce();
+  });
+
+  test('denies a readonly non-owner from testing saved worker code', async () => {
+    const workspaceId = createId();
+    const storedWorker = worker(workspaceId);
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    mocks.findWorker.mockResolvedValue({
+      id: storedWorker.id,
+      ownerId: 'another-user',
+    });
+    const caller = await createCaller();
+
+    await expect(
+      caller.testCode({
+        workspaceId,
+        workerId: storedWorker.id,
+        code: storedWorker.code,
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    expect(mocks.execWorker).not.toHaveBeenCalled();
+  });
+
+  test('keeps draft code testing restricted to workspace admins', async () => {
+    const workspaceId = createId();
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    const caller = await createCaller();
+
+    await expect(
+      caller.testCode({ workspaceId, code: 'return true;' })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    expect(mocks.execWorker).not.toHaveBeenCalled();
   });
 
   test('creates a fresh workspace-scoped identity for every code test', async () => {

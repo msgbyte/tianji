@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteAccount, RelatedAccountModelSchema, CompleteSession, RelatedSessionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteUserApiKey, RelatedUserApiKeyModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema } from "./index.js"
+import { CompleteAccount, RelatedAccountModelSchema, CompleteSession, RelatedSessionModelSchema, CompleteWorkspacesOnUsers, RelatedWorkspacesOnUsersModelSchema, CompleteUserApiKey, RelatedUserApiKeyModelSchema, CompleteWorkspaceInvitation, RelatedWorkspaceInvitationModelSchema, CompleteFunctionWorker, RelatedFunctionWorkerModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema } from "./index.js"
 
 export const UserModelSchema = z.object({
   id: z.string(),
@@ -23,6 +23,9 @@ export interface CompleteUser extends z.infer<typeof UserModelSchema> {
   workspaces: CompleteWorkspacesOnUsers[]
   apiKeys: CompleteUserApiKey[]
   workspaceInvitation: CompleteWorkspaceInvitation[]
+  functionWorkersCreated: CompleteFunctionWorker[]
+  functionWorkersOwned: CompleteFunctionWorker[]
+  functionWorkerRevisionsOperated: CompleteFunctionWorkerRevision[]
 }
 
 /**
@@ -36,4 +39,7 @@ export const RelatedUserModelSchema: z.ZodSchema<CompleteUser> = z.lazy(() => Us
   workspaces: RelatedWorkspacesOnUsersModelSchema.array(),
   apiKeys: RelatedUserApiKeyModelSchema.array(),
   workspaceInvitation: RelatedWorkspaceInvitationModelSchema.array(),
+  functionWorkersCreated: RelatedFunctionWorkerModelSchema.array(),
+  functionWorkersOwned: RelatedFunctionWorkerModelSchema.array(),
+  functionWorkerRevisionsOperated: RelatedFunctionWorkerRevisionModelSchema.array(),
 }))
