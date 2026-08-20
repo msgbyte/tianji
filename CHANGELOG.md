@@ -1,5 +1,11 @@
 
 
+## [1.32.25](https://github.com/msgbyte/tianji/compare/v1.32.24...v1.32.25) (2026-08-20)
+
+### Features
+
+* **worker:** add owner-based worker editing ([#284](https://github.com/msgbyte/tianji/issues/284)) ([9da345d](https://github.com/msgbyte/tianji/commit/9da345d40388b8accc9fb0b2c68d59b1b91cd4b9))
+
 ## [1.32.24](https://github.com/msgbyte/tianji/compare/v1.32.23...v1.32.24) (2026-08-16)
 
 ### Features
