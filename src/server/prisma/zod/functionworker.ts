@@ -1,7 +1,7 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
 import { FunctionWorkerVisibility } from "@prisma/client"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteUser, RelatedUserModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema, CompleteFunctionWorkerEnvironmentVariable, RelatedFunctionWorkerEnvironmentVariableModelSchema } from "./index.js"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteUser, RelatedUserModelSchema, CompleteFunctionWorkerExecution, RelatedFunctionWorkerExecutionModelSchema, CompleteFunctionWorkerRevision, RelatedFunctionWorkerRevisionModelSchema, CompleteFunctionWorkerEnvironmentVariable, RelatedFunctionWorkerEnvironmentVariableModelSchema, CompleteFunctionWorkerModuleBinding, RelatedFunctionWorkerModuleBindingModelSchema } from "./index.js"
 
 export const FunctionWorkerModelSchema = z.object({
   id: z.string(),
@@ -27,6 +27,7 @@ export interface CompleteFunctionWorker extends z.infer<typeof FunctionWorkerMod
   executions: CompleteFunctionWorkerExecution[]
   revisions: CompleteFunctionWorkerRevision[]
   environmentVariables: CompleteFunctionWorkerEnvironmentVariable[]
+  moduleBindings: CompleteFunctionWorkerModuleBinding[]
 }
 
 /**
@@ -41,4 +42,5 @@ export const RelatedFunctionWorkerModelSchema: z.ZodSchema<CompleteFunctionWorke
   executions: RelatedFunctionWorkerExecutionModelSchema.array(),
   revisions: RelatedFunctionWorkerRevisionModelSchema.array(),
   environmentVariables: RelatedFunctionWorkerEnvironmentVariableModelSchema.array(),
+  moduleBindings: RelatedFunctionWorkerModuleBindingModelSchema.array(),
 }))

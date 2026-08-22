@@ -4,6 +4,8 @@ export const CodeEditor = loadable(() =>
   import('./main').then((m) => ({ default: m.CodeEditor }))
 );
 
+export type { CodeEditorExtraLibrary } from './main';
+
 export const CodeDiffEditor = loadable(() =>
   import('./diff').then((m) => ({ default: m.CodeDiffEditor }))
 );

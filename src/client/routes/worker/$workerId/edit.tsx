@@ -39,13 +39,16 @@ function PageComponent() {
     data: environmentVariables,
     isLoading: isEnvironmentLoading,
   } = trpc.worker.getEnvironmentVariables.useQuery(workerQueryInput);
-
   const updateMutation = trpc.worker.upsert.useMutation({
     onError: defaultErrorHandler,
     onSuccess: async () => {
       await Promise.all([
         trpcUtils.worker.get.refetch(workerQueryInput),
         trpcUtils.worker.getEnvironmentVariables.refetch(workerQueryInput),
+        trpcUtils.worker.getModuleBindings.refetch(workerQueryInput),
+        trpcUtils.worker.all.invalidate({ workspaceId }),
+        trpcUtils.sharedModule.all.invalidate({ workspaceId }),
+        trpcUtils.sharedModule.consumers.invalidate(),
       ]);
       toast.success(t('Worker updated successfully'));
       navigate({

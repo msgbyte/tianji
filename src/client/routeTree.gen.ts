@@ -68,6 +68,7 @@ import { Route as ApplicationCompareImport } from './routes/application/compare'
 import { Route as ApplicationAddImport } from './routes/application/add'
 import { Route as AiRouterAddImport } from './routes/aiRouter/add'
 import { Route as AiGatewayAddImport } from './routes/aiGateway/add'
+import { Route as WorkerModulesIndexImport } from './routes/worker/modules/index'
 import { Route as WorkerWorkerIdIndexImport } from './routes/worker/$workerId/index'
 import { Route as WebsiteWebsiteIdIndexImport } from './routes/website/$websiteId/index'
 import { Route as SurveySurveyIdIndexImport } from './routes/survey/$surveyId/index'
@@ -81,6 +82,7 @@ import { Route as ApplicationApplicationIdIndexImport } from './routes/applicati
 import { Route as AiRouterRouterIdIndexImport } from './routes/aiRouter/$routerId/index'
 import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
 import { Route as WorkerWorkerIdEditorImport } from './routes/worker_/$workerId/editor'
+import { Route as WorkerModulesAddImport } from './routes/worker/modules/add'
 import { Route as WorkerWorkerIdEditImport } from './routes/worker/$workerId/edit'
 import { Route as WebsiteVisitorMapWebsiteIdImport } from './routes/website_/visitor-map/$websiteId'
 import { Route as WebsitePublicShareIdImport } from './routes/website_/public/$shareId'
@@ -97,6 +99,7 @@ import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
 import { Route as AiRouterRouterIdEditImport } from './routes/aiRouter/$routerId/edit'
 import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
+import { Route as WorkerModulesModuleIdIndexImport } from './routes/worker/modules/$moduleId/index'
 import { Route as InsightsWarehouseConnectionsIndexImport } from './routes/insights/warehouse/connections/index'
 import { Route as SurveyWorkspaceIdSurveyIdPublicImport } from './routes/survey_/$workspaceId/$surveyId/public'
 import { Route as InsightsWarehouseDatabaseIdQueryImport } from './routes/insights_/warehouse/$databaseId/query'
@@ -390,6 +393,11 @@ const AiGatewayAddRoute = AiGatewayAddImport.update({
   getParentRoute: () => AiGatewayRoute,
 } as any)
 
+const WorkerModulesIndexRoute = WorkerModulesIndexImport.update({
+  path: '/modules/',
+  getParentRoute: () => WorkerRoute,
+} as any)
+
 const WorkerWorkerIdIndexRoute = WorkerWorkerIdIndexImport.update({
   path: '/$workerId/',
   getParentRoute: () => WorkerRoute,
@@ -454,6 +462,11 @@ const AiGatewayGatewayIdIndexRoute = AiGatewayGatewayIdIndexImport.update({
 const WorkerWorkerIdEditorRoute = WorkerWorkerIdEditorImport.update({
   path: '/worker/$workerId/editor',
   getParentRoute: () => rootRoute,
+} as any)
+
+const WorkerModulesAddRoute = WorkerModulesAddImport.update({
+  path: '/modules/add',
+  getParentRoute: () => WorkerRoute,
 } as any)
 
 const WorkerWorkerIdEditRoute = WorkerWorkerIdEditImport.update({
@@ -538,6 +551,13 @@ const AiGatewayGatewayIdEditRoute = AiGatewayGatewayIdEditImport.update({
   path: '/$gatewayId/edit',
   getParentRoute: () => AiGatewayRoute,
 } as any)
+
+const WorkerModulesModuleIdIndexRoute = WorkerModulesModuleIdIndexImport.update(
+  {
+    path: '/modules/$moduleId/',
+    getParentRoute: () => WorkerRoute,
+  } as any,
+)
 
 const InsightsWarehouseConnectionsIndexRoute =
   InsightsWarehouseConnectionsIndexImport.update({
@@ -865,6 +885,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkerWorkerIdEditImport
       parentRoute: typeof WorkerImport
     }
+    '/worker/modules/add': {
+      preLoaderRoute: typeof WorkerModulesAddImport
+      parentRoute: typeof WorkerImport
+    }
     '/worker/$workerId/editor': {
       preLoaderRoute: typeof WorkerWorkerIdEditorImport
       parentRoute: typeof rootRoute
@@ -917,6 +941,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkerWorkerIdIndexImport
       parentRoute: typeof WorkerImport
     }
+    '/worker/modules/': {
+      preLoaderRoute: typeof WorkerModulesIndexImport
+      parentRoute: typeof WorkerImport
+    }
     '/insights/warehouse/connections/create': {
       preLoaderRoute: typeof InsightsWarehouseConnectionsCreateImport
       parentRoute: typeof InsightsImport
@@ -932,6 +960,10 @@ declare module '@tanstack/react-router' {
     '/insights/warehouse/connections/': {
       preLoaderRoute: typeof InsightsWarehouseConnectionsIndexImport
       parentRoute: typeof InsightsImport
+    }
+    '/worker/modules/$moduleId/': {
+      preLoaderRoute: typeof WorkerModulesModuleIdIndexImport
+      parentRoute: typeof WorkerImport
     }
     '/insights/warehouse/connections/$connectionId/table': {
       preLoaderRoute: typeof InsightsWarehouseConnectionsConnectionIdTableImport
@@ -1034,7 +1066,10 @@ export const routeTree = rootRoute.addChildren([
     WorkerAddRoute,
     WorkerIndexRoute,
     WorkerWorkerIdEditRoute,
+    WorkerModulesAddRoute,
     WorkerWorkerIdIndexRoute,
+    WorkerModulesIndexRoute,
+    WorkerModulesModuleIdIndexRoute,
   ]),
   FeedPlaygroundRoute,
   PSlugRoute,

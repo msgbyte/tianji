@@ -6,6 +6,7 @@ import { env } from '../../utils/env.js';
 
 const {
   enqueueMock,
+  flushMock,
   promWorkerExecutionCounterLabelsMock,
   promWorkerExecutionCounterIncMock,
   promWorkerExecutionDurationLabelsMock,
@@ -17,6 +18,7 @@ const {
   promWorkerRequestPayloadSizeLabelsMock,
   promWorkerRequestPayloadSizeObserveMock,
   loadWorkerEnvironmentForExecutionMock,
+  loadWorkerModuleArtifactsMock,
 } = vi.hoisted(() => {
   const promWorkerExecutionCounterIncMock = vi.fn();
   const promWorkerExecutionDurationObserveMock = vi.fn();
@@ -26,6 +28,7 @@ const {
 
   return {
     enqueueMock: vi.fn(),
+    flushMock: vi.fn(),
     promWorkerExecutionCounterIncMock,
     promWorkerExecutionCounterLabelsMock: vi.fn(() => ({
       inc: promWorkerExecutionCounterIncMock,
@@ -47,11 +50,16 @@ const {
       observe: promWorkerRequestPayloadSizeObserveMock,
     })),
     loadWorkerEnvironmentForExecutionMock: vi.fn(),
+    loadWorkerModuleArtifactsMock: vi.fn(),
   };
 });
 
 vi.mock('./environment.js', () => ({
   loadWorkerEnvironmentForExecution: loadWorkerEnvironmentForExecutionMock,
+}));
+
+vi.mock('../sharedModule/bindings.js', () => ({
+  loadWorkerModuleArtifacts: loadWorkerModuleArtifactsMock,
 }));
 
 vi.mock('../../utils/vm/index.js', () => ({
@@ -69,7 +77,7 @@ vi.mock('../../utils/vm/index.js', () => ({
 vi.mock('../../utils/batchWriter.js', () => ({
   createBatchWriter: vi.fn(() => ({
     enqueue: enqueueMock,
-    flush: vi.fn(),
+    flush: flushMock,
     dispose: vi.fn(),
   })),
 }));
@@ -100,6 +108,7 @@ describe('execWorker', () => {
       environment: {},
       secretValues: [],
     });
+    loadWorkerModuleArtifactsMock.mockResolvedValue([]);
   });
 
   test('passes request payload without embedding it into the VM source', async () => {
@@ -188,6 +197,45 @@ describe('execWorker', () => {
     expect(JSON.stringify(execution.logs)).not.toContain('runtime-secret');
   });
 
+  test('redacts Secret values from sandbox execution errors', async () => {
+    vi.mocked(runCodeInIVM).mockResolvedValueOnce({
+      logger: [],
+      result: undefined,
+      error: new Error('request failed with runtime-secret'),
+      usage: 1,
+      cpuTime: 1,
+      memoryUsage: { used_heap_size: 1 } as any,
+    });
+
+    const execution = await execWorker('async function fetch() {}', {
+      scope: {
+        kind: 'test',
+        workspaceId: 'workspace-a',
+        executionId: 'error-redaction-test',
+      },
+      secretValues: ['runtime-secret'],
+    });
+
+    expect(execution.error).toBe('Error: request failed with [secret]');
+  });
+
+  test('redacts Secret values from runner failures', async () => {
+    vi.mocked(runCodeInIVM).mockRejectedValueOnce(
+      new Error('bootstrap failed with runtime-secret')
+    );
+
+    const execution = await execWorker('async function fetch() {}', {
+      scope: {
+        kind: 'test',
+        workspaceId: 'workspace-a',
+        executionId: 'runner-error-redaction-test',
+      },
+      secretValues: ['runtime-secret'],
+    });
+
+    expect(execution.error).toBe('Error: bootstrap failed with [secret]');
+  });
+
   test('loads current environment on every stored execution', async () => {
     const storedWorker = {
       id: 'worker-stored',
@@ -225,6 +273,32 @@ describe('execWorker', () => {
     const storedExecutions = JSON.stringify(enqueueMock.mock.calls);
     expect(storedExecutions).not.toContain('first-secret');
     expect(storedExecutions).not.toContain('second-secret');
+  });
+
+  test('waits for HTTP execution records to flush before returning', async () => {
+    let finishFlush!: () => void;
+    flushMock.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (finishFlush = resolve))
+    );
+
+    const execution = execStoredWorker(
+      {
+        id: 'worker-preview',
+        workspaceId: 'workspace-a',
+        code: 'async function fetch() { return true; }',
+      },
+      undefined,
+      { type: 'http' }
+    );
+
+    await vi.waitFor(() => expect(flushMock).toHaveBeenCalledOnce());
+    let returned = false;
+    void execution.then(() => (returned = true));
+    await Promise.resolve();
+    expect(returned).toBe(false);
+
+    finishFlush();
+    await execution;
   });
 
   test('does not persist request payload for disabled worker ids', async () => {

@@ -24,6 +24,19 @@ const mocks = vi.hoisted(() => {
     execWorker: vi.fn(),
     execStoredWorker: vi.fn(),
     resolveWorkerEnvironmentForExecution: vi.fn(),
+    resolveWorkerModuleBindingsFromCode: vi.fn(
+      async () =>
+        [] as Array<{
+          moduleId: string;
+          moduleRevisionId: string;
+          importAlias: string;
+        }>
+    ),
+    validateWorkerModuleBindings: vi.fn(async () => undefined),
+    loadModuleArtifactsForBindings: vi.fn(
+      async () => [] as Array<{ importAlias: string; compiledCode: string }>
+    ),
+    loadWorkerModuleArtifacts: vi.fn(async () => []),
   };
 });
 
@@ -73,6 +86,16 @@ vi.mock('../../model/worker/environment.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../model/worker/environment.js')>()),
   resolveWorkerEnvironmentForExecution:
     mocks.resolveWorkerEnvironmentForExecution,
+}));
+
+vi.mock('../../model/sharedModule/bindings.js', () => ({
+  resolveWorkerModuleBindingsFromCode:
+    mocks.resolveWorkerModuleBindingsFromCode,
+  validateWorkerModuleBindings: mocks.validateWorkerModuleBindings,
+  loadModuleArtifactsForBindings: mocks.loadModuleArtifactsForBindings,
+  loadWorkerModuleArtifacts: mocks.loadWorkerModuleArtifacts,
+  wrapSharedModuleDeclaration: (alias: string, declaration: string) =>
+    `declare module '${alias}' {\n${declaration}\n}\n`,
 }));
 
 vi.mock('../../model/worker/manager.js', () => ({
@@ -207,6 +230,40 @@ describe('workerRouter environment variables', () => {
       ],
     });
     expect(JSON.stringify(result)).not.toContain(secret);
+  });
+
+  test('persists module bindings inferred from worker imports', async () => {
+    const workspaceId = createId();
+    const savedWorker = worker(workspaceId);
+    const code = `import { sendAlert } from '@shared/alert';`;
+    const inferredBindings = [
+      {
+        moduleId: createId(),
+        moduleRevisionId: createId(),
+        importAlias: '@shared/alert',
+      },
+    ];
+    mocks.resolveWorkerModuleBindingsFromCode.mockResolvedValueOnce(
+      inferredBindings
+    );
+    mocks.upsertWorker.mockResolvedValue({ ...savedWorker, code });
+    const caller = await createCaller();
+
+    await caller.upsert({ workspaceId, name: savedWorker.name, code });
+
+    expect(mocks.resolveWorkerModuleBindingsFromCode).toHaveBeenCalledWith(
+      workspaceId,
+      code,
+      []
+    );
+    expect(mocks.validateWorkerModuleBindings).toHaveBeenCalledWith(
+      workspaceId,
+      inferredBindings,
+      { allowedArchivedBindings: [] }
+    );
+    expect(mocks.upsertWorker).toHaveBeenCalledWith(
+      expect.objectContaining({ moduleBindings: inferredBindings })
+    );
   });
 
   test('returns each revision with its operator identity', async () => {
@@ -477,7 +534,17 @@ describe('workerRouter environment variables', () => {
 
     expect(mocks.findWorker).toHaveBeenCalledWith({
       where: { id: storedWorker.id, workspaceId },
-      select: { id: true, ownerId: true },
+      select: {
+        id: true,
+        ownerId: true,
+        moduleBindings: {
+          select: {
+            moduleId: true,
+            moduleRevisionId: true,
+            importAlias: true,
+          },
+        },
+      },
     });
     expect(mocks.resolveWorkerEnvironmentForExecution).toHaveBeenCalledWith(
       storedWorker.id,
@@ -495,7 +562,48 @@ describe('workerRouter environment variables', () => {
         context: { type: 'test' },
         environment: { TOKEN: 'saved-secret' },
         secretValues: ['saved-secret'],
+        modules: [],
       }
+    );
+  });
+
+  test('loads inferred module artifacts when testing unsaved imports', async () => {
+    const workspaceId = createId();
+    const storedWorker = worker(workspaceId);
+    const code = `import { sendAlert } from '@shared/alert';`;
+    const inferredBindings = [
+      {
+        moduleId: createId(),
+        moduleRevisionId: createId(),
+        importAlias: '@shared/alert',
+      },
+    ];
+    const artifacts = [
+      { importAlias: '@shared/alert', compiledCode: 'export const value = 1;' },
+    ];
+    mocks.findWorker.mockResolvedValue({
+      id: storedWorker.id,
+      ownerId: 'user-id',
+      moduleBindings: [],
+    });
+    mocks.resolveWorkerModuleBindingsFromCode.mockResolvedValueOnce(
+      inferredBindings
+    );
+    mocks.loadModuleArtifactsForBindings.mockResolvedValueOnce(artifacts);
+    const caller = await createCaller();
+
+    await caller.testCode({
+      workspaceId,
+      workerId: storedWorker.id,
+      code,
+    });
+
+    expect(mocks.loadModuleArtifactsForBindings).toHaveBeenCalledWith(
+      inferredBindings
+    );
+    expect(mocks.execWorker).toHaveBeenCalledWith(
+      code,
+      expect.objectContaining({ modules: artifacts })
     );
   });
 

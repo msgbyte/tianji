@@ -11,6 +11,7 @@ import {
   workerCronBroadcast,
   type WorkerCronBroadcastEvent,
 } from './broadcast.js';
+import type { WorkerModuleBindingInput } from '../sharedModule/bindings.js';
 
 export type WorkerCronUpsertData = Pick<
   FunctionWorker,
@@ -23,6 +24,7 @@ export type WorkerCronUpsertData = Pick<
   active?: boolean;
   description?: string;
   environmentVariables?: WorkerEnvironmentVariableInput[];
+  moduleBindings?: WorkerModuleBindingInput[];
 };
 
 export class WorkerCronManager {
@@ -59,6 +61,7 @@ export class WorkerCronManager {
       creatorId,
       operatorId,
       environmentVariables,
+      moduleBindings,
       ...others
     } = data;
 
@@ -69,14 +72,20 @@ export class WorkerCronManager {
             id,
             workspaceId,
           },
+          include: { moduleBindings: true },
         });
 
         if (!existingWorker) {
           throw new Error('Worker not found');
         }
 
+        const existingBindings = existingWorker.moduleBindings ?? [];
+        const effectiveBindings = moduleBindings ?? existingBindings;
         const shouldCreateRevision =
-          others.code !== undefined && others.code !== existingWorker.code;
+          (others.code !== undefined && others.code !== existingWorker.code) ||
+          (moduleBindings !== undefined &&
+            serializeBindings(moduleBindings) !==
+              serializeBindings(existingBindings));
 
         const worker = await prisma.$transaction(async (tx) => {
           const nextRevision = shouldCreateRevision
@@ -102,10 +111,24 @@ export class WorkerCronManager {
             );
           }
 
+          if (moduleBindings !== undefined) {
+            await tx.functionWorkerModuleBinding.deleteMany({
+              where: { workerId: updatedWorker.id },
+            });
+            if (moduleBindings.length > 0) {
+              await tx.functionWorkerModuleBinding.createMany({
+                data: moduleBindings.map((binding) => ({
+                  workerId: updatedWorker.id,
+                  ...binding,
+                })),
+              });
+            }
+          }
+
           delWorkerCache(id, workspaceId);
 
           if (shouldCreateRevision) {
-            await tx.functionWorkerRevision.create({
+            const revision = await tx.functionWorkerRevision.create({
               data: {
                 workerId: updatedWorker.id,
                 operatorId,
@@ -113,6 +136,16 @@ export class WorkerCronManager {
                 code: updatedWorker.code,
               },
             });
+            if (effectiveBindings.length > 0) {
+              await tx.functionWorkerRevisionModuleBinding.createMany({
+                data: effectiveBindings.map((binding) => ({
+                  workerRevisionId: revision.id,
+                  moduleId: binding.moduleId,
+                  moduleRevisionId: binding.moduleRevisionId,
+                  importAlias: binding.importAlias,
+                })),
+              });
+            }
           }
           return updatedWorker;
         });
@@ -134,7 +167,16 @@ export class WorkerCronManager {
         },
       });
 
-      await tx.functionWorkerRevision.create({
+      if ((moduleBindings ?? []).length > 0) {
+        await tx.functionWorkerModuleBinding.createMany({
+          data: moduleBindings!.map((binding) => ({
+            workerId: createdWorker.id,
+            ...binding,
+          })),
+        });
+      }
+
+      const revision = await tx.functionWorkerRevision.create({
         data: {
           workerId: createdWorker.id,
           operatorId,
@@ -142,6 +184,15 @@ export class WorkerCronManager {
           code: createdWorker.code,
         },
       });
+
+      if ((moduleBindings ?? []).length > 0) {
+        await tx.functionWorkerRevisionModuleBinding.createMany({
+          data: moduleBindings!.map((binding) => ({
+            workerRevisionId: revision.id,
+            ...binding,
+          })),
+        });
+      }
 
       await syncWorkerEnvironmentVariables(
         tx,
@@ -366,4 +417,16 @@ export class WorkerCronManager {
     this.workerRunners = {};
     logger.info('All worker cron jobs stopped.');
   }
+}
+
+function serializeBindings(bindings: WorkerModuleBindingInput[]) {
+  return JSON.stringify(
+    bindings
+      .map(({ moduleId, moduleRevisionId, importAlias }) => ({
+        moduleId,
+        moduleRevisionId,
+        importAlias,
+      }))
+      .sort((left, right) => left.importAlias.localeCompare(right.importAlias))
+  );
 }
