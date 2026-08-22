@@ -57,6 +57,9 @@ import {
   migrateLegacyWorkerCode,
 } from './workerCodeMigration';
 import { UserSelect } from '@/components/UserSelect';
+import {
+  useWorkerSharedModuleTypes,
+} from './WorkerModuleResources';
 
 const environmentVariableKeySchema = z
   .string()
@@ -184,6 +187,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
     });
     const { isDirty } = form.formState;
     const workerCode = form.watch('code');
+    const { extraLibraries } = useWorkerSharedModuleTypes(props.workerId);
     const canMigrateWorkerCode = canMigrateLegacyWorkerCode(workerCode);
 
     useEffect(() => {
@@ -369,6 +373,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                           value={field.value}
                           onChange={field.onChange}
                           codeValidator={codeValidator}
+                          extraLibraries={extraLibraries}
                         />
                       )}
                     </FormControl>
@@ -597,6 +602,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                 form.setValue('code', value, { shouldDirty: true })
               }
               codeValidator={codeValidator}
+              extraLibraries={extraLibraries}
             />
           </FullscreenModal>
 

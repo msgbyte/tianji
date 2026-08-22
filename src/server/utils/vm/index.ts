@@ -110,6 +110,7 @@ ${sourceCode}`;
       res = await script.run(context, {
         promise: true,
         copy: true,
+        timeout: env.sandbox.timeout,
       });
     } catch (e) {
       console.trace(e);

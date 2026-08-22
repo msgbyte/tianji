@@ -122,7 +122,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
                       {item.title}
                     </div>
 
-                    {item.number && item.number > 0 && (
+                    {typeof item.number === 'number' && (
                       <span className="opacity-60" title={String(item.number)}>
                         {formatNumber(item.number)}
                       </span>

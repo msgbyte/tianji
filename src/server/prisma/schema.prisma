@@ -31,14 +31,16 @@ model User {
   deletedAt          DateTime? @db.Timestamptz(6)
   currentWorkspaceId String?   @db.VarChar(30)
 
-  accounts            Account[]
-  sessions            Session[]
-  workspaces          WorkspacesOnUsers[]
-  apiKeys             UserApiKey[]
-  workspaceInvitation WorkspaceInvitation[]
-  functionWorkersCreated FunctionWorker[] @relation("FunctionWorkerCreator")
-  functionWorkersOwned   FunctionWorker[] @relation("FunctionWorkerOwner")
+  accounts                        Account[]
+  sessions                        Session[]
+  workspaces                      WorkspacesOnUsers[]
+  apiKeys                         UserApiKey[]
+  workspaceInvitation             WorkspaceInvitation[]
+  functionWorkersCreated          FunctionWorker[]         @relation("FunctionWorkerCreator")
+  functionWorkersOwned            FunctionWorker[]         @relation("FunctionWorkerOwner")
   functionWorkerRevisionsOperated FunctionWorkerRevision[] @relation("FunctionWorkerRevisionOperator")
+  sharedModulesOwned              SharedModule[]           @relation("SharedModuleOwner")
+  sharedModuleRevisionsOperated   SharedModuleRevision[]   @relation("SharedModuleRevisionOperator")
 }
 
 model UserApiKey {
@@ -124,6 +126,7 @@ model Workspace {
   feedChannels           FeedChannel[]
   workspaceInvitation    WorkspaceInvitation[]
   functionWorkers        FunctionWorker[]
+  sharedModules          SharedModule[]
   warehouseCohorts       WarehouseCohorts[]
   warehouseDatabase      WarehouseDatabase[]
   warehouseDatabaseTable WarehouseDatabaseTable[]
@@ -818,6 +821,7 @@ enum WorkspaceAuditLogType {
   Notification
   Task
   FunctionWorker
+  SharedModule
   User
   Workspace
 }
@@ -1029,10 +1033,10 @@ model AIRouterNode {
   createdAt            DateTime @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime @updatedAt @db.Timestamptz(6)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  router    AIRouter  @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter     @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
   tier      AIRouterTier @relation(fields: [workspaceId, routerId, tierId], references: [workspaceId, routerId, id], onUpdate: Cascade, onDelete: Cascade)
-  gateway   AIGateway @relation(fields: [gatewayId], references: [id], onUpdate: Cascade, onDelete: NoAction)
+  gateway   AIGateway    @relation(fields: [gatewayId], references: [id], onUpdate: Cascade, onDelete: NoAction)
 
   @@unique([routerId, tierId, order])
   @@index([workspaceId])
@@ -1084,24 +1088,24 @@ enum AIGatewayLogsStatus {
 }
 
 model AIGatewayLogs {
-  id              String              @id @default(cuid()) @db.VarChar(30)
-  workspaceId     String              @db.VarChar(30)
-  gatewayId       String              @db.VarChar(30)
-  inputToken      Int                 @default(0) @db.Integer
-  outputToken     Int                 @default(0) @db.Integer
+  id                   String              @id @default(cuid()) @db.VarChar(30)
+  workspaceId          String              @db.VarChar(30)
+  gatewayId            String              @db.VarChar(30)
+  inputToken           Int                 @default(0) @db.Integer
+  outputToken          Int                 @default(0) @db.Integer
   cacheReadInputToken  Int                 @default(0) @db.Integer
   cacheWriteInputToken Int                 @default(0) @db.Integer
-  stream          Boolean             @default(false) @db.Boolean // stream response or not
-  modelName       String
-  modelProvider   String              @default("") // upstream provider, e.g. openai, anthropic, openrouter, deepseek, custom
-  status          AIGatewayLogsStatus
-  duration        Int // All response usage time, unit: ms
-  ttft            Int                 @default(-1) // Time To First Token, unit: ms
-  tpot            Int                 @default(-1) @db.Integer // Time Per Output Token, unit: ms/token
-  price           Decimal             @default(0.0) @db.Decimal(30, 13) // unit: usd
-  requestPayload  Json                @default("{}")
-  responsePayload Json                @default("{}")
-  userId          String?             @db.VarChar(30) // if use api call, log the user id
+  stream               Boolean             @default(false) @db.Boolean // stream response or not
+  modelName            String
+  modelProvider        String              @default("") // upstream provider, e.g. openai, anthropic, openrouter, deepseek, custom
+  status               AIGatewayLogsStatus
+  duration             Int // All response usage time, unit: ms
+  ttft                 Int                 @default(-1) // Time To First Token, unit: ms
+  tpot                 Int                 @default(-1) @db.Integer // Time Per Output Token, unit: ms/token
+  price                Decimal             @default(0.0) @db.Decimal(30, 13) // unit: usd
+  requestPayload       Json                @default("{}")
+  responsePayload      Json                @default("{}")
+  userId               String?             @db.VarChar(30) // if use api call, log the user id
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -1163,12 +1167,13 @@ model FunctionWorker {
   updatedAt      DateTime                 @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  creator User? @relation("FunctionWorkerCreator", fields: [creatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  owner   User? @relation("FunctionWorkerOwner", fields: [ownerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  creator   User?     @relation("FunctionWorkerCreator", fields: [creatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  owner     User?     @relation("FunctionWorkerOwner", fields: [ownerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
-  executions FunctionWorkerExecution[]
-  revisions  FunctionWorkerRevision[]
+  executions           FunctionWorkerExecution[]
+  revisions            FunctionWorkerRevision[]
   environmentVariables FunctionWorkerEnvironmentVariable[]
+  moduleBindings       FunctionWorkerModuleBinding[]
 
   @@index([workspaceId])
   @@index([creatorId])
@@ -1225,12 +1230,93 @@ model FunctionWorkerRevision {
   code       String
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
 
-  worker   FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  operator User?          @relation("FunctionWorkerRevisionOperator", fields: [operatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  worker         FunctionWorker                        @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  operator       User?                                 @relation("FunctionWorkerRevisionOperator", fields: [operatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  moduleBindings FunctionWorkerRevisionModuleBinding[]
 
   @@unique([workerId, revision])
   @@index([workerId, createdAt])
   @@index([operatorId])
+}
+
+model SharedModule {
+  id             String    @id @default(cuid()) @db.VarChar(30)
+  workspaceId    String    @db.VarChar(30)
+  ownerId        String?   @db.VarChar(30)
+  name           String
+  description    String?
+  importAlias    String    @db.VarChar(255)
+  latestRevision Int       @default(0)
+  archivedAt     DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+
+  workspace              Workspace                             @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  owner                  User?                                 @relation("SharedModuleOwner", fields: [ownerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  revisions              SharedModuleRevision[]
+  workerBindings         FunctionWorkerModuleBinding[]
+  workerRevisionBindings FunctionWorkerRevisionModuleBinding[]
+
+  @@unique([workspaceId, importAlias])
+  @@index([workspaceId, archivedAt])
+  @@index([ownerId])
+}
+
+model SharedModuleRevision {
+  id              String   @id @default(cuid()) @db.VarChar(30)
+  moduleId        String   @db.VarChar(30)
+  operatorId      String?  @db.VarChar(30)
+  revision        Int
+  source          String
+  compiledCode    String
+  declarationCode String
+  exportsMetadata Json     @default("[]")
+  compilerVersion String   @db.VarChar(100)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  module                 SharedModule                          @relation(fields: [moduleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  operator               User?                                 @relation("SharedModuleRevisionOperator", fields: [operatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  workerBindings         FunctionWorkerModuleBinding[]
+  workerRevisionBindings FunctionWorkerRevisionModuleBinding[]
+
+  @@unique([moduleId, revision])
+  @@index([moduleId, createdAt])
+  @@index([operatorId])
+}
+
+model FunctionWorkerModuleBinding {
+  id               String   @id @default(cuid()) @db.VarChar(30)
+  workerId         String   @db.VarChar(30)
+  moduleId         String   @db.VarChar(30)
+  moduleRevisionId String   @db.VarChar(30)
+  importAlias      String   @db.VarChar(255)
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
+
+  worker         FunctionWorker       @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  module         SharedModule         @relation(fields: [moduleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  moduleRevision SharedModuleRevision @relation(fields: [moduleRevisionId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([workerId, importAlias])
+  @@unique([workerId, moduleId])
+  @@index([moduleId])
+  @@index([moduleRevisionId])
+}
+
+model FunctionWorkerRevisionModuleBinding {
+  id               String @id @default(cuid()) @db.VarChar(30)
+  workerRevisionId String @db.VarChar(30)
+  moduleId         String @db.VarChar(30)
+  moduleRevisionId String @db.VarChar(30)
+  importAlias      String @db.VarChar(255)
+
+  workerRevision FunctionWorkerRevision @relation(fields: [workerRevisionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  module         SharedModule           @relation(fields: [moduleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  moduleRevision SharedModuleRevision   @relation(fields: [moduleRevisionId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([workerRevisionId, importAlias])
+  @@index([moduleId])
+  @@index([moduleRevisionId])
 }
 
 model WarehouseCohorts {

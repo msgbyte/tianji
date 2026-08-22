@@ -233,6 +233,28 @@ describe('runCodeInIVM', () => {
     expect(result.result).toBe('complete');
   });
 
+  test('should safely format non-cloneable console arguments', async () => {
+    const code = `
+      (async () => {
+        async function task() {}
+        const circular = { task };
+        circular.self = circular;
+        console.log(task, circular);
+        return 'complete';
+      })()
+    `;
+    const result = await runCodeInIVM(code);
+
+    expect(result.error).toBeUndefined();
+    expect(result.result).toBe('complete');
+    expect(result.logger[0]).toEqual([
+      'log',
+      expect.any(Number),
+      '[AsyncFunction: task]',
+      { task: '[AsyncFunction: task]', self: '[Circular]' },
+    ]);
+  });
+
   test.runIf(process.env.ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT === 'true')(
     'should support typescript code',
     async () => {

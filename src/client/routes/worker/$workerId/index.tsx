@@ -134,7 +134,11 @@ function PageComponent() {
       workspaceId,
       workerId: worker.id,
     });
-    trpcUtils.worker.all.invalidate();
+    await Promise.all([
+      trpcUtils.worker.all.invalidate(),
+      trpcUtils.sharedModule.all.invalidate({ workspaceId }),
+      trpcUtils.sharedModule.consumers.invalidate(),
+    ]);
 
     navigate({
       to: '/worker',

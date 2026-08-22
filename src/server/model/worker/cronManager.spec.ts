@@ -31,6 +31,13 @@ const mocks = vi.hoisted(() => {
     functionWorkerRevision: {
       create: vi.fn(),
     },
+    functionWorkerModuleBinding: {
+      deleteMany: vi.fn(),
+      createMany: vi.fn(),
+    },
+    functionWorkerRevisionModuleBinding: {
+      createMany: vi.fn(),
+    },
     functionWorkerEnvironmentVariable: {
       findMany: vi.fn(),
       create: vi.fn(),
@@ -383,6 +390,69 @@ describe('WorkerCronManager lifecycle synchronization', () => {
     expect(manager.getRunner('worker-a')?.worker.cronExpression).toBe(
       '*/30 * * * *'
     );
+  });
+
+  test('creates a worker revision and immutable binding snapshot when bindings change', async () => {
+    const manager = new WorkerCronManager();
+    const previousBinding = {
+      id: 'binding-old',
+      workerId: 'worker-a',
+      moduleId: 'module-a',
+      moduleRevisionId: 'module-revision-1',
+      importAlias: '@shared/alerts',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const nextBinding = {
+      moduleId: 'module-a',
+      moduleRevisionId: 'module-revision-2',
+      importAlias: '@shared/alerts',
+    };
+    mocks.prisma.functionWorker.findUnique.mockResolvedValue({
+      ...oldWorker,
+      moduleBindings: [previousBinding],
+    });
+    mocks.prisma.functionWorker.update.mockResolvedValue({
+      ...oldWorker,
+      revision: 2,
+    });
+    mocks.prisma.functionWorkerRevision.create.mockResolvedValue({
+      id: 'worker-revision-2',
+    });
+
+    await manager.upsert({
+      ...upsertInput,
+      id: 'worker-a',
+      code: oldWorker.code,
+      moduleBindings: [nextBinding],
+    });
+
+    expect(
+      mocks.prisma.functionWorkerModuleBinding.deleteMany
+    ).toHaveBeenCalledWith({ where: { workerId: 'worker-a' } });
+    expect(
+      mocks.prisma.functionWorkerModuleBinding.createMany
+    ).toHaveBeenCalledWith({
+      data: [{ workerId: 'worker-a', ...nextBinding }],
+    });
+    expect(mocks.prisma.functionWorkerRevision.create).toHaveBeenCalledWith({
+      data: {
+        workerId: 'worker-a',
+        operatorId: undefined,
+        revision: 2,
+        code: oldWorker.code,
+      },
+    });
+    expect(
+      mocks.prisma.functionWorkerRevisionModuleBinding.createMany
+    ).toHaveBeenCalledWith({
+      data: [
+        {
+          workerRevisionId: 'worker-revision-2',
+          ...nextBinding,
+        },
+      ],
+    });
   });
 
   test('synchronizes environment variables inside the worker update transaction', async () => {

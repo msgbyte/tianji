@@ -162,6 +162,9 @@ export const env = {
     memoryLimit: process.env.SANDBOX_MEMORY_LIMIT
       ? Number(process.env.SANDBOX_MEMORY_LIMIT)
       : 16, // unit: MB
+    timeout: process.env.SANDBOX_TIMEOUT
+      ? Number(process.env.SANDBOX_TIMEOUT)
+      : 5000, // unit: ms
   },
   puppeteerExecutablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
   amapToken: process.env.AMAP_TOKEN,

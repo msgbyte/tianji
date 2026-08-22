@@ -18,6 +18,19 @@ const mocks = vi.hoisted(() => ({
       value: 'server-value',
     },
   ],
+  moduleBindings: [] as Array<{
+    id: string;
+    moduleId: string;
+    moduleRevisionId: string;
+    typeDeclaration: string;
+  }>,
+  moduleOptions: [] as Array<{
+    id: string;
+    revisions: Array<{
+      id: string;
+      typeDeclaration: string;
+    }>;
+  }>,
   navigate: vi.fn(),
   refetchEnvironmentVariables: vi.fn(),
   refetchWorker: vi.fn(),
@@ -62,10 +75,16 @@ vi.mock('@/api/trpc', () => ({
   trpc: {
     useUtils: () => ({
       worker: {
+        all: { invalidate: vi.fn() },
         get: { refetch: mocks.refetchWorker },
         getEnvironmentVariables: {
           refetch: mocks.refetchEnvironmentVariables,
         },
+        getModuleBindings: { refetch: vi.fn() },
+      },
+      sharedModule: {
+        all: { invalidate: vi.fn() },
+        consumers: { invalidate: vi.fn() },
       },
     }),
     worker: {
@@ -78,6 +97,9 @@ vi.mock('@/api/trpc', () => ({
           isLoading: false,
         }),
       },
+      getModuleBindings: {
+        useQuery: () => ({ data: mocks.moduleBindings, isLoading: false }),
+      },
       testCode: {
         useMutation: () => ({ mutateAsync: mocks.testCode }),
       },
@@ -89,6 +111,11 @@ vi.mock('@/api/trpc', () => ({
             return mocks.worker;
           },
         }),
+      },
+    },
+    sharedModule: {
+      bindingOptions: {
+        useQuery: () => ({ data: mocks.moduleOptions }),
       },
     },
     workspace: {
@@ -138,15 +165,24 @@ vi.mock('@/components/CodeEditor', () => ({
   CodeEditor: ({
     value,
     onChange,
+    extraLibraries,
   }: {
     value?: string;
     onChange?: (value: string) => void;
+    extraLibraries?: Array<{ content: string; filePath: string }>;
   }) => (
-    <textarea
-      aria-label="Code editor"
-      value={value}
-      onChange={(event) => onChange?.(event.target.value)}
-    />
+    <>
+      <textarea
+        aria-label="Code editor"
+        value={value}
+        onChange={(event) => onChange?.(event.target.value)}
+      />
+      {extraLibraries?.map((library) => (
+        <output key={library.filePath} data-testid="code-editor-extra-library">
+          {library.content}
+        </output>
+      ))}
+    </>
   ),
 }));
 
@@ -177,6 +213,8 @@ beforeEach(() => {
   mocks.worker.id = 'worker-a';
   mocks.worker.name = 'Worker';
   mocks.environmentVariables[0].value = 'server-value';
+  mocks.moduleBindings.length = 0;
+  mocks.moduleOptions.length = 0;
 });
 
 function createDefaultValues(
@@ -265,6 +303,48 @@ describe('WorkerEditForm worker entry migration', () => {
     expect(
       screen.queryByRole('button', { name: 'Migrate to Module Worker' })
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('WorkerEditForm shared module types', () => {
+  test('loads every available module declaration without a binding field', () => {
+    mocks.moduleOptions.push(
+      {
+        id: 'module-a',
+        revisions: [
+          {
+            id: 'revision-a',
+            typeDeclaration: "declare module '@shared/a' {}",
+          },
+        ],
+      },
+      {
+        id: 'module-b',
+        revisions: [
+          {
+            id: 'revision-b',
+            typeDeclaration: "declare module '@shared/b' {}",
+          },
+        ],
+      }
+    );
+
+    render(
+      <WorkerEditForm
+        defaultValues={createDefaultValues('server-value')}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    expect(
+      screen
+        .getAllByTestId('code-editor-extra-library')
+        .map((item) => item.textContent)
+    ).toEqual([
+      "declare module '@shared/a' {}",
+      "declare module '@shared/b' {}",
+    ]);
+    expect(screen.queryByText('Shared Modules')).not.toBeInTheDocument();
   });
 });
 

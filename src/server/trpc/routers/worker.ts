@@ -30,6 +30,13 @@ import {
 import { createId } from '@paralleldrive/cuid2';
 import { getWorkspaceUser } from '../../model/workspace.js';
 import { ROLES } from '@tianji/shared';
+import {
+  loadModuleArtifactsForBindings,
+  loadWorkerModuleArtifacts,
+  resolveWorkerModuleBindingsFromCode,
+  validateWorkerModuleBindings,
+  wrapSharedModuleDeclaration,
+} from '../../model/sharedModule/bindings.js';
 
 const workerUserSchema = z.object({
   id: z.string(),
@@ -54,6 +61,14 @@ const functionWorkerUserSelect = {
   nickname: true,
   avatar: true,
 } as const;
+
+const workerModuleBindingsInputSchema = z.array(
+  z.object({
+    moduleId: z.cuid2(),
+    moduleRevisionId: z.cuid2(),
+    importAlias: z.string().startsWith('@shared/'),
+  })
+);
 
 export const workerRouter = router({
   // Get all workers in workspace
@@ -163,6 +178,7 @@ export const workerRouter = router({
         enableCron: z.boolean().default(false),
         cronExpression: z.string().optional(),
         environmentVariables: workerEnvironmentVariablesInputSchema.optional(),
+        moduleBindings: workerModuleBindingsInputSchema.optional(),
         ownerId: z.cuid2().optional(),
       })
     )
@@ -177,6 +193,7 @@ export const workerRouter = router({
         enableCron,
         cronExpression,
         environmentVariables,
+        moduleBindings,
         ownerId,
         workspaceId,
       } = input;
@@ -184,11 +201,25 @@ export const workerRouter = router({
       const workspaceUser = await getWorkspaceUser(workspaceId, ctx.user.id);
       const hasAdminPermission = isWorkspaceAdmin(workspaceUser?.role);
       let currentOwnerId: string | null = null;
+      let currentModuleBindings: Array<{
+        moduleId: string;
+        moduleRevisionId: string;
+        importAlias: string;
+      }> = [];
 
       if (id) {
         const existingWorker = await prisma.functionWorker.findUnique({
           where: { id, workspaceId },
-          select: { ownerId: true },
+          select: {
+            ownerId: true,
+            moduleBindings: {
+              select: {
+                moduleId: true,
+                moduleRevisionId: true,
+                importAlias: true,
+              },
+            },
+          },
         });
 
         if (!existingWorker) {
@@ -196,6 +227,7 @@ export const workerRouter = router({
         }
 
         currentOwnerId = existingWorker.ownerId;
+        currentModuleBindings = existingWorker.moduleBindings ?? [];
         if (!hasAdminPermission && currentOwnerId !== ctx.user.id) {
           throw new TRPCError({ code: 'FORBIDDEN' });
         }
@@ -255,6 +287,26 @@ export const workerRouter = router({
         }
       }
 
+      const resolvedModuleBindings =
+        moduleBindings ??
+        (await resolveWorkerModuleBindingsFromCode(
+          workspaceId,
+          code,
+          currentModuleBindings
+        ));
+      const nextModuleBindings =
+        moduleBindings !== undefined ||
+        currentModuleBindings.length > 0 ||
+        resolvedModuleBindings.length > 0
+          ? resolvedModuleBindings
+          : undefined;
+
+      if (nextModuleBindings !== undefined) {
+        await validateWorkerModuleBindings(workspaceId, nextModuleBindings, {
+          allowedArchivedBindings: currentModuleBindings,
+        });
+      }
+
       const worker = await workerCronManager.upsert({
         id,
         creatorId: id ? undefined : ctx.user.id,
@@ -268,15 +320,16 @@ export const workerRouter = router({
         enableCron,
         cronExpression: cronExpression || null,
         environmentVariables,
+        moduleBindings: nextModuleBindings,
       });
 
       await createAuditLog({
         workspaceId,
         relatedId: worker.id,
         relatedType: WorkspaceAuditLogType.FunctionWorker,
-        content: id
-          ? `Updated worker: ${name} by ${ctx.user?.username}(${ctx.user?.id})`
-          : `Created worker: ${name} by ${ctx.user?.username}(${ctx.user?.id})`,
+        content: `${
+          id ? `Updated worker: ${name}` : `Created worker: ${name}`
+        }${formatModuleBindingAudit(currentModuleBindings, nextModuleBindings)} by ${ctx.user?.username}(${ctx.user?.id})`,
       });
 
       return worker;
@@ -725,6 +778,7 @@ export const workerRouter = router({
         payload: z.record(z.string(), z.any()).optional(),
         workerId: z.cuid2().optional(),
         environmentVariables: workerEnvironmentVariablesInputSchema.optional(),
+        moduleBindings: workerModuleBindingsInputSchema.optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -733,6 +787,7 @@ export const workerRouter = router({
         payload = undefined,
         workerId,
         environmentVariables,
+        moduleBindings,
         workspaceId,
       } = input;
 
@@ -740,10 +795,26 @@ export const workerRouter = router({
         throw new Error('Function worker is not enabled');
       }
 
+      let currentModuleBindings: Array<{
+        moduleId: string;
+        moduleRevisionId: string;
+        importAlias: string;
+      }> = [];
+
       if (workerId) {
         const worker = await prisma.functionWorker.findUnique({
           where: { id: workerId, workspaceId },
-          select: { id: true, ownerId: true },
+          select: {
+            id: true,
+            ownerId: true,
+            moduleBindings: {
+              select: {
+                moduleId: true,
+                moduleRevisionId: true,
+                importAlias: true,
+              },
+            },
+          },
         });
 
         if (!worker) {
@@ -751,6 +822,7 @@ export const workerRouter = router({
         }
 
         await assertCanEditWorker(workspaceId, ctx.user.id, worker.ownerId);
+        currentModuleBindings = worker.moduleBindings ?? [];
       } else {
         // Draft code is not associated with a worker owner, so testing it
         // remains restricted to workspace administrators.
@@ -762,12 +834,37 @@ export const workerRouter = router({
           workerId,
           environmentVariables
         );
+      const resolvedModuleBindings =
+        moduleBindings ??
+        (await resolveWorkerModuleBindingsFromCode(
+          workspaceId,
+          code,
+          currentModuleBindings
+        ));
+      const nextModuleBindings =
+        moduleBindings !== undefined ||
+        currentModuleBindings.length > 0 ||
+        resolvedModuleBindings.length > 0
+          ? resolvedModuleBindings
+          : undefined;
+
+      if (nextModuleBindings !== undefined) {
+        await validateWorkerModuleBindings(workspaceId, nextModuleBindings, {
+          allowedArchivedBindings: currentModuleBindings,
+        });
+      }
+      const modules = nextModuleBindings
+        ? await loadModuleArtifactsForBindings(nextModuleBindings)
+        : workerId
+          ? await loadWorkerModuleArtifacts(workerId)
+          : [];
       const execution = await execWorker(code, {
         scope: { kind: 'test', workspaceId, executionId: createId() },
         requestPayload: payload,
         context: { type: 'test' },
         environment,
         secretValues,
+        modules,
       });
 
       return execution;
@@ -809,15 +906,21 @@ export const workerRouter = router({
           id: revisionId,
           workerId,
         },
+        include: { moduleBindings: true },
       });
 
       if (!revision) {
         throw new Error('Revision not found');
       }
 
-      if (revision.code === worker.code) {
-        return worker;
-      }
+      const moduleBindings = revision.moduleBindings.map((binding) => ({
+        moduleId: binding.moduleId,
+        moduleRevisionId: binding.moduleRevisionId,
+        importAlias: binding.importAlias,
+      }));
+      await validateWorkerModuleBindings(workspaceId, moduleBindings, {
+        allowArchived: true,
+      });
 
       const updatedWorker = await workerCronManager.upsert({
         id: workerId,
@@ -829,6 +932,7 @@ export const workerRouter = router({
         active: worker.active,
         enableCron: worker.enableCron,
         cronExpression: worker.cronExpression,
+        moduleBindings,
       });
 
       await createAuditLog({
@@ -883,10 +987,99 @@ export const workerRouter = router({
 
       return revisions;
     }),
+
+  getModuleBindings: workspaceProcedure
+    .input(z.object({ workerId: z.cuid2() }))
+    .query(async ({ input }) => {
+      const worker = await prisma.functionWorker.findUnique({
+        where: { id: input.workerId, workspaceId: input.workspaceId },
+        select: { id: true },
+      });
+      if (!worker) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Worker not found' });
+      }
+
+      const bindings = await prisma.functionWorkerModuleBinding.findMany({
+        where: { workerId: input.workerId },
+        include: {
+          module: {
+            select: {
+              name: true,
+              archivedAt: true,
+              latestRevision: true,
+            },
+          },
+          moduleRevision: {
+            select: { revision: true, declarationCode: true },
+          },
+        },
+        orderBy: { importAlias: 'asc' },
+      });
+      return bindings.map((binding) => ({
+        id: binding.id,
+        moduleId: binding.moduleId,
+        moduleRevisionId: binding.moduleRevisionId,
+        importAlias: binding.importAlias,
+        name: binding.module.name,
+        archivedAt: binding.module.archivedAt,
+        latestRevision: binding.module.latestRevision,
+        revision: binding.moduleRevision.revision,
+        declarationCode: binding.moduleRevision.declarationCode,
+        typeDeclaration: wrapSharedModuleDeclaration(
+          binding.importAlias,
+          binding.moduleRevision.declarationCode
+        ),
+      }));
+    }),
 });
 
 function isWorkspaceAdmin(role?: string): boolean {
   return role === ROLES.owner || role === ROLES.admin;
+}
+
+function formatModuleBindingAudit(
+  currentBindings: Array<{
+    moduleId: string;
+    moduleRevisionId: string;
+    importAlias: string;
+  }>,
+  nextBindings:
+    | Array<{
+        moduleId: string;
+        moduleRevisionId: string;
+        importAlias: string;
+      }>
+    | undefined
+) {
+  if (nextBindings === undefined) {
+    return '';
+  }
+
+  const currentByModuleId = new Map(
+    currentBindings.map((binding) => [binding.moduleId, binding])
+  );
+  const nextByModuleId = new Map(
+    nextBindings.map((binding) => [binding.moduleId, binding])
+  );
+  const changes: string[] = [];
+
+  for (const binding of nextBindings) {
+    const current = currentByModuleId.get(binding.moduleId);
+    if (!current) {
+      changes.push(`bound ${binding.importAlias}@${binding.moduleRevisionId}`);
+    } else if (current.moduleRevisionId !== binding.moduleRevisionId) {
+      changes.push(
+        `upgraded ${binding.importAlias} ${current.moduleRevisionId}->${binding.moduleRevisionId}`
+      );
+    }
+  }
+  for (const binding of currentBindings) {
+    if (!nextByModuleId.has(binding.moduleId)) {
+      changes.push(`unbound ${binding.importAlias}@${binding.moduleRevisionId}`);
+    }
+  }
+
+  return changes.length > 0 ? `; modules: ${changes.join(', ')}` : '';
 }
 
 async function assertCanEditWorker(

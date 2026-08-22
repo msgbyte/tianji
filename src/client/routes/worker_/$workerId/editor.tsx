@@ -41,6 +41,7 @@ import {
   canMigrateLegacyWorkerCode,
   migrateLegacyWorkerCode,
 } from '@/components/worker/workerCodeMigration';
+import { useWorkerSharedModuleTypes } from '@/components/worker/WorkerModuleResources';
 
 import 'allotment/dist/style.css';
 
@@ -64,6 +65,7 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
+  const trpcUtils = trpc.useUtils();
   const hasAdminPermission = useHasAdminPermission();
   const userId = useUserInfo()?.id;
 
@@ -82,6 +84,7 @@ function PageComponent() {
     workspaceId,
     workerId,
   });
+  const { extraLibraries } = useWorkerSharedModuleTypes(workerId);
 
   const {
     data: executionsData,
@@ -161,7 +164,12 @@ function PageComponent() {
       cronExpression: worker.cronExpression ?? undefined,
     });
     toast.success(t('Worker updated successfully'));
-    refetchWorker();
+    await Promise.all([
+      refetchWorker(),
+      trpcUtils.worker.getModuleBindings.invalidate({ workspaceId, workerId }),
+      trpcUtils.sharedModule.all.invalidate({ workspaceId }),
+      trpcUtils.sharedModule.consumers.invalidate(),
+    ]);
   });
 
   const handleMigrateWorkerCode = useEvent(() => {
@@ -334,6 +342,7 @@ function PageComponent() {
               value={code}
               onChange={setCode}
               language="typescript"
+              extraLibraries={extraLibraries}
             />
           </Allotment.Pane>
           <Allotment.Pane>

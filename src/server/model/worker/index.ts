@@ -24,6 +24,11 @@ import {
 import { createSandboxProxy } from '../../utils/vm/sandbox.js';
 import { loadWorkerEnvironmentForExecution } from './environment.js';
 import { transformWorkerModuleCode } from '../../utils/vm/utils.js';
+import {
+  runWorkerModuleInIVM,
+  type WorkerModuleArtifact,
+} from '../../utils/vm/module.js';
+import { loadWorkerModuleArtifacts } from '../sharedModule/bindings.js';
 
 const execRecordWriter = createBatchWriter<Prisma.FunctionWorkerExecutionCreateManyInput>({
   name: 'WorkerExecution',
@@ -95,6 +100,7 @@ export interface ExecWorkerOptions {
   context?: Record<string, any>;
   environment?: Record<string, string>;
   secretValues?: string[];
+  modules?: WorkerModuleArtifact[];
 }
 
 function createWorkerKVBridge(scope: WorkerKVScope) {
@@ -151,6 +157,12 @@ export async function execWorker(
   const workspaceKVProxy = createSandboxProxy(
     createWorkerKVBridge(kv.workspace)
   );
+  const vmGlobals = {
+    __requestPayload: workerRequestPayload,
+    __workerContext: workerContext,
+    __workerKV: workerKVProxy,
+    __workspaceKV: workspaceKVProxy,
+  };
 
   try {
     const transformedModuleCode = isModuleWorkerCode(code)
@@ -176,7 +188,14 @@ export async function execWorker(
       usage,
       cpuTime,
       memoryUsage,
-    } = await runCodeInIVM(`
+    } = options.modules?.length
+      ? await runWorkerModuleInIVM(code, {
+          modules: options.modules,
+          globals: vmGlobals,
+          requestPayload: workerRequestPayload,
+          context: workerContext,
+        })
+      : await runCodeInIVM(`
       (async () => {
         (() => {
           const privateBridge = reproxy(globalThis.__workerKV);
@@ -458,12 +477,7 @@ export async function execWorker(
             : 'fetch is not defined';
         })();
       })()
-    `, {
-      __requestPayload: workerRequestPayload,
-      __workerContext: workerContext,
-      __workerKV: workerKVProxy,
-      __workspaceKV: workspaceKVProxy,
-    });
+        `, vmGlobals);
 
     const { used_heap_size } = memoryUsage;
 
@@ -478,7 +492,9 @@ export async function execWorker(
       cpuTime,
       requestPayload: shouldStoreRequestPayload ? requestPayload : null,
       responsePayload: result,
-      error: error ? String(error) : undefined,
+      error: error
+        ? redactWorkerLogString(String(error), secretsToRedact)
+        : undefined,
       logs: Array.isArray(logs)
         ? logs.map((log) =>
             log.map(
@@ -515,7 +531,10 @@ export async function execWorker(
 
     return payload;
   } catch (e) {
-    logger.error('ExecWorker error:', e);
+    logger.error(
+      'ExecWorker error:',
+      redactWorkerLogString(String(e), secretsToRedact)
+    );
 
     // Record Prometheus metrics for failure
     const workerIdLabel = workerId || 'anonymous';
@@ -529,7 +548,7 @@ export async function execWorker(
       workerId: workerId || '',
       status: FunctionWorkerExecutionStatus.Failed,
       requestPayload: shouldStoreRequestPayload ? requestPayload : null,
-      error: String(e),
+      error: redactWorkerLogString(String(e), secretsToRedact),
       logs: [],
       responsePayload: null,
     };
@@ -554,8 +573,9 @@ export async function execStoredWorker(
 ) {
   const { environment, secretValues } =
     await loadWorkerEnvironmentForExecution(worker.id);
+  const modules = await loadWorkerModuleArtifacts(worker.id);
 
-  return execWorker(worker.code, {
+  const execution = await execWorker(worker.code, {
     scope: {
       kind: 'worker',
       workspaceId: worker.workspaceId,
@@ -565,5 +585,12 @@ export async function execStoredWorker(
     context,
     environment,
     secretValues,
+    modules,
   });
+
+  if (context?.type === 'http' || context?.type === 'manual') {
+    await execRecordWriter.flush();
+  }
+
+  return execution;
 }
