@@ -465,6 +465,101 @@ function stringifyResponseInput(input: unknown): string {
   return typeof input === 'string' ? input : JSON.stringify(input);
 }
 
+export async function finishOpenAIResponsesGatewayLog(args: {
+  logId: string;
+  workspaceId: string;
+  gatewayId: string;
+  modelName: string;
+  input: unknown;
+  startedAt: number;
+  ttft: number;
+  outputContent?: string;
+  response?: any;
+  error?: unknown;
+  modelProvider?: string;
+  customModelStrategy?: unknown;
+  customModelInputPrice?: CustomModelPriceValue;
+  customModelOutputPrice?: CustomModelPriceValue;
+}) {
+  const duration = Date.now() - args.startedAt;
+
+  if (args.error !== undefined) {
+    await prisma.aIGatewayLogs.update({
+      where: { id: args.logId },
+      data: {
+        status: AIGatewayLogsStatus.Failed,
+        duration,
+        responsePayload: { error: String(args.error) },
+      },
+    });
+    return;
+  }
+
+  const outputContent =
+    getOpenAIResponsesOutputText(args.response) || args.outputContent || '';
+  const usage = getOpenAIResponsesUsage(args.response);
+  const [inputToken, outputToken] = await Promise.all([
+    usage.inputToken ||
+      calcOpenAIToken(stringifyResponseInput(args.input), args.modelName),
+    usage.outputToken || calcOpenAIToken(outputContent, args.modelName),
+  ]);
+  const modelProvider = args.modelProvider ?? 'openai';
+  const customPrice =
+    modelProvider === 'custom'
+      ? calcAIGatewayCustomModelPrice({
+          inputToken,
+          outputToken,
+          cacheReadInputToken: usage.cacheReadInputToken,
+          cacheWriteInputToken: usage.cacheWriteInputToken,
+          customModelStrategy: args.customModelStrategy,
+          customModelInputPrice: args.customModelInputPrice,
+          customModelOutputPrice: args.customModelOutputPrice,
+        })
+      : null;
+  const price =
+    customPrice ??
+    getLLMCostDecimalV2(
+      modelProvider,
+      args.modelName,
+      inputToken,
+      outputToken,
+      usage.cacheReadInputToken,
+      usage.cacheWriteInputToken
+    );
+
+  await prisma.aIGatewayLogs.update({
+    where: { id: args.logId },
+    data: {
+      status: AIGatewayLogsStatus.Success,
+      modelName: args.response?.model ?? args.modelName,
+      inputToken,
+      outputToken,
+      cacheReadInputToken: usage.cacheReadInputToken,
+      cacheWriteInputToken: usage.cacheWriteInputToken,
+      duration,
+      ttft: args.ttft,
+      tpot: calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Success,
+        duration,
+        ttft: args.ttft,
+        outputToken,
+      }),
+      price,
+      responsePayload: {
+        content: outputContent,
+        response: args.response ?? {},
+      },
+    },
+  });
+
+  checkQuotaAlert(args.workspaceId, args.gatewayId, Number(price)).catch(
+    (error) => {
+      logger.error('Error checking quota alert:', error);
+    }
+  );
+}
+
 export type AIGatewayProtocol =
   | 'openai-chat'
   | 'openai-responses'

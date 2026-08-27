@@ -8,6 +8,7 @@ import {
   buildAIRouterAnthropicMessagesHandler,
   buildAIRouterOpenAIChatHandler,
   buildBufferedAIGatewayAttemptResult,
+  createAIRouterResponsesWebSocketLog,
   createAIRouterAttemptRequest,
   getAIRouterProtocolForPath,
   inspectAIRouterBufferedResponseContent,
@@ -15,6 +16,7 @@ import {
   isAIRouterNodeEligibleForProtocol,
   isAIRouterRetryableFailure,
   resolveAIRouterGatewayHandlerConfig,
+  resolveAIRouterResponsesWebSocketCandidates,
   runAIRouterAttempts,
   runAIRouterModelsDiscovery,
   selectAIRouterTierAttemptNodes,
@@ -382,6 +384,145 @@ describe('AI Router eligibility helpers', () => {
     );
 
     expect(nodes.map((node) => node.id)).toEqual(['large', 'small']);
+  });
+});
+
+describe('AI Router Responses WebSocket helpers', () => {
+  test('orders eligible candidates by tier and filters unsupported providers', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+      id: 'router_1',
+      tiers: [
+        {
+          id: 'tier_2',
+          order: 2,
+          nodes: [
+            {
+              id: 'node_custom',
+              gatewayId: 'gateway_custom',
+              enabled: true,
+              order: 1,
+              provider: 'custom',
+              weight: 1,
+              gateway: { id: 'gateway_custom', modelApiKey: 'custom-key' },
+            },
+          ],
+        },
+        {
+          id: 'tier_1',
+          order: 1,
+          nodes: [
+            {
+              id: 'node_anthropic',
+              gatewayId: 'gateway_anthropic',
+              enabled: true,
+              order: 1,
+              provider: 'anthropic',
+              weight: 1,
+              gateway: {
+                id: 'gateway_anthropic',
+                modelApiKey: 'anthropic-key',
+              },
+            },
+            {
+              id: 'node_openai',
+              gatewayId: 'gateway_openai',
+              enabled: true,
+              order: 2,
+              provider: 'openai',
+              weight: 1,
+              gateway: { id: 'gateway_openai', modelApiKey: 'openai-key' },
+            },
+          ],
+        },
+      ],
+    } as any);
+
+    const candidates = await resolveAIRouterResponsesWebSocketCandidates({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      random: () => 0,
+    });
+
+    expect(candidates.map(({ node }) => node.gatewayId)).toEqual([
+      'gateway_openai',
+      'gateway_custom',
+    ]);
+  });
+
+  test('writes a partial router log linked to the selected gateway log', async () => {
+    const create = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockResolvedValue({ id: 'router_log_1' } as any);
+
+    await createAIRouterResponsesWebSocketLog({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      gatewayId: 'gateway_2',
+      gatewayLogId: 'gateway_log_2',
+      handshakeAttempts: [
+        {
+          gatewayId: 'gateway_1',
+          retryable: true,
+          errorType: 'network',
+          message: 'connection refused',
+        },
+      ],
+      success: false,
+      error: new Error('upstream closed'),
+      duration: 12.4,
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        status: AIRouterLogsStatus.Partial,
+        finalGatewayId: 'gateway_2',
+        finalGatewayLogId: 'gateway_log_2',
+        attemptGatewayIds: ['gateway_1', 'gateway_2'],
+        attemptGatewayLogIds: ['gateway_log_2'],
+        attemptCount: 2,
+        duration: 12,
+      }),
+    });
+  });
+
+  test('writes a failed router log when every WebSocket handshake fails', async () => {
+    const create = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockResolvedValue({ id: 'router_log_1' } as any);
+    const handshakeAttempts = [
+      {
+        gatewayId: 'gateway_1',
+        statusCode: 418,
+        retryable: true,
+        message: 'teapot',
+      },
+      {
+        gatewayId: 'gateway_2',
+        statusCode: 503,
+        retryable: true,
+        message: 'unavailable',
+      },
+    ];
+
+    await createAIRouterResponsesWebSocketLog({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      handshakeAttempts,
+      success: false,
+      error: new Error('all handshakes failed'),
+      duration: 8.7,
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        status: AIRouterLogsStatus.Failed,
+        finalGatewayId: 'gateway_2',
+        attemptGatewayIds: ['gateway_1', 'gateway_2'],
+        attemptGatewayLogIds: [],
+        attemptCount: 2,
+        duration: 9,
+      }),
+    });
   });
 });
 

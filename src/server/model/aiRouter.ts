@@ -114,6 +114,10 @@ export interface AIRouterGatewayEligibility {
   id?: string;
   modelApiKey?: string | null;
   customModelBaseUrl?: string | null;
+  customModelName?: string | null;
+  customModelStrategy?: unknown;
+  customModelInputPrice?: Prisma.Decimal | number | string | null;
+  customModelOutputPrice?: Prisma.Decimal | number | string | null;
 }
 
 export interface AIRouterNodeEligibility {
@@ -833,6 +837,58 @@ function getAIRouterRuntimeTiers<TNode extends AIRouterAttemptNode>(
   return [];
 }
 
+export interface AIRouterResponsesWebSocketCandidate {
+  node: AIRouterAttemptNode;
+  modelProvider: 'openai' | 'custom';
+}
+
+export async function resolveAIRouterResponsesWebSocketCandidates(args: {
+  workspaceId: string;
+  routerId: string;
+  random?: () => number;
+}): Promise<AIRouterResponsesWebSocketCandidate[]> {
+  const router = (await prisma.aIRouter.findFirst({
+    where: {
+      id: args.routerId,
+      workspaceId: args.workspaceId,
+      enabled: true,
+    },
+    include: {
+      tiers: {
+        include: {
+          nodes: {
+            include: { gateway: true },
+            orderBy: { order: 'asc' },
+          },
+        },
+        orderBy: { order: 'asc' },
+      },
+    },
+  })) as AIRouterRuntimeRouter | null;
+
+  if (!router) {
+    throw new AIRouterRuntimeError(
+      404,
+      'not_found',
+      'AI Router not found or disabled'
+    );
+  }
+
+  return getAIRouterRuntimeTiers(router).flatMap((tier) =>
+    selectAIRouterTierAttemptNodes(
+      tier.nodes,
+      AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+      args.random
+    ).flatMap((node) => {
+      const modelProvider = getAIRouterNodeProvider(node);
+
+      return modelProvider === 'openai' || modelProvider === 'custom'
+        ? [{ node, modelProvider }]
+        : [];
+    })
+  );
+}
+
 export function buildAIRouterOpenAIChatHandler(
   options?: AIRouterRuntimeHandlerOptions
 ): RequestHandler {
@@ -1432,6 +1488,51 @@ function buildAIRouterLogData(args: {
     attemptCount: args.attempts.length,
     duration: Math.max(0, Math.round(args.duration)),
   };
+}
+
+export async function createAIRouterResponsesWebSocketLog(args: {
+  workspaceId: string;
+  routerId: string;
+  gatewayId?: string;
+  gatewayLogId?: string;
+  handshakeAttempts: AIRouterAttemptSummary[];
+  success: boolean;
+  error?: unknown;
+  duration: number;
+}) {
+  const finalAttempt = args.gatewayId
+    ? {
+        gatewayId: args.gatewayId,
+        gatewayLogId: args.gatewayLogId,
+        statusCode: args.success ? 200 : undefined,
+        retryable: false,
+        message:
+          args.error === undefined
+            ? undefined
+            : args.error instanceof Error
+              ? args.error.message
+              : String(args.error),
+      }
+    : args.handshakeAttempts[args.handshakeAttempts.length - 1];
+  const attempts = args.gatewayId
+    ? [...args.handshakeAttempts, finalAttempt]
+    : args.handshakeAttempts;
+
+  return prisma.aIRouterLogs.create({
+    data: buildAIRouterLogData({
+      workspaceId: args.workspaceId,
+      routerId: args.routerId,
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+      status: args.gatewayId
+        ? args.success
+          ? AIRouterLogsStatus.Success
+          : AIRouterLogsStatus.Partial
+        : AIRouterLogsStatus.Failed,
+      attempts,
+      finalAttempt,
+      duration: args.duration,
+    }),
+  });
 }
 
 function formatAIRouterValidationError(error: z.ZodError) {

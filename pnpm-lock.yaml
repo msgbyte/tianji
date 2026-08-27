@@ -1017,6 +1017,9 @@ importers:
       winston:
         specifier: ^3.17.0
         version: 3.17.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.21.0
       yup:
         specifier: ^1.6.1
         version: 1.6.1
@@ -1102,6 +1105,9 @@ importers:
       '@types/uuid':
         specifier: ^9.0.8
         version: 9.0.8
+      '@types/ws':
+        specifier: ^8.5.12
+        version: 8.5.12
       inquirer:
         specifier: ^12.5.0
         version: 12.5.0(@types/node@22.13.11)

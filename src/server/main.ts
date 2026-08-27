@@ -2,7 +2,7 @@ import 'dotenv/config';
 import './init.js';
 import { initUdpServer } from './udp/server.js';
 import { createServer } from 'http';
-import { initSocketio } from './ws/index.js';
+import { initAIGatewayResponsesWebSocket, initSocketio } from './ws/index.js';
 import { monitorManager } from './model/monitor/index.js';
 import { workerCronManager } from './model/worker/manager.js';
 import { env } from './utils/env.js';
@@ -29,6 +29,8 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 initUdpServer(port);
 
+const aiGatewayResponsesWebSocket =
+  initAIGatewayResponsesWebSocket(httpServer);
 initSocketio(httpServer);
 
 initCronjob();
@@ -96,6 +98,7 @@ async function gracefulShutdown(signal: string) {
   httpServer.close();
 
   await Promise.all([
+    aiGatewayResponsesWebSocket.close(),
     monitorBroadcast.close(),
     workerCronBroadcast.close(),
   ]);
