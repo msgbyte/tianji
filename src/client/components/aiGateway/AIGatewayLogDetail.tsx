@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import React from 'react';
 import { CodeBlock } from '../CodeBlock';
 import { SheetDataSection } from '../ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { AIGatewayStatus } from './AIGatewayStatus';
 
 export type AIGatewayLogItem =
@@ -16,6 +17,18 @@ interface AIGatewayLogDetailProps {
 export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
   React.memo(({ item }) => {
     const { t } = useTranslation();
+    const requestPayload =
+      item.requestPayload &&
+      typeof item.requestPayload === 'object' &&
+      !Array.isArray(item.requestPayload)
+        ? item.requestPayload
+        : null;
+    const defaultRequestTab =
+      requestPayload?.messages !== undefined
+        ? 'messages'
+        : requestPayload?.tools !== undefined
+          ? 'tools'
+          : 'raw';
 
     return (
       <div>
@@ -68,7 +81,31 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
         </SheetDataSection>
 
         <SheetDataSection label={t('Request Payload')}>
-          {renderJsonData(item.requestPayload)}
+          <Tabs defaultValue={defaultRequestTab}>
+            <TabsList>
+              {requestPayload?.messages !== undefined && (
+                <TabsTrigger value="messages">Messages</TabsTrigger>
+              )}
+              {requestPayload?.tools !== undefined && (
+                <TabsTrigger value="tools">Tools</TabsTrigger>
+              )}
+              <TabsTrigger value="raw">Raw Request</TabsTrigger>
+            </TabsList>
+
+            {requestPayload?.messages !== undefined && (
+              <TabsContent value="messages">
+                {renderJsonData(requestPayload.messages)}
+              </TabsContent>
+            )}
+            {requestPayload?.tools !== undefined && (
+              <TabsContent value="tools">
+                {renderJsonData(requestPayload.tools)}
+              </TabsContent>
+            )}
+            <TabsContent value="raw">
+              {renderJsonData(item.requestPayload)}
+            </TabsContent>
+          </Tabs>
         </SheetDataSection>
 
         <SheetDataSection label={t('Response Payload')}>
