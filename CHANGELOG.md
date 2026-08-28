@@ -1,5 +1,11 @@
 
 
+## [1.32.27](https://github.com/msgbyte/tianji/compare/v1.32.26...v1.32.27) (2026-08-28)
+
+### Bug Fixes
+
+* **ci:** sync ws dependency specifier ([b8afe5d](https://github.com/msgbyte/tianji/commit/b8afe5d1993a9fa60e96db47b9e4e64a1d101292))
+
 ## [1.32.26](https://github.com/msgbyte/tianji/compare/v1.32.25...v1.32.26) (2026-08-28)
 
 ### Features
