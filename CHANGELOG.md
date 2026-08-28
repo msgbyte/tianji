@@ -1,5 +1,13 @@
 
 
+## [1.32.26](https://github.com/msgbyte/tianji/compare/v1.32.25...v1.32.26) (2026-08-28)
+
+### Features
+
+* **ai-gateway:** decompose request payload ([3710c23](https://github.com/msgbyte/tianji/commit/3710c237216aab2de5f6bff248fb40361c05c94a))
+* **ai-gateway:** support responses websocket ([3f37e05](https://github.com/msgbyte/tianji/commit/3f37e05d2f27231e43554256e60524326afd536e))
+* **worker:** add shared modules for function workers ([#285](https://github.com/msgbyte/tianji/issues/285)) ([1a7907f](https://github.com/msgbyte/tianji/commit/1a7907ffb281db76570f2f12469267db431263c6))
+
 ## [1.32.25](https://github.com/msgbyte/tianji/compare/v1.32.24...v1.32.25) (2026-08-20)
 
 ### Features
