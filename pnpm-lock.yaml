@@ -1005,6 +1005,9 @@ importers:
       tsx:
         specifier: ^4.19.3
         version: 4.19.3
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -1126,9 +1129,6 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17(ts-node@10.9.2(@swc/core@1.15.0)(@types/node@22.13.11)(typescript@5.7.2))
-      typescript:
-        specifier: 5.7.2
-        version: 5.7.2
       vite:
         specifier: ^5.4.14
         version: 5.4.14(@types/node@22.13.11)(less@4.2.2)(lightningcss@1.27.0)(terser@5.28.1)
