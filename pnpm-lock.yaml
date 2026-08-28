@@ -1018,7 +1018,7 @@ importers:
         specifier: ^3.17.0
         version: 3.17.0
       ws:
-        specifier: ^8.18.0
+        specifier: 8.21.0
         version: 8.21.0
       yup:
         specifier: ^1.6.1
