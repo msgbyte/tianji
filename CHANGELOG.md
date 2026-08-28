@@ -1,5 +1,11 @@
 
 
+## [1.32.28](https://github.com/msgbyte/tianji/compare/v1.32.27...v1.32.28) (2026-08-28)
+
+### Bug Fixes
+
+* **server:** add typescript runtime dependency ([4f94775](https://github.com/msgbyte/tianji/commit/4f94775adefb491e2bee2f776b3ee064c67db717))
+
 ## [1.32.27](https://github.com/msgbyte/tianji/compare/v1.32.26...v1.32.27) (2026-08-28)
 
 ### Bug Fixes
