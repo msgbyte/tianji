@@ -9,14 +9,22 @@ describe('Model Prices and Context Window Configuration', () => {
     'together_ai/',
     'snowflake/',
     'featherless_ai/',
+    'github_copilot/',
+    'gradient_ai/',
+    'heroku/',
   ];
+  // Pricing varies by region and reasoning mode and cannot be one token pair.
+  const variablePricingModels = ['dashscope/qwen3-30b-a3b'];
 
   it('should ensure chat models have proper pricing fields', () => {
     const models = modelPricesAndContextWindow;
     const modelKeys = Object.keys(models);
 
-    // Skip the sample_spec as it's just documentation
-    const actualModels = modelKeys.filter((key) => key !== 'sample_spec');
+    // Skip documentation and routing metadata entries.
+    const actualModels = modelKeys.filter((key) => {
+      const model = models[key as keyof typeof models];
+      return key !== 'sample_spec' && 'litellm_provider' in model;
+    });
 
     expect(actualModels.length).toBeGreaterThan(0);
 
@@ -29,6 +37,7 @@ describe('Model Prices and Context Window Configuration', () => {
       const isThirdPartyModel = thirdPartyPrefixes.some((prefix) =>
         modelKey.startsWith(prefix)
       );
+      const hasVariablePricing = variablePricingModels.includes(modelKey);
 
       // Only check for chat and completion models that should have pricing
       const isTextModel =
@@ -36,17 +45,42 @@ describe('Model Prices and Context Window Configuration', () => {
         model.mode === 'chat' ||
         model.mode === 'completion';
 
-      if (isTextModel && !isThirdPartyModel) {
+      if (isTextModel && !isThirdPartyModel && !hasVariablePricing) {
         const hasTokenPricing =
           'input_cost_per_token' in model && 'output_cost_per_token' in model;
         const hasCharacterPricing =
           'input_cost_per_character' in model &&
           'output_cost_per_character' in model;
+        const hasResourcePricing = Object.entries(model).some(
+          ([field, value]) =>
+            field.includes('_cost_per_') &&
+            ![
+              'input_cost_per_token',
+              'output_cost_per_token',
+              'input_cost_per_character',
+              'output_cost_per_character',
+            ].includes(field) &&
+            typeof value === 'number'
+        );
+        const hasTieredPricing =
+          'tiered_pricing' in model &&
+          Array.isArray(model.tiered_pricing) &&
+          model.tiered_pricing.length > 0 &&
+          model.tiered_pricing.every(
+            (tier) =>
+              'input_cost_per_token' in tier &&
+              'output_cost_per_token' in tier
+          );
 
         if (hasCharacterPricing && !hasTokenPricing) {
           // Model uses character pricing - this is valid but needs conversion
           characterPricingModels.push(modelKey);
-        } else if (!hasTokenPricing && !hasCharacterPricing) {
+        } else if (
+          !hasTokenPricing &&
+          !hasCharacterPricing &&
+          !hasResourcePricing &&
+          !hasTieredPricing
+        ) {
           // Model has no pricing information at all
           missingPricing.push({
             model: modelKey,

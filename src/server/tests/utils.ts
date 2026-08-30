@@ -1,10 +1,16 @@
 import supertest from 'supertest';
-import { afterAll } from 'vitest';
+import { afterAll, vi } from 'vitest';
 import { app } from '../app.js';
 import { prisma } from '../model/_client.js';
 import { PrismaPromise } from '@prisma/client';
 import { createUser } from '../model/user.js';
 import { nanoid } from 'nanoid';
+
+vi.mock('../mq/producer.js', () => ({
+  sendBuildLighthouseMessageQueue: vi.fn(),
+  sendBuildSurveyClassifyMessageQueue: vi.fn(),
+  sendBuildSurveyTranslationMessageQueue: vi.fn(),
+}));
 
 export function createTestContext() {
   const testDataCallback: (() => PrismaPromise<any> | Promise<any>)[] = [];
