@@ -76,6 +76,9 @@ function PageComponent() {
     (state) => state.updateCurrentWorkspaceSettings
   );
   const globalConfig = useGlobalConfig();
+  const smtpUnavailableMessage = t(
+    'SMTP service is not configured on the server, invitation emails will not be sent'
+  );
 
   const { tableEl: workspaceMembersTable } = useWorkspaceMembers();
   const form = useForm<InviteFormValues>({
@@ -207,12 +210,18 @@ function PageComponent() {
                   <div className="flex items-center gap-2">
                     <span>{t('Invite new members by email address')}</span>
                     {!globalConfig.smtpAvailable && (
-                      <SimpleTooltip
-                        content={t(
-                          'SMTP service is not configured on the server, invitation emails will not be sent'
-                        )}
-                      >
-                        <LuTriangleAlert className="h-4 w-4 text-yellow-500" />
+                      <SimpleTooltip content={smtpUnavailableMessage}>
+                        <span
+                          role="img"
+                          aria-label={smtpUnavailableMessage}
+                          tabIndex={0}
+                          className="inline-flex cursor-help"
+                        >
+                          <LuTriangleAlert
+                            aria-hidden="true"
+                            className="h-4 w-4 text-yellow-500"
+                          />
+                        </span>
                       </SimpleTooltip>
                     )}
                   </div>
