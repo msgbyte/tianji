@@ -1,5 +1,19 @@
 
 
+## [1.32.29](https://github.com/msgbyte/tianji/compare/v1.32.28...v1.32.29) (2026-08-30)
+
+### Features
+
+* **website:** add retention chart menu ([224007c](https://github.com/msgbyte/tianji/commit/224007c1119de13fa9b9b44ef9abb54ce7179da1))
+* **website:** add visitor retention report ([609945a](https://github.com/msgbyte/tianji/commit/609945af2e9f89847bea72c6a46ecb61b2943bfd))
+
+### Bug Fixes
+
+* **gateway:** preserve responses websocket upgrades ([cca2319](https://github.com/msgbyte/tianji/commit/cca23198d96a0b04f5d8f894774355987dd100dd))
+* **insights:** initialize warehouse event queries ([e079983](https://github.com/msgbyte/tianji/commit/e07998373082c0f5594ed7e3bc175bff40332691))
+* **insights:** use website session id for event queries ([bfa31e5](https://github.com/msgbyte/tianji/commit/bfa31e578c2b25e30540f2dc5aed6a77650d0107))
+* **workspace:** restore invitation warning tooltip ([9e5a470](https://github.com/msgbyte/tianji/commit/9e5a4702c38f389058cae19c8edb1cc8a20d2342))
+
 ## [1.32.28](https://github.com/msgbyte/tianji/compare/v1.32.27...v1.32.28) (2026-08-28)
 
 ### Bug Fixes
