@@ -803,6 +803,72 @@ export async function getWorkspaceWebsiteSession(
     `;
 }
 
+export async function getWorkspaceWebsiteRetention(
+  websiteId: string,
+  filters: WebsiteQueryFilters
+) {
+  const { timezone = 'UTC' } = filters;
+  const { params } = await parseWebsiteFilters(websiteId, filters);
+
+  return prisma.$queryRaw<
+    {
+      date: string;
+      cohortSize: number;
+      d1: number | null;
+      d3: number | null;
+      d5: number | null;
+      d7: number | null;
+      d14: number | null;
+    }[]
+  >`
+    with cohorts as (
+      select
+        "sessionId" session_id,
+        (min("createdAt") at time zone ${timezone})::date cohort_date
+      from "WebsiteEvent"
+      where "websiteId" = ${params.websiteId}
+        ${
+          params.resetDate
+            ? Prisma.sql`and "createdAt" >= ${params.resetDate}::timestamptz`
+            : Prisma.empty
+        }
+        and "createdAt" <= ${params.endDate}::timestamptz
+        and "eventType" = ${EVENT_TYPE.pageView}
+      group by "sessionId"
+      having min("createdAt") between ${params.startDate}::timestamptz and ${params.endDate}::timestamptz
+    ), activity as (
+      select distinct
+        "sessionId",
+        ("createdAt" at time zone ${timezone})::date activity_date
+      from "WebsiteEvent"
+      where "websiteId" = ${params.websiteId}
+        and "createdAt" >= ${params.startDate}::timestamptz
+        and "createdAt" < least(
+          ((((${params.endDate}::timestamptz at time zone ${timezone})::date + 15)::timestamp) at time zone ${timezone}),
+          current_timestamp
+        )
+        and "eventType" = ${EVENT_TYPE.pageView}
+    )
+    select
+      to_char(cohorts.cohort_date, 'YYYY-MM-DD') date,
+      count(distinct cohorts.session_id)::integer "cohortSize",
+      case when cohorts.cohort_date + 1 < (current_timestamp at time zone ${timezone})::date
+        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 1)::integer end d1,
+      case when cohorts.cohort_date + 3 < (current_timestamp at time zone ${timezone})::date
+        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 3)::integer end d3,
+      case when cohorts.cohort_date + 5 < (current_timestamp at time zone ${timezone})::date
+        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 5)::integer end d5,
+      case when cohorts.cohort_date + 7 < (current_timestamp at time zone ${timezone})::date
+        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 7)::integer end d7,
+      case when cohorts.cohort_date + 14 < (current_timestamp at time zone ${timezone})::date
+        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 14)::integer end d14
+    from cohorts
+    left join activity on activity."sessionId" = cohorts.session_id
+    group by cohorts.cohort_date
+    order by cohorts.cohort_date desc
+  `;
+}
+
 export async function getWorkspaceWebsiteStats(
   websiteId: string,
   filters: WebsiteQueryFilters

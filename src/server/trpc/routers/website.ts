@@ -10,6 +10,7 @@ import {
   getWebsiteOnlineUserCount,
   getWorkspaceWebsitePageview,
   getWorkspaceWebsiteSession,
+  getWorkspaceWebsiteRetention,
   getWorkspaceWebsiteStats,
   getWorkspaceWebsiteVisitorCounts,
   delWebsiteCache,
@@ -73,6 +74,15 @@ const metricsTypeSchema = z.enum([
   'utm_content',
 ]);
 const publicRangeSchema = z.enum(['realtime', '24h', '7d', '30d', '90d']);
+const websiteRetentionSchema = z.object({
+  date: z.string(),
+  cohortSize: z.number(),
+  d1: z.number().nullable(),
+  d3: z.number().nullable(),
+  d5: z.number().nullable(),
+  d7: z.number().nullable(),
+  d14: z.number().nullable(),
+});
 
 export const websiteRouter = router({
   onlineCount: workspaceProcedure
@@ -254,6 +264,46 @@ export const websiteRouter = router({
       );
 
       return websiteStatsSchema.parse(stats);
+    }),
+  retention: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/retention',
+        summary: 'Get visitor retention',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string(),
+        startAt: z.number(),
+        endAt: z.number(),
+        timezone: z.string().optional(),
+      })
+    )
+    .output(z.array(websiteRetentionSchema))
+    .query(async ({ input }) => {
+      const { workspaceId, websiteId, startAt, endAt, timezone } = input;
+      const website = await prisma.website.findUnique({
+        where: { id: websiteId, workspaceId },
+        select: { id: true },
+      });
+
+      if (!website) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Website not found' });
+      }
+
+      const { startDate, endDate } = await parseDateRange({
+        websiteId,
+        startAt,
+        endAt,
+      });
+
+      return getWorkspaceWebsiteRetention(websiteId, {
+        startDate,
+        endDate,
+        timezone,
+      });
     }),
   geoStats: workspaceProcedure
     .meta(

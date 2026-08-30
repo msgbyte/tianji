@@ -95,6 +95,9 @@ export async function parseWebsiteFilters(
       endDate: filters.endDate
         ? dayjs(filters.endDate).toISOString()
         : undefined,
+      resetDate: website.resetAt
+        ? dayjs(website.resetAt).toISOString()
+        : undefined,
       websiteDomain,
     },
   };

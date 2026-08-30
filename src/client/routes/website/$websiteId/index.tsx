@@ -16,6 +16,7 @@ import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
+import { WebsiteRetention } from '@/components/website/WebsiteRetention';
 import { WebsiteEventAnalysis } from '@/components/website/WebsiteEventAnalysis';
 import { WebsiteSimpleMap } from '@/components/website/WebsiteSimpleMap';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
@@ -156,6 +157,14 @@ function PageComponent() {
         <Card bordered={false} className="bg-transparent">
           <Card.Grid hoverable={false} className="!w-full">
             <WebsiteOverview website={website} showDateFilter={true} />
+          </Card.Grid>
+          <Card.Grid hoverable={false} className="!w-full">
+            <WebsiteRetention
+              workspaceId={workspaceId}
+              websiteId={websiteId}
+              startAt={startAt}
+              endAt={endAt}
+            />
           </Card.Grid>
           <Card.Grid
             hoverable={false}

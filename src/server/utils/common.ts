@@ -174,7 +174,7 @@ export function parseToken(token: string, secret = jwtSecret) {
 }
 
 export function maxDate(...args: any[]) {
-  return dayjs.max(args.filter((n) => dayjs(n).isValid()));
+  return dayjs.max(args.map((n) => dayjs(n)).filter((n) => n.isValid()));
 }
 
 export async function parseDateRange({

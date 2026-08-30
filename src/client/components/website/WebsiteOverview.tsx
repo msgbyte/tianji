@@ -27,6 +27,7 @@ export const WebsiteOverview: React.FC<{
   const { t } = useTranslation();
   const { website, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
+  const trpcUtils = trpc.useUtils();
   const showPreviousPeriod = useGlobalStateStore(
     (state) => state.showPreviousPeriod
   );
@@ -106,7 +107,14 @@ export const WebsiteOverview: React.FC<{
   const handleRefresh = useEvent(async () => {
     refresh();
 
-    await Promise.all([refetchPageview(), refetchStats()]);
+    await Promise.all([
+      refetchPageview(),
+      refetchStats(),
+      trpcUtils.website.retention.invalidate({
+        workspaceId: website.workspaceId,
+        websiteId: website.id,
+      }),
+    ]);
 
     toast.success(t('Refreshed'));
   });
