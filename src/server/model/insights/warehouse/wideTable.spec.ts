@@ -1,12 +1,15 @@
-import { beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { WarehouseWideTableInsightsSqlBuilder } from './wideTable.js';
 import { unwrapSQL } from '../../../utils/prisma.js';
 import dayjs from 'dayjs';
 import { env } from '../../../utils/env.js';
+import { INIT_WORKSPACE_ID } from '../../../utils/const.js';
+import { clearWarehouseApplicationsCache } from './utils.js';
 
 describe('WarehouseWideTableInsightsSqlBuilder', () => {
   const insightId = 'wide_table_test';
   const insightType = 'warehouse';
+  const originalApplicationsJson = env.insights.warehouse.applicationsJson;
 
   beforeAll(() => {
     env.insights.warehouse.applicationsJson = JSON.stringify([
@@ -25,14 +28,20 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
         dateBasedCreatedAtField: 'event_date',
       },
     ]);
+    clearWarehouseApplicationsCache(INIT_WORKSPACE_ID);
   });
 
-  test('default', () => {
+  afterAll(() => {
+    env.insights.warehouse.applicationsJson = originalApplicationsJson;
+    clearWarehouseApplicationsCache(INIT_WORKSPACE_ID);
+  });
+
+  test('default', async () => {
     const builder = new WarehouseWideTableInsightsSqlBuilder(
       {
         insightId,
         insightType,
-        workspaceId: '',
+        workspaceId: INIT_WORKSPACE_ID,
         metrics: [
           {
             name: '$all_event',
@@ -52,14 +61,15 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
       }
     );
 
+    await builder.initialize();
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
-  test('group by', () => {
+  test('group by', async () => {
     const builder = new WarehouseWideTableInsightsSqlBuilder(
       {
-        workspaceId: '',
+        workspaceId: INIT_WORKSPACE_ID,
         insightId: 'wide_table_test',
         insightType: 'warehouse',
         metrics: [
@@ -87,14 +97,15 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
       }
     );
 
+    await builder.initialize();
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
-  test('buildFetchEventsQuery', () => {
+  test('buildFetchEventsQuery', async () => {
     const builder = new WarehouseWideTableInsightsSqlBuilder(
       {
-        workspaceId: '',
+        workspaceId: INIT_WORKSPACE_ID,
         insightId: 'wide_table_test',
         insightType: 'warehouse',
         metrics: [
@@ -122,6 +133,7 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
       }
     );
 
+    await builder.initialize();
     const sql = builder.buildFetchEventsQuery(undefined);
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });

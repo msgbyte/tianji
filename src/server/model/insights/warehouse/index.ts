@@ -13,11 +13,11 @@ export async function queryWarehouseEvents(
     query.insightId
   );
 
-  if (application?.type === 'wideTable') {
-    const builder = new WarehouseWideTableInsightsSqlBuilder(query, context);
-    return builder.queryEvents(query.cursor);
-  }
+  const builder =
+    application?.type === 'wideTable'
+      ? new WarehouseWideTableInsightsSqlBuilder(query, context)
+      : new WarehouseLongTableInsightsSqlBuilder(query, context);
 
-  const builder = new WarehouseLongTableInsightsSqlBuilder(query, context);
+  await builder.initialize();
   return builder.queryEvents(query.cursor);
 }

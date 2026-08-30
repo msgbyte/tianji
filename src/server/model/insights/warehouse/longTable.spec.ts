@@ -1,17 +1,21 @@
-import { beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { WarehouseLongTableInsightsSqlBuilder } from './longTable.js';
 import { unwrapSQL } from '../../../utils/prisma.js';
 import dayjs from 'dayjs';
 import { env } from '../../../utils/env.js';
+import { INIT_WORKSPACE_ID } from '../../../utils/const.js';
+import { clearWarehouseApplicationsCache } from './utils.js';
 
 describe('WarehouseInsightsSqlBuilder', () => {
   const insightId = 'test'; // application name
   const insightType = 'warehouse';
+  const originalApplicationsJson = env.insights.warehouse.applicationsJson;
 
   beforeAll(() => {
     env.insights.warehouse.applicationsJson = JSON.stringify([
       {
         name: 'test',
+        type: 'longTable',
         eventTable: {
           name: 'events',
           eventNameField: 'event_name',
@@ -26,14 +30,20 @@ describe('WarehouseInsightsSqlBuilder', () => {
         },
       },
     ]);
+    clearWarehouseApplicationsCache(INIT_WORKSPACE_ID);
   });
 
-  test('default', () => {
+  afterAll(() => {
+    env.insights.warehouse.applicationsJson = originalApplicationsJson;
+    clearWarehouseApplicationsCache(INIT_WORKSPACE_ID);
+  });
+
+  test('default', async () => {
     const builder = new WarehouseLongTableInsightsSqlBuilder(
       {
         insightId,
         insightType,
-        workspaceId: '',
+        workspaceId: INIT_WORKSPACE_ID,
         metrics: [
           {
             name: '$all_event',
@@ -53,16 +63,17 @@ describe('WarehouseInsightsSqlBuilder', () => {
       }
     );
 
+    await builder.initialize();
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
-  test('with filter', () => {
+  test('with filter', async () => {
     const builder = new WarehouseLongTableInsightsSqlBuilder(
       {
         insightId,
         insightType,
-        workspaceId: '',
+        workspaceId: INIT_WORKSPACE_ID,
         metrics: [
           {
             name: '$all_event',
@@ -89,6 +100,7 @@ describe('WarehouseInsightsSqlBuilder', () => {
       }
     );
 
+    await builder.initialize();
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
