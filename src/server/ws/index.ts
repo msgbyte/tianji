@@ -676,6 +676,7 @@ export function initSocketio(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
     transports: ['websocket'],
     serveClient: false,
+    destroyUpgradeTimeout: 35_000,
     cors: {
       origin: '*',
       methods: ['GET', 'POST'],

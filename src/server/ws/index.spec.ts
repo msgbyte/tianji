@@ -121,6 +121,49 @@ describe('AI Gateway Responses WebSocket', () => {
     expect(parsePath('/socket.io/?EIO=4&transport=websocket')).toBeNull();
   });
 
+  test('leaves delayed non-Socket.IO upgrades for other listeners', async () => {
+    vi.useFakeTimers();
+    const httpServer = createServer();
+    const nativeWss = new WebSocketServer({ noServer: true });
+    let markUpgradeReceived!: () => void;
+    const upgradeReceived = new Promise<void>((resolve) => {
+      markUpgradeReceived = resolve;
+    });
+
+    httpServer.on('upgrade', (request, socket, head) => {
+      markUpgradeReceived();
+      setTimeout(() => {
+        if (!socket.writable) {
+          return;
+        }
+
+        nativeWss.handleUpgrade(request, socket, head, (client) => {
+          nativeWss.emit('connection', client, request);
+        });
+      }, 1_500);
+    });
+    websocket.initSocketio(httpServer);
+    const port = await listen(httpServer);
+    const client = new WebSocket(`ws://127.0.0.1:${port}/native`);
+    const outcome = new Promise<'open' | 'error'>((resolve) => {
+      client.once('open', () => resolve('open'));
+      client.once('error', () => resolve('error'));
+    });
+
+    try {
+      await upgradeReceived;
+      await vi.advanceTimersByTimeAsync(1_500);
+
+      expect(await outcome).toBe('open');
+    } finally {
+      client.terminate();
+      for (const socket of nativeWss.clients) socket.terminate();
+      httpServer.close();
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+  });
+
   test('proxies official events with the resolved key and finishes the gateway log', async () => {
     const init = websocket.initAIGatewayResponsesWebSocket;
 
