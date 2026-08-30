@@ -1,28 +1,87 @@
 import { getUserTimezone } from '@/api/model/user';
-import { AppRouterOutput, trpc } from '@/api/trpc';
+import { trpc } from '@/api/trpc';
+import {
+  TimeEventChart,
+  type TimeEventChartData,
+} from '@/components/chart/TimeEventChart';
+import { Button } from '@/components/ui/button';
+import type { ChartConfig } from '@/components/ui/chart';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { pickColorWithNum } from '@/utils/color';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Table, Tooltip, theme } from 'antd';
-import { ColumnsType } from 'antd/es/table/interface';
+import { Empty, Spin } from 'antd';
 import dayjs from 'dayjs';
-
-type RetentionRow = AppRouterOutput['website']['retention'][number];
-type RetentionDay = 'd1' | 'd3' | 'd5' | 'd7' | 'd14';
+import { useMemo, useState } from 'react';
+import { LuChartLine } from 'react-icons/lu';
 
 interface WebsiteRetentionProps {
   workspaceId: string;
   websiteId: string;
   startAt: number;
   endAt: number;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 }
 
-export function WebsiteRetention({
+const retentionDays = [
+  [0, null],
+  [1, 'd1'],
+  [3, 'd3'],
+  [5, 'd5'],
+  [7, 'd7'],
+  [14, 'd14'],
+] as const;
+
+export function WebsiteRetention(props: WebsiteRetentionProps) {
+  const { t } = useTranslation();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = props.open ?? internalOpen;
+  const setOpen = props.onOpenChange ?? setInternalOpen;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      {props.showTrigger !== false && (
+        <DialogTrigger asChild>
+          <Button variant="outline" Icon={LuChartLine}>
+            {t('Visitor retention')}
+          </Button>
+        </DialogTrigger>
+      )}
+      <DialogContent className="max-h-[90vh] max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>{t('Visitor retention')}</DialogTitle>
+          <DialogDescription>
+            {t('Estimated from anonymous visitor fingerprints')}
+          </DialogDescription>
+        </DialogHeader>
+        {open && (
+          <WebsiteRetentionChart
+            workspaceId={props.workspaceId}
+            websiteId={props.websiteId}
+            startAt={props.startAt}
+            endAt={props.endAt}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function WebsiteRetentionChart({
   workspaceId,
   websiteId,
   startAt,
   endAt,
 }: WebsiteRetentionProps) {
   const { t } = useTranslation();
-  const { token } = theme.useToken();
   const selectedEnd = dayjs(endAt);
   const completeEnd = selectedEnd.isBefore(dayjs(), 'day')
     ? selectedEnd.endOf('day')
@@ -40,62 +99,75 @@ export function WebsiteRetention({
     timezone: getUserTimezone(),
   });
 
-  const columns: ColumnsType<RetentionRow> = [
-    {
-      title: t('Cohort date'),
-      dataIndex: 'date',
-    },
-    {
-      title: t('New visitors'),
-      dataIndex: 'cohortSize',
-      align: 'center',
-    },
-    ...(['d1', 'd3', 'd5', 'd7', 'd14'] as RetentionDay[]).map(
-      (day) => ({
-        title: day.toUpperCase(),
-        dataIndex: day,
-        align: 'center' as const,
-        render: (count: number | null, row: RetentionRow) => {
-          if (count === null) {
-            return <span className="opacity-50">—</span>;
+  const chartConfig = useMemo<ChartConfig>(
+    () => ({
+      all: { label: t('All start dates'), color: pickColorWithNum(0) },
+      ...Object.fromEntries(
+        data.map((row, index) => [
+          row.date,
+          { label: row.date, color: pickColorWithNum(index + 1) },
+        ])
+      ),
+    }),
+    [data, t]
+  );
+  const chartData = useMemo(
+    () =>
+      retentionDays.map(([day, key]) => {
+        const point: TimeEventChartData = { date: String(day) };
+        let totalUsers = 0;
+        let retainedUsers = 0;
+
+        data.forEach((row) => {
+          const retained = key === null ? row.cohortSize : row[key];
+          if (retained === null) {
+            return;
           }
 
-          const rate = row.cohortSize ? (count / row.cohortSize) * 100 : 0;
+          point[row.date] = row.cohortSize
+            ? (retained / row.cohortSize) * 100
+            : 0;
+          retainedUsers += retained;
+          totalUsers += row.cohortSize;
+        });
 
-          return (
-            <Tooltip title={`${count} / ${row.cohortSize}`}>
-              <div
-                className="rounded px-2 py-1 tabular-nums"
-                style={{
-                  backgroundColor: `color-mix(in srgb, ${token.colorPrimary} ${rate}%, transparent)`,
-                }}
-              >
-                {rate.toFixed(1)}%
-              </div>
-            </Tooltip>
-          );
-        },
-      })
-    ),
-  ];
+        if (totalUsers > 0) {
+          point.all = (retainedUsers / totalUsers) * 100;
+        }
+
+        return point;
+      }),
+    [data]
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[420px] items-center justify-center">
+        <Spin />
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="flex h-[420px] items-center justify-center">
+        <Empty />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="mb-4">
-        <div className="font-medium">{t('Visitor retention')}</div>
-        <div className="text-xs opacity-60">
-          {t('Estimated from anonymous visitor fingerprints')}
-        </div>
-      </div>
-      <Table
-        rowKey="date"
-        dataSource={data}
-        columns={columns}
-        loading={isLoading}
-        pagination={false}
-        scroll={{ x: 640 }}
-        size="small"
-      />
-    </div>
+    <TimeEventChart
+      className="h-[420px] w-full"
+      data={chartData}
+      unit="day"
+      chartType="line"
+      chartConfig={chartConfig}
+      drawGradientArea={false}
+      yAxisDomain={[0, 100]}
+      valueFormatter={(value) => `${value.toFixed(1)}%`}
+      xAxisLabelFormatter={(value) => `${t('Day')} ${value}`}
+      tooltipLabelFormatter={(value) => `${t('Day')} ${value}`}
+    />
   );
 }

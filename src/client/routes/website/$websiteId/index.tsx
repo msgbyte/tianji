@@ -12,6 +12,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { WebsiteActionsMenu } from '@/components/website/WebsiteActionsMenu';
 import { WebsiteCodeBtn } from '@/components/website/WebsiteCodeBtn';
 import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn';
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
@@ -27,11 +28,10 @@ import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Card } from 'antd';
-import { LuChevronDown, LuCompass, LuSettings, LuShare2 } from 'react-icons/lu';
+import { LuChevronDown, LuCompass, LuSettings } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
 import { toast } from 'sonner';
-import { useMemo } from 'react';
-import { SimpleTooltip } from '@/components/ui/tooltip';
+import { useMemo, useState } from 'react';
 
 export const Route = createFileRoute('/website/$websiteId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -49,6 +49,8 @@ function PageComponent() {
   const { startDate, endDate } = useGlobalRangeDate();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const [retentionOpen, setRetentionOpen] = useState(false);
+  const [lighthouseOpen, setLighthouseOpen] = useState(false);
   const resetInsightsStore = useInsightsStore((state) => state.reset);
   const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
 
@@ -105,47 +107,39 @@ function PageComponent() {
                 </Button>
               )}
 
-              <WebsiteLighthouseBtn websiteId={website.id} />
+              <WebsiteRetention
+                workspaceId={workspaceId}
+                websiteId={websiteId}
+                startAt={startAt}
+                endAt={endAt}
+                open={retentionOpen}
+                onOpenChange={setRetentionOpen}
+                showTrigger={false}
+              />
 
-              {website.shareId && (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  Icon={LuShare2}
-                  onClick={() => {
-                    copy(shareLink);
-                    toast.success(t('Public share link copied to clipboard'));
-                  }}
-                  aria-label={t('Public share link copied to clipboard')}
-                />
-              )}
-
-              {website.shareId ? (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  Icon={LuShare2}
-                  onClick={() => {
-                    copy(shareLink);
-                    toast.success(t('Public share link copied to clipboard'));
-                  }}
-                  aria-label={t('Public share link copied to clipboard')}
-                />
-              ) : (
-                <SimpleTooltip
-                  content={t('Public share is disabled for this website')}
-                  tooltipProps={{ delayDuration: 0 }}
-                >
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    Icon={LuShare2}
-                    disabled
-                  />
-                </SimpleTooltip>
-              )}
+              <WebsiteLighthouseBtn
+                websiteId={website.id}
+                open={lighthouseOpen}
+                onOpenChange={setLighthouseOpen}
+                showTrigger={false}
+              />
 
               <WebsiteCodeBtn websiteId={website.id} />
+
+              <WebsiteActionsMenu
+                onRetention={() => setRetentionOpen(true)}
+                onLighthouse={() => setLighthouseOpen(true)}
+                onShare={
+                  website.shareId
+                    ? () => {
+                        copy(shareLink);
+                        toast.success(
+                          t('Public share link copied to clipboard')
+                        );
+                      }
+                    : undefined
+                }
+              />
             </div>
           }
         />
@@ -157,14 +151,6 @@ function PageComponent() {
         <Card bordered={false} className="bg-transparent">
           <Card.Grid hoverable={false} className="!w-full">
             <WebsiteOverview website={website} showDateFilter={true} />
-          </Card.Grid>
-          <Card.Grid hoverable={false} className="!w-full">
-            <WebsiteRetention
-              workspaceId={workspaceId}
-              websiteId={websiteId}
-              startAt={startAt}
-              endAt={endAt}
-            />
           </Card.Grid>
           <Card.Grid
             hoverable={false}

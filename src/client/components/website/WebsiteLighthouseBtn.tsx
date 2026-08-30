@@ -32,6 +32,9 @@ import { useSocketSubscribe } from '@/api/socketio';
 
 interface WebsiteLighthouseBtnProps {
   websiteId: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 }
 export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
   React.memo((props) => {
@@ -90,10 +93,16 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
     });
 
     return (
-      <Sheet>
-        <SheetTrigger>
-          <Button variant="outline" size="icon" Icon={TbBuildingLighthouse} />
-        </SheetTrigger>
+      <Sheet open={props.open} onOpenChange={props.onOpenChange}>
+        {props.showTrigger !== false && (
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              Icon={TbBuildingLighthouse}
+            />
+          </SheetTrigger>
+        )}
         <SheetContent>
           <SheetHeader>
             <SheetTitle>{t('Website Lighthouse Reports')}</SheetTitle>
