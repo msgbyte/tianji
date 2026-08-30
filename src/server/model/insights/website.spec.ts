@@ -21,6 +21,37 @@ describe('WebsiteInsightsSqlBuilder', () => {
   const insightId = 'cly5yay7a001v5tp6xdkzmygh';
   const insightType = 'website';
 
+  test('uses sessionId as the event distinctId', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+        useClickhouse: false,
+      }
+    );
+
+    expect(unwrapSQL(builder.buildFetchEventsQuery(undefined))).toContain(
+      '"sessionId" as "distinctId"'
+    );
+  });
+
   test.each(['minute', 'hour', 'day', 'month', 'year'])(
     'binds the %s timezone in ClickHouse date queries',
     (unit) => {

@@ -18,6 +18,10 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     return 'WebsiteEvent';
   }
 
+  protected getDistinctFieldName(): string {
+    return 'sessionId';
+  }
+
   buildSelectQueryArr() {
     const { metrics } = this.query;
 
