@@ -319,6 +319,7 @@ model WebsiteEvent {
   id             String   @id() @default(cuid()) @db.VarChar(30)
   websiteId      String   @db.VarChar(30)
   sessionId      String   @db.Uuid
+  distinctId     String?  @db.Uuid
   urlPath        String   @db.VarChar(500)
   urlQuery       String?  @db.VarChar(500)
   referrerPath   String?  @db.VarChar(500)

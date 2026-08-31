@@ -6,6 +6,7 @@ export const WebsiteEventModelSchema = z.object({
   id: z.string(),
   websiteId: z.string(),
   sessionId: z.string(),
+  distinctId: z.string().nullish(),
   urlPath: z.string(),
   urlQuery: z.string().nullish(),
   referrerPath: z.string().nullish(),
