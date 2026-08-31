@@ -77,11 +77,7 @@ const publicRangeSchema = z.enum(['realtime', '24h', '7d', '30d', '90d']);
 const websiteRetentionSchema = z.object({
   date: z.string(),
   cohortSize: z.number(),
-  d1: z.number().nullable(),
-  d3: z.number().nullable(),
-  d5: z.number().nullable(),
-  d7: z.number().nullable(),
-  d14: z.number().nullable(),
+  retention: z.array(z.number().nullable()).length(31),
 });
 
 export const websiteRouter = router({

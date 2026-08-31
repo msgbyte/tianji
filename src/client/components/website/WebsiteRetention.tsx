@@ -5,6 +5,7 @@ import {
   type TimeEventChartData,
 } from '@/components/chart/TimeEventChart';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { ChartConfig } from '@/components/ui/chart';
 import {
   Dialog,
@@ -14,12 +15,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { pickColorWithNum } from '@/utils/color';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Empty, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
-import { LuChartLine } from 'react-icons/lu';
+import { LuChartLine, LuChevronDown, LuChevronRight } from 'react-icons/lu';
 
 interface WebsiteRetentionProps {
   workspaceId: string;
@@ -31,14 +40,7 @@ interface WebsiteRetentionProps {
   showTrigger?: boolean;
 }
 
-const retentionDays = [
-  [0, null],
-  [1, 'd1'],
-  [3, 'd3'],
-  [5, 'd5'],
-  [7, 'd7'],
-  [14, 'd14'],
-] as const;
+const retentionDays = Array.from({ length: 31 }, (_, day) => day);
 
 export function WebsiteRetention(props: WebsiteRetentionProps) {
   const { t } = useTranslation();
@@ -55,7 +57,7 @@ export function WebsiteRetention(props: WebsiteRetentionProps) {
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-h-[90vh] max-w-5xl">
+      <DialogContent className="max-h-[90vh] w-[90vw] max-w-7xl grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t('Visitor retention')}</DialogTitle>
           <DialogDescription>
@@ -82,6 +84,8 @@ function WebsiteRetentionChart({
   endAt,
 }: WebsiteRetentionProps) {
   const { t } = useTranslation();
+  const [showCohorts, setShowCohorts] = useState(false);
+  const [selectedCohorts, setSelectedCohorts] = useState<string[]>([]);
   const selectedEnd = dayjs(endAt);
   const completeEnd = selectedEnd.isBefore(dayjs(), 'day')
     ? selectedEnd.endOf('day')
@@ -103,23 +107,28 @@ function WebsiteRetentionChart({
     () => ({
       all: { label: t('All start dates'), color: pickColorWithNum(0) },
       ...Object.fromEntries(
-        data.map((row, index) => [
-          row.date,
-          { label: row.date, color: pickColorWithNum(index + 1) },
-        ])
+        data
+          .map(
+            (row, index) =>
+              [
+                row.date,
+                { label: row.date, color: pickColorWithNum(index + 1) },
+              ] as const
+          )
+          .filter(([date]) => selectedCohorts.includes(date))
       ),
     }),
-    [data, t]
+    [data, selectedCohorts, t]
   );
   const chartData = useMemo(
     () =>
-      retentionDays.map(([day, key]) => {
+      retentionDays.map((day) => {
         const point: TimeEventChartData = { date: String(day) };
         let totalUsers = 0;
         let retainedUsers = 0;
 
         data.forEach((row) => {
-          const retained = key === null ? row.cohortSize : row[key];
+          const retained = row.retention[day];
           if (retained === null) {
             return;
           }
@@ -139,6 +148,16 @@ function WebsiteRetentionChart({
       }),
     [data]
   );
+  const totalUsers = data.reduce((total, row) => total + row.cohortSize, 0);
+  const formatPercent = (value: number | undefined) =>
+    value === undefined ? '-' : `${value.toFixed(1)}%`;
+  const toggleCohort = (date: string, selected: boolean) => {
+    setSelectedCohorts((current) =>
+      selected
+        ? [...current, date]
+        : current.filter((selectedDate) => selectedDate !== date)
+    );
+  };
 
   if (isLoading) {
     return (
@@ -157,17 +176,110 @@ function WebsiteRetentionChart({
   }
 
   return (
-    <TimeEventChart
-      className="h-[420px] w-full"
-      data={chartData}
-      unit="day"
-      chartType="line"
-      chartConfig={chartConfig}
-      drawGradientArea={false}
-      yAxisDomain={[0, 100]}
-      valueFormatter={(value) => `${value.toFixed(1)}%`}
-      xAxisLabelFormatter={(value) => `${t('Day')} ${value}`}
-      tooltipLabelFormatter={(value) => `${t('Day')} ${value}`}
-    />
+    <div className="min-h-0 space-y-4 overflow-y-auto">
+      <TimeEventChart
+        className="h-[360px] w-full"
+        data={chartData}
+        unit="day"
+        chartType="line"
+        chartConfig={chartConfig}
+        drawGradientArea={false}
+        drawDashLine={false}
+        hideLegend
+        yAxisDomain={[0, 100]}
+        valueFormatter={(value) => `${value.toFixed(1)}%`}
+        xAxisLabelFormatter={(value) => `${t('Day')} ${value}`}
+        tooltipLabelFormatter={(value) => `${t('Day')} ${value}`}
+      />
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10" />
+              <TableHead className="min-w-48">{t('Start date')}</TableHead>
+              <TableHead className="min-w-24 text-right">
+                {t('Users')}
+              </TableHead>
+              {retentionDays.map((day) => (
+                <TableHead key={day} className="min-w-20 text-right">
+                  {t('Day')} {day}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>
+                <Button
+                  aria-label={t(showCohorts ? 'Hide cohorts' : 'Show cohorts')}
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setShowCohorts((shown) => !shown)}
+                >
+                  {showCohorts ? <LuChevronDown /> : <LuChevronRight />}
+                </Button>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2 font-medium">
+                  <Checkbox checked disabled aria-label={t('All start dates')} />
+                  <span
+                    className="size-3 rounded-full"
+                    style={{ backgroundColor: pickColorWithNum(0) }}
+                  />
+                  {t('All start dates')}
+                </div>
+              </TableCell>
+              <TableCell className="text-right font-medium">
+                {totalUsers.toLocaleString()}
+              </TableCell>
+              {retentionDays.map((day) => (
+                <TableCell key={day} className="text-right font-medium">
+                  {formatPercent(chartData[day]?.all as number | undefined)}
+                </TableCell>
+              ))}
+            </TableRow>
+            {showCohorts &&
+              data.map((row, index) => (
+                <TableRow key={row.date}>
+                  <TableCell />
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        aria-label={row.date}
+                        checked={selectedCohorts.includes(row.date)}
+                        onCheckedChange={(checked) =>
+                          toggleCohort(row.date, checked === true)
+                        }
+                      />
+                      <span
+                        className="size-3 rounded-full"
+                        style={{ backgroundColor: pickColorWithNum(index + 1) }}
+                      />
+                      {row.date}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {row.cohortSize.toLocaleString()}
+                  </TableCell>
+                  {retentionDays.map((day) => {
+                    const retained = row.retention[day];
+                    const value =
+                      retained === null || row.cohortSize === 0
+                        ? undefined
+                        : (retained / row.cohortSize) * 100;
+
+                    return (
+                      <TableCell key={day} className="text-right">
+                        {formatPercent(value)}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 }

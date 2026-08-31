@@ -279,6 +279,113 @@ describe('websiteRouter.retention', () => {
     }
   });
 
+  test('prefers ClickHouse and returns D0-D30 retention', async () => {
+    const workspace = await prisma.workspace.create({
+      data: { name: 'ClickHouse Retention Workspace' },
+    });
+    workspaceId = workspace.id;
+    const website = await prisma.website.create({
+      data: {
+        name: 'ClickHouse Retention Website',
+        domain: 'clickhouse-retention.example.com',
+        workspaceId: workspace.id,
+      },
+    });
+    const counts = Object.fromEntries(
+      Array.from({ length: 30 }, (_, index) => [`d${index + 1}`, '0'])
+    );
+    counts.d1 = '1';
+    counts.d30 = '1';
+
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockResolvedValue({
+      json: async () => ({
+        data: [
+          {
+            date: '2026-07-01',
+            cohortSize: '2',
+            ...counts,
+          },
+        ],
+      }),
+    });
+
+    const caller = await createCaller();
+    const result = await caller.retention({
+      workspaceId: workspace.id,
+      websiteId: website.id,
+      startAt: new Date('2026-07-01T00:00:00.000Z').valueOf(),
+      endAt: new Date('2026-07-02T00:00:00.000Z').valueOf(),
+      timezone: 'UTC',
+    });
+
+    expect(result).toEqual([
+      {
+        date: '2026-07-01',
+        cohortSize: 2,
+        retention: [2, 1, ...Array(28).fill(0), 1],
+      },
+    ]);
+    expect(mocks.clickhouseQuery).toHaveBeenCalledOnce();
+    const query = mocks.clickhouseQuery.mock.calls[0]?.[0];
+    expect(query.query).toContain('{eventType:UInt8}');
+    expect(query.query).toContain('toDateTime64');
+    expect(query.query).toContain('d30');
+    expect(query.query_params).toMatchObject({
+      websiteId: website.id,
+      eventType: EVENT_TYPE.pageView,
+      timezone: 'UTC',
+    });
+  });
+
+  test('falls back to PostgreSQL when the ClickHouse retention query fails', async () => {
+    const workspace = await prisma.workspace.create({
+      data: { name: 'Retention Fallback Workspace' },
+    });
+    workspaceId = workspace.id;
+    const website = await prisma.website.create({
+      data: {
+        name: 'Retention Fallback Website',
+        domain: 'retention-fallback.example.com',
+        workspaceId: workspace.id,
+      },
+    });
+    const sessionId = randomUUID();
+    const cohortAt = new Date('2026-07-01T08:00:00.000Z');
+
+    await prisma.websiteSession.create({
+      data: { id: sessionId, websiteId: website.id },
+    });
+    await prisma.websiteEvent.create({
+      data: {
+        id: createId(),
+        websiteId: website.id,
+        sessionId,
+        urlPath: '/',
+        eventType: EVENT_TYPE.pageView,
+        createdAt: cohortAt,
+      },
+    });
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockRejectedValue(new Error('ClickHouse unavailable'));
+
+    const caller = await createCaller();
+    const result = await caller.retention({
+      workspaceId: workspace.id,
+      websiteId: website.id,
+      startAt: new Date('2026-07-01T00:00:00.000Z').valueOf(),
+      endAt: new Date('2026-07-02T00:00:00.000Z').valueOf(),
+      timezone: 'UTC',
+    });
+
+    expect(result[0]).toMatchObject({
+      date: '2026-07-01',
+      cohortSize: 1,
+    });
+    expect(result[0]?.retention).toHaveLength(31);
+    expect(mocks.forceClickhouseHealthCheck).toHaveBeenCalledOnce();
+  });
+
   test('keeps retention null until the target day is complete', async () => {
     const workspace = await prisma.workspace.create({
       data: { name: 'Retention Maturity Workspace' },
@@ -333,11 +440,11 @@ describe('websiteRouter.retention', () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       date: cohortStart.toISOString().slice(0, 10),
-      d1: null,
     });
+    expect(result[0]?.retention[1]).toBeNull();
   });
 
-  test('includes the full local day across DST in the D14 activity window', async () => {
+  test('includes the full local day across DST in the D30 activity window', async () => {
     const workspace = await prisma.workspace.create({
       data: { name: 'Retention Window Workspace' },
     });
@@ -352,7 +459,7 @@ describe('websiteRouter.retention', () => {
     const cohortStart = new Date('2025-10-25T04:00:00.000Z');
     const cohortAt = new Date('2025-10-25T12:00:00.000Z');
     const queryEnd = new Date('2025-10-26T03:59:00.000Z');
-    const day14At = new Date('2025-11-09T04:30:00.000Z');
+    const day30At = new Date('2025-11-25T04:30:00.000Z');
     const sessionId = randomUUID();
 
     await prisma.websiteSession.create({
@@ -364,11 +471,11 @@ describe('websiteRouter.retention', () => {
       },
     });
     await prisma.websiteEvent.createMany({
-      data: [cohortAt, day14At].map((createdAt, index) => ({
+      data: [cohortAt, day30At].map((createdAt, index) => ({
         id: createId(),
         websiteId: website.id,
         sessionId,
-        urlPath: index === 0 ? '/' : '/day-fourteen',
+        urlPath: index === 0 ? '/' : '/day-thirty',
         eventType: EVENT_TYPE.pageView,
         createdAt,
       })),
@@ -384,7 +491,7 @@ describe('websiteRouter.retention', () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0]?.d14).toBe(1);
+    expect(result[0]?.retention[30]).toBe(1);
   });
 
   test('uses the first page view date as the cohort date', async () => {
@@ -448,17 +555,16 @@ describe('websiteRouter.retention', () => {
       timezone: 'UTC',
     });
 
-    expect(result).toEqual([
-      {
-        date: '2026-07-02',
-        cohortSize: 1,
-        d1: 1,
-        d3: 0,
-        d5: 0,
-        d7: 0,
-        d14: 0,
-      },
-    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      date: '2026-07-02',
+      cohortSize: 1,
+    });
+    expect(result[0]?.retention).toHaveLength(31);
+    expect(result[0]?.retention[0]).toBe(1);
+    expect(result[0]?.retention[1]).toBe(1);
+    expect(result[0]?.retention[2]).toBe(0);
+    expect(result[0]?.retention[30]).toBe(0);
   });
 
   test('starts visitor cohorts after the website reset date', async () => {
@@ -503,17 +609,12 @@ describe('websiteRouter.retention', () => {
       timezone: 'UTC',
     });
 
-    expect(result).toEqual([
-      {
-        date: '2026-07-03',
-        cohortSize: 1,
-        d1: 1,
-        d3: 0,
-        d5: 0,
-        d7: 0,
-        d14: 0,
-      },
-    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      date: '2026-07-03',
+      cohortSize: 1,
+    });
+    expect(result[0]?.retention[1]).toBe(1);
   });
 
   test('returns page-view cohorts, repeat visits, and immature periods', async () => {
@@ -625,25 +726,16 @@ describe('websiteRouter.retention', () => {
       timezone: 'UTC',
     });
 
-    expect(result).toEqual([
-      {
-        date: now.toISOString().slice(0, 10),
-        cohortSize: 1,
-        d1: null,
-        d3: null,
-        d5: null,
-        d7: null,
-        d14: null,
-      },
-      {
-        date: '2026-07-01',
-        cohortSize: 2,
-        d1: 1,
-        d3: 0,
-        d5: 0,
-        d7: 1,
-        d14: 0,
-      },
-    ]);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({
+      date: now.toISOString().slice(0, 10),
+      cohortSize: 1,
+    });
+    expect(result[0]?.retention.slice(1)).toEqual(Array(30).fill(null));
+    expect(result[1]).toMatchObject({ date: '2026-07-01', cohortSize: 2 });
+    expect(result[1]?.retention[0]).toBe(2);
+    expect(result[1]?.retention[1]).toBe(1);
+    expect(result[1]?.retention[7]).toBe(1);
+    expect(result[1]?.retention[30]).toBe(0);
   });
 });

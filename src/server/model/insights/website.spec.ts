@@ -21,7 +21,7 @@ describe('WebsiteInsightsSqlBuilder', () => {
   const insightId = 'cly5yay7a001v5tp6xdkzmygh';
   const insightType = 'website';
 
-  test('uses sessionId as the event distinctId', () => {
+  test('falls back to sessionId when the event has no distinctId', () => {
     const builder = new WebsiteInsightsSqlBuilder(
       {
         insightId,
@@ -30,7 +30,7 @@ describe('WebsiteInsightsSqlBuilder', () => {
         metrics: [
           {
             name: '$all_event',
-            math: 'events',
+            math: 'sessions',
           },
         ],
         filters: [],
@@ -47,8 +47,8 @@ describe('WebsiteInsightsSqlBuilder', () => {
       }
     );
 
-    expect(unwrapSQL(builder.buildFetchEventsQuery(undefined))).toContain(
-      '"sessionId" as "distinctId"'
+    expect(unwrapSQL(builder.build())).toContain(
+      'count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId"))'
     );
   });
 

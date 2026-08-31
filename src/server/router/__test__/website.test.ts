@@ -225,4 +225,38 @@ describe('website router', () => {
       )
     ).toBe(true);
   });
+
+  test('does not persist user identity fields as session data', async () => {
+    const workspace = await createTestWorkspace();
+    const website = await prisma.website.create({
+      data: {
+        name: 'Test Website',
+        domain: 'example.com',
+        workspaceId: workspace.id,
+      },
+    });
+
+    const { status } = await app
+      .post('/api/website/send')
+      .set('user-agent', 'Mozilla/5.0 Tianji Test')
+      .send({
+        type: 'identify',
+        payload: {
+          website: website.id,
+          hostname: 'example.com',
+          data: {
+            id: 'private-id',
+            userId: 'legacy-private-id',
+            plan: 'pro',
+          },
+        },
+      });
+    const sessionData = await prisma.websiteSessionData.findMany({
+      where: { websiteId: website.id },
+      select: { key: true, stringValue: true },
+    });
+
+    expect(status).toBe(200);
+    expect(sessionData).toEqual([{ key: 'plan', stringValue: 'pro' }]);
+  });
 });

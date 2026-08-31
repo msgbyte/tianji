@@ -8,7 +8,7 @@ import {
   saveWebsiteSessionData,
   WebsiteNotFoundError,
 } from '../model/website/index.js';
-import { createToken } from '../utils/common.js';
+import { createToken, hashUuid } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
 import { isWorkspacePaused } from '../model/billing/workspace.js';
 import {
@@ -22,6 +22,7 @@ export const websiteRouter = Router();
 // Shared validation schema for event payload
 const eventPayloadSchema = yup.object().shape({
   data: yup.object(),
+  distinctId: yup.string().trim().max(500),
   hostname: yup.string().matches(hostnameRegex).max(100),
   language: yup.string().max(35),
   referrer: yup.string().max(500),
@@ -123,6 +124,10 @@ async function processEvent(type: string, payload: any, session: any) {
       utmContent,
       ...session,
       sessionId: session.id,
+      distinctId:
+        typeof payload.distinctId === 'string' && payload.distinctId.trim()
+          ? hashUuid(session.websiteId, payload.distinctId.trim())
+          : undefined,
     });
     return { status: 'success', type: 'event' };
   }
@@ -132,9 +137,13 @@ async function processEvent(type: string, payload: any, session: any) {
       throw new Error('Data required for identify event');
     }
 
+    const sessionData = { ...eventData };
+    delete sessionData.id;
+    delete sessionData.userId;
+
     await saveWebsiteSessionData({
       ...session,
-      sessionData: eventData,
+      sessionData,
       sessionId: session.id,
     });
     return { status: 'success', type: 'identify' };

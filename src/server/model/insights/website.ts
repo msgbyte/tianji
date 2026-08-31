@@ -19,7 +19,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 
   protected getDistinctFieldName(): string {
-    return 'sessionId';
+    return 'distinctId';
   }
 
   buildSelectQueryArr() {
@@ -38,15 +38,17 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
 
         return sql`sum(case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN 1 ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
       } else if (item.math === 'sessions') {
+        const distinctId = sql`coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")`;
+
         if (item.name === '$all_event') {
-          return sql`count(distinct "sessionId") as ${quoteSqlIdentifier(alias)}`;
+          return sql`count(distinct ${distinctId}) as ${quoteSqlIdentifier(alias)}`;
         }
 
         if (item.name === '$page_view') {
-          return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN "sessionId" ELSE null END) as ${quoteSqlIdentifier(alias)}`;
+          return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} THEN ${distinctId} ELSE null END) as ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN "sessionId" END) as ${quoteSqlIdentifier(alias)}`;
+        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" = ${item.name} THEN ${distinctId} END) as ${quoteSqlIdentifier(alias)}`;
       }
 
       return null;
@@ -269,6 +271,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
         name: event.eventName ?? 'Page View',
         createdAt: event.createdAt,
         properties: {
+          distinctId: event.distinctId ?? event.sessionId,
           sessionId: event.sessionId,
           urlPath: event.urlPath,
           urlQuery: event.urlQuery,

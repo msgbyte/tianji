@@ -139,6 +139,7 @@ const websiteEventWriter = createBatchWriter<WebsiteEventBatchItem>({
 
 export interface WebsiteEventPayload {
   data?: object;
+  distinctId?: string;
   hostname: string;
   language?: string;
   referrer?: string;
@@ -356,6 +357,7 @@ export { delWebsiteSessionCache };
 
 export function saveWebsiteEvent(data: {
   sessionId: string;
+  distinctId?: string;
   websiteId: string;
   urlPath: string;
   urlQuery?: string;
@@ -374,6 +376,7 @@ export function saveWebsiteEvent(data: {
   const {
     websiteId,
     sessionId,
+    distinctId,
     urlPath,
     urlQuery,
     referrerPath,
@@ -395,6 +398,7 @@ export function saveWebsiteEvent(data: {
     id: eventId,
     websiteId,
     sessionId,
+    distinctId: distinctId ?? sessionId,
     urlPath: urlPath?.substring(0, URL_LENGTH),
     urlQuery: urlQuery?.substring(0, URL_LENGTH),
     referrerPath: referrerPath?.substring(0, URL_LENGTH),
@@ -486,7 +490,7 @@ export async function getWebsiteOnlineUserCount(
 
   const res = await prisma.$queryRaw<
     Ret[]
-  >`SELECT count(distinct "sessionId") x FROM "WebsiteEvent" where "websiteId" = ${websiteId} AND "createdAt" >= ${startAt}`;
+  >`SELECT count(distinct coalesce("distinctId", "sessionId")) x FROM "WebsiteEvent" where "websiteId" = ${websiteId} AND "createdAt" >= ${startAt}`;
 
   return Number(res?.[0].x ?? 0);
 }
@@ -516,7 +520,7 @@ export async function getWorkspaceWebsiteVisitorCounts(
         query: `
           select
             websiteId,
-            uniqExact(sessionId) as visitorCount
+            uniqExact(coalesce(distinctId, sessionId)) as visitorCount
           from WebsiteEvent
           where websiteId in {websiteIds:Array(String)}
             and eventType = {eventType:UInt64}
@@ -552,7 +556,7 @@ export async function getWorkspaceWebsiteVisitorCounts(
   >`
     select
       "WebsiteEvent"."websiteId",
-      count(distinct "WebsiteEvent"."sessionId") as "visitorCount"
+      count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")) as "visitorCount"
     from "WebsiteEvent"
     join "Website"
       on "WebsiteEvent"."websiteId" = "Website"."id"
@@ -604,7 +608,7 @@ export async function getWebsiteSessionMetrics(
       const chGroupByExtra = includeCountry ? ', country' : '';
 
       const chQuery = `
-        select ${column} as x, uniqExact(sessionId) as y${chCountrySelect}
+        select ${column} as x, uniqExact(coalesce(distinctId, sessionId)) as y${chCountrySelect}
         from WebsiteEvent
         ${chJoin}
         where websiteId = {websiteId:String}
@@ -638,7 +642,7 @@ export async function getWebsiteSessionMetrics(
 
   return prisma.$queryRaw`select
       ${Prisma.sql([`"${column}"`])} x,
-      count(distinct "WebsiteEvent"."sessionId") y
+      count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")) y
       ${includeCountry ? Prisma.sql([', country']) : Prisma.empty}
     from "WebsiteEvent"
     ${joinSession}
@@ -790,7 +794,7 @@ export async function getWorkspaceWebsiteSession(
   return prisma.$queryRaw`
     select
       ${getDateQuery('"WebsiteEvent"."createdAt"', unit, timezone)} x,
-      count(distinct "WebsiteEvent"."sessionId") y
+      count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")) y
     from "WebsiteEvent"
       ${joinSession}
     where "WebsiteEvent"."websiteId" = ${params.websiteId}
@@ -809,21 +813,121 @@ export async function getWorkspaceWebsiteRetention(
 ) {
   const { timezone = 'UTC' } = filters;
   const { params } = await parseWebsiteFilters(websiteId, filters);
+  type RetentionQueryRow = {
+    date: string;
+    cohortSize: number | string;
+    [key: string]: number | string | null;
+  };
+  const normalizeRows = (rows: RetentionQueryRow[]) =>
+    rows.map((row) => {
+      const cohortSize = Number(row.cohortSize);
 
-  return prisma.$queryRaw<
-    {
-      date: string;
-      cohortSize: number;
-      d1: number | null;
-      d3: number | null;
-      d5: number | null;
-      d7: number | null;
-      d14: number | null;
-    }[]
-  >`
+      return {
+        date: String(row.date),
+        cohortSize,
+        retention: [
+          cohortSize,
+          ...Array.from({ length: 30 }, (_, index) => {
+            const value = row[`d${index + 1}`];
+            return value === null || value === undefined ? null : Number(value);
+          }),
+        ],
+      };
+    });
+  const retentionColumns = Array.from({ length: 30 }, (_, index) => {
+    const day = index + 1;
+    return `
+      if(
+        addDays(cohorts.cohort_date, ${day}) < toDate(now(), {timezone:String}),
+        uniqExactIf(activity.session_id, activity.activity_date = addDays(cohorts.cohort_date, ${day})),
+        null
+      ) d${day}`;
+  }).join(',');
+
+  if (clickhouseHealthManager.isClickHouseHealthy()) {
+    try {
+      const result = await clickhouse.query({
+        query: `
+          with cohorts as (
+            select
+              coalesce(distinctId, sessionId) session_id,
+              toDate(min(createdAt), {timezone:String}) cohort_date
+            from WebsiteEvent
+            where websiteId = {websiteId:String}
+              ${
+                params.resetDate
+                  ? `and createdAt >= toDateTime64({resetAt:String}, 3, 'UTC')`
+                  : ''
+              }
+              and createdAt <= toDateTime64({endAt:String}, 3, 'UTC')
+              and eventType = {eventType:UInt8}
+            group by coalesce(distinctId, sessionId)
+            having min(createdAt) between
+              toDateTime64({startAt:String}, 3, 'UTC') and
+              toDateTime64({endAt:String}, 3, 'UTC')
+          ), activity as (
+            select distinct
+              coalesce(distinctId, sessionId) session_id,
+              toDate(createdAt, {timezone:String}) activity_date
+            from WebsiteEvent
+            where websiteId = {websiteId:String}
+              and createdAt >= toDateTime64({startAt:String}, 3, 'UTC')
+              and createdAt < least(
+                addDays(toDateTime64({endAt:String}, 3, 'UTC'), 32),
+                now64(3)
+              )
+              and eventType = {eventType:UInt8}
+          )
+          select
+            formatDateTime(cohorts.cohort_date, '%F') date,
+            uniqExact(cohorts.session_id) cohortSize,
+            ${retentionColumns}
+          from cohorts
+          left join activity on activity.session_id = cohorts.session_id
+          group by cohorts.cohort_date
+          order by cohorts.cohort_date desc
+        `,
+        query_params: {
+          websiteId: params.websiteId,
+          startAt: dayjs(params.startDate)
+            .utc()
+            .format('YYYY-MM-DD HH:mm:ss.SSS'),
+          endAt: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss.SSS'),
+          ...(params.resetDate
+            ? {
+                resetAt: dayjs(params.resetDate)
+                  .utc()
+                  .format('YYYY-MM-DD HH:mm:ss.SSS'),
+              }
+            : {}),
+          eventType: EVENT_TYPE.pageView,
+          timezone,
+        },
+      });
+      const { data } = await result.json<RetentionQueryRow>();
+
+      return normalizeRows(data ?? []);
+    } catch (error) {
+      logger.warn(
+        `ClickHouse getWorkspaceWebsiteRetention failed, falling back to PostgreSQL: ${error}`
+      );
+      clickhouseHealthManager.forceHealthCheck().catch(() => {});
+    }
+  }
+
+  const postgresRetentionColumns = Prisma.join(
+    Array.from({ length: 30 }, (_, index) => {
+      const day = index + 1;
+      return Prisma.sql`
+        case when cohorts.cohort_date + ${day}::integer < (current_timestamp at time zone ${timezone})::date
+          then count(distinct activity.session_id) filter (where activity.activity_date = cohorts.cohort_date + ${day}::integer)::integer
+        end ${Prisma.raw(`d${day}`)}`;
+    })
+  );
+  const rows = await prisma.$queryRaw<RetentionQueryRow[]>`
     with cohorts as (
       select
-        "sessionId" session_id,
+        coalesce("distinctId", "sessionId") session_id,
         (min("createdAt") at time zone ${timezone})::date cohort_date
       from "WebsiteEvent"
       where "websiteId" = ${params.websiteId}
@@ -834,17 +938,17 @@ export async function getWorkspaceWebsiteRetention(
         }
         and "createdAt" <= ${params.endDate}::timestamptz
         and "eventType" = ${EVENT_TYPE.pageView}
-      group by "sessionId"
+      group by coalesce("distinctId", "sessionId")
       having min("createdAt") between ${params.startDate}::timestamptz and ${params.endDate}::timestamptz
     ), activity as (
       select distinct
-        "sessionId",
+        coalesce("distinctId", "sessionId") session_id,
         ("createdAt" at time zone ${timezone})::date activity_date
       from "WebsiteEvent"
       where "websiteId" = ${params.websiteId}
         and "createdAt" >= ${params.startDate}::timestamptz
         and "createdAt" < least(
-          ((((${params.endDate}::timestamptz at time zone ${timezone})::date + 15)::timestamp) at time zone ${timezone}),
+          ((((${params.endDate}::timestamptz at time zone ${timezone})::date + 31)::timestamp) at time zone ${timezone}),
           current_timestamp
         )
         and "eventType" = ${EVENT_TYPE.pageView}
@@ -852,21 +956,14 @@ export async function getWorkspaceWebsiteRetention(
     select
       to_char(cohorts.cohort_date, 'YYYY-MM-DD') date,
       count(distinct cohorts.session_id)::integer "cohortSize",
-      case when cohorts.cohort_date + 1 < (current_timestamp at time zone ${timezone})::date
-        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 1)::integer end d1,
-      case when cohorts.cohort_date + 3 < (current_timestamp at time zone ${timezone})::date
-        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 3)::integer end d3,
-      case when cohorts.cohort_date + 5 < (current_timestamp at time zone ${timezone})::date
-        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 5)::integer end d5,
-      case when cohorts.cohort_date + 7 < (current_timestamp at time zone ${timezone})::date
-        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 7)::integer end d7,
-      case when cohorts.cohort_date + 14 < (current_timestamp at time zone ${timezone})::date
-        then count(distinct activity."sessionId") filter (where activity.activity_date = cohorts.cohort_date + 14)::integer end d14
+      ${postgresRetentionColumns}
     from cohorts
-    left join activity on activity."sessionId" = cohorts.session_id
+    left join activity on activity.session_id = cohorts.session_id
     group by cohorts.cohort_date
     order by cohorts.cohort_date desc
   `;
+
+  return normalizeRows(rows);
 }
 
 export async function getWorkspaceWebsiteStats(
@@ -895,24 +992,31 @@ export async function getWorkspaceWebsiteStats(
         .replace(/::[a-zA-Z]+/g, '');
 
       const chQuery = `
-        select
-          sum(t.c) as pageviews,
-          uniqExact(t.sessionId) as uniques,
-          sum(if(t.c = 1, 1, 0)) as bounces,
-          sum(t.time) as totaltime
-        from (
+        with filtered_events as (
           select
             sessionId,
-            toStartOfHour(createdAt) as bucket,
-            count(*) as c,
-            dateDiff('second', min(createdAt), max(createdAt)) as time
+            coalesce(distinctId, sessionId) as distinctId,
+            createdAt
           from WebsiteEvent
           where websiteId = {websiteId:String}
             and createdAt between toDateTime({start:String}, 'UTC') and toDateTime({end:String}, 'UTC')
             and eventType = {eventType:UInt64}
             ${chFilter}
+        ), stats as (
+          select
+            sessionId,
+            toStartOfHour(createdAt) as bucket,
+            count(*) as c,
+            dateDiff('second', min(createdAt), max(createdAt)) as time
+          from filtered_events
           group by sessionId, bucket
-        ) as t
+        )
+        select
+          sum(stats.c) as pageviews,
+          (select uniqExact(distinctId) from filtered_events) as uniques,
+          sum(if(stats.c = 1, 1, 0)) as bounces,
+          sum(stats.time) as totaltime
+        from stats
       `;
 
       const result = await clickhouse.query({
@@ -959,17 +1063,11 @@ export async function getWorkspaceWebsiteStats(
 
   // PostgreSQL fallback (or when extra filters are present)
   return prisma.$queryRaw`
-    select
-      sum(t.c) as "pageviews",
-      count(distinct t."sessionId") as "uniques",
-      sum(case when t.c = 1 then 1 else 0 end) as "bounces",
-      sum(t.time) as "totaltime"
-    from (
+    with filtered_events as (
       select
         "WebsiteEvent"."sessionId",
-        ${getDateQuery('"WebsiteEvent"."createdAt"', 'hour')},
-        count(*) as c,
-        ${getTimestampIntervalQuery('"WebsiteEvent"."createdAt"')} as "time"
+        coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId") as "distinctId",
+        "WebsiteEvent"."createdAt"
       from "WebsiteEvent"
       join "Website"
         on "WebsiteEvent"."websiteId" = "Website"."id"
@@ -980,7 +1078,20 @@ export async function getWorkspaceWebsiteStats(
         }::timestamptz and ${params.endDate}::timestamptz
         and "eventType" = ${EVENT_TYPE.pageView}
         ${filterQuery}
+    ), stats as (
+      select
+        "sessionId",
+        ${getDateQuery('"createdAt"', 'hour')},
+        count(*) as c,
+        ${getTimestampIntervalQuery('"createdAt"')} as "time"
+      from filtered_events
       group by 1, 2
-    ) as t
+    )
+    select
+      sum(stats.c) as "pageviews",
+      (select count(distinct "distinctId") from filtered_events) as "uniques",
+      sum(case when stats.c = 1 then 1 else 0 end) as "bounces",
+      sum(stats.time) as "totaltime"
+    from stats
   `;
 }
