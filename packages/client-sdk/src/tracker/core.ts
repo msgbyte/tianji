@@ -8,6 +8,7 @@ export const DEFAULT_WEBSITE_BATCH_DELAY = 1_000;
 
 export interface WebsiteEventPayload {
   website: string;
+  distinctId?: string;
   hostname?: string;
   screen?: string;
   language?: string;
@@ -23,6 +24,16 @@ export interface TrackerCoreOptions {
   websiteId: string;
   batchDelay?: number;
   disableBatch?: boolean;
+}
+
+export function getWebsiteDistinctId(data: Record<string, any>) {
+  for (const value of [data.id, data.userId]) {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
 }
 
 /**
@@ -62,6 +73,7 @@ export function createTrackerCore(options: TrackerCoreOptions) {
   } = options;
   const endpoint = `${serverUrl}/api/website/send`;
   const batchEndpoint = `${serverUrl}/api/website/batch`;
+  let distinctId: string | undefined;
 
   const sendSingle = async (
     type: 'event' | 'identify',
@@ -103,6 +115,7 @@ export function createTrackerCore(options: TrackerCoreOptions) {
   ): WebsiteEventPayload => ({
     website: websiteId,
     ...getBrowserInfo(),
+    ...(distinctId ? { distinctId } : {}),
     ...overrides,
   });
 
@@ -116,7 +129,7 @@ export function createTrackerCore(options: TrackerCoreOptions) {
         typeof eventNameOrPayload === 'object' &&
         eventNameOrPayload !== null
       ) {
-        payload = eventNameOrPayload;
+        payload = getPayload(eventNameOrPayload);
       } else {
         payload = getPayload(
           eventNameOrPayload
@@ -128,6 +141,8 @@ export function createTrackerCore(options: TrackerCoreOptions) {
     },
 
     identify: (data: Record<string, any>) => {
+      distinctId = getWebsiteDistinctId(data);
+
       const payload = getPayload({ data });
       batchManager.add('identify', payload);
     },

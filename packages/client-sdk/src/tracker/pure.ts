@@ -5,7 +5,7 @@
 
 import { IdentifyPayload } from '../types';
 import { BatchManager, BatchItem } from '../utils/batch-manager';
-import { DEFAULT_WEBSITE_BATCH_DELAY } from './core';
+import { DEFAULT_WEBSITE_BATCH_DELAY, getWebsiteDistinctId } from './core';
 
 /**
  * Website event payload interface
@@ -15,6 +15,10 @@ export interface WebsiteEventPayload {
    * Website identifier (required)
    */
   website: string;
+  /**
+   * User identifier set by identifyWebsiteUser
+   */
+  distinctId?: string;
   /**
    * Current hostname
    */
@@ -91,6 +95,7 @@ export interface WebsiteTrackingOptions {
 }
 
 let options: WebsiteTrackingOptions | undefined;
+let distinctId: string | undefined;
 let batchManager: BatchManager<
   WebsiteEventPayload | WebsiteIdentifyPayload
 > | null = null;
@@ -100,6 +105,7 @@ let batchManager: BatchManager<
  */
 export function initWebsiteTracking(_options: WebsiteTrackingOptions) {
   options = _options;
+  distinctId = undefined;
 
   // Initialize batch manager
   batchManager = new BatchManager({
@@ -159,6 +165,7 @@ export async function trackPageView(
   const payload: WebsiteEventPayload = {
     website: options.websiteId,
     ...browserInfo,
+    ...(distinctId ? { distinctId } : {}),
     ...(url && { url }),
     ...(title && { title }),
   };
@@ -185,6 +192,7 @@ export async function reportWebsiteEvent(
   const payload: WebsiteEventPayload = {
     website: options.websiteId,
     ...browserInfo,
+    ...(distinctId ? { distinctId } : {}),
     name: eventName,
     data: eventData,
   };
@@ -210,10 +218,13 @@ export async function identifyWebsiteUser(
     return;
   }
 
+  distinctId = getWebsiteDistinctId(userInfo);
+
   const browserInfo = getBrowserInfo();
   const payload: WebsiteIdentifyPayload = {
     website: options.websiteId,
     ...browserInfo,
+    ...(distinctId ? { distinctId } : {}),
     data: userInfo,
   };
 

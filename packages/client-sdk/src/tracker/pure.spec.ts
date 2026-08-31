@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { initWebsiteTracking, reportWebsiteEvent } from './pure';
+import {
+  flushBatchQueue,
+  identifyWebsiteUser,
+  initWebsiteTracking,
+  reportWebsiteEvent,
+} from './pure';
 
 describe('initWebsiteTracking', () => {
   afterEach(() => {
@@ -26,5 +31,60 @@ describe('initWebsiteTracking', () => {
 
     await vi.advanceTimersByTimeAsync(1);
     expect(requestedUrls).toEqual(['https://example.com/api/website/batch']);
+  });
+
+  test('adds the identified user id to later events', async () => {
+    const requests: any[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      requests.push(JSON.parse(String(init.body)));
+      return new Response(null, { status: 200 });
+    });
+    initWebsiteTracking({
+      serverUrl: 'https://example.com',
+      websiteId: 'website-id',
+    });
+
+    await identifyWebsiteUser({ id: 'user-1' });
+    await reportWebsiteEvent('pageview');
+    await flushBatchQueue();
+
+    expect(requests[0].events[1].payload.distinctId).toBe('user-1');
+  });
+
+  test('supports the documented userId field', async () => {
+    const requests: any[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      requests.push(JSON.parse(String(init.body)));
+      return new Response(null, { status: 200 });
+    });
+    initWebsiteTracking({
+      serverUrl: 'https://example.com',
+      websiteId: 'website-id',
+    });
+
+    await identifyWebsiteUser({ userId: 'user-1' });
+    await reportWebsiteEvent('pageview');
+    await flushBatchQueue();
+
+    expect(requests[0].events[1].payload.distinctId).toBe('user-1');
+  });
+
+  test('falls back to session identity when identify omits a user id', async () => {
+    const requests: any[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      requests.push(JSON.parse(String(init.body)));
+      return new Response(null, { status: 200 });
+    });
+    initWebsiteTracking({
+      serverUrl: 'https://example.com',
+      websiteId: 'website-id',
+    });
+
+    await identifyWebsiteUser({ id: 'user-1' });
+    await identifyWebsiteUser({ plan: 'free' });
+    await reportWebsiteEvent('pageview');
+    await flushBatchQueue();
+
+    expect(requests[0].events[2].payload).not.toHaveProperty('distinctId');
   });
 });
