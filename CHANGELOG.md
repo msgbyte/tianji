@@ -1,5 +1,17 @@
 
 
+## [1.32.30](https://github.com/msgbyte/tianji/compare/v1.32.29...v1.32.30) (2026-08-31)
+
+### Features
+
+* **sdk:** track identified website users ([06b6725](https://github.com/msgbyte/tianji/commit/06b672523ef804d495f29d94cf435369f5f11928))
+* **website:** add distinct visitor identity storage ([c7c8bab](https://github.com/msgbyte/tianji/commit/c7c8bab12e39ba6686085bcb3cbc81fe6b2313b1))
+* **website:** support identified visitor analytics ([b0102d3](https://github.com/msgbyte/tianji/commit/b0102d31041614e862a1a822d1349a66b86fc250))
+
+### Others
+
+* **sdk:** bump client package versions ([1d78557](https://github.com/msgbyte/tianji/commit/1d785576d7ba270dae1f4e93ec128563c8161d08))
+
 ## [1.32.29](https://github.com/msgbyte/tianji/compare/v1.32.28...v1.32.29) (2026-08-30)
 
 ### Features
