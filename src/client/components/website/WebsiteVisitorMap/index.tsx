@@ -6,10 +6,6 @@ import loadable from '@loadable/component';
 import { Loading } from '../../Loading';
 import { useGlobalConfig } from '../../../hooks/useConfig';
 
-const VisitorLeafletMap = loadable(() =>
-  import('./VisitorLeafletMap').then((m) => m.VisitorLeafletMap)
-);
-
 const VisitorLarkMap = loadable(() =>
   import('./VisitorLarkMap').then((m) => m.VisitorLarkMap)
 );
@@ -22,7 +18,7 @@ function useMapType() {
   } else if (amapToken) {
     return 'Gaode';
   } else {
-    return 'Leaflet';
+    return 'MapLibre';
   }
 }
 
@@ -49,17 +45,13 @@ export const WebsiteVisitorMap: React.FC<WebsiteVisitorMapProps> = React.memo(
       return <Loading />;
     }
 
-    if (mapType === 'Mapbox' || mapType === 'Gaode') {
-      return (
-        <VisitorLarkMap
-          mapType={mapType}
-          data={data}
-          fullScreen={props.fullScreen}
-        />
-      );
-    }
-
-    return <VisitorLeafletMap data={data} fullScreen={props.fullScreen} />;
+    return (
+      <VisitorLarkMap
+        mapType={mapType}
+        data={data}
+        fullScreen={props.fullScreen}
+      />
+    );
   }
 );
 WebsiteVisitorMap.displayName = 'WebsiteVisitorMap';
