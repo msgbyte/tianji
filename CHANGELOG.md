@@ -1,5 +1,15 @@
 
 
+## [1.32.31](https://github.com/msgbyte/tianji/compare/v1.32.30...v1.32.31) (2026-09-01)
+
+### Features
+
+* **website:** migrate visitor map to OpenFreeMap ([aa88484](https://github.com/msgbyte/tianji/commit/aa88484b953479a6ca900bc0b94a90e0334343b4))
+
+### Others
+
+* **client:** use published tianji SDK packages ([18c15e8](https://github.com/msgbyte/tianji/commit/18c15e86c4a6a98ce268e3f6dcbc7a68a00c8eb5))
+
 ## [1.32.30](https://github.com/msgbyte/tianji/compare/v1.32.29...v1.32.30) (2026-08-31)
 
 ### Features
