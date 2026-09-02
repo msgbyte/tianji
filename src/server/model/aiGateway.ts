@@ -780,6 +780,14 @@ export function buildOpenAIHandler(
             completion_tokens: 0,
             total_tokens: 0,
           };
+          const toolCalls = new Map<
+            number,
+            {
+              id?: string;
+              type?: string;
+              function: { name: string; arguments: string };
+            }
+          >();
           let openrouterProviderName = ''; // only for open router, as for different openrouter provider, its will have different price.
           let responseModelName = modelName; // real model name which returned from remote. its will be some changed because of the model alias.
           for await (const chunk of stream) {
@@ -790,6 +798,36 @@ export function buildOpenAIHandler(
             const content =
               get(chunk, ['choices', 0, 'delta', 'content']) || '';
             outputContent += content;
+            const toolCallDeltas = get(chunk, [
+              'choices',
+              0,
+              'delta',
+              'tool_calls',
+            ]);
+            if (Array.isArray(toolCallDeltas)) {
+              for (const delta of toolCallDeltas) {
+                if (!Number.isInteger(delta?.index) || delta.index < 0) {
+                  continue;
+                }
+
+                const toolCall = toolCalls.get(delta.index) ?? {
+                  function: { name: '', arguments: '' },
+                };
+                toolCalls.set(delta.index, toolCall);
+                if (typeof delta.id === 'string') {
+                  toolCall.id = delta.id;
+                }
+                if (typeof delta.type === 'string') {
+                  toolCall.type = delta.type;
+                }
+                if (typeof delta.function?.name === 'string') {
+                  toolCall.function.name += delta.function.name;
+                }
+                if (typeof delta.function?.arguments === 'string') {
+                  toolCall.function.arguments += delta.function.arguments;
+                }
+              }
+            }
             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
 
             if (chunk.usage) {
@@ -882,6 +920,11 @@ export function buildOpenAIHandler(
                   content: outputContent,
                   usage,
                   provider: openrouterProviderName,
+                  ...(toolCalls.size > 0 && {
+                    tool_calls: Array.from(toolCalls.entries())
+                      .sort(([a], [b]) => a - b)
+                      .map(([, toolCall]) => toolCall),
+                  }),
                 },
               },
             });
@@ -1583,6 +1626,8 @@ export function buildAnthropicHandler(
         let responseCost: number | undefined;
         let usage: Record<string, any> | undefined;
         let streamUsage = getAIGatewayUsage(undefined);
+        const toolUseBlocks = new Map<number, Record<string, any>>();
+        const toolUseInputJson = new Map<number, string>();
 
         const body = upstreamResponse.body;
         if (!body) {
@@ -1592,6 +1637,7 @@ export function buildAnthropicHandler(
         const reader = body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let currentEventType = '';
 
         try {
           while (true) {
@@ -1610,7 +1656,6 @@ export function buildAnthropicHandler(
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
 
-            let currentEventType = '';
             for (const line of lines) {
               if (line.startsWith('event: ')) {
                 currentEventType = line.slice(7).trim();
@@ -1632,12 +1677,29 @@ export function buildAnthropicHandler(
                     cacheReadInputTokens = streamUsage.cacheReadInputToken;
                     cacheWriteInputTokens = streamUsage.cacheWriteInputToken;
                     responseCost = data.message.usage?.cost ?? responseCost;
+                  } else if (
+                    currentEventType === 'content_block_start' &&
+                    Number.isInteger(data.index) &&
+                    (data.content_block?.type === 'tool_use' ||
+                      data.content_block?.type === 'server_tool_use')
+                  ) {
+                    toolUseBlocks.set(data.index, data.content_block);
                   } else if (currentEventType === 'content_block_delta') {
                     if (ttft === -1) {
                       ttft = Date.now() - start;
                     }
                     if (data.delta?.type === 'text_delta') {
                       outputContent += data.delta.text || '';
+                    } else if (
+                      Number.isInteger(data.index) &&
+                      data.delta?.type === 'input_json_delta' &&
+                      typeof data.delta.partial_json === 'string'
+                    ) {
+                      toolUseInputJson.set(
+                        data.index,
+                        (toolUseInputJson.get(data.index) ?? '') +
+                          data.delta.partial_json
+                      );
                     }
                   } else if (currentEventType === 'message_delta') {
                     usage = {
@@ -1668,6 +1730,20 @@ export function buildAnthropicHandler(
         stopKeepAlive?.();
         res.end();
         const duration = Date.now() - start;
+        const toolUse = [...toolUseBlocks.entries()]
+          .sort(([a], [b]) => a - b)
+          .map(([index, block]) => {
+            const inputJson = toolUseInputJson.get(index);
+            if (!inputJson) {
+              return block;
+            }
+
+            try {
+              return { ...block, input: JSON.parse(inputJson) };
+            } catch {
+              return { ...block, input_json: inputJson };
+            }
+          });
 
         logP.then(async ({ id: logId }) => {
           const customPrice = options.isCustomRoute
@@ -1721,6 +1797,7 @@ export function buildAnthropicHandler(
                 usage: {
                   ...usage,
                 },
+                ...(toolUse.length > 0 && { tool_use: toolUse }),
               },
             },
           });
@@ -1793,6 +1870,7 @@ export function buildAnthropicHandler(
               responsePayload: {
                 content: outputContent,
                 usage,
+                response: responseBody,
               },
             },
           });

@@ -1,5 +1,6 @@
 import { AppRouterOutput } from '@/api/trpc';
 import { useTranslation } from '@i18next-toolkit/react';
+import { Image } from 'antd';
 import dayjs from 'dayjs';
 import React from 'react';
 import { CodeBlock } from '../CodeBlock';
@@ -29,6 +30,7 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
         : requestPayload?.tools !== undefined
           ? 'tools'
           : 'raw';
+    const messageImageUrls = getMessageImageUrls(requestPayload?.messages);
 
     return (
       <div>
@@ -95,6 +97,21 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
             {requestPayload?.messages !== undefined && (
               <TabsContent value="messages">
                 {renderJsonData(requestPayload.messages)}
+                {messageImageUrls.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {messageImageUrls.map((url, index) => (
+                      <Image
+                        key={index}
+                        src={url}
+                        alt="Message attachment"
+                        width={64}
+                        height={64}
+                        className="rounded object-cover"
+                        preview={{ destroyOnClose: true }}
+                      />
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             )}
             {requestPayload?.tools !== undefined && (
@@ -123,6 +140,24 @@ function renderJsonData(data: any) {
   } catch (err) {
     return <div className="text-red-500">{String(err)}</div>;
   }
+}
+
+function getMessageImageUrls(messages: any): string[] {
+  if (!Array.isArray(messages)) {
+    return [];
+  }
+
+  return messages.flatMap((message) =>
+    Array.isArray(message?.content)
+      ? message.content
+          .filter(
+            (part: any) =>
+              part?.type === 'image_url' &&
+              typeof part.image_url?.url === 'string'
+          )
+          .map((part: any) => part.image_url.url)
+      : []
+  );
 }
 
 function renderNullableTiming(value: number, suffix: string) {

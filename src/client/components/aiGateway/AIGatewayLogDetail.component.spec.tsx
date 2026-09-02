@@ -71,4 +71,67 @@ describe('AIGatewayLogDetail', () => {
     expect(screen.getByText(/Actual user input/)).toBeVisible();
     expect(screen.getByText(/"name": "read"/)).toBeVisible();
   });
+
+  test('previews image_url content below the messages payload', async () => {
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element) =>
+      getComputedStyle(element)
+    );
+
+    render(
+      <AIGatewayLogDetail
+        item={
+          {
+            id: 'log_2',
+            workspaceId: 'workspace_1',
+            gatewayId: 'gateway_1',
+            inputToken: 12,
+            outputToken: 34,
+            cacheReadInputToken: 0,
+            cacheWriteInputToken: 0,
+            stream: false,
+            modelName: 'custom',
+            modelProvider: 'openai',
+            status: 'Success',
+            duration: 234,
+            ttft: 56,
+            tpot: 78,
+            price: 0.001,
+            requestPayload: {
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { type: 'text', text: 'Inspect this image' },
+                    {
+                      type: 'image_url',
+                      image_url: { url: 'data:image/png;base64,aGVsbG8=' },
+                    },
+                  ],
+                },
+              ],
+            },
+            responsePayload: { content: 'Response text' },
+            userId: null,
+            createdAt: '2026-08-29T00:00:00.000Z',
+            updatedAt: '2026-08-29T00:00:01.000Z',
+          } as AIGatewayLogItem
+        }
+      />
+    );
+
+    const thumbnail = screen.getByRole('img', { name: 'Message attachment' });
+    expect(thumbnail).toHaveAttribute(
+      'src',
+      'data:image/png;base64,aGVsbG8='
+    );
+
+    await userEvent.click(thumbnail);
+    expect(document.querySelector('.ant-image-preview-img')).toHaveAttribute(
+      'src',
+      'data:image/png;base64,aGVsbG8='
+    );
+
+    vi.restoreAllMocks();
+  });
 });

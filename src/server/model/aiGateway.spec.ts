@@ -1,9 +1,10 @@
 import { AIGatewayLogsStatus } from '@prisma/client';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   AI_GATEWAY_STREAM_PING_COMMENT,
   AI_GATEWAY_STREAM_PING_INTERVAL_MS,
   buildAnthropicHandler,
+  buildOpenAIHandler,
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
   getAIGatewayErrorStatusCode,
@@ -21,6 +22,25 @@ import {
 } from './aiGateway.js';
 import { aiGatewayRouter } from '../router/aiGateway.js';
 import { prisma } from './_client.js';
+import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
+
+const { openAIChatCreateMock } = vi.hoisted(() => ({
+  openAIChatCreateMock: vi.fn(),
+}));
+
+vi.mock('openai', () => ({
+  default: class {
+    chat = {
+      completions: {
+        create: openAIChatCreateMock,
+      },
+    };
+  },
+}));
+
+vi.mock('./aiGateway/quotaAlert.js', () => ({
+  checkQuotaAlert: vi.fn(() => Promise.resolve()),
+}));
 
 vi.mock('./_client.js', () => ({
   prisma: {
@@ -33,6 +53,10 @@ vi.mock('./_client.js', () => ({
     },
   },
 }));
+
+beforeEach(() => {
+  vi.mocked(checkQuotaAlert).mockResolvedValue();
+});
 
 afterEach(() => {
   vi.useRealTimers();
@@ -306,6 +330,356 @@ describe('calcAIGatewayTpot', () => {
 });
 
 describe('AI Gateway stream keepalive', () => {
+  test('stores reconstructed OpenAI stream tool calls in the response payload', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+    openAIChatCreateMock.mockResolvedValue(
+      (async function* () {
+        yield {
+          model: 'gemini-2.5-pro',
+          provider: 'Google',
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    id: 'call_weather',
+                    type: 'function',
+                    function: {
+                      name: 'get_weather',
+                      arguments: '{"city":"',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        };
+        yield {
+          model: 'gemini-2.5-pro',
+          provider: 'Google',
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    function: { arguments: '上海"}' },
+                  },
+                  {
+                    index: 1,
+                    id: 'call_time',
+                    type: 'function',
+                    function: {
+                      name: 'get_time',
+                      arguments: '{"zone":"',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        };
+        yield {
+          model: 'gemini-2.5-pro',
+          provider: 'Google',
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 1,
+                    function: { arguments: 'Asia/Shanghai"}' },
+                  },
+                  {
+                    index: Number.MAX_SAFE_INTEGER,
+                    id: 'call_search',
+                    type: 'function',
+                    function: {
+                      name: 'web_search',
+                      arguments: '{"query":"tianji"}',
+                    },
+                  },
+                ],
+              },
+              finish_reason: 'tool_calls',
+            },
+          ],
+          usage: {
+            prompt_tokens: 10,
+            completion_tokens: 5,
+            total_tokens: 15,
+          },
+        };
+      })()
+    );
+
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { authorization: 'Bearer sk-test' },
+      body: {
+        model: 'gemini-2.5-pro',
+        messages: [{ role: 'user', content: 'check weather and time' }],
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      flush: vi.fn(),
+      end: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildOpenAIHandler({ modelProvider: 'openai' });
+    await handler(req as any, res as any, vi.fn());
+
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              content: '',
+              provider: 'Google',
+              tool_calls: [
+                {
+                  id: 'call_weather',
+                  type: 'function',
+                  function: {
+                    name: 'get_weather',
+                    arguments: '{"city":"上海"}',
+                  },
+                },
+                {
+                  id: 'call_time',
+                  type: 'function',
+                  function: {
+                    name: 'get_time',
+                    arguments: '{"zone":"Asia/Shanghai"}',
+                  },
+                },
+                {
+                  id: 'call_search',
+                  type: 'function',
+                  function: {
+                    name: 'web_search',
+                    arguments: '{"query":"tianji"}',
+                  },
+                },
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
+  test('stores reconstructed Anthropic stream tool use when event and data arrive separately', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+    const event = (type: string, data: unknown) => [
+      `event: ${type}\n`,
+      `data: ${JSON.stringify(data)}\n\n`,
+    ];
+    const chunks = [
+      ...event('message_start', {
+        message: {
+          model: 'claude-3-7-sonnet-latest',
+          usage: { input_tokens: 10, output_tokens: 0 },
+        },
+      }),
+      ...event('content_block_start', {
+        index: 0,
+        content_block: {
+          type: 'tool_use',
+          id: 'toolu_weather',
+          name: 'get_weather',
+          input: {},
+        },
+      }),
+      ...event('content_block_delta', {
+        index: 0,
+        delta: {
+          type: 'input_json_delta',
+          partial_json: '{"city":"',
+        },
+      }),
+      ...event('content_block_delta', {
+        index: 0,
+        delta: {
+          type: 'input_json_delta',
+          partial_json: '上海"}',
+        },
+      }),
+      ...event('content_block_start', {
+        index: 1,
+        content_block: {
+          type: 'server_tool_use',
+          id: 'srvtoolu_search',
+          name: 'web_search',
+          input: {},
+        },
+      }),
+      ...event('content_block_delta', {
+        index: 1,
+        delta: {
+          type: 'input_json_delta',
+          partial_json: '{"query":"tianji"}',
+        },
+      }),
+      ...event('message_delta', {
+        usage: { output_tokens: 4 },
+      }),
+    ];
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            const encoder = new TextEncoder();
+            chunks.forEach((chunk) => controller.enqueue(encoder.encode(chunk)));
+            controller.close();
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'text/event-stream' } }
+      )
+    );
+
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { 'x-api-key': 'sk-test' },
+      body: {
+        model: 'claude-3-7-sonnet-latest',
+        messages: [{ role: 'user', content: 'check weather' }],
+        max_tokens: 64,
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      flush: vi.fn(),
+      end: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+      headersSent: true,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: fetchMock as typeof fetch,
+    });
+    await handler(req as any, res as any, vi.fn());
+
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              tool_use: [
+                {
+                  type: 'tool_use',
+                  id: 'toolu_weather',
+                  name: 'get_weather',
+                  input: { city: '上海' },
+                },
+                {
+                  type: 'server_tool_use',
+                  id: 'srvtoolu_search',
+                  name: 'web_search',
+                  input: { query: 'tianji' },
+                },
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
+  test('stores the complete non-streaming Anthropic response payload', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+    const responseBody = {
+      id: 'msg_1',
+      type: 'message',
+      model: 'claude-3-7-sonnet-latest',
+      role: 'assistant',
+      content: [
+        { type: 'text', text: 'I will check.' },
+        {
+          type: 'tool_use',
+          id: 'toolu_weather',
+          name: 'get_weather',
+          input: { city: '上海' },
+        },
+      ],
+      stop_reason: 'tool_use',
+      usage: { input_tokens: 10, output_tokens: 8 },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(Response.json(responseBody, { status: 200 }));
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { 'x-api-key': 'sk-test' },
+      body: {
+        model: 'claude-3-7-sonnet-latest',
+        messages: [{ role: 'user', content: 'check weather' }],
+        max_tokens: 64,
+        stream: false,
+      },
+    };
+    const res = {
+      json: vi.fn(),
+      status: vi.fn(),
+      setHeader: vi.fn(),
+      end: vi.fn(),
+      headersSent: false,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: fetchMock as typeof fetch,
+    });
+    await handler(req as any, res as any, vi.fn());
+
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: {
+              content: 'I will check.',
+              usage: responseBody.usage,
+              response: responseBody,
+            },
+          }),
+        })
+      )
+    );
+  });
+
   test('uses a conservative ping interval below common proxy read timeouts', () => {
     expect(AI_GATEWAY_STREAM_PING_INTERVAL_MS).toBeLessThanOrEqual(30_000);
   });
