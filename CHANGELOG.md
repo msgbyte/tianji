@@ -1,5 +1,11 @@
 
 
+## [1.32.32](https://github.com/msgbyte/tianji/compare/v1.32.31...v1.32.32) (2026-09-02)
+
+### Features
+
+* **ai-gateway:** expose tool calls and image previews ([509e41f](https://github.com/msgbyte/tianji/commit/509e41fcffc8d8f3099bb5d5159854c09ee35759))
+
 ## [1.32.31](https://github.com/msgbyte/tianji/compare/v1.32.30...v1.32.31) (2026-09-01)
 
 ### Features
