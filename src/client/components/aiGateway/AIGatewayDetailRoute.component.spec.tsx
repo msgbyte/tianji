@@ -19,6 +19,9 @@ vi.mock('@tanstack/react-router', () => ({
       ...options,
       useParams: () => ({ gatewayId: 'gateway_1' }),
     }),
+  Link: ({ children, to, params }: any) => (
+    <a href={to.replace('$gatewayId', params.gatewayId)}>{children}</a>
+  ),
   useNavigate: () => mocks.navigate,
 }));
 
@@ -86,6 +89,7 @@ describe('AI Gateway detail route actions', () => {
 
     expect(screen.getByText('Code example')).toBeInTheDocument();
     expect(screen.getByLabelText('AI Gateway actions')).toBeInTheDocument();
+    expect(mocks.actionsMenuProps.current.canManage).toBe(true);
 
     act(() => mocks.actionsMenuProps.current.onEdit());
     expect(mocks.navigate).toHaveBeenCalledWith({
@@ -113,15 +117,14 @@ describe('AI Gateway detail route actions', () => {
     );
   });
 
-  test('shows Code Example but hides the actions menu from non-administrators', () => {
+  test('keeps the actions menu available to non-administrators', () => {
     mocks.hasAdminPermission = false;
     const Component = (Route as any).component;
 
     render(<Component />);
 
     expect(screen.getByText('Code example')).toBeInTheDocument();
-    expect(
-      screen.queryByLabelText('AI Gateway actions')
-    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText('AI Gateway actions')).toBeInTheDocument();
+    expect(mocks.actionsMenuProps.current.canManage).toBe(false);
   });
 });

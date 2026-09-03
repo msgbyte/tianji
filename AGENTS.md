@@ -8,6 +8,8 @@
 - Prefer reusing existing hooks, components, utilities, and other project assets instead of creating new implementations.
 
 ## Translation Files
+All user-facing copy must be written in English and wrapped with the project's `t()` translation function. Do not add Chinese copy directly in source code.
+
 When generating code, **do not modify** any JSON files in `src/client/public/locales`. These translations are managed separately.
 
 ## Testing Instructions
