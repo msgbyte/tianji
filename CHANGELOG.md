@@ -1,5 +1,14 @@
 
 
+## [1.32.33](https://github.com/msgbyte/tianji/compare/v1.32.32...v1.32.33) (2026-09-03)
+
+### Features
+
+* **ai-gateway:** forward session id upstream ([08f40da](https://github.com/msgbyte/tianji/commit/08f40da6d094336e7c09d489622d2f627097ce0f))
+* **ai-gateway:** improve log payload views ([e3dd453](https://github.com/msgbyte/tianji/commit/e3dd453a639f0dcb1192109819539dc22e2f567d))
+* **aiGateway:** add live log observer ([#289](https://github.com/msgbyte/tianji/issues/289)) ([e9eaef5](https://github.com/msgbyte/tianji/commit/e9eaef5a42c7813149aa85f15683ca7db75e5f77))
+* **audit-log:** add workspace mutation auditing ([#288](https://github.com/msgbyte/tianji/issues/288)) ([b58fb86](https://github.com/msgbyte/tianji/commit/b58fb86de96d7277809b9171bcaeda9c11115e46))
+
 ## [1.32.32](https://github.com/msgbyte/tianji/compare/v1.32.31...v1.32.32) (2026-09-02)
 
 ### Features
