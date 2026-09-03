@@ -240,7 +240,7 @@ export const monitorRouter = router({
         },
       });
 
-      createAuditLog({
+      await createAuditLog({
         workspaceId,
         relatedId: monitorId,
         relatedType: 'Monitor',
@@ -314,22 +314,21 @@ export const monitorRouter = router({
       const user = ctx.user;
 
       try {
-        // Create audit log for manual trigger
-        createAuditLog({
-          workspaceId: workspaceId,
-          relatedId: monitorId,
-          relatedType: 'Monitor',
-          content: `Monitor(id: ${monitorId}) manual trigger by ${String(
-            user.username
-          )}(${String(user.id)})`,
-        });
-
         const runner = await monitorManager.ensureRunner(
           workspaceId,
           monitorId
         );
 
         await runner.manualTrigger();
+
+        await createAuditLog({
+          workspaceId,
+          relatedId: monitorId,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitorId}) manual trigger by ${String(
+            user.username
+          )}(${String(user.id)})`,
+        });
       } catch (err) {
         const errorMessage = get(err, 'message', String(err));
         logger.error(
@@ -338,7 +337,7 @@ export const monitorRouter = router({
         );
 
         // Create audit log for error
-        createAuditLog({
+        await createAuditLog({
           workspaceId: workspaceId,
           relatedId: monitorId,
           relatedType: 'Monitor',

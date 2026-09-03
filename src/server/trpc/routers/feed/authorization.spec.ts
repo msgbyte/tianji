@@ -16,6 +16,9 @@ const mocks = vi.hoisted(() => {
     fetchDataByCursor: vi.fn(),
     feedStateResolve: vi.fn(),
     prisma: {
+      workspaceAuditLog: {
+        create: vi.fn(),
+      },
       feedChannel: {
         findFirst: vi.fn(),
         findMany: vi.fn(),

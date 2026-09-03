@@ -806,13 +806,13 @@ model WorkspaceDailyUsage {
 
 model WorkspaceAuditLog {
   id          String                 @id @default(cuid()) @db.VarChar(30)
-  workspaceId String                 @db.VarChar(30)
+  workspaceId String?                @db.VarChar(30)
   content     String
   relatedId   String?
   relatedType WorkspaceAuditLogType?
   createdAt   DateTime               @default(now()) @db.Timestamptz(6)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
   @@index([createdAt])
 }

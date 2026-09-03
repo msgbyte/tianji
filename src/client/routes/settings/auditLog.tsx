@@ -3,12 +3,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { useMemo, useRef } from 'react';
-import {
-  defaultErrorHandler,
-  defaultSuccessHandler,
-  trpc,
-} from '../../api/trpc';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
+import { trpc } from '../../api/trpc';
+import { useCurrentWorkspaceId } from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
 import { last } from 'lodash-es';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -16,9 +12,6 @@ import { useWatch } from '@/hooks/useWatch';
 import dayjs from 'dayjs';
 import { ColorTag } from '@/components/ColorTag';
 import { SimpleVirtualList } from '@/components/SimpleVirtualList';
-import { Button } from '@/components/ui/button';
-import { LuTrash2 } from 'react-icons/lu';
-import { AlertConfirm } from '@/components/AlertConfirm';
 
 export const Route = createFileRoute('/settings/auditLog')({
   beforeLoad: routeAuthBeforeLoad,
@@ -29,9 +22,8 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const parentRef = useRef<HTMLDivElement>(null);
-  const hasAdminPermission = useHasAdminPermission();
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
     trpc.auditLog.fetchByCursor.useInfiniteQuery(
       {
         workspaceId,
@@ -40,11 +32,6 @@ function PageComponent() {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       }
     );
-
-  const clearMutation = trpc.auditLog.clear.useMutation({
-    onSuccess: defaultSuccessHandler,
-    onError: defaultErrorHandler,
-  });
 
   const allData = useMemo(() => {
     if (!data) {
@@ -82,23 +69,7 @@ function PageComponent() {
   return (
     <CommonWrapper
       header={
-        <CommonHeader
-          title={t('Audit Log')}
-          actions={
-            <>
-              {hasAdminPermission && (
-                <AlertConfirm
-                  onConfirm={() => {
-                    clearMutation.mutateAsync({ workspaceId });
-                    refetch();
-                  }}
-                >
-                  <Button variant="outline" size="icon" Icon={LuTrash2} />
-                </AlertConfirm>
-              )}
-            </>
-          }
-        />
+        <CommonHeader title={t('Audit Log')} />
       }
     >
       <div className="h-full overflow-hidden p-4">

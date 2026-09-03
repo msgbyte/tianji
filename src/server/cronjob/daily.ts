@@ -232,14 +232,14 @@ export async function clearMonitorEventDaily() {
 }
 
 /**
- * Clear over 4 week data
+ * Clear expired audit logs
  */
 export async function clearAuditLogDaily() {
   if (env.disableAutoClear) {
     return;
   }
 
-  const date = dayjs().subtract(4, 'weeks').toDate();
+  const date = dayjs().subtract(env.auditLogRetentionDays, 'days').toDate();
   logger.info(
     '[clearAuditLogDaily] Start clear log data before:',
     date.toISOString()

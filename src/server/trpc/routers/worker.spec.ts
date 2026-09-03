@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => {
     findWorkerRevisions: vi.fn(),
     upsertWorker: vi.fn(),
     createAuditLog: vi.fn(),
+    createWorkspaceMutationAuditLog: vi.fn(),
     execWorker: vi.fn(),
     execStoredWorker: vi.fn(),
     resolveWorkerEnvironmentForExecution: vi.fn(),
@@ -75,6 +76,7 @@ vi.mock('../../model/_client.js', () => ({
 
 vi.mock('../../model/auditLog.js', () => ({
   createAuditLog: mocks.createAuditLog,
+  createWorkspaceMutationAuditLog: mocks.createWorkspaceMutationAuditLog,
 }));
 
 vi.mock('../../model/worker/index.js', () => ({

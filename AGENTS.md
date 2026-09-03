@@ -12,6 +12,10 @@ All user-facing copy must be written in English and wrapped with the project's `
 
 When generating code, **do not modify** any JSON files in `src/client/public/locales`. These translations are managed separately.
 
+## Audit Logs
+- Record every successful authenticated persistent create, update, and delete operation, plus permission and API key changes, in the workspace audit log.
+- Prefer the shared audited workspace mutation procedures. If an endpoint bypasses them, write the audit log explicitly after success. Include the actor, action, target, and redacted changed fields; never persist secrets.
+
 ## Testing Instructions
 - CI configuration is under `.github/workflows`.
 - Run `pnpm check:type` and `pnpm build` to mirror CI checks.

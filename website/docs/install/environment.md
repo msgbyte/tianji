@@ -16,6 +16,7 @@ Tianji supports various environment variables to customize its behavior. You can
 | `ALLOW_OPENAPI` | Enable OpenAPI access | `true` | `false` |
 | `WEBSITE_ID` | Website identifier | - | `your-website-id` |
 | `DISABLE_AUTO_CLEAR` | Disable automatic data cleanup | `false` | `true` |
+| `AUDIT_LOG_RETENTION_DAYS` | Number of days to retain audit logs | `30` | `90` |
 | `DISABLE_ACCESS_LOGS` | Disable access logs | `false` | `true` |
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
 | `ALPHA_MODE` | Enable alpha features | `false` | `true` |
