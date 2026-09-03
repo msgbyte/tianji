@@ -98,6 +98,7 @@ import { Route as FeedPublicShareIdImport } from './routes/feed_/public/$shareId
 import { Route as FeedChannelIdEditImport } from './routes/feed/$channelId/edit'
 import { Route as ApplicationApplicationIdEditImport } from './routes/application/$applicationId/edit'
 import { Route as AiRouterRouterIdEditImport } from './routes/aiRouter/$routerId/edit'
+import { Route as AiGatewayGatewayIdObserverImport } from './routes/aiGateway_/$gatewayId/observer'
 import { Route as AiGatewayGatewayIdEditImport } from './routes/aiGateway/$gatewayId/edit'
 import { Route as WorkerModulesModuleIdIndexImport } from './routes/worker/modules/$moduleId/index'
 import { Route as InsightsWarehouseConnectionsIndexImport } from './routes/insights/warehouse/connections/index'
@@ -547,6 +548,13 @@ const AiRouterRouterIdEditRoute = AiRouterRouterIdEditImport.update({
   getParentRoute: () => AiRouterRoute,
 } as any)
 
+const AiGatewayGatewayIdObserverRoute = AiGatewayGatewayIdObserverImport.update(
+  {
+    path: '/aiGateway/$gatewayId/observer',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
 const AiGatewayGatewayIdEditRoute = AiGatewayGatewayIdEditImport.update({
   path: '/$gatewayId/edit',
   getParentRoute: () => AiGatewayRoute,
@@ -825,6 +833,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiGatewayGatewayIdEditImport
       parentRoute: typeof AiGatewayImport
     }
+    '/aiGateway/$gatewayId/observer': {
+      preLoaderRoute: typeof AiGatewayGatewayIdObserverImport
+      parentRoute: typeof rootRoute
+    }
     '/aiRouter/$routerId/edit': {
       preLoaderRoute: typeof AiRouterRouterIdEditImport
       parentRoute: typeof AiRouterImport
@@ -1074,6 +1086,7 @@ export const routeTree = rootRoute.addChildren([
   FeedPlaygroundRoute,
   PSlugRoute,
   StatusSlugRoute,
+  AiGatewayGatewayIdObserverRoute,
   FeedPublicShareIdRoute,
   InvitationAcceptTokenRoute,
   PageSlugEditorRoute,

@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 import { AIGatewayAnalytics } from '@/components/aiGateway/AIGatewayAnalytics';
@@ -18,7 +18,6 @@ import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { useNavigate } from '@tanstack/react-router';
 import { LuRefreshCw } from 'react-icons/lu';
 import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
@@ -93,14 +92,13 @@ function PageComponent() {
             <div className="space-x-2">
               <AIGatewayCodeExampleBtn gatewayId={gatewayId} />
 
-              {hasAdminPermission && (
-                <AIGatewayActionsMenu
-                  gatewayId={gatewayId}
-                  gatewayName={gateway.name}
-                  onEdit={handleEditGateway}
-                  onDelete={handleDeleteGateway}
-                />
-              )}
+              <AIGatewayActionsMenu
+                gatewayId={gatewayId}
+                gatewayName={gateway.name}
+                canManage={hasAdminPermission}
+                onEdit={handleEditGateway}
+                onDelete={handleDeleteGateway}
+              />
             </div>
           }
         />

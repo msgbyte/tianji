@@ -16,6 +16,23 @@ vi.mock('@i18next-toolkit/react', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: React.forwardRef(
+    (
+      { children, to, params, ...props }: any,
+      ref: React.ForwardedRef<HTMLAnchorElement>
+    ) => (
+      <a
+        ref={ref}
+        href={to.replace('$gatewayId', params.gatewayId)}
+        {...props}
+      >
+        {children}
+      </a>
+    )
+  ),
+}));
+
 vi.mock('@/components/aiGateway/AIGatewayDuplicateDialog', () => ({
   AIGatewayDuplicateDialog: (props: unknown) => {
     mocks.duplicateDialogProps.current = props;
@@ -58,11 +75,12 @@ beforeEach(() => {
   mocks.useRealAlertConfirm = false;
 });
 
-function renderMenu() {
+function renderMenu(canManage = true) {
   render(
     <AIGatewayActionsMenu
       gatewayId="gateway_1"
       gatewayName="Primary Gateway"
+      canManage={canManage}
       onEdit={mocks.onEdit}
       onDelete={mocks.onDelete}
     />
@@ -74,12 +92,16 @@ async function openMenu() {
 }
 
 describe('AIGatewayActionsMenu', () => {
-  test('shows Edit, Duplicate, and Delete in order', async () => {
+  test('shows Log Observer before the management actions', async () => {
     renderMenu();
     await openMenu();
 
-    const actions = ['Edit', 'Duplicate', 'Delete'].map((name) =>
+    const actions = ['Log Observer', 'Edit', 'Duplicate', 'Delete'].map((name) =>
       screen.getByText(name)
+    );
+    expect(screen.getByRole('menuitem', { name: 'Log Observer' })).toHaveAttribute(
+      'href',
+      '/aiGateway/gateway_1/observer'
     );
     expect(actions[0].compareDocumentPosition(actions[1])).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
@@ -87,6 +109,21 @@ describe('AIGatewayActionsMenu', () => {
     expect(actions[1].compareDocumentPosition(actions[2])).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
+    expect(actions[2].compareDocumentPosition(actions[3])).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+  });
+
+  test('shows only Log Observer to users without management permission', async () => {
+    renderMenu(false);
+    await openMenu();
+
+    expect(
+      screen.getByRole('menuitem', { name: 'Log Observer' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Edit')).not.toBeInTheDocument();
+    expect(screen.queryByText('Duplicate')).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
   });
 
   test('invokes edit from the menu', async () => {

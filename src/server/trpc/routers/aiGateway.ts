@@ -417,6 +417,8 @@ export const aiGatewayRouter = router({
         cursor: z.string().optional(),
         limit: z.number().int().min(1).max(100).default(20),
         logId: z.string().optional(),
+        openedAt: z.date().optional(),
+        pendingIds: z.array(z.string()).optional(),
       })
     )
     .output(
@@ -433,7 +435,47 @@ export const aiGatewayRouter = router({
       )
     )
     .query(async ({ input }) => {
-      const { workspaceId, gatewayId, cursor, limit, logId } = input;
+      const {
+        workspaceId,
+        gatewayId,
+        cursor,
+        limit,
+        logId,
+        openedAt,
+        pendingIds,
+      } = input;
+
+      if (openedAt) {
+        const where = {
+          workspaceId,
+          gatewayId,
+          createdAt: { gte: openedAt },
+        };
+        const [freshItems, pendingItems] = await Promise.all([
+          prisma.aIGatewayLogs.findMany({
+            where,
+            take: limit + 1,
+            cursor: cursor ? { id: cursor } : undefined,
+            orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+          }),
+          pendingIds?.length
+            ? prisma.aIGatewayLogs.findMany({
+                where: { ...where, id: { in: pendingIds } },
+              })
+            : [],
+        ]);
+        const nextItem = freshItems.length > limit ? freshItems.pop() : undefined;
+        const items = new Map(freshItems.map((item) => [item.id, item]));
+        pendingItems.forEach((item) => items.set(item.id, item));
+
+        return {
+          items: Array.from(items.values()).map((item) => ({
+            ...item,
+            price: Number(item.price),
+          })) as z.infer<typeof AIGatewayLogsModelSchema>[],
+          nextCursor: nextItem?.id,
+        };
+      }
 
       const { items, nextCursor } = await fetchDataByCursor(
         prisma.aIGatewayLogs,

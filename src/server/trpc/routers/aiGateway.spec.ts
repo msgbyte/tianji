@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => {
     getWorkspaceUser: vi.fn(async () => ({ role: 'owner' })),
     promStartTimer: vi.fn(() => endRequest),
     findGateway: vi.fn(),
+    findLogs: vi.fn(),
     createGateway: vi.fn(),
     testConnection: vi.fn(),
   };
@@ -42,6 +43,9 @@ vi.mock('../../model/_client.js', () => ({
     aIGateway: {
       findFirst: mocks.findGateway,
       create: mocks.createGateway,
+    },
+    aIGatewayLogs: {
+      findMany: mocks.findLogs,
     },
   },
 }));
@@ -267,3 +271,76 @@ describe('aiGatewayRouter.duplicate', () => {
     expect(mocks.createGateway).not.toHaveBeenCalled();
   });
 });
+
+describe('aiGatewayRouter.logs observer mode', () => {
+  test('filters from open time, paginates chronologically, and refreshes pending rows', async () => {
+    const workspaceId = createId();
+    const openedAt = new Date('2026-09-03T08:00:00Z');
+    const freshLogs = Array.from({ length: 101 }, (_, index) =>
+      createLog(`log_${index}`, new Date(openedAt.getTime() + index))
+    );
+    const completedPendingLog = createLog(
+      'pending_1',
+      new Date(openedAt.getTime() + 1),
+      'Success'
+    );
+    mocks.findLogs
+      .mockResolvedValueOnce(freshLogs)
+      .mockResolvedValueOnce([completedPendingLog]);
+    const caller = await createCaller();
+
+    const result = await caller.logs({
+      workspaceId,
+      gatewayId: 'gateway_1',
+      openedAt,
+      pendingIds: ['pending_1'],
+      limit: 100,
+    });
+
+    expect(mocks.findLogs).toHaveBeenNthCalledWith(1, {
+      where: {
+        workspaceId,
+        gatewayId: 'gateway_1',
+        createdAt: { gte: openedAt },
+      },
+      take: 101,
+      cursor: undefined,
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    });
+    expect(mocks.findLogs).toHaveBeenNthCalledWith(2, {
+      where: {
+        workspaceId,
+        gatewayId: 'gateway_1',
+        createdAt: { gte: openedAt },
+        id: { in: ['pending_1'] },
+      },
+    });
+    expect(result.nextCursor).toBe('log_100');
+    expect(result.items).toContainEqual(completedPendingLog);
+  });
+});
+
+function createLog(id: string, createdAt: Date, status = 'Pending') {
+  return {
+    id,
+    workspaceId: 'workspace_1',
+    gatewayId: 'gateway_1',
+    inputToken: 0,
+    outputToken: 0,
+    cacheReadInputToken: 0,
+    cacheWriteInputToken: 0,
+    stream: true,
+    modelName: 'gpt-5',
+    modelProvider: 'openai',
+    status,
+    duration: 0,
+    ttft: -1,
+    tpot: -1,
+    price: 0,
+    requestPayload: {},
+    responsePayload: {},
+    userId: null,
+    createdAt,
+    updatedAt: createdAt,
+  };
+}
