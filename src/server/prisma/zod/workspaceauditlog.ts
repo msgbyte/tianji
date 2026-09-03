@@ -5,7 +5,7 @@ import { CompleteWorkspace, RelatedWorkspaceModelSchema } from "./index.js"
 
 export const WorkspaceAuditLogModelSchema = z.object({
   id: z.string(),
-  workspaceId: z.string(),
+  workspaceId: z.string().nullish(),
   content: z.string(),
   relatedId: z.string().nullish(),
   relatedType: z.nativeEnum(WorkspaceAuditLogType).nullish(),
@@ -13,7 +13,7 @@ export const WorkspaceAuditLogModelSchema = z.object({
 })
 
 export interface CompleteWorkspaceAuditLog extends z.infer<typeof WorkspaceAuditLogModelSchema> {
-  workspace: CompleteWorkspace
+  workspace?: CompleteWorkspace | null
 }
 
 /**
@@ -22,5 +22,5 @@ export interface CompleteWorkspaceAuditLog extends z.infer<typeof WorkspaceAudit
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
 export const RelatedWorkspaceAuditLogModelSchema: z.ZodSchema<CompleteWorkspaceAuditLog> = z.lazy(() => WorkspaceAuditLogModelSchema.extend({
-  workspace: RelatedWorkspaceModelSchema,
+  workspace: RelatedWorkspaceModelSchema.nullish(),
 }))

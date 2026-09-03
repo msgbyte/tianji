@@ -10,6 +10,9 @@ const jwtSecret =
     : process.env.JWT_SECRET;
 
 const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+const configuredAuditLogRetentionDays = Number(
+  process.env.AUDIT_LOG_RETENTION_DAYS
+);
 
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
@@ -175,6 +178,11 @@ export const env = {
   ),
   customTrackerScriptName: process.env.CUSTOM_TRACKER_SCRIPT_NAME,
   disableAutoClear: checkEnvTrusty(process.env.DISABLE_AUTO_CLEAR), // disable auto clear old data cronjob
+  auditLogRetentionDays:
+    Number.isSafeInteger(configuredAuditLogRetentionDays) &&
+    configuredAuditLogRetentionDays > 0
+      ? configuredAuditLogRetentionDays
+      : 30,
   disableAccessLogs: checkEnvTrusty(process.env.DISABLE_ACCESS_LOGS), // disable show access logs
   debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
   debugInsights: checkEnvTrusty(process.env.DEBUG_INSIGHTS) || isDev, // debug insights

@@ -39,6 +39,9 @@ vi.mock('../../utils/prometheus/client.js', () => ({
 
 vi.mock('../../model/_client.js', () => ({
   prisma: {
+    workspaceAuditLog: {
+      create: vi.fn(),
+    },
     aIGateway: {
       findFirst: mocks.findGateway,
       create: mocks.createGateway,

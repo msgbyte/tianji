@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   autoDisableContinuousDownMonitorDaily,
   clearAIRouterLogsDaily,
+  clearAuditLogDaily,
   dailyUpdateApplicationStoreInfo,
 } from './daily.js';
 import { prisma } from '../model/_client.js';
@@ -10,10 +11,14 @@ import { monitorManager } from '../model/monitor/index.js';
 
 const originalAiGatewayLogClearDays = env.aiGatewayLogClearDays;
 const originalAutoDisableMonitorDays = env.autoDisableMonitorDays;
+const originalDisableAutoClear = env.disableAutoClear;
+const originalAuditLogRetentionDays = env.auditLogRetentionDays;
 
 afterEach(() => {
   env.aiGatewayLogClearDays = originalAiGatewayLogClearDays;
   env.autoDisableMonitorDays = originalAutoDisableMonitorDays;
+  env.disableAutoClear = originalDisableAutoClear;
+  env.auditLogRetentionDays = originalAuditLogRetentionDays;
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
@@ -70,6 +75,28 @@ describe('clearAIRouterLogsDaily', () => {
       where: {
         createdAt: {
           lte: new Date('2026-06-06T00:00:00.000Z'),
+        },
+      },
+    });
+  });
+});
+
+describe('clearAuditLogDaily', () => {
+  test('deletes audit logs older than the configured retention days', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-13T00:00:00.000Z'));
+    env.disableAutoClear = false;
+    env.auditLogRetentionDays = 45;
+    const deleteMany = vi
+      .spyOn(prisma.workspaceAuditLog, 'deleteMany')
+      .mockResolvedValue({ count: 2 });
+
+    await clearAuditLogDaily();
+
+    expect(deleteMany).toHaveBeenCalledWith({
+      where: {
+        createdAt: {
+          lte: new Date('2026-04-29T00:00:00.000Z'),
         },
       },
     });

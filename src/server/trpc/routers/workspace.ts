@@ -32,7 +32,10 @@ import {
   clearWorkspaceSettingsCache,
   getWorkspaceServiceCount,
 } from '../../model/workspace.js';
-import { createAuditLog } from '../../model/auditLog.js';
+import {
+  createAuditLog,
+  createWorkspaceMutationAuditLog,
+} from '../../model/auditLog.js';
 import {
   acceptInvitation,
   createWorkspaceInvitation,
@@ -97,6 +100,17 @@ export const workspaceRouter = router({
         });
       });
 
+      if (userInfo.currentWorkspaceId) {
+        await createWorkspaceMutationAuditLog({
+          workspaceId: userInfo.currentWorkspaceId,
+          path: 'workspace.create',
+          input,
+          actor: ctx.user,
+          relatedId: userInfo.currentWorkspaceId,
+          relatedType: 'Workspace',
+        });
+      }
+
       return userInfo;
     }),
   switch: protectProedure
@@ -140,6 +154,15 @@ export const workspaceRouter = router({
           currentWorkspaceId: targetWorkspace.id,
         },
         select: createUserSelect,
+      });
+
+      await createWorkspaceMutationAuditLog({
+        workspaceId,
+        path: 'workspace.switch',
+        input: { currentWorkspaceId: workspaceId },
+        actor: ctx.user,
+        relatedId: userId,
+        relatedType: 'User',
       });
 
       return userInfo;
@@ -190,12 +213,6 @@ export const workspaceRouter = router({
       const { workspaceId } = input;
       const userId = ctx.user.id;
 
-      createAuditLog({
-        workspaceId,
-        relatedType: 'Workspace',
-        content: `Workspace deleted by ${String(ctx.user.username)}(${userId})`,
-      });
-
       const monitors = await prisma.monitor.findMany({
         where: {
           workspaceId,
@@ -209,17 +226,27 @@ export const workspaceRouter = router({
         monitors.map((m) => monitorManager.delete(workspaceId, m.id))
       );
 
-      await prisma.workspace.delete({
-        where: {
-          id: workspaceId,
-          users: {
-            some: {
-              userId,
-              role: ROLES.owner,
+      await prisma.$transaction([
+        prisma.workspaceAuditLog.create({
+          data: {
+            workspaceId,
+            relatedId: workspaceId,
+            relatedType: 'Workspace',
+            content: `Workspace deleted by ${String(ctx.user.username)}(${userId})`,
+          },
+        }),
+        prisma.workspace.delete({
+          where: {
+            id: workspaceId,
+            users: {
+              some: {
+                userId,
+                role: ROLES.owner,
+              },
             },
           },
-        },
-      });
+        }),
+      ]);
     }),
   members: workspaceProcedure
     .meta(
@@ -384,7 +411,18 @@ export const workspaceRouter = router({
   acceptInvitation: protectProedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return acceptInvitation(input.token, ctx.user.id);
+      const result = await acceptInvitation(input.token, ctx.user.id);
+
+      await createWorkspaceMutationAuditLog({
+        workspaceId: result.workspaceId,
+        path: 'workspace.acceptInvitation',
+        input: { role: result.role },
+        actor: ctx.user,
+        relatedId: ctx.user.id,
+        relatedType: 'User',
+      });
+
+      return result;
     }),
 
   // Get invitation info (no login required)
@@ -450,13 +488,14 @@ export const workspaceRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { targetUserId, workspaceId } = input;
 
-      createAuditLog({
+      await leaveWorkspace(targetUserId, workspaceId);
+
+      await createAuditLog({
         workspaceId,
-        relatedType: 'Workspace',
+        relatedId: targetUserId,
+        relatedType: 'User',
         content: `Member(${targetUserId}) kicked by ${String(ctx.user.username)}(${ctx.user.id})`,
       });
-
-      leaveWorkspace(targetUserId, workspaceId);
     }),
 
   updateMemberRole: workspaceOwnerProcedure
@@ -507,9 +546,10 @@ export const workspaceRouter = router({
         },
       });
 
-      createAuditLog({
+      await createAuditLog({
         workspaceId,
-        relatedType: 'Workspace',
+        relatedId: userId,
+        relatedType: 'User',
         content: `Member(${userId}) role changed to ${role} by ${String(ctx.user.username)}(${ctx.user.id})`,
       });
     }),

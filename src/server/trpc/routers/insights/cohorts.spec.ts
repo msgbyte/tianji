@@ -13,6 +13,9 @@ const mocks = vi.hoisted(() => {
     getWorkspaceUser: vi.fn(async () => ({ role: 'owner' })),
     promStartTimer: vi.fn(() => endRequest),
     prisma: {
+      workspaceAuditLog: {
+        create: vi.fn(),
+      },
       warehouseCohorts: {
         update: vi.fn(),
         create: vi.fn(),

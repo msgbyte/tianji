@@ -23,6 +23,9 @@ const mocks = vi.hoisted(() => {
       deleted: 0,
     })),
     prisma: {
+      workspaceAuditLog: {
+        create: vi.fn(),
+      },
       warehouseDatabase: {
         findFirst: vi.fn(),
         update: vi.fn(),

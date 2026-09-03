@@ -11,6 +11,37 @@ import { promTrpcRequest } from '../utils/prometheus/client.js';
 import { verifyUserApiKey } from '../model/user.js';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { parse as languageParse } from 'accept-language-parser';
+import { createWorkspaceMutationAuditLog } from '../model/auditLog.js';
+
+const WORKSPACE_MUTATION_AUDIT_EXCLUDED_PATHS = new Set([
+  'aiGateway.testConnection',
+  'insights.warehouse.query.execute',
+  'monitor.testCustomScript',
+  'monitor.testNotifyScript',
+  'notification.test',
+  'sharedModule.validate',
+  'worker.testCode',
+  'workspace.previewCron',
+]);
+
+const WORKSPACE_MUTATION_AUDIT_EXISTING_PATHS = new Set([
+  'monitor.changeActive',
+  'monitor.regeneratePushToken',
+  'monitor.triggerMonitor',
+  'sharedModule.archive',
+  'sharedModule.publish',
+  'shortlink.create',
+  'shortlink.delete',
+  'shortlink.update',
+  'worker.delete',
+  'worker.execute',
+  'worker.rollbackToRevision',
+  'worker.toggleActive',
+  'worker.upsert',
+  'workspace.delete',
+  'workspace.tick',
+  'workspace.updateMemberRole',
+]);
 
 export async function createContext({ req }: CreateExpressContextOptions) {
   const authorization = req.headers['authorization'] ?? '';
@@ -140,7 +171,7 @@ export const workspaceProcedure = publicProcedure
       workspaceId: z.cuid2(),
     })
   )
-  .use(createWorkspacePermissionMiddleware());
+  .use(createWorkspacePermissionMiddleware([], true));
 
 export const workspaceAdminProcedure = publicProcedure
   .input(
@@ -148,7 +179,7 @@ export const workspaceAdminProcedure = publicProcedure
       workspaceId: z.cuid2(),
     })
   )
-  .use(createWorkspacePermissionMiddleware([ROLES.owner, ROLES.admin]));
+  .use(createWorkspacePermissionMiddleware([ROLES.owner, ROLES.admin], true));
 
 export const workspaceOwnerProcedure = publicProcedure
   .input(
@@ -156,13 +187,16 @@ export const workspaceOwnerProcedure = publicProcedure
       workspaceId: z.cuid2(),
     })
   )
-  .use(createWorkspacePermissionMiddleware([ROLES.owner]));
+  .use(createWorkspacePermissionMiddleware([ROLES.owner], true));
 
 /**
  * Create a trpc middleware which help user check workspace permission
  * NOTE: this middleware already include user auth, so we dont need use it under protectProedure which will trigger user auth twice.
  */
-function createWorkspacePermissionMiddleware(roles: ROLES[] = []) {
+function createWorkspacePermissionMiddleware(
+  roles: ROLES[] = [],
+  auditMutations = false
+) {
   return isUser.unstable_pipe(async (opts) => {
     const { ctx, input } = opts;
 
@@ -200,6 +234,29 @@ function createWorkspacePermissionMiddleware(roles: ROLES[] = []) {
       }
     }
 
-    return opts.next();
+    const result = await opts.next();
+
+    if (
+      auditMutations &&
+      result.ok &&
+      opts.type === 'mutation' &&
+      shouldAuditWorkspaceMutation(opts.path)
+    ) {
+      await createWorkspaceMutationAuditLog({
+        workspaceId,
+        path: opts.path,
+        input: await opts.getRawInput(),
+        actor: ctx.user,
+      });
+    }
+
+    return result;
   });
+}
+
+function shouldAuditWorkspaceMutation(path: string) {
+  return (
+    !WORKSPACE_MUTATION_AUDIT_EXCLUDED_PATHS.has(path) &&
+    !WORKSPACE_MUTATION_AUDIT_EXISTING_PATHS.has(path)
+  );
 }
