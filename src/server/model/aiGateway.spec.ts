@@ -3,8 +3,10 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   AI_GATEWAY_STREAM_PING_COMMENT,
   AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+  buildAIGatewayForwardHeaders,
   buildAnthropicHandler,
   buildOpenAIHandler,
+  buildOpenRouterHeaders,
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
   getAIGatewayErrorStatusCode,
@@ -24,12 +26,17 @@ import { aiGatewayRouter } from '../router/aiGateway.js';
 import { prisma } from './_client.js';
 import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
 
-const { openAIChatCreateMock } = vi.hoisted(() => ({
+const { openAIChatCreateMock, openAIConstructorMock } = vi.hoisted(() => ({
   openAIChatCreateMock: vi.fn(),
+  openAIConstructorMock: vi.fn(),
 }));
 
 vi.mock('openai', () => ({
   default: class {
+    constructor(options: unknown) {
+      openAIConstructorMock(options);
+    }
+
     chat = {
       completions: {
         create: openAIChatCreateMock,
@@ -420,7 +427,10 @@ describe('AI Gateway stream keepalive', () => {
 
     const req = {
       params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
-      headers: { authorization: 'Bearer sk-test' },
+      headers: {
+        authorization: 'Bearer sk-test',
+        'x-session-id': 'session-123',
+      },
       body: {
         model: 'gemini-2.5-pro',
         messages: [{ role: 'user', content: 'check weather and time' }],
@@ -442,6 +452,12 @@ describe('AI Gateway stream keepalive', () => {
 
     const handler = buildOpenAIHandler({ modelProvider: 'openai' });
     await handler(req as any, res as any, vi.fn());
+
+    expect(openAIConstructorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultHeaders: { 'x-session-id': 'session-123' },
+      })
+    );
 
     await vi.waitFor(() =>
       expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
@@ -559,7 +575,10 @@ describe('AI Gateway stream keepalive', () => {
 
     const req = {
       params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
-      headers: { 'x-api-key': 'sk-test' },
+      headers: {
+        'x-api-key': 'sk-test',
+        'x-session-id': 'session-123',
+      },
       body: {
         model: 'claude-3-7-sonnet-latest',
         messages: [{ role: 'user', content: 'check weather' }],
@@ -586,6 +605,15 @@ describe('AI Gateway stream keepalive', () => {
       fetch: fetchMock as typeof fetch,
     });
     await handler(req as any, res as any, vi.fn());
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://anthropic.example/v1/messages',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'x-session-id': 'session-123',
+        }),
+      })
+    );
 
     await vi.waitFor(() =>
       expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
@@ -948,6 +976,40 @@ describe('OpenAI Responses stream helpers', () => {
 });
 
 describe('AI Gateway runtime metadata helpers', () => {
+  test('forwards only the incoming session id', () => {
+    expect(
+      buildAIGatewayForwardHeaders({
+        headers: {
+          authorization: 'Bearer client-key',
+          cookie: 'private=value',
+          'x-session-id': 'session-123',
+        },
+      } as any)
+    ).toEqual({ 'x-session-id': 'session-123' });
+    expect(buildAIGatewayForwardHeaders({ headers: {} } as any)).toEqual({});
+  });
+
+  test('builds OpenRouter headers with the incoming session id', () => {
+    expect(
+      buildOpenRouterHeaders({
+        headers: {
+          'http-referer': 'https://example.com/app',
+          'x-title': 'Example App',
+          'x-session-id': 'session-123',
+        },
+      } as any)
+    ).toEqual({
+      'HTTP-Referer': 'https://example.com/app',
+      'X-Title': 'Example App',
+      'x-session-id': 'session-123',
+    });
+
+    expect(buildOpenRouterHeaders({ headers: {} } as any)).toEqual({
+      'HTTP-Referer': 'https://tianji.dev/',
+      'X-Title': 'Tianji',
+    });
+  });
+
   test('preserves numeric upstream error status codes', () => {
     expect(getAIGatewayErrorStatusCode({ status: 400 })).toBe(400);
     expect(getAIGatewayErrorStatusCode({ status: 401 })).toBe(401);

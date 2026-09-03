@@ -21,6 +21,10 @@ const userMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('../model/aiGateway.js', () => ({
+  buildAIGatewayForwardHeaders: (request: { headers: Record<string, unknown> }) =>
+    request.headers['x-session-id']
+      ? { 'x-session-id': String(request.headers['x-session-id']) }
+      : {},
   openaiResponsesRequestSchema: {
     safeParse: (value: unknown) => {
       const event = value as Record<string, unknown>;
@@ -179,11 +183,13 @@ describe('AI Gateway Responses WebSocket', () => {
     const upstreamWss = new WebSocketServer({ server: upstreamServer });
     const upstreamPort = await listen(upstreamServer);
     let upstreamAuthorization: string | undefined;
+    let upstreamSessionId: string | undefined;
     let upstreamPath: string | undefined;
     let upstreamPayload: unknown;
 
     upstreamWss.on('connection', (socket, request) => {
       upstreamAuthorization = request.headers.authorization;
+      upstreamSessionId = request.headers['x-session-id'] as string | undefined;
       upstreamPath = request.url;
       socket.on('message', (data) => {
         upstreamPayload = JSON.parse(data.toString());
@@ -220,7 +226,12 @@ describe('AI Gateway Responses WebSocket', () => {
     const gatewayPort = await listen(gatewayServer);
     const client = new WebSocket(
       `ws://127.0.0.1:${gatewayPort}/api/ai/workspace_1/gateway_1/openai/v1/responses`,
-      { headers: { Authorization: 'Bearer gateway-key' } }
+      {
+        headers: {
+          Authorization: 'Bearer gateway-key',
+          'x-session-id': 'session-123',
+        },
+      }
     );
 
     try {
@@ -257,6 +268,7 @@ describe('AI Gateway Responses WebSocket', () => {
       });
 
       expect(upstreamAuthorization).toBe('Bearer upstream-key');
+      expect(upstreamSessionId).toBe('session-123');
       expect(upstreamPath).toBe('/v1/responses');
       expect(upstreamPayload).toEqual({
         type: 'response.create',

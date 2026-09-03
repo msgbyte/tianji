@@ -1,5 +1,5 @@
 import { Server as SocketIOServer } from 'socket.io';
-import { Server as HTTPServer } from 'http';
+import { Server as HTTPServer, type IncomingMessage } from 'http';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { WebSocket, WebSocketServer } from 'ws';
 import { jwtVerify } from '../middleware/auth.js';
@@ -12,6 +12,7 @@ import { env } from '../utils/env.js';
 import { Redis } from 'ioredis';
 import {
   createAIGatewayPendingLog,
+  buildAIGatewayForwardHeaders,
   finishOpenAIResponsesGatewayLog,
   getOpenAIResponsesStreamDelta,
   openaiResponsesRequestSchema,
@@ -148,12 +149,16 @@ function resolveResponsesWebSocketUrl(
   return url.toString();
 }
 
-function connectResponsesWebSocketUpstream(target: ResponsesWebSocketTarget) {
+function connectResponsesWebSocketUpstream(
+  target: ResponsesWebSocketTarget,
+  request: IncomingMessage
+) {
   return new Promise<WebSocket>((resolve, reject) => {
     const upstream = new WebSocket(target.upstreamUrl, {
       headers: {
         Authorization: `Bearer ${target.modelApiKey}`,
         'OpenAI-Beta': OPENAI_RESPONSES_WEBSOCKET_BETA,
+        ...buildAIGatewayForwardHeaders(request),
       },
       handshakeTimeout: target.handshakeTimeout ?? 30_000,
     });
@@ -543,7 +548,7 @@ export function initAIGatewayResponsesWebSocket(
         };
 
         try {
-          upstream = await connectResponsesWebSocketUpstream(target);
+          upstream = await connectResponsesWebSocketUpstream(target, request);
         } catch (error) {
           throw Object.assign(new Error('Upstream WebSocket unavailable'), {
             statusCode: 502,
@@ -577,7 +582,10 @@ export function initAIGatewayResponsesWebSocket(
               handshakeAttempts,
             });
             const candidateUpstream =
-              await connectResponsesWebSocketUpstream(candidateTarget);
+              await connectResponsesWebSocketUpstream(
+                candidateTarget,
+                request
+              );
             target = candidateTarget;
             upstream = candidateUpstream;
             break;

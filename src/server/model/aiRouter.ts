@@ -9,8 +9,10 @@ import OpenAI from 'openai';
 import { z } from 'zod';
 import {
   anthropicRequestSchema,
+  buildAIGatewayForwardHeaders,
   buildAnthropicHandler,
   buildOpenAIHandler,
+  buildOpenRouterHeaders,
   buildOpenAIResponsesHandler,
   getAIGatewayErrorStatusCode,
   openaiRequestSchema,
@@ -440,17 +442,6 @@ export function resolveAIRouterGatewayHandlerConfig(args: {
   }
 
   return null;
-}
-
-function buildOpenRouterHeaders(req: Request) {
-  const referer =
-    req.get?.('HTTP-Referer') ?? req.headers['http-referer'] ?? undefined;
-  const title = req.get?.('X-Title') ?? req.headers['x-title'] ?? undefined;
-
-  return {
-    'HTTP-Referer': referer ? String(referer) : 'https://tianji.dev/',
-    'X-Title': title ? String(title) : 'Tianji',
-  };
 }
 
 export interface AIRouterAttemptSummary {
@@ -1067,7 +1058,7 @@ async function listAIRouterOpenAIModels(args: {
     defaultHeaders:
       args.modelProvider === 'openrouter'
         ? buildOpenRouterHeaders(args.req)
-        : undefined,
+        : buildAIGatewayForwardHeaders(args.req),
   });
   const list = await openai.models.list();
 
@@ -1096,6 +1087,7 @@ async function listAIRouterAnthropicModels(args: {
         'x-api-key': args.modelApiKey,
         'anthropic-version':
           String(args.req.headers['anthropic-version'] ?? '') || '2023-06-01',
+        ...buildAIGatewayForwardHeaders(args.req),
       },
     }
   );

@@ -15,6 +15,27 @@ import { promAIGatewayRequestCounter } from '../utils/prometheus/client.js';
 export const AI_GATEWAY_STREAM_PING_COMMENT = ': PING\n\n';
 export const AI_GATEWAY_STREAM_PING_INTERVAL_MS = 25_000;
 
+export function buildAIGatewayForwardHeaders(
+  req: Pick<Request, 'headers'> & Partial<Pick<Request, 'get'>>
+): Record<string, string> {
+  const sessionId =
+    req.get?.('x-session-id') ?? req.headers['x-session-id'] ?? undefined;
+
+  return sessionId ? { 'x-session-id': String(sessionId) } : {};
+}
+
+export function buildOpenRouterHeaders(req: Request) {
+  const referer =
+    req.get?.('HTTP-Referer') ?? req.headers['http-referer'] ?? undefined;
+  const title = req.get?.('X-Title') ?? req.headers['x-title'] ?? undefined;
+
+  return {
+    'HTTP-Referer': referer ? String(referer) : 'https://tianji.dev/',
+    'X-Title': title ? String(title) : 'Tianji',
+    ...buildAIGatewayForwardHeaders(req),
+  };
+}
+
 type AIGatewayStreamResponse = Pick<Response, 'write'> & {
   flush?: () => void;
   writableEnded?: boolean;
@@ -745,7 +766,10 @@ export function buildOpenAIHandler(
       const openai = new OpenAI({
         apiKey: modelApiKey,
         baseURL: baseUrl,
-        defaultHeaders: options.header?.(req),
+        defaultHeaders: {
+          ...options.header?.(req),
+          ...buildAIGatewayForwardHeaders(req),
+        },
       });
       const modelPriceName = options.modelPriceName
         ? options.modelPriceName(modelName)
@@ -1112,7 +1136,10 @@ export function buildOpenAIResponsesHandler(
       const openai = new OpenAI({
         apiKey: modelApiKey,
         baseURL: baseUrl,
-        defaultHeaders: options.header?.(req),
+        defaultHeaders: {
+          ...options.header?.(req),
+          ...buildAIGatewayForwardHeaders(req),
+        },
       });
       const modelPriceName = options.modelPriceName
         ? options.modelPriceName(modelName)
@@ -1375,7 +1402,10 @@ export function buildOpenAIModelsHandler(
       const openai = new OpenAI({
         apiKey: modelApiKey,
         baseURL: baseUrl,
-        defaultHeaders: options.header?.(req),
+        defaultHeaders: {
+          ...options.header?.(req),
+          ...buildAIGatewayForwardHeaders(req),
+        },
       });
 
       const list = await openai.models.list();
@@ -1443,6 +1473,7 @@ export function buildAnthropicModelsHandler(
         'x-api-key': modelApiKey,
         'anthropic-version': anthropicVersion,
         ...options.header?.(req),
+        ...buildAIGatewayForwardHeaders(req),
       };
 
       const betaHeader = req.headers['anthropic-beta'];
@@ -1565,6 +1596,7 @@ export function buildAnthropicHandler(
         'x-api-key': modelApiKey,
         'anthropic-version': anthropicVersion,
         ...options.header?.(req),
+        ...buildAIGatewayForwardHeaders(req),
       };
 
       // Forward anthropic-beta header if present

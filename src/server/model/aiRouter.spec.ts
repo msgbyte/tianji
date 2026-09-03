@@ -1260,6 +1260,7 @@ describe('AI Router gateway provider dispatch', () => {
       headers: {
         'http-referer': 'https://example.com/app',
         'x-title': 'Example App',
+        'x-session-id': 'session-123',
       },
     } as any;
 
@@ -1277,6 +1278,7 @@ describe('AI Router gateway provider dispatch', () => {
     expect(chatConfig?.options.header?.(lowercaseHeaderReq)).toEqual({
       'HTTP-Referer': 'https://example.com/app',
       'X-Title': 'Example App',
+      'x-session-id': 'session-123',
     });
     expect(messagesConfig).toMatchObject({
       builder: 'anthropic-messages',
@@ -1292,6 +1294,7 @@ describe('AI Router gateway provider dispatch', () => {
     expect(messagesConfig?.options.header?.(lowercaseHeaderReq)).toEqual({
       'HTTP-Referer': 'https://example.com/app',
       'X-Title': 'Example App',
+      'x-session-id': 'session-123',
     });
   });
 

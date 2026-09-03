@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   buildOpenAIHandler,
+  buildOpenRouterHeaders,
   buildOpenAIResponsesHandler,
   buildAnthropicHandler,
   buildOpenAIModelsHandler,
@@ -44,16 +45,7 @@ aiGatewayRouter.post(
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
@@ -85,16 +77,7 @@ aiGatewayRouter.post(
   buildAnthropicHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
@@ -123,16 +106,7 @@ aiGatewayRouter.get(
   '/:workspaceId/:gatewayId/openrouter/v1/models',
   buildOpenAIModelsHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
@@ -180,16 +154,7 @@ aiGatewayRouter.post(
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
