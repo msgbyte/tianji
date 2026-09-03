@@ -201,6 +201,8 @@ const config = {
       '×',
       '...',
       '•',
+      '·',
+      ' · ',
       'v',
       '0',
       ...httpStatusCodes.map((code) => `${code} -`),

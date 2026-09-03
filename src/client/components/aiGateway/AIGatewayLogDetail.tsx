@@ -31,6 +31,20 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
           ? 'tools'
           : 'raw';
     const messageImageUrls = getMessageImageUrls(requestPayload?.messages);
+    const responsePayload =
+      item.responsePayload &&
+      typeof item.responsePayload === 'object' &&
+      !Array.isArray(item.responsePayload)
+        ? item.responsePayload
+        : null;
+    const { content: responseContent, ...responseParameters } =
+      responsePayload ?? {};
+    const defaultResponseTab =
+      responseContent !== undefined
+        ? 'content'
+        : responsePayload
+          ? 'parameters'
+          : 'raw';
 
     return (
       <div>
@@ -86,12 +100,12 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
           <Tabs defaultValue={defaultRequestTab}>
             <TabsList>
               {requestPayload?.messages !== undefined && (
-                <TabsTrigger value="messages">Messages</TabsTrigger>
+                <TabsTrigger value="messages">{t('Messages')}</TabsTrigger>
               )}
               {requestPayload?.tools !== undefined && (
-                <TabsTrigger value="tools">Tools</TabsTrigger>
+                <TabsTrigger value="tools">{t('Tools')}</TabsTrigger>
               )}
-              <TabsTrigger value="raw">Raw Request</TabsTrigger>
+              <TabsTrigger value="raw">{t('Raw Request')}</TabsTrigger>
             </TabsList>
 
             {requestPayload?.messages !== undefined && (
@@ -103,7 +117,7 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
                       <Image
                         key={index}
                         src={url}
-                        alt="Message attachment"
+                        alt={t('Message attachment')}
                         width={64}
                         height={64}
                         className="rounded object-cover"
@@ -126,7 +140,23 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
         </SheetDataSection>
 
         <SheetDataSection label={t('Response Payload')}>
-          {renderJsonData(item.responsePayload)}
+          <Tabs defaultValue={defaultResponseTab}>
+            <TabsList>
+              <TabsTrigger value="parameters">{t('Parameters')}</TabsTrigger>
+              <TabsTrigger value="content">{t('Content')}</TabsTrigger>
+              <TabsTrigger value="raw">{t('Raw Response')}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="parameters">
+              {renderJsonData(responseParameters)}
+            </TabsContent>
+            <TabsContent value="content">
+              {renderJsonData(responseContent ?? null)}
+            </TabsContent>
+            <TabsContent value="raw">
+              {renderJsonData(item.responsePayload)}
+            </TabsContent>
+          </Tabs>
         </SheetDataSection>
       </div>
     );
