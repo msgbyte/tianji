@@ -11,13 +11,13 @@ vi.mock('@i18next-toolkit/react', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        Messages: '消息',
-        Tools: '工具',
-        'Raw Request': '原始请求',
-        'Message attachment': '消息附件',
-        Parameters: '参数',
-        Content: '内容',
-        'Raw Response': '原始响应',
+        Messages: 'Mensajes',
+        Tools: 'Herramientas',
+        'Raw Request': 'Solicitud sin procesar',
+        'Message attachment': 'Archivo adjunto del mensaje',
+        Parameters: 'Parámetros',
+        Content: 'Contenido',
+        'Raw Response': 'Respuesta sin procesar',
       };
 
       return translations[key] ?? key;
@@ -69,18 +69,22 @@ describe('AIGatewayLogDetail', () => {
       />
     );
 
-    expect(screen.getByRole('tab', { name: '消息' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Mensajes' })).toHaveAttribute(
       'aria-selected',
       'true'
     );
     expect(screen.getByText(/Actual user input/)).toBeVisible();
     expect(screen.queryByText(/"name": "read"/)).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('tab', { name: '工具' }));
+    await userEvent.click(
+      screen.getByRole('tab', { name: 'Herramientas' })
+    );
     expect(screen.getByText(/"name": "read"/)).toBeVisible();
     expect(screen.queryByText('Actual user input')).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('tab', { name: '原始请求' }));
+    await userEvent.click(
+      screen.getByRole('tab', { name: 'Solicitud sin procesar' })
+    );
     expect(screen.getByText(/"model": "custom"/)).toBeVisible();
     expect(screen.getByText(/Actual user input/)).toBeVisible();
     expect(screen.getByText(/"name": "read"/)).toBeVisible();
@@ -134,7 +138,9 @@ describe('AIGatewayLogDetail', () => {
       />
     );
 
-    const thumbnail = screen.getByRole('img', { name: '消息附件' });
+    const thumbnail = screen.getByRole('img', {
+      name: 'Archivo adjunto del mensaje',
+    });
     expect(thumbnail).toHaveAttribute(
       'src',
       'data:image/png;base64,aGVsbG8='
@@ -193,19 +199,21 @@ describe('AIGatewayLogDetail', () => {
       />
     );
 
-    expect(screen.getByRole('tab', { name: '内容' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Contenido' })).toHaveAttribute(
       'aria-selected',
       'true'
     );
     expect(screen.getByText(/Response text/)).toBeVisible();
     expect(screen.queryByText(/"provider": "Google"/)).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('tab', { name: '参数' }));
+    await userEvent.click(screen.getByRole('tab', { name: 'Parámetros' }));
     expect(screen.getByText(/"provider": "Google"/)).toBeVisible();
     expect(screen.getByText(/\\"city\\":\\"Paris\\"/)).toBeVisible();
     expect(screen.queryByText(/Response text/)).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('tab', { name: '原始响应' }));
+    await userEvent.click(
+      screen.getByRole('tab', { name: 'Respuesta sin procesar' })
+    );
     expect(screen.getByText(/Response text/)).toBeVisible();
     expect(screen.getByText(/"provider": "Google"/)).toBeVisible();
   });

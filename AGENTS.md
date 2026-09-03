@@ -17,6 +17,7 @@ When generating code, **do not modify** any JSON files in `src/client/public/loc
 - Run `pnpm check:type` and `pnpm build` to mirror CI checks.
 - Execute `pnpm test` to run Vitest across packages (or `pnpm -r test` for individual packages).
 - Focus on one test with `pnpm vitest run -t "<test name>"`.
+- Do not use Chinese text in test cases; use Spanish for localized test fixtures and assertions.
 
 ## PR instructions
 - Title your PR using Angular commit style, e.g. `feat: add new feature`.
