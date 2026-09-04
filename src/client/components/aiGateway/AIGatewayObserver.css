@@ -97,7 +97,7 @@
 
 .observer-select {
   width: min(190px, 18vw);
-  padding: 0 30px 0 10px;
+  padding: 0 10px;
   overflow: hidden;
   color: var(--observer-muted);
   font: 12px var(--observer-mono);
@@ -627,7 +627,9 @@
 
 .observer-bubble {
   max-width: 100%;
+  max-height: 520px;
   padding: 9px 11px;
+  overflow: auto;
   border: 1px solid var(--observer-border);
   border-radius: 6px;
   color: color-mix(in oklch, var(--observer-fg) 91%, var(--observer-muted));
@@ -641,6 +643,21 @@
 .observer-turn.role-user .observer-bubble {
   border-color: color-mix(in oklch, var(--observer-blue) 30%, var(--observer-border));
   background: color-mix(in oklch, var(--observer-blue) 6%, var(--observer-bg));
+}
+
+.observer-bubble .markdown-body {
+  color: inherit;
+  background: transparent;
+  font-size: inherit;
+  white-space: normal;
+}
+
+.observer-bubble .markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.observer-bubble .markdown-body > :last-child {
+  margin-bottom: 0;
 }
 
 .observer-tool-call {

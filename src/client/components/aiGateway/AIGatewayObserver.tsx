@@ -1,4 +1,5 @@
 import { trpc } from '@/api/trpc';
+import { MarkdownViewer } from '@/components/MarkdownEditor';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { useCurrentWorkspaceId } from '@/store/user';
 import {
@@ -6,6 +7,13 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { t } from '@i18next-toolkit/react';
 import dayjs from 'dayjs';
@@ -155,26 +163,32 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
           <strong>{t('Gateway Log Observer')}</strong>
         </Link>
 
-        <select
-          aria-label={t('Select Gateway')}
-          className="observer-select"
+        <Select
           value={gatewayId}
-          onChange={(event) =>
+          onValueChange={(gatewayId) =>
             navigate({
               to: '/aiGateway/$gatewayId/observer',
-              params: { gatewayId: event.target.value },
+              params: { gatewayId },
             })
           }
         >
-          {gateways.map((gateway) => (
-            <option key={gateway.id} value={gateway.id}>
-              {gateway.name}
-            </option>
-          ))}
-          {gateways.length === 0 && (
-            <option value={gatewayId}>{gatewayId}</option>
-          )}
-        </select>
+          <SelectTrigger
+            aria-label={t('Select Gateway')}
+            className="observer-select"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {gateways.map((gateway) => (
+              <SelectItem key={gateway.id} value={gateway.id}>
+                {gateway.name}
+              </SelectItem>
+            ))}
+            {gateways.length === 0 && (
+              <SelectItem value={gatewayId}>{gatewayId}</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
 
         <div className="observer-status-filter" aria-label={t('Status filter')}>
           {statusFilters.map((status) => (
@@ -474,6 +488,7 @@ function LogDetail({ log }: { log?: AIGatewayLogItem }) {
         {tab === 'conversation' && (
           <MessageList
             messages={[...requestMessages, ...responseMessages]}
+            renderMarkdown
             pending={log.status === 'Pending'}
             error={
               log.status === 'Failed'
@@ -629,10 +644,12 @@ function MessageList({
   messages,
   pending,
   error,
+  renderMarkdown,
 }: {
   messages: DisplayMessage[];
   pending?: boolean;
   error?: string;
+  renderMarkdown?: boolean;
 }) {
   return (
     <div className="observer-conversation">
@@ -646,7 +663,13 @@ function MessageList({
             {message.name && <code>{message.name}()</code>}
           </div>
           {message.content && message.role !== 'tool' && (
-            <div className="observer-bubble">{message.content}</div>
+            <div className="observer-bubble">
+              {renderMarkdown ? (
+                <MarkdownViewer value={message.content} />
+              ) : (
+                message.content
+              )}
+            </div>
           )}
           {message.toolCalls.map((call, callIndex) => (
             <div

@@ -89,6 +89,15 @@ test('renders observer copy in English through the translation function', () => 
   expect(document.body.textContent).not.toMatch(/[\u3400-\u9fff]/);
 });
 
+test('uses the shared non-native gateway selector', () => {
+  render(<AIGatewayObserver gatewayId="gateway_1" />);
+
+  const selector = screen.getByRole('combobox', { name: 'Select Gateway' });
+
+  expect(selector).toHaveTextContent('Primary');
+  expect(selector).not.toBeInstanceOf(HTMLSelectElement);
+});
+
 test('keeps a request that arrives while the first response is delayed', () => {
   const { rerender } = render(<AIGatewayObserver gatewayId="gateway_1" />);
 
@@ -138,6 +147,39 @@ test('replaces a pending row with its completed version', () => {
     screen.queryByText('Streaming response in progress…')
   ).not.toBeInTheDocument();
   expect(screen.getAllByText('Success')).not.toHaveLength(0);
+});
+
+test('keeps long message content inside a scrollable height limit', async () => {
+  mocks.data = {
+    items: [createLog('log_long', 'Contenido extenso para revisar')],
+  };
+  render(<AIGatewayObserver gatewayId="gateway_1" />);
+
+  const bubble = (
+    await screen.findByText('Contenido extenso para revisar', {
+      selector: '.markdown-body p',
+    })
+  ).closest('.observer-bubble');
+  const styles = window.getComputedStyle(bubble!);
+
+  expect(styles.maxHeight).toBe('520px');
+  expect(styles.overflow).toBe('auto');
+});
+
+test('renders conversation message content as Markdown', async () => {
+  mocks.data = {
+    items: [
+      createLog('log_markdown', '## Título\n\nTexto **importante**', {
+        responsePayload: { content: 'Respuesta sencilla' },
+      }),
+    ],
+  };
+  render(<AIGatewayObserver gatewayId="gateway_1" />);
+
+  expect(
+    await screen.findByRole('heading', { name: 'Título' })
+  ).toBeInTheDocument();
+  expect(screen.getByText('importante').tagName).toBe('STRONG');
 });
 
 test('renders Anthropic server tools and structured tool results', () => {
