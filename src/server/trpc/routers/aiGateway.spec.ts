@@ -276,6 +276,31 @@ describe('aiGatewayRouter.duplicate', () => {
 });
 
 describe('aiGatewayRouter.logs observer mode', () => {
+  test('accepts an openedAt date serialized by an HTTP client', async () => {
+    const workspaceId = createId();
+    const serializedOpenedAt = '2026-09-03T08:00:00.000Z';
+    mocks.findLogs.mockResolvedValue([]);
+    const caller = await createCaller();
+
+    await caller.logs({
+      workspaceId,
+      gatewayId: 'gateway_1',
+      openedAt: serializedOpenedAt as unknown as Date,
+      limit: 100,
+    });
+
+    expect(mocks.findLogs).toHaveBeenCalledWith({
+      where: {
+        workspaceId,
+        gatewayId: 'gateway_1',
+        createdAt: { gte: new Date(serializedOpenedAt) },
+      },
+      take: 101,
+      cursor: undefined,
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    });
+  });
+
   test('filters from open time, paginates chronologically, and refreshes pending rows', async () => {
     const workspaceId = createId();
     const openedAt = new Date('2026-09-03T08:00:00Z');

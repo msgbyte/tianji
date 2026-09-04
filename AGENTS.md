@@ -7,6 +7,11 @@
 - Run `pnpm build` to generate production assets.
 - Prefer reusing existing hooks, components, utilities, and other project assets instead of creating new implementations.
 
+## Serialization Boundaries
+- Treat all tRPC HTTP inputs as JSON wire values; objects such as `Date` arrive in their serialized form unless a transformer is explicitly configured.
+- For date inputs, use `z.coerce.date<Date>()` at the server boundary, or validate an ISO date string and convert it before use.
+- Cover the serialized wire value in route tests. Do not test date inputs only by passing a native `Date` directly to a caller.
+
 ## Translation Files
 All user-facing copy must be written in English and wrapped with the project's `t()` translation function. Do not add Chinese copy directly in source code.
 

@@ -417,7 +417,7 @@ export const aiGatewayRouter = router({
         cursor: z.string().optional(),
         limit: z.number().int().min(1).max(100).default(20),
         logId: z.string().optional(),
-        openedAt: z.date().optional(),
+        openedAt: z.coerce.date<Date>().optional(),
         pendingIds: z.array(z.string()).optional(),
       })
     )
