@@ -1,5 +1,11 @@
 
 
+## [1.32.34](https://github.com/msgbyte/tianji/compare/v1.32.33...v1.32.34) (2026-09-04)
+
+### Bug Fixes
+
+* **ai-gateway:** parse serialized observer dates ([6b16623](https://github.com/msgbyte/tianji/commit/6b16623649d0117e68d34b29187188fb5a4c8336))
+
 ## [1.32.33](https://github.com/msgbyte/tianji/compare/v1.32.32...v1.32.33) (2026-09-03)
 
 ### Features
