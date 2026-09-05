@@ -7,7 +7,8 @@ import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
 import { Button } from '../../ui/button';
 import { LuBot, LuHistory } from 'react-icons/lu';
 import { DatePicker, DatePickerRange } from '../../DatePicker';
-import { Select as AntdSelect, Checkbox } from 'antd';
+import { Checkbox } from 'antd';
+import { LayeredSelect as AntdSelect } from '@/components/LayeredSelect';
 import { toast } from 'sonner';
 import {
   Select,

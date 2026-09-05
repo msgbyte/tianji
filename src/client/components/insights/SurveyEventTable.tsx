@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { VirtualizedInfiniteDataTable } from '../VirtualizedInfiniteDataTable';
 import { cn } from '@/utils/style';
-import { Image } from 'antd';
+import { ImagePreview } from '../ImagePreview';
 import { CountryName } from '../CountryName';
 import { DataTableColumnSelector } from '../DataTableColumnSelector';
 import { Button } from '@/components/ui/button';
@@ -132,16 +132,13 @@ export const SurveyEventTable: React.FC<SurveyEventTableProps> = ({
         ) {
           return (
             <div className="flex items-center gap-1">
-              {value.split(',').map((url) => (
-                <div className="h-6 w-6 overflow-hidden">
-                  <Image
+              {value.split(',').map((url, index) => (
+                <div key={index} className="h-6 w-6 overflow-hidden">
+                  <ImagePreview
                     src={url}
                     alt={field.label}
                     width={24}
                     height={24}
-                    preview={{
-                      destroyOnClose: true,
-                    }}
                   />
                 </div>
               ))}

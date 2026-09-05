@@ -22,7 +22,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { reorder } from '@/utils/reorder';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Select as AntdSelect } from 'antd';
+import { LayeredSelect as AntdSelect } from '@/components/LayeredSelect';
 import React, { useMemo } from 'react';
 import {
   DragDropContext,

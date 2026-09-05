@@ -1,9 +1,9 @@
 import { AppRouterOutput } from '@/api/trpc';
 import { useTranslation } from '@i18next-toolkit/react';
-import { Image } from 'antd';
 import dayjs from 'dayjs';
 import React from 'react';
 import { CodeBlock } from '../CodeBlock';
+import { ImagePreview } from '../ImagePreview';
 import { SheetDataSection } from '../ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { AIGatewayStatus } from './AIGatewayStatus';
@@ -114,14 +114,13 @@ export const AIGatewayLogDetail: React.FC<AIGatewayLogDetailProps> =
                 {messageImageUrls.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {messageImageUrls.map((url, index) => (
-                      <Image
+                      <ImagePreview
                         key={index}
                         src={url}
                         alt={t('Message attachment')}
                         width={64}
                         height={64}
                         className="rounded object-cover"
-                        preview={{ destroyOnClose: true }}
                       />
                     ))}
                   </div>
