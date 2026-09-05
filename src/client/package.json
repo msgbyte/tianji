@@ -131,7 +131,7 @@
   "devDependencies": {
     "@auth/core": "0.34.3",
     "@chromatic-com/storybook": "^4.1.1",
-    "@i18next-toolkit/cli": "^1.5.0",
+    "@i18next-toolkit/cli": "^1.6.2",
     "@storybook/addon-a11y": "^9.1.5",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-onboarding": "^9.1.5",

@@ -42,7 +42,6 @@ overrides:
   ws@8: 8.21.0
   typescript: 5.7.2
   zod: 4.1.12
-  '@i18next-toolkit/cli>zod': 3.25.76
   zod-openapi: 5.4.3
 
 patchedDependencies:
@@ -664,8 +663,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(storybook@9.1.5(@testing-library/dom@10.0.0)(msw@2.10.4(@types/node@22.13.11)(typescript@5.7.2))(prettier@3.5.3)(vite@5.4.14(@types/node@22.13.11)(less@4.2.2)(lightningcss@1.27.0)(terser@5.28.1)))
       '@i18next-toolkit/cli':
-        specifier: ^1.5.0
-        version: 1.5.0(buffer@6.0.3)(encoding@0.1.13)(typescript@5.7.2)(ws@8.21.0)
+        specifier: ^1.6.2
+        version: 1.6.2(buffer@6.0.3)(encoding@0.1.13)(typescript@5.7.2)(ws@8.21.0)
       '@storybook/addon-a11y':
         specifier: ^9.1.5
         version: 9.1.5(storybook@9.1.5(@testing-library/dom@10.0.0)(msw@2.10.4(@types/node@22.13.11)(typescript@5.7.2))(prettier@3.5.3)(vite@5.4.14(@types/node@22.13.11)(less@4.2.2)(lightningcss@1.27.0)(terser@5.28.1)))
@@ -3721,8 +3720,8 @@ packages:
     resolution: {integrity: sha512-e5+YUKENATs1JgYHMzTr2MW/NDcXGfYFAuOQU8gJgF/kEh4EqKgfGrfLI67bMD4tbhZVlkigz/9YYwWcbOFthg==}
     engines: {node: '>=10.13.0'}
 
-  '@i18next-toolkit/cli@1.5.0':
-    resolution: {integrity: sha512-hjtOCGZoeGvVCUs1nyR0t70AE1QX8uX2yNBaQ9SygK7MLJ1FR4ZGPRt6avj/0qDj8pvm8f04FvbHyXOZ4fz0XQ==}
+  '@i18next-toolkit/cli@1.6.2':
+    resolution: {integrity: sha512-swInwDoCM8/KzmgZh2adayxSKpZMD6X7eSWeySN1XRGXPe3pp0bjszWtYoGe8DnI5iGRLAjHUVY5ayR8cRGWVQ==}
     hasBin: true
 
   '@i18next-toolkit/extractor@1.1.0':
@@ -18695,9 +18694,6 @@ packages:
     peerDependencies:
       zod: 4.1.12
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.1.12:
     resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
 
@@ -23094,7 +23090,7 @@ snapshots:
 
   '@hutson/parse-repository-url@5.0.0': {}
 
-  '@i18next-toolkit/cli@1.5.0(buffer@6.0.3)(encoding@0.1.13)(typescript@5.7.2)(ws@8.21.0)':
+  '@i18next-toolkit/cli@1.6.2(buffer@6.0.3)(encoding@0.1.13)(typescript@5.7.2)(ws@8.21.0)':
     dependencies:
       '@i18next-toolkit/extractor': 1.1.0(buffer@6.0.3)(typescript@5.7.2)
       '@i18next-toolkit/scanner': 1.0.0
@@ -23104,10 +23100,10 @@ snapshots:
       fs-extra: 11.3.0
       inquirer: 8.2.6
       lodash: 4.18.0
-      openai: 4.87.3(encoding@0.1.13)(ws@8.21.0)(zod@3.25.76)
+      openai: 4.87.3(encoding@0.1.13)(ws@8.21.0)(zod@4.1.12)
       proxy-agent: 6.5.0
       yargs: 17.7.2
-      zod: 3.25.76
+      zod: 4.1.12
     transitivePeerDependencies:
       - buffer
       - encoding
@@ -36206,21 +36202,6 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.87.3(encoding@0.1.13)(ws@8.21.0)(zod@3.25.76):
-    dependencies:
-      '@types/node': 22.13.11
-      '@types/node-fetch': 2.6.12
-      abort-controller: 3.0.0
-      agentkeepalive: 4.6.0
-      form-data-encoder: 1.7.2
-      formdata-node: 4.4.1
-      node-fetch: 2.7.0(encoding@0.1.13)
-    optionalDependencies:
-      ws: 8.21.0
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - encoding
-
   openai@4.87.3(encoding@0.1.13)(ws@8.21.0)(zod@4.1.12):
     dependencies:
       '@types/node': 22.13.11
@@ -42105,8 +42086,6 @@ snapshots:
   zod-to-json-schema@3.24.5(zod@4.1.12):
     dependencies:
       zod: 4.1.12
-
-  zod@3.25.76: {}
 
   zod@4.1.12: {}
 
