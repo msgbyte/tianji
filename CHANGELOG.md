@@ -1,5 +1,19 @@
 
 
+## [1.32.35](https://github.com/msgbyte/tianji/compare/v1.32.34...v1.32.35) (2026-09-05)
+
+### Features
+
+* **ai-gateway:** improve observer log display ([5f85cb9](https://github.com/msgbyte/tianji/commit/5f85cb944b7dd89b163e7aec1bebf89692ffebe7))
+
+### Bug Fixes
+
+* **ui:** isolate nested image previews and select dropdowns ([9ed1a21](https://github.com/msgbyte/tianji/commit/9ed1a21f64565b90ca87341c0d6d52e3163a3876))
+
+### Others
+
+* **i18n:** update translations and translation tooling ([10ef57e](https://github.com/msgbyte/tianji/commit/10ef57e6597b9c354fbeed8ce28697dadf9ecba8))
+
 ## [1.32.34](https://github.com/msgbyte/tianji/compare/v1.32.33...v1.32.34) (2026-09-04)
 
 ### Bug Fixes
