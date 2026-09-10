@@ -8,7 +8,7 @@ const httpStatusCodes = [
 ];
 
 const config = {
-  locales: ['en', 'zh-CN', 'ja-JP', 'fr-FR', 'de-DE', 'pl-PL', 'pt-PT', 'ru-RU', 'tr-TR', 'id-ID', 'es-ES'],
+  locales: ['en', 'zh-CN', 'ja-JP', 'fr-FR', 'de-DE', 'pl-PL', 'pt-PT', 'ru-RU', 'tr-TR', 'id-ID', 'es-ES', 'ko'],
   verbose: true,
   namespaces: ['translation'],
   translator: {

@@ -1,0 +1,62 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Install": {
+    "message": "설치",
+    "description": "The label for category Install in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Kubernetes": {
+    "message": "Kubernetes",
+    "description": "The label for category Kubernetes in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Other Ways": {
+    "message": "기타 설치 방법",
+    "description": "The label for category Other Ways in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Website": {
+    "message": "웹사이트",
+    "description": "The label for category Website in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Framework": {
+    "message": "프레임워크",
+    "description": "The label for category Framework in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Events": {
+    "message": "이벤트",
+    "description": "The label for category Events in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Application": {
+    "message": "애플리케이션",
+    "description": "The label for category Application in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Monitor": {
+    "message": "모니터",
+    "description": "The label for category Monitor in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Notification": {
+    "message": "알림",
+    "description": "The label for category Notification in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.API": {
+    "message": "API",
+    "description": "The label for category API in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Server Status": {
+    "message": "서버 상태",
+    "description": "The label for category Server Status in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Telemetry": {
+    "message": "텔레메트리",
+    "description": "The label for category Telemetry in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Feed": {
+    "message": "피드",
+    "description": "The label for category Feed in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Develop": {
+    "message": "개발",
+    "description": "The label for category Develop in sidebar tutorialSidebar"
+  }
+}
