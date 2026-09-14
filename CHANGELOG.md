@@ -1,5 +1,16 @@
 
 
+## [1.32.37](https://github.com/msgbyte/tianji/compare/v1.32.36...v1.32.37) (2026-09-14)
+
+### Features
+
+* **ai-gateway:** add Gemini CLI and API examples ([e6e334f](https://github.com/msgbyte/tianji/commit/e6e334fadb356947ec6f0ffa3146adde32b7a020))
+* **ai-gateway:** add native Gemini relay support ([379ccad](https://github.com/msgbyte/tianji/commit/379ccad1071e5b0711245f160cd106232d4c63dc))
+
+### Document
+
+* document Gemini support and English-first conventions ([3d7dcbe](https://github.com/msgbyte/tianji/commit/3d7dcbee79f98925f4ada701bbe9a282fbb1eea7))
+
 ## [1.32.36](https://github.com/msgbyte/tianji/compare/v1.32.35...v1.32.36) (2026-09-08)
 
 ### Features
