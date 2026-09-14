@@ -1,5 +1,10 @@
 # Contributor Guide
 
+## Language
+
+- English is the primary language for all repository content, including documentation, PRDs, plans, code comments, examples, UI source strings, and commit/PR text.
+- Write new and updated content in English regardless of the language used in the request, unless another language is explicitly required. Follow the translation and localized-test-fixture rules below for localization.
+
 ## Development Tips
 - Install Node.js 22.14.0+ and pnpm 9.7.1.
 - Run `pnpm install` in the repo root to bootstrap all workspace packages.
