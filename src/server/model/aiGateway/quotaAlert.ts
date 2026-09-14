@@ -107,7 +107,7 @@ async function getDailyCost(
     where: {
       gatewayId,
       workspaceId,
-      status: 'Success',
+      status: { in: ['Success', 'Failed'] },
       createdAt: {
         gte: todayStart.toDate(),
         lt: tomorrowStart.toDate(),

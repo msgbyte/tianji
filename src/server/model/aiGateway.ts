@@ -8,6 +8,7 @@ import { AIGatewayLogs, AIGatewayLogsStatus, Prisma } from '@prisma/client';
 import { getLLMCostDecimalV2, getOpenRouterCostDecimal } from '../utils/llm.js';
 import { get } from 'lodash-es';
 import { verifyUserApiKey } from '../model/user.js';
+import { getWorkspaceUser } from './workspace.js';
 import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
 import { logger } from '../utils/logger.js';
 import { promAIGatewayRequestCounter } from '../utils/prometheus/client.js';
@@ -291,6 +292,7 @@ function resolveStrategyPrice(
 function calcPriceFromConfig(args: {
   inputToken: number;
   outputToken: number;
+  inputTokenIncludesCache?: boolean;
   cacheReadInputToken?: number;
   cacheWriteInputToken?: number;
   price: CustomModelPriceConfig;
@@ -309,7 +311,21 @@ function calcPriceFromConfig(args: {
   }
 
   return new Prisma.Decimal(0)
-    .add(inputPrice ? inputPrice.mul(args.inputToken).div(1_000_000) : 0)
+    .add(
+      inputPrice
+        ? inputPrice
+            .mul(
+              Math.max(
+                0,
+                args.inputToken -
+                  (args.inputTokenIncludesCache && cacheReadPrice
+                    ? (args.cacheReadInputToken ?? 0)
+                    : 0)
+              )
+            )
+            .div(1_000_000)
+        : 0
+    )
     .add(outputPrice ? outputPrice.mul(args.outputToken).div(1_000_000) : 0)
     .add(
       cacheReadPrice
@@ -326,6 +342,8 @@ function calcPriceFromConfig(args: {
 export function calcAIGatewayCustomModelPrice(args: {
   inputToken: number;
   outputToken: number;
+  /** Gemini prompt tokens include cached input; tier selection still uses the full prompt. */
+  inputTokenIncludesCache?: boolean;
   cacheReadInputToken?: number;
   cacheWriteInputToken?: number;
   customModelStrategy?: unknown;
@@ -630,15 +648,26 @@ export async function resolveAIGatewayModelApiKey(args: {
   gatewayId: string;
   requestApiKey: string;
 }) {
+  if (!args.requestApiKey) {
+    throw Object.assign(new Error('API key is required.'), { status: 401 });
+  }
   const gatewayInfo = await getGatewayInfoCache(
     args.workspaceId,
     args.gatewayId
   );
+  if (!gatewayInfo || gatewayInfo.workspaceId !== args.workspaceId) {
+    throw Object.assign(new Error('Gateway not found.'), { status: 404 });
+  }
   let modelApiKey = args.requestApiKey;
   let userId: string | null = null;
 
   if (gatewayInfo?.modelApiKey) {
     const user = await verifyUserApiKey(args.requestApiKey);
+    if (!(await getWorkspaceUser(args.workspaceId, user.id))) {
+      throw Object.assign(new Error('Workspace access denied.'), {
+        status: 403,
+      });
+    }
     userId = user.id;
     modelApiKey = gatewayInfo.modelApiKey;
   }
@@ -1386,12 +1415,11 @@ export function buildOpenAIModelsHandler(
       .parse(req.params);
 
     const apiKey = (req.headers.authorization ?? '').replace('Bearer ', '');
-    let modelApiKey = apiKey;
-    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
-    if (gatewayInfo?.modelApiKey) {
-      await verifyUserApiKey(apiKey);
-      modelApiKey = gatewayInfo.modelApiKey;
-    }
+    const { gatewayInfo, modelApiKey } = await resolveAIGatewayModelApiKey({
+      workspaceId,
+      gatewayId,
+      requestApiKey: apiKey,
+    });
 
     const baseUrl =
       options.isCustomRoute && gatewayInfo?.customModelBaseUrl
@@ -1445,12 +1473,11 @@ export function buildAnthropicModelsHandler(
     const apiKey =
       (req.headers['x-api-key'] as string) ??
       (req.headers.authorization ?? '').replace('Bearer ', '');
-    let modelApiKey = apiKey;
-    const gatewayInfo = await getGatewayInfoCache(workspaceId, gatewayId);
-    if (gatewayInfo?.modelApiKey) {
-      await verifyUserApiKey(apiKey);
-      modelApiKey = gatewayInfo.modelApiKey;
-    }
+    const { gatewayInfo, modelApiKey } = await resolveAIGatewayModelApiKey({
+      workspaceId,
+      gatewayId,
+      requestApiKey: apiKey,
+    });
 
     const baseUrl =
       options.isCustomRoute && gatewayInfo?.customModelBaseUrl

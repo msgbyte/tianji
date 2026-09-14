@@ -423,13 +423,11 @@ export async function verifyUserApiKey(apiKey: string) {
   });
 
   if (result?.expiredAt && result.expiredAt.valueOf() < Date.now()) {
-    throw new Error('Api Key has been expired.');
+    throw Object.assign(new Error('API key has expired.'), { status: 401 });
   }
 
   if (!result) {
-    throw new Error(
-      'Api Key not found, input api key: ' + apiKey.slice(0, 10) + '...'
-    );
+    throw Object.assign(new Error('Invalid API key.'), { status: 401 });
   }
 
   prisma.userApiKey

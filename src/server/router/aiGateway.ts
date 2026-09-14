@@ -7,6 +7,7 @@ import {
   buildOpenAIModelsHandler,
   buildAnthropicModelsHandler,
 } from '../model/aiGateway.js';
+import { geminiHandler } from '../model/aiGateway/gemini.js';
 
 export const aiGatewayRouter = Router();
 
@@ -124,6 +125,11 @@ aiGatewayRouter.get(
   })
 );
 //#endregion
+
+aiGatewayRouter.all(
+  '/:workspaceId/:gatewayId/custom/:version/models/*',
+  geminiHandler
+);
 
 //#region Alias should be remove in future
 aiGatewayRouter.post(

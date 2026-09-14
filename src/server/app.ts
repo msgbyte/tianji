@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type ErrorRequestHandler } from 'express';
 import 'express-async-errors';
 import compression from 'compression';
 import swaggerUI from 'swagger-ui-express';
@@ -35,6 +35,7 @@ import {
   staticPageRouter,
 } from './router/staticPage.js';
 import { pageRouter } from './router/page.js';
+import { geminiError } from './model/aiGateway/gemini.js';
 
 const app = express();
 
@@ -126,6 +127,11 @@ if (env.allowOpenapi) {
   app.use('/open', trpcOpenapiHttpHandler);
 }
 
+// API misses must never fall through to the frontend or custom-domain page.
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'API endpoint not found.' });
+});
+
 // Custom domain: only for root path so /p/:slug and /status/:slug are not intercepted
 app.use('/*', async (req, res, next) => {
   if (req.method === 'GET' && req.accepts('html')) {
@@ -159,12 +165,29 @@ const webEntry = path.join(process.cwd(), 'public', 'index.html');
 app.use('/*', (req, res) => {
   if (req.method === 'GET' && req.accepts('html')) {
     res.sendFile(webEntry);
-  }
+  } else res.status(404).json({ message: 'Not found.' });
 });
 
-app.use((err: any, req: any, res: any, next: any) => {
-  logger.error('[express]', err);
-  res.status(500).json({ message: err.message });
-});
+app.use(((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status =
+    Number.isInteger(err.status) && err.status >= 400 && err.status <= 599
+      ? err.status
+      : 500;
+  if (/^\/api\/ai\/[^/]+\/[^/]+\/custom\/[^/]+\/models\//.test(req.path)) {
+    res
+      .status(status)
+      .json(
+        geminiError(
+          status,
+          status < 500 ? 'Invalid Gemini request.' : 'Internal server error.'
+        )
+      );
+    return;
+  }
+  // Parser errors contain the caller's entire body; never log that payload.
+  logger.error('[express]', err.message);
+  res.status(status).json({ message: err.message });
+}) as ErrorRequestHandler);
 
 export { app };

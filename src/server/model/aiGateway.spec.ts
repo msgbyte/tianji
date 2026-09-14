@@ -73,6 +73,38 @@ afterEach(() => {
 });
 
 describe('calcAIGatewayCustomModelPrice', () => {
+  test('selects Gemini tiers using the full prompt while billing cache only once', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 250000,
+      outputToken: 1000,
+      cacheReadInputToken: 100000,
+      inputTokenIncludesCache: true,
+      customModelStrategy: {
+        price: [
+          { inputTokenMax: 200000, input: 3, output: 15, cacheRead: 0.3 },
+          { inputTokenMin: 200001, input: 6, output: 22.5, cacheRead: 0.6 },
+        ],
+      },
+      customModelInputPrice: null,
+      customModelOutputPrice: null,
+    });
+    expect(price?.toNumber()).toBe(0.9825);
+  });
+  test.each([null, { price: { input: 3, output: 15 } }])(
+    'charges cached prompt at the input rate if no cache rate exists: %s',
+    (customModelStrategy) => {
+      const price = calcAIGatewayCustomModelPrice({
+        inputToken: 1000,
+        outputToken: 2000,
+        cacheReadInputToken: 500,
+        inputTokenIncludesCache: true,
+        customModelStrategy,
+        customModelInputPrice: 3,
+        customModelOutputPrice: 15,
+      });
+      expect(price?.toNumber()).toBe(0.033);
+    }
+  );
   test('uses strategy price before deprecated SQL price fields', () => {
     const price = calcAIGatewayCustomModelPrice({
       inputToken: 1000,
@@ -338,7 +370,10 @@ describe('calcAIGatewayTpot', () => {
 
 describe('AI Gateway stream keepalive', () => {
   test('stores reconstructed OpenAI stream tool calls in the response payload', async () => {
-    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
     vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
       id: 'log1',
     } as any);
@@ -500,7 +535,10 @@ describe('AI Gateway stream keepalive', () => {
   });
 
   test('stores reconstructed Anthropic stream tool use when event and data arrive separately', async () => {
-    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
     vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
       id: 'log1',
     } as any);
@@ -642,7 +680,10 @@ describe('AI Gateway stream keepalive', () => {
   });
 
   test('stores the complete non-streaming Anthropic response payload', async () => {
-    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
     vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
       id: 'log1',
     } as any);
@@ -810,7 +851,10 @@ describe('AI Gateway stream keepalive', () => {
   });
 
   test('Anthropic stream handler sends an initial ping before upstream responds', async () => {
-    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
     vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
       id: 'log1',
     } as any);

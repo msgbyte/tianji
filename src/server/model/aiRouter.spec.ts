@@ -1559,7 +1559,23 @@ describe('aiRouterRouter routes', () => {
         },
       ],
     } as any);
-    vi.spyOn(prisma.aIGateway, 'findUnique').mockResolvedValue(null);
+    vi.spyOn(prisma.aIGateway, 'findUnique').mockImplementation((async ({
+      where,
+    }: any) => ({
+      id: where.id,
+      workspaceId: 'workspace-empty-runtime',
+      modelApiKey:
+        where.id === 'gw-empty-runtime'
+          ? 'sk-empty-runtime'
+          : 'sk-good-runtime',
+    })) as any);
+    vi.spyOn(prisma.userApiKey, 'findUnique').mockResolvedValue({
+      user: { id: 'user-empty-runtime' },
+    } as any);
+    vi.spyOn(prisma.userApiKey, 'update').mockResolvedValue({} as any);
+    vi.spyOn(prisma.workspacesOnUsers, 'findFirst').mockResolvedValue({
+      userId: 'user-empty-runtime',
+    } as any);
     const quotaAlertFindFirst = vi
       .spyOn(prisma.aIGatewayQuotaAlert, 'findFirst')
       .mockResolvedValue(null);
