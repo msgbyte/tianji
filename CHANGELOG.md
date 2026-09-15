@@ -1,5 +1,11 @@
 
 
+## [1.32.38](https://github.com/msgbyte/tianji/compare/v1.32.37...v1.32.38) (2026-09-15)
+
+### Bug Fixes
+
+* update gemini ai gateway compatibility ([6056033](https://github.com/msgbyte/tianji/commit/6056033243a09741f2c312884844a5dffa4917cf))
+
 ## [1.32.37](https://github.com/msgbyte/tianji/compare/v1.32.36...v1.32.37) (2026-09-14)
 
 ### Features
