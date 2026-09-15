@@ -74,11 +74,17 @@ function validateModel(model: string) {
   return model;
 }
 
-function validateBaseUrl(value: string | null) {
+function resolveBaseUrl(value: string | null, requestVersion: string) {
   let url: URL;
   let pathname: string;
+  let apiVersion = requestVersion;
   try {
     url = new URL(value || '');
+    const version = url.pathname.match(/\/(v1|v1beta)\/?$/);
+    if (version) {
+      apiVersion = version[1];
+      url.pathname = url.pathname.slice(0, -version[0].length);
+    }
     pathname = decodeURIComponent(url.pathname);
   } catch {
     throw failure(
@@ -96,10 +102,10 @@ function validateBaseUrl(value: string | null) {
   ) {
     throw failure(
       400,
-      'Gemini upstream base URL must precede /v1 or /v1beta and contain no credentials or query.'
+      'Gemini upstream base URL must use HTTP(S), optionally end in /v1 or /v1beta, and contain no credentials, query, fragment, or API action path.'
     );
   }
-  return url.toString().replace(/\/$/, '');
+  return { baseUrl: url.toString().replace(/\/$/, ''), apiVersion };
 }
 
 export function geminiError(code: number, message: string) {
@@ -205,7 +211,10 @@ export const geminiHandler: RequestHandler = async (req, res) => {
     });
     gateway = resolved.gatewayInfo;
     upstreamKey = resolved.modelApiKey;
-    const baseUrl = validateBaseUrl(gateway.customModelBaseUrl);
+    const { baseUrl, apiVersion } = resolveBaseUrl(
+      gateway.customModelBaseUrl,
+      version
+    );
     modelName = validateModel(gateway.customModelName || requestedModel);
     const model = `models/${modelName}`;
     const body = parsed.data;
@@ -240,7 +249,7 @@ export const geminiHandler: RequestHandler = async (req, res) => {
       vertexai: false,
       httpOptions: {
         baseUrl,
-        apiVersion: version,
+        apiVersion,
         timeout: 600_000,
         retryOptions: { attempts: 1 },
         headers: buildAIGatewayForwardHeaders(req),

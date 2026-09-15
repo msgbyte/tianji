@@ -174,7 +174,7 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                         </FormControl>
                         <FormDescription>
                           {t(
-                            'Custom base URL for the AI model API. If set, requests will be made to this URL instead of the default provider URL.'
+                            'Custom base URL for the AI model API, e.g. https://api.example.com/v1 for OpenAI or https://relay.example/v1beta for Gemini. For Gemini, an explicit URL version overrides the client version; without one, the client version is used.'
                           )}
                         </FormDescription>
                         <FormMessage />

@@ -431,12 +431,12 @@ gemini`;
                     <>
                       <li>
                         {t(
-                          'Configure a native Gemini upstream. Its base URL must end before /v1 or /v1beta.'
+                          'Configure a native Gemini upstream with a base URL such as https://relay.example/v1beta. A configured /v1 or /v1beta overrides the client API version; without a version, the client API version is used.'
                         )}
                       </li>
                       <li>
                         {t(
-                          'In Gemini CLI, select Use Gemini API Key. Google login and Vertex AI are not supported by this endpoint.'
+                          'In Gemini CLI, keep GOOGLE_GEMINI_BASE_URL ending in /custom and select Use Gemini API Key. Google login and Vertex AI are not supported by this endpoint.'
                         )}
                       </li>
                       <li>

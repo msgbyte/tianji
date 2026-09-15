@@ -39,7 +39,7 @@ export GEMINI_MODEL="<upstream-model-id>"
 gemini
 ```
 
-Keep `/custom` in the base URL and do not append a version path. The SDK's default API version is used unless overridden. To test v1, set `GOOGLE_GENAI_API_VERSION="v1"` before starting the CLI. This changes the Gemini API version, not the protocol to OpenAI. See the [Gemini CLI configuration documentation](https://geminicli.com/docs/reference/configuration/#environment-variables) and [authentication documentation](https://geminicli.com/docs/get-started/authentication/) for environment variables and API key authentication.
+Keep `/custom` in the CLI base URL and do not append a version path. This differs from the saved upstream URL, which may include `/v1` or `/v1beta` (see Section 4). The SDK's default API version is used for requests to Tianji unless overridden. To send v1 requests to Tianji, set `GOOGLE_GENAI_API_VERSION="v1"` before starting the CLI; a version explicitly configured in the gateway's upstream URL still takes precedence upstream. This changes the Gemini API version, not the protocol to OpenAI. See the [Gemini CLI configuration documentation](https://geminicli.com/docs/reference/configuration/#environment-variables) and [authentication documentation](https://geminicli.com/docs/get-started/authentication/) for environment variables and API key authentication.
 
 ## 3. Scope
 
@@ -47,7 +47,7 @@ Keep `/custom` in the base URL and do not append a version path. The SDK's defau
 | --- | --- |
 | Text generation | Non-streaming and streaming responses, multi-turn history, and system instructions |
 | Tool calls | Declarations, arguments, result submission, sequential and parallel calls, and signature preservation |
-| Gemini API versions | Accept `v1beta` and `v1` and call the upstream with the requested version; actual capabilities depend on the relay |
+| Gemini API versions | Accept `v1beta` and `v1`; use the saved upstream URL's explicit version, or the requested version for unversioned URLs; actual capabilities depend on the relay |
 | Custom models | Preserve model aliases containing `/` and reuse the gateway's fixed-model override rules |
 | Authentication and operations | Reuse existing key resolution, logging, usage, pricing, and quota-related logic |
 | Failure handling | Explicit HTTP/SSE errors, timeouts, interruption handling, and prompt termination of unknown routes |
@@ -82,11 +82,13 @@ Return 400 for empty models, malformed encoding, path traversal, and URL or quer
 
 ### Upstream URL and Version
 
-Continue using `customModelBaseUrl`. It must contain the base URL before the version path, such as `https://relay.example` or `https://relay.example/gemini`. Set the SDK's `httpOptions.baseUrl` to that URL and `apiVersion` to the validated incoming version.
+Continue using `customModelBaseUrl`. Prefer a complete API base URL such as `https://relay.example/v1beta` or `https://relay.example/gemini/v1beta`. Accept an optional trailing slash. An explicit trailing `/v1` or `/v1beta` takes precedence over the incoming request version. Split that suffix into the SDK's `apiVersion` and pass the remaining prefix as `httpOptions.baseUrl`, preserving relay path prefixes and avoiding duplicate version paths. Do not rewrite the saved configuration or change OpenAI URL handling.
 
-For example, with base URL `https://relay.example/gemini`, incoming version `v1beta`, and effective model `gemini-model`, the final request URL must be `https://relay.example/gemini/v1beta/models/gemini-model:generateContent`.
+For example, with saved URL `https://relay.example/gemini/v1beta`, incoming version `v1`, and effective model `gemini-model`, the final request URL must be `https://relay.example/gemini/v1beta/models/gemini-model:generateContent`. The same resolution applies to streaming and token counting.
 
-Do not include a trailing `/v1`, `/v1beta`, or complete action path in the base URL. Report these configurations clearly rather than guessing or rewriting the saved URL. A missing URL must produce an explicit error, not silently fall back to Google's service. Both incoming versions must route correctly. If a relay supports only `v1beta`, requests using `v1` must return the upstream error without an automatic downgrade.
+Existing unversioned URLs such as `https://relay.example` or `https://relay.example/gemini` remain compatible and use the validated incoming version. There is no automatic version guessing, retry, or downgrade: a configured `/v1` stays `/v1`, and an unversioned URL receiving `v1` still calls upstream `v1`, even if the relay only supports `v1beta`.
+
+Reject non-HTTP(S) URLs, credentials, queries, fragments, malformed encoding, complete API action paths, and `/v1` or `/v1beta` segments left inside the base prefix. A missing URL must produce an explicit error, not silently fall back to Google's service.
 
 The external format follows the [Gemini GenerateContent REST contract](https://ai.google.dev/api/generate-content). Supporting both version paths does not imply support for every Google API feature.
 
@@ -190,7 +192,7 @@ Invalid versions, paths, and unsupported APIs must not return HTML or open an in
 
 ### Native Token Counting
 
-Call `ai.models.countTokens` using the same relay, upstream key, incoming API version, and effective model. Support the two mutually exclusive REST input forms, `contents` and `generateContentRequest`. Preserve system instructions, tool declarations, and other fields in the latter rather than extracting only text. Apply the fixed-model override to nested models as well. Do not introduce the other input form while preparing SDK parameters.
+Call `ai.models.countTokens` using the same relay, upstream key, resolved upstream API version, and effective model. Support the two mutually exclusive REST input forms, `contents` and `generateContentRequest`. Preserve system instructions, tool declarations, and other fields in the latter rather than extracting only text. Apply the fixed-model override to nested models as well. Do not introduce the other input form while preparing SDK parameters.
 
 SDK token-count parameters differ from generation parameters, and some config fields apply only to Vertex AI. Make only the necessary adjustments based on the pinned version's [CountTokensConfig](https://googleapis.github.io/js-genai/release_docs/interfaces/types.CountTokensConfig.html). Use the SDK's `extraBody` for complete native counting requests when needed and inspect the actual outgoing request; a type assertion alone does not prove support.
 
@@ -236,7 +238,7 @@ Use the official SDK and existing validation, authentication, and logging utilit
 | CLI tool round trip | In a temporary test directory, read a file, modify another test file based on its contents, then read it back to verify; the CLI completes its final answer normally |
 | Sequential and parallel tools | The real upstream completes two sequential calls; IDs, arguments, results, and ordering of same-name parallel calls survive the round trip, with no server-side tool execution |
 | Signature round trip | After issuing a tool call, the Gemini upstream accepts the result and continues generation without losing signature contents or their association with parts |
-| Version and model routing | Route v1 and v1beta according to the requested version; supported relay versions succeed and unsupported ones fail explicitly; aliases containing `/` and fixed-model overrides work without duplicate version paths |
+| Version and model routing | Explicit saved `/v1` or `/v1beta` overrides the requested version; unversioned URLs preserve it; trailing slashes and relay prefixes work without duplicate version paths; unsupported upstream versions fail explicitly; aliases containing `/` and fixed-model overrides work |
 | Token counting | Preserve counting input for both plain contents and complete generateContentRequest forms, comparing results with direct relay calls; preserve errors for unsupported counting and verify CLI fallback |
 | Non-streaming SDK | The official Google SDK parses text, tool calls, usage, and finish reasons |
 | SDK boundaries | Inspect actual outgoing SDK paths and bodies; preserve thinking, tool schemas, signatures, and safety settings; callers cannot override URLs, keys, versions, or transport options |

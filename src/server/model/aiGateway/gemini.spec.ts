@@ -470,6 +470,34 @@ describe('Gemini native relay with the official SDK', () => {
     }
   );
 
+  test.each([
+    ['/v1beta', 'v1beta', '/v1beta'],
+    ['/v1', 'v1', '/v1'],
+    ['/gemini/v1beta/', 'v1', '/gemini/v1beta'],
+    ['/gemini/v1', 'v1beta', '/gemini/v1'],
+    ['/proxy%20path/gemini/v1beta', 'v1', '/proxy%20path/gemini/v1beta'],
+  ])(
+    'uses saved base path %s over incoming version %s without duplicating the version',
+    async (basePath, version, expectedPath) => {
+      gateway.customModelBaseUrl = `${relayUrl}${basePath}`;
+
+      const result = await post(
+        'generateContent',
+        { contents },
+        'relay/gemini',
+        version
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body).toEqual(response);
+      expect(received).toHaveLength(1);
+      expect(received[0].url).toBe(
+        `${expectedPath}/models/relay/gemini:generateContent`
+      );
+      expect(gateway.customModelBaseUrl).toBe(`${relayUrl}${basePath}`);
+    }
+  );
+
   test('preserves tool IDs, signatures, schemas, thinking and all candidates', async () => {
     const parts = [
       {
@@ -555,6 +583,7 @@ describe('Gemini native relay with the official SDK', () => {
   test.each([false, true])(
     'counts the complete native request, nested=%s, without billing generation',
     async (nested) => {
+      gateway.customModelBaseUrl = `${relayUrl}/gemini/v1beta`;
       gateway.customModelName = 'fixed/model';
       relayHandler = (_req, res) => {
         res.json({ totalTokens: 42 });
@@ -566,7 +595,7 @@ describe('Gemini native relay with the official SDK', () => {
         tools: [{ functionDeclarations: [{ name: 'read' }] }],
       };
       const body = nested ? { generateContentRequest } : { contents };
-      const result = await post('countTokens', body);
+      const result = await post('countTokens', body, 'relay/gemini', 'v1');
       expect(result.status).toBe(200);
       expect(result.body).toEqual({ totalTokens: 42 });
       expect(received[0].url).toBe(
@@ -622,6 +651,7 @@ describe('Gemini native relay with the official SDK', () => {
   );
 
   test('streams chunks and tail metadata to an official SDK client', async () => {
+    gateway.customModelBaseUrl = `${relayUrl}/gemini/v1beta`;
     const first = {
       candidates: [
         { index: 0, content: { role: 'model', parts: [{ text: 'Ho' }] } },
@@ -648,7 +678,7 @@ describe('Gemini native relay with the official SDK', () => {
     const baseUrl = await listen(app);
     const ai = new GoogleGenAI({
       apiKey: 'test-upstream-key',
-      httpOptions: { baseUrl: `${baseUrl}${prefix}` },
+      httpOptions: { baseUrl: `${baseUrl}${prefix}`, apiVersion: 'v1' },
     });
     const chunks = [];
     for await (const chunk of await ai.models.generateContentStream({
@@ -748,10 +778,16 @@ describe('Gemini native relay with the official SDK', () => {
   test.each([
     undefined,
     'https://relay.example/%ZZ',
-    'https://relay.example/v1beta',
-    'https://relay.example/v1',
+    'ftp://relay.example/v1beta',
+    'https://user:secret@relay.example/v1beta',
+    'https://relay.example/v1beta?key=secret',
+    'https://relay.example/v1beta#fragment',
+    'https://relay.example/v1/v1beta',
+    'https://relay.example/v1beta/v1',
+    'https://relay.example/%76%31beta/v1',
     'https://relay.example/v1beta/models/m:generateContent',
-  ])('rejects an invalid saved base URL', async (baseUrl) => {
+    'https://relay.example/v1/models',
+  ])('rejects an invalid saved base URL: %s', async (baseUrl) => {
     gateway.customModelBaseUrl = baseUrl;
     expect((await post()).status).toBe(400);
     expect(received).toHaveLength(0);
