@@ -1,5 +1,17 @@
 
 
+## [1.33.0](https://github.com/msgbyte/tianji/compare/v1.32.38...v1.33.0) (2026-09-16)
+
+### Features
+
+* **auth:** add workspace write role and member assignment ([7df0ba5](https://github.com/msgbyte/tianji/commit/7df0ba5e570f5b0d49c10e6a14f808301be277a9))
+* **auth:** allow writers to create and update workspace resources ([aa30c23](https://github.com/msgbyte/tianji/commit/aa30c2308f77a52b9b70c0ecf77cdc3e268c73a7))
+* **ui:** expose write actions while restricting destructive operations ([b7be6ee](https://github.com/msgbyte/tianji/commit/b7be6ee4e3eb11e37015cc258c05056aa2ad26c8))
+
+### Others
+
+* **i18n:** update translations and ignore Gemini labels ([09ec225](https://github.com/msgbyte/tianji/commit/09ec2257bd2fcabd58217b1aa9120e1dbba96a27))
+
 ## [1.32.38](https://github.com/msgbyte/tianji/compare/v1.32.37...v1.32.38) (2026-09-15)
 
 ### Bug Fixes
