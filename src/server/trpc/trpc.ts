@@ -173,6 +173,15 @@ export const workspaceProcedure = publicProcedure
   )
   .use(createWorkspacePermissionMiddleware([], true));
 
+export const workspaceWriteProcedure = publicProcedure
+  .input(z.object({ workspaceId: z.cuid2() }))
+  .use(
+    createWorkspacePermissionMiddleware(
+      [ROLES.owner, ROLES.admin, ROLES.write],
+      true
+    )
+  );
+
 export const workspaceAdminProcedure = publicProcedure
   .input(
     z.object({

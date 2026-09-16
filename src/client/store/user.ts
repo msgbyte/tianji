@@ -162,11 +162,22 @@ export function useHasPermission(role: ROLES): boolean {
     return true;
   }
 
+  if (
+    currentWorkspaceRole === ROLES.write &&
+    (role === ROLES.write || role === ROLES.readOnly)
+  ) {
+    return true;
+  }
+
   if (currentWorkspaceRole === ROLES.readOnly && role === ROLES.readOnly) {
     return true;
   }
 
   return false;
+}
+
+export function useHasWritePermission(): boolean {
+  return useHasPermission(ROLES.write);
 }
 
 export function useHasAdminPermission(): boolean {

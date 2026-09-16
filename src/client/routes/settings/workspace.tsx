@@ -59,6 +59,7 @@ export const Route = createFileRoute('/settings/workspace')({
 
 const inviteFormSchema = z.object({
   emailOrId: z.string(),
+  role: z.enum([ROLES.readOnly, ROLES.write, ROLES.admin]),
 });
 
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
@@ -85,6 +86,7 @@ function PageComponent() {
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
       emailOrId: '',
+      role: ROLES.readOnly,
     },
   });
   const inviteMutation = trpc.workspace.invite.useMutation({
@@ -124,6 +126,7 @@ function PageComponent() {
       await inviteMutation.mutateAsync({
         workspaceId,
         emailOrId: values.emailOrId,
+        role: values.role,
       });
       form.reset();
 
@@ -240,6 +243,46 @@ function PageComponent() {
                           />
                         </FormControl>
                         <FormDescription />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem className="mt-4 max-w-[320px]">
+                        <FormLabel>{t('Role')}</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={ROLES.readOnly}>
+                              {t('Read Only')}
+                            </SelectItem>
+                            <SelectItem value={ROLES.write}>
+                              {t('Write')}
+                            </SelectItem>
+                            {isWorkspaceOwner && (
+                              <SelectItem value={ROLES.admin}>
+                                {t('Admin')}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {field.value === ROLES.write && (
+                          <FormDescription>
+                            {t(
+                              'Can create and edit resources, but cannot delete them.'
+                            )}
+                          </FormDescription>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}

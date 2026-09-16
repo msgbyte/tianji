@@ -351,7 +351,9 @@ export const workspaceRouter = router({
     .input(
       z.object({
         emailOrId: z.string(),
-        role: z.enum([ROLES.admin, ROLES.readOnly]).default(ROLES.readOnly),
+        role: z
+          .enum([ROLES.admin, ROLES.write, ROLES.readOnly])
+          .default(ROLES.readOnly),
       })
     )
     .output(z.void())
@@ -391,7 +393,7 @@ export const workspaceRouter = router({
 
       if (targetUser) {
         // if user exist
-        await joinWorkspace(targetUser.id, workspaceId);
+        await joinWorkspace(targetUser.id, workspaceId, input.role);
       } else if (emailOrId.includes('@')) {
         // user not exist, and is email invite user with send email
         const invitation = await createWorkspaceInvitation(

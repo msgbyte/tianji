@@ -27,10 +27,21 @@ vi.mock('../utils/prometheus/client.js', () => ({
   promTrpcRequest: { startTimer: vi.fn(() => mocks.endRequest) },
 }));
 
-const { router, workspaceAdminProcedure, workspaceProcedure } =
-  await import('./trpc.js');
+const {
+  router,
+  workspaceAdminProcedure,
+  workspaceWriteProcedure,
+  workspaceOwnerProcedure,
+  workspaceProcedure,
+} = await import('./trpc.js');
 
 const testRouter = router({
+  permissions: router({
+    create: workspaceWriteProcedure.mutation(() => 'created'),
+    update: workspaceWriteProcedure.mutation(() => 'updated'),
+    delete: workspaceAdminProcedure.mutation(() => 'deleted'),
+    manage: workspaceOwnerProcedure.mutation(() => 'managed'),
+  }),
   entity: router({
     update: workspaceAdminProcedure
       .input(
@@ -140,6 +151,48 @@ describe('workspace mutation audit log', () => {
     await caller.aiGateway.testConnection({ workspaceId });
     await caller.notification.test({ workspaceId });
 
+    expect(mocks.createAuditLog).not.toHaveBeenCalled();
+  });
+});
+
+describe('workspace role permissions', () => {
+  test.each([
+    ['readOnly', false, false, false],
+    ['write', true, false, false],
+    ['admin', true, true, false],
+    ['owner', true, true, true],
+    ['unknown', false, false, false],
+  ])(
+    '%s enforces write, delete, and management boundaries',
+    async (role, canWrite, canDelete, canManage) => {
+      mocks.getWorkspaceUser.mockResolvedValue({ role });
+      const caller = createCaller();
+      const input = { workspaceId: createId() };
+      for (const [operation, allowed, result] of [
+        [caller.permissions.create, canWrite, 'created'],
+        [caller.permissions.update, canWrite, 'updated'],
+        [caller.permissions.delete, canDelete, 'deleted'],
+        [caller.permissions.manage, canManage, 'managed'],
+      ] as const) {
+        mocks.createAuditLog.mockClear();
+        if (allowed) {
+          await expect(operation(input)).resolves.toBe(result);
+          expect(mocks.createAuditLog).toHaveBeenCalledOnce();
+        } else {
+          await expect(operation(input)).rejects.toMatchObject({
+            code: 'FORBIDDEN',
+          });
+          expect(mocks.createAuditLog).not.toHaveBeenCalled();
+        }
+      }
+    }
+  );
+
+  test('rejects writing to a workspace without membership', async () => {
+    mocks.getWorkspaceUser.mockResolvedValue(null);
+    await expect(
+      createCaller().permissions.create({ workspaceId: createId() })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
     expect(mocks.createAuditLog).not.toHaveBeenCalled();
   });
 });
