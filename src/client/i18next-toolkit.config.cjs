@@ -103,6 +103,8 @@ const config = {
       'Deepseek API',
       'OpenRouter API',
       'Anthropic API',
+      'Gemini CLI',
+      'Gemini API',
       'Custom API',
       'DeepSeek',
       'Anthropic',
