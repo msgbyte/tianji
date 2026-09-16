@@ -200,6 +200,8 @@ export const workerRouter = router({
 
       const workspaceUser = await getWorkspaceUser(workspaceId, ctx.user.id);
       const hasAdminPermission = isWorkspaceAdmin(workspaceUser?.role);
+      const hasWritePermission =
+        hasAdminPermission || workspaceUser?.role === ROLES.write;
       let currentOwnerId: string | null = null;
       let currentModuleBindings: Array<{
         moduleId: string;
@@ -228,14 +230,17 @@ export const workerRouter = router({
 
         currentOwnerId = existingWorker.ownerId;
         currentModuleBindings = existingWorker.moduleBindings ?? [];
-        if (!hasAdminPermission && currentOwnerId !== ctx.user.id) {
+        if (!hasWritePermission && currentOwnerId !== ctx.user.id) {
           throw new TRPCError({ code: 'FORBIDDEN' });
         }
-      } else if (!hasAdminPermission) {
+      } else if (!hasWritePermission) {
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
-      if (ownerId !== undefined && ownerId !== currentOwnerId) {
+      if (
+        ownerId !== undefined &&
+        ownerId !== (id ? currentOwnerId : ctx.user.id)
+      ) {
         if (!hasAdminPermission) {
           throw new TRPCError({ code: 'FORBIDDEN' });
         }
@@ -1092,7 +1097,10 @@ async function assertCanEditWorker(
   }
 
   const workspaceUser = await getWorkspaceUser(workspaceId, userId);
-  if (!isWorkspaceAdmin(workspaceUser?.role)) {
+  if (
+    !isWorkspaceAdmin(workspaceUser?.role) &&
+    workspaceUser?.role !== ROLES.write
+  ) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
 }

@@ -4,6 +4,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { prisma } from '../../model/_client.js';
 import { z } from 'zod';
@@ -117,7 +118,7 @@ export const monitorRouter = router({
 
       return getMonitorPublicInfos(monitorIds);
     }),
-  upsert: workspaceAdminProcedure
+  upsert: workspaceWriteProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'POST',
@@ -156,6 +157,18 @@ export const monitorRouter = router({
         upMessageTemplate,
         downMessageTemplate,
       } = input;
+
+      if (id) {
+        const existing = await prisma.monitor.findUnique({
+          where: { id, workspaceId },
+          select: { payload: true },
+        });
+        // Token rotation is handled by the admin-only regeneration endpoint.
+        const pushToken = get(existing?.payload, 'pushToken');
+        if (pushToken) {
+          payload.pushToken = pushToken;
+        }
+      }
 
       const monitor = await monitorManager.upsert({
         id,
@@ -249,7 +262,7 @@ export const monitorRouter = router({
 
       return newPushToken;
     }),
-  testCustomScript: workspaceAdminProcedure
+  testCustomScript: workspaceWriteProcedure
     .input(
       z.object({
         code: z.string(),
@@ -271,7 +284,7 @@ export const monitorRouter = router({
         usage: res.usage,
       };
     }),
-  testNotifyScript: workspaceAdminProcedure
+  testNotifyScript: workspaceWriteProcedure
     .input(
       z.object({
         monitorId: z.string(),
@@ -382,7 +395,7 @@ export const monitorRouter = router({
         new Date(endAt)
       );
     }),
-  changeActive: workspaceAdminProcedure
+  changeActive: workspaceWriteProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'PATCH',

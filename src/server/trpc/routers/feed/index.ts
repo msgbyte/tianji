@@ -7,6 +7,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../../trpc.js';
 import { OPENAPI_TAG } from '../../../utils/const.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
@@ -121,7 +122,7 @@ export const feedRouter = router({
         notificationIds: channel?.notifications.map((n) => n.id),
       };
     }),
-  updateChannelInfo: workspaceProcedure
+  updateChannelInfo: workspaceWriteProcedure
     .meta(
       buildFeedOpenapi({
         method: 'POST',
@@ -346,7 +347,7 @@ export const feedRouter = router({
 
       return channel;
     }),
-  createChannel: workspaceAdminProcedure
+  createChannel: workspaceWriteProcedure
     .meta(
       buildFeedOpenapi({
         method: 'POST',
@@ -606,7 +607,7 @@ export const feedRouter = router({
         },
       });
     }),
-  unarchiveEvent: workspaceAdminProcedure
+  unarchiveEvent: workspaceWriteProcedure
     .meta(
       buildFeedPublicOpenapi({
         method: 'PATCH',

@@ -690,3 +690,54 @@ describe('workerRouter environment variables', () => {
     expect(mocks.execWorker).not.toHaveBeenCalled();
   });
 });
+
+describe('worker write role', () => {
+  test.each([false, true])(
+    'can save workers with an existing id: %s',
+    async (existing) => {
+      const workspaceId = createId();
+      const savedWorker = worker(workspaceId);
+      mocks.getWorkspaceUser.mockResolvedValue({ role: 'write' });
+      mocks.findWorker.mockResolvedValue({
+        ownerId: 'another-user',
+        moduleBindings: [],
+      });
+      mocks.upsertWorker.mockResolvedValue(savedWorker);
+      const caller = await createCaller();
+      await expect(
+        caller.upsert({
+          workspaceId,
+          ...(existing ? { id: savedWorker.id } : {}),
+          name: savedWorker.name,
+          code: savedWorker.code,
+        })
+      ).resolves.toEqual(savedWorker);
+      expect(mocks.createAuditLog).toHaveBeenCalledOnce();
+    }
+  );
+
+  test('cannot delete a worker or transfer its ownership', async () => {
+    const workspaceId = createId();
+    const savedWorker = worker(workspaceId);
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'write' });
+    mocks.findWorker.mockResolvedValue({
+      ownerId: 'user-id',
+      moduleBindings: [],
+    });
+    const caller = await createCaller();
+    await expect(
+      caller.delete({ workspaceId, workerId: savedWorker.id })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(
+      caller.upsert({
+        workspaceId,
+        id: savedWorker.id,
+        name: savedWorker.name,
+        code: savedWorker.code,
+        ownerId: createId(),
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(mocks.upsertWorker).not.toHaveBeenCalled();
+    expect(mocks.createAuditLog).not.toHaveBeenCalled();
+  });
+});

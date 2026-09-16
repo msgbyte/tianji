@@ -4,6 +4,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { z } from 'zod';
 import {
@@ -286,7 +287,10 @@ export const websiteRouter = router({
       });
 
       if (!website) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Website not found' });
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Website not found',
+        });
       }
 
       const { startDate, endDate } = await parseDateRange({
@@ -538,7 +542,7 @@ export const websiteRouter = router({
 
       return [];
     }),
-  add: workspaceAdminProcedure
+  add: workspaceWriteProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -614,7 +618,7 @@ export const websiteRouter = router({
 
       return website;
     }),
-  updateInfo: workspaceAdminProcedure
+  updateInfo: workspaceWriteProcedure
     .meta(
       buildWebsiteOpenapi({
         method: 'PUT',
@@ -650,7 +654,7 @@ export const websiteRouter = router({
 
       return websiteInfo;
     }),
-  generateLighthouseReport: workspaceProcedure
+  generateLighthouseReport: workspaceWriteProcedure
     .meta(
       buildWebsiteOpenapi({
         method: 'POST',

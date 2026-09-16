@@ -4,6 +4,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import {
   EVENT_COLUMNS,
@@ -135,7 +136,7 @@ export const telemetryRouter = router({
 
       return count;
     }),
-  upsert: workspaceAdminProcedure
+  upsert: workspaceWriteProcedure
     .meta(
       buildTelemetryOpenapi({
         method: 'POST',

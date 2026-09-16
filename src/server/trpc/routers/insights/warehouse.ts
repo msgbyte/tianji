@@ -3,6 +3,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../../trpc.js';
 import { prisma } from '../../../model/_client.js';
 import { WarehouseDatebaseModelSchema } from '../../../prisma/zod/warehousedatebase.js';
@@ -179,7 +180,7 @@ export const warehouseRouter = router({
         });
         return items;
       }),
-    upsert: workspaceAdminProcedure
+    upsert: workspaceWriteProcedure
       .input(
         z.object({
           id: z.string().optional(),

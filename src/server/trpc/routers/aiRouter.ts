@@ -4,6 +4,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../utils/const.js';
@@ -121,7 +122,7 @@ export const aiRouterRouter = router({
       return aiRouter ? (serializeAIRouterInfo(aiRouter) as any) : null;
     }),
 
-  create: workspaceAdminProcedure
+  create: workspaceWriteProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -143,7 +144,7 @@ export const aiRouterRouter = router({
       });
     }),
 
-  update: workspaceAdminProcedure
+  update: workspaceWriteProcedure
     .meta(
       buildAIRouterOpenapi({
         method: 'PATCH',
@@ -247,7 +248,7 @@ export const aiRouterRouter = router({
         .map(serializeAIGatewayModel);
     }),
 
-  replaceTiers: workspaceAdminProcedure
+  replaceTiers: workspaceWriteProcedure
     .meta(
       buildAIRouterOpenapi({
         method: 'POST',

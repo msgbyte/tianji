@@ -5,6 +5,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../utils/const.js';
@@ -152,7 +153,7 @@ export const aiGatewayRouter = router({
           : null,
       };
     }),
-  create: workspaceAdminProcedure
+  create: workspaceWriteProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -200,7 +201,7 @@ export const aiGatewayRouter = router({
       };
     }),
 
-  update: workspaceAdminProcedure
+  update: workspaceWriteProcedure
     .meta(
       buildAIGatewayOpenapi({
         method: 'PATCH',
@@ -258,7 +259,7 @@ export const aiGatewayRouter = router({
       };
     }),
 
-  testConnection: workspaceAdminProcedure
+  testConnection: workspaceWriteProcedure
     .input(
       z.object({
         gatewayId: z.string(),
@@ -316,7 +317,7 @@ export const aiGatewayRouter = router({
       }
     }),
 
-  duplicate: workspaceAdminProcedure
+  duplicate: workspaceWriteProcedure
     .meta(
       buildAIGatewayOpenapi({
         method: 'POST',
@@ -684,7 +685,7 @@ export const aiGatewayRouter = router({
         };
       }),
 
-    upsert: workspaceAdminProcedure
+    upsert: workspaceWriteProcedure
       .meta(
         buildAIGatewayOpenapi({
           method: 'POST',

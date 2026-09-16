@@ -167,6 +167,7 @@ async function createCaller() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.getWorkspaceUser.mockResolvedValue({ role: 'owner' });
 });
 
 afterEach(() => {
@@ -366,5 +367,52 @@ describe('feed channel authorization', () => {
     });
 
     expect(result).toEqual(resolvedState);
+  });
+});
+
+describe('feed write permissions', () => {
+  test.each(['readOnly', 'write', 'admin', 'owner'])(
+    '%s can update channels only with write permission',
+    async (role) => {
+      mocks.getWorkspaceUser.mockResolvedValue({ role });
+      const currentChannel = channel();
+      mocks.prisma.feedChannel.update.mockResolvedValue(currentChannel);
+      const caller = await createCaller();
+      const request = caller.updateChannelInfo({
+        workspaceId: currentChannel.workspaceId,
+        channelId: currentChannel.id,
+        name: currentChannel.name,
+        webhookSignature: '',
+        notifyFrequency: 'day',
+      });
+      if (role === 'readOnly') {
+        await expect(request).rejects.toMatchObject({ code: 'FORBIDDEN' });
+        expect(mocks.prisma.feedChannel.update).not.toHaveBeenCalled();
+        expect(mocks.prisma.workspaceAuditLog.create).not.toHaveBeenCalled();
+      } else {
+        await expect(request).resolves.toMatchObject({ id: currentChannel.id });
+        expect(mocks.prisma.workspaceAuditLog.create).toHaveBeenCalledOnce();
+      }
+    }
+  );
+
+  test('writers cannot delete, archive, clear, or change public access', async () => {
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'write' });
+    const caller = await createCaller();
+    const input = { workspaceId: createId(), channelId: 'channel-id' };
+    for (const request of [
+      () => caller.deleteChannel(input),
+      () => caller.archiveEvent({ ...input, eventId: 'event-id' }),
+      () => caller.clearAllArchivedEvents(input),
+      () => caller.refreshPublicShareId(input),
+      () => caller.disablePublicShareId(input),
+    ]) {
+      await expect(request()).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    }
+    expect(mocks.prisma.feedChannel.delete).not.toHaveBeenCalled();
+    expect(mocks.prisma.feedChannel.update).not.toHaveBeenCalled();
+    expect(mocks.prisma.feedEvent.update).not.toHaveBeenCalled();
+    expect(mocks.prisma.feedEvent.deleteMany).not.toHaveBeenCalled();
+    expect(mocks.prisma.workspaceAuditLog.create).not.toHaveBeenCalled();
   });
 });

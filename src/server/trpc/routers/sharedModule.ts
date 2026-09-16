@@ -11,7 +11,11 @@ import {
 } from '../../model/sharedModule/compiler.js';
 import { wrapSharedModuleDeclaration } from '../../model/sharedModule/bindings.js';
 import { getWorkspaceUser } from '../../model/workspace.js';
-import { router, workspaceProcedure } from '../trpc.js';
+import {
+  router,
+  workspaceAdminProcedure,
+  workspaceProcedure,
+} from '../trpc.js';
 
 const userSelect = {
   id: true,
@@ -62,6 +66,7 @@ export const sharedModuleRouter = router({
     .mutation(async ({ input, ctx }) => {
       const workspaceUser = await getWorkspaceUser(input.workspaceId, ctx.user.id);
       const isAdmin = isWorkspaceAdmin(workspaceUser?.role);
+      const canWrite = isAdmin || workspaceUser?.role === ROLES.write;
       if (input.moduleId) {
         const module = await prisma.sharedModule.findUnique({
           where: { id: input.moduleId, workspaceId: input.workspaceId },
@@ -70,8 +75,8 @@ export const sharedModuleRouter = router({
         if (!module) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Shared module not found' });
         }
-        assertCanEditSharedModule(isAdmin, ctx.user.id, module.ownerId);
-      } else if (!isAdmin) {
+        assertCanEditSharedModule(canWrite, ctx.user.id, module.ownerId);
+      } else if (!canWrite) {
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
@@ -84,8 +89,9 @@ export const sharedModuleRouter = router({
       const { workspaceId, id, ownerId, source, ...data } = input;
       const workspaceUser = await getWorkspaceUser(workspaceId, ctx.user.id);
       const isAdmin = isWorkspaceAdmin(workspaceUser?.role);
+      const canWrite = isAdmin || workspaceUser?.role === ROLES.write;
 
-      if (!id && !isAdmin) {
+      if (!id && !canWrite) {
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
 
@@ -107,7 +113,7 @@ export const sharedModuleRouter = router({
             message: 'Shared module not found',
           });
         }
-        assertCanEditSharedModule(isAdmin, ctx.user.id, existing.ownerId);
+        assertCanEditSharedModule(canWrite, ctx.user.id, existing.ownerId);
         if (existing.archivedAt) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
@@ -122,7 +128,10 @@ export const sharedModuleRouter = router({
         }
       }
 
-      if (ownerId !== undefined && ownerId !== existing?.ownerId) {
+      if (
+        ownerId !== undefined &&
+        ownerId !== (id ? existing?.ownerId : ctx.user.id)
+      ) {
         if (!isAdmin) {
           throw new TRPCError({ code: 'FORBIDDEN' });
         }
@@ -194,7 +203,7 @@ export const sharedModuleRouter = router({
       return result;
     }),
 
-  archive: workspaceProcedure
+  archive: workspaceAdminProcedure
     .input(moduleIdInput)
     .mutation(async ({ input, ctx }) => {
       const module = await prisma.sharedModule.findUnique({
@@ -203,12 +212,6 @@ export const sharedModuleRouter = router({
       if (!module) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Shared module not found' });
       }
-      const workspaceUser = await getWorkspaceUser(input.workspaceId, ctx.user.id);
-      assertCanEditSharedModule(
-        isWorkspaceAdmin(workspaceUser?.role),
-        ctx.user.id,
-        module.ownerId
-      );
       if (module.archivedAt) {
         return module;
       }
@@ -311,11 +314,11 @@ async function assertModuleInWorkspace(workspaceId: string, moduleId: string) {
 }
 
 function assertCanEditSharedModule(
-  isAdmin: boolean,
+  canWrite: boolean,
   userId: string,
   ownerId: string | null
 ) {
-  if (!isAdmin && ownerId !== userId) {
+  if (!canWrite && ownerId !== userId) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
 }

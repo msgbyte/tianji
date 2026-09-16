@@ -4,6 +4,7 @@ import {
   publicProcedure,
   router,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../../trpc.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../../utils/const.js';
@@ -115,7 +116,7 @@ export const feedStateRouter = router({
 
       return state;
     }),
-  resolve: workspaceProcedure
+  resolve: workspaceWriteProcedure
     .meta(
       buildFeedOpenapi({
         method: 'POST',

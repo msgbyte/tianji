@@ -1,6 +1,7 @@
 import {
   router,
   workspaceProcedure,
+  workspaceWriteProcedure,
   workspaceAdminProcedure,
 } from '../trpc.js';
 import { z } from 'zod';
@@ -49,7 +50,7 @@ export const shortlinkRouter = router({
   /**
    * Create a new short link
    */
-  create: workspaceAdminProcedure
+  create: workspaceWriteProcedure
     .input(
       z.object({
         originalUrl: z.string().url(),
@@ -84,7 +85,7 @@ export const shortlinkRouter = router({
   /**
    * Update a short link
    */
-  update: workspaceAdminProcedure
+  update: workspaceWriteProcedure
     .input(
       z.object({
         id: z.string().cuid2(),
