@@ -12,7 +12,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@i18next-toolkit/react';
 import { trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { AlertCircle, DollarSign } from 'lucide-react';
@@ -31,6 +35,8 @@ export const AIGatewayQuotaAlertModal: React.FC<
 > = ({ isOpen, onClose, gatewayId }) => {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const [dailyQuota, setDailyQuota] = useState<string>('0');
   const [enabled, setEnabled] = useState(false);
   const [notificationId, setNotificationId] = useState<string | undefined>();
@@ -188,7 +194,7 @@ export const AIGatewayQuotaAlertModal: React.FC<
 
             <div className="flex justify-between">
               <div>
-                {quotaAlert && (
+                {hasAdminPermission && quotaAlert && (
                   <AlertConfirm
                     title={t('Delete Quota Alert')}
                     description={t(
@@ -213,7 +219,10 @@ export const AIGatewayQuotaAlertModal: React.FC<
                 <Button type="button" variant="outline" onClick={onClose}>
                   {t('Cancel')}
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !hasWritePermission}
+                >
                   {quotaAlert ? t('Update') : t('Create')}
                 </Button>
               </div>

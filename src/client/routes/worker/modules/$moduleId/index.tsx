@@ -32,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEvent } from '@/hooks/useEvent';
 import {
   useCurrentWorkspaceId,
-  useHasAdminPermission,
+  useHasWritePermission,
   useUserInfo,
 } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -46,7 +46,7 @@ function PageComponent() {
   const { moduleId } = Route.useParams<{ moduleId: string }>();
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const userId = useUserInfo()?.id;
   const utils = trpc.useUtils();
   const input = { workspaceId, moduleId };
@@ -99,7 +99,7 @@ function PageComponent() {
   if (!module) return <ErrorTip />;
   const revisions = revisionsQuery.data ?? [];
   const consumers = consumersQuery.data ?? [];
-  const canEdit = hasAdminPermission || module.ownerId === userId;
+  const canEdit = hasWritePermission || module.ownerId === userId;
 
   return (
     <CommonWrapper
@@ -220,7 +220,7 @@ function PageComponent() {
                       key={consumer.id}
                       to="/worker/$workerId"
                       params={{ workerId: consumer.worker.id }}
-                      className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted"
+                      className="hover:bg-muted flex items-center justify-between rounded-lg border p-3"
                     >
                       <span>{consumer.worker.name}</span>
                       <Badge variant="outline">

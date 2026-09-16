@@ -21,7 +21,8 @@ import {
 interface AIGatewayActionsMenuProps {
   gatewayId: string;
   gatewayName: string;
-  canManage: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
   onEdit: () => void;
   onDelete: () => Promise<void>;
 }
@@ -52,7 +53,7 @@ export function AIGatewayActionsMenu(props: AIGatewayActionsMenuProps) {
               {t('Log Observer')}
             </Link>
           </DropdownMenuItem>
-          {props.canManage && (
+          {props.canEdit && (
             <>
               <DropdownMenuItem onSelect={props.onEdit}>
                 <LuPencil className="mr-2" />
@@ -62,26 +63,28 @@ export function AIGatewayActionsMenu(props: AIGatewayActionsMenuProps) {
                 <LuCopy className="mr-2" />
                 {t('Duplicate')}
               </DropdownMenuItem>
-              <AlertConfirm
-                title={`${t('Delete AI Gateway')} ${props.gatewayName}`}
-                description={t(
-                  'Are you sure you want to delete this AI Gateway? This action cannot be undone.'
-                )}
-                onConfirm={props.onDelete}
-              >
-                <DropdownMenuItem
-                  onSelect={(event) => event.preventDefault()}
-                  className="text-red-600 data-[highlighted]:!bg-red-50 data-[highlighted]:!text-red-700"
-                >
-                  <LuTrash className="mr-2" />
-                  {t('Delete')}
-                </DropdownMenuItem>
-              </AlertConfirm>
             </>
+          )}
+          {props.canDelete && (
+            <AlertConfirm
+              title={`${t('Delete AI Gateway')} ${props.gatewayName}`}
+              description={t(
+                'Are you sure you want to delete this AI Gateway? This action cannot be undone.'
+              )}
+              onConfirm={props.onDelete}
+            >
+              <DropdownMenuItem
+                onSelect={(event) => event.preventDefault()}
+                className="text-red-600 data-[highlighted]:!bg-red-50 data-[highlighted]:!text-red-700"
+              >
+                <LuTrash className="mr-2" />
+                {t('Delete')}
+              </DropdownMenuItem>
+            </AlertConfirm>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-      {props.canManage && (
+      {props.canEdit && (
         <AIGatewayDuplicateDialog
           gatewayId={props.gatewayId}
           gatewayName={props.gatewayName}

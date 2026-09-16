@@ -11,7 +11,11 @@ import { NotFoundTip } from '@/components/NotFoundTip';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEvent } from '@/hooks/useEvent';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -33,6 +37,7 @@ function PageComponent() {
   });
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { t } = useTranslation();
   const trpcUtils = trpc.useUtils();
 
@@ -80,37 +85,39 @@ function PageComponent() {
             <div className="space-x-2">
               <AIRouterUsageBtn routerId={routerId} />
 
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  Icon={LuPencil}
-                  aria-label={t('Edit AI Router')}
-                  onClick={() =>
-                    navigate({
-                      to: '/aiRouter/$routerId/edit',
-                      params: {
-                        routerId,
-                      },
-                    })
-                  }
-                />
-
-                <AlertConfirm
-                  title={t('Delete AI Router') + ' ' + router.name}
-                  description={t(
-                    'Are you sure you want to delete this AI Router? This action cannot be undone.'
-                  )}
-                  onConfirm={handleDeleteRouter}
-                >
                   <Button
                     size="icon"
                     variant="outline"
-                    Icon={LuTrash}
-                    aria-label={t('Delete AI Router')}
+                    Icon={LuPencil}
+                    aria-label={t('Edit AI Router')}
+                    onClick={() =>
+                      navigate({
+                        to: '/aiRouter/$routerId/edit',
+                        params: {
+                          routerId,
+                        },
+                      })
+                    }
                   />
-                </AlertConfirm>
+
+                  {hasAdminPermission && (
+                    <AlertConfirm
+                      title={t('Delete AI Router') + ' ' + router.name}
+                      description={t(
+                        'Are you sure you want to delete this AI Router? This action cannot be undone.'
+                      )}
+                      onConfirm={handleDeleteRouter}
+                    >
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        Icon={LuTrash}
+                        aria-label={t('Delete AI Router')}
+                      />
+                    </AlertConfirm>
+                  )}
                 </>
               )}
             </div>
@@ -147,7 +154,7 @@ function PageComponent() {
               <AIRouterRouteEditor
                 routerId={routerId}
                 tiers={router.tiers}
-                canEdit={hasAdminPermission}
+                canEdit={hasWritePermission}
               />
             </div>
           </TabsContent>
@@ -265,11 +272,7 @@ function Overview({ router }: { router: AIRouterInfo }) {
   );
 }
 
-function Settings({
-  router,
-}: {
-  router: AIRouterInfo;
-}) {
+function Settings({ router }: { router: AIRouterInfo }) {
   const { t } = useTranslation();
   const nodeCount = router.tiers.reduce(
     (sum, tier) => sum + tier.nodes.length,

@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -37,6 +37,7 @@ export const Route = createFileRoute('/telemetry/$telemetryId')({
 function TelemetryDetailComponent() {
   const { telemetryId } = Route.useParams<{ telemetryId: string }>();
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
   const { t } = useTranslation();
   const { startDate, endDate } = useGlobalRangeDate();
   const { data: info } = trpc.telemetry.info.useQuery({
@@ -76,17 +77,19 @@ function TelemetryDetailComponent() {
           title={info?.name ?? ''}
           actions={
             <div className="space-x-2">
-              <AlertConfirm
-                title={t('Confirm to delete this telemetry?')}
-                description={t('Telemetry name: {{name}} | events: {{num}}', {
-                  name: info?.name ?? '',
-                  num: eventCount ?? 0,
-                })}
-                content={t('It will permanently delete the relevant data')}
-                onConfirm={handleDelete}
-              >
-                <Button variant="outline" size="icon" Icon={LuTrash} />
-              </AlertConfirm>
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Confirm to delete this telemetry?')}
+                  description={t('Telemetry name: {{name}} | events: {{num}}', {
+                    name: info?.name ?? '',
+                    num: eventCount ?? 0,
+                  })}
+                  content={t('It will permanently delete the relevant data')}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
+              )}
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>

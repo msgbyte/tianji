@@ -6,6 +6,7 @@ import { Route } from '../../routes/aiGateway/$gatewayId/index';
 
 const mocks = vi.hoisted(() => ({
   hasAdminPermission: true,
+  hasWritePermission: true,
   navigate: vi.fn(),
   deleteGateway: vi.fn(),
   refetchGateways: vi.fn(),
@@ -13,12 +14,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute:
-    () =>
-    (options: Record<string, unknown>) => ({
-      ...options,
-      useParams: () => ({ gatewayId: 'gateway_1' }),
-    }),
+  createFileRoute: () => (options: Record<string, unknown>) => ({
+    ...options,
+    useParams: () => ({ gatewayId: 'gateway_1' }),
+  }),
   Link: ({ children, to, params }: any) => (
     <a href={to.replace('$gatewayId', params.gatewayId)}>{children}</a>
   ),
@@ -33,6 +32,7 @@ vi.mock('@/utils/route', () => ({ routeAuthBeforeLoad: vi.fn() }));
 vi.mock('@/store/user', () => ({
   useCurrentWorkspaceId: () => 'workspace_1',
   useHasAdminPermission: () => mocks.hasAdminPermission,
+  useHasWritePermission: () => mocks.hasWritePermission,
 }));
 
 vi.mock('@/api/trpc', () => ({
@@ -56,7 +56,9 @@ vi.mock('@/api/trpc', () => ({
 }));
 
 vi.mock('@/components/CommonWrapper', () => ({
-  CommonWrapper: ({ header }: { header: React.ReactNode }) => <div>{header}</div>,
+  CommonWrapper: ({ header }: { header: React.ReactNode }) => (
+    <div>{header}</div>
+  ),
 }));
 vi.mock('@/components/CommonHeader', () => ({
   CommonHeader: ({ actions }: { actions: React.ReactNode }) => (
@@ -76,6 +78,7 @@ vi.mock('@/components/aiGateway/AIGatewayActionsMenu', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.hasAdminPermission = true;
+  mocks.hasWritePermission = true;
   mocks.actionsMenuProps.current = null;
   mocks.deleteGateway.mockResolvedValue(undefined);
   mocks.refetchGateways.mockResolvedValue(undefined);
@@ -89,7 +92,8 @@ describe('AI Gateway detail route actions', () => {
 
     expect(screen.getByText('Code example')).toBeInTheDocument();
     expect(screen.getByLabelText('AI Gateway actions')).toBeInTheDocument();
-    expect(mocks.actionsMenuProps.current.canManage).toBe(true);
+    expect(mocks.actionsMenuProps.current.canEdit).toBe(true);
+    expect(mocks.actionsMenuProps.current.canDelete).toBe(true);
 
     act(() => mocks.actionsMenuProps.current.onEdit());
     expect(mocks.navigate).toHaveBeenCalledWith({
@@ -117,14 +121,24 @@ describe('AI Gateway detail route actions', () => {
     );
   });
 
-  test('keeps the actions menu available to non-administrators', () => {
+  test('allows writers to edit without deletion rights', () => {
     mocks.hasAdminPermission = false;
+    const Component = (Route as any).component;
+    render(<Component />);
+    expect(mocks.actionsMenuProps.current.canEdit).toBe(true);
+    expect(mocks.actionsMenuProps.current.canDelete).toBe(false);
+  });
+
+  test('keeps the actions menu available to read-only members', () => {
+    mocks.hasAdminPermission = false;
+    mocks.hasWritePermission = false;
     const Component = (Route as any).component;
 
     render(<Component />);
 
     expect(screen.getByText('Code example')).toBeInTheDocument();
     expect(screen.getByLabelText('AI Gateway actions')).toBeInTheDocument();
-    expect(mocks.actionsMenuProps.current.canManage).toBe(false);
+    expect(mocks.actionsMenuProps.current.canEdit).toBe(false);
+    expect(mocks.actionsMenuProps.current.canDelete).toBe(false);
   });
 });

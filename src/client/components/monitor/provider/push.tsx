@@ -7,13 +7,14 @@ import { useEvent } from '@/hooks/useEvent';
 import { LuInfo, LuRefreshCw } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
 import { defaultErrorHandler, trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { toast } from 'sonner';
 
 const MonitorPush: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const form = Form.useFormInstance();
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
   const pushToken = Form.useWatch(['payload', 'pushToken'], form);
   const enableCron = Form.useWatch(['payload', 'enableCron'], form);
   const monitorId = Form.useWatch('id', form);
@@ -70,7 +71,7 @@ const MonitorPush: React.FC = React.memo(() => {
             className="mr-2"
             value={pushToken}
           />
-          {pushToken && (
+          {hasAdminPermission && pushToken && (
             <Tooltip title={t('Rotate Push Token')}>
               <Button
                 size="icon"

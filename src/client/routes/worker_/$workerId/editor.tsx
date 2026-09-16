@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import {
   useCurrentWorkspaceId,
-  useHasAdminPermission,
+  useHasWritePermission,
   useUserInfo,
 } from '@/store/user';
 import { CommonWrapper } from '@/components/CommonWrapper';
@@ -66,7 +66,7 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const trpcUtils = trpc.useUtils();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const userId = useUserInfo()?.id;
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,7 +146,7 @@ function PageComponent() {
     () => canMigrateLegacyWorkerCode(code),
     [code]
   );
-  const canEdit = hasAdminPermission || worker?.owner?.id === userId;
+  const canEdit = hasWritePermission || worker?.owner?.id === userId;
 
   const handleSave = useEvent(async () => {
     if (!worker || !canEdit || !isCodeDirty) {

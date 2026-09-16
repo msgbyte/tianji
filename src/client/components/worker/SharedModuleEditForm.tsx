@@ -341,28 +341,31 @@ export function SharedModuleEditForm(props: SharedModuleEditFormProps) {
           </CardContent>
         </Card>
 
-        {props.moduleId && props.onArchive && !readOnly && (
-          <Card className="border-destructive/40">
-            <CardHeader>
-              <CardTitle>{t('Archive Module')}</CardTitle>
-              <CardDescription>
-                {t(
-                  'Existing pinned workers keep running, but new bindings and upgrades will be blocked.'
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <AlertConfirm
-                title={t('Archive this shared module?')}
-                onConfirm={props.onArchive}
-              >
-                <Button type="button" variant="destructive" Icon={LuArchive}>
-                  {t('Archive')}
-                </Button>
-              </AlertConfirm>
-            </CardFooter>
-          </Card>
-        )}
+        {hasAdminPermission &&
+          props.moduleId &&
+          props.onArchive &&
+          !readOnly && (
+            <Card className="border-destructive/40">
+              <CardHeader>
+                <CardTitle>{t('Archive Module')}</CardTitle>
+                <CardDescription>
+                  {t(
+                    'Existing pinned workers keep running, but new bindings and upgrades will be blocked.'
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <AlertConfirm
+                  title={t('Archive this shared module?')}
+                  onConfirm={props.onArchive}
+                >
+                  <Button type="button" variant="destructive" Icon={LuArchive}>
+                    {t('Archive')}
+                  </Button>
+                </AlertConfirm>
+              </CardFooter>
+            </Card>
+          )}
       </form>
     </Form>
   );

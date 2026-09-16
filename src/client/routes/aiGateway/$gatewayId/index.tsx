@@ -16,7 +16,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CommonHeader } from '@/components/CommonHeader';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { LuRefreshCw } from 'react-icons/lu';
 import { message } from 'antd';
@@ -41,6 +45,7 @@ function PageComponent() {
   });
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { t } = useTranslation();
   const trpcUtils = trpc.useUtils();
 
@@ -95,7 +100,8 @@ function PageComponent() {
               <AIGatewayActionsMenu
                 gatewayId={gatewayId}
                 gatewayName={gateway.name}
-                canManage={hasAdminPermission}
+                canEdit={hasWritePermission}
+                canDelete={hasAdminPermission}
                 onEdit={handleEditGateway}
                 onDelete={handleDeleteGateway}
               />

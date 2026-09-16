@@ -5,6 +5,7 @@ import { useEvent } from '@/hooks/useEvent';
 import {
   useCurrentWorkspaceId,
   useHasAdminPermission,
+  useHasWritePermission,
   useUserInfo,
 } from '@/store/user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,6 +68,7 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const userId = useUserInfo()?.id;
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [showExecutionResult, setShowExecutionResult] = useState(false);
@@ -209,7 +211,7 @@ function PageComponent() {
     return <ErrorTip />;
   }
 
-  const canEdit = hasAdminPermission || worker.owner?.id === userId;
+  const canEdit = hasWritePermission || worker.owner?.id === userId;
 
   return (
     <CommonWrapper
@@ -263,7 +265,6 @@ function PageComponent() {
                     Icon={LuPencil}
                     onClick={handleEdit}
                   />
-
                 </>
               )}
               {hasAdminPermission && (

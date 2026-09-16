@@ -7,7 +7,11 @@ import { NotFoundTip } from '@/components/NotFoundTip';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { LuPencil, LuTrash } from 'react-icons/lu';
@@ -36,6 +40,7 @@ function PageComponent() {
   });
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { t } = useTranslation();
   const trpcUtils = trpc.useUtils();
 
@@ -76,7 +81,7 @@ function PageComponent() {
           title={application.name}
           actions={
             <div className="space-x-2">
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <>
                   <Button
                     size="icon"
@@ -91,15 +96,17 @@ function PageComponent() {
                       })
                     }
                   />
-                  <AlertConfirm
-                    title={t('Delete Application') + ' ' + application.name}
-                    description={t(
-                      'Are you sure you want to delete this application? This action cannot be undone.'
-                    )}
-                    onConfirm={handleDeleteApplication}
-                  >
-                    <Button size="icon" variant="outline" Icon={LuTrash} />
-                  </AlertConfirm>
+                  {hasAdminPermission && (
+                    <AlertConfirm
+                      title={t('Delete Application') + ' ' + application.name}
+                      description={t(
+                        'Are you sure you want to delete this application? This action cannot be undone.'
+                      )}
+                      onConfirm={handleDeleteApplication}
+                    >
+                      <Button size="icon" variant="outline" Icon={LuTrash} />
+                    </AlertConfirm>
+                  )}
                 </>
               )}
             </div>

@@ -1,7 +1,11 @@
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -31,6 +35,7 @@ function PageComponent() {
     shortLinkId,
   });
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const deleteMutation = trpc.shortlink.delete.useMutation({
     onSuccess: defaultSuccessHandler,
@@ -74,7 +79,7 @@ function PageComponent() {
           title={shortLink.title || shortLink.code}
           actions={
             <div className="space-x-2">
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <>
                   <Button
                     variant="outline"
@@ -82,15 +87,17 @@ function PageComponent() {
                     Icon={LuPencil}
                     onClick={handleEdit}
                   />
-                  <AlertConfirm
-                    title={t('Delete Short Link')}
-                    description={t(
-                      'Are you sure you want to delete this short link? This action cannot be undone.'
-                    )}
-                    onConfirm={handleDelete}
-                  >
-                    <Button variant="outline" size="icon" Icon={LuTrash} />
-                  </AlertConfirm>
+                  {hasAdminPermission && (
+                    <AlertConfirm
+                      title={t('Delete Short Link')}
+                      description={t(
+                        'Are you sure you want to delete this short link? This action cannot be undone.'
+                      )}
+                      onConfirm={handleDelete}
+                    >
+                      <Button variant="outline" size="icon" Icon={LuTrash} />
+                    </AlertConfirm>
+                  )}
                 </>
               )}
             </div>

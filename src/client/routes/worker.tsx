@@ -4,7 +4,7 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
 import { SimpleTooltip } from '@/components/ui/tooltip';
 import { Layout } from '@/components/layout';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -40,7 +40,7 @@ function PageComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const isSharedModules =
     pathname === '/worker/modules' || pathname.startsWith('/worker/modules/');
 
@@ -116,7 +116,7 @@ function PageComponent() {
                 </TabsList>
               </Tabs>
 
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <SimpleTooltip
                   content={
                     isSharedModules

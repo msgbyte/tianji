@@ -22,11 +22,7 @@ vi.mock('@tanstack/react-router', () => ({
       { children, to, params, ...props }: any,
       ref: React.ForwardedRef<HTMLAnchorElement>
     ) => (
-      <a
-        ref={ref}
-        href={to.replace('$gatewayId', params.gatewayId)}
-        {...props}
-      >
+      <a ref={ref} href={to.replace('$gatewayId', params.gatewayId)} {...props}>
         {children}
       </a>
     )
@@ -75,12 +71,13 @@ beforeEach(() => {
   mocks.useRealAlertConfirm = false;
 });
 
-function renderMenu(canManage = true) {
+function renderMenu(canEdit = true, canDelete = canEdit) {
   render(
     <AIGatewayActionsMenu
       gatewayId="gateway_1"
       gatewayName="Primary Gateway"
-      canManage={canManage}
+      canEdit={canEdit}
+      canDelete={canDelete}
       onEdit={mocks.onEdit}
       onDelete={mocks.onDelete}
     />
@@ -96,13 +93,12 @@ describe('AIGatewayActionsMenu', () => {
     renderMenu();
     await openMenu();
 
-    const actions = ['Log Observer', 'Edit', 'Duplicate', 'Delete'].map((name) =>
-      screen.getByText(name)
+    const actions = ['Log Observer', 'Edit', 'Duplicate', 'Delete'].map(
+      (name) => screen.getByText(name)
     );
-    expect(screen.getByRole('menuitem', { name: 'Log Observer' })).toHaveAttribute(
-      'href',
-      '/aiGateway/gateway_1/observer'
-    );
+    expect(
+      screen.getByRole('menuitem', { name: 'Log Observer' })
+    ).toHaveAttribute('href', '/aiGateway/gateway_1/observer');
     expect(actions[0].compareDocumentPosition(actions[1])).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
@@ -124,6 +120,17 @@ describe('AIGatewayActionsMenu', () => {
     expect(screen.queryByText('Edit')).not.toBeInTheDocument();
     expect(screen.queryByText('Duplicate')).not.toBeInTheDocument();
     expect(screen.queryByText('Delete')).not.toBeInTheDocument();
+  });
+
+  test('allows writers to edit and duplicate without offering delete', async () => {
+    renderMenu(true, false);
+    await openMenu();
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'Duplicate' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
+    expect(screen.queryByText('Confirm delete')).not.toBeInTheDocument();
   });
 
   test('invokes edit from the menu', async () => {

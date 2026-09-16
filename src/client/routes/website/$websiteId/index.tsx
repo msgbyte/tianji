@@ -23,7 +23,7 @@ import { WebsiteSimpleMap } from '@/components/website/WebsiteSimpleMap';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
 import { useInsightsStore } from '@/store/insights';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -48,7 +48,7 @@ function PageComponent() {
   });
   const { startDate, endDate } = useGlobalRangeDate();
   const navigate = useNavigate();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const [retentionOpen, setRetentionOpen] = useState(false);
   const [lighthouseOpen, setLighthouseOpen] = useState(false);
   const resetInsightsStore = useInsightsStore((state) => state.reset);
@@ -90,7 +90,7 @@ function PageComponent() {
           title={website.name}
           actions={
             <div className="space-x-2">
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <Button
                   size="icon"
                   variant="outline"

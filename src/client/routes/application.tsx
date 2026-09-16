@@ -5,7 +5,7 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
 import { useEvent } from '@/hooks/useEvent';
 import { Layout } from '@/components/layout';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/application')({
 
 function ApplicationComponent() {
   const workspaceId = useCurrentWorkspaceId();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { t } = useTranslation();
   const { data = [], isLoading } = trpc.application.all.useQuery({
     workspaceId,
@@ -83,7 +83,7 @@ function ApplicationComponent() {
                     onClick={handleClickCompare}
                   />
 
-                  {hasAdminPermission && (
+                  {hasWritePermission && (
                     <Button
                       className={cn(
                         pathname === '/application/add' && '!bg-muted'

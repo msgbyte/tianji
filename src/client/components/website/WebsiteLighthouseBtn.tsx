@@ -20,14 +20,13 @@ import {
   SheetTrigger,
 } from '../ui/sheet';
 import { defaultErrorHandler, defaultSuccessHandler, trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId, useHasPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { formatDate } from '@/utils/date';
 import { Input } from '../ui/input';
 import { toast } from 'sonner';
 import { useEvent } from '@/hooks/useEvent';
 import { Badge } from '../ui/badge';
 import { LuArrowRight, LuPlus } from 'react-icons/lu';
-import { ROLES } from '@tianji/shared';
 import { useSocketSubscribe } from '@/api/socketio';
 
 interface WebsiteLighthouseBtnProps {
@@ -42,7 +41,7 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
     const { t } = useTranslation();
     const [url, setUrl] = useState('');
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const hasAdminPermission = useHasPermission(ROLES.admin);
+    const hasWritePermission = useHasWritePermission();
 
     const { data, hasNextPage, fetchNextPage, isFetchingNextPage, refetch } =
       trpc.website.getLighthouseReport.useInfiniteQuery(
@@ -96,11 +95,7 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
       <Sheet open={props.open} onOpenChange={props.onOpenChange}>
         {props.showTrigger !== false && (
           <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              Icon={TbBuildingLighthouse}
-            />
+            <Button variant="outline" size="icon" Icon={TbBuildingLighthouse} />
           </SheetTrigger>
         )}
         <SheetContent>
@@ -114,7 +109,7 @@ export const WebsiteLighthouseBtn: React.FC<WebsiteLighthouseBtnProps> =
           </SheetHeader>
 
           <div className="mt-2 flex flex-col gap-2">
-            {hasAdminPermission && (
+            {hasWritePermission && (
               <div>
                 <Dialog
                   open={isCreateDialogOpen}

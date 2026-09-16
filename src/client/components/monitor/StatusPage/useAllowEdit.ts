@@ -15,5 +15,5 @@ export function useAllowEdit(workspaceId?: string): boolean {
     }
   );
 
-  return role === ROLES.owner || role === ROLES.admin;
+  return role === ROLES.owner || role === ROLES.admin || role === ROLES.write;
 }

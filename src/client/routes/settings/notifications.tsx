@@ -11,7 +11,11 @@ import {
   NotificationInfoModal,
 } from '../../components/modals/NotificationInfo';
 import { useEvent } from '../../hooks/useEvent';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '../../store/user';
 import { CommonHeader } from '@/components/CommonHeader';
 import { Button } from '@/components/ui/button';
 import { LuFilePen, LuPlus, LuTrash2 } from 'react-icons/lu';
@@ -33,6 +37,7 @@ function PageComponent() {
     NotificationFormValues | undefined
   >(undefined);
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const upsertMutation = trpc.notification.upsert.useMutation();
   const deleteMutation = trpc.notification.delete.useMutation();
@@ -71,7 +76,7 @@ function PageComponent() {
           title={t('Notifications')}
           actions={
             <>
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <Button
                   variant="outline"
                   Icon={LuPlus}
@@ -93,7 +98,7 @@ function PageComponent() {
             renderItem={(item) => (
               <List.Item
                 actions={compact([
-                  hasAdminPermission && (
+                  hasWritePermission && (
                     <Button
                       variant="default"
                       Icon={LuFilePen}

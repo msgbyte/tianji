@@ -5,7 +5,7 @@ import { LuPlus } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { useHasAdminPermission } from '@/store/user';
+import { useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 
 export const Route = createFileRoute('/worker/modules/')({
@@ -16,18 +16,16 @@ export const Route = createFileRoute('/worker/modules/')({
 function PageComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   return (
-    <CommonWrapper
-      header={<CommonHeader title={t('Shared Modules')} />}
-    >
+    <CommonWrapper header={<CommonHeader title={t('Shared Modules')} />}>
       <Empty
         className="pt-8"
         description={
           <div className="space-y-3">
             <p>{t('No shared modules yet.')}</p>
-            {hasAdminPermission && (
+            {hasWritePermission && (
               <Button
                 Icon={LuPlus}
                 onClick={() => navigate({ to: '/worker/modules/add' })}

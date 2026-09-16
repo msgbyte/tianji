@@ -6,7 +6,7 @@ import { Layout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/aiRouter')({
 
 function AIRouterComponent() {
   const workspaceId = useCurrentWorkspaceId();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { t } = useTranslation();
   const { data = [], isLoading } = trpc.aiRouter.all.useQuery({
     workspaceId,
@@ -73,7 +73,7 @@ function AIRouterComponent() {
             <CommonHeader
               title={t('AI Router')}
               actions={
-                hasAdminPermission && (
+                hasWritePermission && (
                   <Button
                     className={cn(pathname === '/aiRouter/add' && '!bg-muted')}
                     variant="outline"

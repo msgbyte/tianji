@@ -6,7 +6,11 @@ import {
 } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -72,6 +76,7 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const { t } = useTranslation();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   useAIStoreContext({
     type: 'survey',
     surveyId,
@@ -211,7 +216,7 @@ function PageComponent() {
           title={info?.name ?? ''}
           actions={
             <div className="space-x-2">
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     asChild={true}
@@ -242,28 +247,30 @@ function PageComponent() {
                       {t('Duplicate')}
                     </DropdownMenuItem>
 
-                    <AlertConfirm
-                      title={t('Confirm to delete this survey?')}
-                      description={t(
-                        'Survey name: {{name}} | data count: {{num}}',
-                        {
-                          name: info?.name ?? '',
-                          num: count ?? 0,
-                        }
-                      )}
-                      content={t(
-                        'It will permanently delete the relevant data'
-                      )}
-                      onConfirm={handleDelete}
-                    >
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-red-600 data-[highlighted]:!bg-red-50 data-[highlighted]:!text-red-700"
+                    {hasAdminPermission && (
+                      <AlertConfirm
+                        title={t('Confirm to delete this survey?')}
+                        description={t(
+                          'Survey name: {{name}} | data count: {{num}}',
+                          {
+                            name: info?.name ?? '',
+                            num: count ?? 0,
+                          }
+                        )}
+                        content={t(
+                          'It will permanently delete the relevant data'
+                        )}
+                        onConfirm={handleDelete}
                       >
-                        <LuTrash className="mr-2" />
-                        {t('Delete')}
-                      </DropdownMenuItem>
-                    </AlertConfirm>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="text-red-600 data-[highlighted]:!bg-red-50 data-[highlighted]:!text-red-700"
+                        >
+                          <LuTrash className="mr-2" />
+                          {t('Delete')}
+                        </DropdownMenuItem>
+                      </AlertConfirm>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}

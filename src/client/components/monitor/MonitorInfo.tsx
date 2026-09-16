@@ -2,7 +2,11 @@ import { Card, Dropdown, Space, Modal } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { trpc } from '../../api/trpc';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '../../store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '../../store/user';
 import { Loading } from '../Loading';
 import { getMonitorLink } from './provider';
 import { NotFoundTip } from '../NotFoundTip';
@@ -37,6 +41,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
   const [showBadge, setShowBadge] = useState(false);
   const isMobile = useIsMobile();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const isMonitorDown = currentResponse === -1;
 
   const {
@@ -81,7 +86,7 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                 </span>
               </div>
 
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
@@ -137,15 +142,15 @@ export const MonitorInfo: React.FC<MonitorInfoProps> = React.memo((props) => {
                               monitorId,
                             }),
                         },
-                        {
-                          type: 'divider',
-                        },
-                        {
-                          key: 'delete',
-                          label: t('Delete'),
-                          danger: true,
-                          onClick: handleDelete,
-                        },
+                        hasAdminPermission ? { type: 'divider' } : null,
+                        hasAdminPermission
+                          ? {
+                              key: 'delete',
+                              label: t('Delete'),
+                              danger: true,
+                              onClick: handleDelete,
+                            }
+                          : null,
                       ],
                     }}
                   >

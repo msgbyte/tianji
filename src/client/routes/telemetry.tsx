@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
 import { Layout } from '@/components/layout';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { Trans, useTranslation } from '@i18next-toolkit/react';
@@ -35,7 +35,7 @@ function TelemetryComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const items = data.map((item) => ({
     id: item.id,
@@ -102,7 +102,7 @@ function TelemetryComponent() {
               }
               actions={
                 <>
-                  {hasAdminPermission && (
+                  {hasWritePermission && (
                     <Button
                       className={cn(
                         pathname === '/telemetry/add' && '!bg-muted'

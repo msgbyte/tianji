@@ -25,7 +25,11 @@ import {
 } from '@/components/ui/select';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { trpc, defaultErrorHandler } from '@/api/trpc';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { useEvent } from '@/hooks/useEvent';
 import { List, message } from 'antd';
 import { compact } from 'lodash-es';
@@ -54,6 +58,7 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const { data: warehouseApplicationIds = [], isLoading: loadingApps } =
     trpc.insights.warehouseApplications.useQuery({ workspaceId });
@@ -154,7 +159,7 @@ function PageComponent() {
   });
 
   const headerActions = useMemo(() => {
-    if (!hasAdminPermission) return null;
+    if (!hasWritePermission) return null;
     return (
       <div className="flex items-center gap-2">
         <Button
@@ -167,7 +172,7 @@ function PageComponent() {
         </Button>
       </div>
     );
-  }, [hasAdminPermission, loadingWideApps, wideTableAppIds.length]);
+  }, [hasWritePermission, loadingWideApps, wideTableAppIds.length]);
 
   return (
     <CommonWrapper
@@ -222,7 +227,7 @@ function PageComponent() {
           renderItem={(item: CohortItem) => (
             <List.Item
               actions={compact([
-                hasAdminPermission && (
+                hasWritePermission && (
                   <Button
                     key="edit"
                     variant="default"
