@@ -1,8 +1,12 @@
 import request from 'supertest';
 import express from 'express';
+import { once } from 'node:events';
+import { request as httpRequest } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { app } from './app.js';
 import { prisma } from './model/_client.js';
+import { logger } from './utils/logger.js';
 
 vi.mock('./model/_client.js', () => ({
   prisma: {
@@ -155,3 +159,73 @@ test.each(['{bad', '{"contents":'])(
     });
   }
 );
+
+test('aborted JSON requests log the endpoint and byte counts without secrets', async () => {
+  const log = vi.spyOn(logger, 'error').mockReturnValue(logger);
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const client = httpRequest({
+    host: '127.0.0.1',
+    port: (server.address() as AddressInfo).port,
+    method: 'POST',
+    path: '/api/worker/workspace/worker?token=query-secret',
+    headers: {
+      'content-type': 'application/json',
+      'content-length': '100',
+      authorization: 'Bearer header-secret',
+    },
+  });
+  client.on('error', () => {});
+  server.once('request', (req) => {
+    req.once('data', () => client.destroy());
+  });
+
+  try {
+    client.write('{"secret":"body-secret"');
+    await vi.waitFor(() => expect(log).toHaveBeenCalled());
+    const output = String(log.mock.calls[0][0]);
+    expect(output).toContain('[express]');
+    expect(output).toContain('/api/worker/workspace/worker');
+    expect(JSON.parse(output.slice('[express] '.length))).toMatchObject({
+      message: 'request aborted',
+      method: 'POST',
+      path: '/api/worker/workspace/worker',
+      status: 400,
+      type: 'request.aborted',
+      code: 'ECONNABORTED',
+      received: Buffer.byteLength('{"secret":"body-secret"'),
+      expected: 100,
+    });
+    expect(output).not.toContain('secret');
+  } finally {
+    client.destroy();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+
+test.each([
+  ['/api/website/batch', '/api/website/batch'],
+  ['/api/push/path-secret', '/api/push/:pushToken'],
+  ['/API/PUSH/path-secret', '/api/push/:pushToken'],
+  [
+    '/api/ai/workspace/gateway/custom/v1beta/models/model:generateContent',
+    '/api/ai/workspace/gateway/custom/v1beta/models/model:generateContent',
+  ],
+])('parser errors on %s log the endpoint without payload excerpts', async (path, loggedPath) => {
+  const log = vi.spyOn(logger, 'error').mockReturnValue(logger);
+  const result = await request(app)
+    .post(`${path}?token=query-secret`)
+    .type('json')
+    .send('{"secret":"body-secret" invalid}');
+  expect(result.status).toBe(400);
+  expect(log).toHaveBeenCalledTimes(1);
+  const output = String(log.mock.calls[0][0]);
+  expect(JSON.parse(output.slice('[express] '.length))).toMatchObject({
+    message: 'Invalid JSON body.',
+    method: 'POST',
+    path: loggedPath,
+    status: 400,
+    type: 'entity.parse.failed',
+  });
+  expect(output).not.toContain('secret');
+});

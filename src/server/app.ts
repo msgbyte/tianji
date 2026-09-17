@@ -174,6 +174,22 @@ app.use(((err, req, res, next) => {
     Number.isInteger(err.status) && err.status >= 400 && err.status <= 599
       ? err.status
       : 500;
+  // JSON parse messages can contain body excerpts; push tokens are credentials.
+  logger.error(
+    `[express] ${JSON.stringify({
+      message:
+        err.type === 'entity.parse.failed' ? 'Invalid JSON body.' : err.message,
+      method: req.method,
+      path: req.originalUrl
+        .split('?')[0]
+        .replace(/^\/api\/push\/[^/]+/i, '/api/push/:pushToken'),
+      status,
+      type: err.type,
+      code: err.code,
+      received: err.received,
+      expected: err.expected,
+    })}`
+  );
   if (/^\/api\/ai\/[^/]+\/[^/]+\/custom\/[^/]+\/models\//.test(req.path)) {
     res
       .status(status)
@@ -185,8 +201,6 @@ app.use(((err, req, res, next) => {
       );
     return;
   }
-  // Parser errors contain the caller's entire body; never log that payload.
-  logger.error('[express]', err.message);
   res.status(status).json({ message: err.message });
 }) as ErrorRequestHandler);
 
