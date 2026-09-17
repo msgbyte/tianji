@@ -1,5 +1,15 @@
 
 
+## [1.33.1](https://github.com/msgbyte/tianji/compare/v1.33.0...v1.33.1) (2026-09-17)
+
+### Bug Fixes
+
+* **i18n:** use num for translation interpolation ([0b2106a](https://github.com/msgbyte/tianji/commit/0b2106a9a372a93907c8090262cf6a774f61348e))
+
+### Others
+
+* **i18n:** sync translations with num placeholders ([ce68a64](https://github.com/msgbyte/tianji/commit/ce68a64b8ca177d84e5f6cb7eef16bcbbc873c9b))
+
 ## [1.33.0](https://github.com/msgbyte/tianji/compare/v1.32.38...v1.33.0) (2026-09-16)
 
 ### Features
