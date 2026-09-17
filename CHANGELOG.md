@@ -1,5 +1,11 @@
 
 
+## [1.33.2](https://github.com/msgbyte/tianji/compare/v1.33.1...v1.33.2) (2026-09-17)
+
+### Bug Fixes
+
+* **server:** include request context in express error logs ([8bda381](https://github.com/msgbyte/tianji/commit/8bda381042af9d8e40db7c05ccd29e18689f61e0))
+
 ## [1.33.1](https://github.com/msgbyte/tianji/compare/v1.33.0...v1.33.1) (2026-09-17)
 
 ### Bug Fixes
