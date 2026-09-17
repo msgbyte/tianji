@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { transformTypescriptCode } from '../../utils/vm/utils.js';
+import { sandboxGlobalDeclaration } from '../../utils/vm/sandbox-globals.js';
 
 export const SHARED_MODULE_ALIAS_PATTERN = /^@shared\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -50,6 +51,11 @@ export async function compileSharedModule(
 
 function emitDeclaration(source: string): string {
   const fileName = '/shared-module.ts';
+  const globalsFileName = '/sandbox-globals.d.ts';
+  const virtualFiles: Record<string, string> = {
+    [fileName]: source,
+    [globalsFileName]: sandboxGlobalDeclaration,
+  };
   const options: ts.CompilerOptions = {
     declaration: true,
     emitDeclarationOnly: true,
@@ -59,18 +65,18 @@ function emitDeclaration(source: string): string {
     target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
-    lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+    lib: ['lib.es2022.d.ts'],
     types: [],
   };
   const defaultHost = ts.createCompilerHost(options);
   let declarationCode = '';
   const host: ts.CompilerHost = {
     ...defaultHost,
-    fileExists: (path) => path === fileName || defaultHost.fileExists(path),
-    readFile: (path) => (path === fileName ? source : defaultHost.readFile(path)),
+    fileExists: (path) => path in virtualFiles || defaultHost.fileExists(path),
+    readFile: (path) => virtualFiles[path] ?? defaultHost.readFile(path),
     getSourceFile: (path, languageVersion, onError, shouldCreateNewSourceFile) =>
-      path === fileName
-        ? ts.createSourceFile(path, source, languageVersion, true, ts.ScriptKind.TS)
+      path in virtualFiles
+        ? ts.createSourceFile(path, virtualFiles[path], languageVersion, true)
         : defaultHost.getSourceFile(
             path,
             languageVersion,
@@ -83,9 +89,12 @@ function emitDeclaration(source: string): string {
       }
     },
   };
-  const program = ts.createProgram([fileName], options, host);
+  const program = ts.createProgram([fileName, globalsFileName], options, host);
   const emitResult = program.emit();
-  const diagnostics = [...ts.getPreEmitDiagnostics(program), ...emitResult.diagnostics];
+  const diagnostics = ts.sortAndDeduplicateDiagnostics([
+    ...ts.getPreEmitDiagnostics(program),
+    ...emitResult.diagnostics,
+  ]);
 
   if (diagnostics.length > 0) {
     throw new SharedModuleCompileError(

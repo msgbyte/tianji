@@ -35,3 +35,18 @@ describe('compileSharedModule', () => {
   });
 });
 
+
+describe('compileSharedModule sandbox globals', () => {
+  test('accepts worker sandbox globals such as request and kv', async () => {
+    const compiled = await compileSharedModule(`
+      export async function ping(url: string) {
+        const res = await request({ url });
+        await kv.set('last', res.status);
+        console.log(res.status);
+        return res.data;
+      }
+    `);
+
+    expect(compiled.declarationCode).toContain('export declare function ping');
+  });
+});
