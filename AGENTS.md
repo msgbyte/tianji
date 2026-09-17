@@ -20,6 +20,8 @@
 ## Translation Files
 All user-facing copy must be written in English and wrapped with the project's `t()` translation function. Do not add Chinese copy directly in source code.
 
+Do not use `{{count}}` as a translation interpolation variable. Use `{{num}}` or another descriptive name, with a matching key in `t()` options, for example: `t('{{num}} items', { num: total })`.
+
 When generating code, **do not modify** any JSON files in `src/client/public/locales`. These translations are managed separately.
 
 ## Audit Logs

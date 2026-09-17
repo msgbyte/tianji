@@ -69,8 +69,8 @@ export const QueryResultTable: React.FC<QueryResultTableProps> = React.memo(
 
         {/* Stats bar */}
         <div className="text-muted-foreground border-b px-4 py-2 text-xs">
-          {t('{{count}} rows returned in {{time}}ms', {
-            count: rowCount,
+          {t('{{num}} rows returned in {{time}}ms', {
+            num: rowCount,
             time: executionTime,
           })}
         </div>

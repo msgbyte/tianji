@@ -423,7 +423,7 @@ function LogStream({
     <div className="observer-stream">
       <div className="observer-stream-title">
         <span>{t('Request stream')}</span>
-        <span>{t('{{count}} requests', { count: logs.length })}</span>
+        <span>{t('{{num}} requests', { num: logs.length })}</span>
       </div>
       <div className="observer-table-wrap">
         <table className="observer-table">
@@ -583,8 +583,8 @@ function LogDetail({ log }: { log?: AIGatewayLogItem }) {
         <div>
           <strong>{t('Content')}</strong>
           <span>
-            {t('{{count}} messages', {
-              count: requestMessages.length + responseMessages.length,
+            {t('{{num}} messages', {
+              num: requestMessages.length + responseMessages.length,
             })}
           </span>
         </div>
@@ -956,7 +956,7 @@ function JsonValue({ value, depth }: { value: unknown; depth: number }) {
       <details className="json-branch" open={depth < 2}>
         <summary>
           <span>{brackets[0]}</span>
-          <em>{t('{{count}} items', { count: entries.length })}</em>
+          <em>{t('{{num}} items', { num: entries.length })}</em>
           <span>{brackets[1]}</span>
         </summary>
         <div>

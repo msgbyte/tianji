@@ -75,13 +75,13 @@ function PageComponent() {
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue>
-                    {t('Per page {{count}}', { count: pageSize })}
+                    {t('Per page {{num}}', { num: pageSize })}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {[20, 50, 100].map((sizeOption) => (
                     <SelectItem key={sizeOption} value={String(sizeOption)}>
-                      {t('Per page {{count}}', { count: sizeOption })}
+                      {t('Per page {{num}}', { num: sizeOption })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -159,10 +159,10 @@ function PageComponent() {
           {total > 0 && (
             <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
               <div className="text-muted-foreground text-sm">
-                {t('Page {{page}} of {{total}} • Total {{count}} records', {
+                {t('Page {{page}} of {{total}} • Total {{num}} records', {
                   page,
                   total: totalPages,
-                  count: total,
+                  num: total,
                 })}
               </div>
               <PaginationControls
