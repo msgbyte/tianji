@@ -10,6 +10,8 @@ The **Tianji Data Query Skill** is a lightweight, agent-agnostic skill bundle th
 
 It follows the [agentskills.io](https://agentskills.io/specification) specification — a single `SKILL.md` plus reference files. No long-running process, no extra runtime.
 
+To create, test, deploy, and manage Workers, download the separate [Tianji Worker Skill](../worker/agent-skill.md), which includes common operations and the Worker runtime reference.
+
 :::tip Get started
 See the [Installation Guide](./installation.md) for one-click and manual setup.
 :::

@@ -10,6 +10,8 @@ Tianji Worker lets you run small functions without maintaining a separate servic
 
 This guide walks you through creating and publishing your first worker in the Tianji dashboard. If you want an AI coding agent to generate the source code, see the [Worker Agent Reference](./agent-reference.md).
 
+For an installable skill covering code generation and common operations, [download the Tianji Worker Skill](./agent-skill.md).
+
 ## Before you start
 
 Worker is disabled by default on self-hosted Tianji instances. Add this environment variable to the Tianji server and restart it:
