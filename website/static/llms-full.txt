@@ -1208,6 +1208,7 @@ Tianji supports various environment variables to customize its behavior. You can
 | `ALLOW_OPENAPI` | Enable OpenAPI access | `true` | `false` |
 | `WEBSITE_ID` | Website identifier | - | `your-website-id` |
 | `DISABLE_AUTO_CLEAR` | Disable automatic data cleanup | `false` | `true` |
+| `AUDIT_LOG_RETENTION_DAYS` | Number of days to retain audit logs | `30` | `90` |
 | `DISABLE_ACCESS_LOGS` | Disable access logs | `false` | `true` |
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
 | `ALPHA_MODE` | Enable alpha features | `false` | `true` |
@@ -2362,6 +2363,8 @@ The **Tianji Data Query Skill** is a lightweight, agent-agnostic skill bundle th
 
 It follows the [agentskills.io](https://agentskills.io/specification) specification — a single `SKILL.md` plus reference files. No long-running process, no extra runtime.
 
+To create, test, deploy, and manage Workers, download the separate [Tianji Worker Skill](../worker/agent-skill.md), which includes common operations and the Worker runtime reference.
+
 :::tip Get started
 See the [Installation Guide](./installation.md) for one-click and manual setup.
 :::
@@ -2909,11 +2912,58 @@ You can add `data-domains` into your script. The value should be your root domai
 Then you can just see the events from these domains.
 
 
+===== FILE: docs/website/visitor-map.md =====
+
+# Visitor Map
+
+The visitor map shows the geographic distribution of website visitors. You can find it in the website analytics dashboard.
+
+## Map Provider Selection
+
+Tianji selects the map provider from the configured environment variables:
+
+1. Use Mapbox when `MAPBOX_TOKEN` is set.
+2. Otherwise, use AMap when `AMAP_TOKEN` is set.
+3. Use the default map when neither variable is set.
+
+When both variables are set, Mapbox takes priority.
+
+## Configure Mapbox
+
+Set a browser-compatible Mapbox public access token:
+
+```bash
+MAPBOX_TOKEN=your-mapbox-public-access-token
+```
+
+## Configure AMap
+
+Set an AMap key that can be used by its browser map SDK:
+
+```bash
+AMAP_TOKEN=your-amap-key
+```
+
+Restart Tianji after changing either environment variable. For other deployment settings, see [Environment Variables](../install/environment).
+
+## Token Safety
+
+Map tokens are sent to the browser to load the map. Do not use a server-side secret token. Restrict the token to your Tianji domain in the provider console when that option is available.
+
+## Troubleshooting
+
+- If the map is blank, check the browser network panel for `401` or `403` responses, token restrictions, and provider quota limits.
+- If Tianji still uses the default map, confirm that the environment variable is available to the Tianji process and restart the service.
+- If the map has no visitor points, confirm that the selected date range contains visits with geographic data.
+
+
 ===== FILE: docs/worker/agent-reference.md =====
 
 # Worker Agent Reference
 
-This page is a machine-oriented reference for coding agents that generate Tianji Worker source code. For the user-facing setup and operation guide, read [Worker Getting Started](./getting-started.md).
+This page is a machine-oriented reference for coding agents that generate Tianji Worker source code. For the user-facing setup and operation guide, read [Worker Getting Started](https://tianji.dev/docs/worker/getting-started).
+
+For an installable bundle that also covers common operations, [download the Tianji Worker Skill](https://tianji.dev/docs/worker/agent-skill).
 
 Read this page completely before generating code. Do not infer Node.js, browser, or Cloudflare Worker APIs that are not declared here.
 
@@ -2928,7 +2978,7 @@ https://tianji.dev/docs/worker/agent-reference
 
 If the Agent cannot access the URL, copy and paste the entire page into the conversation instead. Then describe the Worker's purpose, input, environment-variable names, external APIs, temporary data, and expected output. Never include real Secret values.
 
-The [Worker Getting Started guide](./getting-started.md#ask-an-agent-to-write-your-worker) provides a ready-to-copy request template and the complete user workflow.
+The [Worker Getting Started guide](https://tianji.dev/docs/worker/getting-started#ask-an-agent-to-write-your-worker) provides a ready-to-copy request template and the complete user workflow.
 
 ## Choose the target
 
@@ -2948,6 +2998,14 @@ Generate a Module Worker. Do not generate the legacy global `function fetch(...)
   },
 };
 ```
+
+## Shared modules
+
+Workers can use static imports from published workspace modules with aliases such as `@shared/math`. Inspect the module's exports and declarations in the dashboard before importing it; do not invent aliases or exported functions.
+
+Each binding pins a specific module revision. Saving or testing code with an existing import keeps its current pin; a newly added alias resolves to the latest published revision when bindings are not supplied explicitly. Updating a shared module does not automatically upgrade an existing Worker's pin. A Worker can bind at most 16 shared modules, and shared modules cannot import dependencies themselves.
+
+Use the Worker editor to inspect bindings and test the code together with its selected revisions. A plain dashboard Worker cannot resolve arbitrary npm imports; CLI dependencies must be bundled and compatible with the sandbox.
 
 ## Runtime types
 
@@ -3174,6 +3232,77 @@ Do not deploy, overwrite remote code, or include real Secret values.
 Tianji publishes a documentation index at [`/llms.txt`](https://tianji.dev/llms.txt) and the complete documentation corpus at [`/llms-full.txt`](https://tianji.dev/llms-full.txt). This reference and the user-facing guide are included in the full corpus.
 
 
+===== FILE: docs/worker/agent-skill.md =====
+
+# Worker Agent Skill
+
+The **Tianji Worker Skill** teaches coding agents how to write Worker code and carry out common operations using the dashboard, CLI, and supported management APIs.
+
+<a href="/skills/tianji-worker.tar.gz" download>Download the Tianji Worker Skill (.tar.gz)</a>
+
+The archive contains an installable `tianji-worker` folder with `SKILL.md`, a common-operations guide, and the [Worker Agent Reference](./agent-reference.md). It includes no credentials and requires no MCP server.
+
+## Install
+
+Download and extract the archive into your agent's skills directory. For Codex:
+
+```bash
+curl --fail --location https://tianji.dev/skills/tianji-worker.tar.gz \
+  --output tianji-worker.tar.gz
+mkdir -p ~/.codex/skills
+tar -xzf tianji-worker.tar.gz -C ~/.codex/skills
+```
+
+For Claude Code, use `~/.claude/skills`; for Cursor, use `~/.cursor/skills`. If you already installed this skill, review local customizations before replacing its files. Restart or reload the agent session after installation.
+
+## What the agent learns
+
+| Operation         | Guidance included                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| Create and update | Runtime contract, payload validation, local project setup, deployment, preserving existing settings |
+| Test and invoke   | Draft tests, saved-code manual runs, public HTTP requests, and their different effects              |
+| Debug             | Execution history, logs, errors, and common configuration problems                                  |
+| Configure         | Text/Secret variables, shared-module bindings, cron expressions, and workspace timezone             |
+| Maintain          | Revision comparison and rollback, pause/resume, and deletion                                        |
+
+The skill explains the limits of each interface. For example, CLI deployment activates a Worker and can disable its existing schedule; a draft test isolates KV but can still call real external services. It directs the agent to supported dashboard actions where no public API or CLI command exists.
+
+## Example requests
+
+```text
+Use tianji-worker to create a Worker that validates an incoming webhook and
+forwards its message using a Secret named API_TOKEN. Give me valid and invalid
+test payloads. Save the code locally for review.
+```
+
+```text
+Update Worker <worker-id> in workspace <workspace-id> on <server-url>.
+Keep its active state, cron schedule, and environment variables unchanged.
+Test the new code before deploying it, then check the execution logs.
+```
+
+```text
+Inspect the recent failures for Worker <worker-id>, compare its revisions,
+and explain which revision could restore the previous behavior.
+```
+
+```text
+Pause Worker <worker-id> without deleting its code or cron configuration.
+```
+
+Provide the target server and workspace through your existing configuration. Keep API keys and Secret values in secure configuration rather than pasting them into prompts. The skill supplies instructions; it does not grant access to your Tianji instance.
+
+## Source and maintenance
+
+The source lives in [`skills/tianji-worker`](https://github.com/msgbyte/tianji/tree/master/skills/tianji-worker). The website build refreshes the bundled runtime reference from the Worker documentation and rebuilds the download. To rebuild it locally:
+
+```bash
+pnpm --dir website build:worker-skill
+```
+
+For a walkthrough in the dashboard, see [Worker Getting Started](./getting-started.md). For read-only queries across Tianji services, see the separate [Tianji Data Query Skill](../skill/).
+
+
 ===== FILE: docs/worker/getting-started.md =====
 
 # Worker Getting Started
@@ -3181,6 +3310,8 @@ Tianji publishes a documentation index at [`/llms.txt`](https://tianji.dev/llms.
 Tianji Worker lets you run small functions without maintaining a separate service. A worker can receive HTTP requests, run on a schedule, call external APIs, read environment variables, and store short-lived data.
 
 This guide walks you through creating and publishing your first worker in the Tianji dashboard. If you want an AI coding agent to generate the source code, see the [Worker Agent Reference](./agent-reference.md).
+
+For an installable skill covering code generation and common operations, [download the Tianji Worker Skill](./agent-skill.md).
 
 ## Before you start
 
