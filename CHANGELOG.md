@@ -1,5 +1,25 @@
 
 
+## [1.33.3](https://github.com/msgbyte/tianji/compare/v1.33.2...v1.33.3) (2026-09-18)
+
+### Features
+
+* **ai-gateway:** add collapsible observer timeline ([618baa3](https://github.com/msgbyte/tianji/commit/618baa3c28a1d27324cf84693f910ebc831e1d91))
+* **ai-gateway:** add observer usage totals ([a0bc83a](https://github.com/msgbyte/tianji/commit/a0bc83af4222af437056ce83390417109290f024))
+* **scripts:** add Feishu alert card worker ([461546f](https://github.com/msgbyte/tianji/commit/461546f3ab3b566db3a9ebe2dd0a4bbdfeb7c7d8))
+
+### Bug Fixes
+
+* **ai-gateway:** prevent observer list flicker on updates ([e39b9d6](https://github.com/msgbyte/tianji/commit/e39b9d6ef320bafbfacca14adb8e8d3f579cf029))
+* **server:** declare sandbox globals when type-checking shared modules ([1f9c6ad](https://github.com/msgbyte/tianji/commit/1f9c6adba985d37dc91c5cb040c6a0963d174fd8))
+
+### Document
+
+* **skills:** add worker operations skill and runtime reference ([e65f9bb](https://github.com/msgbyte/tianji/commit/e65f9bbf2918252f07ae0233ace913459ff577d3))
+* **website:** refresh llm documentation exports ([ad0ef0f](https://github.com/msgbyte/tianji/commit/ad0ef0f777092c9d8eab1b578edaf3bc96a1b9e6))
+* **worker:** add skill download and installation guide ([cdfe8ce](https://github.com/msgbyte/tianji/commit/cdfe8ceed53f8af94e363d1193aa03f5e5d910ea))
+* **worker:** link skill from existing guides ([7a8fbb5](https://github.com/msgbyte/tianji/commit/7a8fbb536808a4d55d175b6451991a3007f950e3))
+
 ## [1.33.2](https://github.com/msgbyte/tianji/compare/v1.33.1...v1.33.2) (2026-09-17)
 
 ### Bug Fixes
