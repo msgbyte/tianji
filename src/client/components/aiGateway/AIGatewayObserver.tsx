@@ -123,7 +123,19 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
     if (data.items.length) {
       setSessionLogs((current) => {
         const next = new Map(current);
-        data.items.forEach((log) => next.set(log.id, log));
+        data.items.forEach((log) => {
+          const existing = next.get(log.id);
+          // Changing pendingIds can replay an older cached query response.
+          if (
+            existing &&
+            (new Date(log.updatedAt).getTime() <
+              new Date(existing.updatedAt).getTime() ||
+              (existing.status !== 'Pending' && log.status === 'Pending'))
+          ) {
+            return;
+          }
+          next.set(log.id, log);
+        });
         return next;
       });
     }

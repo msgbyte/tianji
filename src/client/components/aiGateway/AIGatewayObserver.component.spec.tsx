@@ -382,6 +382,52 @@ test('replaces a pending row with its completed version', () => {
   expect(screen.getAllByText('Success')).not.toHaveLength(0);
 });
 
+test.each(['Success', 'Failed'])(
+  'keeps a %s row stable when cached responses replay',
+  (status) => {
+    const pending = createLog('log_cached', 'Solicitud de prueba', {
+      status: 'Pending',
+      duration: 0,
+      updatedAt: '2026-09-03T08:00:01Z',
+    });
+    mocks.data = { items: [pending] };
+    const { rerender } = render(<AIGatewayObserver gatewayId="gateway_1" />);
+    expect(mocks.input?.pendingIds).toEqual(['log_cached']);
+
+    const completed = {
+      ...pending,
+      status,
+      duration: 2500,
+      updatedAt: '2026-09-03T08:00:02Z',
+    };
+    mocks.data = { items: [completed] };
+    rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+    fireEvent.click(screen.getByRole('button', { name: status }));
+    const row = screen.getByRole('row', { name: /Solicitud de prueba/ });
+
+    for (const stale of [
+      pending,
+      { ...pending, updatedAt: completed.updatedAt },
+      { ...completed, duration: 1000, updatedAt: pending.updatedAt },
+    ]) {
+      mocks.data = { items: [stale] };
+      rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+
+      expect(row).toBeInTheDocument();
+      expect(within(row).getByText('2.50s')).toBeInTheDocument();
+      expect(mocks.input?.pendingIds).toEqual([]);
+    }
+
+    mocks.data = {
+      items: [
+        { ...completed, duration: 3000, updatedAt: '2026-09-03T08:00:03Z' },
+      ],
+    };
+    rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+    expect(within(row).getByText('3.00s')).toBeInTheDocument();
+  }
+);
+
 test('keeps long message content inside a scrollable height limit', async () => {
   mocks.data = {
     items: [createLog('log_long', 'Contenido extenso para revisar')],
