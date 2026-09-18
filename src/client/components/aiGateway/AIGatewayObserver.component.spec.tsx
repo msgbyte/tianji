@@ -165,6 +165,86 @@ test('totals displayed usage across updates, filters, and clearing the view', ()
   expectTotals('0.00000', '0', '0');
 });
 
+test('shows request timing in a collapsible timeline linked to selection and filters', () => {
+  mocks.data = {
+    items: [
+      createLog('log_first', 'Primera solicitud', {
+        modelName: 'model-first',
+        createdAt: '2026-09-03T08:00:00.000Z',
+        duration: 2000,
+      }),
+      createLog('log_second', 'Segunda solicitud', {
+        modelName: 'model-second',
+        createdAt: '2026-09-03T08:00:01.000Z',
+        duration: 500,
+        status: 'Failed',
+      }),
+    ],
+  };
+  render(<AIGatewayObserver gatewayId="gateway_1" />);
+
+  const timeline = screen.getByRole('region', { name: 'Timeline' });
+  const bars = timeline.querySelectorAll('.waterfall-item-bar');
+  expect(bars[0]).toHaveStyle({ left: '0%', width: '100%' });
+  expect(bars[1]).toHaveStyle({ left: '50%', width: '25%' });
+
+  fireEvent.click(bars[0]);
+  expect(screen.getByRole('heading', { name: 'model-first' })).toBeVisible();
+  fireEvent.click(within(timeline).getByText('model-second · log_second'));
+  expect(screen.getByRole('heading', { name: 'model-second' })).toBeVisible();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Timeline' }));
+  expect(screen.getByRole('button', { name: 'Timeline' })).toHaveAttribute(
+    'aria-expanded',
+    'false'
+  );
+  expect(screen.queryByRole('region', { name: 'Timeline' })).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Timeline' }));
+
+  fireEvent.click(screen.getByRole('button', { name: 'Failed' }));
+  const filteredTimeline = screen.getByRole('region', { name: 'Timeline' });
+  expect(filteredTimeline.querySelectorAll('.waterfall-item-bar')).toHaveLength(
+    1
+  );
+  expect(
+    within(filteredTimeline).queryByText('model-first · log_first')
+  ).toBeNull();
+
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search logs' }), {
+    target: { value: 'no-match' },
+  });
+  expect(
+    within(filteredTimeline).getByText('No requests to display')
+  ).toBeVisible();
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search logs' }), {
+    target: { value: '' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Clear current view' }));
+  expect(
+    within(filteredTimeline).getByText('No requests to display')
+  ).toBeVisible();
+});
+
+test('updates an in-progress timeline bar when the request finishes', () => {
+  mocks.data = {
+    items: [
+      createLog('log_pending', 'Solicitud en curso', { status: 'Pending' }),
+    ],
+  };
+  const { rerender } = render(<AIGatewayObserver gatewayId="gateway_1" />);
+  const timeline = screen.getByRole('region', { name: 'Timeline' });
+  expect(timeline.querySelector('.waterfall-item-bar')).toHaveClass('dashed');
+
+  mocks.data = {
+    items: [createLog('log_pending', 'Solicitud en curso', { duration: 2500 })],
+  };
+  rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+  expect(timeline.querySelectorAll('.waterfall-item-bar')).toHaveLength(1);
+  expect(timeline.querySelector('.waterfall-item-bar')).not.toHaveClass(
+    'dashed'
+  );
+});
+
 test('applies custom latency boundaries and remembers them for each gateway', () => {
   mocks.data = {
     items: [29990, 30000, 60490, 60500].map((duration) =>

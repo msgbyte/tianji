@@ -2,6 +2,11 @@ import { trpc } from '@/api/trpc';
 import { ImagePreview } from '@/components/ImagePreview';
 import { MarkdownViewer } from '@/components/MarkdownEditor';
 import { Button } from '@/components/ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import {
   Popover,
@@ -40,7 +45,9 @@ import {
   LuWrench,
 } from 'react-icons/lu';
 import { z } from 'zod';
+import { Waterfall } from 'react-waterfall-timeline';
 import type { AIGatewayLogItem } from './AIGatewayLogDetail';
+import 'react-waterfall-timeline/style.css';
 import './AIGatewayObserver.css';
 
 type StatusFilter = 'All' | 'Success' | 'Failed' | 'Pending';
@@ -276,14 +283,21 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
       <section className="observer-body">
         <ResizablePanelGroup direction={compact ? 'vertical' : 'horizontal'}>
           <ResizablePanel defaultSize={compact ? 48 : 62} minSize={25}>
-            <LogStream
-              logs={logs}
-              latencyThresholds={latencyThresholds}
-              selectedId={selectedLog?.id}
-              isLoading={isLoading}
-              error={error?.message}
-              onSelect={setSelectedId}
-            />
+            <div className="observer-requests">
+              <LogStream
+                logs={logs}
+                latencyThresholds={latencyThresholds}
+                selectedId={selectedLog?.id}
+                isLoading={isLoading}
+                error={error?.message}
+                onSelect={setSelectedId}
+              />
+              <LogTimeline
+                logs={logs}
+                selectedId={selectedLog?.id}
+                onSelect={setSelectedId}
+              />
+            </div>
           </ResizablePanel>
           <ResizableHandle className="observer-resize" withHandle />
           <ResizablePanel defaultSize={compact ? 52 : 38} minSize={25}>
@@ -418,6 +432,93 @@ function LatencySettings({
         </form>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function LogTimeline({
+  logs,
+  selectedId,
+  onSelect,
+}: {
+  logs: AIGatewayLogItem[];
+  selectedId?: string;
+  onSelect: (id: string) => void;
+}) {
+  const items = useMemo(() => {
+    const chronologicalLogs = [...logs].reverse();
+    const origin = new Date(chronologicalLogs[0]?.createdAt ?? 0).getTime();
+
+    return chronologicalLogs.map((log) => {
+      const startTime = new Date(log.createdAt).getTime() - origin;
+      return {
+        id: log.id,
+        name: `${log.modelName || t('Unknown model')} · ${log.id}`,
+        startTime,
+        endTime:
+          log.status === 'Pending'
+            ? undefined
+            : startTime + Math.max(0, log.duration),
+        color: `var(--observer-${
+          log.id === selectedId
+            ? 'blue'
+            : log.status === 'Failed'
+              ? 'error'
+              : log.status === 'Pending'
+                ? 'warn'
+                : 'ok'
+        })`,
+      };
+    });
+  }, [logs, selectedId]);
+
+  return (
+    <Collapsible defaultOpen className="observer-timeline">
+      <CollapsibleTrigger className="observer-stream-title observer-timeline-trigger">
+        {t('Timeline')}
+      </CollapsibleTrigger>
+      <CollapsibleContent
+        role="region"
+        aria-label={t('Timeline')}
+        className="observer-timeline-content"
+      >
+        {items.length ? (
+          <>
+            <span className="observer-timeline-label">
+              {t('Model / Request')}
+            </span>
+            <Waterfall
+              items={items}
+              labelWidth={180}
+              rowHeight={28}
+              rulerHeight={32}
+              onItemClick={(item) => onSelect(item.id)}
+              onLabelClick={(item) => onSelect(item.id)}
+              renderTooltip={(item) => {
+                const log = logs.find((log) => log.id === item.id);
+                if (!log) return null;
+                return (
+                  <>
+                    <strong>{item.name}</strong>
+                    <div>{getStatusLabel(log.status)}</div>
+                    <div>
+                      {t('Started at')}:{' '}
+                      {dayjs(log.createdAt).format('HH:mm:ss.SSS')}
+                    </div>
+                    {log.status !== 'Pending' && (
+                      <div>
+                        {t('Duration')}: {formatDuration(log.duration)}
+                      </div>
+                    )}
+                  </>
+                );
+              }}
+            />
+          </>
+        ) : (
+          <div className="observer-empty">{t('No requests to display')}</div>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 

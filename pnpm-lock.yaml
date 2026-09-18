@@ -607,6 +607,9 @@ importers:
       react-syntax-highlighter:
         specifier: ^15.6.1
         version: 15.6.1(react@18.2.0)
+      react-waterfall-timeline:
+        specifier: 1.1.3
+        version: 1.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       recharts:
         specifier: ^2.15.1
         version: 2.15.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -16053,6 +16056,12 @@ packages:
 
   react-vertical-timeline-component@3.6.0:
     resolution: {integrity: sha512-l9zulqjIGlRuaQeplGzV4r/tG2RYBpYt84Il8w4IxnJze2cDIGI04MKo3F7f1sHT0Sih1ohEFts8UV23AJS15Q==}
+
+  react-waterfall-timeline@1.1.3:
+    resolution: {integrity: sha512-HGGJCzX4CYAQKwbwur/QoxTCu1rS9+BQ0RKxc6F+6wHl99KmSMr7mWch2Av9FlhjrC52AeguNJBV8hFlWGIOkw==}
+    peerDependencies:
+      react: 18.2.0
+      react-dom: 18.2.0
 
   react@18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
@@ -38818,6 +38827,11 @@ snapshots:
       react-intersection-observer: 8.34.0(react@18.2.0)
     transitivePeerDependencies:
       - react
+
+  react-waterfall-timeline@1.1.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   react@18.2.0:
     dependencies:

@@ -162,6 +162,7 @@
 .observer-live:focus-visible,
 .observer-status-filter button:focus-visible,
 .observer-detail-tabs button:focus-visible,
+.observer-timeline-trigger:focus-visible,
 .observer-table tr:focus-visible {
   outline: 1px solid var(--observer-accent);
   outline-offset: 1px;
@@ -259,6 +260,86 @@
 .observer-resize > div {
   border-color: var(--observer-border) !important;
   background: var(--observer-raised) !important;
+}
+
+.observer-requests {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.observer-requests > .observer-stream {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.observer-timeline {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  max-height: 45%;
+  min-height: 35px;
+  border-top: 1px solid var(--observer-border);
+}
+
+.gateway-observer .observer-timeline-trigger {
+  flex: 0 0 35px;
+  width: 100%;
+  background: var(--observer-surface);
+  font-size: 11px;
+}
+
+.observer-timeline-content {
+  position: relative;
+  height: 240px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.observer-timeline-label {
+  position: absolute;
+  top: 0;
+  left: 12px;
+  z-index: 1;
+  line-height: 32px;
+  color: var(--observer-muted);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.observer-timeline .waterfall-container {
+  border: 0;
+  border-radius: 0;
+  background: var(--observer-bg);
+  font-family: var(--observer-mono);
+  font-size: 11px;
+}
+
+.observer-timeline :is(.waterfall-header, .waterfall-header-label, .waterfall-ruler) {
+  background: var(--observer-surface);
+}
+
+.observer-timeline :is(.waterfall-header, .waterfall-header-label, .waterfall-item-label, .waterfall-row) {
+  border-color: var(--observer-border);
+}
+
+.observer-timeline .waterfall-header-label-text {
+  display: none;
+}
+
+.observer-timeline :is(.waterfall-item-label, .waterfall-ruler-tick-label) {
+  color: var(--observer-muted);
+}
+
+.observer-timeline .waterfall-item-label {
+  cursor: pointer;
+}
+
+.observer-timeline .waterfall-row:hover {
+  background: var(--observer-raised);
 }
 
 .observer-stream {
