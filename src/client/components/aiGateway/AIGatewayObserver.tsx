@@ -166,6 +166,14 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
     ? `${Math.round((completed.filter((log) => log.status === 'Success').length / completed.length) * 100)}%`
     : '—';
   const p95 = percentile95(logs.map((log) => log.duration).filter(Boolean));
+  const totals = logs.reduce(
+    (total, log) => ({
+      cost: total.cost + log.price,
+      inputToken: total.inputToken + log.inputToken,
+      outputToken: total.outputToken + log.outputToken,
+    }),
+    { cost: 0, inputToken: 0, outputToken: 0 }
+  );
 
   const clearView = () => {
     setOpenedAt(new Date());
@@ -301,6 +309,15 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
         </span>
         <span>
           {t('P95')} <b>{p95 ? `${formatDuration(p95)}` : '—'}</b>
+        </span>
+        <span>
+          {t('Total cost')} <b>${totals.cost.toFixed(5)}</b>
+        </span>
+        <span>
+          {t('Total input tokens')} <b>{formatNumber(totals.inputToken)}</b>
+        </span>
+        <span>
+          {t('Total output tokens')} <b>{formatNumber(totals.outputToken)}</b>
         </span>
         <span className="observer-statusbar-end">
           {gatewayName} · {t('Refreshes every 2 seconds')}

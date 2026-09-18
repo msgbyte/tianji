@@ -893,6 +893,7 @@
 }
 
 @media (max-width: 760px) {
+  .gateway-observer { grid-template-rows: auto minmax(0, 1fr) auto; }
   .observer-brand strong { display: none; }
   .observer-select { flex: 1 1 140px; width: auto; }
   .observer-status-filter { order: 4; width: 100%; }
@@ -912,7 +913,7 @@
   .observer-turn { grid-template-columns: 1fr; }
   .observer-turn-label { flex-direction: row; gap: 6px; }
   .observer-turn .observer-tool-call { grid-column: 1; }
-  .observer-statusbar { gap: 10px; }
+  .observer-statusbar { flex-wrap: wrap; gap: 5px 10px; padding-block: 5px; }
   .observer-statusbar span:nth-child(3),
   .observer-statusbar span:nth-child(4) { display: none; }
 }

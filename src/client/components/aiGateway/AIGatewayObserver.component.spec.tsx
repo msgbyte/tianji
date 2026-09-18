@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest';
@@ -97,6 +97,72 @@ test('uses the shared non-native gateway selector', () => {
 
   expect(selector).toHaveTextContent('Primary');
   expect(selector).not.toBeInstanceOf(HTMLSelectElement);
+});
+
+test('totals displayed usage across updates, filters, and clearing the view', () => {
+  mocks.data = {
+    items: [
+      createLog('log_first', 'Primera solicitud', {
+        inputToken: 1200,
+        outputToken: 30,
+        price: 0.00123,
+      }),
+      createLog('log_failed', 'Solicitud fallida', {
+        status: 'Failed',
+        inputToken: 200,
+        outputToken: 4,
+        price: 0.0001,
+      }),
+      createLog('log_pending', 'Solicitud en curso', {
+        status: 'Pending',
+        inputToken: 0,
+        outputToken: 0,
+        price: 0,
+      }),
+    ],
+  };
+  const { container, rerender } = render(
+    <AIGatewayObserver gatewayId="gateway_1" />
+  );
+  const footer = within(container.querySelector('footer')!);
+  const expectTotals = (cost: string, input: string, output: string) => {
+    expect(footer.getByText('Total cost').querySelector('b')?.textContent).toBe(
+      `$${cost}`
+    );
+    expect(
+      footer.getByText('Total input tokens').querySelector('b')?.textContent
+    ).toBe(input);
+    expect(
+      footer.getByText('Total output tokens').querySelector('b')?.textContent
+    ).toBe(output);
+  };
+  expectTotals('0.00133', '1,400', '34');
+
+  mocks.data = {
+    items: [
+      createLog('log_pending', 'Solicitud en curso', {
+        inputToken: 300,
+        outputToken: 6,
+        price: 0.00067,
+      }),
+    ],
+  };
+  rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+  expectTotals('0.00200', '1,700', '40');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Failed' }));
+  expectTotals('0.00010', '200', '4');
+  fireEvent.click(screen.getByRole('button', { name: 'All' }));
+  const search = screen.getByRole('textbox', { name: 'Search logs' });
+  fireEvent.change(search, { target: { value: 'Primera' } });
+  expectTotals('0.00123', '1,200', '30');
+  fireEvent.change(search, { target: { value: 'no-match' } });
+  expectTotals('0.00000', '0', '0');
+  fireEvent.change(search, { target: { value: '' } });
+  expectTotals('0.00200', '1,700', '40');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Clear current view' }));
+  expectTotals('0.00000', '0', '0');
 });
 
 test('applies custom latency boundaries and remembers them for each gateway', () => {
