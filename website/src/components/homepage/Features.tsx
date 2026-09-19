@@ -79,6 +79,16 @@ export const HomepageFeatures: React.FC = React.memo(() => {
             information is handled with the utmost care and security, providing
             you with transparency, control, and peace of mind.
           </div>
+          <div className="mt-3 text-zinc-300">
+            Tianji Cloud is hosted in Frankfurt, Germany — your data is stored
+            in the EU.{' '}
+            <Link
+              to="/private-policy#data-storage-and-location"
+              className="text-white underline"
+            >
+              Learn more
+            </Link>
+          </div>
           <div>
             <img src="/img/gdpr-ccpa.svg" />
           </div>

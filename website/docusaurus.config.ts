@@ -185,6 +185,10 @@ const config: Config = {
               label: 'GitHub',
               href: 'https://github.com/msgbyte/tianji',
             },
+            {
+              label: 'Privacy Policy',
+              to: '/private-policy',
+            },
           ],
         },
       ],
