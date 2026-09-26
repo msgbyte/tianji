@@ -479,7 +479,7 @@ export async function execWorker(
       })()
         `, vmGlobals);
 
-    const { used_heap_size } = memoryUsage;
+    const used_heap_size = memoryUsage?.used_heap_size;
 
     const payload = {
       id: workerId ? createId() : undefined,
@@ -512,10 +512,15 @@ export async function execWorker(
     promWorkerExecutionDuration
       .labels(workerIdLabel, statusLabel)
       .observe(usage / 1000); // ms to seconds
-    promWorkerCPUTime.labels(workerIdLabel, statusLabel).observe(cpuTime);
-    promWorkerMemoryUsage
-      .labels(workerIdLabel, statusLabel)
-      .observe(used_heap_size);
+    // A memory-limit failure disposes the isolate before stats can be read.
+    if (cpuTime !== undefined) {
+      promWorkerCPUTime.labels(workerIdLabel, statusLabel).observe(cpuTime);
+    }
+    if (used_heap_size !== undefined) {
+      promWorkerMemoryUsage
+        .labels(workerIdLabel, statusLabel)
+        .observe(used_heap_size);
+    }
     promWorkerRequestPayloadSize
       .labels(workerIdLabel, statusLabel)
       .observe(requestPayloadSizeBytes);

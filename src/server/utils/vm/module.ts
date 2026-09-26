@@ -2,7 +2,7 @@ import ivm from 'isolated-vm';
 import { env } from '../env.js';
 import { buildSandbox, environmentScript } from './sandbox.js';
 import { transformTypescriptCode } from './utils.js';
-import type { IVMExecutionResult } from './index.js';
+import type { VMExecutionResult } from './index.js';
 
 export interface WorkerModuleArtifact {
   importAlias: string;
@@ -27,7 +27,7 @@ const MAX_WORKER_MODULE_GRAPH_BYTES = 1024 * 1024;
 export async function runWorkerModuleInIVM(
   workerSource: string,
   options: RunWorkerModuleOptions
-): Promise<IVMExecutionResult> {
+): Promise<VMExecutionResult> {
   if (options.modules.length > MAX_WORKER_SHARED_MODULES) {
     throw new Error(
       `A worker can load at most ${MAX_WORKER_SHARED_MODULES} shared modules`
@@ -156,6 +156,16 @@ export async function runWorkerModuleInIVM(
       error = executionError;
     }
 
+    // isolated-vm disposes the isolate itself when it hits the memory limit.
+    if (isolate.isDisposed) {
+      return {
+        logger: logs,
+        result,
+        error,
+        usage: Date.now() - start,
+      };
+    }
+
     return {
       logger: logs,
       result,
@@ -181,7 +191,9 @@ export async function runWorkerModuleInIVM(
     try {
       context?.release();
     } catch {}
-    isolate.dispose();
+    if (!isolate.isDisposed) {
+      isolate.dispose();
+    }
   }
 }
 

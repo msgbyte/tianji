@@ -20,11 +20,6 @@ export interface VMExecutionResult {
   memoryUsage?: ivm.HeapStatistics;
 }
 
-export interface IVMExecutionResult extends VMExecutionResult {
-  cpuTime: number;
-  memoryUsage: ivm.HeapStatistics;
-}
-
 export async function runCodeInVM(
   _code: string
 ): Promise<VMExecutionResult> {
@@ -65,7 +60,7 @@ export async function runCodeInVM(
 export async function runCodeInIVM(
   _code: string,
   globals: Record<string, any> = {}
-): Promise<IVMExecutionResult> {
+): Promise<VMExecutionResult> {
   const start = Date.now();
   // const transformedCode = await transformTypescriptCode(_code);
   let sourceCode = _code;
@@ -117,6 +112,16 @@ ${sourceCode}`;
       err = e;
     }
 
+    // isolated-vm disposes the isolate itself when it hits the memory limit.
+    if (isolate.isDisposed) {
+      return {
+        logger,
+        result: res,
+        error: err,
+        usage: Date.now() - start,
+      };
+    }
+
     const cpuTime = Number(isolate.cpuTime); // unit: ns
     const memoryUsage = await isolate.getHeapStatistics(); // unit: bytes
 
@@ -135,6 +140,8 @@ ${sourceCode}`;
     try {
       script?.release();
     } catch {}
-    isolate.dispose();
+    if (!isolate.isDisposed) {
+      isolate.dispose();
+    }
   }
 }
