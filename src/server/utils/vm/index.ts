@@ -1,5 +1,9 @@
 import ivm from 'isolated-vm';
-import { buildSandbox, environmentScript } from './sandbox.js';
+import {
+  buildSandbox,
+  describeDisposedIsolateError,
+  environmentScript,
+} from './sandbox.js';
 import { env } from '../env.js';
 import { runCodeInVM2 } from './sandbox-vm2.js';
 import { logger } from '../logger.js';
@@ -76,6 +80,7 @@ ${sourceCode}`;
 
   const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
   const logger: any[][] = [];
+  const requestLog: string[] = [];
 
   let res: any;
   let err: any;
@@ -88,6 +93,7 @@ ${sourceCode}`;
 
     buildSandbox(context, {
       globals,
+      requestLog,
       console: {
         log: (...args: any[]) => {
           logger.push(['log', Date.now(), ...args]);
@@ -117,7 +123,7 @@ ${sourceCode}`;
       return {
         logger,
         result: res,
-        error: err,
+        error: describeDisposedIsolateError(err, requestLog),
         usage: Date.now() - start,
       };
     }

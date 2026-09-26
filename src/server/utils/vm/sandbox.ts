@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import EventEmitter from 'events';
 import ivm, { Context } from 'isolated-vm';
+import { env } from '../env.js';
 
 function isTransferable(data: any): data is ivm.Transferable {
   const dataType = typeof data;
@@ -134,6 +135,44 @@ interface SandboxGlobals {
     error: (...args: any[]) => void;
   };
   globals?: Record<string, any>;
+  /**
+   * Receives one summary line per completed `request()` call, so a later
+   * memory-limit failure can point at the response that preceded it.
+   */
+  requestLog?: string[];
+}
+
+function formatBytes(bytes: number | undefined) {
+  if (bytes === undefined) return 'unknown size';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function byteSize(data: unknown) {
+  if (typeof data === 'string') return Buffer.byteLength(data);
+  if (Buffer.isBuffer(data)) return data.length;
+  return undefined;
+}
+
+/**
+ * isolated-vm disposes the isolate itself when it hits the memory limit and
+ * drops the JS stack, so explain the failure with what the host observed.
+ */
+export function describeDisposedIsolateError(
+  error: unknown,
+  requestLog: string[]
+) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : String(error ?? 'Isolate was disposed during execution');
+  const requests = requestLog.length
+    ? ` Sandbox requests completed before the failure: ${requestLog.join('; ')}`
+    : ' No sandbox request completed before the failure.';
+  return new Error(
+    `${message} (sandbox memory limit: ${env.sandbox.memoryLimit} MB).${requests}`
+  );
 }
 
 const defaultSandboxGlobals = {
@@ -158,7 +197,24 @@ export function buildSandbox(context: Context, globals: SandboxGlobals = {}) {
   jail.setSync(
     '_request',
     new ivm.Reference(async (config: AxiosRequestConfig) => {
-      const result = await axios.request(config);
+      let responseBytes: number | undefined;
+      const result = await axios.request({
+        ...config,
+        // Count the raw body before axios parses it, so logging the size never
+        // re-serializes parsed JSON on the main thread.
+        transformResponse: [
+          (data) => {
+            responseBytes = byteSize(data);
+            return data;
+          },
+          ...[axios.defaults.transformResponse ?? []].flat(),
+        ],
+      });
+      globals.requestLog?.push(
+        `${(config.method ?? 'GET').toUpperCase()} ${
+          axios.getUri(config).split('?')[0]
+        } -> ${result.status}, ${formatBytes(responseBytes)}`
+      );
 
       return makeTransferable({
         headers: { ...result.headers },

@@ -1,6 +1,10 @@
 import ivm from 'isolated-vm';
 import { env } from '../env.js';
-import { buildSandbox, environmentScript } from './sandbox.js';
+import {
+  buildSandbox,
+  describeDisposedIsolateError,
+  environmentScript,
+} from './sandbox.js';
 import { transformTypescriptCode } from './utils.js';
 import type { VMExecutionResult } from './index.js';
 
@@ -44,6 +48,7 @@ export async function runWorkerModuleInIVM(
   const start = Date.now();
   const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
   const logs: any[][] = [];
+  const requestLog: string[] = [];
   const modules: ivm.Module[] = [];
   const references: ivm.Reference[] = [];
   let context: ivm.Context | undefined;
@@ -55,6 +60,7 @@ export async function runWorkerModuleInIVM(
     context = await isolate.createContext();
     buildSandbox(context, {
       globals: options.globals,
+      requestLog,
       console: {
         log: (...args: any[]) => logs.push(['log', Date.now(), ...args]),
         warn: (...args: any[]) => logs.push(['warn', Date.now(), ...args]),
@@ -161,7 +167,7 @@ export async function runWorkerModuleInIVM(
       return {
         logger: logs,
         result,
-        error,
+        error: describeDisposedIsolateError(error, requestLog),
         usage: Date.now() - start,
       };
     }
