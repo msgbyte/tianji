@@ -1,7 +1,6 @@
 .env
 src/client/public/tracker.js
 geo
-docs/superpowers/
 
 # Logs
 logs
