@@ -63,7 +63,8 @@ export async function runCodeInVM(
  */
 export async function runCodeInIVM(
   _code: string,
-  globals: Record<string, any> = {}
+  globals: Record<string, any> = {},
+  options: { requestPayloadBytes?: number } = {}
 ): Promise<VMExecutionResult> {
   const start = Date.now();
   // const transformedCode = await transformTypescriptCode(_code);
@@ -123,7 +124,11 @@ ${sourceCode}`;
       return {
         logger,
         result: res,
-        error: describeDisposedIsolateError(err, requestLog),
+        error: describeDisposedIsolateError(
+          err,
+          requestLog,
+          options.requestPayloadBytes
+        ),
         usage: Date.now() - start,
       };
     }

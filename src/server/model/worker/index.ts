@@ -193,6 +193,7 @@ export async function execWorker(
           modules: options.modules,
           globals: vmGlobals,
           requestPayload: workerRequestPayload,
+          requestPayloadBytes: requestPayloadSizeBytes,
           context: workerContext,
         })
       : await runCodeInIVM(`
@@ -477,7 +478,7 @@ export async function execWorker(
             : 'fetch is not defined';
         })();
       })()
-        `, vmGlobals);
+        `, vmGlobals, { requestPayloadBytes: requestPayloadSizeBytes });
 
     const used_heap_size = memoryUsage?.used_heap_size;
 

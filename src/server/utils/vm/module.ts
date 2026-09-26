@@ -17,6 +17,7 @@ export interface RunWorkerModuleOptions {
   modules: WorkerModuleArtifact[];
   globals?: Record<string, any>;
   requestPayload: Record<string, any>;
+  requestPayloadBytes?: number;
   context: Record<string, any>;
 }
 
@@ -167,7 +168,11 @@ export async function runWorkerModuleInIVM(
       return {
         logger: logs,
         result,
-        error: describeDisposedIsolateError(error, requestLog),
+        error: describeDisposedIsolateError(
+          error,
+          requestLog,
+          options.requestPayloadBytes
+        ),
         usage: Date.now() - start,
       };
     }

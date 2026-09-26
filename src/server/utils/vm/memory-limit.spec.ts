@@ -56,10 +56,11 @@ describe('sandbox memory limit', () => {
       if (small.data.ok !== true) throw new Error('JSON response was not parsed');
       const response = await request({ url: '${baseUrl}/large?token=secret', responseType: 'text' });
       return response.data.split('\\n').reverse().length;
-    })()`);
+    })()`, {}, { requestPayloadBytes: 2048 });
 
     const message = String(result.error);
     expect(message).toContain('memory limit');
+    expect(message).toContain('Request payload: 2.0 KB.');
     expect(message).toContain(`GET ${baseUrl}/small -> 200, 11 B`);
     expect(message).toContain(`GET ${baseUrl}/large -> 200, 23.2 MB`);
     expect(message).not.toContain('secret');
@@ -78,10 +79,12 @@ describe('sandbox memory limit', () => {
         modules: [],
         globals: createWorkerGlobals(),
         requestPayload: {},
+        requestPayloadBytes: 512,
         context: {},
       }
     );
 
+    expect(String(result.error)).toContain('Request payload: 512 B.');
     expect(String(result.error)).toContain(`GET ${baseUrl}/large -> 200, 23.2 MB`);
     expect(result.logger.map((log) => log[2])).toContain('fetching log');
   });

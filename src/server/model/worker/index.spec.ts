@@ -129,7 +129,7 @@ describe('execWorker', () => {
       }
     );
 
-    const [source, globals] = vi.mocked(runCodeInIVM).mock.calls[0];
+    const [source, globals, options] = vi.mocked(runCodeInIVM).mock.calls[0];
 
     expect(source).not.toContain(largePayload.data);
     expect(globals).toEqual(
@@ -137,6 +137,9 @@ describe('execWorker', () => {
         __requestPayload: largePayload,
       })
     );
+    expect(options).toEqual({
+      requestPayloadBytes: Buffer.byteLength(JSON.stringify(largePayload)),
+    });
   });
 
   test('passes environment variables through context.env without embedding values in source', async () => {

@@ -161,17 +161,22 @@ function byteSize(data: unknown) {
  */
 export function describeDisposedIsolateError(
   error: unknown,
-  requestLog: string[]
+  requestLog: string[],
+  requestPayloadBytes?: number
 ) {
   const message =
     error instanceof Error
       ? error.message
       : String(error ?? 'Isolate was disposed during execution');
+  const payload =
+    requestPayloadBytes === undefined
+      ? ''
+      : ` Request payload: ${formatBytes(requestPayloadBytes)}.`;
   const requests = requestLog.length
     ? ` Sandbox requests completed before the failure: ${requestLog.join('; ')}`
     : ' No sandbox request completed before the failure.';
   return new Error(
-    `${message} (sandbox memory limit: ${env.sandbox.memoryLimit} MB).${requests}`
+    `${message} (sandbox memory limit: ${env.sandbox.memoryLimit} MB).${payload}${requests}`
   );
 }
 
