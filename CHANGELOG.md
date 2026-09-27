@@ -1,5 +1,11 @@
 
 
+## [1.33.5](https://github.com/msgbyte/tianji/compare/v1.33.4...v1.33.5) (2026-09-27)
+
+### Others
+
+* **ai-gateway:** load log payloads on demand ([f0d58d4](https://github.com/msgbyte/tianji/commit/f0d58d48b4275315db416b15c9568681b41f5115))
+
 ## [1.33.4](https://github.com/msgbyte/tianji/compare/v1.33.3...v1.33.4) (2026-09-27)
 
 ### Features
