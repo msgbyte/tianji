@@ -105,5 +105,102 @@ describe('WarehouseInsightsSqlBuilder', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
+  test('keeps multiple breakdown keys inside the parameter join', async () => {
+    const builder = new WarehouseLongTableInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: INIT_WORKSPACE_ID,
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: dayjs('2025-08-01').valueOf(),
+          endAt: dayjs('2025-08-02').valueOf(),
+          unit: 'day',
+        },
+        groups: [
+          { value: 'plan', type: 'string' },
+          { value: 'country', type: 'string' },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    await builder.initialize();
+    const sql = builder.build();
+    expect(unwrapSQL(sql)).toContain(
+      `AND ("event_parameters"."event_param_key" = 'plan' OR "event_parameters"."event_param_key" = 'country')`
+    );
+  });
+
+  test.each(['plan`, (select 1) as `x', 'plan"', 'plan?'])(
+    'rejects breakdown key %s that could break out of an identifier',
+    async (value) => {
+      const builder = new WarehouseLongTableInsightsSqlBuilder(
+        {
+          insightId,
+          insightType,
+          workspaceId: INIT_WORKSPACE_ID,
+          metrics: [
+            {
+              name: '$all_event',
+              math: 'events',
+            },
+          ],
+          filters: [],
+          time: {
+            startAt: dayjs('2025-08-01').valueOf(),
+            endAt: dayjs('2025-08-02').valueOf(),
+            unit: 'day',
+          },
+          groups: [{ value, type: 'string' }],
+        },
+        {
+          timezone: 'UTC',
+        }
+      );
+
+      await builder.initialize();
+      expect(() => builder.build()).toThrow('Invalid warehouse identifier');
+    }
+  );
+
+  test('rejects metric aliases that could break out of an identifier', async () => {
+    const builder = new WarehouseLongTableInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: INIT_WORKSPACE_ID,
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+            alias: 'x`, (select 1) as `y',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: dayjs('2025-08-01').valueOf(),
+          endAt: dayjs('2025-08-02').valueOf(),
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    await builder.initialize();
+    expect(() => builder.build()).toThrow('Invalid warehouse identifier');
+  });
+
   test.todo('buildFetchEventsQuery');
 });

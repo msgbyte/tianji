@@ -5,6 +5,7 @@ import {
   getWarehouseApplications,
   getWarehouseConnection,
   MYSQL_DATE_FORMATS,
+  quoteWarehouseIdentifier,
   WarehouseWideTableInsightsApplication,
 } from './utils.js';
 import dayjs from 'dayjs';
@@ -33,6 +34,19 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
     if (!application) {
       throw new Error(`Application ${name} not found`);
+    }
+
+    const fieldNames = new Set(application.fields.map((field) => field.name));
+    const unknownField = [
+      ...this.query.metrics
+        .map((metric) => metric.name)
+        .filter((name) => name !== '$all_event'),
+      ...this.query.filters.map((filter) => filter.name),
+      ...this.query.groups.map((group) => group.value),
+    ].find((name) => !fieldNames.has(name));
+
+    if (unknownField !== undefined) {
+      throw new Error(`Unknown warehouse field: ${unknownField}`);
     }
 
     this.application = application;
@@ -187,20 +201,20 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
     const application = this.getApplication();
 
     return metrics.map((item) => {
-      const alias = item.alias ?? item.name;
+      const alias = quoteWarehouseIdentifier(item.alias ?? item.name);
 
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as ${raw(`"${alias}"`)}`;
+          return sql`count(1) as ${alias}`;
         }
 
-        return sql`count("${raw(item.name)}") as ${raw(`"${alias}"`)}`;
+        return sql`count(${quoteWarehouseIdentifier(item.name)}) as ${alias}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return sql`count(distinct "${raw(application.distinctField)}") as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct "${raw(application.distinctField)}") as ${alias}`;
         }
 
-        return sql`count(distinct case WHEN "${raw(item.name)}" = ${item.name} THEN "${raw(application.distinctField)}" END) as ${raw(`"${alias}"`)}`;
+        return sql`count(distinct case WHEN ${quoteWarehouseIdentifier(item.name)} = ${item.name} THEN "${raw(application.distinctField)}" END) as ${alias}`;
       }
 
       return null;
@@ -219,7 +233,7 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
           filter.type,
           filter.operator,
           filter.value,
-          sql`"${raw(filter.name)}"`
+          quoteWarehouseIdentifier(filter.name)
         )
       ),
     ];
@@ -231,7 +245,9 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
     if (groups.length > 0) {
       for (const g of groups) {
         if (!g.customGroups) {
-          groupSelectQueryArr.push(sql`${raw(g.value)} as "%${raw(g.value)}"`);
+          groupSelectQueryArr.push(
+            sql`${quoteWarehouseIdentifier(g.value)} as ${quoteWarehouseIdentifier(`%${g.value}`)}`
+          );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
             groupSelectQueryArr.push(
@@ -239,8 +255,8 @@ export class WarehouseWideTableInsightsSqlBuilder extends InsightsSqlBuilder {
                 g.type,
                 cg.filterOperator,
                 cg.filterValue,
-                sql`"${raw(g.value)}"`
-              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+                quoteWarehouseIdentifier(g.value)
+              )} as ${quoteWarehouseIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
         }

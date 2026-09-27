@@ -22,6 +22,10 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
             name: 'event_name',
             type: 'string',
           },
+          {
+            name: 'is_public',
+            type: 'string',
+          },
         ],
         distinctField: 'user_id',
         createdAtField: 'event_timestamp',
@@ -136,5 +140,67 @@ describe('WarehouseWideTableInsightsSqlBuilder', () => {
     await builder.initialize();
     const sql = builder.buildFetchEventsQuery(undefined);
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
+  });
+
+  function createBuilder(
+    overrides: Partial<
+      ConstructorParameters<typeof WarehouseWideTableInsightsSqlBuilder>[0]
+    >
+  ) {
+    return new WarehouseWideTableInsightsSqlBuilder(
+      {
+        workspaceId: INIT_WORKSPACE_ID,
+        insightId,
+        insightType,
+        metrics: [{ name: '$all_event', math: 'events' }],
+        filters: [],
+        groups: [],
+        time: {
+          startAt: dayjs('2025-08-01').valueOf(),
+          endAt: dayjs('2025-08-02').valueOf(),
+          unit: 'day',
+        },
+        ...overrides,
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+  }
+
+  test.each([
+    { metrics: [{ name: 'password', math: 'events' as const }] },
+    {
+      filters: [
+        {
+          name: 'password',
+          operator: 'equals' as const,
+          type: 'string' as const,
+          value: 'x',
+        },
+      ],
+    },
+    {
+      groups: [
+        { value: '(select password from users)', type: 'string' as const },
+      ],
+    },
+  ])('rejects names that are not configured fields: %j', async (overrides) => {
+    const builder = createBuilder(overrides);
+
+    await expect(builder.initialize()).rejects.toThrow(
+      'Unknown warehouse field'
+    );
+  });
+
+  test('rejects metric aliases that could break out of an identifier', async () => {
+    const builder = createBuilder({
+      metrics: [
+        { name: '$all_event', math: 'events', alias: 'x`, (select 1) as `y' },
+      ],
+    });
+
+    await builder.initialize();
+    expect(() => builder.build()).toThrow('Invalid warehouse identifier');
   });
 });

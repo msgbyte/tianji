@@ -469,4 +469,44 @@ describe('WebsiteInsightsSqlBuilder', () => {
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql with date filters');
   });
+
+  test('keeps multiple breakdown keys inside the event join', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [
+          {
+            value: 'plan',
+            type: 'string',
+          },
+          {
+            value: 'country',
+            type: 'string',
+          },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = builder.build();
+    expect(unwrapSQL(sql)).toContain(
+      `AND ("WebsiteEventData"."eventKey" = 'plan' OR "WebsiteEventData"."eventKey" = 'country')`
+    );
+  });
 });

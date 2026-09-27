@@ -6,7 +6,7 @@ import {
 } from 'mysql2/promise';
 import pg from 'pg';
 import { env } from '../../../utils/env.js';
-import { WarehouseDatabaseTable } from '@prisma/client';
+import { Prisma, WarehouseDatabaseTable } from '@prisma/client';
 import { flatten, get, uniqBy } from 'lodash-es';
 import { prisma } from '../../_client.js';
 import {
@@ -46,6 +46,19 @@ export function extractSchemaFromUrl(url: string): string {
   } catch {
     return 'public';
   }
+}
+
+/**
+ * Quote a client-provided name as a warehouse SQL identifier.
+ * `executeQuery` turns `"` into MySQL backticks and mysql2 treats every `?`
+ * as a placeholder, so these characters could escape the identifier.
+ */
+export function quoteWarehouseIdentifier(name: string): Prisma.Sql {
+  if (/[`"?]/.test(name)) {
+    throw new Error(`Invalid warehouse identifier: ${name}`);
+  }
+
+  return Prisma.raw(`"${name}"`);
 }
 
 export interface WarehouseTableMeta {

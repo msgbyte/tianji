@@ -105,7 +105,9 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
         );
         innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
           groupConditions,
-          ' OR '
+          ' OR ',
+          '(',
+          ')'
         )}`;
       }
     }
