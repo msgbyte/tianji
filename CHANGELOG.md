@@ -1,5 +1,11 @@
 
 
+## [1.33.6](https://github.com/msgbyte/tianji/compare/v1.33.5...v1.33.6) (2026-09-27)
+
+### Bug Fixes
+
+* **server:** log elapsed time for express errors ([65a5e8a](https://github.com/msgbyte/tianji/commit/65a5e8ad39aaedde06696ecea3f1856097259d3b))
+
 ## [1.33.5](https://github.com/msgbyte/tianji/compare/v1.33.4...v1.33.5) (2026-09-27)
 
 ### Others
