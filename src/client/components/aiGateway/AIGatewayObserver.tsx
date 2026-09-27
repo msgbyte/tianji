@@ -46,7 +46,11 @@ import {
 } from 'react-icons/lu';
 import { z } from 'zod';
 import { Waterfall } from 'react-waterfall-timeline';
-import type { AIGatewayLogItem } from './AIGatewayLogDetail';
+import {
+  AIGatewayLogPayload,
+  type AIGatewayLogItem,
+  type AIGatewayLogDetailItem,
+} from './AIGatewayLogDetail';
 import 'react-waterfall-timeline/style.css';
 import './AIGatewayObserver.css';
 
@@ -157,16 +161,11 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
           return true;
         }
 
-        return [
-          log.id,
-          log.modelName,
-          log.modelProvider,
-          log.userId,
-          getPromptPreview(log),
-        ].some((value) =>
-          String(value ?? '')
-            .toLowerCase()
-            .includes(needle)
+        return [log.id, log.modelName, log.modelProvider, log.userId].some(
+          (value) =>
+            String(value ?? '')
+              .toLowerCase()
+              .includes(needle)
         );
       })
       .sort((left, right) => {
@@ -313,7 +312,7 @@ export function AIGatewayObserver({ gatewayId }: { gatewayId: string }) {
           </ResizablePanel>
           <ResizableHandle className="observer-resize" withHandle />
           <ResizablePanel defaultSize={compact ? 52 : 38} minSize={25}>
-            <LogDetail log={selectedLog} />
+            <LogDetail log={selectedLog} live={live} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </section>
@@ -600,7 +599,7 @@ function LogStream({
                 </td>
                 <td>
                   <strong>{log.modelName}</strong>
-                  <span>{getPromptPreview(log)}</span>
+                  <span>{log.id}</span>
                 </td>
                 <td>
                   {formatNumber(log.inputToken)} →{' '}
@@ -635,9 +634,7 @@ function LogStream({
   );
 }
 
-function LogDetail({ log }: { log?: AIGatewayLogItem }) {
-  const [tab, setTab] = useState<DetailTab>('conversation');
-
+function LogDetail({ log, live }: { log?: AIGatewayLogItem; live: boolean }) {
   if (!log) {
     return (
       <aside className="observer-detail observer-detail-empty">
@@ -649,10 +646,6 @@ function LogDetail({ log }: { log?: AIGatewayLogItem }) {
       </aside>
     );
   }
-
-  const requestMessages = getRequestMessages(log.requestPayload);
-  const responseMessages = getResponseMessages(log.responsePayload);
-  const error = getResponseError(log.responsePayload);
 
   return (
     <aside className="observer-detail">
@@ -709,6 +702,21 @@ function LogDetail({ log }: { log?: AIGatewayLogItem }) {
         </dl>
       </details>
 
+      <AIGatewayLogPayload key={log.id} item={log} live={live}>
+        {(detail) => <LogPayload log={detail} />}
+      </AIGatewayLogPayload>
+    </aside>
+  );
+}
+
+function LogPayload({ log }: { log: AIGatewayLogDetailItem }) {
+  const [tab, setTab] = useState<DetailTab>('conversation');
+  const requestMessages = getRequestMessages(log.requestPayload);
+  const responseMessages = getResponseMessages(log.responsePayload);
+  const error = getResponseError(log.responsePayload);
+
+  return (
+    <>
       <div className="observer-detail-tabs">
         <div>
           <strong>{t('Content')}</strong>
@@ -774,7 +782,7 @@ function LogDetail({ log }: { log?: AIGatewayLogItem }) {
           </div>
         )}
       </div>
-    </aside>
+    </>
   );
 }
 
@@ -782,7 +790,7 @@ function InputView({
   log,
   messages,
 }: {
-  log: AIGatewayLogItem;
+  log: AIGatewayLogDetailItem;
   messages: DisplayMessage[];
 }) {
   const request = asRecord(log.requestPayload) ?? {};
@@ -833,7 +841,7 @@ function OutputView({
   messages,
   error,
 }: {
-  log: AIGatewayLogItem;
+  log: AIGatewayLogDetailItem;
   messages: DisplayMessage[];
   error?: string;
 }) {
@@ -1300,14 +1308,6 @@ function contentToParts(value: unknown): DisplayMessage['contentParts'] {
   }
 
   return parts;
-}
-
-function getPromptPreview(log: AIGatewayLogItem): string {
-  const messages = getRequestMessages(log.requestPayload);
-  const prompt = [...messages]
-    .reverse()
-    .find((message) => message.role === 'user' && message.content)?.content;
-  return prompt?.replace(/\s+/g, ' ').slice(0, 100) || log.id;
 }
 
 function getResponseError(value: unknown): string | undefined {

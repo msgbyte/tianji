@@ -19,6 +19,33 @@ import { clearQuotaAlertCacheForGateway } from '../../model/aiGateway/quotaAlert
 import { testAIGatewayCustomConnection } from '../../model/aiGateway/connectivity.js';
 import { redactSecret } from '../../model/aiGateway/redactSecret.js';
 import { logger } from '../../utils/logger.js';
+import type { Prisma } from '@prisma/client';
+
+const logSummarySchema = AIGatewayLogsModelSchema.omit({
+  requestPayload: true,
+  responsePayload: true,
+});
+
+const logSummarySelect = {
+  id: true,
+  workspaceId: true,
+  gatewayId: true,
+  inputToken: true,
+  outputToken: true,
+  cacheReadInputToken: true,
+  cacheWriteInputToken: true,
+  stream: true,
+  modelName: true,
+  modelProvider: true,
+  status: true,
+  duration: true,
+  ttft: true,
+  tpot: true,
+  price: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.AIGatewayLogsSelect;
 
 const modelPricingData = await import(
   '../../utils/model_prices_and_context_window_v2.json',
@@ -422,19 +449,7 @@ export const aiGatewayRouter = router({
         pendingIds: z.array(z.string()).optional(),
       })
     )
-    .output(
-      buildCursorResponseSchema(
-        AIGatewayLogsModelSchema.omit({
-          requestPayload: true,
-          responsePayload: true,
-        }).merge(
-          z.object({
-            requestPayload: z.any().optional(),
-            responsePayload: z.any().optional(),
-          })
-        )
-      )
-    )
+    .output(buildCursorResponseSchema(logSummarySchema))
     .query(async ({ input }) => {
       const {
         workspaceId,
@@ -455,6 +470,7 @@ export const aiGatewayRouter = router({
         const [freshItems, pendingItems] = await Promise.all([
           prisma.aIGatewayLogs.findMany({
             where,
+            select: logSummarySelect,
             take: limit + 1,
             cursor: cursor ? { id: cursor } : undefined,
             orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -462,10 +478,12 @@ export const aiGatewayRouter = router({
           pendingIds?.length
             ? prisma.aIGatewayLogs.findMany({
                 where: { ...where, id: { in: pendingIds } },
+                select: logSummarySelect,
               })
             : [],
         ]);
-        const nextItem = freshItems.length > limit ? freshItems.pop() : undefined;
+        const nextItem =
+          freshItems.length > limit ? freshItems.pop() : undefined;
         const items = new Map(freshItems.map((item) => [item.id, item]));
         pendingItems.forEach((item) => items.set(item.id, item));
 
@@ -473,7 +491,7 @@ export const aiGatewayRouter = router({
           items: Array.from(items.values()).map((item) => ({
             ...item,
             price: Number(item.price),
-          })) as z.infer<typeof AIGatewayLogsModelSchema>[],
+          })),
           nextCursor: nextItem?.id,
         };
       }
@@ -487,6 +505,7 @@ export const aiGatewayRouter = router({
             ...(logId && { id: logId }),
           },
           limit,
+          select: logSummarySelect,
           cursor,
           cursorName: 'id',
           order: 'desc',
@@ -497,9 +516,33 @@ export const aiGatewayRouter = router({
         items: items.map((item) => ({
           ...item,
           price: Number(item.price),
-        })) as z.infer<typeof AIGatewayLogsModelSchema>[],
+        })),
         nextCursor,
       };
+    }),
+  logDetail: workspaceProcedure
+    .meta(
+      buildAIGatewayOpenapi({
+        method: 'GET',
+        path: '/logs/{logId}',
+        summary: 'Get gateway log detail',
+      })
+    )
+    .input(z.object({ gatewayId: z.string(), logId: z.string() }))
+    .output(
+      logSummarySchema.extend({
+        requestPayload: z.any().optional(),
+        responsePayload: z.any().optional(),
+      })
+    )
+    .query(async ({ input: { workspaceId, gatewayId, logId } }) => {
+      const log = await prisma.aIGatewayLogs.findFirst({
+        where: { workspaceId, gatewayId, id: logId },
+      });
+      if (!log) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Log not found' });
+      }
+      return { ...log, price: Number(log.price) };
     }),
   modelPricing: workspaceProcedure
     .meta(

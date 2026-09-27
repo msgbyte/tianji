@@ -5,9 +5,22 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   AIGatewayLogDetail,
   type AIGatewayLogItem,
+  type AIGatewayLogDetailItem,
 } from './AIGatewayLogDetail';
 import { Sheet, SheetContent, SheetTitle } from '../ui/sheet';
 import { ScrollArea } from '../ui/scroll-area';
+
+const detailQuery = vi.hoisted(() => vi.fn());
+
+vi.mock('@/api/trpc', () => ({
+  trpc: { aiGateway: { logDetail: { useQuery: detailQuery } } },
+}));
+
+function mockDetail(item: AIGatewayLogDetailItem): AIGatewayLogItem {
+  detailQuery.mockReturnValue({ data: item, error: null, refetch: vi.fn() });
+  const { requestPayload, responsePayload, ...summary } = item;
+  return summary;
+}
 
 vi.mock('@i18next-toolkit/react', () => ({
   t: (key: string) => (key === 'Close' ? 'Cerrar' : key),
@@ -29,46 +42,114 @@ vi.mock('@i18next-toolkit/react', () => ({
 }));
 
 describe('AIGatewayLogDetail', () => {
+  test('keeps metadata visible while payloads load, fail, and switch between logs', async () => {
+    const item = {
+      id: 'log_loading',
+      workspaceId: 'workspace_1',
+      gatewayId: 'gateway_1',
+      modelName: 'gpt-5',
+      status: 'Success',
+      duration: 234,
+      ttft: 56,
+      tpot: 78,
+      inputToken: 12,
+      outputToken: 34,
+      cacheReadInputToken: 0,
+      cacheWriteInputToken: 0,
+      price: 0.001,
+      createdAt: '2026-08-29T00:00:00Z',
+    } as AIGatewayLogItem;
+    const refetch = vi.fn();
+    detailQuery.mockReturnValue({ data: undefined, error: null, refetch });
+    const { rerender } = render(<AIGatewayLogDetail item={item} />);
+
+    expect(screen.getByText('gpt-5')).toBeVisible();
+    expect(screen.getByText('234 ms')).toBeVisible();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading payloads…');
+    expect(detailQuery).toHaveBeenLastCalledWith(
+      {
+        workspaceId: 'workspace_1',
+        gatewayId: 'gateway_1',
+        logId: 'log_loading',
+      },
+      expect.any(Object)
+    );
+
+    detailQuery.mockReturnValue({
+      data: undefined,
+      error: new Error('offline'),
+      refetch,
+    });
+    rerender(<AIGatewayLogDetail item={{ ...item }} />);
+    expect(screen.getByText('234 ms')).toBeVisible();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Failed to load payloads'
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(refetch).toHaveBeenCalledOnce();
+
+    detailQuery.mockReturnValue({
+      data: {
+        ...item,
+        requestPayload: { messages: [{ role: 'user', content: 'Hola' }] },
+        responsePayload: { content: 'Respuesta' },
+      },
+      error: null,
+      refetch,
+    });
+    rerender(<AIGatewayLogDetail item={{ ...item }} />);
+    expect(screen.getByText(/Hola/)).toBeVisible();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+    detailQuery.mockReturnValue({ data: undefined, error: null, refetch });
+    rerender(
+      <AIGatewayLogDetail
+        item={{ ...item, id: 'log_next', modelName: 'next-model' }}
+      />
+    );
+    expect(screen.getByText('next-model')).toBeVisible();
+    expect(screen.getByRole('status')).toBeVisible();
+    expect(screen.queryByText(/Hola/)).not.toBeInTheDocument();
+  });
+
   test('switches between decomposed request tabs', async () => {
     render(
       <AIGatewayLogDetail
-        item={
-          {
-            id: 'log_1',
-            workspaceId: 'workspace_1',
-            gatewayId: 'gateway_1',
-            inputToken: 12,
-            outputToken: 34,
-            cacheReadInputToken: 0,
-            cacheWriteInputToken: 0,
+        item={mockDetail({
+          id: 'log_1',
+          workspaceId: 'workspace_1',
+          gatewayId: 'gateway_1',
+          inputToken: 12,
+          outputToken: 34,
+          cacheReadInputToken: 0,
+          cacheWriteInputToken: 0,
+          stream: true,
+          modelName: 'custom',
+          modelProvider: 'openai',
+          status: 'Success',
+          duration: 234,
+          ttft: 56,
+          tpot: 78,
+          price: 0.001,
+          requestPayload: {
+            model: 'custom',
+            tools: [
+              {
+                type: 'function',
+                function: { name: 'read' },
+              },
+            ],
+            messages: [
+              { role: 'system', content: 'System instructions' },
+              { role: 'user', content: 'Actual user input' },
+            ],
             stream: true,
-            modelName: 'custom',
-            modelProvider: 'openai',
-            status: 'Success',
-            duration: 234,
-            ttft: 56,
-            tpot: 78,
-            price: 0.001,
-            requestPayload: {
-              model: 'custom',
-              tools: [
-                {
-                  type: 'function',
-                  function: { name: 'read' },
-                },
-              ],
-              messages: [
-                { role: 'system', content: 'System instructions' },
-                { role: 'user', content: 'Actual user input' },
-              ],
-              stream: true,
-            },
-            responsePayload: { content: 'Response text' },
-            userId: null,
-            createdAt: '2026-08-29T00:00:00.000Z',
-            updatedAt: '2026-08-29T00:00:01.000Z',
-          } as AIGatewayLogItem
-        }
+          },
+          responsePayload: { content: 'Response text' },
+          userId: null,
+          createdAt: '2026-08-29T00:00:00.000Z',
+          updatedAt: '2026-08-29T00:00:01.000Z',
+        } as AIGatewayLogDetailItem)}
       />
     );
 
@@ -79,9 +160,7 @@ describe('AIGatewayLogDetail', () => {
     expect(screen.getByText(/Actual user input/)).toBeVisible();
     expect(screen.queryByText(/"name": "read"/)).not.toBeInTheDocument();
 
-    await userEvent.click(
-      screen.getByRole('tab', { name: 'Herramientas' })
-    );
+    await userEvent.click(screen.getByRole('tab', { name: 'Herramientas' }));
     expect(screen.getByText(/"name": "read"/)).toBeVisible();
     expect(screen.queryByText('Actual user input')).not.toBeInTheDocument();
 
@@ -105,45 +184,43 @@ describe('AIGatewayLogDetail', () => {
           <SheetTitle>Detalle del registro</SheetTitle>
           <ScrollArea>
             <AIGatewayLogDetail
-              item={
-                {
-                  id: 'log_2',
-                  workspaceId: 'workspace_1',
-                  gatewayId: 'gateway_1',
-                  inputToken: 12,
-                  outputToken: 34,
-                  cacheReadInputToken: 0,
-                  cacheWriteInputToken: 0,
-                  stream: false,
-                  modelName: 'custom',
-                  modelProvider: 'openai',
-                  status: 'Success',
-                  duration: 234,
-                  ttft: 56,
-                  tpot: 78,
-                  price: 0.001,
-                  requestPayload: {
-                    messages: [
-                      {
-                        role: 'user',
-                        content: [
-                          { type: 'text', text: 'Inspect this image' },
-                          {
-                            type: 'image_url',
-                            image_url: {
-                              url: 'data:image/png;base64,aGVsbG8=',
-                            },
+              item={mockDetail({
+                id: 'log_2',
+                workspaceId: 'workspace_1',
+                gatewayId: 'gateway_1',
+                inputToken: 12,
+                outputToken: 34,
+                cacheReadInputToken: 0,
+                cacheWriteInputToken: 0,
+                stream: false,
+                modelName: 'custom',
+                modelProvider: 'openai',
+                status: 'Success',
+                duration: 234,
+                ttft: 56,
+                tpot: 78,
+                price: 0.001,
+                requestPayload: {
+                  messages: [
+                    {
+                      role: 'user',
+                      content: [
+                        { type: 'text', text: 'Inspect this image' },
+                        {
+                          type: 'image_url',
+                          image_url: {
+                            url: 'data:image/png;base64,aGVsbG8=',
                           },
-                        ],
-                      },
-                    ],
-                  },
-                  responsePayload: { content: 'Response text' },
-                  userId: null,
-                  createdAt: '2026-08-29T00:00:00.000Z',
-                  updatedAt: '2026-08-29T00:00:01.000Z',
-                } as AIGatewayLogItem
-              }
+                        },
+                      ],
+                    },
+                  ],
+                },
+                responsePayload: { content: 'Response text' },
+                userId: null,
+                createdAt: '2026-08-29T00:00:00.000Z',
+                updatedAt: '2026-08-29T00:00:01.000Z',
+              } as AIGatewayLogDetailItem)}
             />
           </ScrollArea>
         </SheetContent>
@@ -211,44 +288,42 @@ describe('AIGatewayLogDetail', () => {
   test('switches between decomposed response tabs', async () => {
     render(
       <AIGatewayLogDetail
-        item={
-          {
-            id: 'log_3',
-            workspaceId: 'workspace_1',
-            gatewayId: 'gateway_1',
-            inputToken: 12,
-            outputToken: 34,
-            cacheReadInputToken: 0,
-            cacheWriteInputToken: 0,
-            stream: true,
-            modelName: 'custom',
-            modelProvider: 'openai',
-            status: 'Success',
-            duration: 234,
-            ttft: 56,
-            tpot: 78,
-            price: 0.001,
-            requestPayload: {},
-            responsePayload: {
-              usage: { total_tokens: 3 },
-              content: 'Response text',
-              provider: 'Google',
-              tool_calls: [
-                {
-                  id: 'call_1',
-                  type: 'function',
-                  function: {
-                    name: 'lookup',
-                    arguments: '{"city":"Paris"}',
-                  },
+        item={mockDetail({
+          id: 'log_3',
+          workspaceId: 'workspace_1',
+          gatewayId: 'gateway_1',
+          inputToken: 12,
+          outputToken: 34,
+          cacheReadInputToken: 0,
+          cacheWriteInputToken: 0,
+          stream: true,
+          modelName: 'custom',
+          modelProvider: 'openai',
+          status: 'Success',
+          duration: 234,
+          ttft: 56,
+          tpot: 78,
+          price: 0.001,
+          requestPayload: {},
+          responsePayload: {
+            usage: { total_tokens: 3 },
+            content: 'Response text',
+            provider: 'Google',
+            tool_calls: [
+              {
+                id: 'call_1',
+                type: 'function',
+                function: {
+                  name: 'lookup',
+                  arguments: '{"city":"Paris"}',
                 },
-              ],
-            },
-            userId: null,
-            createdAt: '2026-08-29T00:00:00.000Z',
-            updatedAt: '2026-08-29T00:00:01.000Z',
-          } as AIGatewayLogItem
-        }
+              },
+            ],
+          },
+          userId: null,
+          createdAt: '2026-08-29T00:00:00.000Z',
+          updatedAt: '2026-08-29T00:00:01.000Z',
+        } as AIGatewayLogDetailItem)}
       />
     );
 

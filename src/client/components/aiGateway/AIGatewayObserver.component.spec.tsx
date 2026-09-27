@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, beforeEach, expect, test, vi } from 'vitest';
@@ -7,6 +12,10 @@ import { AIGatewayObserver } from './AIGatewayObserver';
 
 const mocks = vi.hoisted(() => ({
   data: undefined as { items: any[]; nextCursor?: string } | undefined,
+  summarySource: undefined as unknown,
+  summaries: undefined as { items: any[]; nextCursor?: string } | undefined,
+  details: new Map<string, any>(),
+  detailQuery: vi.fn(),
   input: undefined as Record<string, unknown> | undefined,
   t: vi.fn((key: string, values?: Record<string, unknown>) => {
     if (key === 'Gateway Log Observer') return 'Translated Gateway Observer';
@@ -35,6 +44,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@i18next-toolkit/react', () => ({
   t: mocks.t,
+  useTranslation: () => ({ t: mocks.t }),
 }));
 
 vi.mock('@/hooks/useWindowSize', () => ({
@@ -61,11 +71,24 @@ vi.mock('@/api/trpc', () => ({
       all: {
         useQuery: () => ({ data: [{ id: 'gateway_1', name: 'Primary' }] }),
       },
+      logDetail: { useQuery: mocks.detailQuery },
       logs: {
         useQuery: (input: Record<string, unknown>) => {
           mocks.input = input;
+          if (mocks.data !== mocks.summarySource) {
+            mocks.summarySource = mocks.data;
+            mocks.data?.items.forEach((item) =>
+              mocks.details.set(item.id, item)
+            );
+            mocks.summaries = mocks.data && {
+              ...mocks.data,
+              items: mocks.data.items.map(
+                ({ requestPayload, responsePayload, ...summary }) => summary
+              ),
+            };
+          }
           return {
-            data: mocks.data,
+            data: mocks.summaries,
             error: null,
             isLoading: !mocks.data,
             isFetching: false,
@@ -80,6 +103,14 @@ beforeEach(() => {
   localStorage.clear();
   mocks.data = undefined;
   mocks.input = undefined;
+  mocks.summarySource = undefined;
+  mocks.summaries = undefined;
+  mocks.details.clear();
+  mocks.detailQuery.mockReset().mockImplementation(({ logId }) => ({
+    data: mocks.details.get(logId),
+    error: null,
+    refetch: vi.fn(),
+  }));
   mocks.t.mockClear();
 });
 
@@ -154,7 +185,7 @@ test('totals displayed usage across updates, filters, and clearing the view', ()
   expectTotals('0.00010', '200', '4');
   fireEvent.click(screen.getByRole('button', { name: 'All' }));
   const search = screen.getByRole('textbox', { name: 'Search logs' });
-  fireEvent.change(search, { target: { value: 'Primera' } });
+  fireEvent.change(search, { target: { value: 'log_first' } });
   expectTotals('0.00123', '1,200', '30');
   fireEvent.change(search, { target: { value: 'no-match' } });
   expectTotals('0.00000', '0', '0');
@@ -337,7 +368,7 @@ test('keeps a request that arrives while the first response is delayed', () => {
   mocks.data = { items: [createLog('log_1', 'Arrived while opening')] };
   rerender(<AIGatewayObserver gatewayId="gateway_1" />);
 
-  expect(screen.getAllByText('Arrived while opening')).not.toHaveLength(0);
+  expect(screen.getByRole('row', { name: /log_1/ })).toBeVisible();
   expect(mocks.input?.openedAt).toBeInstanceOf(Date);
 });
 
@@ -355,8 +386,8 @@ test('accumulates logs while draining batches larger than 100', () => {
   mocks.data = { items: [createLog('log_100', 'Request 100')] };
   rerender(<AIGatewayObserver gatewayId="gateway_1" />);
 
-  expect(screen.getAllByText('Request 0')).not.toHaveLength(0);
-  expect(screen.getAllByText('Request 100')).not.toHaveLength(0);
+  expect(screen.getAllByText('log_0')).not.toHaveLength(0);
+  expect(screen.getAllByText('log_100')).not.toHaveLength(0);
   expect(screen.getByText('101 requests')).toBeInTheDocument();
 });
 
@@ -403,7 +434,7 @@ test.each(['Success', 'Failed'])(
     mocks.data = { items: [completed] };
     rerender(<AIGatewayObserver gatewayId="gateway_1" />);
     fireEvent.click(screen.getByRole('button', { name: status }));
-    const row = screen.getByRole('row', { name: /Solicitud de prueba/ });
+    const row = screen.getByRole('row', { name: /log_cached/ });
 
     for (const stale of [
       pending,
@@ -627,3 +658,161 @@ function createLog(
     ...overrides,
   };
 }
+
+test('loads only the selected payload without blocking metadata or row selection', () => {
+  mocks.data = {
+    items: [
+      createLog('log_first', 'Primera', {
+        createdAt: new Date('2026-09-03T08:00:02Z'),
+      }),
+      createLog('log_second', 'Segunda'),
+    ],
+  };
+  mocks.detailQuery.mockReturnValue({
+    data: undefined,
+    error: null,
+    refetch: vi.fn(),
+  });
+  const { container } = render(<AIGatewayObserver gatewayId="gateway_1" />);
+  const detail = within(container.querySelector('.observer-detail')!);
+  expect(detail.getByText('log_first')).toBeVisible();
+  expect(detail.getByText('Metadata and timing')).toBeVisible();
+  expect(detail.getByRole('status')).toHaveTextContent('Loading payloads…');
+  expect(
+    mocks.detailQuery.mock.calls.every(([input]) => input.logId === 'log_first')
+  ).toBe(true);
+
+  fireEvent.click(screen.getByRole('row', { name: /log_second/ }));
+  expect(detail.getByText('log_second')).toBeVisible();
+  expect(mocks.detailQuery).toHaveBeenLastCalledWith(
+    { workspaceId: 'workspace_1', gatewayId: 'gateway_1', logId: 'log_second' },
+    expect.objectContaining({
+      trpc: { context: { skipBatch: true }, abortOnUnmount: true },
+    })
+  );
+  expect(detail.getByRole('status')).toBeVisible();
+});
+
+test('pauses payload polling while allowing another log to load and resumes polling when live', async () => {
+  vi.useFakeTimers();
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const fetchDetail = vi.fn(async ({ logId }: { logId: string }) =>
+    mocks.details.get(logId)
+  );
+  mocks.data = {
+    items: [
+      createLog('log_first', 'Primera', {
+        status: 'Pending',
+        createdAt: new Date('2026-09-03T08:00:02Z'),
+      }),
+      createLog('log_second', 'Segunda', { status: 'Pending' }),
+    ],
+  };
+  mocks.detailQuery.mockImplementation((input, options) =>
+    useQuery({
+      ...options,
+      queryKey: ['logDetail', input],
+      queryFn: () => fetchDetail(input),
+    })
+  );
+  const { unmount } = render(
+    <QueryClientProvider client={client}>
+      <AIGatewayObserver gatewayId="gateway_1" />
+    </QueryClientProvider>
+  );
+
+  try {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(fetchDetail).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(fetchDetail).toHaveBeenCalledTimes(2);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Live' }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6000);
+    });
+    expect(fetchDetail).toHaveBeenCalledTimes(2);
+
+    fireEvent.click(screen.getByRole('row', { name: /log_second/ }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(fetchDetail).toHaveBeenCalledTimes(3);
+    expect(fetchDetail).toHaveBeenLastCalledWith(
+      expect.objectContaining({ logId: 'log_second' })
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6000);
+    });
+    expect(fetchDetail).toHaveBeenCalledTimes(3);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Paused' }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(fetchDetail).toHaveBeenCalledTimes(4);
+  } finally {
+    unmount();
+    client.clear();
+    vi.useRealTimers();
+  }
+});
+
+test('shows refresh errors alongside cached payloads and preserves the selected tab through retry', () => {
+  const pendingLog = createLog('log_cached', 'Solicitud guardada', {
+    status: 'Pending',
+    responsePayload: null,
+  });
+  const refetch = vi.fn();
+  const query = {
+    data: pendingLog,
+    error: null as Error | null,
+    refetch,
+    isFetching: false,
+  };
+  mocks.data = { items: [pendingLog] };
+  mocks.detailQuery.mockImplementation(() => query);
+  const { container, rerender } = render(
+    <AIGatewayObserver gatewayId="gateway_1" />
+  );
+  const detail = within(container.querySelector('.observer-detail')!);
+  fireEvent.click(detail.getByRole('tab', { name: 'Input' }));
+
+  query.error = new Error('offline');
+  rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+  expect(detail.getByRole('alert')).toHaveTextContent(
+    'Failed to load payloads'
+  );
+  expect(detail.getByText('Solicitud guardada')).toBeVisible();
+  expect(detail.getByText('Metadata and timing')).toBeVisible();
+  expect(detail.getByRole('tab', { name: 'Input' })).toHaveAttribute(
+    'aria-selected',
+    'true'
+  );
+  fireEvent.click(detail.getByRole('button', { name: 'Retry' }));
+  expect(refetch).toHaveBeenCalledOnce();
+
+  query.isFetching = true;
+  rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+  expect(detail.getByRole('button', { name: 'Retry' })).toBeDisabled();
+  expect(detail.getByText('Solicitud guardada')).toBeVisible();
+
+  query.error = null;
+  query.isFetching = false;
+  query.data = createLog('log_cached', 'Solicitud guardada');
+  rerender(<AIGatewayObserver gatewayId="gateway_1" />);
+  expect(detail.queryByRole('alert')).not.toBeInTheDocument();
+  expect(detail.getByRole('tab', { name: 'Input' })).toHaveAttribute(
+    'aria-selected',
+    'true'
+  );
+  expect(detail.getByText('Solicitud guardada')).toBeVisible();
+  fireEvent.click(detail.getByRole('tab', { name: 'Output' }));
+  expect(detail.getByText('Response for Solicitud guardada')).toBeVisible();
+});

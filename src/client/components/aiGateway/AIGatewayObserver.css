@@ -513,11 +513,15 @@
 }
 
 .observer-detail {
-  display: grid;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
   background: var(--observer-surface);
+}
+
+.observer-detail > * {
+  flex-shrink: 0;
 }
 
 .observer-detail-empty {
@@ -663,6 +667,7 @@
 .observer-detail-tabs button { padding: 6px 8px; }
 
 .observer-tab-panel {
+  flex: 1;
   overflow: auto;
   overscroll-behavior: contain;
 }

@@ -4,6 +4,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { AIRouterLogTable } from './AIRouterLogTable';
 
+const aiGatewayLogDetailUseQuery = vi.hoisted(() =>
+  vi.fn(() => ({ data: undefined, error: null, refetch: vi.fn() }))
+);
 const aiGatewayLogsUseInfiniteQuery = vi.hoisted(() => vi.fn());
 const aiGatewayLogsResult = vi.hoisted(() => ({
   data: {
@@ -26,8 +29,6 @@ const aiGatewayLogsResult = vi.hoisted(() => ({
             ttft: 56,
             tpot: 78,
             price: 0.001,
-            requestPayload: { messages: [{ role: 'user', content: 'hello' }] },
-            responsePayload: { content: 'world' },
             userId: null,
             createdAt: new Date('2026-06-28T00:00:00.000Z'),
             updatedAt: new Date('2026-06-28T00:00:01.000Z'),
@@ -62,20 +63,14 @@ vi.mock('@tanstack/react-router', () => ({
     to: string;
   }> &
     React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a
-      href={to.replace('$gatewayId', params?.gatewayId ?? '')}
-      {...props}
-    >
+    <a href={to.replace('$gatewayId', params?.gatewayId ?? '')} {...props}>
       {children}
     </a>
   ),
 }));
 
 vi.mock('@/components/ui/sheet', () => ({
-  Sheet: ({
-    children,
-    open,
-  }: React.PropsWithChildren<{ open?: boolean }>) =>
+  Sheet: ({ children, open }: React.PropsWithChildren<{ open?: boolean }>) =>
     open ? <div role="dialog">{children}</div> : null,
   SheetContent: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
@@ -89,9 +84,7 @@ vi.mock('@/components/ui/sheet', () => ({
       <div>{children}</div>
     </section>
   ),
-  SheetHeader: ({ children }: React.PropsWithChildren) => (
-    <div>{children}</div>
-  ),
+  SheetHeader: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
   SheetTitle: ({ children }: React.PropsWithChildren) => <h2>{children}</h2>,
 }));
 
@@ -142,6 +135,7 @@ vi.mock('@/api/trpc', () => ({
       },
     },
     aiGateway: {
+      logDetail: { useQuery: aiGatewayLogDetailUseQuery },
       logs: {
         useInfiniteQuery: aiGatewayLogsUseInfiniteQuery,
       },
@@ -150,7 +144,9 @@ vi.mock('@/api/trpc', () => ({
 }));
 
 aiGatewayLogsUseInfiniteQuery.mockImplementation((_input, options) =>
-  options?.enabled ? aiGatewayLogsResult : { ...aiGatewayLogsResult, data: undefined }
+  options?.enabled
+    ? aiGatewayLogsResult
+    : { ...aiGatewayLogsResult, data: undefined }
 );
 
 describe('AIRouterLogTable', () => {
@@ -165,6 +161,7 @@ describe('AIRouterLogTable', () => {
     const gatewayLink = screen.getByRole('link', {
       name: 'Primary Gateway',
     });
+    expect(aiGatewayLogDetailUseQuery).not.toHaveBeenCalled();
     expect(gatewayLink).toHaveAttribute('href', '/aiGateway/gateway_1');
     expect(aiGatewayLogsUseInfiniteQuery).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -197,5 +194,14 @@ describe('AIRouterLogTable', () => {
 
     expect(screen.getByRole('dialog')).toHaveTextContent('gateway_log_1');
     expect(screen.getByRole('dialog')).toHaveTextContent('gpt-5.5');
+    expect(screen.getByRole('status')).toHaveTextContent('Loading payloads…');
+    expect(aiGatewayLogDetailUseQuery).toHaveBeenCalledWith(
+      {
+        workspaceId: 'workspace_1',
+        gatewayId: 'gateway_1',
+        logId: 'gateway_log_1',
+      },
+      expect.any(Object)
+    );
   });
 });

@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => {
     promStartTimer: vi.fn(() => endRequest),
     findGateway: vi.fn(),
     findLogs: vi.fn(),
+    findLog: vi.fn(),
     createGateway: vi.fn(),
     testConnection: vi.fn(),
   };
@@ -49,6 +50,7 @@ vi.mock('../../model/_client.js', () => ({
     },
     aIGatewayLogs: {
       findMany: mocks.findLogs,
+      findFirst: mocks.findLog,
     },
   },
 }));
@@ -275,7 +277,25 @@ describe('aiGatewayRouter.duplicate', () => {
   });
 });
 
-describe('aiGatewayRouter.logs observer mode', () => {
+describe('aiGatewayRouter.logs', () => {
+  test('returns summary fields without reading or returning payloads', async () => {
+    const workspaceId = createId();
+    const log = createLog('log_1', new Date());
+    log.requestPayload = { messages: ['Large request'.repeat(1000)] };
+    log.responsePayload = { content: 'Large response'.repeat(1000) };
+    mocks.findLogs.mockResolvedValueOnce([log]);
+    const caller = await createCaller();
+
+    const result = await caller.logs({ workspaceId, gatewayId: 'gateway_1' });
+
+    expect(result.items).toEqual([
+      expect.objectContaining({ id: log.id, price: 0 }),
+    ]);
+    expect(result.items[0]).not.toHaveProperty('requestPayload');
+    expect(result.items[0]).not.toHaveProperty('responsePayload');
+    expect(mocks.findLogs.mock.calls[0][0].select).toEqual(summarySelect);
+  });
+
   test('accepts an openedAt date serialized by an HTTP client', async () => {
     const workspaceId = createId();
     const serializedOpenedAt = '2026-09-03T08:00:00.000Z';
@@ -296,6 +316,7 @@ describe('aiGatewayRouter.logs observer mode', () => {
         createdAt: { gte: new Date(serializedOpenedAt) },
       },
       take: 101,
+      select: summarySelect,
       cursor: undefined,
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     });
@@ -332,6 +353,7 @@ describe('aiGatewayRouter.logs observer mode', () => {
         createdAt: { gte: openedAt },
       },
       take: 101,
+      select: summarySelect,
       cursor: undefined,
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     });
@@ -342,11 +364,73 @@ describe('aiGatewayRouter.logs observer mode', () => {
         createdAt: { gte: openedAt },
         id: { in: ['pending_1'] },
       },
+      select: summarySelect,
     });
     expect(result.nextCursor).toBe('log_100');
-    expect(result.items).toContainEqual(completedPendingLog);
+    const { requestPayload, responsePayload, ...summary } = completedPendingLog;
+    expect(result.items).toContainEqual(summary);
+    for (const item of result.items) {
+      expect(item).not.toHaveProperty('requestPayload');
+      expect(item).not.toHaveProperty('responsePayload');
+    }
   });
 });
+
+describe('aiGatewayRouter.logDetail', () => {
+  test('loads payloads only for a log in the requested workspace and gateway', async () => {
+    const workspaceId = createId();
+    const log = createLog('log_1', new Date(), 'Success');
+    log.requestPayload = { messages: [{ role: 'user', content: 'Hola' }] };
+    log.responsePayload = { content: 'Respuesta' };
+    mocks.findLog.mockResolvedValueOnce(log);
+    const caller = await createCaller();
+
+    const result = await caller.logDetail({
+      workspaceId,
+      gatewayId: 'gateway_1',
+      logId: log.id,
+    });
+
+    expect(mocks.findLog).toHaveBeenCalledWith({
+      where: { workspaceId, gatewayId: 'gateway_1', id: log.id },
+    });
+    expect(result).toEqual(log);
+  });
+
+  test('does not return a log outside the requested workspace or gateway', async () => {
+    mocks.findLog.mockResolvedValueOnce(null);
+    const caller = await createCaller();
+
+    await expect(
+      caller.logDetail({
+        workspaceId: createId(),
+        gatewayId: 'gateway_1',
+        logId: 'missing',
+      })
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+});
+
+const summarySelect = {
+  id: true,
+  workspaceId: true,
+  gatewayId: true,
+  inputToken: true,
+  outputToken: true,
+  cacheReadInputToken: true,
+  cacheWriteInputToken: true,
+  stream: true,
+  modelName: true,
+  modelProvider: true,
+  status: true,
+  duration: true,
+  ttft: true,
+  tpot: true,
+  price: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+};
 
 function createLog(id: string, createdAt: Date, status = 'Pending') {
   return {
