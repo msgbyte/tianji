@@ -14,18 +14,8 @@ FROM node:22.22-alpine3.23 AS base
 
 RUN npm install -g pnpm@10.27.0
 
-# For apprise and Prisma
-RUN apk add --update --no-cache python3 py3-pip g++ make openssl
-
-# For puppeteer
-RUN apk upgrade --no-cache --available glib \
-    && apk add --no-cache \
-      chromium-swiftshader \
-      ttf-freefont \
-      font-noto-emoji \
-    && apk add --no-cache \
-      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
-      font-wqy-zenhei
+# For native modules and Prisma
+RUN apk add --update --no-cache python3 g++ make openssl
 
 # For zeromq
 RUN apk add --update --no-cache curl cmake
@@ -46,14 +36,13 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN pnpm build:static
 
-# Tianji server ------------------------------
-FROM base AS app
+# Tianji server build ------------------------------
+FROM base AS build
 WORKDIR /app/tianji
 
 # We don't need the standalone Chromium in alpine.
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 COPY . .
 
@@ -63,26 +52,43 @@ RUN mkdir -p ./src/server/public
 COPY --from=static /app/tianji/geo /app/tianji/geo
 COPY --from=static /app/tianji/src/server/public /app/tianji/src/server/public
 
-# Copy reporter binary from reporter stage
-COPY --from=reporter /app/reporter/tianji-reporter /usr/local/bin/tianji-reporter
-RUN chmod +x /usr/local/bin/tianji-reporter
-
 RUN pnpm build:server
 
 RUN CI=true pnpm prune --prod --config.dedupe-peer-dependents=false
 RUN CI=true pnpm install --filter @tianji/server... --prod --offline --ignore-scripts --config.dedupe-peer-dependents=false
 
-RUN pip install apprise cryptography --break-system-packages
-RUN rm -rf /usr/local/lib/node_modules/npm \
-    /usr/local/lib/node_modules/pnpm \
-    /usr/local/bin/npm \
-    /usr/local/bin/npx \
-    /usr/local/bin/pnpm \
-    /usr/local/bin/pnpx
+RUN rm -rf ./src/client ./website ./reporter
 
-RUN rm -rf ./src/client
-RUN rm -rf ./website
-RUN rm -rf ./reporter
+# Tianji server ------------------------------
+# Runtime only: the build toolchain, pnpm store and caches stay in the build stage.
+FROM node:22.22-alpine3.23 AS app
+WORKDIR /app/tianji
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# For apprise, Prisma and the healthcheck
+RUN apk add --update --no-cache python3 openssl curl
+
+# For puppeteer
+RUN apk upgrade --no-cache --available glib \
+    && apk add --no-cache \
+      chromium-swiftshader \
+      ttf-freefont \
+      font-noto-emoji \
+    && apk add --no-cache \
+      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+      font-wqy-zenhei
+
+RUN apk add --no-cache --virtual .pip py3-pip \
+    && pip install --no-cache-dir apprise cryptography --break-system-packages \
+    && apk del .pip
+
+RUN rm -rf /usr/local/lib/node_modules/npm \
+    /usr/local/bin/npm \
+    /usr/local/bin/npx
+
+COPY --from=build /app/tianji /app/tianji
+COPY --from=reporter /app/reporter/tianji-reporter /usr/local/bin/tianji-reporter
 
 EXPOSE 12345
 
