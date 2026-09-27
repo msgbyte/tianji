@@ -1,5 +1,36 @@
 
 
+## [1.33.4](https://github.com/msgbyte/tianji/compare/v1.33.3...v1.33.4) (2026-09-27)
+
+### Features
+
+* **server:** include request payload size in memory-limit errors ([20124bb](https://github.com/msgbyte/tianji/commit/20124bb953eae609b8b5c003cae48633af3e4207))
+* **server:** list sandbox requests in memory-limit errors ([6bd3348](https://github.com/msgbyte/tianji/commit/6bd3348f7c08ceb6568312cf7c031b95cc7832b4))
+
+### Bug Fixes
+
+* **ai-gateway:** support bearer auth for custom gemini upstreams ([c5fa29b](https://github.com/msgbyte/tianji/commit/c5fa29bd91b21f1105dd908f7f14f41a37ffff0b))
+* **insights:** quote warehouse identifiers and group breakdown join keys ([74244f2](https://github.com/msgbyte/tianji/commit/74244f25e8a1219a4115add555f9cf07cc7b732e))
+* **server:** keep sandbox memory-limit errors from being masked ([680e48f](https://github.com/msgbyte/tianji/commit/680e48f7801389a4e9b54e0b500cd4f84779cf79))
+
+### Document
+
+* **ai-gateway:** add native gemini gateway plan ([96b3e5c](https://github.com/msgbyte/tianji/commit/96b3e5c2ecdf73593b3e13529c640402d531f3a8))
+* **ai-gateway:** add tpot monitoring plan ([6274ea5](https://github.com/msgbyte/tianji/commit/6274ea5fb577c305d1d63b309c5e06840b6faea9))
+* **ai-router:** add empty content failover plan ([356beda](https://github.com/msgbyte/tianji/commit/356beda5ae2ce0b3ec1623da1d7e6cdd32719a39))
+* **ai-router:** add responses websocket plan ([80f778a](https://github.com/msgbyte/tianji/commit/80f778a43c06a03371a0d07910bfe4ab8416b74b))
+* **ai-router:** add router design and implementation plan ([5658eec](https://github.com/msgbyte/tianji/commit/5658eecb18e4542f496ccc2fe780c6989d54654e))
+* **ci:** add llm data validation plan ([59deb7d](https://github.com/msgbyte/tianji/commit/59deb7d3507a202ae92c1db01dda63d270dfbd4a))
+* **i18n:** add translation wrapper plan ([8980b4b](https://github.com/msgbyte/tianji/commit/8980b4b149e08dfac464852325232f29a4f1fd0d))
+* **skills:** discover API contracts from target instances ([23674e0](https://github.com/msgbyte/tianji/commit/23674e0d09013482c6c927b8fe30327adcc518b9))
+* **website:** add sidebar page view plan ([3516851](https://github.com/msgbyte/tianji/commit/35168511b84a21e28173e34e35ab94ac7c1fd1a1))
+* **website:** disclose Frankfurt EU data hosting location ([dbf17b9](https://github.com/msgbyte/tianji/commit/dbf17b9b37832ad7247d150117754c934c827e9c))
+
+### Others
+
+* **docker:** split runtime stage to shrink server image ([ed95c26](https://github.com/msgbyte/tianji/commit/ed95c2663baab1a99cce35cb6c551af7edef4226))
+* **git:** track superpowers documents ([805a3f7](https://github.com/msgbyte/tianji/commit/805a3f74d919f792086ec02e7b8aaae9ba46ea3c))
+
 ## [1.33.3](https://github.com/msgbyte/tianji/compare/v1.33.2...v1.33.3) (2026-09-18)
 
 ### Features
