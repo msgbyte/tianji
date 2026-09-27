@@ -40,6 +40,10 @@ import { geminiError } from './model/aiGateway/gemini.js';
 const app = express();
 
 app.set('trust proxy', true);
+app.use((_req, res, next) => {
+  res.locals.requestStartedAt = performance.now();
+  next();
+});
 app.use(
   prometheusApiVersion({
     metricsPath: env.observability.prometheus.metricsPath,
@@ -184,6 +188,7 @@ app.use(((err, req, res, next) => {
         .split('?')[0]
         .replace(/^\/api\/push\/[^/]+/i, '/api/push/:pushToken'),
       status,
+      durationMs: Math.round(performance.now() - res.locals.requestStartedAt),
       type: err.type,
       code: err.code,
       received: err.received,

@@ -160,7 +160,7 @@ test.each(['{bad', '{"contents":'])(
   }
 );
 
-test('aborted JSON requests log the endpoint and byte counts without secrets', async () => {
+test('aborted JSON requests log upload duration, endpoint and byte counts without secrets', async () => {
   const log = vi.spyOn(logger, 'error').mockReturnValue(logger);
   const server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -177,16 +177,18 @@ test('aborted JSON requests log the endpoint and byte counts without secrets', a
   });
   client.on('error', () => {});
   server.once('request', (req) => {
-    req.once('data', () => client.destroy());
+    req.once('data', () => setTimeout(() => client.destroy(), 100));
   });
 
   try {
+    const startedAt = performance.now();
     client.write('{"secret":"body-secret"');
     await vi.waitFor(() => expect(log).toHaveBeenCalled());
     const output = String(log.mock.calls[0][0]);
     expect(output).toContain('[express]');
     expect(output).toContain('/api/worker/workspace/worker');
-    expect(JSON.parse(output.slice('[express] '.length))).toMatchObject({
+    const entry = JSON.parse(output.slice('[express] '.length));
+    expect(entry).toMatchObject({
       message: 'request aborted',
       method: 'POST',
       path: '/api/worker/workspace/worker',
@@ -196,6 +198,10 @@ test('aborted JSON requests log the endpoint and byte counts without secrets', a
       received: Buffer.byteLength('{"secret":"body-secret"'),
       expected: 100,
     });
+    expect(entry.durationMs).toBeGreaterThanOrEqual(75);
+    expect(entry.durationMs).toBeLessThanOrEqual(
+      Math.ceil(performance.now() - startedAt)
+    );
     expect(output).not.toContain('secret');
   } finally {
     client.destroy();
