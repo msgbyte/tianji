@@ -252,7 +252,13 @@ export const geminiHandler: RequestHandler = async (req, res) => {
         apiVersion,
         timeout: 600_000,
         retryOptions: { attempts: 1 },
-        headers: buildAIGatewayForwardHeaders(req),
+        headers: {
+          ...buildAIGatewayForwardHeaders(req),
+          // Custom Gemini relays may require Bearer authentication.
+          ...(!new URL(baseUrl).hostname.endsWith('.googleapis.com') && {
+            Authorization: `Bearer ${upstreamKey}`,
+          }),
+        },
       },
     });
     // REST schemas/signatures must not be rewritten by SDK's content/config converters.

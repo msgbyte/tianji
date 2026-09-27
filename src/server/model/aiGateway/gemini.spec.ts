@@ -14,6 +14,8 @@ vi.mock('../_client.js', () => ({
   prisma: {
     aIGateway: { findUnique: vi.fn() },
     aIGatewayLogs: { create: vi.fn(), update: vi.fn() },
+    userApiKey: { findUnique: vi.fn(), update: vi.fn() },
+    workspacesOnUsers: { findFirst: vi.fn() },
   },
 }));
 vi.mock('./quotaAlert.js', () => ({ checkQuotaAlert: vi.fn() }));
@@ -77,6 +79,17 @@ function post(
     .send(body);
 }
 
+function redirectUpstream(baseUrl: string) {
+  gateway.customModelBaseUrl = baseUrl;
+  const fetch = globalThis.fetch;
+  // Keep the real SDK and HTTP transport, but send the request to the local relay.
+  vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    expect(url.origin).toBe(new URL(baseUrl).origin);
+    return fetch(new URL(url.pathname + url.search, relayUrl), init);
+  });
+}
+
 beforeEach(async () => {
   vi.resetAllMocks();
   received = [];
@@ -101,11 +114,19 @@ beforeEach(async () => {
     id: 'log',
   } as any);
   vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+  vi.mocked(prisma.userApiKey.findUnique).mockResolvedValue({
+    user: { id: 'user' },
+  } as any);
+  vi.mocked(prisma.userApiKey.update).mockResolvedValue({} as any);
+  vi.mocked(prisma.workspacesOnUsers.findFirst).mockResolvedValue({
+    userId: 'user',
+  } as any);
   vi.mocked(checkQuotaAlert).mockResolvedValue(undefined);
 });
 
 afterEach(async () => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   await Promise.all(
     servers.map(
       (server) =>
@@ -119,6 +140,122 @@ afterEach(async () => {
 });
 
 describe('Gemini native relay with the official SDK', () => {
+  test.each(['generateContent', 'streamGenerateContent', 'countTokens'])(
+    'authenticates custom relay %s with the stored upstream key',
+    async (action) => {
+      redirectUpstream('https://relay.example/v1beta');
+      gateway.modelApiKey = 'stored-upstream-key';
+      relayHandler = (req, res) => {
+        if (req.headers.authorization !== 'Bearer stored-upstream-key') {
+          res.status(401).json({ error: { message: 'invalid api key' } });
+        } else if (action === 'streamGenerateContent') {
+          res
+            .type('text/event-stream')
+            .end(`data: ${JSON.stringify(response)}\n\n`);
+        } else {
+          res.json(action === 'countTokens' ? { totalTokens: 42 } : response);
+        }
+      };
+
+      const result = await post(action)
+        .set('x-goog-api-key', 'caller-secret-key')
+        .set('Authorization', 'Bearer caller-secret-key')
+        .set('x-session-id', 'test-session');
+
+      expect(result.status).toBe(200);
+      if (action === 'streamGenerateContent') {
+        expect(result.text).toContain('Hola');
+        expect(result.text).toContain('STOP');
+      } else {
+        expect(result.body).toEqual(
+          action === 'countTokens' ? { totalTokens: 42 } : response
+        );
+      }
+      expect(received).toHaveLength(1);
+      expect(received[0].url).toBe(
+        `/v1beta/models/relay/gemini:${action}${action === 'streamGenerateContent' ? '?alt=sse' : ''}`
+      );
+      expect(received[0].headers).toMatchObject({
+        authorization: 'Bearer stored-upstream-key',
+        'x-goog-api-key': 'stored-upstream-key',
+        'x-session-id': 'test-session',
+      });
+      expect(JSON.stringify(received[0])).not.toContain('caller-secret-key');
+    }
+  );
+
+  test.each([
+    'https://relay.example/v1beta',
+    'https://generativelanguage.googleapis.com.example/v1beta',
+    'https://notgoogleapis.com/v1beta',
+  ])('preserves BYOK for custom relay %s', async (baseUrl) => {
+    redirectUpstream(baseUrl);
+    expect((await post()).status).toBe(200);
+    expect(received[0].headers).toMatchObject({
+      authorization: 'Bearer test-upstream-key',
+      'x-goog-api-key': 'test-upstream-key',
+    });
+    expect(prisma.userApiKey.findUnique).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    'https://generativelanguage.googleapis.com/v1beta',
+    'https://generativelanguage.mtls.googleapis.com/v1beta',
+  ])('preserves API key authentication for %s', async (baseUrl) => {
+    redirectUpstream(baseUrl);
+    expect((await post()).status).toBe(200);
+    expect(received[0].headers['x-goog-api-key']).toBe('test-upstream-key');
+    expect(received[0].headers.authorization).toBeUndefined();
+  });
+
+  test.each([401, 403])(
+    'rejects unauthorized callers before contacting the upstream: %s',
+    async (status) => {
+      redirectUpstream('https://relay.example/v1beta');
+      gateway.modelApiKey = 'stored-upstream-key';
+      if (status === 401)
+        vi.mocked(prisma.userApiKey.findUnique).mockResolvedValue(null);
+      else
+        vi.mocked(prisma.workspacesOnUsers.findFirst).mockResolvedValue(null);
+
+      expect((await post()).status).toBe(status);
+      expect(received).toHaveLength(0);
+      expect(prisma.aIGatewayLogs.create).not.toHaveBeenCalled();
+    }
+  );
+
+  test('redacts caller and stored keys from upstream errors and logs without retrying', async () => {
+    redirectUpstream('https://relay.example/v1beta');
+    gateway.modelApiKey = 'stored-upstream-key';
+    relayHandler = (_req, res) => {
+      res.status(401).json({
+        error: { message: 'Invalid caller-secret-key or stored-upstream-key' },
+      });
+    };
+
+    const result = await post().set('x-goog-api-key', 'caller-secret-key');
+    expect(result.status).toBe(401);
+    expect(received).toHaveLength(1);
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalled()
+    );
+    const serialized = JSON.stringify({
+      response: result.body,
+      created: vi.mocked(prisma.aIGatewayLogs.create).mock.calls,
+      updated: vi.mocked(prisma.aIGatewayLogs.update).mock.calls,
+    });
+    expect(serialized).not.toContain('caller-secret-key');
+    expect(serialized).not.toContain('stored-upstream-key');
+  });
+
+  test('rejects generation responses from upstream countTokens', async () => {
+    redirectUpstream('https://relay.example/v1beta');
+    const result = await post('countTokens');
+    expect(result.status).toBe(502);
+    expect(result.body.error.message).toBe('Invalid Gemini token count.');
+    expect(received).toHaveLength(1);
+  });
+
   test.each(['', '/'])(
     'preserves OpenAI model discovery at /v1/models%s',
     async (suffix) => {

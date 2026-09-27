@@ -101,6 +101,7 @@ The external format follows the [Gemini GenerateContent REST contract](https://a
 - Continue using `customModelBaseUrl`. If `customModelName` is configured, it overrides the requested model; otherwise, use the model ID from the path.
 - Apply the fixed-model override to the CLI's auxiliary model requests as well, so they do not unexpectedly use a default model unsupported by the relay.
 - Initialize the SDK with the resolved upstream key; do not forward caller authentication headers. Reuse only necessary, safe forwarding headers and prevent callers from overriding SDK transport settings.
+- For Google API hosts ending in `.googleapis.com`, preserve the SDK's standard `x-goog-api-key` authentication. For all other custom Gemini upstreams, also send `Authorization: Bearer <resolved upstream key>` for generation, streaming, and token counting. Both headers must use the resolved upstream key, with existing session forwarding preserved. Do not retry with alternate credentials. A generation-shaped `countTokens` response without top-level `totalTokens` remains an upstream protocol error (502).
 - Do not log authentication headers or include keys or key prefixes in error messages, examples, or URL query parameters. Remove the existing key-prefix disclosure from invalid-key errors.
 
 ## 5. Minimal Implementation: Thin Handler and Official SDK
