@@ -1,5 +1,13 @@
 
 
+## [1.33.7](https://github.com/msgbyte/tianji/compare/v1.33.6...v1.33.7) (2026-09-28)
+
+### Bug Fixes
+
+* **ai-gateway:** use event-safe blank SSE heartbeats ([8365ce7](https://github.com/msgbyte/tianji/commit/8365ce70ff8ea518d552d71c2ef7db3899395558))
+* **ai-router:** keep heartbeat-only stream failures retryable ([b3c1842](https://github.com/msgbyte/tianji/commit/b3c18420e6f90110d7b83a015aa30303333df819))
+* **application:** handle concurrent session creation ([3dc5fce](https://github.com/msgbyte/tianji/commit/3dc5fcefc0fe8034a5508fb2e452428d8eee789c))
+
 ## [1.33.6](https://github.com/msgbyte/tianji/compare/v1.33.5...v1.33.6) (2026-09-27)
 
 ### Bug Fixes
