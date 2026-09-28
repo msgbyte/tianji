@@ -724,6 +724,119 @@ describe('AI Router retry helpers', () => {
 });
 
 describe('AI Router buffered attempt mapping', () => {
+  test.each(Object.values(AI_ROUTER_PROTOCOLS))(
+    'ignores heartbeat-only output for %s failures and opted-in empty results',
+    (protocol) => {
+      const response = {
+        statusCode: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        chunks: [Buffer.from('\n\n'), Buffer.from('\n\n')],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      };
+      const args = { protocol, gatewayId: 'gw1', response };
+      expect(
+        buildBufferedAIGatewayAttemptResult({ ...args, failOnEmptyContent: true })
+      ).toMatchObject({
+        ok: false,
+        committed: false,
+        failure: { errorType: 'empty_content' },
+      });
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          ...args,
+          failOnEmptyContent: false,
+        })
+      ).toMatchObject({ ok: true });
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          ...args,
+          response: { ...response, ended: false },
+          error: new Error('upstream disconnected'),
+        })
+      ).toMatchObject({ ok: false, committed: false });
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          ...args,
+          failOnEmptyContent: false,
+          response: { ...response, ended: false },
+        })
+      ).toMatchObject({ ok: false, committed: false, statusCode: 500 });
+    }
+  );
+
+  test.each([
+    [
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      {
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  id: 'call_1',
+                  type: 'function',
+                  function: { name: 'weather', arguments: '{"city":"Madrid"}' },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    [
+      AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+      {
+        type: 'response.output_item.added',
+        item: {
+          type: 'function_call',
+          name: 'weather',
+          arguments: '{"city":"Madrid"}',
+        },
+      },
+    ],
+    [
+      AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+      {
+        type: 'content_block_start',
+        content_block: {
+          type: 'tool_use',
+          id: 'call_1',
+          name: 'weather',
+          input: { city: 'Madrid' },
+        },
+      },
+    ],
+  ] as const)(
+    'preserves %s tool-only results with surrounding heartbeats',
+    (protocol, event) => {
+      const response = {
+        statusCode: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        chunks: [Buffer.from(`data: ${JSON.stringify(event)}\n\n`)],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      };
+      const withHeartbeat = {
+        ...response,
+        chunks: [Buffer.from('\n\n'), ...response.chunks, Buffer.from('\n\n')],
+      };
+      expect(
+        inspectAIRouterBufferedResponseContent(protocol, withHeartbeat)
+      ).toEqual(inspectAIRouterBufferedResponseContent(protocol, response));
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          protocol,
+          failOnEmptyContent: true,
+          gatewayId: 'gw1',
+          response: withHeartbeat,
+        })
+      ).toMatchObject({ ok: true, committed: true });
+    }
+  );
+
   test('converts opted-in empty content into an uncommitted retryable failure', () => {
     const result = buildBufferedAIGatewayAttemptResult({
       protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,

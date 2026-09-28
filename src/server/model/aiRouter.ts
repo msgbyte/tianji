@@ -1645,10 +1645,17 @@ export function buildBufferedAIGatewayAttemptResult(args: {
   error?: unknown;
 }): BufferedAIRouterAttemptResult {
   const timeout = args.error instanceof AIRouterAttemptTimeoutError;
-  const partialFailure =
+  const heartbeatOnly =
+    args.response &&
+    String(args.response.headers['content-type']).includes('text/event-stream') &&
+    args.response.chunks.every((chunk) =>
+      chunk.every((byte) => byte === 10 || byte === 13)
+    );
+  const responseFailed =
     Boolean(args.response?.bodyStartedBeforeFailure) ||
     Boolean(args.response?.wroteBody && !args.response.ended) ||
     Boolean(args.error && args.response?.wroteBody);
+  const partialFailure = responseFailed && !heartbeatOnly;
 
   if (args.error) {
     const statusCode = timeout ? 504 : getAIGatewayErrorStatusCode(args.error);
@@ -1690,7 +1697,7 @@ export function buildBufferedAIGatewayAttemptResult(args: {
   const statusCode =
     args.response.statusCode >= 200 &&
     args.response.statusCode < 300 &&
-    partialFailure
+    responseFailed
       ? 500
       : args.response.statusCode >= 200 &&
           args.response.statusCode < 300 &&
@@ -1700,13 +1707,14 @@ export function buildBufferedAIGatewayAttemptResult(args: {
   const ok =
     statusCode >= 200 &&
     statusCode < 300 &&
-    !partialFailure &&
+    !responseFailed &&
     !streamFailureMessage;
   const emptyContentFailure =
     ok &&
     args.failOnEmptyContent === true &&
-    args.protocol &&
-    isAIRouterBufferedResponseEmptyContent(args.protocol, args.response);
+    (heartbeatOnly ||
+      (args.protocol &&
+        isAIRouterBufferedResponseEmptyContent(args.protocol, args.response)));
 
   if (emptyContentFailure) {
     return {
@@ -1732,8 +1740,10 @@ export function buildBufferedAIGatewayAttemptResult(args: {
     failure: ok
       ? undefined
       : {
-          message: partialFailure
-            ? 'AI Gateway attempt ended after partial output'
+          message: responseFailed
+            ? heartbeatOnly
+              ? 'AI Gateway attempt ended before completing the response'
+              : 'AI Gateway attempt ended after partial output'
             : streamFailureMessage ??
               getBufferedFailureMessage(args.response),
           errorType: 'upstream',
