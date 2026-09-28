@@ -1,11 +1,13 @@
 import { AIGatewayLogsStatus } from '@prisma/client';
+import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
-  AI_GATEWAY_STREAM_PING_COMMENT,
+  AI_GATEWAY_STREAM_HEARTBEAT,
   AI_GATEWAY_STREAM_PING_INTERVAL_MS,
   buildAIGatewayForwardHeaders,
   buildAnthropicHandler,
   buildOpenAIHandler,
+  buildOpenAIResponsesHandler,
   buildOpenRouterHeaders,
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
@@ -26,8 +28,9 @@ import { aiGatewayRouter } from '../router/aiGateway.js';
 import { prisma } from './_client.js';
 import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
 
-const { openAIChatCreateMock, openAIConstructorMock } = vi.hoisted(() => ({
+const { openAIChatCreateMock, openAIResponsesCreateMock, openAIConstructorMock } = vi.hoisted(() => ({
   openAIChatCreateMock: vi.fn(),
+  openAIResponsesCreateMock: vi.fn(),
   openAIConstructorMock: vi.fn(),
 }));
 
@@ -42,11 +45,17 @@ vi.mock('openai', () => ({
         create: openAIChatCreateMock,
       },
     };
+    responses = { create: openAIResponsesCreateMock };
   },
 }));
 
 vi.mock('./aiGateway/quotaAlert.js', () => ({
   checkQuotaAlert: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock('../cache/index.js', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  buildQueryWithCache: (_name: string, get: unknown) => ({ get, del: vi.fn() }),
 }));
 
 vi.mock('./_client.js', () => ({
@@ -774,7 +783,7 @@ describe('AI Gateway stream keepalive', () => {
     expect(res.flushHeaders).toHaveBeenCalledTimes(1);
   });
 
-  test('writes SSE ping comments immediately and on the configured interval', () => {
+  test('writes SSE heartbeats immediately and on the configured interval', () => {
     vi.useFakeTimers();
     const writes: string[] = [];
     const res = {
@@ -790,13 +799,13 @@ describe('AI Gateway stream keepalive', () => {
       writeInitial: true,
     });
 
-    expect(writes).toEqual([AI_GATEWAY_STREAM_PING_COMMENT]);
+    expect(writes).toEqual([AI_GATEWAY_STREAM_HEARTBEAT]);
     expect(res.flush).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
     expect(writes).toEqual([
-      AI_GATEWAY_STREAM_PING_COMMENT,
-      AI_GATEWAY_STREAM_PING_COMMENT,
+      AI_GATEWAY_STREAM_HEARTBEAT,
+      AI_GATEWAY_STREAM_HEARTBEAT,
     ]);
     expect(res.flush).toHaveBeenCalledTimes(2);
 
@@ -851,6 +860,7 @@ describe('AI Gateway stream keepalive', () => {
   });
 
   test('Anthropic stream handler sends an initial ping before upstream responds', async () => {
+    vi.useFakeTimers();
     vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
       id: 'gateway1',
       workspaceId: 'workspace1',
@@ -897,8 +907,492 @@ describe('AI Gateway stream keepalive', () => {
     void handler(req as any, res as any, vi.fn());
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
     expect(res.flush).toHaveBeenCalledTimes(1);
+    res.destroyed = true;
+    vi.advanceTimersByTime(25_000);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+function streamResponse() {
+  const writes: string[] = [];
+  const res = Object.assign(new EventEmitter(), {
+    writes,
+    headersSent: false,
+    writableEnded: false,
+    writableNeedDrain: false,
+    destroyed: false,
+    setHeader: vi.fn(),
+    flushHeaders: vi.fn(),
+    flush: vi.fn(),
+    write: vi.fn((chunk: string) => {
+      writes.push(chunk);
+      res.headersSent = true;
+      return !res.writableNeedDrain;
+    }),
+    end: vi.fn(() => {
+      res.writableEnded = true;
+      res.emit('finish');
+    }),
+    destroy: vi.fn(() => {
+      res.destroyed = true;
+      res.emit('close');
+    }),
+  });
+  return res;
+}
+
+describe('stream heartbeat lifecycle', () => {
+  test('uses exactly two LF bytes every 25 seconds without duplicate timers', () => {
+    vi.useFakeTimers();
+    const res = streamResponse();
+    const stop = startAIGatewayStreamKeepAlive(res as any, {
+      writeInitial: true,
+    });
+    const stopAgain = startAIGatewayStreamKeepAlive(res as any, {
+      writeInitial: true,
+    });
+    expect(stopAgain).toBe(stop);
+    expect(AI_GATEWAY_STREAM_PING_INTERVAL_MS).toBe(25_000);
+    vi.advanceTimersByTime(75_000);
+    expect(res.writes).toEqual(['\n\n', '\n\n', '\n\n', '\n\n']);
+    stop();
+    stop();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(res.eventNames()).toEqual([]);
+  });
+
+  test.each(['finish', 'close', 'error'])('cleans up on %s', (event) => {
+    vi.useFakeTimers();
+    const res = streamResponse();
+    startAIGatewayStreamKeepAlive(res as any);
+    res.emit(event);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(res.eventNames()).toEqual([]);
+    vi.advanceTimersByTime(50_000);
+    expect(res.write).not.toHaveBeenCalled();
+  });
+
+  test.each(['destroyed', 'writableEnded'] as const)(
+    'does not start or continue on %s',
+    (flag) => {
+      vi.useFakeTimers();
+      const res = streamResponse();
+      res[flag] = true;
+      startAIGatewayStreamKeepAlive(res as any);
+      expect(vi.getTimerCount()).toBe(0);
+      res[flag] = false;
+      startAIGatewayStreamKeepAlive(res as any);
+      res[flag] = true;
+      vi.advanceTimersByTime(25_000);
+      expect(res.write).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(res.eventNames()).toEqual([]);
+    }
+  );
+
+  test('skips blocked ticks and backpressure without stopping or catching up', () => {
+    vi.useFakeTimers();
+    const res = streamResponse();
+    let canWrite = false;
+    const stop = startAIGatewayStreamKeepAlive(res as any, {
+      writeInitial: true,
+      canWrite: () => canWrite,
+    });
+    vi.advanceTimersByTime(50_000);
+    expect(res.write).not.toHaveBeenCalled();
+    canWrite = true;
+    res.write.mockImplementationOnce((chunk) => {
+      res.writes.push(chunk);
+      res.writableNeedDrain = true;
+      return false;
+    });
+    vi.advanceTimersByTime(25_000);
+    expect(res.write).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(50_000);
+    expect(res.write).toHaveBeenCalledTimes(1);
+    res.writableNeedDrain = false;
+    res.emit('drain');
+    expect(res.write).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(25_000);
+    expect(res.write).toHaveBeenCalledTimes(2);
+    stop();
+    expect(res.eventNames()).toEqual([]);
+  });
+
+  test.each(['write', 'flush'] as const)(
+    'cleans up when %s throws',
+    (method) => {
+      vi.useFakeTimers();
+      const res = streamResponse();
+      res[method].mockImplementation(() => {
+        throw new Error('disconnected');
+      });
+      expect(() =>
+        startAIGatewayStreamKeepAlive(res as any, { writeInitial: true })
+      ).not.toThrow();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(res.eventNames()).toEqual([]);
+    }
+  );
+});
+
+describe('serialized OpenAI stream heartbeats', () => {
+  test.each(['chat', 'responses'] as const)(
+    '%s preserves business events, tools, usage, price and timing',
+    async (protocol) => {
+      vi.useFakeTimers();
+      vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+        id: 'gateway1',
+        workspaceId: 'workspace1',
+        customModelInputPrice: 2,
+        customModelOutputPrice: 6,
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+        id: 'log1',
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+      const tool = {
+        type: 'function_call',
+        name: 'weather',
+        call_id: 'call_1',
+        arguments: '{"city":"Madrid"}',
+      };
+      const events =
+        protocol === 'chat'
+          ? [
+              {
+                model: 'gpt-test',
+                choices: [
+                  {
+                    delta: {
+                      content: 'Hola',
+                      tool_calls: [
+                        {
+                          index: 0,
+                          id: 'call_1',
+                          type: 'function',
+                          function: { name: 'weather', arguments: '{"city":' },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+              {
+                model: 'gpt-test',
+                choices: [
+                  {
+                    delta: {
+                      tool_calls: [
+                        { index: 0, function: { arguments: '"Madrid"}' } },
+                      ],
+                    },
+                    finish_reason: 'tool_calls',
+                  },
+                ],
+                usage: {
+                  prompt_tokens: 100,
+                  completion_tokens: 10,
+                  prompt_tokens_details: { cached_tokens: 20 },
+                },
+              },
+            ]
+          : [
+              { type: 'response.output_text.delta', delta: 'Hola' },
+              {
+                type: 'response.output_item.added',
+                item: { ...tool, arguments: '' },
+              },
+              {
+                type: 'response.function_call_arguments.delta',
+                delta: '{"city":',
+              },
+              {
+                type: 'response.function_call_arguments.delta',
+                delta: '"Madrid"}',
+              },
+              {
+                type: 'response.completed',
+                response: {
+                  model: 'gpt-test',
+                  output_text: 'Hola',
+                  output: [tool],
+                  usage: {
+                    input_tokens: 100,
+                    output_tokens: 10,
+                    input_tokens_details: { cached_tokens: 20 },
+                  },
+                },
+              },
+            ];
+      const logs: unknown[] = [];
+      for (const blockHeartbeat of [true, false]) {
+        const create =
+          protocol === 'chat'
+            ? openAIChatCreateMock
+            : openAIResponsesCreateMock;
+        create.mockResolvedValue(
+          (async function* () {
+            for (const event of events) {
+              await new Promise((resolve) => setTimeout(resolve, 30_000));
+              yield event;
+            }
+          })()
+        );
+        const res = streamResponse();
+        res.writableNeedDrain = blockHeartbeat;
+        const handler =
+          protocol === 'chat'
+            ? buildOpenAIHandler
+            : buildOpenAIResponsesHandler;
+        const done = handler({
+          isCustomRoute: true,
+          baseUrl: 'https://openai.example/v1',
+        })(
+          {
+            params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+            headers: { authorization: 'Bearer sk-test' },
+            body: {
+              model: 'gpt-test',
+              stream: true,
+              ...(protocol === 'chat'
+                ? { messages: [{ role: 'user', content: 'Hola' }] }
+                : { input: 'Hola' }),
+            },
+          } as any,
+          res as any,
+          vi.fn()
+        );
+        await vi.advanceTimersByTimeAsync(events.length * 30_000 + 1);
+        await done;
+        expect(res.writes.filter((chunk) => chunk !== '\n\n')).toEqual([
+          ...events.map((event) => `data: ${JSON.stringify(event)}\n\n`),
+          'data: [DONE]\n\n',
+        ]);
+        expect(res.writes.filter((chunk) => chunk === '\n\n').length).toBe(
+          blockHeartbeat ? 0 : 1 + Math.floor((events.length * 30_000) / 25_000)
+        );
+        const log = vi.mocked(prisma.aIGatewayLogs.update).mock.lastCall![0]
+          .data;
+        expect(log).toMatchObject({
+          status: AIGatewayLogsStatus.Success,
+          inputToken: 100,
+          outputToken: 10,
+          cacheReadInputToken: 20,
+          ttft: 30_000,
+          responsePayload: { content: 'Hola' },
+        });
+        logs.push(log);
+        expect(res.end).toHaveBeenCalledOnce();
+        expect(vi.getTimerCount()).toBe(0);
+        expect(res.eventNames()).toEqual([]);
+      }
+      expect(logs[1]).toEqual(logs[0]);
+    }
+  );
+
+  test('Responses preserves a stream error and stops heartbeats', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    openAIResponsesCreateMock.mockResolvedValue(
+      (async function* () {
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        throw new Error('upstream failed');
+      })()
+    );
+    const res = streamResponse();
+    const done = buildOpenAIResponsesHandler({
+      baseUrl: 'https://openai.example/v1',
+    })(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { authorization: 'Bearer sk-test' },
+        body: { model: 'gpt-test', stream: true, input: 'Hola' },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.advanceTimersByTimeAsync(30_001);
+    await done;
+    expect(res.writes).toEqual([
+      '\n\n',
+      '\n\n',
+      'data: {"error":{"message":"upstream failed","type":"server_error"}}\n\n',
+      'data: [DONE]\n\n',
+    ]);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: AIGatewayLogsStatus.Failed }),
+      })
+    );
+  });
+});
+
+describe('Anthropic raw stream boundaries', () => {
+  const encoder = new TextEncoder();
+  const tick = () => vi.advanceTimersByTimeAsync(25_000);
+
+  async function openStream() {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        source = controller;
+      },
+    });
+    const res = streamResponse();
+    const done = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: vi.fn(async () => new Response(body)),
+    })(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { 'x-api-key': 'sk-test' },
+        body: {
+          model: 'claude-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          max_tokens: 16,
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    return { res, source, done };
+  }
+
+  test.each(['\n', '\r\n', '\r'])(
+    'preserves every byte split with %j line endings',
+    async (newline) => {
+      vi.useFakeTimers();
+      const event = [
+        'event: content_block_delta',
+        'id: 1',
+        'retry: 1000',
+        ': upstream comment',
+        'unknown: value',
+        'data: {"delta":{"type":"text_delta",',
+        'data: "text":"Olé 🌍"}}',
+        '',
+        '',
+      ].join(newline);
+      const bytes = encoder.encode(event);
+      for (let split = 1; split < bytes.length; split++) {
+        const { res, source, done } = await openStream();
+        source.enqueue(bytes.slice(0, split));
+        await vi.advanceTimersByTimeAsync(0);
+        const writesBeforeTick = res.writes.length;
+        await tick();
+        expect(res.writes.length, `split ${split}`).toBe(writesBeforeTick);
+        source.enqueue(bytes.slice(split));
+        await vi.advanceTimersByTimeAsync(0);
+        const writesBeforeBoundaryTick = res.writes.length;
+        await tick();
+        // A trailing CR might still be followed by LF: conservatively wait.
+        expect(res.writes.length).toBe(
+          writesBeforeBoundaryTick + (newline === '\r' ? 0 : 1)
+        );
+        source.close();
+        await done;
+        expect(res.writes.join('')).toBe(
+          '\n\n' + event + (newline === '\r' ? '' : '\n\n')
+        );
+        expect(res.end).toHaveBeenCalledOnce();
+        expect(res.destroy).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(0);
+        expect(res.eventNames()).toEqual([]);
+      }
+    }
+  );
+
+  test('handles bytewise UTF-8 and multiple events per chunk without rewriting upstream comments', async () => {
+    vi.useFakeTimers();
+    const { res, source, done } = await openStream();
+    const event =
+      'event: content_block_delta\ndata: {"delta":{"type":"text_delta","text":"Olé 🌍"}}\n\n';
+    const bytes = encoder.encode(event);
+    for (const byte of bytes.slice(0, -1)) {
+      source.enqueue(Uint8Array.of(byte));
+      await tick();
+    }
+    expect(res.writes.join('')).toBe('\n\n' + event.slice(0, -1));
+    source.enqueue(
+      encoder.encode(
+        '\n: PING\n\nevent: message_stop\ndata: {"type":"message_stop"}\n\n'
+      )
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    await tick();
+    source.close();
+    await done;
+    expect(res.writes.join('')).toBe(
+      '\n\n' +
+        event +
+        ': PING\n\nevent: message_stop\ndata: {"type":"message_stop"}\n\n\n\n'
+    );
+    expect(prisma.aIGatewayLogs.update).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: AIGatewayLogsStatus.Success,
+          responsePayload: expect.objectContaining({ content: 'Olé 🌍' }),
+        }),
+      })
+    );
+  });
+
+  test.each(['eof', 'error'])(
+    'terminates a truncated event on %s without appending an error event',
+    async (reason) => {
+      vi.useFakeTimers();
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { res, source, done } = await openStream();
+      const partial = 'event: content_block_delta\ndata: {"text":"partial';
+      source.enqueue(encoder.encode(partial));
+      await tick();
+      if (reason === 'eof') source.close();
+      else source.error(new Error('upstream disconnected'));
+      await done;
+      expect(res.writes.join('')).toBe('\n\n' + partial);
+      expect(res.destroy).toHaveBeenCalledOnce();
+      expect(res.end).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(res.eventNames()).toEqual([]);
+      expect(prisma.aIGatewayLogs.update).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: AIGatewayLogsStatus.Failed }),
+        })
+      );
+    }
+  );
+
+  test('keeps the existing error event at a complete boundary', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { res, source, done } = await openStream();
+    source.error(new Error('upstream disconnected'));
+    await done;
+    expect(res.writes.join('')).toBe(
+      '\n\nevent: error\ndata: {"type":"error","error":{"type":"server_error","message":"upstream disconnected"}}\n\n'
+    );
+    expect(res.end).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 

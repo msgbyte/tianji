@@ -6,6 +6,7 @@ import {
   type Response,
 } from 'express';
 import OpenAI from 'openai';
+import { EventEmitter } from 'node:events';
 import { z } from 'zod';
 import {
   anthropicRequestSchema,
@@ -1767,12 +1768,17 @@ async function executeBufferedAIGatewayAttempt(args: {
   const bufferedResponse = new BufferedExpressResponse();
 
   try {
-    await runGatewayHandlerWithTimeout({
-      handler: args.gatewayHandler,
-      req: attemptRequest.attemptReq,
-      res: bufferedResponse as unknown as Response,
-      timeoutMs: args.node.timeoutMs ?? undefined,
-    });
+    try {
+      await runGatewayHandlerWithTimeout({
+        handler: args.gatewayHandler,
+        req: attemptRequest.attemptReq,
+        res: bufferedResponse as unknown as Response,
+        timeoutMs: args.node.timeoutMs ?? undefined,
+      });
+    } finally {
+      // Timed-out handlers may settle later; release their stream resources now.
+      bufferedResponse.destroy();
+    }
 
     const response = bufferedResponse.snapshot();
     const logId = await attemptRequest.getGatewayLogId();
@@ -1870,10 +1876,11 @@ async function runGatewayHandlerWithTimeout(args: {
   }
 }
 
-class BufferedExpressResponse {
+class BufferedExpressResponse extends EventEmitter {
   public statusCode = 200;
   public headersSent = false;
   public writableEnded = false;
+  public destroyed = false;
   public wroteBody = false;
   private bodyStartedBeforeFailure = false;
   private readonly headers = new Map<string, number | string | string[]>();
@@ -1913,6 +1920,9 @@ class BufferedExpressResponse {
   }
 
   write(chunk: unknown) {
+    if (this.writableEnded || this.destroyed) {
+      return false;
+    }
     if (chunk !== undefined) {
       this.chunks.push(toBuffer(chunk));
       this.wroteBody = true;
@@ -1922,11 +1932,23 @@ class BufferedExpressResponse {
   }
 
   end(chunk?: unknown) {
+    if (this.writableEnded || this.destroyed) {
+      return this;
+    }
     if (chunk !== undefined) {
       this.write(chunk);
     }
     this.headersSent = true;
     this.writableEnded = true;
+    this.emit('finish');
+    return this;
+  }
+
+  destroy() {
+    if (!this.destroyed) {
+      this.destroyed = true;
+      this.emit('close');
+    }
     return this;
   }
 

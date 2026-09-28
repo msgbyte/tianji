@@ -1,6 +1,7 @@
-import { AIRouterLogsStatus } from '@prisma/client';
+import { AIGatewayLogsStatus, AIRouterLogsStatus } from '@prisma/client';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { AI_GATEWAY_STREAM_PING_COMMENT } from './aiGateway.js';
+import { AI_GATEWAY_STREAM_HEARTBEAT } from './aiGateway.js';
+import * as quotaAlert from './aiGateway/quotaAlert.js';
 import { AIRouterLogsModelSchema } from '../prisma/zod/index.js';
 import {
   AI_ROUTER_PROTOCOLS,
@@ -911,7 +912,7 @@ describe('AI Router buffered attempt mapping', () => {
           'content-type': 'text/event-stream',
         },
         chunks: [
-          Buffer.from(AI_GATEWAY_STREAM_PING_COMMENT),
+          Buffer.from(AI_GATEWAY_STREAM_HEARTBEAT),
           Buffer.from(
             'data: {"error":{"message":"LLM returned empty response from stream","type":"server_error"}}\n\n'
           ),
@@ -1980,7 +1981,275 @@ describe('aiRouterRouter routes', () => {
     expect(res.end).toHaveBeenCalledTimes(1);
   });
 
-  test('streams keepalive pings while router attempts are still buffered', async () => {
+  test.each([false, true])(
+    'fails over after a truncated heartbeat-only stream with failOnEmptyContent=%s',
+    async (failOnEmptyContent) => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const checkQuotaAlert = vi
+        .spyOn(quotaAlert, 'checkQuotaAlert')
+        .mockResolvedValue();
+      vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+        id: 'router-heartbeat',
+        tiers: ['gw-truncated', 'gw-good'].map((gatewayId, order) => ({
+          id: `tier-${order}`,
+          order,
+          nodes: [
+            {
+              id: `node-${order}`,
+              gatewayId,
+              provider: 'anthropic',
+              enabled: true,
+              order: 0,
+              weight: 100,
+              failOnEmptyContent,
+              gateway: { id: gatewayId, modelApiKey: 'sk-test' },
+            },
+          ],
+        })),
+      } as any);
+      const createRouterLog = vi
+        .spyOn(prisma.aIRouterLogs, 'create')
+        .mockResolvedValue({ id: 'router-log-heartbeat' } as any);
+      vi.spyOn(prisma.aIGateway, 'findUnique').mockResolvedValue({
+        workspaceId: 'workspace-heartbeat',
+      } as any);
+      vi.spyOn(prisma.aIGatewayLogs, 'create').mockResolvedValue({
+        id: 'log-heartbeat',
+      } as any);
+      const updateGatewayLog = vi
+        .spyOn(prisma.aIGatewayLogs, 'update')
+        .mockResolvedValue({} as any);
+      const upstream = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            new ReadableStream({
+              start(controller) {
+                // An incomplete UTF-8 BOM leaves no decoded business output.
+                controller.enqueue(Uint8Array.of(0xef, 0xbb));
+                controller.close();
+              },
+            })
+          )
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            'event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Hola"}}\n\n' +
+              'event: message_stop\ndata: {"type":"message_stop"}\n\n'
+          )
+        );
+      vi.stubGlobal('fetch', upstream);
+      const writes: string[] = [];
+      const res = {
+        headersSent: false,
+        writableEnded: false,
+        setHeader: vi.fn(),
+        flush: vi.fn(),
+        write(chunk: string) {
+          writes.push(String(chunk));
+          res.headersSent = true;
+          return true;
+        },
+        end: vi.fn(() => {
+          res.writableEnded = true;
+        }),
+      };
+
+      await buildAIRouterAnthropicMessagesHandler()(
+        {
+          params: {
+            workspaceId: 'workspace-heartbeat',
+            routerId: 'router-heartbeat',
+          },
+          headers: { 'x-api-key': 'sk-test' },
+          body: {
+            model: 'claude-test',
+            messages: [{ role: 'user', content: 'Hola' }],
+            max_tokens: 16,
+            stream: true,
+          },
+        } as any,
+        res as any,
+        vi.fn()
+      );
+
+      expect(updateGatewayLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: AIGatewayLogsStatus.Failed }),
+        })
+      );
+      expect(createRouterLog).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          status: AIRouterLogsStatus.Success,
+          finalGatewayId: 'gw-good',
+          attemptGatewayIds: ['gw-truncated', 'gw-good'],
+          attemptErrors: [
+            expect.objectContaining({ statusCode: 500, retryable: true }),
+            expect.objectContaining({ statusCode: 200, retryable: false }),
+          ],
+        }),
+      });
+      expect(upstream).toHaveBeenCalledTimes(2);
+      expect(writes.join('')).toContain('"text":"Hola"');
+      expect(writes.join('')).not.toContain('event: error');
+      expect(res.end).toHaveBeenCalledOnce();
+      await vi.waitFor(() => expect(checkQuotaAlert).toHaveBeenCalledOnce());
+    }
+  );
+
+  test('releases both outer and buffered heartbeat timers when an attempt times out', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(prisma.aIGateway, 'findUnique').mockResolvedValue({
+      id: 'gw-heartbeat-timeout',
+      workspaceId: 'workspace-heartbeat',
+    } as any);
+    vi.spyOn(prisma.aIGatewayLogs, 'create').mockResolvedValue({
+      id: 'log-heartbeat',
+    } as any);
+    vi.spyOn(prisma.aIGatewayLogs, 'update').mockResolvedValue({} as any);
+    let rejectFetch!: (error: Error) => void;
+    const fetchMock = vi.fn(
+      () =>
+        new Promise<Response>((_, reject) => {
+          rejectFetch = reject;
+        })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    let attempt: any;
+    const runAttempts = vi.fn(async ({ executeAttempt, requestPayload }: any) => {
+      attempt = await executeAttempt({
+        node: {
+          id: 'node-heartbeat',
+          gatewayId: 'gw-heartbeat-timeout',
+          provider: 'anthropic',
+          timeoutMs: 60_000,
+          failOnEmptyContent: true,
+          gateway: { id: 'gw-heartbeat-timeout' },
+        },
+        payload: requestPayload,
+      });
+      return {
+        result: null,
+        finalResult: attempt,
+        attempts: [
+          { statusCode: attempt.statusCode, message: attempt.failure?.message },
+        ],
+        log: {},
+      };
+    });
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flush: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(String(chunk));
+        res.headersSent = true;
+        return true;
+      }),
+      end: vi.fn(() => {
+        res.writableEnded = true;
+      }),
+    };
+    const done = buildAIRouterAnthropicMessagesHandler({ runAttempts } as any)(
+      {
+        params: {
+          workspaceId: 'workspace-heartbeat',
+          routerId: 'router-heartbeat',
+        },
+        headers: { 'x-api-key': 'sk-test' },
+        body: {
+          model: 'claude-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          max_tokens: 16,
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    await vi.advanceTimersByTimeAsync(60_000);
+    await done;
+    expect(attempt).toMatchObject({
+      ok: false,
+      committed: false,
+      statusCode: 504,
+      failure: { errorType: 'timeout' },
+    });
+    expect(writes.slice(0, 3)).toEqual(['\n\n', '\n\n', '\n\n']);
+    expect(res.end).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+    const count = writes.length;
+    rejectFetch(new Error('late upstream failure'));
+    await vi.advanceTimersByTimeAsync(50_000);
+    expect(writes).toHaveLength(count);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test('replays buffered business events and heartbeats in order after waiting', async () => {
+    vi.useFakeTimers();
+    const chunks = [
+      '\n\n',
+      'data: {"choices":[{"delta":{"content":"Hola"}}]}\n\n',
+      '\n\n',
+      'data: [DONE]\n\n',
+    ];
+    const runAttempts = vi.fn(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60_000));
+      return {
+        result: {
+          ok: true,
+          committed: true,
+          response: {
+            statusCode: 200,
+            headers: { 'content-type': 'text/event-stream' },
+            chunks: chunks.map((chunk) => Buffer.from(chunk)),
+            wroteBody: true,
+            ended: true,
+          },
+        },
+        attempts: [],
+      };
+    });
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flush: vi.fn(),
+      write: vi.fn((chunk: string | Buffer) => {
+        writes.push(String(chunk));
+        res.headersSent = true;
+        return true;
+      }),
+      end: vi.fn(() => {
+        res.writableEnded = true;
+      }),
+    };
+    const done = buildAIRouterOpenAIChatHandler({ runAttempts } as any)(
+      {
+        params: { workspaceId: 'workspace1', routerId: 'router1' },
+        body: {
+          model: 'gpt-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.advanceTimersByTimeAsync(60_000);
+    await done;
+    expect(writes).toEqual(['\n\n', '\n\n', '\n\n', ...chunks]);
+    expect(res.end).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test('streams heartbeats while router attempts are still buffered', async () => {
+    vi.useFakeTimers();
     vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
     const runAttempts = vi.fn(
       () =>
@@ -2024,10 +2293,13 @@ describe('aiRouterRouter routes', () => {
     );
 
     await vi.waitFor(() => expect(runAttempts).toHaveBeenCalledTimes(1));
-    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
     expect(res.flush).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();
+    res.destroyed = true;
+    await vi.advanceTimersByTimeAsync(25_000);
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   test('returns a streaming error when buffered router attempts fail after keepalive committed headers', async () => {
@@ -2096,7 +2368,7 @@ describe('aiRouterRouter routes', () => {
       vi.fn()
     );
 
-    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
     expect(writes).toContain(
       'data: {"error":{"message":"AI Router gateway attempt timed out after 120000ms","type":"router_failed"}}\n\n'
     );
@@ -2150,7 +2422,7 @@ describe('aiRouterRouter routes', () => {
       next
     );
 
-    expect(writes[0]).toBe(AI_GATEWAY_STREAM_PING_COMMENT);
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
     expect(writes).toContain(
       'data: {"error":{"message":"database unavailable","type":"server_error"}}\n\n'
     );
@@ -2353,121 +2625,128 @@ describe('AI Router models discovery', () => {
 });
 
 describe('AI Router orchestration', () => {
-  test('fails over and logs empty_content when an opted-in route returns empty content', async () => {
-    const attemptedGatewayIds: string[] = [];
-    const createdLogs: any[] = [];
+  test.each([false, true])(
+    'fails over and logs empty_content with heartbeat enabled: %s',
+    async (heartbeat) => {
+      const attemptedGatewayIds: string[] = [];
+      const createdLogs: any[] = [];
 
-    const result = await runAIRouterAttempts({
-      workspaceId: 'workspace1',
-      routerId: 'router1',
-      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
-      requestPayload: {
-        model: 'original-model',
-        messages: [{ role: 'user', content: 'hello' }],
-      },
-      loadRouter: async () => ({
-        id: 'router1',
-        nodes: [
-          {
-            id: 'node-empty',
-            gatewayId: 'gw-empty',
-            provider: 'openai',
-            enabled: true,
-            order: 0,
-            weight: 100,
-            modelOverride: null,
-            timeoutMs: 30000,
-            retryableStatusCodes: [],
-            failOnEmptyContent: true,
-            gateway: {
-              id: 'gw-empty',
-              modelApiKey: 'sk-empty',
+      const result = await runAIRouterAttempts({
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        requestPayload: {
+          model: 'original-model',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+        loadRouter: async () => ({
+          id: 'router1',
+          nodes: [
+            {
+              id: 'node-empty',
+              gatewayId: 'gw-empty',
+              provider: 'openai',
+              enabled: true,
+              order: 0,
+              weight: 100,
+              modelOverride: null,
+              timeoutMs: 30000,
+              retryableStatusCodes: [],
+              failOnEmptyContent: true,
+              gateway: {
+                id: 'gw-empty',
+                modelApiKey: 'sk-empty',
+              },
             },
-          },
-          {
-            id: 'node-good',
-            gatewayId: 'gw-good',
-            provider: 'openai',
-            enabled: true,
-            order: 1,
-            weight: 100,
-            modelOverride: null,
-            timeoutMs: 30000,
-            retryableStatusCodes: [],
-            failOnEmptyContent: true,
-            gateway: {
-              id: 'gw-good',
-              modelApiKey: 'sk-good',
+            {
+              id: 'node-good',
+              gatewayId: 'gw-good',
+              provider: 'openai',
+              enabled: true,
+              order: 1,
+              weight: 100,
+              modelOverride: null,
+              timeoutMs: 30000,
+              retryableStatusCodes: [],
+              failOnEmptyContent: true,
+              gateway: {
+                id: 'gw-good',
+                modelApiKey: 'sk-good',
+              },
             },
-          },
-        ],
-      }),
-      executeAttempt: async ({ node }) => {
-        attemptedGatewayIds.push(node.gatewayId);
+          ],
+        }),
+        executeAttempt: async ({ node }) => {
+          attemptedGatewayIds.push(node.gatewayId);
 
-        if (node.gatewayId === 'gw-empty') {
+          if (node.gatewayId === 'gw-empty') {
+            return buildBufferedAIGatewayAttemptResult({
+              protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+              failOnEmptyContent: node.failOnEmptyContent,
+              gatewayId: 'gw-empty',
+              logId: 'log-empty',
+              response: {
+                statusCode: 200,
+                headers: { 'content-type': 'text/event-stream' },
+                chunks: heartbeat ? [Buffer.from('\n\n')] : [],
+                wroteBody: heartbeat,
+                bodyStartedBeforeFailure: false,
+                ended: true,
+              },
+            });
+          }
+
           return {
-            ok: false,
-            committed: false,
-            gatewayId: 'gw-empty',
-            statusCode: 502,
-            logId: 'log-empty',
-            failure: {
-              message: 'AI Router gateway returned empty content',
-              errorType: 'empty_content',
-            },
+            ok: true,
+            committed: true,
+            gatewayId: 'gw-good',
+            statusCode: 200,
+            logId: 'log-good',
           };
-        }
+        },
+        createLog: async (data) => {
+          createdLogs.push(data);
+          return {
+            id: 'router-log1',
+            ...data,
+          };
+        },
+        now: () => 1000,
+        random: () => 0,
+      });
 
-        return {
-          ok: true,
-          committed: true,
-          gatewayId: 'gw-good',
-          statusCode: 200,
-          logId: 'log-good',
-        };
-      },
-      createLog: async (data) => {
-        createdLogs.push(data);
-        return {
-          id: 'router-log1',
-          ...data,
-        };
-      },
-      now: () => 1000,
-      random: () => 0,
-    });
-
-    expect(attemptedGatewayIds).toEqual(['gw-empty', 'gw-good']);
-    expect(result.result).toMatchObject({
-      ok: true,
-      gatewayId: 'gw-good',
-    });
-    expect(createdLogs[0]).toMatchObject({
-      status: AIRouterLogsStatus.Success,
-      finalGatewayId: 'gw-good',
-      finalGatewayLogId: 'log-good',
-      attemptGatewayIds: ['gw-empty', 'gw-good'],
-      attemptGatewayLogIds: ['log-empty', 'log-good'],
-      attemptCount: 2,
-    });
-    expect(createdLogs[0].attemptErrors).toEqual([
-      {
-        gatewayId: 'gw-empty',
-        gatewayLogId: 'log-empty',
-        statusCode: 502,
-        retryable: true,
-        errorType: 'empty_content',
-        message: 'AI Router gateway returned empty content',
-      },
-      {
+      expect(attemptedGatewayIds).toEqual(['gw-empty', 'gw-good']);
+      expect(result.result).toMatchObject({
+        ok: true,
         gatewayId: 'gw-good',
-        gatewayLogId: 'log-good',
-        statusCode: 200,
-        retryable: false,
-      },
-    ]);
-  });
+      });
+      expect(createdLogs[0]).toMatchObject({
+        status: AIRouterLogsStatus.Success,
+        finalGatewayId: 'gw-good',
+        finalGatewayLogId: 'log-good',
+        attemptGatewayIds: ['gw-empty', 'gw-good'],
+        attemptGatewayLogIds: ['log-empty', 'log-good'],
+        attemptCount: 2,
+      });
+      expect(createdLogs[0].attemptErrors).toEqual([
+        {
+          gatewayId: 'gw-empty',
+          gatewayLogId: 'log-empty',
+          statusCode: 502,
+          retryable: true,
+          errorType: 'empty_content',
+          message: 'AI Router gateway returned empty content',
+        },
+        {
+          gatewayId: 'gw-good',
+          gatewayLogId: 'log-good',
+          statusCode: 200,
+          retryable: false,
+        },
+      ]);
+    }
+  );
 
   test('stops failover and writes Partial when an attempt has committed output', async () => {
     const attemptedGatewayIds: string[] = [];

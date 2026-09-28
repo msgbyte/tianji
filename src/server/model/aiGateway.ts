@@ -13,7 +13,7 @@ import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
 import { logger } from '../utils/logger.js';
 import { promAIGatewayRequestCounter } from '../utils/prometheus/client.js';
 
-export const AI_GATEWAY_STREAM_PING_COMMENT = ': PING\n\n';
+export const AI_GATEWAY_STREAM_HEARTBEAT = '\n\n';
 export const AI_GATEWAY_STREAM_PING_INTERVAL_MS = 25_000;
 
 export function buildAIGatewayForwardHeaders(
@@ -37,11 +37,15 @@ export function buildOpenRouterHeaders(req: Request) {
   };
 }
 
-type AIGatewayStreamResponse = Pick<Response, 'write'> & {
-  flush?: () => void;
-  writableEnded?: boolean;
-  destroyed?: boolean;
-};
+type AIGatewayStreamResponse = Pick<Response, 'write'> &
+  Partial<Pick<Response, 'on' | 'off'>> & {
+    flush?: () => void;
+    writableEnded?: boolean;
+    destroyed?: boolean;
+    writableNeedDrain?: boolean;
+  };
+
+const streamKeepAlives = new WeakMap<AIGatewayStreamResponse, () => void>();
 
 export function setAIGatewayStreamHeaders(res: Response) {
   res.setHeader('Content-Type', 'text/event-stream');
@@ -51,31 +55,19 @@ export function setAIGatewayStreamHeaders(res: Response) {
   res.flushHeaders?.();
 }
 
-function writeAIGatewayStreamPing(res: AIGatewayStreamResponse) {
-  if (res.writableEnded || res.destroyed) {
-    return false;
-  }
-
-  try {
-    res.write(AI_GATEWAY_STREAM_PING_COMMENT);
-
-    if (res.flush) {
-      res.flush();
-    }
-  } catch {
-    return false;
-  }
-
-  return true;
-}
-
 export function startAIGatewayStreamKeepAlive(
   res: AIGatewayStreamResponse,
   options: {
     intervalMs?: number;
     writeInitial?: boolean;
+    canWrite?: () => boolean;
   } = {}
 ) {
+  const existingStop = streamKeepAlives.get(res);
+  if (existingStop) {
+    return existingStop;
+  }
+
   const intervalMs = options.intervalMs ?? AI_GATEWAY_STREAM_PING_INTERVAL_MS;
   let stopped = false;
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -84,36 +76,48 @@ export function startAIGatewayStreamKeepAlive(
     if (stopped) {
       return;
     }
-
     stopped = true;
-
-    if (timer) {
-      clearInterval(timer);
-    }
+    clearInterval(timer);
+    res.off?.('finish', stop);
+    res.off?.('close', stop);
+    res.off?.('error', stop);
+    streamKeepAlives.delete(res);
   };
 
   const ping = () => {
-    if (!writeAIGatewayStreamPing(res)) {
+    if (stopped) {
+      return;
+    }
+    if (res.writableEnded || res.destroyed) {
+      stop();
+      return;
+    }
+    try {
+      if (res.writableNeedDrain || options.canWrite?.() === false) {
+        return;
+      }
+      // A false return means accepted with backpressure, not a failed write.
+      res.write(AI_GATEWAY_STREAM_HEARTBEAT);
+      res.flush?.();
+    } catch {
       stop();
     }
   };
 
-  if (options.writeInitial) {
+  streamKeepAlives.set(res, stop);
+  res.on?.('finish', stop);
+  res.on?.('close', stop);
+  res.on?.('error', stop);
+
+  if (res.writableEnded || res.destroyed) {
+    stop();
+  } else if (options.writeInitial) {
     ping();
   }
 
   if (!stopped) {
-    timer = setInterval(() => {
-      if (stopped) {
-        return;
-      }
-
-      ping();
-    }, intervalMs);
-
-    if (typeof timer.unref === 'function') {
-      timer.unref();
-    }
+    timer = setInterval(ping, intervalMs);
+    timer.unref?.();
   }
 
   return stop;
@@ -1603,6 +1607,9 @@ export function buildAnthropicHandler(
     );
 
     let stopKeepAlive: (() => void) | undefined;
+    let atEventBoundary = true;
+    let lineHasContent = false;
+    let previousCR = false;
 
     try {
       promAIGatewayRequestCounter.inc({ modelProvider });
@@ -1636,6 +1643,8 @@ export function buildAnthropicHandler(
         setAIGatewayStreamHeaders(res);
         stopKeepAlive = startAIGatewayStreamKeepAlive(res, {
           writeInitial: true,
+          // A trailing CR may still be the first half of a CRLF.
+          canWrite: () => atEventBoundary && !previousCR,
         });
       }
 
@@ -1701,11 +1710,33 @@ export function buildAnthropicHandler(
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              if (!atEventBoundary) {
+                throw new Error('Anthropic upstream stream ended mid-event');
+              }
+              break;
+            }
 
             const text = decoder.decode(value, { stream: true });
             // Write raw SSE data directly to client
             res.write(text);
+            // Track framing bytes only; retain neither events nor JSON here.
+            // Scan bytes so a buffered partial UTF-8 character also blocks pings.
+            for (const byte of value) {
+              if (byte === 10 && previousCR) {
+                previousCR = false;
+                continue;
+              }
+              if (byte === 10 || byte === 13) {
+                atEventBoundary = !lineHasContent;
+                lineHasContent = false;
+                previousCR = byte === 13;
+              } else {
+                atEventBoundary = false;
+                lineHasContent = true;
+                previousCR = false;
+              }
+            }
             if (res.flush) {
               res.flush();
             }
@@ -1953,6 +1984,9 @@ export function buildAnthropicHandler(
             message: error instanceof Error ? error.message : 'Unknown error',
           },
         });
+      } else if (!atEventBoundary || previousCR) {
+        // Never append an error event to an unfinished raw event or split CRLF.
+        res.destroy();
       } else {
         writeAIGatewayAnthropicStreamError(res, error);
       }

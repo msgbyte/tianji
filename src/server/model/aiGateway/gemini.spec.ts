@@ -9,6 +9,73 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { aiGatewayRouter } from '../../router/aiGateway.js';
 import { prisma } from '../_client.js';
 import { checkQuotaAlert } from './quotaAlert.js';
+import { AI_GATEWAY_STREAM_HEARTBEAT } from '../aiGateway.js';
+
+// Minimal SSE framing fixture from @google/genai 1.30.0 ApiClient.processStreamResponse,
+// bundled with Gemini CLI 0.61.0. Preserve its anchored regex and EOF check.
+// https://github.com/googleapis/js-genai/blob/v1.30.0/src/_api_client.ts
+function parseLegacyGeminiStream(chunks: Uint8Array[]) {
+  const decoder = new TextDecoder();
+  const events: unknown[] = [];
+  const responseLineRE = /^\s*data: (.*)(?:\n\n|\r\r|\r\n\r\n)/;
+  let buffer = '';
+  for (const chunk of chunks) {
+    buffer += decoder.decode(chunk, { stream: true });
+    let match = buffer.match(responseLineRE);
+    while (match) {
+      events.push(JSON.parse(match[1]));
+      buffer = buffer.slice(match[0].length);
+      match = buffer.match(responseLineRE);
+    }
+  }
+  if (buffer.trim().length > 0) {
+    throw new Error('Incomplete JSON segment at the end');
+  }
+  return events;
+}
+
+test.each([false, true])(
+  'legacy Gemini parser ignores leading, middle and trailing heartbeats (bytewise: %s)',
+  (bytewise) => {
+    const events = [
+      { candidates: [{ content: { parts: [{ text: 'Olé 🌍' }] } }] },
+      {
+        candidates: [
+          {
+            content: {
+              parts: [
+                { functionCall: { name: 'weather', args: { city: 'Madrid' } } },
+              ],
+            },
+            finishReason: 'STOP',
+          },
+        ],
+      },
+    ];
+    const encode = (heartbeat: string) =>
+      new TextEncoder().encode(
+        heartbeat +
+          events
+            .map((event) => `data: ${JSON.stringify(event)}\n\n`)
+            .join(heartbeat) +
+          heartbeat +
+          heartbeat
+      );
+    const chunks = (bytes: Uint8Array) =>
+      bytewise ? [...bytes].map((byte) => Uint8Array.of(byte)) : [bytes];
+    expect(
+      parseLegacyGeminiStream(chunks(encode(AI_GATEWAY_STREAM_HEARTBEAT)))
+    ).toEqual(events);
+    expect(() => parseLegacyGeminiStream(chunks(encode(': PING\n\n')))).toThrow(
+      'Incomplete JSON segment at the end'
+    );
+    expect(() =>
+      parseLegacyGeminiStream(
+        chunks(new TextEncoder().encode('data: {"partial":'))
+      )
+    ).toThrow('Incomplete JSON segment at the end');
+  }
+);
 
 vi.mock('../_client.js', () => ({
   prisma: {
