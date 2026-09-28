@@ -84,26 +84,45 @@ export async function findSession(
 
   // Create a session if not found
   if (!session) {
-    session = await prisma.applicationSession.upsert({
-      where: { id: sessionId },
-      create: {
-        id: sessionId,
-        applicationId,
-        os,
-        language,
-        ip,
-        version,
-        sdkVersion,
-        country,
-        subdivision1,
-        subdivision2,
-        city,
-        longitude,
-        latitude,
-        accuracyRadius,
-      },
-      update: {},
-    });
+    session = await prisma.applicationSession
+      .upsert({
+        where: { id: sessionId },
+        create: {
+          id: sessionId,
+          applicationId,
+          os,
+          language,
+          ip,
+          version,
+          sdkVersion,
+          country,
+          subdivision1,
+          subdivision2,
+          city,
+          longitude,
+          latitude,
+          accuracyRadius,
+        },
+        update: {},
+      })
+      .catch(async (error: unknown) => {
+        if (
+          !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+          error.code !== 'P2002'
+        ) {
+          throw error;
+        }
+
+        // Another request may have created the same session after our lookup.
+        const existingSession = await prisma.applicationSession.findUnique({
+          where: { id: sessionId },
+        });
+        if (!existingSession) {
+          throw error;
+        }
+
+        return existingSession;
+      });
   }
 
   const res: any = { ...session!, workspaceId: application.workspaceId };
