@@ -67,6 +67,22 @@ vi.mock('../../model/aiGateway/connectivity.js', () => ({
   testAIGatewayCustomConnection: mocks.testConnection,
 }));
 
+vi.mock('../../utils/model_prices_and_context_window_v2.json', () => ({
+  default: {
+    alpha: {
+      name: 'Alpha',
+      models: { 'shared-model': { name: 'Shared Model' } },
+    },
+    beta: {
+      name: 'Beta',
+      models: {
+        'shared-model': { name: 'Shared Model' },
+        'beta-special': { name: 'Reasoning Model' },
+      },
+    },
+  },
+}));
+
 async function createCaller() {
   const { aiGatewayRouter } = await import('./aiGateway.js');
 
@@ -86,6 +102,61 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.resetModules();
+});
+
+describe('aiGatewayRouter.modelPricing', () => {
+  test('returns all provider options independently of search and limit', async () => {
+    const caller = await createCaller();
+    const workspaceId = createId();
+
+    for (const search of [undefined, 'no-match']) {
+      const result = await caller.modelPricing({
+        workspaceId,
+        search,
+        limit: 1,
+      });
+
+      expect(result).toMatchObject({
+        availableProviders: [
+          { id: 'alpha', name: 'Alpha' },
+          { id: 'beta', name: 'Beta' },
+        ],
+      });
+      expect(result.providers.map(({ id }) => id)).toEqual(
+        search ? [] : ['alpha']
+      );
+    }
+  });
+
+  test('filters by exact provider before limiting and combines model search', async () => {
+    const caller = await createCaller();
+    const workspaceId = createId();
+
+    for (const [search, modelId] of [
+      [undefined, 'shared-model'],
+      ['BETA-SPECIAL', 'beta-special'],
+      ['reasoning', 'beta-special'],
+    ]) {
+      const result = await caller.modelPricing({
+        workspaceId,
+        providerId: 'beta',
+        search,
+        limit: 1,
+      });
+
+      expect(result.providers).toEqual([
+        expect.objectContaining({
+          id: 'beta',
+          models: [expect.objectContaining({ id: modelId })],
+        }),
+      ]);
+    }
+
+    for (const providerId of ['bet', 'missing']) {
+      const result = await caller.modelPricing({ workspaceId, providerId });
+      expect(result.providers).toEqual([]);
+    }
+  });
 });
 
 describe('aiGatewayRouter.testConnection', () => {

@@ -54,6 +54,10 @@ const modelPricingData = await import(
   }
 ).then((res) => res.default);
 
+const modelPricingProviders = Object.entries(modelPricingData)
+  .map(([id, provider]) => ({ id, name: provider.name }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
 const aiGatewayCustomModelPriceSchema = z
   .object({
     inputTokenMin: z.number().int().nonnegative().optional(),
@@ -555,11 +559,15 @@ export const aiGatewayRouter = router({
     .input(
       z.object({
         search: z.string().optional(),
+        providerId: z.string().optional(),
         limit: z.number().int().min(1).max(50).default(10),
       })
     )
     .output(
       z.object({
+        availableProviders: z.array(
+          z.object({ id: z.string(), name: z.string() })
+        ),
         providers: z.array(
           z.object({
             id: z.string(),
@@ -598,7 +606,7 @@ export const aiGatewayRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const { search, limit } = input;
+      const { search, providerId: selectedProviderId, limit } = input;
 
       try {
         const allModels = [];
@@ -606,6 +614,10 @@ export const aiGatewayRouter = router({
         for (const [providerId, providerInfo] of Object.entries(
           modelPricingData
         )) {
+          if (selectedProviderId && providerId !== selectedProviderId) {
+            continue;
+          }
+
           const provider = providerInfo as any;
 
           for (const [modelId, modelInfo] of Object.entries(
@@ -668,10 +680,10 @@ export const aiGatewayRouter = router({
 
         const providers = Array.from(providerMap.values());
 
-        return { providers };
+        return { providers, availableProviders: modelPricingProviders };
       } catch (error) {
         logger.error('Error reading model pricing data:', error);
-        return { providers: [] };
+        return { providers: [], availableProviders: modelPricingProviders };
       }
     }),
   quotaAlert: {

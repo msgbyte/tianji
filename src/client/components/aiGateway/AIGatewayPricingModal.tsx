@@ -8,6 +8,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useTranslation } from '@i18next-toolkit/react';
 import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -99,13 +106,18 @@ export const AIGatewayPricingModal: React.FC<AIGatewayPricingModalProps> = ({
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const [searchTerm, setSearchTerm] = useState('');
+  const [providerId, setProviderId] = useState('all');
   const debouncedSearchTerm = useDebounce(searchTerm, { wait: 600 });
 
-  const { data, isLoading, error } = trpc.aiGateway.modelPricing.useQuery({
-    workspaceId,
-    search: debouncedSearchTerm || undefined,
-    limit: 50,
-  });
+  const { data, isLoading, error } = trpc.aiGateway.modelPricing.useQuery(
+    {
+      workspaceId,
+      search: debouncedSearchTerm || undefined,
+      providerId: providerId === 'all' ? undefined : providerId,
+      limit: 50,
+    },
+    { placeholderData: (previousData) => previousData }
+  );
 
   const formatPrice = (price: number) => {
     return `$${price.toFixed(4)}`;
@@ -140,14 +152,30 @@ export const AIGatewayPricingModal: React.FC<AIGatewayPricingModalProps> = ({
         </DialogHeader>
 
         <div className="flex flex-1 flex-col space-y-4 overflow-hidden">
-          {/* Search Input */}
-          <div className="flex items-center space-x-2 p-0.5">
+          {/* Search Filters */}
+          <div className="flex flex-col gap-2 p-0.5 sm:flex-row sm:items-center">
             <Input
               placeholder={t('Search models by name or provider...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1"
             />
+            <Select value={providerId} onValueChange={setProviderId}>
+              <SelectTrigger
+                aria-label={t('Provider')}
+                className="w-full sm:w-[220px]"
+              >
+                <SelectValue placeholder={t('All providers')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('All providers')}</SelectItem>
+                {data?.availableProviders.map((provider) => (
+                  <SelectItem key={provider.id} value={provider.id}>
+                    {provider.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Content Area */}
