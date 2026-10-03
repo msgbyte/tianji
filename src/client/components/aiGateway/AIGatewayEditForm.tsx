@@ -47,6 +47,7 @@ export type AIGatewayEditFormValues = z.infer<typeof addFormSchema>;
 
 interface AIGatewayEditFormProps {
   defaultValues?: AIGatewayEditFormValues;
+  hasModelApiKey?: boolean;
   onSubmit: (values: AIGatewayEditFormValues) => Promise<void>;
   onTestConnection?: (values: AIGatewayEditFormValues) => void;
   isTestingConnection?: boolean;
@@ -82,7 +83,10 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
       }
 
       const values = form.getValues();
-      if (!values.modelApiKey?.trim()) {
+      if (
+        !values.modelApiKey?.trim() &&
+        !(props.hasModelApiKey && values.modelApiKey === undefined)
+      ) {
         form.setError('modelApiKey', {
           type: 'manual',
           message: 'Model API Key is required',
@@ -123,12 +127,23 @@ export const AIGatewayEditForm: React.FC<AIGatewayEditFormProps> = React.memo(
                     <FormControl>
                       <SecretInput
                         value={field.value}
-                        onChange={field.onChange}
+                        hasExistingValue={
+                          Boolean(field.value) ||
+                          (props.hasModelApiKey && field.value === undefined)
+                        }
+                        onChange={(value) => field.onChange(value || null)}
                         placeholder="sk-..."
                         maskPlaceholder="••••••••••••••••"
                       />
                     </FormControl>
                     <FormDescription>
+                      {props.hasModelApiKey && (
+                        <span className="block">
+                          {t(
+                            'A key is configured. Leave unchanged to keep it, enter a new key to replace it, or use Clear to remove it.'
+                          )}
+                        </span>
+                      )}
                       {t(
                         'Model API Key which user can use to request model with their own api key in tianji, if not set, use the api key in the header'
                       )}

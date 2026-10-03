@@ -14,6 +14,9 @@ const mocks = vi.hoisted(() => {
     getWorkspaceUser: vi.fn(async () => ({ role: 'owner' })),
     promStartTimer: vi.fn(() => endRequest),
     findGateway: vi.fn(),
+    findGateways: vi.fn(),
+    updateGateway: vi.fn(),
+    deleteGateway: vi.fn(),
     findLogs: vi.fn(),
     findLog: vi.fn(),
     createGateway: vi.fn(),
@@ -46,6 +49,9 @@ vi.mock('../../model/_client.js', () => ({
     },
     aIGateway: {
       findFirst: mocks.findGateway,
+      findMany: mocks.findGateways,
+      update: mocks.updateGateway,
+      delete: mocks.deleteGateway,
       create: mocks.createGateway,
     },
     aIGatewayLogs: {
@@ -102,6 +108,146 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.resetModules();
+});
+
+describe('AI Gateway secret boundaries', () => {
+  const settings = {
+    name: 'Gateway',
+    modelApiKey: 'sk-private-upstream',
+    customModelBaseUrl: null,
+    customModelName: null,
+    customModelStrategy: null,
+    customModelInputPrice: null,
+    customModelOutputPrice: null,
+  };
+  const gateway = {
+    ...settings,
+    id: 'gateway_1',
+    workspaceId: createId(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  const target = { workspaceId: gateway.workspaceId, gatewayId: gateway.id };
+
+  test.each(['owner', 'admin', 'write', 'readOnly'])(
+    'never returns the stored secret to a %s member',
+    async (role) => {
+      mocks.getWorkspaceUser.mockResolvedValue({ role });
+      mocks.findGateways.mockResolvedValue([gateway]);
+      mocks.findGateway.mockResolvedValue(gateway);
+      const caller = await createCaller();
+
+      for (const result of [
+        await caller.all({ workspaceId: gateway.workspaceId }),
+        await caller.info(target),
+      ]) {
+        const item = Array.isArray(result) ? result[0] : result;
+        expect(item).toMatchObject({ id: gateway.id, hasModelApiKey: true });
+        expect(item).not.toHaveProperty('modelApiKey');
+        expect(JSON.stringify(result)).not.toContain(settings.modelApiKey);
+      }
+    }
+  );
+
+  test('redacts create, update and delete responses and reports an absent key', async () => {
+    mocks.createGateway.mockResolvedValue(gateway);
+    mocks.updateGateway.mockResolvedValue(gateway);
+    mocks.deleteGateway.mockResolvedValue(gateway);
+    const caller = await createCaller();
+    for (const result of [
+      await caller.create({ ...settings, workspaceId: gateway.workspaceId }),
+      await caller.update({ ...settings, ...target }),
+      await caller.delete(target),
+    ]) {
+      expect(result).toMatchObject({ hasModelApiKey: true });
+      expect(result).not.toHaveProperty('modelApiKey');
+      expect(JSON.stringify(result)).not.toContain(settings.modelApiKey);
+    }
+
+    mocks.findGateway.mockResolvedValue({ ...gateway, modelApiKey: null });
+    expect(await caller.info(target)).toMatchObject({ hasModelApiKey: false });
+    mocks.findGateway.mockResolvedValue(null);
+    expect(await caller.info(target)).toBeNull();
+  });
+
+  test.each([undefined, null, 'sk-replacement'])(
+    'preserves, clears or replaces a key explicitly: %s',
+    async (modelApiKey) => {
+      mocks.updateGateway.mockResolvedValue(gateway);
+      const caller = await createCaller();
+      const input = JSON.parse(
+        JSON.stringify({ ...settings, ...target, modelApiKey })
+      );
+      await caller.update(input);
+      expect(mocks.updateGateway).toHaveBeenCalledWith({
+        where: { id: gateway.id, workspaceId: gateway.workspaceId },
+        data: { ...settings, modelApiKey },
+      });
+    }
+  );
+
+  test('tests the stored key on the server without returning it', async () => {
+    mocks.findGateway.mockResolvedValue(gateway);
+    mocks.testConnection.mockResolvedValue({
+      model: settings.modelApiKey,
+      durationMs: 1,
+    });
+    const caller = await createCaller();
+    const result = await caller.testConnection({
+      ...target,
+      customModelBaseUrl: null,
+      customModelName: null,
+    });
+    expect(mocks.testConnection).toHaveBeenCalledWith({
+      modelApiKey: settings.modelApiKey,
+      customModelBaseUrl: null,
+      customModelName: null,
+    });
+    expect(result.model).toBe('[REDACTED]');
+
+    mocks.testConnection.mockRejectedValueOnce(
+      new Error(`Provider rejected ${settings.modelApiKey}`)
+    );
+    await expect(
+      caller.testConnection({
+        ...target,
+        customModelBaseUrl: null,
+        customModelName: null,
+      })
+    ).rejects.toMatchObject({
+      code: 'BAD_GATEWAY',
+      message: 'Provider rejected [REDACTED]',
+    });
+
+    mocks.testConnection.mockClear();
+    await expect(
+      caller.testConnection({
+        ...target,
+        modelApiKey: null,
+        customModelBaseUrl: null,
+        customModelName: null,
+      })
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    expect(mocks.testConnection).not.toHaveBeenCalled();
+  });
+
+  test('rejects secret updates and connection tests from read-only members', async () => {
+    mocks.getWorkspaceUser.mockResolvedValue({ role: 'readOnly' });
+    const caller = await createCaller();
+    await expect(
+      caller.update({ ...settings, ...target })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(
+      caller.testConnection({
+        ...target,
+        modelApiKey: settings.modelApiKey,
+        customModelBaseUrl: null,
+        customModelName: null,
+      })
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(mocks.updateGateway).not.toHaveBeenCalled();
+    expect(mocks.testConnection).not.toHaveBeenCalled();
+  });
 });
 
 describe('aiGatewayRouter.modelPricing', () => {
@@ -180,7 +326,7 @@ describe('aiGatewayRouter.testConnection', () => {
 
     expect(mocks.findGateway).toHaveBeenCalledWith({
       where: { id: 'gateway_1', workspaceId },
-      select: { id: true },
+      select: { id: true, modelApiKey: true },
     });
     expect(mocks.testConnection).not.toHaveBeenCalled();
   });

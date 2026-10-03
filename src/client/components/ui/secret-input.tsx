@@ -10,6 +10,8 @@ export interface SecretInputProps
     'type' | 'value' | 'onChange'
   > {
   value?: string | null;
+  /** Indicates a stored secret without passing its value to the client. */
+  hasExistingValue?: boolean;
   onChange?: (value: string) => void;
   /**
    * The placeholder to show when the field has an existing value.
@@ -35,6 +37,7 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
     {
       className,
       value,
+      hasExistingValue = Boolean(value),
       onChange,
       maskPlaceholder = '******',
       placeholder,
@@ -49,9 +52,7 @@ const SecretInput = React.forwardRef<HTMLInputElement, SecretInputProps>(
     const [internalValue, setInternalValue] = React.useState('');
     const [isFocused, setIsFocused] = React.useState(false);
 
-    const hasExistingValue = Boolean(value);
-    const showMask =
-      hasExistingValue && !isFocused && internalValue === '';
+    const showMask = hasExistingValue && !isFocused && internalValue === '';
     const showClearBtn =
       allowClear && !disabled && (hasExistingValue || internalValue !== '');
 

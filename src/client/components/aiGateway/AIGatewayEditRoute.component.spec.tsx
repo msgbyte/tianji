@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -8,15 +8,14 @@ const mocks = vi.hoisted(() => ({
   testConnectionOptions: { current: null as any },
   toastSuccess: vi.fn(),
   defaultErrorHandler: vi.fn(),
+  updateGateway: vi.fn(async (_input: any) => ({ id: 'gateway_1' })),
 }));
 
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute:
-    () =>
-    (options: Record<string, unknown>) => ({
-      ...options,
-      useParams: () => ({ gatewayId: 'gateway_1' }),
-    }),
+  createFileRoute: () => (options: Record<string, unknown>) => ({
+    ...options,
+    useParams: () => ({ gatewayId: 'gateway_1' }),
+  }),
   useNavigate: () => vi.fn(),
 }));
 
@@ -42,7 +41,7 @@ vi.mock('@/api/trpc', () => ({
           data: {
             id: 'gateway_1',
             name: 'Gateway',
-            modelApiKey: 'sk-existing',
+            hasModelApiKey: true,
             customModelBaseUrl: 'https://models.example.com/v1',
             customModelName: 'old-model',
             customModelStrategy: null,
@@ -52,7 +51,7 @@ vi.mock('@/api/trpc', () => ({
         }),
       },
       update: {
-        useMutation: () => ({ mutateAsync: vi.fn() }),
+        useMutation: () => ({ mutateAsync: mocks.updateGateway }),
       },
       testConnection: {
         useMutation: (options: unknown) => {
@@ -68,7 +67,9 @@ vi.mock('@/api/trpc', () => ({
 }));
 
 vi.mock('@/components/CommonWrapper', () => ({
-  CommonWrapper: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+  CommonWrapper: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
 }));
 vi.mock('@/components/ErrorTip', () => ({ ErrorTip: () => <div>Error</div> }));
 vi.mock('@/components/Loading', () => ({ Loading: () => <div>Loading</div> }));
@@ -82,6 +83,13 @@ vi.mock('@/components/aiGateway/AIGatewayStrategyEditor.utils', () => ({
 vi.mock('@/components/aiGateway/AIGatewayEditForm', () => ({
   AIGatewayEditForm: (props: any) => (
     <div>
+      <span data-testid="has-key">{String(props.hasModelApiKey)}</span>
+      <button onClick={() => props.onSubmit(props.defaultValues)}>
+        Update
+      </button>
+      <button onClick={() => props.onTestConnection(props.defaultValues)}>
+        Test Stored Key
+      </button>
       <span data-testid="testing-state">
         {String(props.isTestingConnection)}
       </span>
@@ -111,10 +119,24 @@ beforeEach(() => {
 });
 
 describe('AI Gateway edit route connection test', () => {
-  test('sends normalized current values and configures feedback', async () => {
-    const { Route } = await import(
-      '../../routes/aiGateway/$gatewayId/edit'
+  test('preserves a configured secret when saving or testing unchanged values', async () => {
+    const { Route } = await import('../../routes/aiGateway/$gatewayId/edit');
+    const Component = (Route as any).component;
+    render(<Component />);
+    expect(screen.getByTestId('has-key')).toHaveTextContent('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+    await waitFor(() => expect(mocks.updateGateway).toHaveBeenCalled());
+    expect(mocks.updateGateway.mock.calls[0][0]).toMatchObject({
+      modelApiKey: undefined,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Test Stored Key' }));
+    expect(mocks.testConnectionMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ modelApiKey: undefined })
     );
+  });
+
+  test('sends normalized current values and configures feedback', async () => {
+    const { Route } = await import('../../routes/aiGateway/$gatewayId/edit');
     const Component = (Route as any).component;
     render(<Component />);
 

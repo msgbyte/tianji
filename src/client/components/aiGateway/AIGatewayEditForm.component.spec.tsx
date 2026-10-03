@@ -9,6 +9,7 @@ import {
 
 vi.mock('@i18next-toolkit/react', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
+  t: (key: string) => key,
 }));
 
 vi.mock('@/components/ui/label', () => ({
@@ -34,7 +35,6 @@ vi.mock('./AIGatewayStrategyEditor', () => ({
 
 const defaultValues: AIGatewayEditFormValues = {
   name: 'Gateway',
-  modelApiKey: 'sk-existing',
   customModelBaseUrl: 'https://old.example.com/v1',
   customModelName: 'old-model',
   customModelStrategy: '',
@@ -43,6 +43,62 @@ const defaultValues: AIGatewayEditFormValues = {
 };
 
 describe('AIGatewayEditForm connection test action', () => {
+  test.each(['unchanged', 'replace', 'clear'])(
+    'submits the intended secret change: %s',
+    async (action) => {
+      const onSubmit = vi.fn(
+        async (_values: AIGatewayEditFormValues) => undefined
+      );
+      render(
+        <AIGatewayEditForm
+          defaultValues={defaultValues}
+          hasModelApiKey
+          onSubmit={onSubmit}
+        />
+      );
+      const input = screen.getByLabelText(/Model API Key/);
+      expect(input).toHaveValue('');
+      expect(input).toHaveAttribute('placeholder', '••••••••••••••••');
+      if (action === 'replace') {
+        fireEvent.change(input, { target: { value: 'sk-new' } });
+      } else if (action === 'clear') {
+        fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+      }
+      fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+      expect(onSubmit.mock.calls[0][0].modelApiKey).toBe(
+        action === 'unchanged'
+          ? undefined
+          : action === 'replace'
+            ? 'sk-new'
+            : null
+      );
+    }
+  );
+
+  test('tests a configured key without loading it into the form', async () => {
+    const onTestConnection = vi.fn();
+    render(
+      <AIGatewayEditForm
+        defaultValues={defaultValues}
+        hasModelApiKey
+        onSubmit={vi.fn()}
+        onTestConnection={onTestConnection}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Test Connection' }));
+    await waitFor(() =>
+      expect(onTestConnection).toHaveBeenCalledWith(defaultValues)
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    onTestConnection.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Test Connection' }));
+    expect(
+      await screen.findByText('Model API Key is required')
+    ).toBeInTheDocument();
+    expect(onTestConnection).not.toHaveBeenCalled();
+  });
+
   test('omits the action when no test callback is supplied', () => {
     render(
       <AIGatewayEditForm defaultValues={defaultValues} onSubmit={vi.fn()} />
@@ -54,7 +110,9 @@ describe('AIGatewayEditForm connection test action', () => {
   });
 
   test('passes current unsaved values without submitting or resetting', async () => {
-    const onSubmit = vi.fn(async () => undefined);
+    const onSubmit = vi.fn(
+      async (_values: AIGatewayEditFormValues) => undefined
+    );
     const onTestConnection = vi.fn();
     render(
       <AIGatewayEditForm
@@ -92,7 +150,7 @@ describe('AIGatewayEditForm connection test action', () => {
     render(
       <AIGatewayEditForm
         defaultValues={{ ...defaultValues, modelApiKey: '' }}
-        onSubmit={vi.fn(async () => undefined)}
+        onSubmit={vi.fn(async (_values: AIGatewayEditFormValues) => undefined)}
         onTestConnection={onTestConnection}
       />
     );
@@ -109,7 +167,7 @@ describe('AIGatewayEditForm connection test action', () => {
     render(
       <AIGatewayEditForm
         defaultValues={defaultValues}
-        onSubmit={vi.fn(async () => undefined)}
+        onSubmit={vi.fn(async (_values: AIGatewayEditFormValues) => undefined)}
         onTestConnection={vi.fn()}
         isTestingConnection={true}
       />

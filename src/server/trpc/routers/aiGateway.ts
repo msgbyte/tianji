@@ -9,7 +9,6 @@ import {
 } from '../trpc.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../utils/const.js';
-import { AIGatewayModelSchema } from '../../prisma/zod/aigateway.js';
 import { AIGatewayLogsModelSchema } from '../../prisma/zod/aigatewaylogs.js';
 import { prisma } from '../../model/_client.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
@@ -17,6 +16,10 @@ import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { clearGatewayInfoCache } from '../../model/aiGateway.js';
 import { clearQuotaAlertCacheForGateway } from '../../model/aiGateway/quotaAlert.js';
 import { testAIGatewayCustomConnection } from '../../model/aiGateway/connectivity.js';
+import {
+  aiGatewayOutputSchema,
+  serializeAIGateway,
+} from '../../model/aiGateway/serialize.js';
 import { redactSecret } from '../../model/aiGateway/redactSecret.js';
 import { logger } from '../../utils/logger.js';
 import type { Prisma } from '@prisma/client';
@@ -123,7 +126,7 @@ export const aiGatewayRouter = router({
         summary: 'Get all gateways',
       },
     })
-    .output(z.array(AIGatewayModelSchema))
+    .output(z.array(aiGatewayOutputSchema))
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
@@ -136,15 +139,7 @@ export const aiGatewayRouter = router({
         },
       });
 
-      return aiGateways.map((gateway) => ({
-        ...gateway,
-        customModelInputPrice: gateway.customModelInputPrice
-          ? Number(gateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: gateway.customModelOutputPrice
-          ? Number(gateway.customModelOutputPrice)
-          : null,
-      }));
+      return aiGateways.map(serializeAIGateway);
     }),
   info: workspaceProcedure
     .meta(
@@ -159,7 +154,7 @@ export const aiGatewayRouter = router({
         gatewayId: z.string(),
       })
     )
-    .output(AIGatewayModelSchema.nullable())
+    .output(aiGatewayOutputSchema.nullable())
     .query(async ({ input }) => {
       const { workspaceId, gatewayId } = input;
 
@@ -174,15 +169,7 @@ export const aiGatewayRouter = router({
         return null;
       }
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
   create: workspaceWriteProcedure
     .meta({
@@ -195,7 +182,7 @@ export const aiGatewayRouter = router({
       },
     })
     .input(aiGatewayCreateSchema)
-    .output(AIGatewayModelSchema)
+    .output(aiGatewayOutputSchema)
     .mutation(async ({ input }) => {
       const {
         workspaceId,
@@ -221,15 +208,7 @@ export const aiGatewayRouter = router({
         },
       });
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
 
   update: workspaceWriteProcedure
@@ -245,9 +224,9 @@ export const aiGatewayRouter = router({
         .object({
           gatewayId: z.string(),
         })
-        .merge(aiGatewayCreateSchema)
+        .merge(aiGatewayCreateSchema.partial({ modelApiKey: true }))
     )
-    .output(AIGatewayModelSchema)
+    .output(aiGatewayOutputSchema)
     .mutation(async ({ input }) => {
       const {
         workspaceId,
@@ -279,22 +258,18 @@ export const aiGatewayRouter = router({
 
       clearGatewayInfoCache(workspaceId, gatewayId);
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
 
   testConnection: workspaceWriteProcedure
     .input(
       z.object({
         gatewayId: z.string(),
-        modelApiKey: z.string().trim().min(1, 'Model API Key is required'),
+        modelApiKey: z
+          .string()
+          .trim()
+          .min(1, 'Model API Key is required')
+          .nullish(),
         customModelBaseUrl: z.string().trim().url().nullable(),
         customModelName: z.string().nullable(),
       })
@@ -315,7 +290,7 @@ export const aiGatewayRouter = router({
       } = input;
       const gateway = await prisma.aIGateway.findFirst({
         where: { id: gatewayId, workspaceId },
-        select: { id: true },
+        select: { id: true, modelApiKey: true },
       });
 
       if (!gateway) {
@@ -325,23 +300,32 @@ export const aiGatewayRouter = router({
         });
       }
 
+      const apiKey =
+        modelApiKey === undefined ? gateway.modelApiKey : modelApiKey;
+      if (!apiKey) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Model API Key is required',
+        });
+      }
+
       try {
         const result = await testAIGatewayCustomConnection({
-          modelApiKey,
+          modelApiKey: apiKey,
           customModelBaseUrl,
           customModelName,
         });
 
         return {
           ...result,
-          model: redactSecret(result.model, modelApiKey),
+          model: redactSecret(result.model, apiKey),
         };
       } catch (error) {
         throw new TRPCError({
           code: 'BAD_GATEWAY',
           message:
             error instanceof Error
-              ? error.message
+              ? redactSecret(error.message, apiKey)
               : 'AI Gateway connection test failed',
           cause: error,
         });
@@ -412,7 +396,7 @@ export const aiGatewayRouter = router({
         gatewayId: z.string(),
       })
     )
-    .output(AIGatewayModelSchema)
+    .output(aiGatewayOutputSchema)
     .mutation(async ({ input }) => {
       const { workspaceId, gatewayId } = input;
 
@@ -425,15 +409,7 @@ export const aiGatewayRouter = router({
 
       clearGatewayInfoCache(workspaceId, gatewayId);
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
   logs: workspaceProcedure
     .meta(

@@ -53,7 +53,7 @@ function AIGatewayEditComponent() {
       workspaceId,
       gatewayId,
       name: values.name,
-      modelApiKey: values.modelApiKey ?? null,
+      modelApiKey: values.modelApiKey,
       customModelBaseUrl: values.customModelBaseUrl ?? null,
       customModelName: values.customModelName ?? null,
       customModelStrategy: parseAIGatewayCustomModelStrategy(
@@ -77,7 +77,10 @@ function AIGatewayEditComponent() {
     testConnectionMutation.mutate({
       workspaceId,
       gatewayId,
-      modelApiKey: values.modelApiKey?.trim() ?? '',
+      modelApiKey:
+        values.modelApiKey === undefined
+          ? undefined
+          : values.modelApiKey?.trim() || null,
       customModelBaseUrl: values.customModelBaseUrl?.trim() || null,
       customModelName: values.customModelName?.trim() || null,
     });
@@ -97,11 +100,11 @@ function AIGatewayEditComponent() {
     >
       <ScrollArea className="h-full overflow-hidden p-4">
         <AIGatewayEditForm
+          hasModelApiKey={gatewayInfo?.hasModelApiKey}
           defaultValues={
             gatewayInfo
               ? {
                   name: gatewayInfo.name,
-                  modelApiKey: gatewayInfo.modelApiKey,
                   customModelBaseUrl: gatewayInfo.customModelBaseUrl,
                   customModelName: gatewayInfo.customModelName,
                   customModelStrategy: stringifyAIGatewayCustomModelStrategy(

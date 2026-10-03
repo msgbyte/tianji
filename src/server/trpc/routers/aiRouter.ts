@@ -12,7 +12,6 @@ import { prisma } from '../../model/_client.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import {
-  AIGatewayModelSchema,
   AIRouterLogsModelSchema,
   AIRouterModelSchema,
   AIRouterNodeModelSchema,
@@ -22,6 +21,11 @@ import {
   AI_ROUTER_PROVIDER_VALUES,
   isAIGatewayEligibleForAIRouter,
 } from '../../model/aiRouter.js';
+
+import {
+  aiGatewayOutputSchema,
+  serializeAIGateway,
+} from '../../model/aiGateway/serialize.js';
 
 const aiRouterCreateSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -87,7 +91,7 @@ export const aiRouterRouter = router({
           AIRouterTierModelSchema.extend({
             nodes: z.array(
               AIRouterNodeModelSchema.extend({
-                gateway: AIGatewayModelSchema,
+                gateway: aiGatewayOutputSchema,
               })
             ),
           })
@@ -229,7 +233,7 @@ export const aiRouterRouter = router({
         query: z.string().optional(),
       })
     )
-    .output(z.array(AIGatewayModelSchema))
+    .output(z.array(aiGatewayOutputSchema))
     .query(async ({ input }) => {
       const gateways = await prisma.aIGateway.findMany({
         where: {
@@ -245,7 +249,7 @@ export const aiRouterRouter = router({
 
       return gateways
         .filter((gateway) => isAIGatewayEligibleForAIRouter(gateway))
-        .map(serializeAIGatewayModel);
+        .map(serializeAIGateway);
     }),
 
   replaceTiers: workspaceWriteProcedure
@@ -267,7 +271,7 @@ export const aiRouterRouter = router({
         AIRouterTierModelSchema.extend({
           nodes: z.array(
             AIRouterNodeModelSchema.extend({
-              gateway: AIGatewayModelSchema,
+              gateway: aiGatewayOutputSchema,
             })
           ),
         })
@@ -447,27 +451,6 @@ function assertNoDuplicateNodeOrders(
   }
 }
 
-function serializeAIGatewayModel<
-  T extends {
-    customModelInputPrice?: unknown;
-    customModelOutputPrice?: unknown;
-  },
->(gateway: T) {
-  return {
-    ...gateway,
-    customModelInputPrice:
-      gateway.customModelInputPrice === null ||
-      gateway.customModelInputPrice === undefined
-        ? null
-        : Number(gateway.customModelInputPrice),
-    customModelOutputPrice:
-      gateway.customModelOutputPrice === null ||
-      gateway.customModelOutputPrice === undefined
-        ? null
-        : Number(gateway.customModelOutputPrice),
-  };
-}
-
 function serializeAIRouterInfo<
   T extends {
     tiers: Array<Parameters<typeof serializeAIRouterTierModel>[0]>;
@@ -482,7 +465,7 @@ function serializeAIRouterInfo<
 function serializeAIRouterTierModel<
   T extends {
     nodes: Array<{
-      gateway: Parameters<typeof serializeAIGatewayModel>[0];
+      gateway: Parameters<typeof serializeAIGateway>[0];
     }>;
   },
 >(tier: T) {
@@ -490,7 +473,7 @@ function serializeAIRouterTierModel<
     ...tier,
     nodes: tier.nodes.map((node) => ({
       ...node,
-      gateway: serializeAIGatewayModel(node.gateway),
+      gateway: serializeAIGateway(node.gateway),
     })),
   };
 }
