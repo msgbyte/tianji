@@ -4,16 +4,29 @@ import { prisma } from '../_client.js';
 import { Prisma, WebsiteEvent } from '@prisma/client';
 import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
 import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
-import { InsightEvent, InsightsSqlBuilder } from './shared.js';
+import {
+  InsightEvent,
+  InsightsQueryContext,
+  InsightsSqlBuilder,
+} from './shared.js';
 import { processGroupedTimeSeriesData } from './utils.js';
 import { clickhouse } from '../../clickhouse/index.js';
 import { logger } from '../../utils/logger.js';
 import { clickhouseHealthManager } from '../../clickhouse/health.js';
 import { quoteSqlIdentifier } from '../../utils/sql.js';
+import { TRPCError } from '@trpc/server';
 
 const { sql, raw } = Prisma;
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
+  constructor(
+    query: z.infer<typeof insightsQuerySchema>,
+    context: InsightsQueryContext,
+    private readonly resetAt?: Date | null
+  ) {
+    super(query, context);
+  }
+
   getTableName() {
     return 'WebsiteEvent';
   }
@@ -27,6 +40,13 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
 
     return metrics.map((item) => {
       const alias = item.alias ?? item.name;
+      if (
+        item.name === '$first_visit' &&
+        (item.math === 'events' || item.math === 'sessions')
+      ) {
+        return sql`count(distinct case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView} AND "WebsiteEvent"."createdAt" = first_visits.first_at THEN coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId") END) as ${quoteSqlIdentifier(alias)}`;
+      }
+
       if (item.math === 'events') {
         if (item.name === '$all_event') {
           return sql`count(1) as ${quoteSqlIdentifier(alias)}`;
@@ -111,6 +131,27 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
         )}`;
       }
     }
+    if (this.query.metrics.some((item) => item.name === '$first_visit')) {
+      // Find the first page view across history, independently of the query window.
+      const resetFilter = this.resetAt
+        ? sql`AND ${this.buildDateRangeQuery(
+            '"createdAt"',
+            this.resetAt.getTime(),
+            this.query.time.endAt
+          )}`
+        : Prisma.empty;
+      innerJoinQuery = sql`${innerJoinQuery}
+        LEFT JOIN (
+          SELECT coalesce("distinctId", "sessionId") AS visitor_id,
+            min("createdAt") AS first_at
+          FROM "WebsiteEvent"
+          WHERE "websiteId" = ${this.query.insightId}
+            AND "eventType" = ${EVENT_TYPE.pageView} AND "eventName" IS NULL
+            ${resetFilter}
+          GROUP BY coalesce("distinctId", "sessionId")
+        ) AS first_visits ON coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId") = first_visits.visitor_id`;
+    }
+
     return innerJoinQuery;
   }
 
@@ -123,7 +164,11 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
       sql`"WebsiteEvent"."websiteId" = ${insightId}`,
 
       // date
-      this.buildDateRangeQuery('"WebsiteEvent"."createdAt"', startAt, endAt),
+      this.buildDateRangeQuery(
+        '"WebsiteEvent"."createdAt"',
+        this.resetAt ? Math.max(startAt, this.resetAt.getTime()) : startAt,
+        endAt
+      ),
 
       // event name
       Prisma.join(
@@ -132,7 +177,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
             return sql`1 = 1`;
           }
 
-          if (item.name === '$page_view') {
+          if (item.name === '$page_view' || item.name === '$first_visit') {
             return sql`"WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}`;
           }
 
@@ -294,7 +339,19 @@ export async function insightsWebsite(
   query: z.infer<typeof insightsQuerySchema>,
   context: { timezone: string }
 ) {
-  const builder = new WebsiteInsightsSqlBuilder(query, context);
+  const website = await prisma.website.findUnique({
+    where: { id: query.insightId, workspaceId: query.workspaceId },
+    select: { resetAt: true },
+  });
+  if (!website) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Website not found' });
+  }
+
+  const builder = new WebsiteInsightsSqlBuilder(
+    query,
+    context,
+    website.resetAt
+  );
   const sql = builder.build();
 
   const data = await builder.executeQuery(sql);

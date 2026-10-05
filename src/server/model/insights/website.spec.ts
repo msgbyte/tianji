@@ -52,6 +52,34 @@ describe('WebsiteInsightsSqlBuilder', () => {
     );
   });
 
+  test('only joins historical first visits when requested', () => {
+    const query = {
+      insightId,
+      insightType: 'website' as const,
+      workspaceId: '',
+      metrics: [{ name: '$page_view', math: 'sessions' as const }],
+      filters: [],
+      groups: [],
+      time: {
+        startAt: 1739203200000,
+        endAt: 1741881599999,
+        unit: 'day' as const,
+      },
+    };
+    const context = { timezone: 'UTC', useClickhouse: false };
+    expect(
+      unwrapSQL(new WebsiteInsightsSqlBuilder(query, context).build())
+    ).not.toContain('first_visits');
+    query.metrics.push({ name: '$first_visit', math: 'sessions' });
+    const firstVisitSql = unwrapSQL(
+      new WebsiteInsightsSqlBuilder(query, context).build()
+    );
+    expect(firstVisitSql).toContain('LEFT JOIN');
+    expect(firstVisitSql).toContain('first_visits');
+    expect(firstVisitSql).toContain('min("createdAt")');
+    expect(firstVisitSql).toContain('count(distinct case');
+  });
+
   test.each(['minute', 'hour', 'day', 'month', 'year'])(
     'binds the %s timezone in ClickHouse date queries',
     (unit) => {
