@@ -18,6 +18,7 @@ import { WebsiteLighthouseBtn } from '@/components/website/WebsiteLighthouseBtn'
 import { WebsiteMetricsTable } from '@/components/website/WebsiteMetricsTable';
 import { WebsiteOverview } from '@/components/website/WebsiteOverview';
 import { WebsiteRetention } from '@/components/website/WebsiteRetention';
+import { WebsiteDailyStats } from '@/components/website/WebsiteDailyStats';
 import { WebsiteEventAnalysis } from '@/components/website/WebsiteEventAnalysis';
 import { WebsiteSimpleMap } from '@/components/website/WebsiteSimpleMap';
 import { WebsiteVisitorMapBtn } from '@/components/website/WebsiteVisitorMapBtn';
@@ -50,6 +51,7 @@ function PageComponent() {
   const navigate = useNavigate();
   const hasWritePermission = useHasWritePermission();
   const [retentionOpen, setRetentionOpen] = useState(false);
+  const [dailyStatsOpen, setDailyStatsOpen] = useState(false);
   const [lighthouseOpen, setLighthouseOpen] = useState(false);
   const resetInsightsStore = useInsightsStore((state) => state.reset);
   const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
@@ -117,6 +119,15 @@ function PageComponent() {
                 showTrigger={false}
               />
 
+              <WebsiteDailyStats
+                workspaceId={workspaceId}
+                websiteId={websiteId}
+                startAt={startAt}
+                endAt={endAt}
+                open={dailyStatsOpen}
+                onOpenChange={setDailyStatsOpen}
+              />
+
               <WebsiteLighthouseBtn
                 websiteId={website.id}
                 open={lighthouseOpen}
@@ -127,6 +138,7 @@ function PageComponent() {
               <WebsiteCodeBtn websiteId={website.id} />
 
               <WebsiteActionsMenu
+                onDailyStats={() => setDailyStatsOpen(true)}
                 onRetention={() => setRetentionOpen(true)}
                 onLighthouse={() => setLighthouseOpen(true)}
                 onShare={

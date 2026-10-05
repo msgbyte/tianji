@@ -10,14 +10,16 @@ vi.mock('@i18next-toolkit/react', () => ({
 }));
 
 describe('WebsiteActionsMenu', () => {
-  test('groups retention, Lighthouse, and sharing under More', async () => {
+  test('groups daily stats, retention, Lighthouse, and sharing under More', async () => {
     const user = userEvent.setup();
     const onRetention = vi.fn();
+    const onDailyStats = vi.fn();
     const onLighthouse = vi.fn();
     const onShare = vi.fn();
 
     render(
       <WebsiteActionsMenu
+        onDailyStats={onDailyStats}
         onRetention={onRetention}
         onLighthouse={onLighthouse}
         onShare={onShare}
@@ -25,8 +27,14 @@ describe('WebsiteActionsMenu', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'More' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Visitor retention' }));
+    await user.click(
+      screen.getByRole('menuitem', { name: 'Visitor retention' })
+    );
     expect(onRetention).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    await user.click(screen.getByRole('menuitem', { name: 'DNU / DAU' }));
+    expect(onDailyStats).toHaveBeenCalledOnce();
 
     await user.click(screen.getByRole('button', { name: 'More' }));
     await user.click(
@@ -45,6 +53,7 @@ describe('WebsiteActionsMenu', () => {
     render(
       <TooltipProvider>
         <WebsiteActionsMenu
+          onDailyStats={vi.fn()}
           onRetention={vi.fn()}
           onLighthouse={vi.fn()}
         />

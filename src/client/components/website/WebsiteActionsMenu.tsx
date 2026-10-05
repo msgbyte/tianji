@@ -1,6 +1,7 @@
 import { useTranslation } from '@i18next-toolkit/react';
 import {
   LuChartLine,
+  LuUsers,
   LuEllipsisVertical,
   LuShare2,
 } from 'react-icons/lu';
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface WebsiteActionsMenuProps {
+  onDailyStats: () => void;
   onRetention: () => void;
   onLighthouse: () => void;
   onShare?: () => void;
@@ -35,6 +37,10 @@ export function WebsiteActionsMenu(props: WebsiteActionsMenuProps) {
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={props.onDailyStats}>
+          <LuUsers className="mr-2" />
+          {t('DNU / DAU')}
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={props.onRetention}>
           <LuChartLine className="mr-2" />
           {t('Visitor retention')}
