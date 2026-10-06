@@ -28,7 +28,7 @@ export async function getRequestInfo(req: IncomingMessage) {
     latitude,
     accuracyRadius,
   } = location ?? {};
-  const browser = browserName(userAgent ?? '');
+  const browser = getBrowserName(userAgent ?? '');
   const os = detectOS(userAgent ?? '');
   const language: string | undefined =
     pareseAcceptLanguage(req.headers['accept-language'])[0]?.code ?? undefined;
@@ -47,6 +47,39 @@ export async function getRequestInfo(req: IncomingMessage) {
     latitude,
     accuracyRadius,
   };
+}
+
+// ponytail: hand-maintained host app list; extend when the *-webview share stays high
+// Order matters: first match wins (WeCom also sends MicroMessenger, Feishu also sends Lark/)
+const IN_APP_RULES: [RegExp, string][] = [
+  [/wxwork\//i, 'wecom'],
+  [/MicroMessenger/i, 'wechat'],
+  [/\bQQ\//, 'qq'],
+  [/Weibo/i, 'weibo'],
+  [/DingTalk/i, 'dingtalk'],
+  [/Feishu/i, 'feishu'],
+  [/\bLark\//i, 'lark'],
+  [/AlipayClient/i, 'alipay'],
+  [/musical_ly|\btrill_/, 'tiktok'],
+  [/aweme/i, 'douyin'],
+  [/Instagram/, 'instagram'],
+  [/FBAN|FBAV|FB_IAB/, 'facebook'],
+  [/\bLine\//i, 'line'],
+];
+
+/**
+ * Prefer the in-app host (WeChat, Facebook...) over the underlying webview name
+ */
+export function getBrowserName(userAgent: string): string | null {
+  // Link preview bots (DingTalkBot, Weibo spider...) carry host tokens too
+  if (/bot|spider|crawl/i.test(userAgent)) {
+    return browserName(userAgent);
+  }
+
+  return (
+    IN_APP_RULES.find(([re]) => re.test(userAgent))?.[1] ??
+    browserName(userAgent)
+  );
 }
 
 export async function getClientInfo(
