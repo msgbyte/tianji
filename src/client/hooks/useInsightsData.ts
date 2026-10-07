@@ -20,8 +20,10 @@ function generateSeriesName(
 
   if (groups.length > 0) {
     const groupSuffixes = groups
-      .map((group) => {
-        const value = get(item, group.value);
+      .map((group, index) => {
+        const value = item.groupValues
+          ? item.groupValues[index]
+          : get(item, group.value);
 
         return value && groupValueFormatter
           ? groupValueFormatter(String(value), group)
@@ -129,6 +131,12 @@ export function processInsightsData(options: UseInsightsDataOptions): {
   // For complex case (groups or multiple metrics), process full chart data
   const res: { date: string }[] = [];
   const seriesLabels = new Map<string, string>();
+  const seriesNames = data.map((item) => generateSeriesName(item, groups));
+  // Preserve existing chart config keys unless display names collide.
+  const seriesKeys =
+    new Set(seriesNames).size === seriesNames.length
+      ? seriesNames
+      : data.map((_, index) => `series_${index}`);
 
   // Collect all unique dates from all data series
   const allDates = new Set<string>();
@@ -138,11 +146,11 @@ export function processInsightsData(options: UseInsightsDataOptions): {
   const dates = Array.from(allDates).sort();
 
   dates.forEach((date) => {
-    data.forEach((item) => {
+    data.forEach((item, index) => {
       const dataPoint = item.data.find((d) => d.date === date);
       const value = dataPoint?.value ?? 0;
       const processedValue = valueProcessor?.(value) ?? value;
-      const name = generateSeriesName(item, groups);
+      const name = seriesKeys[index];
       const label = generateSeriesName(item, groups, groupValueFormatter);
 
       seriesLabels.set(name, label);

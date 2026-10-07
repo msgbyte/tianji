@@ -1,4 +1,4 @@
-import { get, uniq } from 'lodash-es';
+import { get, groupBy } from 'lodash-es';
 import { DateUnit, getDateArray } from './date';
 
 export interface MetricsInfo {
@@ -66,9 +66,7 @@ export type GroupedTimeSeriesQuery = {
     name: string;
     alias?: string;
   }[];
-  groups?: {
-    value: string;
-  }[];
+  groups?: Pick<GroupInfo, 'value'>[];
 };
 
 /**
@@ -97,33 +95,29 @@ export function processGroupedTimeSeriesData(
 
   for (const m of metrics) {
     if (groups.length > 0) {
-      for (const g of groups) {
-        const allGroupValue = uniq(
-          data.map((item) => get(item, `%${g.value}`) as any)
-        );
-
-        result.push(
-          ...allGroupValue.map((gv) => ({
-            name: m.name,
-            alias: m.alias,
-            [g.value]: gv,
-            data: getDateArray(
-              data
-                .filter((item) => get(item, `%${g.value}`) === gv)
-                .map((item) => {
-                  return {
-                    value: Number(get(item, m.alias ?? m.name)),
-                    date: String(item.date),
-                  };
-                }),
-              startAt,
-              endAt,
-              unit,
-              timezone
-            ),
-          }))
-        );
-      }
+      const combinations = groupBy(data, (item) =>
+        JSON.stringify(groups.map((g) => get(item, `%${g.value}`)))
+      );
+      result.push(
+        ...Object.values(combinations).map((rows) => ({
+          ...Object.fromEntries(
+            groups.map((g) => [g.value, get(rows[0], `%${g.value}`)])
+          ),
+          groupValues: groups.map((g) => get(rows[0], `%${g.value}`)),
+          name: m.name,
+          alias: m.alias,
+          data: getDateArray(
+            rows.map((item) => ({
+              value: Number(get(item, m.alias ?? m.name)),
+              date: String(item.date),
+            })),
+            startAt,
+            endAt,
+            unit,
+            timezone
+          ),
+        }))
+      );
     } else {
       result.push({
         name: m.name,

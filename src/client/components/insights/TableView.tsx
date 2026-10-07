@@ -82,11 +82,17 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
   ];
 
   const tableData = props.data.map((item) => {
-    const { name, data, ...others } = item;
+    const { name, alias, data } = item;
 
     return {
       name,
-      ...others,
+      ...(alias ? { alias } : {}),
+      ...Object.fromEntries(
+        props.groups.map((group, index) => [
+          group.value,
+          item.groupValues ? item.groupValues[index] : get(item, group.value),
+        ])
+      ),
       ...data.reduce((prev, curr) => {
         return {
           ...prev,
