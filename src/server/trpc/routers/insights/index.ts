@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server';
 import { router, workspaceProcedure } from '../../trpc.js';
 import {
   insightsQueryEventsSchema,
@@ -29,186 +30,204 @@ import {
 import { insightCohortsRouter } from './cohorts.js';
 import { warehouseRouter } from './warehouse.js';
 
+/**
+ * Insight queries read data by `insightId` alone, so the target must be
+ * checked against the caller's workspace before any query runs.
+ */
+const insightTargetProcedure = workspaceProcedure
+  .input(
+    z.object({
+      insightId: z.string(),
+      insightType: insightTypeSchema,
+    })
+  )
+  .use(async ({ input, next }) => {
+    const { workspaceId, insightId, insightType } = input;
+    const where = { id: insightId, workspaceId };
+    const select = { id: true };
+    const target =
+      insightType === 'website'
+        ? await prisma.website.findUnique({ where, select })
+        : insightType === 'survey'
+          ? await prisma.survey.findUnique({ where, select })
+          : insightType === 'aigateway'
+            ? await prisma.aIGateway.findUnique({ where, select })
+            : await findWarehouseApplication(workspaceId, insightId);
+
+    if (!target) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Insight target not found',
+      });
+    }
+
+    return next();
+  });
+
 export const insightsRouter = router({
-  query: workspaceProcedure
+  query: insightTargetProcedure
     .input(insightsQuerySchema)
     .query(async ({ input, ctx }) => {
       return await queryInsight(input, {
         timezone: ctx.timezone,
       });
     }),
-  queryEvents: workspaceProcedure
+  queryEvents: insightTargetProcedure
     .input(insightsQueryEventsSchema)
     .query(async ({ input, ctx }) => {
       return queryEvents(input, {
         timezone: ctx.timezone,
       });
     }),
-  eventNames: workspaceProcedure
-    .input(
-      z.object({
-        insightId: z.string(),
-        insightType: insightTypeSchema,
-      })
-    )
-    .query(async ({ input }) => {
-      const { insightId, insightType } = input;
+  eventNames: insightTargetProcedure.query(async ({ input }) => {
+    const { insightId, insightType } = input;
 
-      if (insightType === 'website') {
-        const res = await prisma.websiteEvent.groupBy({
-          by: ['eventName', 'eventType'],
-          where: {
-            websiteId: insightId,
-          },
+    if (insightType === 'website') {
+      const res = await prisma.websiteEvent.groupBy({
+        by: ['eventName', 'eventType'],
+        where: {
+          websiteId: insightId,
+        },
+        _count: {
+          id: true,
+        },
+        orderBy: {
           _count: {
-            id: true,
+            id: 'desc',
           },
-          orderBy: {
-            _count: {
-              id: 'desc',
-            },
-          },
-        });
+        },
+      });
 
-        return res.map((item) => ({
-          name:
-            item.eventType === EVENT_TYPE.pageView
-              ? '$page_view'
-              : (item.eventName ?? '<null>'),
-          count: item._count.id,
-        }));
+      return res.map((item) => ({
+        name:
+          item.eventType === EVENT_TYPE.pageView
+            ? '$page_view'
+            : (item.eventName ?? '<null>'),
+        count: item._count.id,
+      }));
+    }
+
+    if (insightType === 'survey') {
+      return [];
+    }
+
+    if (insightType === 'warehouse') {
+      const application = await findWarehouseApplication(
+        input.workspaceId,
+        insightId
+      );
+      let events: string[] = [];
+      if (application?.type === 'wideTable') {
+        events = await insightsWideTableWarehouseEvents(
+          insightId,
+          input.workspaceId
+        );
+      } else {
+        events = await insightsLongTableWarehouseEvents(
+          insightId,
+          input.workspaceId
+        );
       }
 
-      if (insightType === 'survey') {
+      return events.map((item) => ({
+        name: item,
+        count: 0,
+      }));
+    }
+
+    return [];
+  }),
+  filterParams: insightTargetProcedure.query(async ({ input }) => {
+    const { insightId, insightType } = input;
+
+    if (insightType === 'website') {
+      const res = await prisma.websiteEventData.groupBy({
+        by: ['eventKey', 'dataType'],
+        where: {
+          websiteId: insightId,
+        },
+        _count: {
+          id: true,
+        },
+        orderBy: {
+          _count: {
+            id: 'desc',
+          },
+        },
+      });
+
+      return [
+        ...insightsWebsiteBuiltinFields.map(({ name }) => ({
+          name,
+          source: 'builtin' as const,
+          type: 'string' as const,
+          count: 0,
+        })),
+        ...res.map((item) => ({
+          name: item.eventKey,
+          source: 'custom' as const,
+          type: stringifyDateType(item.dataType),
+          count: item._count.id,
+        })),
+      ];
+    } else if (insightType === 'survey') {
+      const res = await prisma.survey.findFirst({
+        where: {
+          id: insightId,
+        },
+        select: {
+          payload: true,
+        },
+      });
+
+      if (!res) {
         return [];
       }
 
-      if (insightType === 'warehouse') {
-        const application = await findWarehouseApplication(
-          input.workspaceId,
-          insightId
-        );
-        let events: string[] = [];
-        if (application?.type === 'wideTable') {
-          events = await insightsWideTableWarehouseEvents(
-            insightId,
-            input.workspaceId
-          );
-        } else {
-          events = await insightsLongTableWarehouseEvents(
-            insightId,
-            input.workspaceId
-          );
-        }
+      const payload: PrismaJson.SurveyPayload = res.payload;
+      const payloadFields = payload.items.map((item: any) => ({
+        name: item.name,
+        type: 'string',
+        count: 0,
+      }));
 
-        return events.map((item) => ({
-          name: item,
-          count: 0,
-        }));
+      const builtinFields = insightsSurveyBuiltinFields.map((item) => ({
+        name: item,
+        type: 'string',
+        count: 0,
+      }));
+
+      return [...payloadFields, ...builtinFields];
+    } else if (insightType === 'warehouse') {
+      const application = await findWarehouseApplication(
+        input.workspaceId,
+        insightId
+      );
+      let params: string[] = [];
+      if (application?.type === 'wideTable') {
+        params = await insightsWideTableWarehouseFilterParams(
+          insightId,
+          input.workspaceId
+        );
+      } else {
+        params = await insightsLongTableWarehouseFilterParams(
+          insightId,
+          input.workspaceId
+        );
       }
 
-      return [];
-    }),
-  filterParams: workspaceProcedure
+      return params.map((item) => ({
+        name: item,
+        type: 'string',
+        count: 0,
+      }));
+    }
+
+    return [];
+  }),
+  filterParamValues: insightTargetProcedure
     .input(
       z.object({
-        insightId: z.string(),
-        insightType: insightTypeSchema,
-      })
-    )
-    .query(async ({ input }) => {
-      const { insightId, insightType } = input;
-
-      if (insightType === 'website') {
-        const res = await prisma.websiteEventData.groupBy({
-          by: ['eventKey', 'dataType'],
-          where: {
-            websiteId: insightId,
-          },
-          _count: {
-            id: true,
-          },
-          orderBy: {
-            _count: {
-              id: 'desc',
-            },
-          },
-        });
-
-        return [
-          ...insightsWebsiteBuiltinFields.map(({ name }) => ({
-            name,
-            source: 'builtin' as const,
-            type: 'string' as const,
-            count: 0,
-          })),
-          ...res.map((item) => ({
-            name: item.eventKey,
-            source: 'custom' as const,
-            type: stringifyDateType(item.dataType),
-            count: item._count.id,
-          })),
-        ];
-      } else if (insightType === 'survey') {
-        const res = await prisma.survey.findFirst({
-          where: {
-            id: insightId,
-          },
-          select: {
-            payload: true,
-          },
-        });
-
-        if (!res) {
-          return [];
-        }
-
-        const payload: PrismaJson.SurveyPayload = res.payload;
-        const payloadFields = payload.items.map((item: any) => ({
-          name: item.name,
-          type: 'string',
-          count: 0,
-        }));
-
-        const builtinFields = insightsSurveyBuiltinFields.map((item) => ({
-          name: item,
-          type: 'string',
-          count: 0,
-        }));
-
-        return [...payloadFields, ...builtinFields];
-      } else if (insightType === 'warehouse') {
-        const application = await findWarehouseApplication(
-          input.workspaceId,
-          insightId
-        );
-        let params: string[] = [];
-        if (application?.type === 'wideTable') {
-          params = await insightsWideTableWarehouseFilterParams(
-            insightId,
-            input.workspaceId
-          );
-        } else {
-          params = await insightsLongTableWarehouseFilterParams(
-            insightId,
-            input.workspaceId
-          );
-        }
-
-        return params.map((item) => ({
-          name: item,
-          type: 'string',
-          count: 0,
-        }));
-      }
-
-      return [];
-    }),
-  filterParamValues: workspaceProcedure
-    .input(
-      z.object({
-        insightId: z.string(),
-        insightType: insightTypeSchema,
         paramName: z.string(),
         source: z.enum(['builtin', 'custom']).optional(),
       })

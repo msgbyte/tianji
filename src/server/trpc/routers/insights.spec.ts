@@ -1,6 +1,15 @@
 import { createId } from '@paralleldrive/cuid2';
 import { randomUUID } from 'node:crypto';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from 'vitest';
 import { prisma } from '../../model/_client.js';
 import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
 import { WebsiteInsightsSqlBuilder } from '../../model/insights/website.js';
@@ -301,14 +310,14 @@ describe('website insight properties', () => {
       })
     ).toEqual([]);
     for (const paramName of ['$country', '$url']) {
-      expect(
-        await caller.filterParamValues({
+      await expect(
+        caller.filterParamValues({
           ...input,
           workspaceId: createId(),
           paramName,
           source: 'builtin',
         })
-      ).toEqual([]);
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
     }
   });
 
@@ -446,9 +455,9 @@ describe('website insight properties', () => {
       },
       { timezone: 'UTC', useClickhouse: false }
     );
-    expect(await builder.executeQuery(builder.build())).toMatchObject([
-      { '__builtin_group_0|equals|ES': true, $page_view: 1n },
-    ]);
+    expect(
+      builder.restoreResultAliases(await builder.executeQuery(builder.build()))
+    ).toMatchObject([{ '__builtin_group_0|equals|ES': true, $page_view: 1n }]);
   });
 });
 
@@ -615,7 +624,7 @@ describe('insightsRouter.query daily website users', () => {
     mocks.isClickhouseHealthy.mockReturnValue(true);
     mocks.clickhouseQuery.mockResolvedValue({
       json: async () => ({
-        data: [{ date: '2026-07-02 00:00:00', dnu: '2', dau: '5' }],
+        data: [{ date: '2026-07-02 00:00:00', m0: '2', m1: '5' }],
       }),
     });
     const caller = await createCaller();
@@ -638,5 +647,210 @@ describe('insightsRouter.query daily website users', () => {
       })
     ).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect(mocks.clickhouseQuery).toHaveBeenCalledOnce();
+  });
+});
+
+describe('insightsRouter workspace ownership', () => {
+  const endpoints = [
+    'query',
+    'queryEvents',
+    'eventNames',
+    'filterParams',
+    'filterParamValues',
+  ] as const;
+  const insightTypes = ['website', 'survey', 'aigateway', 'warehouse'] as const;
+  const time = {
+    startAt: Date.parse('2026-07-01T00:00:00.000Z'),
+    endAt: Date.parse('2026-07-01T23:59:59.999Z'),
+    unit: 'day' as const,
+    timezone: 'UTC',
+  };
+
+  type InsightType = (typeof insightTypes)[number];
+  type Targets = Record<InsightType, string>;
+
+  let ownWorkspaceId: string;
+  let otherWorkspaceId: string;
+  let ownTargets: Targets;
+  let otherTargets: Targets;
+
+  async function createTargets(workspaceId: string): Promise<Targets> {
+    const website = await prisma.website.create({
+      data: {
+        name: 'Insights Website',
+        domain: 'insights.example.com',
+        workspaceId,
+      },
+    });
+    const survey = await prisma.survey.create({
+      data: { name: 'Insights Survey', payload: { items: [] }, workspaceId },
+    });
+    const gateway = await prisma.aIGateway.create({
+      data: { name: 'Insights Gateway', workspaceId },
+    });
+    const warehouse = `warehouse_${workspaceId}`;
+    await prisma.workspaceConfig.create({
+      data: {
+        workspaceId,
+        key: 'warehouse',
+        value: {
+          enabled: true,
+          applications: [
+            {
+              name: warehouse,
+              type: 'wideTable',
+              tableName: 'events',
+              fields: [{ name: 'plan', type: 'string' }],
+              distinctField: 'user_id',
+              createdAtField: 'event_timestamp',
+            },
+          ],
+        },
+      },
+    });
+
+    return {
+      website: website.id,
+      survey: survey.id,
+      aigateway: gateway.id,
+      warehouse,
+    };
+  }
+
+  async function callEndpoint(
+    endpoint: (typeof endpoints)[number],
+    insightType: InsightType,
+    insightId: string
+  ) {
+    const caller = await createCaller();
+    const target = { workspaceId: ownWorkspaceId, insightId, insightType };
+    const query = {
+      ...target,
+      metrics: [{ name: '$all_event', math: 'events' as const }],
+      filters: [],
+      groups: [],
+      time,
+    };
+
+    switch (endpoint) {
+      case 'query':
+        return caller.query(query);
+      case 'queryEvents':
+        return caller.queryEvents(query);
+      case 'eventNames':
+        return caller.eventNames(target);
+      case 'filterParams':
+        return caller.filterParams(target);
+      case 'filterParamValues':
+        return caller.filterParamValues({ ...target, paramName: 'plan' });
+    }
+  }
+
+  beforeAll(async () => {
+    const [own, other] = await Promise.all([
+      prisma.workspace.create({ data: { name: 'Insights Own Workspace' } }),
+      prisma.workspace.create({ data: { name: 'Insights Other Workspace' } }),
+    ]);
+    ownWorkspaceId = own.id;
+    otherWorkspaceId = other.id;
+    ownTargets = await createTargets(ownWorkspaceId);
+    otherTargets = await createTargets(otherWorkspaceId);
+  });
+
+  afterAll(async () => {
+    await prisma.workspace.deleteMany({
+      where: { id: { in: [ownWorkspaceId, otherWorkspaceId] } },
+    });
+  });
+
+  test.each(
+    endpoints.flatMap((endpoint) =>
+      insightTypes.map((insightType) => [endpoint, insightType] as const)
+    )
+  )('%s rejects a %s from another workspace', async (endpoint, insightType) => {
+    await expect(
+      callEndpoint(endpoint, insightType, otherTargets[insightType])
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  test.each(insightTypes)(
+    'filterParams allows a %s from the authorized workspace',
+    async (insightType) => {
+      await expect(
+        callEndpoint('filterParams', insightType, ownTargets[insightType])
+      ).resolves.toBeInstanceOf(Array);
+    }
+  );
+
+  test('maps client aliases and breakdown keys back after the query', async () => {
+    const session = await prisma.websiteSession.create({
+      data: {
+        id: randomUUID(),
+        websiteId: ownTargets.website,
+        hostname: 'insights.example.com',
+      },
+    });
+    const event = await prisma.websiteEvent.create({
+      data: {
+        id: createId(),
+        websiteId: ownTargets.website,
+        sessionId: session.id,
+        urlPath: '/',
+        eventType: EVENT_TYPE.pageView,
+        createdAt: new Date('2026-07-01T08:00:00.000Z'),
+      },
+    });
+    await prisma.websiteEventData.create({
+      data: {
+        websiteId: ownTargets.website,
+        websiteEventId: event.id,
+        eventKey: 'plan?\\',
+        stringValue: 'pro',
+        dataType: DATA_TYPE.string,
+      },
+    });
+
+    const alias = 'A.search?q\\';
+    const caller = await createCaller();
+    const result = await caller.query({
+      workspaceId: ownWorkspaceId,
+      insightId: ownTargets.website,
+      insightType: 'website',
+      metrics: [{ name: '$all_event', math: 'events', alias }],
+      filters: [],
+      groups: [{ value: 'plan?\\', type: 'string' }],
+      time,
+    });
+
+    expect(result).toMatchObject([
+      {
+        alias,
+        'plan?\\': 'pro',
+        data: [{ date: '2026-07-01 00:00:00', value: 1 }],
+      },
+    ]);
+  });
+
+  test('keeps client text out of ClickHouse SQL so parameters stay aligned', async () => {
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockResolvedValue({
+      json: async () => ({ data: [] }),
+    });
+    const caller = await createCaller();
+
+    await caller.query({
+      workspaceId: ownWorkspaceId,
+      insightId: ownTargets.website,
+      insightType: 'website',
+      metrics: [{ name: 'search?q', math: 'events', alias: 'A.search?q\\' }],
+      filters: [],
+      groups: [{ value: 'plan?\\', type: 'string' }],
+      time,
+    });
+
+    const [{ query, query_params }] = mocks.clickhouseQuery.mock.calls[0];
+    expect(query).not.toContain('search?q');
+    expect(query).not.toContain('plan?');
+    expect(Object.values(query_params)).not.toContain(undefined);
   });
 });

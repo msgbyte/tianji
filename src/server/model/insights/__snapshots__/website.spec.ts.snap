@@ -3,7 +3,7 @@
 exports[`WebsiteInsightsSqlBuilder > builds complete ClickHouse SQL with a normal timezone > clickhouse sql with normal timezone 1`] = `
 {
   "query": "select
-        formatDateTime(toStartOfDay("WebsiteEvent"."createdAt", {field0:String}), '%Y-%m-%d') date , count(1) as "$all_event"
+        formatDateTime(toStartOfDay("WebsiteEvent"."createdAt", {field0:String}), '%Y-%m-%d') date , count(1) as "m0"
       from "WebsiteEvent"
       where "WebsiteEvent"."websiteId" = {field1:String} AND "WebsiteEvent"."createdAt" BETWEEN toDateTime({field2:String}, 'UTC') AND toDateTime({field3:String}, 'UTC') AND (1 = 1)
       group by 1
@@ -20,7 +20,7 @@ exports[`WebsiteInsightsSqlBuilder > builds complete ClickHouse SQL with a norma
 
 exports[`WebsiteInsightsSqlBuilder > combined filters and groups > sql with filters and groups 1`] = `
 "select
-        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "event_data_0"."value" as "%browser" , count(1) as "$all_event"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "event_data_0"."value" as "g0" , count(1) as "m0"
       from "WebsiteEvent"  INNER JOIN (
           SELECT DISTINCT "websiteEventId", "WebsiteEventData"."stringValue" AS "value"
           FROM "WebsiteEventData"
@@ -37,7 +37,7 @@ exports[`WebsiteInsightsSqlBuilder > combined filters and groups > sql with filt
 
 exports[`WebsiteInsightsSqlBuilder > date type filters > sql with date filters 1`] = `
 "select
-        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "m0"
       from "WebsiteEvent" 
       where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1) AND "WebsiteEvent"."id" IN (
           SELECT "websiteEventId" FROM "WebsiteEventData"
@@ -50,7 +50,7 @@ exports[`WebsiteInsightsSqlBuilder > date type filters > sql with date filters 1
 
 exports[`WebsiteInsightsSqlBuilder > different metrics > sql with different metrics 1`] = `
 "select
-        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = '1' THEN 1 ELSE 0 END) as "$page_view" , sum(case WHEN "WebsiteEvent"."eventName" = 'click' THEN 1 ELSE 0 END) as "click" , count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")) as "$all_event"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , sum(case WHEN "WebsiteEvent"."eventName" is null AND "WebsiteEvent"."eventType" = '1' THEN 1 ELSE 0 END) as "m0" , sum(case WHEN "WebsiteEvent"."eventName" = 'click' THEN 1 ELSE 0 END) as "m1" , count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")) as "m2"
       from "WebsiteEvent" 
       where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND ("WebsiteEvent"."eventType" = '1' OR "WebsiteEvent"."eventName" = 'click' OR 1 = 1)
       group by 1
@@ -60,7 +60,7 @@ exports[`WebsiteInsightsSqlBuilder > different metrics > sql with different metr
 
 exports[`WebsiteInsightsSqlBuilder > different time units > sql with month time unit 1`] = `
 "select
-        to_char(date_trunc('month', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-01') date , count(1) as "$all_event"
+        to_char(date_trunc('month', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-01') date , count(1) as "m0"
       from "WebsiteEvent" 
       where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1)
       group by 1
@@ -70,7 +70,7 @@ exports[`WebsiteInsightsSqlBuilder > different time units > sql with month time 
 
 exports[`WebsiteInsightsSqlBuilder > groups > sql 1`] = `
 "select
-        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "event_data_0"."value" as "%number" , count(1) as "$all_event"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "event_data_0"."value" as "g0" , count(1) as "m0"
       from "WebsiteEvent"  INNER JOIN (
           SELECT DISTINCT "websiteEventId", "WebsiteEventData"."numberValue" AS "value"
           FROM "WebsiteEventData"
@@ -84,7 +84,7 @@ exports[`WebsiteInsightsSqlBuilder > groups > sql 1`] = `
 
 exports[`WebsiteInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
 "select
-        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "event_data_0"."value" != '1' as "%number|not equals|1" , count(1) as "$all_event"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , "event_data_0"."value" != '1' as "g0_0" , count(1) as "m0"
       from "WebsiteEvent"  INNER JOIN (
           SELECT DISTINCT "websiteEventId", "WebsiteEventData"."numberValue" AS "value"
           FROM "WebsiteEventData"
@@ -98,7 +98,7 @@ exports[`WebsiteInsightsSqlBuilder > groups with custom bucket > sql 1`] = `
 
 exports[`WebsiteInsightsSqlBuilder > with filters > sql with filters 1`] = `
 "select
-        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "$all_event"
+        to_char(date_trunc('day', "WebsiteEvent"."createdAt" at time zone 'UTC'), 'YYYY-MM-DD') date , count(1) as "m0"
       from "WebsiteEvent" 
       where "WebsiteEvent"."websiteId" = 'cly5yay7a001v5tp6xdkzmygh' AND "WebsiteEvent"."createdAt" between '2025-02-10T16:00:00.000Z'::timestamptz and '2025-03-13T15:59:59.999Z'::timestamptz AND (1 = 1) AND "WebsiteEvent"."id" IN (
           SELECT "websiteEventId" FROM "WebsiteEventData"

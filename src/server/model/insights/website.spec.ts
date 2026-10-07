@@ -199,7 +199,7 @@ describe('WebsiteInsightsSqlBuilder', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
   });
 
-  test('escapes metric aliases as SQL identifiers', () => {
+  test('keeps metric aliases out of the SQL text', () => {
     const builder = new WebsiteInsightsSqlBuilder(
       {
         insightId,
@@ -209,7 +209,7 @@ describe('WebsiteInsightsSqlBuilder', () => {
           {
             name: '$all_event',
             math: 'events',
-            alias: 'safe", (SELECT current_database()) as injected --',
+            alias: 'safe\\", (SELECT current_database()) as injected -- ?',
           },
         ],
         filters: [],
@@ -225,16 +225,12 @@ describe('WebsiteInsightsSqlBuilder', () => {
       }
     );
 
-    const sql = unwrapSQL(builder.build());
-    expect(sql).toContain(
-      'as "safe"", (SELECT current_database()) as injected --"'
-    );
-    expect(sql).not.toContain(
-      'as "safe", (SELECT current_database()) as injected --"'
-    );
+    const sql = builder.build();
+    expect(sql.sql).not.toContain('injected');
+    expect(sql.sql.match(/\?/g)?.length).toBe(sql.values.length);
   });
 
-  test('escapes group aliases as SQL identifiers', () => {
+  test('keeps group keys out of the SQL text', () => {
     const builder = new WebsiteInsightsSqlBuilder(
       {
         insightId,
@@ -254,7 +250,7 @@ describe('WebsiteInsightsSqlBuilder', () => {
         },
         groups: [
           {
-            value: 'depth", (SELECT current_database()) as injected --',
+            value: 'depth\\", (SELECT current_database()) as injected -- ?',
             type: 'number',
           },
         ],
@@ -264,13 +260,9 @@ describe('WebsiteInsightsSqlBuilder', () => {
       }
     );
 
-    const sql = unwrapSQL(builder.build());
-    expect(sql).toContain(
-      'as "%depth"", (SELECT current_database()) as injected --"'
-    );
-    expect(sql).not.toContain(
-      'as "%depth", (SELECT current_database()) as injected --"'
-    );
+    const sql = builder.build();
+    expect(sql.sql).not.toContain('injected');
+    expect(sql.sql.match(/\?/g)?.length).toBe(sql.values.length);
   });
 
   test('groups with custom bucket', () => {

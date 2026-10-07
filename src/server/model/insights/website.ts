@@ -25,6 +25,12 @@ import { TRPCError } from '@trpc/server';
 
 const { sql } = Prisma;
 
+// Positional aliases keep client text (metric aliases, property keys) out of
+// SQL identifiers, so it can neither break quoting nor shift ClickHouse params.
+const metricColumn = (index: number) => `m${index}`;
+const groupColumn = (index: number, bucket?: number) =>
+  bucket === undefined ? `g${index}` : `g${index}_${bucket}`;
+
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   constructor(
     query: z.infer<typeof insightsQuerySchema>,
@@ -49,8 +55,8 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   buildSelectQueryArr() {
     const { metrics } = this.query;
 
-    return metrics.map((item) => {
-      const alias = item.alias ?? item.name;
+    return metrics.map((item, index) => {
+      const alias = metricColumn(index);
       if (
         item.name === '$first_visit' &&
         (item.math === 'events' || item.math === 'sessions')
@@ -96,17 +102,17 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
           sql`${quoteSqlIdentifier(`event_data_${index}`)}."value"`;
         if (!g.customGroups) {
           groupSelectQueryArr.push(
-            sql`${field} as ${quoteSqlIdentifier(getInsightGroupAlias(g, index))}`
+            sql`${field} as ${quoteSqlIdentifier(groupColumn(index))}`
           );
         } else if (g.customGroups && g.customGroups.length > 0) {
-          for (const cg of g.customGroups) {
+          for (const [bucket, cg] of g.customGroups.entries()) {
             groupSelectQueryArr.push(
               sql`${this.buildCommonFilterQueryOperator(
                 g.type,
                 cg.filterOperator,
                 cg.filterValue,
                 field
-              )} as ${quoteSqlIdentifier(`${getInsightGroupAlias(g, index)}|${cg.filterOperator}|${cg.filterValue}`)}`
+              )} as ${quoteSqlIdentifier(groupColumn(index, bucket))}`
             );
           }
         }
@@ -213,6 +219,36 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     ];
 
     return whereConditions;
+  }
+
+  /**
+   * Map positional result columns back to the names
+   * `processGroupedTimeSeriesData` reads.
+   */
+  restoreResultAliases(rows: Record<string, any>[]) {
+    const { metrics, groups } = this.query;
+
+    return rows.map((row) => {
+      const restored: { date: string | null; [key: string]: any } = {
+        date: row.date,
+      };
+      metrics.forEach((metric, index) => {
+        restored[metric.alias ?? metric.name] = row[metricColumn(index)];
+      });
+      groups.forEach((group, index) => {
+        const alias = getInsightGroupAlias(group, index);
+        if (!group.customGroups) {
+          restored[alias] = row[groupColumn(index)];
+          return;
+        }
+        group.customGroups.forEach((cg, bucket) => {
+          restored[`${alias}|${cg.filterOperator}|${cg.filterValue}`] =
+            row[groupColumn(index, bucket)];
+        });
+      });
+
+      return restored;
+    });
   }
 
   private getBuiltinField(
@@ -375,7 +411,7 @@ export async function insightsWebsite(
   );
   const sql = builder.build();
 
-  const data = await builder.executeQuery(sql);
+  const data = builder.restoreResultAliases(await builder.executeQuery(sql));
 
   const result = processGroupedTimeSeriesData(query, context, data);
 
