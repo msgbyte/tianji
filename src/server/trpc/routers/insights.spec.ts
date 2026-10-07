@@ -2,7 +2,7 @@ import { createId } from '@paralleldrive/cuid2';
 import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { prisma } from '../../model/_client.js';
-import { EVENT_TYPE } from '../../utils/const.js';
+import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
 
 const mocks = vi.hoisted(() => {
   const endRequest = vi.fn();
@@ -116,6 +116,121 @@ async function queryDailyUsers(
     dau: dau[index].value,
   }));
 }
+
+describe('website insight properties', () => {
+  const time = {
+    startAt: Date.parse('2026-07-02T00:00:00Z'),
+    endAt: Date.parse('2026-07-02T23:59:59.999Z'),
+    unit: 'day' as const,
+    timezone: 'UTC',
+  };
+
+  async function setup() {
+    const workspace = await prisma.workspace.create({
+      data: { name: 'Insight Properties Workspace' },
+    });
+    workspaceId = workspace.id;
+    const website = await prisma.website.create({
+      data: { name: 'Properties', domain: 'example.com', workspaceId },
+    });
+    const session = await prisma.websiteSession.create({
+      data: {
+        id: randomUUID(),
+        websiteId: website.id,
+        country: 'ES',
+        subdivision1: 'MD',
+        city: 'Madrid',
+        browser: 'chrome',
+      },
+    });
+    const events = [];
+    for (const urlPath of ['/', '/pricing']) {
+      events.push(
+        await prisma.websiteEvent.create({
+          data: {
+            websiteId: website.id,
+            sessionId: session.id,
+            urlPath,
+            createdAt: new Date('2026-07-02T12:00:00Z'),
+          },
+        })
+      );
+    }
+    return {
+      caller: await createCaller(),
+      events,
+      input: {
+        workspaceId,
+        insightId: website.id,
+        insightType: 'website' as const,
+        metrics: [{ name: '$page_view', math: 'events' as const }],
+        time,
+      },
+    };
+  }
+
+  test('combines independent custom properties without multiplying counts', async () => {
+    const { caller, input, events } = await setup();
+    await prisma.websiteEventData.createMany({
+      data: [
+        ...['country', 'result', 'plan', 'plan'].map((eventKey) => ({
+          websiteId: input.insightId,
+          websiteEventId: events[0].id,
+          eventKey,
+          dataType: DATA_TYPE.string,
+          stringValue:
+            eventKey === 'country'
+              ? 'MX'
+              : eventKey === 'result'
+                ? 'success'
+                : 'pro',
+        })),
+        ...['country', 'unrelated', 'plan'].map((eventKey) => ({
+          websiteId: input.insightId,
+          websiteEventId: events[1].id,
+          eventKey,
+          dataType: DATA_TYPE.string,
+          stringValue:
+            eventKey === 'country'
+              ? 'MX'
+              : eventKey === 'unrelated'
+                ? 'success'
+                : 'basic',
+        })),
+      ],
+    });
+    expect(await caller.filterParams(input)).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'country' })])
+    );
+    expect(
+      await caller.filterParamValues({ ...input, paramName: 'country' })
+    ).toEqual(['MX']);
+    const filters = [
+      {
+        name: 'country',
+        type: 'string' as const,
+        operator: 'equals' as const,
+        value: 'MX',
+      },
+      {
+        name: 'result',
+        type: 'string' as const,
+        operator: 'equals' as const,
+        value: 'success',
+      },
+    ];
+    expect(
+      await caller.query({
+        ...input,
+        filters,
+        groups: [{ value: 'plan', type: 'string' }],
+      })
+    ).toMatchObject([{ plan: 'pro', data: [{ value: 1 }] }]);
+    expect(await caller.queryEvents({ ...input, filters })).toMatchObject([
+      { id: events[0].id },
+    ]);
+  });
+});
 
 describe('insightsRouter.query daily website users', () => {
   async function createWebsite(resetAt?: Date) {

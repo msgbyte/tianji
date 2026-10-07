@@ -4,8 +4,8 @@ exports[`WarehouseWideTableInsightsSqlBuilder > buildFetchEventsQuery > sql 1`] 
 "
       select
         *,
-        "user_id" as "distinctId",
-        "event_timestamp" as "createdAt"
+        "events"."user_id" as "distinctId",
+        "events"."event_timestamp" as "createdAt"
       from "events"
       
       where "event_date" BETWEEN '2025-08-01' AND '2025-08-08'

@@ -498,7 +498,7 @@ describe('WebsiteInsightsSqlBuilder', () => {
     expect(unwrapSQL(sql)).toMatchSnapshot('sql with date filters');
   });
 
-  test('keeps multiple breakdown keys inside the event join', () => {
+  test('joins each custom breakdown by its own property key', () => {
     const builder = new WebsiteInsightsSqlBuilder(
       {
         insightId,
@@ -533,8 +533,11 @@ describe('WebsiteInsightsSqlBuilder', () => {
     );
 
     const sql = builder.build();
-    expect(unwrapSQL(sql)).toContain(
-      `AND ("WebsiteEventData"."eventKey" = 'plan' OR "WebsiteEventData"."eventKey" = 'country')`
-    );
+    for (const [index, key] of ['plan', 'country'].entries()) {
+      expect(unwrapSQL(sql)).toContain(`AND "eventKey" = '${key}'`);
+      expect(unwrapSQL(sql)).toContain(
+        `"WebsiteEvent"."id" = "event_data_${index}"."websiteEventId"`
+      );
+    }
   });
 });

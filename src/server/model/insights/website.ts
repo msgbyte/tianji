@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
 import { Prisma, WebsiteEvent } from '@prisma/client';
-import { FilterInfoType, FilterInfoValue } from '@tianji/shared';
+import { FilterInfoType } from '@tianji/shared';
 import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
 import {
   InsightEvent,
@@ -16,7 +16,7 @@ import { clickhouseHealthManager } from '../../clickhouse/health.js';
 import { quoteSqlIdentifier } from '../../utils/sql.js';
 import { TRPCError } from '@trpc/server';
 
-const { sql, raw } = Prisma;
+const { sql } = Prisma;
 
 export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   constructor(
@@ -33,6 +33,10 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
 
   protected getDistinctFieldName(): string {
     return 'distinctId';
+  }
+
+  protected buildFetchEventsSelectQuery(): Prisma.Sql {
+    return sql`"WebsiteEvent".*`;
   }
 
   buildSelectQueryArr() {
@@ -79,18 +83,20 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     const { groups } = this.query;
     let groupSelectQueryArr: Prisma.Sql[] = [];
     if (groups.length > 0) {
-      for (const g of groups) {
+      for (const [index, g] of groups.entries()) {
+        const field = sql`${quoteSqlIdentifier(`event_data_${index}`)}."value"`;
         if (!g.customGroups) {
           groupSelectQueryArr.push(
-            sql`${this.getValueField(g.type)} as ${quoteSqlIdentifier(`%${g.value}`)}`
+            sql`${field} as ${quoteSqlIdentifier(`%${g.value}`)}`
           );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
             groupSelectQueryArr.push(
-              sql`${this.buildFilterQueryOperator(
+              sql`${this.buildCommonFilterQueryOperator(
                 g.type,
                 cg.filterOperator,
-                cg.filterValue
+                cg.filterValue,
+                field
               )} as ${quoteSqlIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
@@ -103,33 +109,13 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   buildInnerJoinQuery() {
     const { filters, groups } = this.query;
     let innerJoinQuery = Prisma.empty;
-    if (filters.length > 0 || groups.length > 0) {
-      innerJoinQuery = sql`INNER JOIN "WebsiteEventData" ON "WebsiteEvent"."id" = "WebsiteEventData"."websiteEventId"`;
-
-      if (filters.length > 0) {
-        innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
-          filters.map((filter) =>
-            this.buildFilterQueryOperator(
-              filter.type,
-              filter.operator,
-              filter.value
-            )
-          ),
-          ' AND '
-        )}`;
-      }
-
-      if (groups.length > 0) {
-        const groupConditions = groups.map(
-          (g) => sql`"WebsiteEventData"."eventKey" = ${g.value}`
-        );
-        innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
-          groupConditions,
-          ' OR ',
-          '(',
-          ')'
-        )}`;
-      }
+    for (const [index, group] of groups.entries()) {
+      const alias = quoteSqlIdentifier(`event_data_${index}`);
+      innerJoinQuery = sql`${innerJoinQuery} INNER JOIN (
+          SELECT DISTINCT "websiteEventId", ${this.getValueField(group.type)} AS "value"
+          FROM "WebsiteEventData"
+          WHERE "websiteId" = ${this.query.insightId} AND "eventKey" = ${group.value}
+        ) AS ${alias} ON "WebsiteEvent"."id" = ${alias}."websiteEventId"`;
     }
     if (this.query.metrics.some((item) => item.name === '$first_visit')) {
       // Find the first page view across history, independently of the query window.
@@ -156,7 +142,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   }
 
   buildWhereQueryArr() {
-    const { insightId, time, metrics } = this.query;
+    const { insightId, time, metrics, filters } = this.query;
     const { startAt, endAt } = time;
 
     const whereConditions = [
@@ -187,6 +173,18 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
         '(',
         ')'
       ),
+      ...filters.map((filter) => {
+        const condition = this.buildCommonFilterQueryOperator(
+          filter.type,
+          filter.operator,
+          filter.value,
+          this.getValueField(filter.type)
+        );
+        return sql`"WebsiteEvent"."id" IN (
+          SELECT "websiteEventId" FROM "WebsiteEventData"
+          WHERE "websiteId" = ${insightId} AND "eventKey" = ${filter.name} AND ${condition}
+        )`;
+      }),
     ];
 
     return whereConditions;
@@ -203,21 +201,6 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
             : sql`"WebsiteEventData"."numberValue"`;
 
     return valueField;
-  }
-
-  private buildFilterQueryOperator(
-    type: FilterInfoType,
-    operator: string,
-    value: FilterInfoValue | null
-  ) {
-    const valueField = this.getValueField(type);
-
-    return this.buildCommonFilterQueryOperator(
-      type,
-      operator,
-      value,
-      valueField
-    );
   }
 
   public async queryEvents(

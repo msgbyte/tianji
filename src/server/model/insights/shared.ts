@@ -326,6 +326,10 @@ export abstract class InsightsSqlBuilder {
     return _sql;
   }
 
+  protected buildFetchEventsSelectQuery(): Prisma.Sql {
+    return sql`*`;
+  }
+
   public buildFetchEventsQuery(cursor: string | undefined): Prisma.Sql {
     const tableName = this.getTableName();
     const whereQueryArr = this.buildWhereQueryArr();
@@ -335,9 +339,9 @@ export abstract class InsightsSqlBuilder {
 
     return sql`
       select
-        *,
-        "${raw(distinctFieldName)}" as "distinctId",
-        "${raw(createAtFieldName)}" as "createdAt"
+        ${this.buildFetchEventsSelectQuery()},
+        "${raw(tableName)}"."${raw(distinctFieldName)}" as "distinctId",
+        "${raw(tableName)}"."${raw(createAtFieldName)}" as "createdAt"
       from "${raw(tableName)}"
       ${innerJoinQuery}
       where ${Prisma.join(whereQueryArr, ' AND ')}

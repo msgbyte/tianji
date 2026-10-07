@@ -202,5 +202,30 @@ describe('WarehouseInsightsSqlBuilder', () => {
     expect(() => builder.build()).toThrow('Invalid warehouse identifier');
   });
 
-  test.todo('buildFetchEventsQuery');
+  test('keeps joined parameter fields when fetching filtered events', async () => {
+    const builder = new WarehouseLongTableInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: INIT_WORKSPACE_ID,
+        metrics: [{ name: '$all_event', math: 'events' }],
+        filters: [
+          { name: 'plan', value: 'pro', operator: 'equals', type: 'string' },
+        ],
+        groups: [],
+        time: {
+          startAt: dayjs('2025-08-01').valueOf(),
+          endAt: dayjs('2025-08-02').valueOf(),
+          unit: 'day',
+        },
+      },
+      { timezone: 'UTC' }
+    );
+    await builder.initialize();
+
+    const query = unwrapSQL(builder.buildFetchEventsQuery(undefined));
+    expect(query).toMatch(/select\s+\*,/);
+    expect(query).toContain('INNER JOIN "event_parameters"');
+    expect(query).toContain('"events"."event_timestamp" as "createdAt"');
+  });
 });
