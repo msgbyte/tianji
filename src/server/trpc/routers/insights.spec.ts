@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { prisma } from '../../model/_client.js';
 import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
+import { WebsiteInsightsSqlBuilder } from '../../model/insights/website.js';
 
 const mocks = vi.hoisted(() => {
   const endRequest = vi.fn();
@@ -169,7 +170,198 @@ describe('website insight properties', () => {
     };
   }
 
-  test('combines independent custom properties without multiplying counts', async () => {
+  test('returns complete builtin group combinations without losing counts', async () => {
+    const { caller, input } = await setup();
+    const session = await prisma.websiteSession.create({
+      data: {
+        id: randomUUID(),
+        websiteId: input.insightId,
+        country: 'ES',
+        browser: 'firefox',
+      },
+    });
+    await prisma.websiteEvent.create({
+      data: {
+        websiteId: input.insightId,
+        sessionId: session.id,
+        urlPath: '/',
+        createdAt: new Date('2026-07-02T12:00:00Z'),
+      },
+    });
+    const result = await caller.query({
+      ...input,
+      groups: [
+        { value: '$country', type: 'string', source: 'builtin' },
+        { value: '$browser', type: 'string', source: 'builtin' },
+      ],
+    });
+    expect(result).toHaveLength(2);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          groupValues: ['ES', 'chrome'],
+          data: [expect.objectContaining({ value: 2 })],
+        }),
+        expect.objectContaining({
+          groupValues: ['ES', 'firefox'],
+          data: [expect.objectContaining({ value: 1 })],
+        }),
+      ])
+    );
+  });
+
+  test('preserves legacy custom properties with builtin names and groups both sources independently', async () => {
+    const { caller, input, events } = await setup();
+    await prisma.websiteEventData.create({
+      data: {
+        websiteId: input.insightId,
+        websiteEventId: events[0].id,
+        eventKey: '$country',
+        dataType: DATA_TYPE.string,
+        stringValue: 'MX',
+      },
+    });
+    expect(await caller.filterParams(input)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: '$country', source: 'builtin' }),
+        expect.objectContaining({ name: '$country', source: 'custom' }),
+      ])
+    );
+    expect(
+      await caller.filterParamValues({ ...input, paramName: '$country' })
+    ).toEqual(['MX']);
+    expect(
+      await caller.filterParamValues({
+        ...input,
+        paramName: '$country',
+        source: 'builtin',
+      })
+    ).toEqual(['ES']);
+
+    const filter = {
+      name: '$country',
+      type: 'string' as const,
+      operator: 'equals' as const,
+      value: 'MX',
+    };
+    expect(await caller.query({ ...input, filters: [filter] })).toMatchObject([
+      { data: [{ value: 1 }] },
+    ]);
+    expect(
+      await caller.queryEvents({ ...input, filters: [filter] })
+    ).toMatchObject([{ id: events[0].id }]);
+    expect(
+      await caller.query({
+        ...input,
+        filters: [{ ...filter, source: 'builtin', value: 'ES' }],
+      })
+    ).toMatchObject([{ data: [{ value: 2 }] }]);
+    expect(
+      await caller.query({
+        ...input,
+        groups: [
+          { value: '$country', type: 'string', source: 'builtin' },
+          { value: '$country', type: 'string' },
+        ],
+      })
+    ).toMatchObject([{ groupValues: ['ES', 'MX'], data: [{ value: 1 }] }]);
+  });
+
+  test('offers builtin properties and values for page views without custom data', async () => {
+    const { caller, input } = await setup();
+    const fields = await caller.filterParams(input);
+    expect(fields).toEqual(
+      expect.arrayContaining([
+        { name: '$country', type: 'string', source: 'builtin', count: 0 },
+        { name: '$region', type: 'string', source: 'builtin', count: 0 },
+        { name: '$browser', type: 'string', source: 'builtin', count: 0 },
+        { name: '$url', type: 'string', source: 'builtin', count: 0 },
+      ])
+    );
+    for (const [paramName, values] of [
+      ['$country', ['ES']],
+      ['$region', ['MD']],
+      ['$url', ['/', '/pricing']],
+    ] as const) {
+      expect(
+        (
+          await caller.filterParamValues({
+            ...input,
+            paramName,
+            source: 'builtin',
+          })
+        ).sort()
+      ).toEqual([...values].sort());
+    }
+    expect(
+      await caller.filterParamValues({
+        ...input,
+        paramName: '$os',
+        source: 'builtin',
+      })
+    ).toEqual([]);
+    for (const paramName of ['$country', '$url']) {
+      expect(
+        await caller.filterParamValues({
+          ...input,
+          workspaceId: createId(),
+          paramName,
+          source: 'builtin',
+        })
+      ).toEqual([]);
+    }
+  });
+
+  test.each([false, true])(
+    'filters and groups page views without custom data (ClickHouse fallback: %s)',
+    async (fallback) => {
+      const { caller, input, events } = await setup();
+      if (fallback) {
+        mocks.isClickhouseHealthy.mockReturnValue(true);
+        mocks.clickhouseQuery.mockRejectedValue(
+          new Error('ClickHouse unavailable')
+        );
+      }
+      const filters = [
+        {
+          name: '$country',
+          source: 'builtin' as const,
+          type: 'string' as const,
+          operator: 'equals' as const,
+          value: 'ES',
+        },
+        {
+          name: '$url',
+          source: 'builtin' as const,
+          type: 'string' as const,
+          operator: 'contains' as const,
+          value: 'pricing',
+        },
+      ];
+      const result = await caller.query({
+        ...input,
+        filters,
+        groups: [{ value: '$region', type: 'string', source: 'builtin' }],
+      });
+      expect(result).toMatchObject([{ $region: 'MD', data: [{ value: 1 }] }]);
+      const rows = await caller.queryEvents({ ...input, filters });
+      expect(rows).toMatchObject([
+        {
+          id: events[1].id,
+          createdAt: events[1].createdAt,
+          properties: { urlPath: '/pricing' },
+        },
+      ]);
+      expect(
+        await caller.query({
+          ...input,
+          filters: [{ ...filters[0], value: 'US' }],
+        })
+      ).toMatchObject([{ data: [] }]);
+    }
+  );
+
+  test('combines builtin and independent custom properties without changing custom names or multiplying counts', async () => {
     const { caller, input, events } = await setup();
     await prisma.websiteEventData.createMany({
       data: [
@@ -200,12 +392,22 @@ describe('website insight properties', () => {
       ],
     });
     expect(await caller.filterParams(input)).toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: 'country' })])
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'country' }),
+        expect.objectContaining({ name: '$country' }),
+      ])
     );
     expect(
       await caller.filterParamValues({ ...input, paramName: 'country' })
     ).toEqual(['MX']);
     const filters = [
+      {
+        name: '$country',
+        source: 'builtin' as const,
+        type: 'string' as const,
+        operator: 'equals' as const,
+        value: 'ES',
+      },
       {
         name: 'country',
         type: 'string' as const,
@@ -228,6 +430,24 @@ describe('website insight properties', () => {
     ).toMatchObject([{ plan: 'pro', data: [{ value: 1 }] }]);
     expect(await caller.queryEvents({ ...input, filters })).toMatchObject([
       { id: events[0].id },
+    ]);
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        ...input,
+        filters,
+        groups: [
+          {
+            value: '$country',
+            source: 'builtin',
+            type: 'string',
+            customGroups: [{ filterOperator: 'equals', filterValue: 'ES' }],
+          },
+        ],
+      },
+      { timezone: 'UTC', useClickhouse: false }
+    );
+    expect(await builder.executeQuery(builder.build())).toMatchObject([
+      { '__builtin_group_0|equals|ES': true, $page_view: 1n },
     ]);
   });
 });

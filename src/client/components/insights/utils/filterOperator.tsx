@@ -8,6 +8,7 @@ import {
   FilterNumberOperator,
   FilterOperator,
   FilterStringOperator,
+  InsightPropertySource,
 } from '@tianji/shared';
 import React, { useMemo } from 'react';
 import { useEvent } from '@/hooks/useEvent';
@@ -36,13 +37,15 @@ export type FilterOperatorMap<T extends string> = Record<
       name: string,
       value: FilterInfoValue,
       onChange: (val: FilterInfoValue) => void,
-      onSubmit: (val?: FilterInfoValue) => void
+      onSubmit: (val?: FilterInfoValue) => void,
+      source?: InsightPropertySource
     ) => React.ReactNode;
   }
 >;
 
 interface FilterComponentProps {
   name: string;
+  source?: InsightPropertySource;
   value: FilterInfoValue;
   onChange: (val: FilterInfoValue) => void;
   onSubmit: (val?: FilterInfoValue) => void;
@@ -133,9 +136,10 @@ export const numberOperators: FilterOperatorMap<
 export const stringOperators: FilterOperatorMap<FilterStringOperator> = {
   equals: {
     label: t('Equals'),
-    component: (name, value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit, source) => (
       <FilterInputWithReference
         name={name}
+        source={source}
         value={value}
         onChange={onChange}
         onSubmit={onSubmit}
@@ -144,9 +148,10 @@ export const stringOperators: FilterOperatorMap<FilterStringOperator> = {
   },
   'not equals': {
     label: t('Not equals'),
-    component: (name, value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit, source) => (
       <FilterInputWithReference
         name={name}
+        source={source}
         value={value}
         onChange={onChange}
         onSubmit={onSubmit}
@@ -155,9 +160,10 @@ export const stringOperators: FilterOperatorMap<FilterStringOperator> = {
   },
   'in list': {
     label: t('In list'),
-    component: (name, value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit, source) => (
       <FilterInputWithReference
         name={name}
+        source={source}
         value={value}
         onChange={onChange}
         onSubmit={onSubmit}
@@ -167,9 +173,10 @@ export const stringOperators: FilterOperatorMap<FilterStringOperator> = {
   },
   'not in list': {
     label: t('Not in list'),
-    component: (name, value, onChange, onSubmit) => (
+    component: (name, value, onChange, onSubmit, source) => (
       <FilterInputWithReference
         name={name}
+        source={source}
         value={value}
         onChange={onChange}
         onSubmit={onSubmit}
@@ -377,6 +384,7 @@ const FilterInputWithReference: React.FC<
         insightId,
         insightType,
         paramName: props.name,
+        source: props.source,
       },
       {
         enabled: !!insightId && !!insightType && !!props.name,

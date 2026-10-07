@@ -21,6 +21,7 @@ interface DropdownSelectProps<T> extends PropsWithChildren {
   defaultIsOpen?: boolean;
   list: T[];
   value: string;
+  getItemValue?: (item: T) => string;
   onSelect: (name: string, item: T) => void;
   onSelectEmpty?: () => void;
   renderItem?: (item: T) => React.ReactNode;
@@ -122,7 +123,9 @@ export const DropdownSelect = <T extends BasicListItem>(
                       key={i}
                       className={cn(
                         'hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm transition-all',
-                        props.value === item.name && 'bg-muted'
+                        props.value ===
+                          (props.getItemValue?.(item) ?? item.name) &&
+                          'bg-muted'
                       )}
                       onClick={() => {
                         props.onSelect(item.name, item);

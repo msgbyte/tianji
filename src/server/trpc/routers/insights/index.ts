@@ -9,7 +9,10 @@ import { prisma } from '../../../model/_client.js';
 import { EVENT_TYPE, INIT_WORKSPACE_ID } from '../../../utils/const.js';
 import { stringifyDateType } from '../../../utils/common.js';
 import { queryEvents, queryInsight } from '../../../model/insights/index.js';
-import { insightsSurveyBuiltinFields } from '../../../model/insights/utils.js';
+import {
+  insightsSurveyBuiltinFields,
+  insightsWebsiteBuiltinFields,
+} from '../../../model/insights/utils.js';
 import { uniq } from 'lodash-es';
 import {
   insightsLongTableWarehouseEvents,
@@ -132,11 +135,20 @@ export const insightsRouter = router({
           },
         });
 
-        return res.map((item) => ({
-          name: item.eventKey,
-          type: stringifyDateType(item.dataType),
-          count: item._count.id,
-        }));
+        return [
+          ...insightsWebsiteBuiltinFields.map(({ name }) => ({
+            name,
+            source: 'builtin' as const,
+            type: 'string' as const,
+            count: 0,
+          })),
+          ...res.map((item) => ({
+            name: item.eventKey,
+            source: 'custom' as const,
+            type: stringifyDateType(item.dataType),
+            count: item._count.id,
+          })),
+        ];
       } else if (insightType === 'survey') {
         const res = await prisma.survey.findFirst({
           where: {
@@ -198,12 +210,47 @@ export const insightsRouter = router({
         insightId: z.string(),
         insightType: insightTypeSchema,
         paramName: z.string(),
+        source: z.enum(['builtin', 'custom']).optional(),
       })
     )
     .query(async ({ input }) => {
       const { insightId, insightType, paramName } = input;
 
       if (insightType === 'website') {
+        const builtin = insightsWebsiteBuiltinFields.find(
+          (field) => input.source === 'builtin' && field.name === paramName
+        );
+        if (builtin) {
+          const args = {
+            select: { [builtin.column]: true },
+            orderBy: { createdAt: 'desc' as const },
+            take: 100,
+          };
+          const rows =
+            builtin.table === 'WebsiteSession'
+              ? await prisma.websiteSession.findMany({
+                  ...args,
+                  where: {
+                    websiteId: insightId,
+                    website: { workspaceId: input.workspaceId },
+                  },
+                })
+              : await prisma.websiteEvent.findMany({
+                  ...args,
+                  where: {
+                    websiteId: insightId,
+                    session: { website: { workspaceId: input.workspaceId } },
+                  },
+                });
+          return uniq(
+            rows
+              .map((row) => (row as Record<string, unknown>)[builtin.column])
+              .filter(
+                (value): value is string =>
+                  typeof value === 'string' && value !== ''
+              )
+          ).slice(0, 10);
+        }
         const res = await prisma.websiteEventData.findMany({
           where: {
             websiteId: insightId,

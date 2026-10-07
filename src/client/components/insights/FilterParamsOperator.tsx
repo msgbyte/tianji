@@ -105,7 +105,8 @@ export const FilterParamsOperator: React.FC<FilterParamsOperatorProps> =
                 info.name,
                 value,
                 handleChange,
-                handleSubmit
+                handleSubmit,
+                info.source
               )}
             </div>
           )}

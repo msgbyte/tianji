@@ -19,7 +19,12 @@ import { cn } from '@/utils/style';
 
 interface FilterParamsBlockProps {
   index: number;
-  list: { name: string; type: FilterInfo['type']; count: number }[];
+  list: {
+    name: string;
+    type: FilterInfo['type'];
+    source?: FilterInfo['source'];
+    count: number;
+  }[];
   info: FilterInfo | null;
   direction?: 'horizontal' | 'vertical';
   onSelect: (info: FilterInfo) => void;
@@ -74,7 +79,12 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
           defaultIsOpen={props.info === null}
           filterText={filterText}
           list={metrics}
-          value={props.info?.name ?? ''}
+          value={
+            props.info
+              ? `${props.info.source ?? 'custom'}:${props.info.name}`
+              : ''
+          }
+          getItemValue={(item) => `${item.source ?? 'custom'}:${item.name}`}
           onSelect={(name, item) => {
             props.onSelect({
               value: null,
@@ -82,6 +92,7 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
               operator: defaultOperators[item.type] ?? 'equals',
               type: item.type,
               name: name,
+              source: item.source,
             });
           }}
           onSelectEmpty={props.onDelete}
@@ -98,6 +109,11 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
             <>
               <DataTypeIcon type={item.type} />
               <span>{item.name}</span>
+              {item.source && (
+                <span className="text-muted-foreground text-xs">
+                  {item.source === 'builtin' ? t('Built-in') : t('Custom')}
+                </span>
+              )}
             </>
           )}
         >
@@ -106,6 +122,11 @@ export const FilterParamsBlock: React.FC<FilterParamsBlockProps> = React.memo(
               <div className="hover:bg-muted flex w-full flex-1 cursor-pointer items-center gap-2 rounded-lg px-2 py-1">
                 <DataTypeIcon type={props.info?.type} />
                 <span>{props.info?.name ?? <>&nbsp;</>}</span>
+                {props.info?.source === 'builtin' && (
+                  <span className="text-muted-foreground text-xs">
+                    {t('Built-in')}
+                  </span>
+                )}
               </div>
             </PopoverTrigger>
 

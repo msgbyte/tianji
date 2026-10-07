@@ -2,14 +2,21 @@ import { z } from 'zod';
 import { insightsQuerySchema } from '../../utils/schema.js';
 import { prisma } from '../_client.js';
 import { Prisma, WebsiteEvent } from '@prisma/client';
-import { FilterInfoType } from '@tianji/shared';
+import {
+  FilterInfoType,
+  getInsightGroupAlias,
+  InsightPropertySource,
+} from '@tianji/shared';
 import { DATA_TYPE, EVENT_TYPE } from '../../utils/const.js';
 import {
   InsightEvent,
   InsightsQueryContext,
   InsightsSqlBuilder,
 } from './shared.js';
-import { processGroupedTimeSeriesData } from './utils.js';
+import {
+  insightsWebsiteBuiltinFields,
+  processGroupedTimeSeriesData,
+} from './utils.js';
 import { clickhouse } from '../../clickhouse/index.js';
 import { logger } from '../../utils/logger.js';
 import { clickhouseHealthManager } from '../../clickhouse/health.js';
@@ -84,10 +91,12 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     let groupSelectQueryArr: Prisma.Sql[] = [];
     if (groups.length > 0) {
       for (const [index, g] of groups.entries()) {
-        const field = sql`${quoteSqlIdentifier(`event_data_${index}`)}."value"`;
+        const field =
+          this.getBuiltinField(g.value, g.source) ??
+          sql`${quoteSqlIdentifier(`event_data_${index}`)}."value"`;
         if (!g.customGroups) {
           groupSelectQueryArr.push(
-            sql`${field} as ${quoteSqlIdentifier(`%${g.value}`)}`
+            sql`${field} as ${quoteSqlIdentifier(getInsightGroupAlias(g, index))}`
           );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
@@ -97,7 +106,7 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
                 cg.filterOperator,
                 cg.filterValue,
                 field
-              )} as ${quoteSqlIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
+              )} as ${quoteSqlIdentifier(`${getInsightGroupAlias(g, index)}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
         }
@@ -109,7 +118,20 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
   buildInnerJoinQuery() {
     const { filters, groups } = this.query;
     let innerJoinQuery = Prisma.empty;
+    const names = [
+      ...filters.filter((f) => f.source === 'builtin').map((f) => f.name),
+      ...groups.filter((g) => g.source === 'builtin').map((g) => g.value),
+    ];
+    if (
+      insightsWebsiteBuiltinFields.some(
+        (field) =>
+          field.table === 'WebsiteSession' && names.includes(field.name)
+      )
+    ) {
+      innerJoinQuery = sql`LEFT JOIN "WebsiteSession" ON "WebsiteEvent"."sessionId" = "WebsiteSession"."id" AND "WebsiteEvent"."websiteId" = "WebsiteSession"."websiteId"`;
+    }
     for (const [index, group] of groups.entries()) {
+      if (this.getBuiltinField(group.value, group.source)) continue;
       const alias = quoteSqlIdentifier(`event_data_${index}`);
       innerJoinQuery = sql`${innerJoinQuery} INNER JOIN (
           SELECT DISTINCT "websiteEventId", ${this.getValueField(group.type)} AS "value"
@@ -174,13 +196,16 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
         ')'
       ),
       ...filters.map((filter) => {
+        const builtin = this.getBuiltinField(filter.name, filter.source);
         const condition = this.buildCommonFilterQueryOperator(
-          filter.type,
+          builtin ? 'string' : filter.type,
           filter.operator,
           filter.value,
-          this.getValueField(filter.type)
+          builtin ?? this.getValueField(filter.type)
         );
-        return sql`"WebsiteEvent"."id" IN (
+        return builtin
+          ? condition
+          : sql`"WebsiteEvent"."id" IN (
           SELECT "websiteEventId" FROM "WebsiteEventData"
           WHERE "websiteId" = ${insightId} AND "eventKey" = ${filter.name} AND ${condition}
         )`;
@@ -188,6 +213,19 @@ export class WebsiteInsightsSqlBuilder extends InsightsSqlBuilder {
     ];
 
     return whereConditions;
+  }
+
+  private getBuiltinField(
+    name: string,
+    source?: InsightPropertySource
+  ): Prisma.Sql | undefined {
+    if (source !== 'builtin') return undefined;
+    const field = insightsWebsiteBuiltinFields.find(
+      (field) => field.name === name
+    );
+    return field
+      ? sql`${quoteSqlIdentifier(field.table)}.${quoteSqlIdentifier(field.column)}`
+      : undefined;
   }
 
   private getValueField(type: FilterInfoType): Prisma.Sql {
