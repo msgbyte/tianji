@@ -1,5 +1,22 @@
 
 
+## [1.33.8](https://github.com/msgbyte/tianji/compare/v1.33.7...v1.33.8) (2026-10-07)
+
+### Features
+
+* **ai-gateway:** add provider filter to pricing lookup ([4a18dd5](https://github.com/msgbyte/tianji/commit/4a18dd56703ab60394d351e9dff685a8d651b4ca))
+* **insights:** add first-visit website metrics ([7505191](https://github.com/msgbyte/tianji/commit/7505191d0443b09b82fcce9e14ad0306a534a298))
+* **insights:** support built-in website properties ([76b7bcd](https://github.com/msgbyte/tianji/commit/76b7bcd2ba8f41e96ee02a7796231347c187d892))
+* **website:** detect in-app host browsers from user agent ([b8102b9](https://github.com/msgbyte/tianji/commit/b8102b9ac013cc33e2891bb1a4a76ce71909a0df))
+* **website:** show daily new and active users ([059dd35](https://github.com/msgbyte/tianji/commit/059dd357154a1514f37a77d06e02c056def4125a))
+
+### Bug Fixes
+
+* **ai-gateway:** prevent upstream api key exposure ([28243e9](https://github.com/msgbyte/tianji/commit/28243e93768a844bf57ab14b95df2ee417e06047))
+* **insights:** correlate website custom properties per event ([09c59c0](https://github.com/msgbyte/tianji/commit/09c59c0b486e1c6688e12dde6917e9baf410b166))
+* **insights:** preserve complete breakdown combinations ([dbd23e5](https://github.com/msgbyte/tianji/commit/dbd23e597f6365a70430155ad11d7ffe2ea2a8d0))
+* **insights:** verify insight targets belong to the workspace ([c73bb81](https://github.com/msgbyte/tianji/commit/c73bb81f07ac8aead51f148cd23039d9a7f36bf5))
+
 ## [1.33.7](https://github.com/msgbyte/tianji/compare/v1.33.6...v1.33.7) (2026-09-28)
 
 ### Bug Fixes
