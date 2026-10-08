@@ -45,7 +45,7 @@ services:
       - "12345:12345"
     environment:
       DATABASE_URL: postgresql://tianji:tianji@postgres:5432/tianji
-      JWT_SECRET: ganti-dengan-string-acak
+      JWT_SECRET: replace-me-with-a-random-string
       ALLOW_REGISTER: "false"
       ALLOW_OPENAPI: "true"
     volumes:

@@ -35,7 +35,7 @@ Buat file `.env` di `src/server`
 
 ```ini
 DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
-JWT_SECRET="ganti-dengan-string-acak"
+JWT_SECRET="replace-me-with-a-random-string"
 ```
 
 Pastikan URL database Anda benar. dan jangan lupa buat database sebelumnya.

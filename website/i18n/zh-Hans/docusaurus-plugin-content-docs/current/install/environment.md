@@ -11,7 +11,7 @@ Tianji 支持各种环境变量来定制其行为。您可以在 Docker Compose 
 | 变量名 | 描述 | 默认值 | 示例 |
 | --- | --- | --- | --- |
 | `PORT` | 服务器端口 | `12345` | `3000` |
-| `JWT_SECRET` | JWT 令牌的密钥 | 随机文本 | `your-secret-key` |
+| `JWT_SECRET` | JWT 令牌的密钥 | 随机文本 | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | 启用用户注册 | `false` | `true` |
 | `ALLOW_OPENAPI` | 启用 OpenAPI 访问 | `true` | `false` |
 | `WEBSITE_ID` | 网站标识符 | - | `your-website-id` |

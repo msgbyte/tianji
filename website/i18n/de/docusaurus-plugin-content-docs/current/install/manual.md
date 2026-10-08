@@ -35,7 +35,7 @@ Erstellen Sie eine `.env` Datei im Verzeichnis `src/server`
 
 ```ini
 DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
-JWT_SECRET="ersetzen-sie-mich-durch-einen-zufälligen-string"
+JWT_SECRET="replace-me-with-a-random-string"
 ```
 
 Stellen Sie sicher, dass Ihre Datenbank-URL korrekt ist und denken Sie daran, die Datenbank zuvor zu erstellen.

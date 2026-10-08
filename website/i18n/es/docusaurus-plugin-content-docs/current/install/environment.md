@@ -11,7 +11,7 @@ Tianji admite varias variables de entorno para personalizar su comportamiento. P
 | Variable | Descripción | Valor por defecto | Ejemplo |
 | --- | --- | --- | --- |
 | `PORT` | Puerto del servidor | `12345` | `3000` |
-| `JWT_SECRET` | Clave secreta para tokens JWT | Texto aleatorio | `your-secret-key` |
+| `JWT_SECRET` | Clave secreta para tokens JWT | Texto aleatorio | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | Permitir registro de usuarios | `false` | `true` |
 | `ALLOW_OPENAPI` | Permitir acceso a OpenAPI | `true` | `false` |
 | `WEBSITE_ID` | Identificador del sitio web | - | `your-website-id` |

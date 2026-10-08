@@ -11,7 +11,7 @@ Tianji mendukung berbagai variabel lingkungan untuk menyesuaikan perilakunya. An
 | Variabel | Deskripsi | Default | Contoh |
 | --- | --- | --- | --- |
 | `PORT` | Port server | `12345` | `3000` |
-| `JWT_SECRET` | Rahasia untuk token JWT | Teks Acak | `your-secret-key` |
+| `JWT_SECRET` | Rahasia untuk token JWT | Teks Acak | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | Izinkan pendaftaran pengguna | `false` | `true` |
 | `ALLOW_OPENAPI` | Izinkan akses OpenAPI | `true` | `false` |
 | `WEBSITE_ID` | Identifikasi situs web | - | `your-website-id` |
