@@ -1,4 +1,4 @@
-import { v1 as uuid } from 'uuid';
+import { randomBytes } from 'node:crypto';
 import md5 from 'md5';
 import { compact } from 'lodash-es';
 import { getLLMContextWindow } from './llm.js';
@@ -6,7 +6,7 @@ import { getLLMContextWindow } from './llm.js';
 const jwtSecret =
   !process.env.JWT_SECRET ||
   process.env.JWT_SECRET === 'replace-me-with-a-random-string'
-    ? uuid()
+    ? randomBytes(32).toString('hex')
     : process.env.JWT_SECRET;
 
 const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
