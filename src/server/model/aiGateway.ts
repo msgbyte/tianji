@@ -559,16 +559,19 @@ export async function finishOpenAIResponsesGatewayLog(args: {
           customModelOutputPrice: args.customModelOutputPrice,
         })
       : null;
+  const responseCost = get(args.response, ['usage', 'cost']);
   const price =
-    customPrice ??
-    getLLMCostDecimalV2(
-      modelProvider,
-      args.modelName,
-      inputToken,
-      outputToken,
-      usage.cacheReadInputToken,
-      usage.cacheWriteInputToken
-    );
+    responseCost !== undefined
+      ? new Prisma.Decimal(responseCost)
+      : (customPrice ??
+        getLLMCostDecimalV2(
+          modelProvider,
+          args.modelName,
+          inputToken,
+          outputToken,
+          usage.cacheReadInputToken,
+          usage.cacheWriteInputToken
+        ));
 
   await prisma.aIGatewayLogs.update({
     where: { id: args.logId },
@@ -1250,16 +1253,20 @@ export function buildOpenAIResponsesHandler(
                   customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
                 })
               : null;
-            const price = customPrice
-              ? customPrice
-              : getLLMCostDecimalV2(
-                  modelProvider,
-                  modelPriceName,
-                  inputToken,
-                  outputToken,
-                  usage.cacheReadInputToken,
-                  usage.cacheWriteInputToken
-                );
+            const responseCost = get(completedResponse, ['usage', 'cost']);
+            const price =
+              responseCost !== undefined
+                ? new Prisma.Decimal(responseCost)
+                : customPrice
+                  ? customPrice
+                  : getLLMCostDecimalV2(
+                      modelProvider,
+                      modelPriceName,
+                      inputToken,
+                      outputToken,
+                      usage.cacheReadInputToken,
+                      usage.cacheWriteInputToken
+                    );
             const tpot = calcAIGatewayTpot({
               stream: true,
               status: AIGatewayLogsStatus.Success,
@@ -1330,16 +1337,20 @@ export function buildOpenAIResponsesHandler(
                 customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
               })
             : null;
-          const price = customPrice
-            ? customPrice
-            : getLLMCostDecimalV2(
-                modelProvider,
-                modelPriceName,
-                inputToken,
-                outputToken,
-                usage.cacheReadInputToken,
-                usage.cacheWriteInputToken
-              );
+          const responseCost = get(response, ['usage', 'cost']);
+          const price =
+            responseCost !== undefined
+              ? new Prisma.Decimal(responseCost)
+              : customPrice
+                ? customPrice
+                : getLLMCostDecimalV2(
+                    modelProvider,
+                    modelPriceName,
+                    inputToken,
+                    outputToken,
+                    usage.cacheReadInputToken,
+                    usage.cacheWriteInputToken
+                  );
 
           await prisma.aIGatewayLogs.update({
             where: {

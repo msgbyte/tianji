@@ -11,6 +11,7 @@ import {
   buildOpenRouterHeaders,
   calcAIGatewayCustomModelPrice,
   calcAIGatewayTpot,
+  finishOpenAIResponsesGatewayLog,
   getAIGatewayErrorStatusCode,
   getAIGatewayUsage,
   mergeAIGatewayStreamUsage,
@@ -1395,6 +1396,136 @@ describe('Anthropic raw stream boundaries', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 });
+
+describe.each(['stream', 'nonstream', 'websocket'] as const)(
+  'Responses cost accounting over %s',
+  (transport) => {
+    test.each([
+      {
+        name: 'records upstream cost without local pricing',
+        cost: 0.021502125,
+        customPricing: false,
+        modelProvider: 'custom',
+        expectedPrice: 0.021502125,
+      },
+      {
+        name: 'prefers upstream cost over custom pricing',
+        cost: 0.021502125,
+        customPricing: true,
+        modelProvider: 'custom',
+        expectedPrice: 0.021502125,
+      },
+      {
+        name: 'preserves an explicit zero upstream cost',
+        cost: 0,
+        customPricing: true,
+        modelProvider: 'custom',
+        expectedPrice: 0,
+      },
+      {
+        name: 'falls back to custom pricing when cost is absent',
+        cost: undefined,
+        customPricing: true,
+        modelProvider: 'custom',
+        expectedPrice: 0.096406,
+      },
+      {
+        name: 'falls back to built-in pricing when cost is absent',
+        cost: undefined,
+        customPricing: false,
+        modelProvider: 'openai',
+        expectedPrice: 0.0211084,
+      },
+    ])('$name', async ({ cost, customPricing, modelProvider, expectedPrice }) => {
+      const pricing = customPricing
+        ? { customModelInputPrice: 2, customModelOutputPrice: 6 }
+        : {};
+      const modelName =
+        modelProvider === 'custom' ? 'google/gemini-3.7-flash' : 'gpt-4.1-mini';
+      const response = {
+        model: modelName,
+        output_text: 'Hola',
+        usage: {
+          input_tokens: 34499,
+          output_tokens: 4568,
+          total_tokens: 39067,
+          input_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+          output_tokens_details: { reasoning_tokens: 1715 },
+          ...(cost === undefined
+            ? {}
+            : {
+                cost,
+                cost_details: { upstream_inference_cost: 0.04300425 },
+              }),
+        },
+      };
+      vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+        id: 'gateway1',
+        workspaceId: 'workspace1',
+        ...pricing,
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+        id: 'log1',
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+      if (transport === 'websocket') {
+        await finishOpenAIResponsesGatewayLog({
+          logId: 'log1',
+          workspaceId: 'workspace1',
+          gatewayId: 'gateway1',
+          modelName,
+          modelProvider,
+          input: 'Hola',
+          startedAt: Date.now(),
+          ttft: 0,
+          response,
+          ...pricing,
+        });
+      } else {
+        const stream = transport === 'stream';
+        openAIResponsesCreateMock.mockResolvedValue(
+          stream
+            ? (async function* () {
+                yield { type: 'response.completed', response };
+              })()
+            : response
+        );
+        const res = Object.assign(streamResponse(), { json: vi.fn() });
+        await buildOpenAIResponsesHandler({
+          isCustomRoute: modelProvider === 'custom',
+          baseUrl: 'https://openai.example/v1',
+        })(
+          {
+            params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+            headers: { authorization: 'Bearer sk-test' },
+            body: { model: modelName, input: 'Hola', stream },
+          } as any,
+          res as any,
+          vi.fn()
+        );
+      }
+
+      await vi.waitFor(() => {
+        expect(prisma.aIGatewayLogs.update).toHaveBeenCalledOnce();
+        expect(checkQuotaAlert).toHaveBeenCalledWith(
+          'workspace1',
+          'gateway1',
+          expectedPrice
+        );
+      });
+      const log = vi.mocked(prisma.aIGatewayLogs.update).mock.lastCall![0].data;
+      expect(log).toMatchObject({
+        status: AIGatewayLogsStatus.Success,
+        inputToken: 34499,
+        outputToken: 4568,
+        cacheReadInputToken: 0,
+        cacheWriteInputToken: 0,
+      });
+      expect(Number(log.price)).toBe(expectedPrice);
+    });
+  }
+);
 
 describe('openaiResponsesRequestSchema', () => {
   test('accepts Responses API payloads and preserves passthrough fields', () => {
