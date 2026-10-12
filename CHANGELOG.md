@@ -1,5 +1,13 @@
 
 
+## [1.33.9](https://github.com/msgbyte/tianji/compare/v1.33.8...v1.33.9) (2026-10-12)
+
+### Bug Fixes
+
+* **ai-gateway:** record upstream responses costs ([a29fbb8](https://github.com/msgbyte/tianji/commit/a29fbb8d2593edc3d416dc6f477e252bdca70ed1))
+* **auth:** generate cryptographically secure jwt secrets ([701915f](https://github.com/msgbyte/tianji/commit/701915f9e1e264448032c720775c7371740724e1))
+* **config:** align jwt secret example placeholders ([eabd67f](https://github.com/msgbyte/tianji/commit/eabd67f7c6a000274901b81667ed35b263916991))
+
 ## [1.33.8](https://github.com/msgbyte/tianji/compare/v1.33.7...v1.33.8) (2026-10-07)
 
 ### Features
