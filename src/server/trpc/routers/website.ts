@@ -203,6 +203,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
         startAt,
         endAt,
       } = input;
@@ -232,6 +239,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       } as WebsiteQueryFilters;
 
       const [metrics, prevPeriod] = await Promise.all([
@@ -390,6 +404,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       } = input;
 
       const { startDate, endDate, unit } = await parseDateRange({
@@ -413,6 +434,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       };
 
       const [pageviews, sessions] = await Promise.all([
@@ -482,6 +510,11 @@ export const websiteRouter = router({
         city,
         language,
         event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       } = input;
 
       const { startDate, endDate } = await parseDateRange({
@@ -504,6 +537,11 @@ export const websiteRouter = router({
         city,
         language,
         event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       };
 
       const column = FILTER_COLUMNS[type] || type;
