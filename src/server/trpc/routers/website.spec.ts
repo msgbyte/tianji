@@ -245,6 +245,224 @@ describe('websiteRouter.allOverview', () => {
   });
 });
 
+describe('website event filters', () => {
+  let websiteId: string;
+  const range = {
+    startAt: new Date('2026-07-01T00:00:00Z').valueOf(),
+    endAt: new Date('2026-07-02T23:59:59.999Z').valueOf(),
+    timezone: 'UTC',
+    unit: 'day',
+  };
+
+  beforeEach(async () => {
+    const workspace = await prisma.workspace.create({
+      data: { name: 'Website Event Filter Workspace' },
+    });
+    workspaceId = workspace.id;
+    const website = await prisma.website.create({
+      data: {
+        workspaceId,
+        name: 'Website Event Filter Test',
+        domain: 'events.example.com',
+      },
+    });
+    websiteId = website.id;
+    const sessionIds = [randomUUID(), randomUUID()];
+    await prisma.websiteSession.createMany({
+      data: sessionIds.map((id, index) => ({
+        id,
+        websiteId,
+        browser: index === 0 ? 'Firefox' : 'Chrome',
+        language: index === 0 ? 'es-ES' : 'en-US',
+      })),
+    });
+    await prisma.websiteEvent.createMany({
+      data: [
+        ...[0, 1, 2, 3].map((index) => ({
+          websiteId,
+          sessionId: sessionIds[0],
+          urlPath: '/',
+          eventType: EVENT_TYPE.pageView,
+          createdAt: new Date(`2026-07-01T08:0${index}:00Z`),
+        })),
+        ...[
+          ['2026-07-01T12:00:00Z', 'signup', sessionIds[0]],
+          ['2026-07-01T12:10:00Z', 'signup', sessionIds[0]],
+          ['2026-07-02T12:00:00Z', 'signup', sessionIds[1]],
+          ['2026-07-01T12:15:00Z', 'purchase', sessionIds[0]],
+          ['2026-06-30T12:00:00Z', 'signup', sessionIds[0]],
+          ['2026-07-03T12:00:00Z', 'signup', sessionIds[0]],
+        ].map(([createdAt, eventName, sessionId]) => ({
+          websiteId,
+          sessionId,
+          urlPath: '/checkout',
+          eventType: EVENT_TYPE.customEvent,
+          eventName,
+          utmSource: 'newsletter',
+          createdAt: new Date(createdAt),
+        })),
+      ],
+    });
+  });
+
+  test('counts matching custom events and visitors in both comparison periods', async () => {
+    const caller = await createCaller();
+    const result = await caller.stats({
+      workspaceId: workspaceId!,
+      websiteId,
+      ...range,
+      event: 'signup',
+    });
+
+    expect(result).toEqual({
+      pageviews: { value: 3, prev: 1 },
+      uniques: { value: 2, prev: 1 },
+      bounces: { value: 1, prev: 1 },
+      totaltime: { value: 600, prev: 0 },
+    });
+  });
+
+  test('returns event and visitor trends while applying language and UTM filters', async () => {
+    const caller = await createCaller();
+    const input = {
+      workspaceId: workspaceId!,
+      websiteId,
+      ...range,
+      event: 'signup',
+    };
+
+    const trends = await caller.pageviews(input);
+    expect(
+      [...trends.pageviews].sort((a, b) => a.x.localeCompare(b.x))
+    ).toEqual([
+      { x: '2026-07-01', y: BigInt(2) },
+      { x: '2026-07-02', y: BigInt(1) },
+    ]);
+    expect([...trends.sessions].sort((a, b) => a.x.localeCompare(b.x))).toEqual(
+      [
+        { x: '2026-07-01', y: BigInt(1) },
+        { x: '2026-07-02', y: BigInt(1) },
+      ]
+    );
+    expect(
+      await caller.pageviews({
+        ...input,
+        language: 'es-ES',
+        utm_source: 'newsletter',
+      })
+    ).toEqual({
+      pageviews: [{ x: '2026-07-01', y: BigInt(2) }],
+      sessions: [{ x: '2026-07-01', y: BigInt(1) }],
+    });
+    expect(await caller.pageviews({ ...input, utm_source: 'other' })).toEqual({
+      pageviews: [],
+      sessions: [],
+    });
+  });
+
+  test('uses matching custom events for page and visitor dimension metrics', async () => {
+    const caller = await createCaller();
+    const input = {
+      workspaceId: workspaceId!,
+      websiteId,
+      ...range,
+      event: 'signup',
+    };
+
+    expect(await caller.metrics({ ...input, type: 'url' })).toEqual([
+      { x: '/checkout', y: 3 },
+    ]);
+    expect(
+      await caller.metrics({ ...input, type: 'browser', language: 'es-ES' })
+    ).toEqual([{ x: 'Firefox', y: 1 }]);
+    expect(await caller.metrics({ ...input, type: 'event' })).toEqual([
+      { x: 'signup', y: 3 },
+    ]);
+  });
+
+  test('keeps page-view defaults and the unfiltered custom-event ranking', async () => {
+    const caller = await createCaller();
+    const input = { workspaceId: workspaceId!, websiteId, ...range };
+
+    expect((await caller.stats(input)).pageviews).toEqual({
+      value: 4,
+      prev: 0,
+    });
+    expect(await caller.pageviews(input)).toEqual({
+      pageviews: [{ x: '2026-07-01', y: BigInt(4) }],
+      sessions: [{ x: '2026-07-01', y: BigInt(1) }],
+    });
+    expect(await caller.metrics({ ...input, type: 'url' })).toEqual([
+      { x: '/', y: 4 },
+    ]);
+    expect(await caller.metrics({ ...input, type: 'browser' })).toEqual([
+      { x: 'Firefox', y: 1 },
+    ]);
+    expect(await caller.metrics({ ...input, type: 'event' })).toEqual([
+      { x: 'signup', y: 3 },
+      { x: 'purchase', y: 1 },
+    ]);
+  });
+
+  test('passes the custom event type and bound name to ClickHouse stats and metrics', async () => {
+    const caller = await createCaller();
+    const { env } = await import('../../utils/env.js');
+    env.clickhouse.enable = true;
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockResolvedValue({
+      json: async () => ({ data: [] }),
+    });
+    const input = {
+      workspaceId: workspaceId!,
+      websiteId,
+      ...range,
+      event: "sign'up",
+    };
+
+    await caller.stats(input);
+    await caller.metrics({ ...input, type: 'url' });
+    await caller.metrics({ ...input, type: 'browser' });
+
+    expect(mocks.clickhouseQuery).toHaveBeenCalledTimes(4);
+    for (const [query] of mocks.clickhouseQuery.mock.calls) {
+      expect(query.query_params).toMatchObject({
+        eventType: 2,
+        filter_0: "sign'up",
+      });
+      expect(query.query).toContain('eventType = {eventType:UInt64}');
+      expect(query.query).toContain('eventName = {filter_0:String}');
+      expect(query.query).not.toContain("sign'up");
+    }
+  });
+
+  test('retains the event filter when ClickHouse falls back to PostgreSQL', async () => {
+    const caller = await createCaller();
+    const { env } = await import('../../utils/env.js');
+    env.clickhouse.enable = true;
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockRejectedValue(
+      new Error('ClickHouse unavailable')
+    );
+    const input = {
+      workspaceId: workspaceId!,
+      websiteId,
+      ...range,
+      event: 'signup',
+    };
+
+    expect((await caller.stats(input)).pageviews).toEqual({
+      value: 3,
+      prev: 1,
+    });
+    expect(await caller.metrics({ ...input, type: 'url' })).toEqual([
+      { x: '/checkout', y: 3 },
+    ]);
+    expect(
+      await caller.metrics({ ...input, type: 'browser', language: 'es-ES' })
+    ).toEqual([{ x: 'Firefox', y: 1 }]);
+  });
+});
+
 describe('websiteRouter.retention', () => {
   test('rejects a website outside the authorized workspace', async () => {
     const workspace = await prisma.workspace.create({

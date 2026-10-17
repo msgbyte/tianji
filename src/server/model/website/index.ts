@@ -622,7 +622,7 @@ export async function getWebsiteSessionMetrics(
           websiteId,
           start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
-          eventType: EVENT_TYPE.pageView,
+          eventType: params.eventType,
           ...clickhouseFilter.params,
         },
       });
@@ -648,7 +648,7 @@ export async function getWebsiteSessionMetrics(
       between ${params.startDate}::timestamptz and ${
         params.endDate
       }::timestamptz
-      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      and "WebsiteEvent"."eventType" = ${params.eventType}
       ${filterQuery}
     group by 1
     ${includeCountry ? Prisma.sql([', 3']) : Prisma.empty}
@@ -661,8 +661,6 @@ export async function getWebsitePageviewMetrics(
   column: string,
   filters: WebsiteQueryFilters
 ): Promise<{ x: string; y: number }[]> {
-  const eventType =
-    column === 'eventName' ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView;
   const { filterQuery, clickhouseFilter, joinSession, params } =
     await parseWebsiteFilters(
       websiteId,
@@ -671,6 +669,8 @@ export async function getWebsitePageviewMetrics(
       },
       { joinSession: SESSION_COLUMNS.includes(column) }
     );
+  const eventType =
+    column === 'eventName' ? EVENT_TYPE.customEvent : params.eventType;
 
   let excludeDomain = Prisma.empty;
   if (column === 'referrerDomain') {
@@ -768,7 +768,7 @@ export async function getWorkspaceWebsitePageview(
       and "WebsiteEvent"."createdAt" between ${
         params.startDate
       }::timestamptz and ${params.endDate}::timestamptz
-      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      and "WebsiteEvent"."eventType" = ${params.eventType}
       ${filterQuery}
     group by 1
   `;
@@ -796,7 +796,7 @@ export async function getWorkspaceWebsiteSession(
       and "WebsiteEvent"."createdAt" between ${
         params.startDate
       }::timestamptz and ${params.endDate}::timestamptz
-      and "WebsiteEvent"."eventType" = ${EVENT_TYPE.pageView}
+      and "WebsiteEvent"."eventType" = ${params.eventType}
       ${filterQuery}
     group by 1
     `;
@@ -1013,7 +1013,7 @@ export async function getWorkspaceWebsiteStats(
           websiteId: params.websiteId,
           start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
-          eventType: EVENT_TYPE.pageView,
+          eventType: params.eventType,
           ...clickhouseFilter.params,
         },
       });
@@ -1065,7 +1065,7 @@ export async function getWorkspaceWebsiteStats(
         and "WebsiteEvent"."createdAt" between ${
           params.startDate
         }::timestamptz and ${params.endDate}::timestamptz
-        and "eventType" = ${EVENT_TYPE.pageView}
+        and "eventType" = ${params.eventType}
         ${filterQuery}
     ), stats as (
       select

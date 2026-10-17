@@ -2,7 +2,12 @@ import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import { loadWebsite } from '../model/website/index.js';
 import { maxDate } from './common.js';
-import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
+import {
+  EVENT_TYPE,
+  FILTER_COLUMNS,
+  OPERATORS,
+  SESSION_COLUMNS,
+} from './const.js';
 import { loadTelemetry } from '../model/telemetry.js';
 import { get } from 'lodash-es';
 import { assertQuotedSqlIdentifierPath } from './sql.js';
@@ -98,6 +103,10 @@ export async function parseWebsiteFilters(
     ),
     params: {
       ...normalizeFilters(filters),
+      eventType:
+        filters.event !== undefined
+          ? EVENT_TYPE.customEvent
+          : EVENT_TYPE.pageView,
       websiteId,
       startDate: dayjs(
         maxDate(filters.startDate, website.resetAt)
