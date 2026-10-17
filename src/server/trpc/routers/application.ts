@@ -19,6 +19,7 @@ import {
 import { delApplicationCache } from '../../model/application/index.js';
 import {
   eventStatsQueryResultItemSchema,
+  eventBreakdownItemSchema,
   getApplicationEventStats,
 } from '../../model/application/event.js';
 import { ApplicationStoreInfoHistoryModelSchema } from '../../prisma/zod/applicationstoreinfohistory.js';
@@ -328,6 +329,7 @@ export const applicationRouter = router({
       z.object({
         current: eventStatsQueryResultItemSchema.array(),
         previous: eventStatsQueryResultItemSchema.array(),
+        eventBreakdown: eventBreakdownItemSchema.array(),
         currentTotalSessionCount: z.number(),
         previousTotalSessionCount: z.number(),
       })
