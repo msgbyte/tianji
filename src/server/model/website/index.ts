@@ -23,7 +23,6 @@ import {
   getDateQuery,
   getTimestampIntervalQuery,
   parseWebsiteFilters,
-  unwrapSQL,
 } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { env } from '../../utils/env.js';
@@ -581,24 +580,21 @@ export async function getWebsiteSessionMetrics(
   column: string,
   filters: WebsiteQueryFilters
 ): Promise<{ x: string; y: number }[]> {
-  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
-    websiteId,
-    {
-      ...filters,
-    },
-    {
-      joinSession: SESSION_COLUMNS.includes(column),
-    }
-  );
+  const { filterQuery, clickhouseFilter, joinSession, params } =
+    await parseWebsiteFilters(
+      websiteId,
+      {
+        ...filters,
+      },
+      {
+        joinSession: SESSION_COLUMNS.includes(column),
+      }
+    );
   const includeCountry = column === 'city' || column === 'subdivision1';
 
   if (env.clickhouse.enable && clickhouseHealthManager.isClickHouseHealthy()) {
     try {
-      const chFilter = unwrapSQL(filterQuery)
-        .replace(/\"WebsiteEvent\"\./g, '')
-        .replace(/\"WebsiteSession\"\./g, '')
-        .replace(/\"/g, '')
-        .replace(/::[a-zA-Z]+/g, '');
+      const chFilter = clickhouseFilter.sql;
 
       const chJoin =
         joinSession === Prisma.empty
@@ -627,6 +623,7 @@ export async function getWebsiteSessionMetrics(
           start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           eventType: EVENT_TYPE.pageView,
+          ...clickhouseFilter.params,
         },
       });
       const json = await result.json<any>();
@@ -666,13 +663,14 @@ export async function getWebsitePageviewMetrics(
 ): Promise<{ x: string; y: number }[]> {
   const eventType =
     column === 'eventName' ? EVENT_TYPE.customEvent : EVENT_TYPE.pageView;
-  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
-    websiteId,
-    {
-      ...filters,
-    },
-    { joinSession: SESSION_COLUMNS.includes(column) }
-  );
+  const { filterQuery, clickhouseFilter, joinSession, params } =
+    await parseWebsiteFilters(
+      websiteId,
+      {
+        ...filters,
+      },
+      { joinSession: SESSION_COLUMNS.includes(column) }
+    );
 
   let excludeDomain = Prisma.empty;
   if (column === 'referrerDomain') {
@@ -682,11 +680,7 @@ export async function getWebsitePageviewMetrics(
   // ClickHouse fast path: only on WebsiteEvent without session join
   if (env.clickhouse.enable && clickhouseHealthManager.isClickHouseHealthy()) {
     try {
-      const chFilter = unwrapSQL(filterQuery)
-        .replace(/\"WebsiteEvent\"\./g, '')
-        .replace(/\"WebsiteSession\"\./g, '')
-        .replace(/\"/g, '')
-        .replace(/::[a-zA-Z]+/g, '');
+      const chFilter = clickhouseFilter.sql;
 
       const chExclude =
         column === 'referrerDomain'
@@ -720,6 +714,7 @@ export async function getWebsitePageviewMetrics(
           start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           eventType,
+          ...clickhouseFilter.params,
         },
       });
       const json = await result.json<any>();
@@ -970,12 +965,10 @@ export async function getWorkspaceWebsiteStats(
   websiteId: string,
   filters: WebsiteQueryFilters
 ): Promise<any> {
-  const { filterQuery, joinSession, params } = await parseWebsiteFilters(
-    websiteId,
-    {
+  const { filterQuery, clickhouseFilter, joinSession, params } =
+    await parseWebsiteFilters(websiteId, {
       ...filters,
-    }
-  );
+    });
 
   // Prefer ClickHouse when enabled and healthy; translate filterQuery for CH; require no session join
   if (
@@ -984,12 +977,7 @@ export async function getWorkspaceWebsiteStats(
     joinSession === Prisma.empty
   ) {
     try {
-      const chFilter = unwrapSQL(filterQuery)
-        .replace(/\"WebsiteEvent\"\./g, '')
-        .replace(/\"WebsiteSession\"\./g, '')
-        .replace(/\"Website\"\./g, '')
-        .replace(/\"/g, '')
-        .replace(/::[a-zA-Z]+/g, '');
+      const chFilter = clickhouseFilter.sql;
 
       const chQuery = `
         with filtered_events as (
@@ -1026,6 +1014,7 @@ export async function getWorkspaceWebsiteStats(
           start: dayjs(params.startDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           end: dayjs(params.endDate).utc().format('YYYY-MM-DD HH:mm:ss'),
           eventType: EVENT_TYPE.pageView,
+          ...clickhouseFilter.params,
         },
       });
       const json = await result.json<any>();

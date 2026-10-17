@@ -39,6 +39,11 @@ export interface WebsiteQueryFilters extends BaseQueryFilters {
   device?: string;
   language?: string;
   event?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
 }
 
 export interface QueryOptions {
@@ -86,6 +91,11 @@ export async function parseWebsiteFilters(
           ])
         : Prisma.empty,
     filterQuery: getWebsiteFilterQuery(filters, options, websiteDomain),
+    clickhouseFilter: getWebsiteClickHouseFilterQuery(
+      filters,
+      options,
+      websiteDomain
+    ),
     params: {
       ...normalizeFilters(filters),
       websiteId,
@@ -155,19 +165,17 @@ export function getWebsiteFilterQuery(
   options: QueryOptions = {},
   websiteDomain: string | null = null
 ) {
-  const query = Object.keys(filters).reduce<string[]>((arr, name) => {
+  const query = Object.keys(filters).reduce<Prisma.Sql[]>((arr, name) => {
     const value: any = filters[name as keyof WebsiteQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
     const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
-    // TODO
-
     if (value !== undefined && column) {
-      arr.push(`AND ${mapFilter(column, operator, name)}`);
+      arr.push(mapFilter(column, operator, value?.value ?? value));
 
-      if (name === 'referrer') {
+      if (name === 'referrer' && websiteDomain) {
         arr.push(
-          `AND ("WebsiteEvent"."referrerDomain" != ${websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`
+          Prisma.sql`AND ("WebsiteEvent"."referrerDomain" != ${websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`
         );
       }
     }
@@ -175,44 +183,86 @@ export function getWebsiteFilterQuery(
     return arr;
   }, []);
 
-  return Prisma.sql([query.join('\n')]);
+  return query.length > 0 ? Prisma.join(query, '\n') : Prisma.empty;
+}
+
+/**
+ * Same filters as getWebsiteFilterQuery, for the ClickHouse queries.
+ * Values are passed as query params, never inlined into the SQL text.
+ */
+export function getWebsiteClickHouseFilterQuery(
+  filters: WebsiteQueryFilters = {},
+  options: QueryOptions = {},
+  websiteDomain: string | null = null
+) {
+  const params: Record<string, string> = {};
+  const query: string[] = [];
+
+  Object.keys(filters).forEach((name) => {
+    const value: any = filters[name as keyof WebsiteQueryFilters];
+    const operator = value?.filter ?? OPERATORS.equals;
+    const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
+    const sqlOperator = SQL_OPERATORS[operator];
+
+    if (value === undefined || !column || !sqlOperator) {
+      return;
+    }
+
+    assertQuotedSqlIdentifierPath(`"${column}"`);
+
+    const param = `filter_${query.length}`;
+    params[param] = String(value?.value ?? value);
+    query.push(`AND ${column} ${sqlOperator} {${param}:String}`);
+
+    if (name === 'referrer' && websiteDomain) {
+      params.filter_websiteDomain = websiteDomain;
+      query.push(
+        'AND (referrerDomain != {filter_websiteDomain:String} or referrerDomain is null)'
+      );
+    }
+  });
+
+  return { sql: query.join('\n'), params };
 }
 
 export function getTelemetryFilterQuery(
   filters: BaseQueryFilters = {},
   options: QueryOptions = {}
 ) {
-  const query = Object.keys(filters).reduce<string[]>((arr, name) => {
+  const query = Object.keys(filters).reduce<Prisma.Sql[]>((arr, name) => {
     const value: any = filters[name as keyof BaseQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
     const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
-    // TODO
-
     if (value !== undefined && column) {
-      arr.push(`AND ${mapFilter(column, operator, name)}`);
+      arr.push(mapFilter(column, operator, value?.value ?? value));
     }
 
     return arr;
   }, []);
 
-  return Prisma.sql([query.join('\n')]);
+  return query.length > 0 ? Prisma.join(query, '\n') : Prisma.empty;
 }
+
+const SQL_OPERATORS: Record<string, string> = {
+  [OPERATORS.equals]: '=',
+  [OPERATORS.notEquals]: '!=',
+};
 
 function mapFilter(
   column: string,
   operator: (typeof OPERATORS)[keyof typeof OPERATORS],
-  name: string,
-  type = 'varchar'
+  value: unknown
 ) {
-  switch (operator) {
-    case OPERATORS.equals:
-      return `"${column}" = '${name}'::${type}`;
-    case OPERATORS.notEquals:
-      return `"${column}" != '${name}'::${type}`;
-    default:
-      return '';
+  const sqlOperator = SQL_OPERATORS[operator];
+
+  if (!sqlOperator) {
+    return Prisma.empty;
   }
+
+  const identifier = Prisma.raw(assertQuotedSqlIdentifierPath(`"${column}"`));
+
+  return Prisma.sql`AND ${identifier} ${Prisma.raw(sqlOperator)} ${String(value)}::varchar`;
 }
 
 export function getDateQuery(
