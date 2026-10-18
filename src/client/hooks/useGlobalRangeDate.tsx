@@ -1,5 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs';
-import { useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { getMinimumUnit } from '@tianji/shared';
 import { DateRange, useGlobalStateStore } from '../store/global';
 import { DateUnit } from '../utils/date';
@@ -17,8 +17,14 @@ export function useGlobalRangeDate(): {
     dateRange,
     startDate: globalStartDate,
     endDate: globalEndDate,
+    rangeDateRefreshKey,
   } = useGlobalStateStore();
-  const [updateInc, refresh] = useReducer((state: number) => state + 1, 0);
+  const [updateInc, refreshLocal] = useReducer((state: number) => state + 1, 0);
+  const refresh = useCallback(() => {
+    useGlobalStateStore.setState((state) => ({
+      rangeDateRefreshKey: state.rangeDateRefreshKey + 1,
+    }));
+  }, []);
   const { t } = useTranslation();
 
   const { label, startDate, endDate, unit } = useMemo(() => {
@@ -133,7 +139,13 @@ export function useGlobalRangeDate(): {
       endDate: dayjs(),
       unit: 'hour' as const,
     };
-  }, [dateRange, globalStartDate, globalEndDate, updateInc]);
+  }, [
+    dateRange,
+    globalStartDate,
+    globalEndDate,
+    updateInc,
+    rangeDateRefreshKey,
+  ]);
 
   /**
    * Auto refresh if is realtime
@@ -148,7 +160,7 @@ export function useGlobalRangeDate(): {
       }
 
       timer = window.setInterval(() => {
-        refresh();
+        refreshLocal();
       }, 60 * 1000);
     }
 
