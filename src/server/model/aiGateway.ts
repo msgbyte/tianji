@@ -833,65 +833,108 @@ export function buildOpenAIHandler(
             stream: true,
           });
 
-          let outputContent = '';
           let ttft = -1;
           let usage: OpenAI.Completions.CompletionUsage = {
             prompt_tokens: 0,
             completion_tokens: 0,
             total_tokens: 0,
           };
-          const toolCalls = new Map<
+          const responseMetadata: Prisma.InputJsonObject = {};
+          const responseChoices = new Map<
             number,
             {
-              id?: string;
-              type?: string;
-              function: { name: string; arguments: string };
+              index: number;
+              message: Record<string, Prisma.InputJsonValue | null>;
+              [key: string]: Prisma.InputJsonValue | null;
             }
+          >();
+          const choiceToolCalls = new Map<
+            number,
+            Map<
+              number,
+              {
+                id?: string;
+                type?: string;
+                function: { name: string; arguments: string };
+              }
+            >
           >();
           let openrouterProviderName = ''; // only for open router, as for different openrouter provider, its will have different price.
           let responseModelName = modelName; // real model name which returned from remote. its will be some changed because of the model alias.
           for await (const chunk of stream) {
-            responseModelName = chunk.model;
+            responseModelName = chunk.model || responseModelName;
             if (ttft === -1) {
               ttft = Date.now() - start;
             }
-            const content =
-              get(chunk, ['choices', 0, 'delta', 'content']) || '';
-            outputContent += content;
-            const toolCallDeltas = get(chunk, [
-              'choices',
-              0,
-              'delta',
-              'tool_calls',
-            ]);
-            if (Array.isArray(toolCallDeltas)) {
-              for (const delta of toolCallDeltas) {
-                if (!Number.isInteger(delta?.index) || delta.index < 0) {
+            const { choices = [], usage: chunkUsage, ...metadata } = chunk;
+            Object.assign(responseMetadata, metadata);
+            for (const [position, choice] of choices.entries()) {
+              const { delta, ...choiceMetadata } = choice;
+              const index = choice.index ?? position;
+              if (!Number.isInteger(index) || index < 0) {
+                continue;
+              }
+              let result = responseChoices.get(index);
+              if (!result) {
+                result = {
+                  index,
+                  message: { role: 'assistant', content: '' },
+                };
+                responseChoices.set(index, result);
+              }
+              Object.assign(result, choiceMetadata, { index });
+              const { tool_calls: toolCallDeltas, ...messageDelta } =
+                delta ?? {};
+              for (const [key, value] of Object.entries(messageDelta)) {
+                if (value == null) {
                   continue;
                 }
+                if (
+                  typeof value === 'string' &&
+                  ['content', 'refusal', 'reasoning', 'reasoning_content'].includes(
+                    key
+                  )
+                ) {
+                  result.message[key] =
+                    String(result.message[key] ?? '') + value;
+                } else {
+                  result.message[key] = value as Prisma.InputJsonValue;
+                }
+              }
+              if (Array.isArray(toolCallDeltas)) {
+                let toolCalls = choiceToolCalls.get(index);
+                if (!toolCalls) {
+                  toolCalls = new Map();
+                  choiceToolCalls.set(index, toolCalls);
+                }
+                for (const delta of toolCallDeltas) {
+                  if (!Number.isInteger(delta?.index) || delta.index < 0) {
+                    continue;
+                  }
 
-                const toolCall = toolCalls.get(delta.index) ?? {
-                  function: { name: '', arguments: '' },
-                };
-                toolCalls.set(delta.index, toolCall);
-                if (typeof delta.id === 'string') {
-                  toolCall.id = delta.id;
-                }
-                if (typeof delta.type === 'string') {
-                  toolCall.type = delta.type;
-                }
-                if (typeof delta.function?.name === 'string') {
-                  toolCall.function.name += delta.function.name;
-                }
-                if (typeof delta.function?.arguments === 'string') {
-                  toolCall.function.arguments += delta.function.arguments;
+                  const toolCall = toolCalls.get(delta.index) ?? {
+                    function: { name: '', arguments: '' },
+                  };
+                  toolCalls.set(delta.index, toolCall);
+                  if (typeof delta.id === 'string') {
+                    toolCall.id = delta.id;
+                  }
+                  if (typeof delta.type === 'string') {
+                    toolCall.type = delta.type;
+                  }
+                  if (typeof delta.function?.name === 'string') {
+                    toolCall.function.name += delta.function.name;
+                  }
+                  if (typeof delta.function?.arguments === 'string') {
+                    toolCall.function.arguments += delta.function.arguments;
+                  }
                 }
               }
             }
             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
 
-            if (chunk.usage) {
-              usage = chunk.usage; // try to get usage from chunk
+            if (chunkUsage) {
+              usage = chunkUsage; // try to get usage from chunk
             }
 
             if ('provider' in chunk) {
@@ -906,6 +949,19 @@ export function buildOpenAIHandler(
           res.write('data: [DONE]\n\n');
           res.end();
           const duration = Date.now() - start;
+          const choices = Array.from(responseChoices.values()).sort(
+            (a, b) => a.index - b.index
+          );
+          for (const choice of choices) {
+            const toolCalls = choiceToolCalls.get(choice.index);
+            if (toolCalls?.size) {
+              choice.message.tool_calls = Array.from(toolCalls.entries())
+                .sort(([a], [b]) => a - b)
+                .map(([, toolCall]) => toolCall);
+            }
+          }
+          const firstMessage = responseChoices.get(0)?.message;
+          const outputContent = String(firstMessage?.content ?? '');
 
           logP.then(async ({ id: logId }) => {
             const normalizedUsage = getAIGatewayUsage(usage);
@@ -977,13 +1033,13 @@ export function buildOpenAIHandler(
                 tpot,
                 price,
                 responsePayload: {
+                  ...responseMetadata,
+                  choices,
                   content: outputContent,
                   usage,
                   provider: openrouterProviderName,
-                  ...(toolCalls.size > 0 && {
-                    tool_calls: Array.from(toolCalls.entries())
-                      .sort(([a], [b]) => a - b)
-                      .map(([, toolCall]) => toolCall),
+                  ...(firstMessage?.tool_calls && {
+                    tool_calls: firstMessage.tool_calls,
                   }),
                 },
               },

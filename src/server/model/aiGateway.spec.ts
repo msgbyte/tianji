@@ -379,6 +379,168 @@ describe('calcAIGatewayTpot', () => {
 });
 
 describe('AI Gateway stream keepalive', () => {
+  test('preserves stream filtering details and refusals after a usage-only chunk', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+    const metadata = {
+      id: 'chatcmpl-filtered',
+      object: 'chat.completion.chunk',
+      created: 1720000000,
+      model: 'gpt-4o',
+      system_fingerprint: 'fp_test',
+    };
+    const chunks = [
+      {
+        ...metadata,
+        choices: [],
+        prompt_filter_results: [
+          {
+            prompt_index: 0,
+            content_filter_results: {
+              violence: { filtered: false, severity: 'safe' },
+            },
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [
+          {
+            index: 0,
+            delta: { role: 'assistant', content: '', refusal: 'No puedo ' },
+            finish_reason: null,
+          },
+          {
+            index: 1,
+            delta: { role: 'assistant', content: 'Hola' },
+            finish_reason: null,
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [
+          {
+            index: 1,
+            delta: { content: ' mundo' },
+            finish_reason: 'stop',
+          },
+          {
+            index: 0,
+            delta: { refusal: 'ayudar con eso.' },
+            finish_reason: 'content_filter',
+            native_finish_reason: 'SAFETY',
+            content_filter_results: {
+              violence: { filtered: true, severity: 'high' },
+            },
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [],
+        usage: {
+          cost: 0,
+          prompt_tokens: 0,
+          completion_tokens: 0,
+          total_tokens: 0,
+        },
+      },
+    ];
+    openAIChatCreateMock.mockResolvedValue(
+      (async function* () {
+        yield* chunks;
+      })()
+    );
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { authorization: 'Bearer sk-test' },
+      body: {
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: 'Hola' }],
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      flush: vi.fn(),
+      end: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+    };
+
+    await buildOpenAIHandler({ modelProvider: 'openai' })(
+      req as any,
+      res as any,
+      vi.fn()
+    );
+
+    for (const chunk of chunks) {
+      expect(res.write).toHaveBeenCalledWith(
+        `data: ${JSON.stringify(chunk)}\n\n`
+      );
+    }
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              ...metadata,
+              content: '',
+              usage: {
+                cost: 0,
+                prompt_tokens: 0,
+                completion_tokens: 0,
+                total_tokens: 0,
+              },
+              prompt_filter_results: [
+                {
+                  prompt_index: 0,
+                  content_filter_results: {
+                    violence: { filtered: false, severity: 'safe' },
+                  },
+                },
+              ],
+              choices: [
+                expect.objectContaining({
+                  index: 0,
+                  finish_reason: 'content_filter',
+                  native_finish_reason: 'SAFETY',
+                  content_filter_results: {
+                    violence: { filtered: true, severity: 'high' },
+                  },
+                  message: expect.objectContaining({
+                    role: 'assistant',
+                    content: '',
+                    refusal: 'No puedo ayudar con eso.',
+                  }),
+                }),
+                expect.objectContaining({
+                  index: 1,
+                  finish_reason: 'stop',
+                  message: expect.objectContaining({
+                    role: 'assistant',
+                    content: 'Hola mundo',
+                  }),
+                }),
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
   test('stores reconstructed OpenAI stream tool calls in the response payload', async () => {
     vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
       id: 'gateway1',
