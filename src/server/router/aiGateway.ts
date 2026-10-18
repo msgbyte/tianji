@@ -8,8 +8,14 @@ import {
   buildAnthropicModelsHandler,
 } from '../model/aiGateway.js';
 import { geminiHandler } from '../model/aiGateway/gemini.js';
+import { buildAIGatewayPassthroughHandler } from '../model/aiGateway/passthrough.js';
 
 export const aiGatewayRouter = Router();
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/custom/api/alpha/decisions',
+  buildAIGatewayPassthroughHandler({ path: '/api/alpha/decisions' })
+);
 
 aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/openai/v1/chat/completions',
