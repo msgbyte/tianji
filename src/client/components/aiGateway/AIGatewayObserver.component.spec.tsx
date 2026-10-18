@@ -492,6 +492,110 @@ test('renders conversation message content as Markdown', async () => {
   expect(screen.getByText('importante').tagName).toBe('STRONG');
 });
 
+test.each(['', 'Respuesta parcial'])(
+  'shows the stream finish reason and refusal alongside content: %s',
+  async (content) => {
+    mocks.data = {
+      items: [
+        createLog('log_filtered', 'Hola', {
+          responsePayload: {
+            id: 'chatcmpl-filtered',
+            content,
+            choices: [
+              {
+                index: 0,
+                finish_reason: 'content_filter',
+                message: {
+                  role: 'assistant',
+                  content,
+                  refusal: 'No puedo ayudar con eso.',
+                },
+              },
+            ],
+          },
+        }),
+      ],
+    };
+    render(<AIGatewayObserver gatewayId="gateway_1" />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Output' }));
+
+    expect(await screen.findByText('content_filter')).toBeInTheDocument();
+    expect(screen.getByText('chatcmpl-filtered')).toBeInTheDocument();
+    expect(screen.getByText('No puedo ayudar con eso.')).toBeInTheDocument();
+    if (content) expect(screen.getByText(content)).toBeInTheDocument();
+  }
+);
+
+test.each([
+  {
+    name: 'Anthropic stop reason',
+    status: 'Success',
+    responsePayload: { id: 'msg_123', content: 'Hola', stop_reason: 'refusal' },
+    reason: 'refusal',
+    id: 'msg_123',
+  },
+  {
+    name: 'Responses incomplete details',
+    status: 'Failed',
+    responsePayload: {
+      content: 'Hola',
+      response: {
+        id: 'resp_123',
+        status: 'incomplete',
+        output: [],
+        incomplete_details: { reason: 'content_filter' },
+      },
+    },
+    reason: 'content_filter',
+    id: 'resp_123',
+  },
+  {
+    name: 'Responses structured error',
+    status: 'Failed',
+    responsePayload: {
+      content: 'Hola',
+      response: {
+        id: 'resp_123',
+        status: 'failed',
+        output: [],
+        error: { code: 'server_error', message: 'Servicio ocupado' },
+      },
+    },
+    reason: 'Servicio ocupado',
+    id: 'resp_123',
+  },
+])('shows $name and partial output', async ({ status, responsePayload, reason, id }) => {
+  mocks.data = {
+    items: [createLog('log_terminal', 'Solicitud', { status, responsePayload })],
+  };
+  render(<AIGatewayObserver gatewayId="gateway_1" />);
+  fireEvent.click(screen.getByRole('tab', { name: 'Output' }));
+
+  expect(await screen.findByText(reason)).toBeInTheDocument();
+  expect(screen.getByText(id)).toBeInTheDocument();
+  expect(screen.getByText('Hola')).toBeInTheDocument();
+});
+
+test('shows Responses refusal content blocks', async () => {
+  mocks.data = {
+    items: [createLog('log_refusal', 'Hola', {
+      responsePayload: {
+        response: {
+          output: [{
+            type: 'message',
+            role: 'assistant',
+            content: [{ type: 'refusal', refusal: 'No puedo ayudar con eso.' }],
+          }],
+        },
+      },
+    })],
+  };
+  render(<AIGatewayObserver gatewayId="gateway_1" />);
+  fireEvent.click(screen.getByRole('tab', { name: 'Output' }));
+
+  expect(await screen.findByText('No puedo ayudar con eso.')).toBeInTheDocument();
+});
+
 test.each(['Conversation', 'Input'])(
   'renders ordered reference images and opens the selected preview in %s',
   async (tab) => {

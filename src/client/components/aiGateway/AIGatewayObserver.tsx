@@ -68,6 +68,7 @@ interface DisplayMessage {
   role: string;
   name?: string;
   content: string;
+  refusal?: string;
   contentParts: (string | { imageUrl: string })[];
   toolCalls: DisplayToolCall[];
 }
@@ -851,23 +852,10 @@ function OutputView({
     ? asRecord(nested.choices[0])
     : null;
   const usage = asRecord(response.usage) ?? asRecord(nested.usage);
+  const finishReason = choice?.finish_reason ?? nested.stop_reason;
 
   if (log.status === 'Pending') {
     return <MessageList messages={[]} pending />;
-  }
-
-  if (log.status === 'Failed') {
-    return (
-      <MessageList
-        messages={[]}
-        error={
-          error ||
-          t(
-            'The upstream model returned an error and the request did not complete.'
-          )
-        }
-      />
-    );
   }
 
   return (
@@ -879,14 +867,24 @@ function OutputView({
           label={t('Model')}
           value={String(nested.model ?? log.modelName)}
         />
-        {choice?.finish_reason && (
+        {finishReason && (
           <Meta
             label={t('Finish reason')}
-            value={String(choice.finish_reason)}
+            value={String(finishReason)}
           />
         )}
       </div>
-      <MessageList messages={messages} />
+      <MessageList
+        messages={messages}
+        error={
+          error ||
+          (log.status === 'Failed'
+            ? t(
+                'The upstream model returned an error and the request did not complete.'
+              )
+            : undefined)
+        }
+      />
       <div className="observer-usage">
         <Meta
           label={t('Input')}
@@ -948,6 +946,12 @@ function MessageList({
                   )}
                 </div>
               ))}
+            </div>
+          )}
+          {message.refusal && (
+            <div className="observer-error">
+              <strong>{t('Refusal')}: </strong>
+              {message.refusal}
             </div>
           )}
           {message.toolCalls.map((call, callIndex) => (
@@ -1154,7 +1158,7 @@ function getResponseMessages(value: unknown): DisplayMessage[] {
     return messages;
   }
 
-  if (Array.isArray(nested.output)) {
+  if (Array.isArray(nested.output) && nested.output.length > 0) {
     nested.output.forEach((item: unknown) =>
       messages.push(toDisplayMessage(item))
     );
@@ -1235,6 +1239,7 @@ function toDisplayMessage(value: unknown): DisplayMessage {
     role,
     name: message.name ?? toolResults[0]?.name,
     content: contentToText(content),
+    refusal: typeof message.refusal === 'string' ? message.refusal : undefined,
     contentParts: contentToParts(content),
     toolCalls: [
       ...directCalls,
@@ -1275,6 +1280,7 @@ function contentToText(value: unknown): string {
         item.text ??
         item.output_text ??
         item.input_text ??
+        item.refusal ??
         item.content ??
         item.json ??
         '';
@@ -1311,11 +1317,13 @@ function contentToParts(value: unknown): DisplayMessage['contentParts'] {
 }
 
 function getResponseError(value: unknown): string | undefined {
-  const error = asRecord(value)?.error;
+  const response = asRecord(value);
+  const nested = asRecord(response?.response) ?? response;
+  const error = response?.error ?? nested?.error ?? nested?.incomplete_details;
   if (typeof error === 'string') return error;
   const record = asRecord(error);
   return record
-    ? String(record.message ?? record.type ?? stringify(record))
+    ? String(record.message ?? record.reason ?? record.type ?? stringify(record))
     : undefined;
 }
 
