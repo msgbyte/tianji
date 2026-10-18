@@ -723,7 +723,12 @@ describe('AI Gateway stream keepalive', () => {
     const chunks = [
       ...event('message_start', {
         message: {
+          id: 'msg_tools',
+          type: 'message',
+          role: 'assistant',
           model: 'claude-3-7-sonnet-latest',
+          stop_reason: null,
+          stop_sequence: null,
           usage: { input_tokens: 10, output_tokens: 0 },
         },
       }),
@@ -767,6 +772,7 @@ describe('AI Gateway stream keepalive', () => {
         },
       }),
       ...event('message_delta', {
+        delta: { stop_reason: 'tool_use', stop_sequence: null },
         usage: { output_tokens: 4 },
       }),
     ];
@@ -830,6 +836,12 @@ describe('AI Gateway stream keepalive', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             responsePayload: expect.objectContaining({
+              id: 'msg_tools',
+              type: 'message',
+              role: 'assistant',
+              model: 'claude-3-7-sonnet-latest',
+              stop_reason: 'tool_use',
+              stop_sequence: null,
               tool_use: [
                 {
                   type: 'tool_use',
@@ -1440,6 +1452,32 @@ describe('Anthropic raw stream boundaries', () => {
     await vi.advanceTimersByTimeAsync(0);
     return { res, source, done };
   }
+
+  test('retains a structured upstream error after partial output', async () => {
+    vi.useFakeTimers();
+    const { res, source, done } = await openStream();
+    const error = { type: 'overloaded_error', message: 'Servicio ocupado' };
+    const events = [
+      ['content_block_delta', { delta: { type: 'text_delta', text: 'Hola' } }],
+      ['error', { type: 'error', error }],
+    ]
+      .map(([type, data]) => `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`)
+      .join('');
+    source.enqueue(encoder.encode(events));
+    source.close();
+    await done;
+    await vi.waitFor(() => {
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: AIGatewayLogsStatus.Failed,
+            responsePayload: expect.objectContaining({ content: 'Hola', error }),
+          }),
+        })
+      );
+    });
+    expect(res.writes.join('')).toContain(events);
+  });
 
   test.each(['\n', '\r\n', '\r'])(
     'preserves every byte split with %j line endings',

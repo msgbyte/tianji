@@ -1761,6 +1761,7 @@ export function buildAnthropicHandler(
         let responseCost: number | undefined;
         let usage: Record<string, any> | undefined;
         let streamUsage = getAIGatewayUsage(undefined);
+        const responseMetadata: Record<string, any> = {};
         const toolUseBlocks = new Map<number, Record<string, any>>();
         const toolUseInputJson = new Map<number, string>();
 
@@ -1820,6 +1821,7 @@ export function buildAnthropicHandler(
                 try {
                   const data = JSON.parse(line.slice(6));
                   if (currentEventType === 'message_start' && data.message) {
+                    Object.assign(responseMetadata, data.message);
                     responseModelName = data.message.model || responseModelName;
                     usage = {
                       ...(usage ?? {}),
@@ -1859,6 +1861,7 @@ export function buildAnthropicHandler(
                       );
                     }
                   } else if (currentEventType === 'message_delta') {
+                    Object.assign(responseMetadata, data.delta);
                     usage = {
                       ...(usage ?? {}),
                       ...(data.usage ?? {}),
@@ -1872,6 +1875,8 @@ export function buildAnthropicHandler(
                     cacheReadInputTokens = streamUsage.cacheReadInputToken;
                     cacheWriteInputTokens = streamUsage.cacheWriteInputToken;
                     responseCost = data.usage?.cost ?? responseCost;
+                  } else if (currentEventType === 'error') {
+                    responseMetadata.error = data.error ?? data;
                   }
                 } catch {
                   // Skip non-JSON data lines
@@ -1887,6 +1892,9 @@ export function buildAnthropicHandler(
         stopKeepAlive?.();
         res.end();
         const duration = Date.now() - start;
+        const status = responseMetadata.error
+          ? AIGatewayLogsStatus.Failed
+          : AIGatewayLogsStatus.Success;
         const toolUse = [...toolUseBlocks.entries()]
           .sort(([a], [b]) => a - b)
           .map(([index, block]) => {
@@ -1930,7 +1938,7 @@ export function buildAnthropicHandler(
                   );
           const tpot = calcAIGatewayTpot({
             stream: true,
-            status: AIGatewayLogsStatus.Success,
+            status,
             duration,
             ttft,
             outputToken: outputTokens,
@@ -1939,7 +1947,7 @@ export function buildAnthropicHandler(
           await prisma.aIGatewayLogs.update({
             where: { id: logId },
             data: {
-              status: AIGatewayLogsStatus.Success,
+              status,
               modelName: responseModelName,
               inputToken: inputTokens,
               outputToken: outputTokens,
@@ -1950,6 +1958,7 @@ export function buildAnthropicHandler(
               tpot,
               price,
               responsePayload: {
+                ...responseMetadata,
                 content: outputContent,
                 usage: {
                   ...usage,
