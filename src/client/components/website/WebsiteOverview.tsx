@@ -1,10 +1,12 @@
 import { Button, message, Spin, Switch } from 'antd';
 import React from 'react';
+import { flushSync } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { SyncOutlined } from '@ant-design/icons';
 import { DateFilter } from '../DateFilter';
 import { WebsiteInfo } from '../../api/model/website';
 import { getDateArray } from '../../utils/date';
-import { useEvent } from '../../hooks/useEvent';
+import { useEventWithLoading } from '../../hooks/useEvent';
 import { MetricCard } from '../MetricCard';
 import { formatNumber, formatShortTime } from '../../utils/common';
 import { WebsiteOnlineCount } from './WebsiteOnlineCount';
@@ -28,6 +30,7 @@ export const WebsiteOverview: React.FC<{
   const { website, showDateFilter = false, actions } = props;
   const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
   const trpcUtils = trpc.useUtils();
+  const queryClient = useQueryClient();
   const showPreviousPeriod = useGlobalStateStore(
     (state) => state.showPreviousPeriod
   );
@@ -35,7 +38,6 @@ export const WebsiteOverview: React.FC<{
   const {
     data: chartData = [],
     isLoading: isLoadingPageview,
-    refetch: refetchPageview,
   } = trpc.insights.query.useQuery(
     {
       workspaceId: website.workspaceId,
@@ -85,7 +87,6 @@ export const WebsiteOverview: React.FC<{
   const {
     data: stats,
     isLoading: isLoadingStats,
-    refetch: refetchStats,
   } = trpc.website.stats.useQuery(
     {
       workspaceId: website.workspaceId,
@@ -104,19 +105,42 @@ export const WebsiteOverview: React.FC<{
     }
   );
 
-  const handleRefresh = useEvent(async () => {
-    refresh();
+  const [handleRefresh, isRefreshing] = useEventWithLoading(async () => {
+    // Commit the new time range before refetching the active queries.
+    flushSync(refresh);
+    const scope = { workspaceId: website.workspaceId, websiteId: website.id };
+    const options = { throwOnError: true, cancelRefetch: false };
 
-    await Promise.all([
-      refetchPageview(),
-      refetchStats(),
-      trpcUtils.website.retention.invalidate({
-        workspaceId: website.workspaceId,
-        websiteId: website.id,
-      }),
-    ]);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries(
+          { queryKey: ['websiteEventAnalysis', scope] },
+          options
+        ),
+        trpcUtils.website.stats.invalidate(scope, undefined, options),
+        trpcUtils.website.metrics.invalidate(scope, undefined, options),
+        trpcUtils.website.retention.invalidate(scope, undefined, options),
+        trpcUtils.website.onlineCount.invalidate(scope, undefined, options),
+        trpcUtils.insights.query.invalidate(
+          {
+            workspaceId: website.workspaceId,
+            insightId: website.id,
+            insightType: 'website',
+          },
+          undefined,
+          options
+        ),
+        trpcUtils.website.allOverview.invalidate(
+          { workspaceId: website.workspaceId },
+          undefined,
+          options
+        ),
+      ]);
 
-    toast.success(t('Refreshed'));
+      toast.success(t('Refreshed'));
+    } catch {
+      toast.error(t('Failed to refresh'));
+    }
   });
 
   const loading = isLoadingPageview || isLoadingStats;
@@ -171,7 +195,10 @@ export const WebsiteOverview: React.FC<{
 
           <Button
             size="large"
+            aria-label={t('Refresh')}
             icon={<SyncOutlined />}
+            loading={isRefreshing}
+            disabled={isRefreshing}
             onClick={handleRefresh}
           />
 
