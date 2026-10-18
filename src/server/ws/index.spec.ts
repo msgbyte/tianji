@@ -168,7 +168,14 @@ describe('AI Gateway Responses WebSocket', () => {
     }
   });
 
-  test('proxies official events with the resolved key and finishes the gateway log', async () => {
+  test.each([
+    ['response.done', 'completed'],
+    ['response.done', 'failed'],
+    ['response.done', 'incomplete'],
+    ['response.done', 'cancelled'],
+    ['response.failed', 'failed'],
+    ['response.incomplete', 'incomplete'],
+  ])('proxies events and retains the %s response with status %s', async (type, status) => {
     const init = websocket.initAIGatewayResponsesWebSocket;
 
     aiGatewayMocks.resolveModelApiKey.mockResolvedValue({
@@ -208,10 +215,16 @@ describe('AI Gateway Responses WebSocket', () => {
         );
         socket.send(
           JSON.stringify({
-            type: 'response.done',
+            type,
             response: {
               id: 'resp_1',
-              status: 'completed',
+              status,
+              error:
+                status === 'failed'
+                  ? { code: 'server_error', message: 'Error' }
+                  : null,
+              incomplete_details:
+                status === 'incomplete' ? { reason: 'content_filter' } : null,
               model: 'gpt-5-mini',
               usage: { input_tokens: 1, output_tokens: 1 },
               output: [],
@@ -241,7 +254,7 @@ describe('AI Gateway Responses WebSocket', () => {
         client.on('message', (data) => {
           const event = JSON.parse(data.toString());
           received.push(event);
-          if (event.type === 'response.done') {
+          if (event.type === type) {
             resolve();
           }
         });
@@ -262,7 +275,7 @@ describe('AI Gateway Responses WebSocket', () => {
           expect.objectContaining({
             logId: 'log_1',
             outputContent: 'pong',
-            response: expect.objectContaining({ id: 'resp_1' }),
+            response: expect.objectContaining({ id: 'resp_1', status }),
           })
         );
       });
@@ -278,7 +291,7 @@ describe('AI Gateway Responses WebSocket', () => {
       expect(received.map((event: any) => event.type)).toEqual([
         'response.created',
         'response.output_text.delta',
-        'response.done',
+        type,
       ]);
     } finally {
       client.terminate();

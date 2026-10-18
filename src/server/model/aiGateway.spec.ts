@@ -15,7 +15,7 @@ import {
   getAIGatewayErrorStatusCode,
   getAIGatewayUsage,
   mergeAIGatewayStreamUsage,
-  getOpenAIResponsesCompletedResponse,
+  getOpenAIResponsesTerminalResponse,
   getOpenAIResponsesOutputText,
   getOpenAIResponsesStreamDelta,
   getOpenAIResponsesUsage,
@@ -1727,6 +1727,93 @@ describe.each(['stream', 'nonstream', 'websocket'] as const)(
   }
 );
 
+describe('Responses terminal logging', () => {
+  beforeEach(() => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({ id: 'log1' } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+  });
+
+  test.each([
+    ['response.failed', 'failed'],
+    ['response.incomplete', 'incomplete'],
+    ['response.done', 'cancelled'],
+  ])('retains the final response for HTTP %s', async (type, status) => {
+    const response = {
+      id: 'resp_filtered',
+      model: 'gpt-4.1-mini',
+      status,
+      error: status === 'failed' ? { code: 'server_error', message: 'Error' } : null,
+      incomplete_details: status === 'incomplete' ? { reason: 'content_filter' } : null,
+      output: [],
+      usage: { input_tokens: 5, output_tokens: 1, cost: 0 },
+    };
+    const events = [
+      { type: 'response.output_text.delta', delta: 'Hola' },
+      { type, response },
+    ];
+    openAIResponsesCreateMock.mockResolvedValue(
+      (async function* () { yield* events; })()
+    );
+    const res = streamResponse();
+    await buildOpenAIResponsesHandler({})(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { authorization: 'Bearer sk-test' },
+        body: { model: response.model, input: 'Hola', stream: true },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.waitFor(() => {
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: AIGatewayLogsStatus.Failed,
+            responsePayload: { content: 'Hola', response },
+          }),
+        })
+      );
+    });
+    expect(res.writes.join('')).toContain(`data: ${JSON.stringify(events[1])}\n\n`);
+  });
+
+  test.each([
+    { code: 'content_filter', message: 'No permitido' },
+    { reason: 'content_filter' },
+    new Error('Connection closed'),
+  ])('retains failure details and partial output in WebSocket logs: %j', async (error) => {
+    const response = { id: 'resp_failed', status: 'incomplete', output: [] };
+    await finishOpenAIResponsesGatewayLog({
+      logId: 'log1',
+      workspaceId: 'workspace1',
+      gatewayId: 'gateway1',
+      modelName: 'gpt-4.1-mini',
+      input: 'Hola',
+      outputContent: 'Respuesta parcial',
+      startedAt: Date.now(),
+      ttft: 1,
+      response,
+      error,
+    });
+    expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: AIGatewayLogsStatus.Failed,
+          responsePayload: {
+            content: 'Respuesta parcial',
+            response,
+            error: error instanceof Error ? String(error) : error,
+          },
+        }),
+      })
+    );
+  });
+});
+
 describe('openaiResponsesRequestSchema', () => {
   test('accepts Responses API payloads and preserves passthrough fields', () => {
     const payload = openaiResponsesRequestSchema.parse({
@@ -1836,7 +1923,7 @@ describe('OpenAI Responses stream helpers', () => {
     };
 
     expect(
-      getOpenAIResponsesCompletedResponse({
+      getOpenAIResponsesTerminalResponse({
         type: 'response.completed',
         response,
       })

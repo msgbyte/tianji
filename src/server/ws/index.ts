@@ -444,6 +444,7 @@ function bridgeAIGatewayResponsesWebSocket(
           event.type === 'error'
         ) {
           finishState(state, {
+            response: event.response,
             error:
               event.response?.error ??
               event.response?.incomplete_details ??

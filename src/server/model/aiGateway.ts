@@ -493,9 +493,14 @@ export function getOpenAIResponsesStreamDelta(event: any): string {
   return '';
 }
 
-export function getOpenAIResponsesCompletedResponse(event: any) {
+export function getOpenAIResponsesTerminalResponse(event: any) {
   if (
-    (event?.type === 'response.completed' || event?.type === 'response.done') &&
+    [
+      'response.completed',
+      'response.done',
+      'response.failed',
+      'response.incomplete',
+    ].includes(event?.type) &&
     event.response
   ) {
     return event.response;
@@ -532,7 +537,19 @@ export async function finishOpenAIResponsesGatewayLog(args: {
       data: {
         status: AIGatewayLogsStatus.Failed,
         duration,
-        responsePayload: { error: String(args.error) },
+        responsePayload: {
+          content:
+            getOpenAIResponsesOutputText(args.response) ||
+            args.outputContent ||
+            '',
+          ...(args.response && { response: args.response }),
+          error:
+            typeof args.error === 'object' &&
+            args.error !== null &&
+            !(args.error instanceof Error)
+              ? (args.error as Prisma.InputJsonObject)
+              : String(args.error),
+        },
       },
     });
     return;
@@ -1258,8 +1275,9 @@ export function buildOpenAIResponsesHandler(
 
           let outputContent = '';
           let ttft = -1;
-          let completedResponse: any;
+          let terminalResponse: any;
           let responseModelName = modelName;
+          let status: AIGatewayLogsStatus = AIGatewayLogsStatus.Success;
 
           for await (const event of responseStream) {
             if (ttft === -1) {
@@ -1267,10 +1285,17 @@ export function buildOpenAIResponsesHandler(
             }
 
             outputContent += getOpenAIResponsesStreamDelta(event);
-            const response = getOpenAIResponsesCompletedResponse(event);
+            const response = getOpenAIResponsesTerminalResponse(event);
             if (response) {
-              completedResponse = response;
+              terminalResponse = response;
               responseModelName = response.model ?? responseModelName;
+              if (
+                event.type === 'response.failed' ||
+                event.type === 'response.incomplete' ||
+                ['failed', 'incomplete', 'cancelled'].includes(response.status)
+              ) {
+                status = AIGatewayLogsStatus.Failed;
+              }
             }
 
             res.write(`data: ${JSON.stringify(event)}\n\n`);
@@ -1286,8 +1311,8 @@ export function buildOpenAIResponsesHandler(
 
           logP.then(async ({ id: logId }) => {
             const finalOutputContent =
-              getOpenAIResponsesOutputText(completedResponse) || outputContent;
-            const usage = getOpenAIResponsesUsage(completedResponse);
+              getOpenAIResponsesOutputText(terminalResponse) || outputContent;
+            const usage = getOpenAIResponsesUsage(terminalResponse);
             const [inputToken, outputToken] = await Promise.all([
               usage.inputToken ||
                 calcOpenAIToken(
@@ -1309,7 +1334,7 @@ export function buildOpenAIResponsesHandler(
                   customModelOutputPrice: gatewayInfo?.customModelOutputPrice,
                 })
               : null;
-            const responseCost = get(completedResponse, ['usage', 'cost']);
+            const responseCost = get(terminalResponse, ['usage', 'cost']);
             const price =
               responseCost !== undefined
                 ? new Prisma.Decimal(responseCost)
@@ -1325,7 +1350,7 @@ export function buildOpenAIResponsesHandler(
                     );
             const tpot = calcAIGatewayTpot({
               stream: true,
-              status: AIGatewayLogsStatus.Success,
+              status,
               duration,
               ttft,
               outputToken,
@@ -1336,7 +1361,7 @@ export function buildOpenAIResponsesHandler(
                 id: logId,
               },
               data: {
-                status: AIGatewayLogsStatus.Success,
+                status,
                 modelName: responseModelName,
                 inputToken,
                 outputToken,
@@ -1348,7 +1373,7 @@ export function buildOpenAIResponsesHandler(
                 price,
                 responsePayload: {
                   content: finalOutputContent,
-                  response: completedResponse ?? {},
+                  response: terminalResponse ?? {},
                 },
               },
             });
