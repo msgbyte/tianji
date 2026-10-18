@@ -884,7 +884,13 @@ export function buildOpenAIHandler(
               ttft = Date.now() - start;
             }
             const { choices = [], usage: chunkUsage, ...metadata } = chunk;
-            Object.assign(responseMetadata, metadata);
+            // Azure filter annotations use placeholders for response identity.
+            Object.assign(responseMetadata, metadata, {
+              id: metadata.id || responseMetadata.id,
+              object: metadata.object || responseMetadata.object,
+              created: metadata.created || responseMetadata.created,
+              model: metadata.model || responseMetadata.model,
+            });
             for (const [position, choice] of choices.entries()) {
               const { delta, ...choiceMetadata } = choice;
               const index = choice.index ?? position;
@@ -899,7 +905,11 @@ export function buildOpenAIHandler(
                 };
                 responseChoices.set(index, result);
               }
-              Object.assign(result, choiceMetadata, { index });
+              Object.assign(result, choiceMetadata, {
+                index,
+                finish_reason:
+                  choice.finish_reason ?? result.finish_reason ?? null,
+              });
               const { tool_calls: toolCallDeltas, ...messageDelta } =
                 delta ?? {};
               for (const [key, value] of Object.entries(messageDelta)) {

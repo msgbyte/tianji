@@ -379,6 +379,105 @@ describe('calcAIGatewayTpot', () => {
 });
 
 describe('AI Gateway stream keepalive', () => {
+  test('preserves terminal metadata after an Azure filter annotation', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+    const metadata = {
+      id: 'chatcmpl-annotated',
+      object: 'chat.completion.chunk',
+      created: 1720000000,
+      model: 'gpt-4o',
+    };
+    const annotation = {
+      index: 0,
+      finish_reason: null,
+      content_filter_results: {
+        violence: { filtered: false, severity: 'safe' },
+      },
+      content_filter_offsets: {
+        check_offset: 4,
+        start_offset: 0,
+        end_offset: 4,
+      },
+    };
+    const chunks = [
+      {
+        ...metadata,
+        choices: [
+          {
+            index: 0,
+            delta: { role: 'assistant', content: 'Hola' },
+            finish_reason: null,
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
+      },
+      {
+        id: '',
+        object: '',
+        created: 0,
+        model: '',
+        choices: [annotation],
+        usage: null,
+      },
+    ];
+    openAIChatCreateMock.mockResolvedValue(
+      (async function* () {
+        yield* chunks;
+      })()
+    );
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { authorization: 'Bearer sk-test' },
+      body: {
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: 'Hola' }],
+        stream: true,
+      },
+    };
+    const res = streamResponse();
+
+    await buildOpenAIHandler({ modelProvider: 'openai' })(
+      req as any,
+      res as any,
+      vi.fn()
+    );
+
+    for (const chunk of chunks) {
+      expect(res.write).toHaveBeenCalledWith(
+        `data: ${JSON.stringify(chunk)}\n\n`
+      );
+    }
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              ...metadata,
+              content: 'Hola',
+              choices: [
+                expect.objectContaining({
+                  ...annotation,
+                  finish_reason: 'stop',
+                  message: { role: 'assistant', content: 'Hola' },
+                }),
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
   test('preserves stream filtering details and refusals after a usage-only chunk', async () => {
     vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
       id: 'gateway1',
