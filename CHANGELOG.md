@@ -1,5 +1,21 @@
 
 
+## [1.33.10](https://github.com/msgbyte/tianji/compare/v1.33.9...v1.33.10) (2026-10-18)
+
+### Features
+
+* **ai-gateway:** add custom decisions passthrough ([edc3790](https://github.com/msgbyte/tianji/commit/edc3790e840b78596a7b2c78176550921086d7c5))
+* **ai-gateway:** forward OpenRouter decisions ([9c77cbf](https://github.com/msgbyte/tianji/commit/9c77cbf349f1bc09a5f3a29b9900a65fd2fb3e32))
+* **application:** add top event breakdown to statistics ([86fbe58](https://github.com/msgbyte/tianji/commit/86fbe5874961a4f55829142a66740d53098e7230))
+* **application:** show stacked events with session trend ([bad5e50](https://github.com/msgbyte/tianji/commit/bad5e50c4c3654e6d1d9761cfceb79699a9390bb))
+
+### Bug Fixes
+
+* **analytics:** synchronize manual date range refresh ([f5cc814](https://github.com/msgbyte/tianji/commit/f5cc81493c7d01d673a38284b170bb67a9aa622c))
+* **website:** bind filter values in stats, pageviews and metrics queries ([#295](https://github.com/msgbyte/tianji/issues/295)) ([3969e7b](https://github.com/msgbyte/tianji/commit/3969e7b0d2c43646c77a2f3573895e1bd250e857))
+* **website:** refresh dashboard data and sidebar counts ([648c134](https://github.com/msgbyte/tianji/commit/648c134c9eec57939c64cca2c43f116178189d8b))
+* **website:** respect event filters in analytics queries ([cb37f7e](https://github.com/msgbyte/tianji/commit/cb37f7edeeaecbf173b9ef786c1b501fc0e740a7))
+
 ## [1.33.9](https://github.com/msgbyte/tianji/compare/v1.33.8...v1.33.9) (2026-10-12)
 
 ### Bug Fixes
