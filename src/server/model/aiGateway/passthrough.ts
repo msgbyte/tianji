@@ -1,4 +1,4 @@
-import type { RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 import http from 'node:http';
 import https from 'node:https';
 import {
@@ -8,6 +8,8 @@ import {
 
 export function buildAIGatewayPassthroughHandler(options: {
   path: string;
+  baseUrl?: string;
+  header?: (req: Request) => Record<string, string>;
 }): RequestHandler {
   return async (req, res, next) => {
     const { gatewayInfo, modelApiKey } = await resolveAIGatewayModelApiKey({
@@ -15,7 +17,7 @@ export function buildAIGatewayPassthroughHandler(options: {
       gatewayId: req.params.gatewayId,
       requestApiKey: (req.headers.authorization ?? '').replace('Bearer ', ''),
     });
-    const baseUrl = gatewayInfo.customModelBaseUrl;
+    const baseUrl = options.baseUrl ?? gatewayInfo.customModelBaseUrl;
     if (!baseUrl) {
       res.status(400).json({ message: 'Custom model base URL is required.' });
       return;
@@ -36,6 +38,7 @@ export function buildAIGatewayPassthroughHandler(options: {
         method: 'POST',
         headers: {
           ...buildAIGatewayForwardHeaders(req),
+          ...options.header?.(req),
           authorization: `Bearer ${modelApiKey}`,
           'content-type': req.get('content-type') ?? 'application/json',
           accept: req.get('accept') ?? '*/*',

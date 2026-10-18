@@ -2,6 +2,7 @@ import 'express-async-errors';
 import express from 'express';
 import { once } from 'node:events';
 import http, { type Server } from 'node:http';
+import https from 'node:https';
 import type { AddressInfo } from 'node:net';
 import { gzipSync } from 'node:zlib';
 import request from 'supertest';
@@ -160,6 +161,36 @@ test('uses the caller key when the gateway has no stored key', async () => {
   expect((await post()).status).toBe(201);
   expect(received[0].headers.authorization).toBe('Bearer caller-key');
   expect(prisma.userApiKey.findUnique).not.toHaveBeenCalled();
+});
+
+test('forwards OpenRouter decisions to the alpha API with provider headers', async () => {
+  vi.spyOn(https, 'request').mockImplementation(
+    (url: any, options: any, callback?: any) => {
+      expect(String(url)).toBe(
+        'https://openrouter.ai/api/alpha/decisions?trace=1'
+      );
+      return http.request(
+        `${upstreamUrl}/api/alpha/decisions?trace=1`,
+        options,
+        callback
+      );
+    }
+  );
+  const result = await post(
+    path.replace('/custom/', '/openrouter/') + '?trace=1'
+  )
+    .set('HTTP-Referer', 'https://client.example/')
+    .set('X-Title', 'Client');
+  expect(result.status).toBe(201);
+  expect(received[0]).toMatchObject({
+    url: '/api/alpha/decisions?trace=1',
+    body: payload,
+    headers: {
+      authorization: 'Bearer stored-upstream-key',
+      'http-referer': 'https://client.example/',
+      'x-title': 'Client',
+    },
+  });
 });
 
 test('preserves compressed responses without corrupting the encoding or length', async () => {

@@ -13,6 +13,15 @@ import { buildAIGatewayPassthroughHandler } from '../model/aiGateway/passthrough
 export const aiGatewayRouter = Router();
 
 aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/openrouter/api/alpha/decisions',
+  buildAIGatewayPassthroughHandler({
+    baseUrl: 'https://openrouter.ai',
+    path: '/api/alpha/decisions',
+    header: buildOpenRouterHeaders,
+  })
+);
+
+aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/custom/api/alpha/decisions',
   buildAIGatewayPassthroughHandler({ path: '/api/alpha/decisions' })
 );
