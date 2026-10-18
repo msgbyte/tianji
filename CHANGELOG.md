@@ -1,5 +1,15 @@
 
 
+## [1.33.11](https://github.com/msgbyte/tianji/compare/v1.33.10...v1.33.11) (2026-10-18)
+
+### Bug Fixes
+
+* **ai-gateway:** preserve Anthropic stream terminal metadata ([843278f](https://github.com/msgbyte/tianji/commit/843278f22c578808f880c044dc447623dd61665c))
+* **ai-gateway:** preserve terminal metadata after filter annotations ([586f787](https://github.com/msgbyte/tianji/commit/586f78746a5efa1b175cd65e1adeaa143cd5be57))
+* **ai-gateway:** retain chat stream completion details ([437a5c4](https://github.com/msgbyte/tianji/commit/437a5c489ef9e995081513a9cb74d9ee4d2d6ac8))
+* **ai-gateway:** retain Responses failure payloads ([67cbd11](https://github.com/msgbyte/tianji/commit/67cbd1164d8045c4fe8327d37d628b34498d7bfd))
+* **ai-gateway:** show refusal and terminal failure details ([df7308e](https://github.com/msgbyte/tianji/commit/df7308e6739b464cc443407c3efe6a1d12fa2c21))
+
 ## [1.33.10](https://github.com/msgbyte/tianji/compare/v1.33.9...v1.33.10) (2026-10-18)
 
 ### Features
