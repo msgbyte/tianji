@@ -5,6 +5,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
@@ -18,6 +19,7 @@ import {
 import { delApplicationCache } from '../../model/application/index.js';
 import {
   eventStatsQueryResultItemSchema,
+  eventBreakdownItemSchema,
   getApplicationEventStats,
 } from '../../model/application/event.js';
 import { ApplicationStoreInfoHistoryModelSchema } from '../../prisma/zod/applicationstoreinfohistory.js';
@@ -95,7 +97,7 @@ export const applicationRouter = router({
       return application;
     }),
 
-  create: workspaceAdminProcedure
+  create: workspaceWriteProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -134,7 +136,7 @@ export const applicationRouter = router({
       return application;
     }),
 
-  update: workspaceAdminProcedure
+  update: workspaceWriteProcedure
     .meta(
       buildApplicationOpenapi({
         method: 'PATCH',
@@ -327,6 +329,7 @@ export const applicationRouter = router({
       z.object({
         current: eventStatsQueryResultItemSchema.array(),
         previous: eventStatsQueryResultItemSchema.array(),
+        eventBreakdown: eventBreakdownItemSchema.array(),
         currentTotalSessionCount: z.number(),
         previousTotalSessionCount: z.number(),
       })

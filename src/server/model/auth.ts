@@ -87,6 +87,7 @@ export const authConfig: Omit<AuthConfig, 'raw'> = {
       Github({
         id: 'github',
         name: 'Github',
+        issuer: 'https://github.com/login/oauth',
         ...env.auth.github,
       }),
     env.auth.provider.includes('google') &&

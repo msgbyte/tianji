@@ -1,20 +1,54 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import {
   OpenApiMetaInfo,
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { OpenApiMeta } from 'trpc-to-openapi';
 import { OPENAPI_TAG } from '../../utils/const.js';
-import { AIGatewayModelSchema } from '../../prisma/zod/aigateway.js';
 import { AIGatewayLogsModelSchema } from '../../prisma/zod/aigatewaylogs.js';
 import { prisma } from '../../model/_client.js';
 import { fetchDataByCursor } from '../../utils/prisma.js';
 import { buildCursorResponseSchema } from '../../utils/schema.js';
 import { clearGatewayInfoCache } from '../../model/aiGateway.js';
 import { clearQuotaAlertCacheForGateway } from '../../model/aiGateway/quotaAlert.js';
+import { testAIGatewayCustomConnection } from '../../model/aiGateway/connectivity.js';
+import {
+  aiGatewayOutputSchema,
+  serializeAIGateway,
+} from '../../model/aiGateway/serialize.js';
+import { redactSecret } from '../../model/aiGateway/redactSecret.js';
 import { logger } from '../../utils/logger.js';
+import type { Prisma } from '@prisma/client';
+
+const logSummarySchema = AIGatewayLogsModelSchema.omit({
+  requestPayload: true,
+  responsePayload: true,
+});
+
+const logSummarySelect = {
+  id: true,
+  workspaceId: true,
+  gatewayId: true,
+  inputToken: true,
+  outputToken: true,
+  cacheReadInputToken: true,
+  cacheWriteInputToken: true,
+  stream: true,
+  modelName: true,
+  modelProvider: true,
+  status: true,
+  duration: true,
+  ttft: true,
+  tpot: true,
+  price: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.AIGatewayLogsSelect;
 
 const modelPricingData = await import(
   '../../utils/model_prices_and_context_window_v2.json',
@@ -23,13 +57,62 @@ const modelPricingData = await import(
   }
 ).then((res) => res.default);
 
+const modelPricingProviders = Object.entries(modelPricingData)
+  .map(([id, provider]) => ({ id, name: provider.name }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+const aiGatewayCustomModelPriceSchema = z
+  .object({
+    inputTokenMin: z.number().int().nonnegative().optional(),
+    inputTokenMax: z.number().int().nonnegative().nullable().optional(),
+    input: z.number().nullable().optional(),
+    output: z.number().nullable().optional(),
+    cacheRead: z.number().nullable().optional(),
+    cacheWrite: z.number().nullable().optional(),
+  })
+  .passthrough();
+
+const aiGatewayCustomModelStrategySchema = z
+  .object({
+    price: z
+      .union([
+        aiGatewayCustomModelPriceSchema,
+        z.array(aiGatewayCustomModelPriceSchema),
+      ])
+      .optional(),
+  })
+  .passthrough();
+
+const aiGatewayModelPricingCostSchema = z
+  .object({
+    input: z.number().optional(),
+    output: z.number().optional(),
+    cache_read: z.number().optional(),
+    cache_write: z.number().optional(),
+    context_over_200k: z
+      .object({
+        input: z.number().optional(),
+        output: z.number().optional(),
+        cache_read: z.number().optional(),
+        cache_write: z.number().optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
 const aiGatewayCreateSchema = z.object({
   name: z.string().max(100),
   modelApiKey: z.string().nullable(),
   customModelBaseUrl: z.string().nullable(),
   customModelName: z.string().nullable(),
+  customModelStrategy: aiGatewayCustomModelStrategySchema.nullable(),
   customModelInputPrice: z.number().nullable(),
   customModelOutputPrice: z.number().nullable(),
+});
+
+const aiGatewayDuplicateOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
 });
 
 export const aiGatewayRouter = router({
@@ -43,7 +126,7 @@ export const aiGatewayRouter = router({
         summary: 'Get all gateways',
       },
     })
-    .output(z.array(AIGatewayModelSchema))
+    .output(z.array(aiGatewayOutputSchema))
     .query(async ({ input }) => {
       const { workspaceId } = input;
 
@@ -56,15 +139,7 @@ export const aiGatewayRouter = router({
         },
       });
 
-      return aiGateways.map((gateway) => ({
-        ...gateway,
-        customModelInputPrice: gateway.customModelInputPrice
-          ? Number(gateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: gateway.customModelOutputPrice
-          ? Number(gateway.customModelOutputPrice)
-          : null,
-      }));
+      return aiGateways.map(serializeAIGateway);
     }),
   info: workspaceProcedure
     .meta(
@@ -79,7 +154,7 @@ export const aiGatewayRouter = router({
         gatewayId: z.string(),
       })
     )
-    .output(AIGatewayModelSchema.nullable())
+    .output(aiGatewayOutputSchema.nullable())
     .query(async ({ input }) => {
       const { workspaceId, gatewayId } = input;
 
@@ -94,17 +169,9 @@ export const aiGatewayRouter = router({
         return null;
       }
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
-  create: workspaceAdminProcedure
+  create: workspaceWriteProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -115,7 +182,7 @@ export const aiGatewayRouter = router({
       },
     })
     .input(aiGatewayCreateSchema)
-    .output(AIGatewayModelSchema)
+    .output(aiGatewayOutputSchema)
     .mutation(async ({ input }) => {
       const {
         workspaceId,
@@ -123,6 +190,7 @@ export const aiGatewayRouter = router({
         modelApiKey,
         customModelBaseUrl,
         customModelName,
+        customModelStrategy,
         customModelInputPrice,
         customModelOutputPrice,
       } = input;
@@ -134,23 +202,16 @@ export const aiGatewayRouter = router({
           modelApiKey,
           customModelBaseUrl,
           customModelName,
+          customModelStrategy,
           customModelInputPrice,
           customModelOutputPrice,
         },
       });
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
 
-  update: workspaceAdminProcedure
+  update: workspaceWriteProcedure
     .meta(
       buildAIGatewayOpenapi({
         method: 'PATCH',
@@ -163,9 +224,9 @@ export const aiGatewayRouter = router({
         .object({
           gatewayId: z.string(),
         })
-        .merge(aiGatewayCreateSchema)
+        .merge(aiGatewayCreateSchema.partial({ modelApiKey: true }))
     )
-    .output(AIGatewayModelSchema)
+    .output(aiGatewayOutputSchema)
     .mutation(async ({ input }) => {
       const {
         workspaceId,
@@ -174,6 +235,7 @@ export const aiGatewayRouter = router({
         modelApiKey,
         customModelBaseUrl,
         customModelName,
+        customModelStrategy,
         customModelInputPrice,
         customModelOutputPrice,
       } = input;
@@ -188,6 +250,7 @@ export const aiGatewayRouter = router({
           modelApiKey,
           customModelBaseUrl,
           customModelName,
+          customModelStrategy,
           customModelInputPrice,
           customModelOutputPrice,
         },
@@ -195,15 +258,129 @@ export const aiGatewayRouter = router({
 
       clearGatewayInfoCache(workspaceId, gatewayId);
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
+    }),
+
+  testConnection: workspaceWriteProcedure
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        modelApiKey: z
+          .string()
+          .trim()
+          .min(1, 'Model API Key is required')
+          .nullish(),
+        customModelBaseUrl: z.string().trim().url().nullable(),
+        customModelName: z.string().nullable(),
+      })
+    )
+    .output(
+      z.object({
+        model: z.string(),
+        durationMs: z.number().nonnegative(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const {
+        workspaceId,
+        gatewayId,
+        modelApiKey,
+        customModelBaseUrl,
+        customModelName,
+      } = input;
+      const gateway = await prisma.aIGateway.findFirst({
+        where: { id: gatewayId, workspaceId },
+        select: { id: true, modelApiKey: true },
+      });
+
+      if (!gateway) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'AI Gateway not found',
+        });
+      }
+
+      const apiKey =
+        modelApiKey === undefined ? gateway.modelApiKey : modelApiKey;
+      if (!apiKey) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Model API Key is required',
+        });
+      }
+
+      try {
+        const result = await testAIGatewayCustomConnection({
+          modelApiKey: apiKey,
+          customModelBaseUrl,
+          customModelName,
+        });
+
+        return {
+          ...result,
+          model: redactSecret(result.model, apiKey),
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'BAD_GATEWAY',
+          message:
+            error instanceof Error
+              ? redactSecret(error.message, apiKey)
+              : 'AI Gateway connection test failed',
+          cause: error,
+        });
+      }
+    }),
+
+  duplicate: workspaceWriteProcedure
+    .meta(
+      buildAIGatewayOpenapi({
+        method: 'POST',
+        path: '/duplicate',
+        summary: 'Duplicate gateway',
+      })
+    )
+    .input(
+      z.object({
+        gatewayId: z.string(),
+        name: z.string().trim().min(1).max(100),
+      })
+    )
+    .output(aiGatewayDuplicateOutputSchema)
+    .mutation(async ({ input }) => {
+      const { workspaceId, gatewayId, name } = input;
+      const source = await prisma.aIGateway.findFirst({
+        where: { id: gatewayId, workspaceId },
+        select: {
+          modelApiKey: true,
+          customModelBaseUrl: true,
+          customModelName: true,
+          customModelStrategy: true,
+          customModelInputPrice: true,
+          customModelOutputPrice: true,
+        },
+      });
+
+      if (!source) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'AI Gateway not found',
+        });
+      }
+
+      return prisma.aIGateway.create({
+        data: {
+          workspaceId,
+          name,
+          modelApiKey: source.modelApiKey,
+          customModelBaseUrl: source.customModelBaseUrl,
+          customModelName: source.customModelName,
+          customModelStrategy: source.customModelStrategy,
+          customModelInputPrice: source.customModelInputPrice,
+          customModelOutputPrice: source.customModelOutputPrice,
+        },
+        select: { id: true, name: true },
+      });
     }),
 
   delete: workspaceAdminProcedure
@@ -219,7 +396,7 @@ export const aiGatewayRouter = router({
         gatewayId: z.string(),
       })
     )
-    .output(AIGatewayModelSchema)
+    .output(aiGatewayOutputSchema)
     .mutation(async ({ input }) => {
       const { workspaceId, gatewayId } = input;
 
@@ -232,15 +409,7 @@ export const aiGatewayRouter = router({
 
       clearGatewayInfoCache(workspaceId, gatewayId);
 
-      return {
-        ...aiGateway,
-        customModelInputPrice: aiGateway.customModelInputPrice
-          ? Number(aiGateway.customModelInputPrice)
-          : null,
-        customModelOutputPrice: aiGateway.customModelOutputPrice
-          ? Number(aiGateway.customModelOutputPrice)
-          : null,
-      };
+      return serializeAIGateway(aiGateway);
     }),
   logs: workspaceProcedure
     .meta(
@@ -256,23 +425,56 @@ export const aiGatewayRouter = router({
         cursor: z.string().optional(),
         limit: z.number().int().min(1).max(100).default(20),
         logId: z.string().optional(),
+        openedAt: z.coerce.date<Date>().optional(),
+        pendingIds: z.array(z.string()).optional(),
       })
     )
-    .output(
-      buildCursorResponseSchema(
-        AIGatewayLogsModelSchema.omit({
-          requestPayload: true,
-          responsePayload: true,
-        }).merge(
-          z.object({
-            requestPayload: z.any().optional(),
-            responsePayload: z.any().optional(),
-          })
-        )
-      )
-    )
+    .output(buildCursorResponseSchema(logSummarySchema))
     .query(async ({ input }) => {
-      const { workspaceId, gatewayId, cursor, limit, logId } = input;
+      const {
+        workspaceId,
+        gatewayId,
+        cursor,
+        limit,
+        logId,
+        openedAt,
+        pendingIds,
+      } = input;
+
+      if (openedAt) {
+        const where = {
+          workspaceId,
+          gatewayId,
+          createdAt: { gte: openedAt },
+        };
+        const [freshItems, pendingItems] = await Promise.all([
+          prisma.aIGatewayLogs.findMany({
+            where,
+            select: logSummarySelect,
+            take: limit + 1,
+            cursor: cursor ? { id: cursor } : undefined,
+            orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+          }),
+          pendingIds?.length
+            ? prisma.aIGatewayLogs.findMany({
+                where: { ...where, id: { in: pendingIds } },
+                select: logSummarySelect,
+              })
+            : [],
+        ]);
+        const nextItem =
+          freshItems.length > limit ? freshItems.pop() : undefined;
+        const items = new Map(freshItems.map((item) => [item.id, item]));
+        pendingItems.forEach((item) => items.set(item.id, item));
+
+        return {
+          items: Array.from(items.values()).map((item) => ({
+            ...item,
+            price: Number(item.price),
+          })),
+          nextCursor: nextItem?.id,
+        };
+      }
 
       const { items, nextCursor } = await fetchDataByCursor(
         prisma.aIGatewayLogs,
@@ -283,6 +485,7 @@ export const aiGatewayRouter = router({
             ...(logId && { id: logId }),
           },
           limit,
+          select: logSummarySelect,
           cursor,
           cursorName: 'id',
           order: 'desc',
@@ -293,9 +496,33 @@ export const aiGatewayRouter = router({
         items: items.map((item) => ({
           ...item,
           price: Number(item.price),
-        })) as z.infer<typeof AIGatewayLogsModelSchema>[],
+        })),
         nextCursor,
       };
+    }),
+  logDetail: workspaceProcedure
+    .meta(
+      buildAIGatewayOpenapi({
+        method: 'GET',
+        path: '/logs/{logId}',
+        summary: 'Get gateway log detail',
+      })
+    )
+    .input(z.object({ gatewayId: z.string(), logId: z.string() }))
+    .output(
+      logSummarySchema.extend({
+        requestPayload: z.any().optional(),
+        responsePayload: z.any().optional(),
+      })
+    )
+    .query(async ({ input: { workspaceId, gatewayId, logId } }) => {
+      const log = await prisma.aIGatewayLogs.findFirst({
+        where: { workspaceId, gatewayId, id: logId },
+      });
+      if (!log) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Log not found' });
+      }
+      return { ...log, price: Number(log.price) };
     }),
   modelPricing: workspaceProcedure
     .meta(
@@ -308,11 +535,15 @@ export const aiGatewayRouter = router({
     .input(
       z.object({
         search: z.string().optional(),
+        providerId: z.string().optional(),
         limit: z.number().int().min(1).max(50).default(10),
       })
     )
     .output(
       z.object({
+        availableProviders: z.array(
+          z.object({ id: z.string(), name: z.string() })
+        ),
         providers: z.array(
           z.object({
             id: z.string(),
@@ -337,13 +568,7 @@ export const aiGatewayRouter = router({
                   })
                   .optional(),
                 open_weights: z.boolean().optional(),
-                cost: z
-                  .object({
-                    input: z.number().optional(),
-                    output: z.number().optional(),
-                    cache_read: z.number().optional(),
-                  })
-                  .optional(),
+                cost: aiGatewayModelPricingCostSchema.optional(),
                 limit: z
                   .object({
                     context: z.number().optional(),
@@ -357,7 +582,7 @@ export const aiGatewayRouter = router({
       })
     )
     .query(async ({ input }) => {
-      const { search, limit } = input;
+      const { search, providerId: selectedProviderId, limit } = input;
 
       try {
         const allModels = [];
@@ -365,6 +590,10 @@ export const aiGatewayRouter = router({
         for (const [providerId, providerInfo] of Object.entries(
           modelPricingData
         )) {
+          if (selectedProviderId && providerId !== selectedProviderId) {
+            continue;
+          }
+
           const provider = providerInfo as any;
 
           for (const [modelId, modelInfo] of Object.entries(
@@ -427,10 +656,10 @@ export const aiGatewayRouter = router({
 
         const providers = Array.from(providerMap.values());
 
-        return { providers };
+        return { providers, availableProviders: modelPricingProviders };
       } catch (error) {
         logger.error('Error reading model pricing data:', error);
-        return { providers: [] };
+        return { providers: [], availableProviders: modelPricingProviders };
       }
     }),
   quotaAlert: {
@@ -487,7 +716,7 @@ export const aiGatewayRouter = router({
         };
       }),
 
-    upsert: workspaceAdminProcedure
+    upsert: workspaceWriteProcedure
       .meta(
         buildAIGatewayOpenapi({
           method: 'POST',

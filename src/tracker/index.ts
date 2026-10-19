@@ -82,7 +82,6 @@ import { createTrackerCore } from 'tianji-client-sdk/tracker/core';
   const tracker = createTrackerCore({
     serverUrl: root,
     websiteId: website,
-    batchDelay: 200,
     disableBatch: false,
   });
 

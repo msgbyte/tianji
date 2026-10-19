@@ -3,7 +3,11 @@ import { Button } from '../ui/button';
 import { LuArchive, LuArchiveRestore } from 'react-icons/lu';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { AppRouterOutput, trpc } from '@/api/trpc';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { DynamicVirtualList } from '../DynamicVirtualList';
 import { get } from 'lodash-es';
 import { FeedEventItem } from './FeedEventItem';
@@ -29,6 +33,7 @@ export const FeedArchivePageButton: React.FC<FeedArchivePageButtonProps> =
       trpc.feed.clearAllArchivedEvents.useMutation();
     const trpcUtils = trpc.useUtils();
     const hasAdminPermission = useHasAdminPermission();
+    const hasWritePermission = useHasWritePermission();
 
     const {
       data,
@@ -110,14 +115,16 @@ export const FeedArchivePageButton: React.FC<FeedArchivePageButtonProps> =
                   className="animate-fade-in mb-2"
                   event={item}
                   actions={
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-6 w-6 overflow-hidden"
-                      onClick={() => handleUnArchive(item)}
-                    >
-                      <LuArchiveRestore size={12} />
-                    </Button>
+                    hasWritePermission && (
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-6 w-6 overflow-hidden"
+                        onClick={() => handleUnArchive(item)}
+                      >
+                        <LuArchiveRestore size={12} />
+                      </Button>
+                    )
                   }
                 />
               )}

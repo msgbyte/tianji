@@ -2,8 +2,13 @@ import Keyv, { type KeyvStoreAdapter } from 'keyv';
 import KeyvRedis from '@keyv/redis';
 import KeyvPostgres from '@keyv/postgres';
 import { env } from '../utils/env.js';
+import {
+  createWorkerCacheManager,
+  scheduleWorkerKVPostgresCleanup,
+} from './worker.js';
 
 let _cacheManager: Keyv;
+let _workerCacheManager: Keyv;
 export async function getCacheManager() {
   if (_cacheManager) {
     return _cacheManager;
@@ -31,6 +36,20 @@ export async function getCacheManager() {
   _cacheManager = cacheManager;
 
   return cacheManager;
+}
+
+export async function getWorkerCacheManager() {
+  if (_workerCacheManager) {
+    return _workerCacheManager;
+  }
+
+  const shared = await getCacheManager();
+  _workerCacheManager = createWorkerCacheManager(
+    shared,
+    scheduleWorkerKVPostgresCleanup
+  );
+
+  return _workerCacheManager;
 }
 
 interface BuildQueryWithCacheOptions {

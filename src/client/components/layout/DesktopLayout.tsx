@@ -11,6 +11,7 @@ import {
   LuBrainCircuit,
   LuSquareFunction,
   LuLink,
+  LuRoute,
 } from 'react-icons/lu';
 import {
   ResizableHandle,
@@ -154,6 +155,12 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             label: String(serviceCount?.aiGateway ?? ''),
             icon: LuBrainCircuit,
             to: '/aiGateway',
+          },
+          {
+            title: t('AI Router'),
+            label: String(serviceCount?.aiRouter ?? ''),
+            icon: LuRoute,
+            to: '/aiRouter',
           },
           alphaMode &&
             enableFunctionWorker && {

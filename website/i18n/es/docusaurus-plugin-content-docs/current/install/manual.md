@@ -35,7 +35,7 @@ Crea un archivo `.env` en `src/server`
 
 ```ini
 DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/tianji?schema=public"
-JWT_SECRET="reemplázame-con-una-cadena-aleatoria"
+JWT_SECRET="replace-me-with-a-random-string"
 ```
 
 Asegúrate de que la URL de tu base de datos sea correcta y no olvides crear la base de datos antes.

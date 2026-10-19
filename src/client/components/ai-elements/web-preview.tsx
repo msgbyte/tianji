@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/utils/style';
+import { t } from '@i18next-toolkit/react';
 import { ChevronDownIcon } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 import {
@@ -164,7 +165,7 @@ export const WebPreviewUrl = ({
       className="h-8 flex-1 text-sm"
       onChange={onChange ?? handleChange}
       onKeyDown={handleKeyDown}
-      placeholder="Enter URL..."
+      placeholder={t('Enter URL...')}
       value={value ?? inputValue}
       {...props}
     />
@@ -186,7 +187,7 @@ export const WebPreviewBody = forwardRef<HTMLIFrameElement, WebPreviewBodyProps>
           className={cn('size-full', className)}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
           src={(src ?? url) || undefined}
-          title="Preview"
+          title={t('Preview')}
           {...props}
         />
         {loading}
@@ -225,7 +226,7 @@ export const WebPreviewConsole = ({
           className="hover:bg-muted/50 flex w-full items-center justify-between p-4 text-left font-medium"
           variant="ghost"
         >
-          Console
+          {t('Console')}
           <ChevronDownIcon
             className={cn(
               'h-4 w-4 transition-transform duration-200',
@@ -242,7 +243,7 @@ export const WebPreviewConsole = ({
       >
         <div className="max-h-48 space-y-1 overflow-y-auto">
           {logs.length === 0 ? (
-            <p className="text-muted-foreground">No console output</p>
+            <p className="text-muted-foreground">{t('No console output')}</p>
           ) : (
             logs.map((log, index) => (
               <div

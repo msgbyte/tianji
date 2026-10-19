@@ -109,8 +109,8 @@ What you should not infer:
 
 Useful docs:
 
-- Telemetry intro: https://tianji.msgbyte.com/docs/telemetry/intro
-- Website tracking script: https://tianji.msgbyte.com/docs/website/track-script
+- Telemetry intro: https://tianji.dev/docs/telemetry/intro
+- Website tracking script: https://tianji.dev/docs/website/track-script
 - Feed concepts: /docs/feed/intro, /docs/feed/state, /docs/feed/channels
 
 [![team aligning around a simple plan](https://images.unsplash.com/photo-1536408614573-c49fd217cd3b?auto=format&q=80&w=1200&fit=max)](https://images.unsplash.com/photo-1536408614573-c49fd217cd3b?auto=format&q=80&w=1200&fit=max)

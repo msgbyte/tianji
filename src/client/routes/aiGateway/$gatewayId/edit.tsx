@@ -1,6 +1,5 @@
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
@@ -8,10 +7,16 @@ import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AIGatewayEditForm,
   AIGatewayEditFormValues,
 } from '@/components/aiGateway/AIGatewayEditForm';
+import {
+  parseAIGatewayCustomModelStrategy,
+  stringifyAIGatewayCustomModelStrategy,
+} from '@/components/aiGateway/AIGatewayStrategyEditor.utils';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/aiGateway/$gatewayId/edit')({
   beforeLoad: routeAuthBeforeLoad,
@@ -34,14 +39,26 @@ function AIGatewayEditComponent() {
     onError: defaultErrorHandler,
   });
 
+  const testConnectionMutation = trpc.aiGateway.testConnection.useMutation({
+    onSuccess: ({ model, durationMs }) => {
+      toast.success(t('Connection successful'), {
+        description: `${t('Model')}: ${model} · ${durationMs} ms`,
+      });
+    },
+    onError: defaultErrorHandler,
+  });
+
   const handleSubmit = useEvent(async (values: AIGatewayEditFormValues) => {
     const res = await updateGatewayMutation.mutateAsync({
       workspaceId,
       gatewayId,
       name: values.name,
-      modelApiKey: values.modelApiKey ?? null,
+      modelApiKey: values.modelApiKey,
       customModelBaseUrl: values.customModelBaseUrl ?? null,
       customModelName: values.customModelName ?? null,
+      customModelStrategy: parseAIGatewayCustomModelStrategy(
+        values.customModelStrategy
+      ),
       customModelInputPrice: values.customModelInputPrice ?? null,
       customModelOutputPrice: values.customModelOutputPrice ?? null,
     });
@@ -53,6 +70,19 @@ function AIGatewayEditComponent() {
       params: {
         gatewayId: res.id || gatewayId,
       },
+    });
+  });
+
+  const handleTestConnection = useEvent((values: AIGatewayEditFormValues) => {
+    testConnectionMutation.mutate({
+      workspaceId,
+      gatewayId,
+      modelApiKey:
+        values.modelApiKey === undefined
+          ? undefined
+          : values.modelApiKey?.trim() || null,
+      customModelBaseUrl: values.customModelBaseUrl?.trim() || null,
+      customModelName: values.customModelName?.trim() || null,
     });
   });
 
@@ -68,12 +98,28 @@ function AIGatewayEditComponent() {
     <CommonWrapper
       header={<h1 className="text-xl font-bold">{t('Edit AI Gateway')}</h1>}
     >
-      <div className="p-4">
+      <ScrollArea className="h-full overflow-hidden p-4">
         <AIGatewayEditForm
-          defaultValues={gatewayInfo ?? undefined}
+          hasModelApiKey={gatewayInfo?.hasModelApiKey}
+          defaultValues={
+            gatewayInfo
+              ? {
+                  name: gatewayInfo.name,
+                  customModelBaseUrl: gatewayInfo.customModelBaseUrl,
+                  customModelName: gatewayInfo.customModelName,
+                  customModelStrategy: stringifyAIGatewayCustomModelStrategy(
+                    gatewayInfo.customModelStrategy
+                  ),
+                  customModelInputPrice: gatewayInfo.customModelInputPrice,
+                  customModelOutputPrice: gatewayInfo.customModelOutputPrice,
+                }
+              : undefined
+          }
           onSubmit={handleSubmit}
+          onTestConnection={handleTestConnection}
+          isTestingConnection={testConnectionMutation.isPending}
         />
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }

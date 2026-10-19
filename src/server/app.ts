@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type ErrorRequestHandler } from 'express';
 import 'express-async-errors';
 import compression from 'compression';
 import swaggerUI from 'swagger-ui-express';
@@ -25,6 +25,7 @@ import { authConfig } from './model/auth.js';
 import { prometheusApiVersion } from './middleware/prometheus/index.js';
 import { billingRouter } from './router/billing.js';
 import { aiGatewayRouter } from './router/aiGateway.js';
+import { aiRouterRouter } from './router/aiRouter.js';
 import { pushRouter } from './router/push.js';
 import { workerRouter } from './router/worker.js';
 import { insightsRouter } from './router/insights.js';
@@ -34,10 +35,15 @@ import {
   staticPageRouter,
 } from './router/staticPage.js';
 import { pageRouter } from './router/page.js';
+import { geminiError } from './model/aiGateway/gemini.js';
 
 const app = express();
 
 app.set('trust proxy', true);
+app.use((_req, res, next) => {
+  res.locals.requestStartedAt = performance.now();
+  next();
+});
 app.use(
   prometheusApiVersion({
     metricsPath: env.observability.prometheus.metricsPath,
@@ -73,6 +79,7 @@ app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
 app.use('/api/application', applicationRouter);
 app.use('/api/ai', aiGatewayRouter);
+app.use('/api/ai-router', aiRouterRouter);
 app.use('/api/insights', insightsRouter);
 app.use('/api/page', pageRouter);
 app.use('/api/billing', billingRouter);
@@ -111,7 +118,7 @@ if (env.allowOpenapi) {
             apiDescriptionUrl="/open/_document"
             router="hash"
             layout="responsive"
-            logo="https://tianji.msgbyte.com/img/logo.svg"
+            logo="https://tianji.dev/img/logo.svg"
           />
           <style>
             a[href^='https://stoplight.io'] {
@@ -123,6 +130,11 @@ if (env.allowOpenapi) {
   );
   app.use('/open', trpcOpenapiHttpHandler);
 }
+
+// API misses must never fall through to the frontend or custom-domain page.
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'API endpoint not found.' });
+});
 
 // Custom domain: only for root path so /p/:slug and /status/:slug are not intercepted
 app.use('/*', async (req, res, next) => {
@@ -157,12 +169,44 @@ const webEntry = path.join(process.cwd(), 'public', 'index.html');
 app.use('/*', (req, res) => {
   if (req.method === 'GET' && req.accepts('html')) {
     res.sendFile(webEntry);
-  }
+  } else res.status(404).json({ message: 'Not found.' });
 });
 
-app.use((err: any, req: any, res: any, next: any) => {
-  logger.error('[express]', err);
-  res.status(500).json({ message: err.message });
-});
+app.use(((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const status =
+    Number.isInteger(err.status) && err.status >= 400 && err.status <= 599
+      ? err.status
+      : 500;
+  // JSON parse messages can contain body excerpts; push tokens are credentials.
+  logger.error(
+    `[express] ${JSON.stringify({
+      message:
+        err.type === 'entity.parse.failed' ? 'Invalid JSON body.' : err.message,
+      method: req.method,
+      path: req.originalUrl
+        .split('?')[0]
+        .replace(/^\/api\/push\/[^/]+/i, '/api/push/:pushToken'),
+      status,
+      durationMs: Math.round(performance.now() - res.locals.requestStartedAt),
+      type: err.type,
+      code: err.code,
+      received: err.received,
+      expected: err.expected,
+    })}`
+  );
+  if (/^\/api\/ai\/[^/]+\/[^/]+\/custom\/[^/]+\/models\//.test(req.path)) {
+    res
+      .status(status)
+      .json(
+        geminiError(
+          status,
+          status < 500 ? 'Invalid Gemini request.' : 'Internal server error.'
+        )
+      );
+    return;
+  }
+  res.status(status).json({ message: err.message });
+}) as ErrorRequestHandler);
 
 export { app };

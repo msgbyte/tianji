@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
-import { TimeEventChart } from '../chart/TimeEventChart';
-import { ChartConfig } from '../ui/chart';
+import { ApplicationEventsChart } from './ApplicationEventsChart';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useGlobalRangeDate } from '../../hooks/useGlobalRangeDate';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -30,34 +29,6 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
       endAt: endDate.valueOf(),
       unit,
     });
-
-    // Use real data from the API instead of mock data
-    const chartData = useMemo(() => {
-      if (!data) {
-        return [];
-      }
-
-      // For combined view, show event counts and unique event counts
-      return data.current.map((item) => ({
-        date: item.date,
-        events: item.eventCount,
-        sessions: item.sessionCount,
-      }));
-    }, [data]);
-
-    // Define chart configuration
-    const chartConfig = useMemo<ChartConfig>(() => {
-      return {
-        events: {
-          label: t('Events'),
-          color: 'hsl(var(--chart-1))',
-        },
-        sessions: {
-          label: t('Sessions'),
-          color: 'hsl(var(--chart-2))',
-        },
-      };
-    }, [t]);
 
     // Calculate totals and differences for the statistics cards
     const statsData = useMemo(() => {
@@ -196,11 +167,7 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <TimeEventChart
-            data={chartData}
-            unit={unit}
-            chartConfig={chartConfig}
-          />
+          <ApplicationEventsChart data={data} unit={unit} />
         </CardContent>
       </Card>
     );

@@ -39,6 +39,10 @@
     "message": "Feed流",
     "description": "The label for category Feed in sidebar tutorialSidebar"
   },
+  "sidebar.tutorialSidebar.category.AI Router": {
+    "message": "AI 路由",
+    "description": "The label for category AI Router in sidebar tutorialSidebar"
+  },
   "sidebar.tutorialSidebar.category.Develop": {
     "message": "开发",
     "description": "The label for category Develop in sidebar tutorialSidebar"

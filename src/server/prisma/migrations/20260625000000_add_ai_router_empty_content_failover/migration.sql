@@ -1,0 +1,2 @@
+ALTER TABLE "AIRouterNode"
+  ADD COLUMN "failOnEmptyContent" BOOLEAN NOT NULL DEFAULT false;

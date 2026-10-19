@@ -1,10 +1,169 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { unwrapSQL } from '../../utils/prisma.js';
 import { WebsiteInsightsSqlBuilder } from './website.js';
+import { clickhouse } from '../../clickhouse/index.js';
+
+class TestWebsiteInsightsSqlBuilder extends WebsiteInsightsSqlBuilder {
+  protected shouldUseClickhouse() {
+    return true;
+  }
+
+  public buildClickHouseDateQuery(unit: string, timezone: string) {
+    return this.getClickHouseDateQuery(
+      '"WebsiteEvent"."createdAt"',
+      unit,
+      timezone
+    );
+  }
+}
 
 describe('WebsiteInsightsSqlBuilder', () => {
   const insightId = 'cly5yay7a001v5tp6xdkzmygh';
   const insightType = 'website';
+
+  test('falls back to sessionId when the event has no distinctId', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'sessions',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+        useClickhouse: false,
+      }
+    );
+
+    expect(unwrapSQL(builder.build())).toContain(
+      'count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId"))'
+    );
+  });
+
+  test('only joins historical first visits when requested', () => {
+    const query = {
+      insightId,
+      insightType: 'website' as const,
+      workspaceId: '',
+      metrics: [{ name: '$page_view', math: 'sessions' as const }],
+      filters: [],
+      groups: [],
+      time: {
+        startAt: 1739203200000,
+        endAt: 1741881599999,
+        unit: 'day' as const,
+      },
+    };
+    const context = { timezone: 'UTC', useClickhouse: false };
+    expect(
+      unwrapSQL(new WebsiteInsightsSqlBuilder(query, context).build())
+    ).not.toContain('first_visits');
+    query.metrics.push({ name: '$first_visit', math: 'sessions' });
+    const firstVisitSql = unwrapSQL(
+      new WebsiteInsightsSqlBuilder(query, context).build()
+    );
+    expect(firstVisitSql).toContain('LEFT JOIN');
+    expect(firstVisitSql).toContain('first_visits');
+    expect(firstVisitSql).toContain('min("createdAt")');
+    expect(firstVisitSql).toContain('count(distinct case');
+  });
+
+  test.each(['minute', 'hour', 'day', 'month', 'year'])(
+    'binds the %s timezone in ClickHouse date queries',
+    (unit) => {
+      const maliciousTimezone =
+        'UTC\') UNION SELECT password FROM "User" -- ';
+      const builder = new TestWebsiteInsightsSqlBuilder(
+        {
+          insightId,
+          insightType,
+          workspaceId: '',
+          metrics: [],
+          filters: [],
+          time: {
+            startAt: 1739203200000,
+            endAt: 1741881599999,
+            unit: 'day',
+          },
+          groups: [],
+        },
+        {
+          timezone: 'UTC',
+        }
+      );
+
+      const query = builder.buildClickHouseDateQuery(
+        unit,
+        maliciousTimezone
+      );
+
+      expect(query.sql).not.toContain(maliciousTimezone);
+      expect(query.values).toEqual([maliciousTimezone]);
+    }
+  );
+
+  test('builds complete ClickHouse SQL with a normal timezone', async () => {
+    const timezone = 'Asia/Shanghai';
+    const builder = new TestWebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+          timezone,
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+    let sentQuery: Parameters<typeof clickhouse.query>[0] | undefined;
+    const querySpy = vi.spyOn(clickhouse, 'query').mockImplementation(
+      async (query) => {
+        sentQuery = query;
+        return {
+          json: async () => ({ data: [] }),
+        } as never;
+      }
+    );
+
+    try {
+      await builder.executeQuery(builder.build());
+    } finally {
+      querySpy.mockRestore();
+    }
+
+    expect(sentQuery?.query_params).toMatchObject({
+      field0: timezone,
+    });
+    expect({
+      ...sentQuery,
+      query: sentQuery?.query.replace(/[ \t]+$/gm, ''),
+    }).toMatchSnapshot('clickhouse sql with normal timezone');
+  });
 
   test('groups', () => {
     const builder = new WebsiteInsightsSqlBuilder(
@@ -38,6 +197,72 @@ describe('WebsiteInsightsSqlBuilder', () => {
 
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql');
+  });
+
+  test('keeps metric aliases out of the SQL text', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+            alias: 'safe\\", (SELECT current_database()) as injected -- ?',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = builder.build();
+    expect(sql.sql).not.toContain('injected');
+    expect(sql.sql.match(/\?/g)?.length).toBe(sql.values.length);
+  });
+
+  test('keeps group keys out of the SQL text', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [
+          {
+            value: 'depth\\", (SELECT current_database()) as injected -- ?',
+            type: 'number',
+          },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = builder.build();
+    expect(sql.sql).not.toContain('injected');
+    expect(sql.sql.match(/\?/g)?.length).toBe(sql.values.length);
   });
 
   test('groups with custom bucket', () => {
@@ -263,5 +488,48 @@ describe('WebsiteInsightsSqlBuilder', () => {
 
     const sql = builder.build();
     expect(unwrapSQL(sql)).toMatchSnapshot('sql with date filters');
+  });
+
+  test('joins each custom breakdown by its own property key', () => {
+    const builder = new WebsiteInsightsSqlBuilder(
+      {
+        insightId,
+        insightType,
+        workspaceId: '',
+        metrics: [
+          {
+            name: '$all_event',
+            math: 'events',
+          },
+        ],
+        filters: [],
+        time: {
+          startAt: 1739203200000,
+          endAt: 1741881599999,
+          unit: 'day',
+        },
+        groups: [
+          {
+            value: 'plan',
+            type: 'string',
+          },
+          {
+            value: 'country',
+            type: 'string',
+          },
+        ],
+      },
+      {
+        timezone: 'UTC',
+      }
+    );
+
+    const sql = builder.build();
+    for (const [index, key] of ['plan', 'country'].entries()) {
+      expect(unwrapSQL(sql)).toContain(`AND "eventKey" = '${key}'`);
+      expect(unwrapSQL(sql)).toContain(
+        `"WebsiteEvent"."id" = "event_data_${index}"."websiteEventId"`
+      );
+    }
   });
 });

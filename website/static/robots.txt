@@ -14,5 +14,5 @@ Disallow: /404
 Disallow: /500
 Disallow: /*.json$
 
-LLM-Content: https://tianji.msgbyte.com/llms.txt
-LLM-Full-Content: https://tianji.msgbyte.com/llms-full.txt
+LLM-Content: https://tianji.dev/llms.txt
+LLM-Full-Content: https://tianji.dev/llms-full.txt

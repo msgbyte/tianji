@@ -5,6 +5,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
@@ -250,7 +251,7 @@ export const surveyRouter = router({
 
       return 'success' as const;
     }),
-  create: workspaceAdminProcedure
+  create: workspaceWriteProcedure
     .meta(
       buildSurveyOpenapi({
         summary: 'Create survey',
@@ -296,7 +297,7 @@ export const surveyRouter = router({
 
       return res;
     }),
-  update: workspaceAdminProcedure
+  update: workspaceWriteProcedure
     .meta(
       buildSurveyOpenapi({
         summary: 'Update survey',
@@ -373,7 +374,7 @@ export const surveyRouter = router({
 
       return res;
     }),
-  duplicate: workspaceAdminProcedure
+  duplicate: workspaceWriteProcedure
     .meta(
       buildSurveyOpenapi({
         summary: 'Duplicate survey',

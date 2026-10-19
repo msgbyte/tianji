@@ -3,6 +3,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../../trpc.js';
 import { prisma } from '../../../model/_client.js';
 import { WarehouseCohortsModelSchema } from '../../../prisma/zod/warehousecohorts.js';
@@ -17,7 +18,7 @@ export const insightCohortsRouter = router({
       const items = await getAllCohorts(workspaceId);
       return items as unknown as z.infer<typeof WarehouseCohortsModelSchema>[];
     }),
-  upsert: workspaceAdminProcedure
+  upsert: workspaceWriteProcedure
     .input(
       z.object({
         id: z.string().optional(),
@@ -32,6 +33,7 @@ export const insightCohortsRouter = router({
         const res = await prisma.warehouseCohorts.update({
           where: {
             id: input.id,
+            workspaceId: input.workspaceId,
           },
           data: {
             name: input.name,
@@ -60,7 +62,7 @@ export const insightCohortsRouter = router({
     .output(WarehouseCohortsModelSchema)
     .mutation(async ({ input }) => {
       const res = await prisma.warehouseCohorts.delete({
-        where: { id: input.id },
+        where: { id: input.id, workspaceId: input.workspaceId },
       });
 
       return res as unknown as z.infer<typeof WarehouseCohortsModelSchema>;

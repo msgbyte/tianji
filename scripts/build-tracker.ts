@@ -18,6 +18,7 @@ vite
       },
     },
     build: {
+      target: 'esnext',
       lib: {
         entry: resolve(process.cwd(), './src/tracker/index.ts'),
         name: 'tianji',

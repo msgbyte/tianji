@@ -4,6 +4,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { prisma } from '../../model/_client.js';
 import { z } from 'zod';
@@ -111,7 +112,7 @@ export const pageRouter = router({
     }),
 
   // Create page (support both types)
-  createPage: workspaceAdminProcedure
+  createPage: workspaceWriteProcedure
     .meta(
       buildPageOpenapi({
         method: 'POST',
@@ -217,7 +218,7 @@ export const pageRouter = router({
     }),
 
   // Edit page (detect type by id)
-  editPage: workspaceAdminProcedure
+  editPage: workspaceWriteProcedure
     .meta(
       buildPageOpenapi({
         method: 'PATCH',

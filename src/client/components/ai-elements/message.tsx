@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/utils/style';
 import type { FileUIPart, UIMessage } from 'ai';
+import { t } from '@i18next-toolkit/react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -243,7 +244,7 @@ export const MessageBranchPrevious = ({
 
   return (
     <Button
-      aria-label="Previous branch"
+      aria-label={t('Previous branch')}
       disabled={totalBranches <= 1}
       onClick={goToPrevious}
       size="icon-sm"
@@ -267,7 +268,7 @@ export const MessageBranchNext = ({
 
   return (
     <Button
-      aria-label="Next branch"
+      aria-label={t('Next branch')}
       disabled={totalBranches <= 1}
       onClick={goToNext}
       size="icon-sm"
@@ -296,7 +297,10 @@ export const MessageBranchPage = ({
       )}
       {...props}
     >
-      {currentBranch + 1} of {totalBranches}
+      {t('{{current}} of {{total}}', {
+        current: currentBranch + 1,
+        total: totalBranches,
+      })}
     </ButtonGroupText>
   );
 };
@@ -355,7 +359,7 @@ export function MessageAttachment({
           />
           {onRemove && (
             <Button
-              aria-label="Remove attachment"
+              aria-label={t('Remove attachment')}
               className="bg-background/80 hover:bg-background absolute right-2 top-2 size-6 rounded-full p-0 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 [&>svg]:size-3"
               onClick={(e) => {
                 e.stopPropagation();
@@ -365,7 +369,7 @@ export function MessageAttachment({
               variant="ghost"
             >
               <XIcon />
-              <span className="sr-only">Remove</span>
+              <span className="sr-only">{t('Remove')}</span>
             </Button>
           )}
         </>
@@ -383,7 +387,7 @@ export function MessageAttachment({
           </Tooltip>
           {onRemove && (
             <Button
-              aria-label="Remove attachment"
+              aria-label={t('Remove attachment')}
               className="hover:bg-accent size-6 shrink-0 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100 [&>svg]:size-3"
               onClick={(e) => {
                 e.stopPropagation();
@@ -393,7 +397,7 @@ export function MessageAttachment({
               variant="ghost"
             >
               <XIcon />
-              <span className="sr-only">Remove</span>
+              <span className="sr-only">{t('Remove')}</span>
             </Button>
           )}
         </>

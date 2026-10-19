@@ -1,4 +1,4 @@
-import { v1 as uuid } from 'uuid';
+import { randomBytes } from 'node:crypto';
 import md5 from 'md5';
 import { compact } from 'lodash-es';
 import { getLLMContextWindow } from './llm.js';
@@ -6,10 +6,13 @@ import { getLLMContextWindow } from './llm.js';
 const jwtSecret =
   !process.env.JWT_SECRET ||
   process.env.JWT_SECRET === 'replace-me-with-a-random-string'
-    ? uuid()
+    ? randomBytes(32).toString('hex')
     : process.env.JWT_SECRET;
 
 const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+const configuredAuditLogRetentionDays = Number(
+  process.env.AUDIT_LOG_RETENTION_DAYS
+);
 
 export const env = {
   isProd: process.env.NODE_ENV === 'production',
@@ -162,6 +165,9 @@ export const env = {
     memoryLimit: process.env.SANDBOX_MEMORY_LIMIT
       ? Number(process.env.SANDBOX_MEMORY_LIMIT)
       : 16, // unit: MB
+    timeout: process.env.SANDBOX_TIMEOUT
+      ? Number(process.env.SANDBOX_TIMEOUT)
+      : 5000, // unit: ms
   },
   puppeteerExecutablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
   amapToken: process.env.AMAP_TOKEN,
@@ -172,6 +178,11 @@ export const env = {
   ),
   customTrackerScriptName: process.env.CUSTOM_TRACKER_SCRIPT_NAME,
   disableAutoClear: checkEnvTrusty(process.env.DISABLE_AUTO_CLEAR), // disable auto clear old data cronjob
+  auditLogRetentionDays:
+    Number.isSafeInteger(configuredAuditLogRetentionDays) &&
+    configuredAuditLogRetentionDays > 0
+      ? configuredAuditLogRetentionDays
+      : 30,
   disableAccessLogs: checkEnvTrusty(process.env.DISABLE_ACCESS_LOGS), // disable show access logs
   debugAIFeature: checkEnvTrusty(process.env.DEBUG_AI_FEATURE), // debug ai feature
   debugInsights: checkEnvTrusty(process.env.DEBUG_INSIGHTS) || isDev, // debug insights
@@ -187,8 +198,18 @@ export const env = {
     Number(process.env.WORKER_EXECUTION_CLEAR_DAYS) || 0,
   workerExecutionPayloadClearDays:
     Number(process.env.WORKER_EXECUTION_PAYLOAD_CLEAR_DAYS) || 0,
+  workerExecutionRequestPayloadDisabledWorkerIds: parseEnvList(
+    process.env.WORKER_EXECUTION_REQUEST_PAYLOAD_DISABLED_WORKER_IDS
+  ),
+  // Auto disable a monitor that has been continuously down for N days. 0 = disabled.
+  autoDisableMonitorDays:
+    Number(process.env.AUTO_DISABLE_MONITOR_DAYS) || 0,
 };
 
 export function checkEnvTrusty(env: string | undefined): boolean {
   return env === '1' || env === 'true';
+}
+
+export function parseEnvList(env: string | undefined): string[] {
+  return compact((env ?? '').split(',').map((item) => item.trim()));
 }

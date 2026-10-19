@@ -1,7 +1,11 @@
 import { Form, Input, message } from 'antd';
 import React, { useMemo } from 'react';
 import { useRequest } from '../../hooks/useRequest';
-import { useCurrentWorkspaceId } from '../../store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '../../store/user';
 import { ErrorTip } from '../ErrorTip';
 import { Loading } from '../Loading';
 import { NoWorkspaceTip } from '../NoWorkspaceTip';
@@ -28,6 +32,8 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
     const { websiteId } = props;
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
+    const hasAdminPermission = useHasAdminPermission();
+    const hasWritePermission = useHasWritePermission();
     const navigate = useNavigate();
     const trpcUtils = trpc.useUtils();
 
@@ -143,7 +149,9 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
           <Tabs defaultValue="detail">
             <TabsList>
               <TabsTrigger value="detail">{t('Detail')}</TabsTrigger>
-              <TabsTrigger value="data">{t('Data')}</TabsTrigger>
+              {hasAdminPermission && (
+                <TabsTrigger value="data">{t('Data')}</TabsTrigger>
+              )}
             </TabsList>
             <TabsContent value="detail">
               <Form
@@ -155,6 +163,7 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
                   monitorId: website.monitorId,
                 }}
                 onFinish={handleSave}
+                disabled={!hasWritePermission}
               >
                 <Form.Item label={t('Website ID')} name="id">
                   <Input size="large" disabled={true} />
@@ -190,88 +199,92 @@ export const WebsiteConfig: React.FC<{ websiteId: string }> = React.memo(
                 </Form.Item>
 
                 <Form.Item>
-                  <Button type="submit">{t('Save')}</Button>
+                  <Button type="submit" disabled={!hasWritePermission}>
+                    {t('Save')}
+                  </Button>
                 </Form.Item>
               </Form>
             </TabsContent>
-            <TabsContent value="data">
-              <Card>
-                <CardHeader className="text-lg font-bold">
-                  {t('Public Share')}
-                </CardHeader>
-                <CardContent>
-                  {website.shareId ? (
-                    <div className="space-y-4">
-                      <div className="break-all font-mono text-sm">
-                        {shareUrl}
+            {hasAdminPermission && (
+              <TabsContent value="data">
+                <Card>
+                  <CardHeader className="text-lg font-bold">
+                    {t('Public Share')}
+                  </CardHeader>
+                  <CardContent>
+                    {website.shareId ? (
+                      <div className="space-y-4">
+                        <div className="break-all font-mono text-sm">
+                          {shareUrl}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            Icon={LuShare2}
+                            onClick={() => {
+                              const origin =
+                                typeof window !== 'undefined'
+                                  ? window.location.origin
+                                  : '';
+                              const valueToCopy =
+                                shareUrl.startsWith('http') || !origin
+                                  ? shareUrl
+                                  : `${origin}${shareUrl}`;
+
+                              copy(valueToCopy);
+                              toast.success(
+                                t('Public share link copied to clipboard')
+                              );
+                            }}
+                            aria-label={t(
+                              'Public share link copied to clipboard'
+                            )}
+                          >
+                            {t('Copy Link')}
+                          </Button>
+
+                          <Button
+                            variant="destructive"
+                            loading={disableShareMutation.isPending}
+                            onClick={handleDisableShare}
+                          >
+                            {t('Disable Public Share')}
+                          </Button>
+                        </div>
                       </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="outline"
-                          Icon={LuShare2}
-                          onClick={() => {
-                            const origin =
-                              typeof window !== 'undefined'
-                                ? window.location.origin
-                                : '';
-                            const valueToCopy =
-                              shareUrl.startsWith('http') || !origin
-                                ? shareUrl
-                                : `${origin}${shareUrl}`;
-
-                            copy(valueToCopy);
-                            toast.success(
-                              t('Public share link copied to clipboard')
-                            );
-                          }}
-                          aria-label={t(
-                            'Public share link copied to clipboard'
-                          )}
-                        >
-                          {t('Copy Link')}
-                        </Button>
-
-                        <Button
-                          variant="destructive"
-                          loading={disableShareMutation.isPending}
-                          onClick={handleDisableShare}
-                        >
-                          {t('Disable Public Share')}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      Icon={LuShare2}
-                      loading={enableShareMutation.isPending}
-                      onClick={handleEnableShare}
-                    >
-                      {t('Enable Public Share')}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="mt-4">
-                <CardHeader className="text-lg font-bold">
-                  {t('Danger Zone')}
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <AlertConfirm
-                      title={t('Delete Website') + ' ' + website.name}
-                      onConfirm={() => handleDeleteWebsite()}
-                    >
-                      <Button variant="destructive" Icon={LuTrash}>
-                        {t('Delete Website')}
+                    ) : (
+                      <Button
+                        variant="outline"
+                        Icon={LuShare2}
+                        loading={enableShareMutation.isPending}
+                        onClick={handleEnableShare}
+                      >
+                        {t('Enable Public Share')}
                       </Button>
-                    </AlertConfirm>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="mt-4">
+                  <CardHeader className="text-lg font-bold">
+                    {t('Danger Zone')}
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      <AlertConfirm
+                        title={t('Delete Website') + ' ' + website.name}
+                        onConfirm={() => handleDeleteWebsite()}
+                      >
+                        <Button variant="destructive" Icon={LuTrash}>
+                          {t('Delete Website')}
+                        </Button>
+                      </AlertConfirm>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>

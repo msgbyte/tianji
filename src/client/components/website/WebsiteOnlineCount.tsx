@@ -22,7 +22,7 @@ export const WebsiteOnlineCount: React.FC<{
           <div className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-green-500" />
         </div>
         <span>
-          {count} {t('current visitor')}
+          {count} {t('online')}
         </span>
       </div>
     );

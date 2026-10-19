@@ -241,7 +241,6 @@ function HomepageFooter() {
         <ClientTweetCard id="1842367065375617205" className="tweet-card" />
         <ClientTweetCard id="1843381313933656116" className="tweet-card" />
         <ClientTweetCard id="1743323947377041806" className="tweet-card" />
-        <ClientTweetCard id="1852357169175318932" className="tweet-card" />
       </div>
     </div>
   );

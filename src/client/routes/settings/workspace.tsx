@@ -59,6 +59,7 @@ export const Route = createFileRoute('/settings/workspace')({
 
 const inviteFormSchema = z.object({
   emailOrId: z.string(),
+  role: z.enum([ROLES.readOnly, ROLES.write, ROLES.admin]),
 });
 
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
@@ -76,12 +77,16 @@ function PageComponent() {
     (state) => state.updateCurrentWorkspaceSettings
   );
   const globalConfig = useGlobalConfig();
+  const smtpUnavailableMessage = t(
+    'SMTP service is not configured on the server, invitation emails will not be sent'
+  );
 
   const { tableEl: workspaceMembersTable } = useWorkspaceMembers();
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
       emailOrId: '',
+      role: ROLES.readOnly,
     },
   });
   const inviteMutation = trpc.workspace.invite.useMutation({
@@ -121,6 +126,7 @@ function PageComponent() {
       await inviteMutation.mutateAsync({
         workspaceId,
         emailOrId: values.emailOrId,
+        role: values.role,
       });
       form.reset();
 
@@ -207,12 +213,18 @@ function PageComponent() {
                   <div className="flex items-center gap-2">
                     <span>{t('Invite new members by email address')}</span>
                     {!globalConfig.smtpAvailable && (
-                      <SimpleTooltip
-                        content={t(
-                          'SMTP service is not configured on the server, invitation emails will not be sent'
-                        )}
-                      >
-                        <LuTriangleAlert className="h-4 w-4 text-yellow-500" />
+                      <SimpleTooltip content={smtpUnavailableMessage}>
+                        <span
+                          role="img"
+                          aria-label={smtpUnavailableMessage}
+                          tabIndex={0}
+                          className="inline-flex cursor-help"
+                        >
+                          <LuTriangleAlert
+                            aria-hidden="true"
+                            className="h-4 w-4 text-yellow-500"
+                          />
+                        </span>
                       </SimpleTooltip>
                     )}
                   </div>
@@ -231,6 +243,46 @@ function PageComponent() {
                           />
                         </FormControl>
                         <FormDescription />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem className="mt-4 max-w-[320px]">
+                        <FormLabel>{t('Role')}</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={ROLES.readOnly}>
+                              {t('Read Only')}
+                            </SelectItem>
+                            <SelectItem value={ROLES.write}>
+                              {t('Write')}
+                            </SelectItem>
+                            {isWorkspaceOwner && (
+                              <SelectItem value={ROLES.admin}>
+                                {t('Admin')}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {field.value === ROLES.write && (
+                          <FormDescription>
+                            {t(
+                              'Can create and edit resources, but cannot delete them.'
+                            )}
+                          </FormDescription>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}

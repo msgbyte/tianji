@@ -5,6 +5,415 @@ It preserves Markdown headings, links, and code fences; frontmatter and MDX ESM 
 
 ================================================================================
 
+===== FILE: docs/ai-router/intro.md =====
+
+# AI Router
+
+AI Router gives one stable AI endpoint for a group of AI Gateways. It routes each request through configured gateway routes, spreads traffic by weight inside the same tier, and falls back to the next tier when retryable failures happen.
+
+Use it when you want:
+
+- One endpoint for your application instead of hard-coding one AI provider.
+- Weighted traffic split across multiple gateways.
+- Fallback from a primary provider to backup providers during outages or rate limits.
+- A migration path where you can move traffic gradually by changing weights.
+
+## How it relates to AI Gateway
+
+AI Gateway is still the unit that stores provider credentials, custom base URLs, model pricing, quota alerts, and gateway logs. AI Router does not replace that.
+
+AI Router only decides which gateway route should receive the request.
+
+The runtime flow is:
+
+1. Your application calls an AI Router endpoint.
+2. AI Router finds the router by workspace ID and router ID.
+3. AI Router chooses an eligible gateway route from the first tier.
+4. The selected AI Gateway sends the request to the upstream AI provider.
+5. If the attempt succeeds, AI Router returns that response.
+6. If the attempt fails with a retryable error, AI Router tries another route in the same tier, then the next tier.
+
+## Prerequisites
+
+Before adding routes, create at least one AI Gateway with a stored model API key. Gateways without a stored key are not shown in the AI Router route picker.
+
+Runtime requests still need a Tianji API key:
+
+- For OpenAI-compatible endpoints, send `Authorization: Bearer <YOUR_TIANJI_API_KEY>`.
+- For Anthropic Messages endpoints, send `x-api-key: <YOUR_TIANJI_API_KEY>`.
+
+Tianji verifies the caller API key, then uses the stored AI Gateway provider key for the upstream request.
+
+## Create a router
+
+1. Open **AI Router** in the Tianji sidebar.
+2. Click **Add AI Router**.
+3. Enter a router name.
+4. Keep **Enabled** on if the router should accept runtime traffic.
+5. Save the router.
+
+After the router is created, open the **Routes** tab to configure tiers and gateway routes.
+
+## Tiers
+
+A tier is a fallback level.
+
+Requests always start at the first tier. If a retryable failure happens, AI Router keeps trying eligible routes in that tier. If every eligible route in the tier fails, AI Router moves to the next tier.
+
+Use multiple tiers when you want strict fallback order.
+
+Example:
+
+| Tier | Routes | Meaning |
+| --- | --- | --- |
+| Tier 1 | OpenAI primary, OpenRouter primary | Normal production traffic |
+| Tier 2 | DeepSeek backup | Backup after primary providers fail |
+| Tier 3 | Custom internal model | Last-resort fallback |
+
+Drag tiers to reorder them. The top tier is tried first.
+
+## Weights inside a tier
+
+Routes inside the same tier do not have a fixed order. They share traffic by weight.
+
+Example:
+
+| Route | Weight | Approximate first-attempt share |
+| --- | ---: | ---: |
+| Gateway A | 80 | 80% |
+| Gateway B | 20 | 20% |
+
+This is useful for:
+
+- Random traffic split across providers.
+- Gradual migration from one provider to another.
+- Canarying a new gateway with a small percentage of traffic.
+
+If you need strict order, put the routes in different tiers instead of the same tier.
+
+## Add a gateway route
+
+On the **Routes** tab:
+
+1. Click **Add Gateway** inside a tier.
+2. Select an existing AI Gateway.
+3. Select the provider mode for this route.
+4. Set the route options.
+5. Save.
+
+You can edit or delete a route later from the route card.
+
+### Provider
+
+Provider controls how AI Router calls the selected AI Gateway for this route. The same AI Gateway can be used in different routes with different provider modes if that matches your setup.
+
+Supported provider values:
+
+- `openai`
+- `deepseek`
+- `anthropic`
+- `openrouter`
+- `custom`
+
+For `custom`, AI Router uses the custom model settings stored on the selected AI Gateway, such as custom base URL and custom model name.
+
+### Weight
+
+Weight controls how traffic is distributed between routes in the same tier. Higher weight means the route is more likely to be tried first.
+
+Default: `100`.
+
+### Model Override
+
+Model Override is optional.
+
+When set, AI Router replaces the request `model` with this value before sending the request to the selected gateway route. Leave it empty if the application request should decide the model.
+
+### Timeout
+
+Timeout is the maximum time for one gateway attempt.
+
+Default: `30000ms`.
+
+If the attempt times out, AI Router treats it as retryable and can try the next eligible route.
+
+### Retryable Status Codes
+
+AI Router always treats network errors, timeouts, and these status codes as retryable:
+
+- `429`
+- `500`
+- `502`
+- `503`
+- `504`
+
+Use **Retryable Status Codes** to add more status codes for a route. For example, you can add `408` if a provider often reports request timeout as an HTTP response.
+
+Be careful with validation errors such as `400` or `401`. Those usually mean the request or key is wrong, and retrying another provider can hide the real problem.
+
+### Fail on Empty Content
+
+Fail on Empty Content is optional and defaults to off.
+
+When enabled for a gateway route, AI Router treats a successful upstream response with no assistant text content as a failed attempt. It then tries the next eligible route in the same tier, followed by lower tiers if needed.
+
+Tool-only responses are still treated as valid responses. This prevents function calling or tool-use requests from failing only because they did not produce assistant text.
+
+## Logs
+
+The **Logs** tab shows runtime attempts for a router:
+
+- Status: `Success`, `Failed`, or `Partial`.
+- Protocol: the matched request protocol.
+- Attempts: how many gateway routes were tried.
+- Final Gateway: the gateway that produced the final result.
+- Final Gateway Log: the linked AI Gateway log ID.
+- Duration.
+
+Use router logs to understand failover behavior. Use the linked AI Gateway logs to inspect token usage, upstream model details, cost, and provider response data.
+
+
+===== FILE: docs/ai-router/usage.md =====
+
+# AI Router usage
+
+AI Router exposes OpenAI-compatible and Anthropic-compatible endpoints under your Tianji server:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/<provider>/v1/...
+```
+
+The `<provider>` segment must match the provider mode you configured on the route.
+
+## Supported endpoints
+
+| Provider segment | Chat Completions | Responses | Anthropic Messages |
+| --- | --- | --- | --- |
+| `openai` | `/openai/v1/chat/completions` | `/openai/v1/responses` | - |
+| `deepseek` | `/deepseek/v1/chat/completions` | - | - |
+| `anthropic` | `/anthropic/v1/chat/completions` | - | `/anthropic/v1/messages` |
+| `openrouter` | `/openrouter/v1/chat/completions` | - | `/openrouter/v1/messages` |
+| `custom` | `/custom/v1/chat/completions` | `/custom/v1/responses` | `/custom/v1/messages` |
+
+## OpenAI Chat Completions
+
+Base URL for OpenAI SDK:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1
+```
+
+Node.js:
+
+```js
+
+const client = new OpenAI({
+  apiKey: process.env.TIANJI_API_KEY,
+  baseURL:
+    'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1',
+});
+
+const response = await client.chat.completions.create({
+  model: 'gpt-5.5',
+  messages: [{ role: 'user', content: 'Hello from Tianji AI Router' }],
+});
+
+console.log(response.choices[0].message);
+```
+
+cURL:
+
+```bash
+curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1/chat/completions' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <YOUR_TIANJI_API_KEY>' \
+  -d '{
+    "model": "gpt-5.5",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello from Tianji AI Router"
+      }
+    ]
+  }'
+```
+
+## OpenAI Responses
+
+Base URL for OpenAI SDK:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1
+```
+
+Node.js:
+
+```js
+
+const client = new OpenAI({
+  apiKey: process.env.TIANJI_API_KEY,
+  baseURL:
+    'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1',
+});
+
+const response = await client.responses.create({
+  model: 'gpt-5.5',
+  input: 'Write a short deployment checklist.',
+});
+
+console.log(response.output_text);
+```
+
+cURL:
+
+```bash
+curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/openai/v1/responses' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <YOUR_TIANJI_API_KEY>' \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Write a short deployment checklist."
+  }'
+```
+
+## Anthropic Messages
+
+Base URL for Anthropic SDK:
+
+```bash
+https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/anthropic
+```
+
+Node.js:
+
+```js
+
+const client = new Anthropic({
+  apiKey: process.env.TIANJI_API_KEY,
+  baseURL:
+    'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/anthropic',
+});
+
+const message = await client.messages.create({
+  model: 'claude-opus-4-8',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: 'Hello from Tianji AI Router' }],
+});
+
+console.log(message.content);
+```
+
+cURL:
+
+```bash
+curl -X POST 'https://your-tianji-domain.com/api/ai-router/<workspaceId>/<routerId>/anthropic/v1/messages' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: <YOUR_TIANJI_API_KEY>' \
+  -H 'anthropic-version: 2023-06-01' \
+  -d '{
+    "model": "claude-opus-4-8",
+    "max_tokens": 1024,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello from Tianji AI Router"
+      }
+    ]
+  }'
+```
+
+## Custom provider routes
+
+Use the `custom` provider segment when the selected AI Gateway stores a custom base URL or custom model name.
+
+Examples:
+
+```bash
+/api/ai-router/<workspaceId>/<routerId>/custom/v1/chat/completions
+/api/ai-router/<workspaceId>/<routerId>/custom/v1/responses
+/api/ai-router/<workspaceId>/<routerId>/custom/v1/messages
+```
+
+The custom upstream details stay on AI Gateway. AI Router only selects the route and forwards the normalized request.
+
+## Recommended routing patterns
+
+### Active backup
+
+Use this when uptime matters more than traffic distribution.
+
+| Tier | Route | Weight |
+| --- | --- | ---: |
+| 1 | Primary OpenAI gateway | 100 |
+| 2 | OpenRouter gateway | 100 |
+| 3 | Custom fallback gateway | 100 |
+
+AI Router tries Tier 2 only after Tier 1 returns retryable failures.
+
+### Weighted split
+
+Use this when you want to share traffic across providers in normal operation.
+
+| Tier | Route | Weight |
+| --- | --- | ---: |
+| 1 | Gateway A | 80 |
+| 1 | Gateway B | 20 |
+
+Both routes are in the same tier, so there is no primary/secondary order. The weights decide which route is likely to be tried first.
+
+### Canary migration
+
+Use this when testing a new provider.
+
+| Tier | Route | Weight |
+| --- | --- | ---: |
+| 1 | Current provider | 95 |
+| 1 | New provider | 5 |
+| 2 | Stable fallback | 100 |
+
+Increase the new provider weight after you confirm quality and reliability in the logs.
+
+## Troubleshooting
+
+### No eligible AI Router nodes are available
+
+Check that:
+
+- The router is enabled.
+- At least one tier has enabled routes.
+- The selected AI Gateway still has a stored model API key.
+- The route provider supports the endpoint you are calling.
+
+### The router stops after one failed attempt
+
+AI Router only continues after retryable failures.
+
+Network errors, timeouts, `429`, `500`, `502`, `503`, and `504` are retryable by default. Add route-specific retryable status codes if a provider uses other temporary failure codes.
+
+### The wrong model is being used
+
+Check both places:
+
+- Route **Model Override**. If set, it replaces the request `model`.
+- AI Gateway custom model name. For `custom` routes, the gateway can replace the model with its custom model name.
+
+### The request returns 401 or 403
+
+Use a Tianji API key in the runtime request. Do not send the upstream provider key to AI Router when the gateway stores its own provider credential.
+
+For OpenAI-compatible endpoints, use:
+
+```bash
+Authorization: Bearer <YOUR_TIANJI_API_KEY>
+```
+
+For Anthropic Messages endpoints, use:
+
+```bash
+x-api-key: <YOUR_TIANJI_API_KEY>
+```
+
+
 ===== FILE: docs/api/authentication.md =====
 
 # Authentication
@@ -144,7 +553,7 @@ API keys can only access workspaces that the user belongs to. If you need to acc
 ```json
 {
   "error": {
-    "code": "FORBIDDEN",
+    "code": "FORBIDDEN", 
     "message": "Insufficient access"
   }
 }
@@ -276,11 +685,11 @@ initOpenapiSDK('https://your-tianji-domain.com', {
 async function getSystemConfig() {
   try {
     const config = await openApiClient.GlobalService.globalConfig();
-
+    
     console.log('Allow registration:', config.allowRegister);
     console.log('AI features enabled:', config.ai.enable);
     console.log('Billing enabled:', config.enableBilling);
-
+    
     return config;
   } catch (error) {
     console.error('Failed to get system configuration:', error);
@@ -363,11 +772,9 @@ reportApplicationScreenView();
 reportApplicationScreenView('Checkout', { cartItems: 3 });
 ```
 
-## User Identification
+#### Intergate with expo-router
 
-Identify users in your application to track their behavior across sessions:
-
-```ts
+```tsx
 
 // Identify a user with their information
 identifyApplicationUser({
@@ -464,7 +871,7 @@ ALLOW_OPENAPI=true
 
 ## Prepare Database struct
 
-Now you can visit database, and you can visit
+Now you can visit database, and you can visit 
 
 ```bash
 cd src/server && pnpm db:migrate:apply
@@ -499,7 +906,7 @@ initTianjiTracker({
   url: backendUrl,
   websiteId,
 });
-
+    
 reportEvent('Demo Event', {
   foo: 'bar',
 });
@@ -796,16 +1203,20 @@ Tianji supports various environment variables to customize its behavior. You can
 | Variable | Description | Default | Example |
 | --- | --- | --- | --- |
 | `PORT` | Server port | `12345` | `3000` |
-| `JWT_SECRET` | Secret for JWT tokens | Random Text | `your-secret-key` |
+| `JWT_SECRET` | Secret for JWT tokens | Random secret on each startup | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | Enable user registration | `false` | `true` |
 | `ALLOW_OPENAPI` | Enable OpenAPI access | `true` | `false` |
 | `WEBSITE_ID` | Website identifier | - | `your-website-id` |
 | `DISABLE_AUTO_CLEAR` | Disable automatic data cleanup | `false` | `true` |
+| `AUDIT_LOG_RETENTION_DAYS` | Number of days to retain audit logs | `30` | `90` |
 | `DISABLE_ACCESS_LOGS` | Disable access logs | `false` | `true` |
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
 | `ALPHA_MODE` | Enable alpha features | `false` | `true` |
 | `ENABLE_FUNCTION_WORKER` | Enable function worker | `false` | `true` |
+| `WORKER_EXECUTION_REQUEST_PAYLOAD_DISABLED_WORKER_IDS` | Comma-separated worker IDs whose execution request payloads are not persisted. Payloads are still passed to worker code. | - | `worker-id-1,worker-id-2` |
 | `REGISTER_AUTO_JOIN_WORKSPACE_ID` | Auto-join workspace ID for new users | - | `workspace-id-123` |
+
+If `JWT_SECRET` is empty or set to `replace-me-with-a-random-string`, Tianji generates a random secret on each startup. For production, generate a secret with `openssl rand -hex 32`, store it in your deployment configuration, and use the same value across replicas to keep tokens valid across restarts. Deployments using older example values must replace them with a generated secret.
 
 ## Cache Configuration
 
@@ -956,7 +1367,7 @@ Now you can search tianji with `helm search` command.
 helm search repo tianji
 ```
 
-## Install
+## Install 
 
 Then, feel free to install with one command:
 
@@ -1101,8 +1512,8 @@ you can fill the form quickly to install.
 
 and only just need to wait for a moment. then you can open your own Tianji in your browser.
 
-> Url: `http://<your-ip>:12345`
-> Default username: `admin`
+> Url: `http://<your-ip>:12345`  
+> Default username: `admin`  
 > Default password: `admin`
 
 
@@ -1110,17 +1521,17 @@ and only just need to wait for a moment. then you can open your own Tianji in yo
 
 # Telemetry
 
-## About Anonymous Telemetry
+## About Anonymous Telemetry  
 
-To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.
+To enhance the user experience, we have **enabled anonymous telemetry by default** in your self-hosted Tianji service.  
 
-We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:
+We understand that data privacy is important to you. Rest assured, this telemetry has the following characteristics:  
 
-- **Completely Anonymous**: We do not collect any personally identifiable information or service content.
-- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.
-- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.
+- **Completely Anonymous**: We do not collect any personally identifiable information or service content.  
+- **Extremely Limited Scope**: It only includes basic usage data, helping us minimally understand Tianji's usage to continuously improve the product.  
+- **Fully Transparent**: All telemetry data transmissions can be observed in your service’s network panel, ensuring complete transparency.  
 
-Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:
+Additionally, we fully respect your choice. If you prefer to **disable anonymous telemetry entirely**, simply set the following environment variable:  
 
 ```bash
 DISABLE_ANONYMOUS_TELEMETRY=1
@@ -1240,6 +1651,8 @@ Join our thriving community to connect with fellow users, share experiences, and
 # Integration with MCP
 
 <a href="https://cursor.com/install-mcp?name=tianji&config=eyJ0eXBlIjoic3RkaW8iLCJjb21tYW5kIjoibnB4IC15IHRpYW5qaS1tY3Atc2VydmVyIiwiZW52Ijp7IlRJQU5KSV9CQVNFX1VSTCI6IiIsIlRJQU5KSV9BUElfS0VZIjoiIiwiVElBTkpJX1dPUktTUEFDRV9JRCI6IiJ9fQ%3D%3D"><em><img src="https://cursor.com/deeplink/mcp-install-light.svg" alt="Add tianji MCP server to Cursor" height="32" /></em></a>
+<br />
+[![Add to Kiro](https://kiro.dev/images/add-to-kiro.svg)](https://kiro.dev/launch/mcp/add?name=tianji&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22tianji-mcp-server%22%5D%2C%22env%22%3A%7B%22TIANJI_BASE_URL%22%3A%22https%3A%2F%2Ftianji.example.com%22%2C%22TIANJI_API_KEY%22%3A%22%3Cyour-api-key%3E%22%2C%22TIANJI_WORKSPACE_ID%22%3A%22%3Cyour-workspace-id%3E%22%7D%7D)
 
 ## Introduction
 
@@ -1522,8 +1935,8 @@ done
 // Send heartbeat every 60 seconds
 setInterval(async () => {
   try {
-    await fetch('https://tianji.example.com/api/push/<your-push-token>', {
-      method: 'POST'
+    await fetch('https://tianji.example.com/api/push/<your-push-token>', { 
+      method: 'POST' 
     });
     console.log('Heartbeat sent successfully');
   } catch (error) {
@@ -1585,7 +1998,7 @@ class ServiceMonitor:
     def __init__(self, push_url):
         self.push_url = push_url
         self.running = True
-
+        
     def start_heartbeat(self):
         def heartbeat_loop():
             while self.running:
@@ -1594,7 +2007,7 @@ class ServiceMonitor:
                     time.sleep(30)  # Send every 30 seconds
                 except Exception as e:
                     print(f"Heartbeat failed: {e}")
-
+        
         thread = threading.Thread(target=heartbeat_loop)
         thread.daemon = True
         thread.start()
@@ -1622,7 +2035,7 @@ def sync_data():
     try:
         # Your data sync logic here
         result = perform_data_sync()
-
+        
         if result.success:
             requests.post(
                 'https://tianji.example.com/api/push/<your-push-token>',
@@ -1725,7 +2138,7 @@ Tianji system will send a POST request with below example content.
         },
         {
             "type": "image",
-            "url": "https://tianji.msgbyte.com/img/social-card.png"
+            "url": "https://tianji.dev/img/social-card.png"
         }
     ],
     "time": "2024-06-19T15:41:09.390Z"
@@ -1813,7 +2226,7 @@ Usage of tianji-reporter:
   --name string
         The identification name for this machine
   --url string
-        The http url of tianji, for example: https://tianji.msgbyte.com
+        The http url of tianji, for example: https://tianji.dev
   --vnstat
         Use vnstat for traffic statistics, linux only
   --workspace string
@@ -1835,7 +2248,7 @@ its will auto download reporter and create linux service in your machine. so its
 if you wanna uninstall reporter service, you can use this command like:
 ```bash
 curl -o- https://tianji.example.com/serverStatus/xxxxxxxxxxxxxxxxxxx/install.sh?url=https://tianji.example.com | sudo bash -s uninstall
-```
+``` 
 
 The main change is to append `-s uninstall` to your install command.
 
@@ -1864,6 +2277,185 @@ Please make sure your reverse proxy add websocket support
 ## Why my machine is always offline?
 
 Please check your server datetime.
+
+
+===== FILE: docs/skill/installation.md =====
+
+# Installation
+
+The skill is just three files. Any modern AI agent (Cursor, Claude Code, Codex, Copilot CLI...) already knows where its own skills directory is — so installation can be as simple as pasting one prompt.
+
+## One-Click Installation (via AI Agent)
+
+Paste the prompt below into your AI agent. It will download the files into the correct skills directory for its platform, then ask you for any missing configuration.
+
+```
+Please install the Tianji Data Query Skill into your skills directory:
+
+https://github.com/msgbyte/tianji/tree/master/skills/tianji-data-query
+
+After downloading, check whether these environment variables are set:
+  - TIANJI_BASE_URL
+  - TIANJI_API_KEY
+  - TIANJI_WORKSPACE_ID
+
+If any are missing, ask me for the values.
+```
+
+That's it. The agent picks its own skills directory, fetches the files, and prompts you for credentials when needed.
+
+## Manual Installation
+
+If you'd rather install it by hand, pick the target directory for your agent and run:
+
+```bash
+DEST="$HOME/.cursor/skills/tianji-data-query"   # or whatever your agent uses
+mkdir -p "$DEST/references"
+
+BASE="https://raw.githubusercontent.com/msgbyte/tianji/master/skills/tianji-data-query"
+curl -fSL "$BASE/SKILL.md"                          -o "$DEST/SKILL.md"
+curl -fSL "$BASE/references/api-endpoints.md"       -o "$DEST/references/api-endpoints.md"
+curl -fSL "$BASE/references/openapi-readonly.json"  -o "$DEST/references/openapi-readonly.json"
+```
+
+### Skills directory by agent
+
+| Agent | Directory |
+|-------|-----------|
+| Cursor (personal) | `~/.cursor/skills/tianji-data-query/` |
+| Cursor (project)  | `<project-root>/.cursor/skills/tianji-data-query/` |
+| Claude Code       | `~/.claude/skills/tianji-data-query/` |
+| Codex             | `~/.codex/skills/tianji-data-query/` |
+| Codex (alt)       | `~/.agents/skills/tianji-data-query/` |
+
+## Required Environment Variables
+
+The skill expects three values. Export them in your shell rc, or set them in your agent's skill config:
+
+```bash
+# Tianji instance base URL
+TIANJI_BASE_URL=https://tianji.example.com
+
+# API key for authentication
+TIANJI_API_KEY=your_api_key_here
+
+# Default workspace ID
+TIANJI_WORKSPACE_ID=your_workspace_id_here
+```
+
+### Getting an API Key
+
+1. Log in to your Tianji instance and click your **profile picture** in the top right corner.
+2. Select **Profile** from the dropdown menu.
+3. Find the **API Keys** section.
+4. Click **Create new key** and follow the prompts.
+
+## Next Steps
+
+After installation, head back to [Integration with Agent Skill](./skill.md) to see usage examples, the comparison with the MCP Server, and how the skill handles sensitive data.
+
+
+===== FILE: docs/skill/skill.md =====
+
+# Integration with Agent Skill
+
+## Introduction
+
+The **Tianji Data Query Skill** is a lightweight, agent-agnostic skill bundle that lets AI agents (Cursor, Claude Code, Codex, Copilot CLI, etc.) query the Tianji platform directly through its read-only OpenAPI.
+
+It follows the [agentskills.io](https://agentskills.io/specification) specification — a single `SKILL.md` plus reference files. No long-running process, no extra runtime.
+
+To create, test, deploy, and manage Workers, download the separate [Tianji Worker Skill](../worker/agent-skill.md), which includes common operations and the Worker runtime reference.
+
+:::tip Get started
+See the [Installation Guide](./installation.md) for one-click and manual setup.
+:::
+
+Before querying data, the skill reads the target instance's `/open/_document` to confirm exported GET routes and their parameter schemas. Bundled endpoint references are snapshots for orientation; the instance's document takes precedence. If discovery is unavailable or invalid, the agent reports the failure instead of guessing requests. Non-exported dashboard tRPC operations require separately maintained references and are outside this read-only skill.
+
+**What it covers:** read-only operations exported by the target instance, including:
+
+- **Website** — traffic stats, pageviews, geo distribution, Lighthouse reports
+- **Monitor** — uptime status, recent check data, monitor events
+- **Survey** — survey responses, result stats, AI categories
+- **Telemetry** — custom event counts, telemetry pageviews, metrics
+- **Feed** — channels, event streams, feed states
+- **Application** — app store reviews, app info, event stats
+- **Billing / AI Gateway / Worker / Page / Workspace / Global / AuditLog**
+
+## Skill vs MCP Server
+
+Tianji offers two ways to integrate with AI agents. Pick the one that fits your workflow:
+
+| | Agent Skill | [MCP Server](/docs/mcp) |
+|--|--|--|
+| **Form** | Plain documentation files (`SKILL.md` + references) | A long-running Node.js process |
+| **Runtime** | None — agent uses `curl` or built-in HTTP tools | `npx tianji-mcp-server` |
+| **Coverage** | GET operations discovered from the target's OpenAPI | A curated subset of tools (read + some write) |
+| **Setup** | Drop files into the agent's skills directory | Add MCP config to the agent's config file |
+| **Best for** | Cursor / Claude Code / Codex / any agent following the agentskills.io spec | Agents with first-class MCP support |
+
+You can use both at the same time without conflict.
+
+## Usage Examples
+
+Once installed, you can ask your AI agent natural-language questions and it will pick an endpoint from the target's OpenAPI document. These examples illustrate typical routes; the agent verifies paths and parameters against that document before making requests:
+
+### Example 1: Website traffic overview
+
+```
+User: Show me the pageviews of my main website over the past 7 days.
+
+Agent: [Calls GET /open/workspace/{workspaceId}/website/all to find the site]
+       [Then GET /open/workspace/{workspaceId}/website/{websiteId}/pageviews
+        with startAt/endAt covering 7 days]
+       Your main website received 12,438 pageviews over the past 7 days,
+       with a peak of 2,103 on Tuesday. Top referrer: google.com (43%).
+```
+
+### Example 2: Monitor health check
+
+```
+User: Are any of my monitors down right now?
+
+Agent: [Calls GET /open/workspace/{workspaceId}/monitor/all]
+       [Then GET /open/workspace/{workspaceId}/monitor/{monitorId}/status
+        for each monitor]
+       2 monitors are currently DOWN:
+       - api.example.com (HTTP 503, last UP 12 min ago)
+       - db-replica (TCP timeout, last UP 1h ago)
+       The other 8 monitors are healthy.
+```
+
+### Example 3: Survey result analysis
+
+```
+User: Summarise the responses to the "Q4 Customer Feedback" survey.
+
+Agent: [Calls GET /open/workspace/{workspaceId}/survey/all to resolve the ID]
+       [Then GET /open/workspace/{workspaceId}/survey/{surveyId}/stats]
+       [Then GET /open/workspace/{workspaceId}/survey/{surveyId}/result/list
+        with a pagination cursor]
+       "Q4 Customer Feedback" received 218 responses. Average satisfaction
+       4.3/5. Top theme: dashboard performance (mentioned 47 times). Most
+       requested feature: dark mode (31 mentions).
+```
+
+## Sensitive Data Handling
+
+Some endpoints may return platform-stored secrets (e.g. `modelApiKey`, `customModelBaseUrl` in AI Gateway responses) or PII (workspace members, audit logs, billing).
+
+The skill instructs agents to:
+
+- **Never display** `apiKey`, `modelApiKey`, `secret`, `token`, `password`, or `credential` fields.
+- **Redact or omit** these fields when summarising responses.
+- For workspace members / audit logs, only surface non-sensitive metadata (names, roles, timestamps) unless the user explicitly requests full detail.
+
+The bundled `openapi-readonly.json` redacts sensitive schema fields, but this does not sanitize live schemas or actual API responses. The agent must still apply these rules when reading and summarizing data.
+
+## Source
+
+The skill source lives in the Tianji repository under [`skills/tianji-data-query/`](https://github.com/msgbyte/tianji/tree/master/skills/tianji-data-query). Pull requests welcome.
 
 
 ===== FILE: docs/special-thanks.md =====
@@ -1923,9 +2515,9 @@ router.get(
     const ip = req.ip;
     const referer = req.header['referer'];
     const userAgent = req.headers['user-agent'];
-
+    
     // Store it in your database
-
+    
     const blankGifBuffer = Buffer.from(
       'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
       'base64'
@@ -1939,9 +2531,9 @@ If you prefer not to develop your own solution, I recommend Tianji. As an open-s
 
 ![](/img/telemetry/2.png)
 
-GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji)
+GitHub: [https://github.com/msgbyte/tianji](https://github.com/msgbyte/tianji) 
 
-Official Website: [https://tianji.msgbyte.com/](https://tianji.msgbyte.com/)
+Official Website: [https://tianji.dev/](https://tianji.dev/)
 
 
 ===== FILE: docs/telemetry/params.md =====
@@ -2155,6 +2747,41 @@ the script look like below:
 
 you can get this script code from your **Tianji** website list
 
+## Script Attributes
+
+The tracker script supports the following `data-*` attributes on the `<script>` tag:
+
+| Attribute | Required | Default | Description |
+|---|---|---|---|
+| `data-website-id` | **Yes** | — | The unique website ID for associating tracking data. The tracker will not initialize without this. |
+| `data-host-url` | No | Script `src` origin | The backend server URL. If omitted, it is automatically derived from the script's `src` path. |
+| `data-auto-track` | No | `true` | Automatically track page views and route changes. Set to `"false"` to disable. |
+| `data-do-not-track` | No | — | When set, respects the browser's Do Not Track (DNT) setting and disables tracking if DNT is enabled. |
+| `data-domains` | No | — | A comma-separated list of domains to track (e.g. `"example.com,www.example.com"`). Tracking is only active when the current hostname matches one of these domains. |
+
+### Full Example
+
+```html
+<script
+  async
+  defer
+  src="https://example.com/tracker.js"
+  data-website-id="clxxxxxxxxxxxxxxxxxx"
+  data-host-url="https://analytics.example.com"
+  data-auto-track="true"
+  data-do-not-track="true"
+  data-domains="example.com,www.example.com"
+></script>
+```
+
+### Disable Tracking via localStorage
+
+You can also disable tracking at runtime by setting a localStorage flag:
+
+```javascript
+localStorage.setItem('tianji.disabled', '1');
+```
+
 ## Report Event
 
 **Tianji** provide a simple way to report user click event, its easy to help you track which action user like and often to use.
@@ -2178,8 +2805,8 @@ Now, when user click this button, your dashboard will receive new event
 You can attach additional data to your events by using `data-tianji-event-{key}` attributes. Any attribute matching this pattern will be collected and sent with the event.
 
 ```html
-<button
-  data-tianji-event="purchase"
+<button 
+  data-tianji-event="purchase" 
   data-tianji-event-product="Premium Plan"
   data-tianji-event-price="99"
   data-tianji-event-currency="USD">
@@ -2289,6 +2916,735 @@ You can add `data-domains` into your script. The value should be your root domai
 Then you can just see the events from these domains.
 
 
+===== FILE: docs/website/visitor-map.md =====
+
+# Visitor Map
+
+The visitor map shows the geographic distribution of website visitors. You can find it in the website analytics dashboard.
+
+## Map Provider Selection
+
+Tianji selects the map provider from the configured environment variables:
+
+1. Use Mapbox when `MAPBOX_TOKEN` is set.
+2. Otherwise, use AMap when `AMAP_TOKEN` is set.
+3. Use the default map when neither variable is set.
+
+When both variables are set, Mapbox takes priority.
+
+## Configure Mapbox
+
+Set a browser-compatible Mapbox public access token:
+
+```bash
+MAPBOX_TOKEN=your-mapbox-public-access-token
+```
+
+## Configure AMap
+
+Set an AMap key that can be used by its browser map SDK:
+
+```bash
+AMAP_TOKEN=your-amap-key
+```
+
+Restart Tianji after changing either environment variable. For other deployment settings, see [Environment Variables](../install/environment).
+
+## Token Safety
+
+Map tokens are sent to the browser to load the map. Do not use a server-side secret token. Restrict the token to your Tianji domain in the provider console when that option is available.
+
+## Troubleshooting
+
+- If the map is blank, check the browser network panel for `401` or `403` responses, token restrictions, and provider quota limits.
+- If Tianji still uses the default map, confirm that the environment variable is available to the Tianji process and restart the service.
+- If the map has no visitor points, confirm that the selected date range contains visits with geographic data.
+
+
+===== FILE: docs/worker/agent-reference.md =====
+
+# Worker Agent Reference
+
+This page is a machine-oriented reference for coding agents that generate Tianji Worker source code. For the user-facing setup and operation guide, read [Worker Getting Started](https://tianji.dev/docs/worker/getting-started).
+
+For an installable bundle that also covers common operations, [download the Tianji Worker Skill](https://tianji.dev/docs/worker/agent-skill).
+
+Read this page completely before generating code. Do not infer Node.js, browser, or Cloudflare Worker APIs that are not declared here.
+
+## Give this page to an Agent
+
+If you are a Tianji user, copy this page's URL and send it to an Agent that can access web pages:
+
+```text
+Read this reference completely before writing code:
+https://tianji.dev/docs/worker/agent-reference
+```
+
+If the Agent cannot access the URL, copy and paste the entire page into the conversation instead. Then describe the Worker's purpose, input, environment-variable names, external APIs, temporary data, and expected output. Never include real Secret values.
+
+The [Worker Getting Started guide](https://tianji.dev/docs/worker/getting-started#ask-an-agent-to-write-your-worker) provides a ready-to-copy request template and the complete user workflow.
+
+## Choose the target
+
+There are two valid generation targets:
+
+| Target | Output |
+| --- | --- |
+| Tianji dashboard | One self-contained source file using plain JavaScript syntax |
+| Tianji CLI project | `src/index.ts`; TypeScript and bundled npm dependencies are allowed |
+
+Dashboard code should use plain JavaScript unless the Tianji instance explicitly enables `ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT`. A CLI project uses Vite to compile TypeScript before deployment.
+
+Generate a Module Worker. Do not generate the legacy global `function fetch(...) {}` format.
+
+```js
+
+  },
+};
+```
+
+## Shared modules
+
+Workers can use static imports from published workspace modules with aliases such as `@shared/math`. Inspect the module's exports and declarations in the dashboard before importing it; do not invent aliases or exported functions.
+
+Each binding pins a specific module revision. Saving or testing code with an existing import keeps its current pin; a newly added alias resolves to the latest published revision when bindings are not supplied explicitly. Updating a shared module does not automatically upgrade an existing Worker's pin. A Worker can bind at most 16 shared modules, and shared modules cannot import dependencies themselves.
+
+Use the Worker editor to inspect bindings and test the code together with its selected revisions. A plain dashboard Worker cannot resolve arbitrary npm imports; CLI dependencies must be bundled and compatible with the sandbox.
+
+## Runtime types
+
+Use this contract for reasoning and TypeScript generation:
+
+```ts
+type JsonValue =
+  | null
+  | string
+  | number
+  | boolean
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+interface WorkerRequestContext {
+  method: string;
+  url: string;
+  headers: Record<string, string | string[] | undefined>;
+}
+
+interface WorkerContext {
+  type: 'http' | 'cron' | 'manual' | 'test';
+  env: Record<string, string>;
+  request?: WorkerRequestContext;
+}
+
+interface TianjiWorker {
+  fetch(
+    payload: Record<string, unknown>,
+    context: WorkerContext
+  ): unknown | Promise<unknown>;
+}
+
+interface RequestConfig {
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  params?: Record<string, unknown>;
+  data?: unknown;
+  timeout?: number;
+}
+
+interface RequestResult {
+  status: number;
+  headers: Record<string, unknown>;
+  data: unknown;
+}
+
+declare function request(config: RequestConfig): Promise<RequestResult>;
+
+interface KVScope {
+  get<T extends JsonValue = JsonValue>(key: string): Promise<T | undefined>;
+  set(key: string, value: JsonValue, ttlMilliseconds?: number): Promise<void>;
+  delete(key: string): Promise<boolean>;
+}
+
+declare const kv: KVScope & { workspace: KVScope };
+```
+
+The types above document runtime globals. Do not include the `declare` statements in dashboard JavaScript output. A CLI TypeScript project may include declarations when type checking needs them.
+
+## Input contract
+
+- `payload` is always an object.
+- For HTTP execution, Tianji merges query parameters and the request body. Body fields overwrite query fields with the same name.
+- A cron execution without input receives `{}`.
+- Treat every payload field as untrusted. Check its type, required status, format, length, and allowed range before using it.
+- Do not assume query parameters have already been converted to numbers or booleans.
+- Reject or return a clear error for invalid input rather than silently constructing unsafe requests.
+
+`context.request` exists only when `context.type === 'http'`. Guard access to it:
+
+```js
+if (context.type !== 'http') {
+  return { error: 'HTTP trigger required' };
+}
+
+const method = context.request.method;
+```
+
+## Output contract
+
+- Return JSON-compatible objects and arrays, a string, or a number.
+- For an HTTP trigger, Tianji serializes object results as JSON.
+- Do not return secrets or internal error objects.
+- Normalize upstream API responses into a stable result owned by the worker.
+- Use `console.log`, `console.warn`, and `console.error` for execution logs.
+
+## Sandbox contract
+
+The Worker sandbox provides standard JavaScript built-ins, captured `console` methods, `request`, and `kv`.
+
+The sandbox is not Node.js and not a browser. Do not generate code that uses:
+
+- `process`, `Buffer`, filesystem, child processes, sockets, or other Node.js APIs.
+- DOM APIs, browser storage, or browser `fetch`.
+- Cloudflare Worker bindings or event handlers.
+- Undocumented globals.
+
+For outbound HTTP, use `request` with an Axios-style configuration:
+
+```js
+const response = await request({
+  method: 'POST',
+  url: context.env.API_URL,
+  headers: { Authorization: `Bearer ${context.env.API_TOKEN}` },
+  data: { value: payload.value },
+  timeout: 10_000,
+});
+```
+
+Check required URLs and credentials before calling `request`. Handle remote failures and avoid placing credentials in query strings.
+
+## Environment and Secret contract
+
+Environment values are available only through `context.env`:
+
+```js
+const apiUrl = context.env.API_URL;
+const apiToken = context.env.API_TOKEN;
+```
+
+Variable names match `^[A-Za-z_][A-Za-z0-9_]*$` and are unique within a worker.
+
+Text and Secret values are both strings at runtime. Secret values are replaced with `[secret]` in captured log strings, arrays, nested object values, and object keys. Empty Secret values are not redacted.
+
+Log redaction does not prevent exfiltration. Worker code can still return a secret or send it to an external service. Use a Secret only for its intended outbound request, and never intentionally log or return it.
+
+## KV contract
+
+`kv` stores data private to the current worker. `kv.workspace` shares data across workers in the same workspace and must be used only when cross-worker sharing is intentional.
+
+```js
+const cached = await kv.get('result');
+await kv.set('result', { ok: true }, 60_000);
+const deleted = await kv.delete('result');
+```
+
+KV limits apply to each execution:
+
+| Limit | Value |
+| --- | ---: |
+| Default TTL | 10 minutes |
+| Minimum TTL | 1 second |
+| Maximum TTL | 24 hours |
+| Key length | 1-256 characters |
+| Value size | 256 KiB of JSON |
+| Calls across both scopes | 50 |
+| Total data written across both scopes | 1 MiB |
+| Timeout for one KV operation | 2 seconds |
+
+Values must be JSON-compatible. Functions, symbols, `undefined`, `BigInt`, non-finite numbers, class instances, custom `toJSON` methods, symbol properties, accessors, non-enumerable properties, and cyclic data are invalid.
+
+KV failures expose one stable error code:
+
+```text
+WORKER_KV_INVALID_KEY
+WORKER_KV_INVALID_VALUE
+WORKER_KV_INVALID_TTL
+WORKER_KV_LIMIT_EXCEEDED
+WORKER_KV_TIMEOUT
+WORKER_KV_UNAVAILABLE
+```
+
+KV is cache storage, not durable storage. Always handle `undefined` from `get`. Test executions use isolated KV namespaces and cannot read or modify the deployed worker's KV data.
+
+## Trigger contract
+
+Generate code that supports only the requested triggers and handles unexpected triggers explicitly.
+
+- HTTP: `context.type === 'http'`; `context.request` is present.
+- Cron: `context.type === 'cron'`; payload is normally `{}`.
+- Manual: `context.type === 'manual'`.
+- Editor test: `context.type === 'test'`; test KV is isolated.
+
+Cron expressions have a minimum interval of one minute. Execution uses the workspace timezone or UTC if none is configured.
+
+The public HTTP route is:
+
+```text
+/api/worker/<workspace-id>/<worker-id>
+```
+
+Only active, public workers can execute through this route. It does not require a Tianji API key. Treat the endpoint as public and the payload as attacker-controlled. Private workers are rejected by the public route and can be tested through authenticated Tianji operations.
+
+## Generation checklist
+
+Before returning generated Worker code, verify all of the following:
+
+1. The output uses a default-exported object with exactly one `async fetch(payload, context)` method.
+2. It matches the requested dashboard JavaScript or CLI TypeScript target.
+3. Every payload field is validated before use.
+4. Configuration and credentials come from named `context.env` keys.
+5. No real credential or placeholder that resembles a real credential is embedded in source.
+6. Outbound HTTP uses `request`, validates required configuration, sets a timeout, and handles failures.
+7. Temporary private data uses `kv`; `kv.workspace` appears only when cross-worker sharing was explicitly requested.
+8. KV keys, values, TTLs, and operation counts stay within the documented limits.
+9. The result is JSON-compatible and does not expose secrets or unnecessary upstream response data.
+10. The code does not use Node.js, browser, Cloudflare, or undocumented runtime APIs.
+11. At least one valid and one invalid test payload are described separately from the source code.
+12. The agent does not deploy, overwrite remote code, change visibility, or add Secret values without explicit user authorization.
+
+## Prompt template
+
+```text
+Read the Tianji Worker Agent Reference completely. Generate Worker source code
+using only its documented runtime contract.
+
+Target: <dashboard JavaScript or CLI TypeScript>
+Triggers: <http, cron, manual, or test>
+Input: <fields, types, required fields, and validation rules>
+Environment: <context.env variable names; never include real values>
+External APIs: <method, endpoint behavior, authentication, and timeout>
+KV: <private or workspace scope, keys, values, and TTL; or none>
+Output: <stable JSON response schema>
+Failures: <invalid input, missing configuration, remote errors, missing KV>
+
+Return the source code first, followed by valid and invalid test payloads.
+Do not deploy, overwrite remote code, or include real Secret values.
+```
+
+## Agent-readable documentation
+
+Tianji publishes a documentation index at [`/llms.txt`](https://tianji.dev/llms.txt) and the complete documentation corpus at [`/llms-full.txt`](https://tianji.dev/llms-full.txt). This reference and the user-facing guide are included in the full corpus.
+
+
+===== FILE: docs/worker/agent-skill.md =====
+
+# Worker Agent Skill
+
+The **Tianji Worker Skill** teaches coding agents how to write Worker code and carry out common operations using the dashboard, CLI, and supported management APIs.
+
+<a href="/skills/tianji-worker.tar.gz" download>Download the Tianji Worker Skill (.tar.gz)</a>
+
+The archive contains an installable `tianji-worker` folder with `SKILL.md`, a common-operations guide, and the [Worker Agent Reference](./agent-reference.md). It includes no credentials and requires no MCP server.
+
+## Install
+
+Download and extract the archive into your agent's skills directory. For Codex:
+
+```bash
+curl --fail --location https://tianji.dev/skills/tianji-worker.tar.gz \
+  --output tianji-worker.tar.gz
+mkdir -p ~/.codex/skills
+tar -xzf tianji-worker.tar.gz -C ~/.codex/skills
+```
+
+For Claude Code, use `~/.claude/skills`; for Cursor, use `~/.cursor/skills`. If you already installed this skill, review local customizations before replacing its files. Restart or reload the agent session after installation.
+
+## What the agent learns
+
+| Operation         | Guidance included                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| Create and update | Runtime contract, payload validation, local project setup, deployment, preserving existing settings |
+| Test and invoke   | Draft tests, saved-code manual runs, public HTTP requests, and their different effects              |
+| Debug             | Execution history, logs, errors, and common configuration problems                                  |
+| Configure         | Text/Secret variables, shared-module bindings, cron expressions, and workspace timezone             |
+| Maintain          | Revision comparison and rollback, pause/resume, and deletion                                        |
+
+Before operating on an instance, the skill instructs the agent to read that instance's `/open/_document` and confirm exported operations, paths, and request schemas. The live document takes precedence over bundled API examples. If discovery fails, the agent reports the problem instead of guessing management API requests.
+
+The skill focuses on operational rules that a schema alone cannot supply: preserving active/cron settings, retaining Secrets during replacement updates, and understanding rollback scope. For example, CLI deployment activates a Worker and can disable its existing schedule; a draft test isolates KV but can still call real external services. When an operation is absent from OpenAPI, the agent uses supported dashboard actions or separately verified tRPC calls.
+
+## Example requests
+
+```text
+Use tianji-worker to create a Worker that validates an incoming webhook and
+forwards its message using a Secret named API_TOKEN. Give me valid and invalid
+test payloads. Save the code locally for review.
+```
+
+```text
+Update Worker <worker-id> in workspace <workspace-id> on <server-url>.
+Keep its active state, cron schedule, and environment variables unchanged.
+Test the new code before deploying it, then check the execution logs.
+```
+
+```text
+Inspect the recent failures for Worker <worker-id>, compare its revisions,
+and explain which revision could restore the previous behavior.
+```
+
+```text
+Pause Worker <worker-id> without deleting its code or cron configuration.
+```
+
+Provide the target server and workspace through your existing configuration. Keep API keys and Secret values in secure configuration rather than pasting them into prompts. The skill supplies instructions; it does not grant access to your Tianji instance.
+
+## Source and maintenance
+
+The source lives in [`skills/tianji-worker`](https://github.com/msgbyte/tianji/tree/master/skills/tianji-worker). The website build refreshes the bundled runtime reference from the Worker documentation and rebuilds the download. Operations not exported to OpenAPI, including their tRPC inputs, require separate maintenance against the matching server and dashboard code; `/open/_document` does not synchronize them. CLI and runtime behavior also remain part of the maintained reference. To rebuild the download locally:
+
+```bash
+pnpm --dir website build:worker-skill
+```
+
+For a walkthrough in the dashboard, see [Worker Getting Started](./getting-started.md). For read-only queries across Tianji services, see the separate [Tianji Data Query Skill](../skill/).
+
+
+===== FILE: docs/worker/getting-started.md =====
+
+# Worker Getting Started
+
+Tianji Worker lets you run small functions without maintaining a separate service. A worker can receive HTTP requests, run on a schedule, call external APIs, read environment variables, and store short-lived data.
+
+This guide walks you through creating and publishing your first worker in the Tianji dashboard. If you want an AI coding agent to generate the source code, see the [Worker Agent Reference](./agent-reference.md).
+
+For an installable skill covering code generation and common operations, [download the Tianji Worker Skill](./agent-skill.md).
+
+## Before you start
+
+Worker is disabled by default on self-hosted Tianji instances. Add this environment variable to the Tianji server and restart it:
+
+```bash
+ENABLE_FUNCTION_WORKER=true
+```
+
+After Worker is enabled, open **Worker** from the Tianji sidebar.
+
+## Ask an Agent to write your Worker
+
+You do not need to write the Worker code by hand. Give the [Worker Agent Reference](./agent-reference.md) to your coding agent so it can learn Tianji's runtime and generate compatible code.
+
+### If your Agent can open web pages
+
+Copy the following prompt, replace the placeholders, and send it to your Agent:
+
+```text
+First, read the Tianji Worker Agent Reference completely:
+https://tianji.dev/docs/worker/agent-reference
+
+Then create a Tianji Worker for me.
+
+Target: dashboard JavaScript
+Purpose: <what the Worker should do>
+Input: <payload fields and validation rules>
+Environment variables: <variable names only; do not include Secret values>
+External APIs: <APIs the Worker should call, or none>
+Temporary data: <what to store in KV, or none>
+Output: <the expected result>
+
+Return the Worker source code and example test payloads. Do not deploy it.
+```
+
+For example, you can replace `Purpose` with “receive a GitHub webhook and forward a short message to my team webhook,” then list the required payload fields and environment-variable names.
+
+### If your Agent cannot open web pages
+
+1. Open the [Worker Agent Reference](./agent-reference.md).
+2. Copy the entire page.
+3. Paste it into your conversation with the Agent.
+4. Add your Worker requirements using the prompt above.
+
+Do not paste real API keys or passwords into the conversation. Give the Agent environment-variable names such as `API_TOKEN`; add the actual values later as **Secret** variables in Tianji.
+
+After the Agent returns code:
+
+1. Review the environment-variable names it requires.
+2. Paste the code into the Tianji Worker editor.
+3. Add Text and Secret variables in Tianji.
+4. Run the provided valid and invalid test payloads.
+5. Save and activate the worker only after the results are correct.
+
+## Create your first worker
+
+1. Open **Worker** in the dashboard.
+2. Click **Add Worker**.
+3. Enter a name and an optional description.
+4. Paste the following code into the editor.
+
+```js
+
+    return {
+      message: `Hello, ${name}!`,
+      trigger: context.type,
+      timestamp: new Date().toISOString(),
+    };
+  },
+};
+```
+
+Every worker exports a `fetch` method. Tianji calls it with:
+
+- `payload`: input values sent to the worker.
+- `context`: information about the trigger, request, and configured environment variables.
+
+The value returned by `fetch` becomes the worker result.
+
+## Test before saving
+
+Use the editor's **Test** action with this payload:
+
+```json
+{
+  "name": "Tianji"
+}
+```
+
+The result should look similar to:
+
+```json
+{
+  "message": "Hello, Tianji!",
+  "trigger": "test",
+  "timestamp": "2026-08-16T00:00:00.000Z"
+}
+```
+
+Use `console.log`, `console.warn`, or `console.error` while debugging. Tianji displays these messages in the execution details.
+
+## Call a worker over HTTP
+
+Save the worker, keep it **Active**, and make sure it is **Public**. Its endpoint is:
+
+```text
+https://<your-tianji-host>/api/worker/<workspace-id>/<worker-id>
+```
+
+You can pass values as query parameters:
+
+```bash
+curl 'https://<your-tianji-host>/api/worker/<workspace-id>/<worker-id>?name=Tianji'
+```
+
+Or send a JSON request body:
+
+```bash
+curl --request POST \
+  --header 'Content-Type: application/json' \
+  --data '{"name":"Tianji"}' \
+  'https://<your-tianji-host>/api/worker/<workspace-id>/<worker-id>'
+```
+
+The endpoint accepts any HTTP method. Query parameters and request-body fields are merged into `payload`; body fields take precedence when the same key appears in both places.
+
+A public worker can be called by anyone who has its URL and does not require a Tianji API key. Validate all input and never return credentials. Private workers cannot be called through the public endpoint, but you can test them from the authenticated dashboard.
+
+## Handle different triggers
+
+`context.type` tells you why the worker is running:
+
+| Type | When it is used |
+| --- | --- |
+| `http` | The public HTTP endpoint called the worker |
+| `cron` | A configured schedule triggered the worker |
+| `manual` | A user ran the saved worker from Tianji |
+| `test` | A user tested code in the editor |
+
+For HTTP calls, `context.request` contains the request method, URL, and headers:
+
+```js
+
+    }
+
+    return {
+      method: context.request.method,
+      payload,
+    };
+  },
+};
+```
+
+## Add environment variables and secrets
+
+Open the worker's environment-variable section and add:
+
+- **Text** variables for non-sensitive settings such as a base URL.
+- **Secret** variables for API keys, tokens, and passwords.
+
+Read both types from `context.env`:
+
+```js
+const apiBaseUrl = context.env.API_BASE_URL;
+const apiToken = context.env.API_TOKEN;
+```
+
+Variable names can contain letters, numbers, and underscores, but must start with a letter or underscore. Names must be unique within a worker.
+
+Tianji replaces configured Secret values with `[secret]` in captured logs. A worker can still send or return a secret, so do not log or return credentials intentionally.
+
+## Call an external API
+
+Use the global `request` function for outbound HTTP requests:
+
+```js
+
+    const apiToken = context.env.API_TOKEN;
+
+    if (!apiBaseUrl || !apiToken) {
+      throw new Error('API configuration is missing');
+    }
+
+    const response = await request({
+      method: 'GET',
+      url: `${apiBaseUrl}/items`,
+      params: { query: String(payload.query ?? '') },
+      headers: { Authorization: `Bearer ${apiToken}` },
+      timeout: 10_000,
+    });
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  },
+};
+```
+
+`request` accepts an Axios-style configuration and returns `status`, `headers`, and `data`. The browser `fetch` API is not available in the Worker sandbox.
+
+## Store short-lived data
+
+Use the global `kv` object when a worker needs temporary state:
+
+```js
+
+    const current = (await kv.get(key)) ?? 0;
+    const next = Number(current) + 1;
+
+    await kv.set(key, next, 60 * 60 * 1000);
+
+    return { count: next };
+  },
+};
+```
+
+The available operations are:
+
+- `kv.get(key)`
+- `kv.set(key, value, ttlMilliseconds?)`
+- `kv.delete(key)`
+
+Data stored with `kv` is private to the current worker. Use `kv.workspace` only when multiple workers in the same workspace intentionally share temporary data.
+
+KV is a cache rather than a durable database. Entries expire and may be evicted, so your worker must handle missing values. The default TTL is 10 minutes and the maximum TTL is 24 hours. See the [Worker Agent Reference](./agent-reference.md#kv-contract) for the complete limits and error codes.
+
+## Run on a schedule
+
+Enable **Cron Schedule** in the worker editor and enter a cron expression. The minimum interval is one minute. Schedules use the workspace timezone, or UTC when no workspace timezone is configured.
+
+Common expressions:
+
+| Expression | Meaning |
+| --- | --- |
+| `*/5 * * * *` | Every 5 minutes |
+| `0 * * * *` | At the start of every hour |
+| `0 9 * * 1-5` | At 09:00, Monday through Friday |
+
+You can restrict a worker to scheduled runs:
+
+```js
+
+    }
+
+    const webhookUrl = context.env.WEBHOOK_URL;
+    if (!webhookUrl) {
+      throw new Error('WEBHOOK_URL is not configured');
+    }
+
+    const response = await request({
+      method: 'POST',
+      url: webhookUrl,
+      data: { executedAt: new Date().toISOString() },
+      timeout: 10_000,
+    });
+
+    return { delivered: response.status >= 200 && response.status < 300 };
+  },
+};
+```
+
+## Develop with the CLI
+
+The dashboard is the quickest way to create a worker. Use the CLI when you want a local TypeScript project, third-party dependencies, version control, and a repeatable build.
+
+Build and link the current CLI from the Tianji repository:
+
+```bash
+git clone https://github.com/msgbyte/tianji.git
+cd tianji
+pnpm install
+pnpm --dir packages/cli build
+cd packages/cli
+pnpm link --global
+```
+
+Then create and deploy a project from your projects directory:
+
+```bash
+tianji login
+tianji worker init my-worker
+cd my-worker
+npm install
+npm run build
+tianji worker deploy
+```
+
+`tianji login` asks for your Tianji server URL, workspace ID, and API key. The deploy command builds `src/index.ts`, uploads `dist/index.js`, and records the remote worker ID in `.tianjirc`.
+
+To download an existing worker into an empty directory:
+
+```bash
+tianji worker pull <worker-id>
+npm install
+```
+
+Pulling into an existing project does not replace `src/index.ts` unless you explicitly pass `--overwrite`. Configure environment variables, secrets, visibility, and cron in the dashboard. Do not put credentials in source code or `.tianjirc`.
+
+## Troubleshooting
+
+### `Function worker is not enabled`
+
+Set `ENABLE_FUNCTION_WORKER=true` on the Tianji server and restart it.
+
+### `fetch is not defined`
+
+Make sure the worker has a default export containing a `fetch` method, as shown in the first example.
+
+### `Worker is private`
+
+Private workers cannot run through the public HTTP endpoint. Test the worker from the authenticated dashboard, or make it public only when unauthenticated link access is intended.
+
+### TypeScript causes a syntax error in the dashboard
+
+Use plain JavaScript in the dashboard. TypeScript syntax requires the server option `ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT`. CLI projects compile TypeScript before uploading it.
+
+### A KV value disappears
+
+KV data expires and may be evicted. Use an external durable database when the data must not be lost.
+
+## Generate a worker with an Agent
+
+Follow [Ask an Agent to write your Worker](#ask-an-agent-to-write-your-worker) to give the reference to your Agent. The [Worker Agent Reference](./agent-reference.md) provides the precise runtime contract, type definitions, sandbox restrictions, KV limits, generation checklist, and a more detailed prompt template.
+
+
 ===== FILE: src/pages/markdown-page.md =====
 
 # Markdown page example
@@ -2335,7 +3691,7 @@ We use your personal data to:
 
 - **Provide, Improve, and Develop the Platform**: We process your data primarily to ensure the proper functioning of our website. We may also use your data to improve our website and offer you the best possible experience. Specifically, we:
   - Operate and maintain your `tianji.msgbye.com` account, allowing you to access and use the Platform. Your email address and password are used to identify you when you log in.
-
+  
 - **Maintain a Safe and Secure Environment**: We process your data to enhance the security of our Platform, ensuring a safe experience for all users.
 
 ## How We Share Your Personal Data
@@ -2343,7 +3699,7 @@ We use your personal data to:
 We do not sell your personal data to external parties.
 
 - **Through Your Profile**: Any personal data you choose to disclose in your public profile on `tianji.msgbye.com` will be visible to other users. They may view your profile information and interact with any public prompts you share.
-
+  
 - **Compliance with Laws**: We may disclose your personal data to courts, law enforcement agencies, or government authorities if required to:
   - Comply with legal obligations or processes.
   - Respond to claims against `tianji.msgbye.com`.

@@ -39,6 +39,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 18,
+    "groupValues": [
+      18,
+    ],
     "name": "$all_event",
   },
   {
@@ -78,6 +81,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 1,
+    "groupValues": [
+      1,
+    ],
     "name": "$all_event",
   },
   {
@@ -117,6 +123,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 2,
+    "groupValues": [
+      2,
+    ],
     "name": "$all_event",
   },
   {
@@ -156,6 +165,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 3,
+    "groupValues": [
+      3,
+    ],
     "name": "$all_event",
   },
   {
@@ -195,6 +207,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 4,
+    "groupValues": [
+      4,
+    ],
     "name": "$all_event",
   },
   {
@@ -234,6 +249,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 5,
+    "groupValues": [
+      5,
+    ],
     "name": "$all_event",
   },
   {
@@ -273,6 +291,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 6,
+    "groupValues": [
+      6,
+    ],
     "name": "$all_event",
   },
   {
@@ -312,6 +333,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 7,
+    "groupValues": [
+      7,
+    ],
     "name": "$all_event",
   },
   {
@@ -351,6 +375,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 8,
+    "groupValues": [
+      8,
+    ],
     "name": "$all_event",
   },
   {
@@ -390,6 +417,9 @@ exports[`processGroupedTimeSeriesData > simple test case 1`] = `
       },
     ],
     "depth": 9,
+    "groupValues": [
+      9,
+    ],
     "name": "$all_event",
   },
 ]

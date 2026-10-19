@@ -1,0 +1,3161 @@
+import { AIGatewayLogsStatus, AIRouterLogsStatus } from '@prisma/client';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import { AI_GATEWAY_STREAM_HEARTBEAT } from './aiGateway.js';
+import * as quotaAlert from './aiGateway/quotaAlert.js';
+import { AIRouterLogsModelSchema } from '../prisma/zod/index.js';
+import {
+  AI_ROUTER_PROTOCOLS,
+  applyAIRouterModelOverride,
+  buildAIRouterAnthropicMessagesHandler,
+  buildAIRouterOpenAIChatHandler,
+  buildBufferedAIGatewayAttemptResult,
+  createAIRouterResponsesWebSocketLog,
+  createAIRouterAttemptRequest,
+  getAIRouterProtocolForPath,
+  inspectAIRouterBufferedResponseContent,
+  isAIGatewayEligibleForAIRouter,
+  isAIRouterNodeEligibleForProtocol,
+  isAIRouterRetryableFailure,
+  resolveAIRouterGatewayHandlerConfig,
+  resolveAIRouterResponsesWebSocketCandidates,
+  runAIRouterAttempts,
+  runAIRouterModelsDiscovery,
+  selectAIRouterTierAttemptNodes,
+  selectEligibleAIRouterNodes,
+} from './aiRouter.js';
+import { aiRouterRouter } from '../router/aiRouter.js';
+import { prisma } from './_client.js';
+import { buildCursorResponseSchema } from '../utils/schema.js';
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe('AI Router protocol helpers', () => {
+  test('exports stable protocol identifiers', () => {
+    expect(AI_ROUTER_PROTOCOLS).toEqual({
+      OPENAI_CHAT: 'openai-chat',
+      OPENAI_RESPONSES: 'openai-responses',
+      ANTHROPIC_MESSAGES: 'anthropic-messages',
+    });
+  });
+
+  test('maps supported runtime paths to protocols', () => {
+    expect(getAIRouterProtocolForPath('openai', 'chat/completions')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+    );
+    expect(getAIRouterProtocolForPath('deepseek', 'chat/completions')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+    );
+    expect(getAIRouterProtocolForPath('anthropic', 'chat/completions')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+    );
+    expect(getAIRouterProtocolForPath('openrouter', 'chat/completions')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+    );
+    expect(getAIRouterProtocolForPath('openai', 'responses')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES
+    );
+    expect(getAIRouterProtocolForPath('anthropic', 'messages')).toBe(
+      AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES
+    );
+    expect(getAIRouterProtocolForPath('openrouter', 'messages')).toBe(
+      AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES
+    );
+  });
+
+  test('maps custom runtime paths to all supported protocols', () => {
+    expect(getAIRouterProtocolForPath('custom', 'chat/completions')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+    );
+    expect(getAIRouterProtocolForPath('custom', 'responses')).toBe(
+      AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES
+    );
+    expect(getAIRouterProtocolForPath('custom', 'messages')).toBe(
+      AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES
+    );
+  });
+
+  test('returns null for unsupported endpoint combinations', () => {
+    expect(getAIRouterProtocolForPath('deepseek', 'responses')).toBeNull();
+    expect(getAIRouterProtocolForPath('openai', 'messages')).toBeNull();
+    expect(getAIRouterProtocolForPath('deepseek', 'messages')).toBeNull();
+    expect(getAIRouterProtocolForPath('anthropic', 'responses')).toBeNull();
+  });
+});
+
+describe('AI Router model override helpers', () => {
+  test('applies model override without mutating original payload', () => {
+    const messages = [{ role: 'user', content: 'hello' }];
+    const payload = { model: 'gpt-4o-mini', messages };
+
+    const next = applyAIRouterModelOverride(payload, 'deepseek-chat');
+
+    expect(next).toEqual({
+      model: 'deepseek-chat',
+      messages,
+    });
+    expect(next).not.toBe(payload);
+    expect(next.messages).toBe(messages);
+    expect(payload).toEqual({
+      model: 'gpt-4o-mini',
+      messages,
+    });
+  });
+
+  test('returns a shallow copy when model override is empty or null', () => {
+    const payload = { model: 'gpt-4o-mini', input: 'hello' };
+
+    const emptyOverride = applyAIRouterModelOverride(payload, '');
+    const nullOverride = applyAIRouterModelOverride(payload, null);
+
+    expect(emptyOverride).toEqual(payload);
+    expect(emptyOverride).not.toBe(payload);
+    expect(nullOverride).toEqual(payload);
+    expect(nullOverride).not.toBe(payload);
+  });
+});
+
+describe('AI Router eligibility helpers', () => {
+  test('selects enabled nodes by node provider without gateway router metadata', () => {
+    const nodes = selectEligibleAIRouterNodes(
+      [
+        {
+          id: 'openai-route',
+          enabled: true,
+          order: 2,
+          provider: 'openai',
+          gateway: {
+            id: 'gw-openai',
+            modelApiKey: 'sk-openai',
+          },
+        },
+        {
+          id: 'openrouter-route',
+          enabled: true,
+          order: 3,
+          provider: 'openrouter',
+          gateway: {
+            id: 'gw-openrouter',
+            modelApiKey: 'sk-openrouter',
+          },
+        },
+        {
+          id: 'messages-only-route',
+          enabled: true,
+          order: 1,
+          provider: 'anthropic',
+          gateway: {
+            id: 'gw-anthropic',
+            modelApiKey: 'sk-anthropic',
+          },
+        },
+        {
+          id: 'custom-route',
+          enabled: true,
+          order: 0,
+          provider: 'custom',
+          gateway: {
+            id: 'gw-custom',
+            modelApiKey: 'sk-custom',
+          },
+        },
+      ],
+      AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES
+    );
+
+    expect(nodes.map((node) => node.id)).toEqual([
+      'custom-route',
+      'openai-route',
+    ]);
+  });
+
+  test('selects enabled nodes by gateway protocol capability without node protocol lanes', () => {
+    const nodes = selectEligibleAIRouterNodes(
+      [
+        {
+          id: 'second',
+          enabled: true,
+          order: 20,
+          gateway: {
+            id: 'gw-second',
+            modelApiKey: 'sk-second',
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'anthropic-only',
+          enabled: true,
+          order: 5,
+          gateway: {
+            id: 'gw-anthropic-only',
+            modelApiKey: 'sk-anthropic',
+            modelProvider: 'anthropic',
+            modelProtocols: ['anthropic-messages'],
+          },
+        },
+        {
+          id: 'first',
+          enabled: true,
+          order: 10,
+          gateway: {
+            id: 'gw-first',
+            modelApiKey: 'sk-first',
+            modelProvider: 'custom',
+            modelProtocols: ['openai-chat', 'anthropic-messages'],
+          },
+        },
+      ],
+      'openai-chat'
+    );
+
+    expect(nodes.map((node) => node.id)).toEqual(['first', 'second']);
+  });
+
+  test('keeps only enabled nodes whose gateway can serve the protocol sorted by order', () => {
+    const nodes = selectEligibleAIRouterNodes(
+      [
+        {
+          id: 'second',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 20,
+          gateway: {
+            id: 'gw-second',
+            modelApiKey: 'sk-second',
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'disabled',
+          enabled: false,
+          protocol: 'openai-chat',
+          order: 1,
+          gateway: {
+            id: 'gw-disabled',
+            modelApiKey: 'sk-disabled',
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'missing-gateway',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 2,
+          gateway: null,
+        },
+        {
+          id: 'missing-api-key',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 3,
+          gateway: {
+            id: 'gw-no-key',
+            modelApiKey: null,
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'missing-provider',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 4,
+          gateway: {
+            id: 'gw-no-provider',
+            modelApiKey: 'sk-no-provider',
+            modelProvider: null,
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'node-protocol-mismatch',
+          enabled: true,
+          protocol: 'anthropic-messages',
+          order: 5,
+          gateway: {
+            id: 'gw-node-mismatch',
+            modelApiKey: 'sk-node-mismatch',
+            modelProvider: 'anthropic',
+            modelProtocols: ['anthropic-messages'],
+          },
+        },
+        {
+          id: 'gateway-protocol-mismatch',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 6,
+          gateway: {
+            id: 'gw-protocol-mismatch',
+            modelApiKey: 'sk-protocol-mismatch',
+            modelProvider: 'openai',
+            modelProtocols: ['anthropic-messages'],
+          },
+        },
+        {
+          id: 'blank-api-key',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 7,
+          gateway: {
+            id: 'gw-blank-key',
+            modelApiKey: '   ',
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'blank-provider',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 8,
+          gateway: {
+            id: 'gw-blank-provider',
+            modelApiKey: 'sk-blank-provider',
+            modelProvider: '   ',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'first',
+          enabled: true,
+          protocol: 'openai-chat',
+          order: 10,
+          gateway: {
+            id: 'gw-first',
+            modelApiKey: 'sk-first',
+            modelProvider: 'custom',
+            modelProtocols: ['openai-chat', 'anthropic-messages'],
+          },
+        },
+      ],
+      'openai-chat'
+    );
+
+    expect(nodes.map((node) => node.id)).toEqual(['first', 'second']);
+  });
+
+  test('orders eligible tier nodes by weighted random without replacement', () => {
+    const nodes = selectAIRouterTierAttemptNodes(
+      [
+        {
+          id: 'small',
+          enabled: true,
+          order: 0,
+          weight: 1,
+          gateway: {
+            id: 'gw-small',
+            modelApiKey: 'sk-small',
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'large',
+          enabled: true,
+          order: 1,
+          weight: 9,
+          gateway: {
+            id: 'gw-large',
+            modelApiKey: 'sk-large',
+            modelProvider: 'openai',
+            modelProtocols: ['openai-chat'],
+          },
+        },
+        {
+          id: 'incompatible',
+          enabled: true,
+          order: 2,
+          weight: 100,
+          gateway: {
+            id: 'gw-incompatible',
+            modelApiKey: 'sk-incompatible',
+            modelProvider: 'anthropic',
+            modelProtocols: ['anthropic-messages'],
+          },
+        },
+      ],
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      () => 0.5
+    );
+
+    expect(nodes.map((node) => node.id)).toEqual(['large', 'small']);
+  });
+});
+
+describe('AI Router Responses WebSocket helpers', () => {
+  test('orders eligible candidates by tier and filters unsupported providers', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+      id: 'router_1',
+      tiers: [
+        {
+          id: 'tier_2',
+          order: 2,
+          nodes: [
+            {
+              id: 'node_custom',
+              gatewayId: 'gateway_custom',
+              enabled: true,
+              order: 1,
+              provider: 'custom',
+              weight: 1,
+              gateway: { id: 'gateway_custom', modelApiKey: 'custom-key' },
+            },
+          ],
+        },
+        {
+          id: 'tier_1',
+          order: 1,
+          nodes: [
+            {
+              id: 'node_anthropic',
+              gatewayId: 'gateway_anthropic',
+              enabled: true,
+              order: 1,
+              provider: 'anthropic',
+              weight: 1,
+              gateway: {
+                id: 'gateway_anthropic',
+                modelApiKey: 'anthropic-key',
+              },
+            },
+            {
+              id: 'node_openai',
+              gatewayId: 'gateway_openai',
+              enabled: true,
+              order: 2,
+              provider: 'openai',
+              weight: 1,
+              gateway: { id: 'gateway_openai', modelApiKey: 'openai-key' },
+            },
+          ],
+        },
+      ],
+    } as any);
+
+    const candidates = await resolveAIRouterResponsesWebSocketCandidates({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      random: () => 0,
+    });
+
+    expect(candidates.map(({ node }) => node.gatewayId)).toEqual([
+      'gateway_openai',
+      'gateway_custom',
+    ]);
+  });
+
+  test('writes a partial router log linked to the selected gateway log', async () => {
+    const create = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockResolvedValue({ id: 'router_log_1' } as any);
+
+    await createAIRouterResponsesWebSocketLog({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      gatewayId: 'gateway_2',
+      gatewayLogId: 'gateway_log_2',
+      handshakeAttempts: [
+        {
+          gatewayId: 'gateway_1',
+          retryable: true,
+          errorType: 'network',
+          message: 'connection refused',
+        },
+      ],
+      success: false,
+      error: new Error('upstream closed'),
+      duration: 12.4,
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        status: AIRouterLogsStatus.Partial,
+        finalGatewayId: 'gateway_2',
+        finalGatewayLogId: 'gateway_log_2',
+        attemptGatewayIds: ['gateway_1', 'gateway_2'],
+        attemptGatewayLogIds: ['gateway_log_2'],
+        attemptCount: 2,
+        duration: 12,
+      }),
+    });
+  });
+
+  test('writes a failed router log when every WebSocket handshake fails', async () => {
+    const create = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockResolvedValue({ id: 'router_log_1' } as any);
+    const handshakeAttempts = [
+      {
+        gatewayId: 'gateway_1',
+        statusCode: 418,
+        retryable: true,
+        message: 'teapot',
+      },
+      {
+        gatewayId: 'gateway_2',
+        statusCode: 503,
+        retryable: true,
+        message: 'unavailable',
+      },
+    ];
+
+    await createAIRouterResponsesWebSocketLog({
+      workspaceId: 'workspace_1',
+      routerId: 'router_1',
+      handshakeAttempts,
+      success: false,
+      error: new Error('all handshakes failed'),
+      duration: 8.7,
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        status: AIRouterLogsStatus.Failed,
+        finalGatewayId: 'gateway_2',
+        attemptGatewayIds: ['gateway_1', 'gateway_2'],
+        attemptGatewayLogIds: [],
+        attemptCount: 2,
+        duration: 9,
+      }),
+    });
+  });
+});
+
+describe('AI Router gateway eligibility helpers', () => {
+  test('accepts a gateway with credentials', () => {
+    expect(
+      isAIGatewayEligibleForAIRouter({
+        modelApiKey: 'sk-test',
+      })
+    ).toBe(true);
+  });
+
+  test.each([null, '', '   '])(
+    'rejects gateway when modelApiKey is %s',
+    (modelApiKey) => {
+      expect(
+        isAIGatewayEligibleForAIRouter({
+          modelApiKey,
+        })
+      ).toBe(false);
+    }
+  );
+});
+
+describe('AI Router node provider eligibility helpers', () => {
+  test.each([null, '', '   '])(
+    'rejects node when provider is %s',
+    (provider) => {
+      expect(
+        isAIRouterNodeEligibleForProtocol(
+          {
+            enabled: true,
+            order: 0,
+            provider,
+            gateway: {
+              modelApiKey: 'sk-test',
+            },
+          },
+          AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+        )
+      ).toBe(false);
+    }
+  );
+
+  test('checks node provider compatibility separately from gateway credentials', () => {
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          provider: 'openai',
+          gateway: {
+            modelApiKey: 'sk-test',
+          },
+        },
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES
+      )
+    ).toBe(true);
+
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          provider: 'openrouter',
+          gateway: {
+            modelApiKey: 'sk-test',
+          },
+        },
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES
+      )
+    ).toBe(false);
+
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          provider: 'openai',
+          gateway: {
+            modelApiKey: 'sk-test',
+          },
+        },
+        'unknown-protocol'
+      )
+    ).toBe(false);
+  });
+
+  test('rejects disabled nodes and nodes without gateway credentials', () => {
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: false,
+          order: 0,
+          provider: 'openai',
+          gateway: {
+            modelApiKey: 'sk-test',
+          },
+        },
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+      )
+    ).toBe(false);
+
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          provider: 'openai',
+          gateway: {
+            modelApiKey: null,
+          },
+        },
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+      )
+    ).toBe(false);
+
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          provider: 'openai',
+          gateway: null,
+        },
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+      )
+    ).toBe(false);
+  });
+});
+
+describe('AI Router legacy gateway metadata compatibility', () => {
+  test('can read provider and protocol from older gateway-backed nodes', () => {
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          gateway: {
+            modelApiKey: 'sk-test',
+            modelProvider: 'openai',
+            modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+          },
+        } as any,
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+      )
+    ).toBe(true);
+
+    expect(
+      isAIRouterNodeEligibleForProtocol(
+        {
+          enabled: true,
+          order: 0,
+          gateway: {
+            modelApiKey: 'sk-test',
+            modelProvider: 'openai',
+            modelProtocols: [AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES],
+          },
+        } as any,
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT
+      )
+    ).toBe(false);
+  });
+});
+
+describe('AI Router retry helpers', () => {
+  test('treats default transient failures as retryable', () => {
+    expect(isAIRouterRetryableFailure({ statusCode: 429 })).toBe(true);
+    expect(isAIRouterRetryableFailure({ statusCode: 500 })).toBe(true);
+    expect(isAIRouterRetryableFailure({ statusCode: 502 })).toBe(true);
+    expect(isAIRouterRetryableFailure({ statusCode: 503 })).toBe(true);
+    expect(isAIRouterRetryableFailure({ statusCode: 504 })).toBe(true);
+    expect(isAIRouterRetryableFailure({ errorType: 'network' })).toBe(true);
+    expect(isAIRouterRetryableFailure({ errorType: 'timeout' })).toBe(true);
+  });
+
+  test('does not retry default client and auth failures', () => {
+    expect(isAIRouterRetryableFailure({ statusCode: 400 })).toBe(false);
+    expect(isAIRouterRetryableFailure({ statusCode: 401 })).toBe(false);
+    expect(isAIRouterRetryableFailure({ statusCode: 403 })).toBe(false);
+    expect(isAIRouterRetryableFailure({ statusCode: 404 })).toBe(false);
+    expect(isAIRouterRetryableFailure({ statusCode: 422 })).toBe(false);
+  });
+
+  test('adds node-specific retryable status codes without removing defaults', () => {
+    expect(
+      isAIRouterRetryableFailure({
+        statusCode: 418,
+        retryableStatusCodes: [418],
+      })
+    ).toBe(true);
+    expect(
+      isAIRouterRetryableFailure({
+        statusCode: 503,
+        retryableStatusCodes: [418],
+      })
+    ).toBe(true);
+  });
+});
+
+describe('AI Router buffered attempt mapping', () => {
+  test.each(Object.values(AI_ROUTER_PROTOCOLS))(
+    'ignores heartbeat-only output for %s failures and opted-in empty results',
+    (protocol) => {
+      const response = {
+        statusCode: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        chunks: [Buffer.from('\n\n'), Buffer.from('\n\n')],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      };
+      const args = { protocol, gatewayId: 'gw1', response };
+      expect(
+        buildBufferedAIGatewayAttemptResult({ ...args, failOnEmptyContent: true })
+      ).toMatchObject({
+        ok: false,
+        committed: false,
+        failure: { errorType: 'empty_content' },
+      });
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          ...args,
+          failOnEmptyContent: false,
+        })
+      ).toMatchObject({ ok: true });
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          ...args,
+          response: { ...response, ended: false },
+          error: new Error('upstream disconnected'),
+        })
+      ).toMatchObject({ ok: false, committed: false });
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          ...args,
+          failOnEmptyContent: false,
+          response: { ...response, ended: false },
+        })
+      ).toMatchObject({ ok: false, committed: false, statusCode: 500 });
+    }
+  );
+
+  test.each([
+    [
+      AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      {
+        choices: [
+          {
+            delta: {
+              tool_calls: [
+                {
+                  id: 'call_1',
+                  type: 'function',
+                  function: { name: 'weather', arguments: '{"city":"Madrid"}' },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    [
+      AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+      {
+        type: 'response.output_item.added',
+        item: {
+          type: 'function_call',
+          name: 'weather',
+          arguments: '{"city":"Madrid"}',
+        },
+      },
+    ],
+    [
+      AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+      {
+        type: 'content_block_start',
+        content_block: {
+          type: 'tool_use',
+          id: 'call_1',
+          name: 'weather',
+          input: { city: 'Madrid' },
+        },
+      },
+    ],
+  ] as const)(
+    'preserves %s tool-only results with surrounding heartbeats',
+    (protocol, event) => {
+      const response = {
+        statusCode: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        chunks: [Buffer.from(`data: ${JSON.stringify(event)}\n\n`)],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      };
+      const withHeartbeat = {
+        ...response,
+        chunks: [Buffer.from('\n\n'), ...response.chunks, Buffer.from('\n\n')],
+      };
+      expect(
+        inspectAIRouterBufferedResponseContent(protocol, withHeartbeat)
+      ).toEqual(inspectAIRouterBufferedResponseContent(protocol, response));
+      expect(
+        buildBufferedAIGatewayAttemptResult({
+          protocol,
+          failOnEmptyContent: true,
+          gatewayId: 'gw1',
+          response: withHeartbeat,
+        })
+      ).toMatchObject({ ok: true, committed: true });
+    }
+  );
+
+  test('converts opted-in empty content into an uncommitted retryable failure', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      failOnEmptyContent: true,
+      gatewayId: 'gw-empty',
+      logId: 'log-empty',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+        chunks: [Buffer.from('{"choices":[{"message":{"content":""}}]}')],
+        jsonBody: {
+          choices: [{ message: { role: 'assistant', content: '' } }],
+        },
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: false,
+      gatewayId: 'gw-empty',
+      logId: 'log-empty',
+      statusCode: 502,
+      failure: {
+        message: 'AI Router gateway returned empty content',
+        errorType: 'empty_content',
+      },
+    });
+  });
+
+  test('allows empty content when failOnEmptyContent is disabled', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      failOnEmptyContent: false,
+      gatewayId: 'gw-empty',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'application/json',
+        },
+        chunks: [Buffer.from('{"choices":[{"message":{"content":""}}]}')],
+        jsonBody: {
+          choices: [{ message: { role: 'assistant', content: '' } }],
+        },
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      committed: true,
+      gatewayId: 'gw-empty',
+      statusCode: 200,
+    });
+  });
+
+  test('converts buffered stream error payload into an uncommitted retryable failure', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      failOnEmptyContent: true,
+      gatewayId: 'gw-stream-error',
+      logId: 'log-stream-error',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'text/event-stream',
+        },
+        chunks: [
+          Buffer.from(AI_GATEWAY_STREAM_HEARTBEAT),
+          Buffer.from(
+            'data: {"error":{"message":"LLM returned empty response from stream","type":"server_error"}}\n\n'
+          ),
+          Buffer.from('data: [DONE]\n\n'),
+        ],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: false,
+      gatewayId: 'gw-stream-error',
+      logId: 'log-stream-error',
+      statusCode: 502,
+      failure: {
+        message: 'LLM returned empty response from stream',
+        errorType: 'upstream',
+      },
+    });
+  });
+
+  test('detects empty OpenAI chat content while allowing tool calls', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [{ message: { role: 'assistant', content: '   ' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: true, hasToolWork: false, text: '' });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [
+              {
+                message: {
+                  role: 'assistant',
+                  content: '',
+                  tool_calls: [{ id: 'call_1', type: 'function' }],
+                },
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+  });
+
+  test('does not treat empty OpenAI chat tool call arrays as tool work', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [
+              {
+                message: {
+                  role: 'assistant',
+                  content: '',
+                  tool_calls: [],
+                },
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: true, hasToolWork: false, text: '' });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"choices":[{"delta":{"content":"","tool_calls":[]}}]}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: true, hasToolWork: false, text: '' });
+  });
+
+  test('detects empty OpenAI responses and Anthropic message content', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            output_text: '',
+            output: [
+              {
+                type: 'message',
+                content: [{ type: 'output_text', text: '' }],
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toMatchObject({ parsed: true, empty: true });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            content: [{ type: 'text', text: '   ' }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toMatchObject({ parsed: true, empty: true });
+  });
+
+  test('treats protocol payloads without recognized content as unparsed', () => {
+    const unparsed = {
+      parsed: false,
+      empty: false,
+      hasToolWork: false,
+      text: '',
+    };
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            choices: [{ message: { role: 'assistant' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual(unparsed);
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            output: [
+              {
+                type: 'message',
+                content: [{ type: 'unknown' }],
+              },
+            ],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual(unparsed);
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            content: [{ type: 'image', source: {} }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual(unparsed);
+  });
+
+  test('detects OpenAI responses added output item tool work', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"type":"response.output_item.added","item":{"type":"function_call"}}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+  });
+
+  test('detects OpenAI responses file search tool work', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'application/json' },
+          chunks: [],
+          jsonBody: {
+            output: [{ type: 'file_search_call' }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"type":"response.output_item.added","item":{"type":"file_search_call"}}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({ parsed: true, empty: false, hasToolWork: true, text: '' });
+  });
+
+  test('reads OpenAI chat SSE content from all choices', () => {
+    expect(
+      inspectAIRouterBufferedResponseContent(
+        AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        {
+          statusCode: 200,
+          headers: { 'content-type': 'text/event-stream' },
+          chunks: [
+            Buffer.from(
+              'data: {"choices":[{"delta":{}},{"delta":{"content":"hello"}}]}\n\n'
+            ),
+          ],
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        }
+      )
+    ).toEqual({
+      parsed: true,
+      empty: false,
+      hasToolWork: false,
+      text: 'hello',
+    });
+  });
+
+  test('preserves non-retryable 4xx statuses as uncommitted failures', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      gatewayId: 'gw1',
+      logId: 'log1',
+      response: {
+        statusCode: 401,
+        headers: {
+          'content-type': 'application/json',
+        },
+        chunks: [Buffer.from('{"error":{"message":"unauthorized"}}')],
+        jsonBody: {
+          error: {
+            message: 'unauthorized',
+          },
+        },
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: false,
+      gatewayId: 'gw1',
+      logId: 'log1',
+      statusCode: 401,
+      failure: {
+        message: 'unauthorized',
+        errorType: 'upstream',
+      },
+    });
+    expect(isAIRouterRetryableFailure({ statusCode: result.statusCode })).toBe(
+      false
+    );
+  });
+
+  test('marks buffered partial output failures as committed', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      gatewayId: 'gw1',
+      logId: 'log1',
+      response: {
+        statusCode: 500,
+        headers: {
+          'content-type': 'text/event-stream',
+        },
+        chunks: [Buffer.from('data: {"delta":"hello"}\n\n')],
+        wroteBody: true,
+        bodyStartedBeforeFailure: true,
+        ended: true,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: true,
+      gatewayId: 'gw1',
+      logId: 'log1',
+      statusCode: 500,
+      failure: {
+        errorType: 'upstream',
+      },
+    });
+  });
+
+  test('marks unfinished buffered output as committed failure', () => {
+    const result = buildBufferedAIGatewayAttemptResult({
+      gatewayId: 'gw1',
+      response: {
+        statusCode: 200,
+        headers: {
+          'content-type': 'text/event-stream',
+        },
+        chunks: [Buffer.from('data: {"delta":"hello"}\n\n')],
+        wroteBody: true,
+        bodyStartedBeforeFailure: false,
+        ended: false,
+      },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      committed: true,
+      gatewayId: 'gw1',
+      statusCode: 500,
+      failure: {
+        message: 'AI Gateway attempt ended after partial output',
+        errorType: 'upstream',
+      },
+    });
+  });
+});
+
+describe('AI Router gateway provider dispatch', () => {
+  test('resolves OpenAI-compatible chat handlers from node gateway provider', () => {
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        modelProvider: 'openai',
+      })
+    ).toMatchObject({
+      builder: 'openai-chat',
+      options: {
+        modelProvider: 'openai',
+      },
+    });
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        modelProvider: 'deepseek',
+      })
+    ).toMatchObject({
+      builder: 'openai-chat',
+      options: {
+        baseUrl: 'https://api.deepseek.com',
+        modelProvider: 'deepseek',
+      },
+    });
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        modelProvider: 'anthropic',
+      })
+    ).toMatchObject({
+      builder: 'openai-chat',
+      options: {
+        baseUrl: 'https://api.anthropic.com/v1/',
+        modelProvider: 'anthropic',
+      },
+    });
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        modelProvider: 'custom',
+      })
+    ).toMatchObject({
+      builder: 'openai-chat',
+      options: {
+        isCustomRoute: true,
+      },
+    });
+  });
+
+  test('resolves OpenRouter headers for chat and messages attempts', () => {
+    const chatConfig = resolveAIRouterGatewayHandlerConfig({
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      modelProvider: 'openrouter',
+    });
+    const messagesConfig = resolveAIRouterGatewayHandlerConfig({
+      protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+      modelProvider: 'openrouter',
+    });
+    const req = {
+      headers: {},
+    } as any;
+    const lowercaseHeaderReq = {
+      headers: {
+        'http-referer': 'https://example.com/app',
+        'x-title': 'Example App',
+        'x-session-id': 'session-123',
+      },
+    } as any;
+
+    expect(chatConfig).toMatchObject({
+      builder: 'openai-chat',
+      options: {
+        baseUrl: 'https://openrouter.ai/api/v1',
+        modelProvider: 'openrouter',
+      },
+    });
+    expect(chatConfig?.options.header?.(req)).toEqual({
+      'HTTP-Referer': 'https://tianji.dev/',
+      'X-Title': 'Tianji',
+    });
+    expect(chatConfig?.options.header?.(lowercaseHeaderReq)).toEqual({
+      'HTTP-Referer': 'https://example.com/app',
+      'X-Title': 'Example App',
+      'x-session-id': 'session-123',
+    });
+    expect(messagesConfig).toMatchObject({
+      builder: 'anthropic-messages',
+      options: {
+        baseUrl: 'https://openrouter.ai/api/v1',
+        modelProvider: 'openrouter',
+      },
+    });
+    expect(messagesConfig?.options.header?.(req)).toEqual({
+      'HTTP-Referer': 'https://tianji.dev/',
+      'X-Title': 'Tianji',
+    });
+    expect(messagesConfig?.options.header?.(lowercaseHeaderReq)).toEqual({
+      'HTTP-Referer': 'https://example.com/app',
+      'X-Title': 'Example App',
+      'x-session-id': 'session-123',
+    });
+  });
+
+  test('resolves only providers compatible with the protocol lane', () => {
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        modelProvider: 'openai',
+      })
+    ).toMatchObject({
+      builder: 'openai-responses',
+      options: {
+        modelProvider: 'openai',
+      },
+    });
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        modelProvider: 'custom',
+      })
+    ).toMatchObject({
+      builder: 'openai-responses',
+      options: {
+        isCustomRoute: true,
+      },
+    });
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+        modelProvider: 'anthropic',
+      })
+    ).toMatchObject({
+      builder: 'anthropic-messages',
+      options: {
+        baseUrl: 'https://api.anthropic.com/v1',
+        modelProvider: 'anthropic',
+      },
+    });
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_RESPONSES,
+        modelProvider: 'deepseek',
+      })
+    ).toBeNull();
+    expect(
+      resolveAIRouterGatewayHandlerConfig({
+        protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+        modelProvider: 'openai',
+      })
+    ).toBeNull();
+  });
+});
+
+describe('AI Router attempt request isolation', () => {
+  test('creates per-attempt request metadata without mutating the shared request', async () => {
+    const sharedReq = {
+      params: {
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+      },
+      body: {
+        model: 'shared-model',
+      },
+      headers: {},
+      __onAIGatewayLogCreated: () => {
+        throw new Error('shared callback should not receive attempt logs');
+      },
+      __aiGatewayLogPromise: Promise.resolve({ id: 'shared-log' } as any),
+    } as any;
+    const node = {
+      id: 'node1',
+      gatewayId: 'gw1',
+      enabled: true,
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      order: 1,
+      modelOverride: null,
+      timeoutMs: 1,
+      retryableStatusCodes: [],
+      gateway: {
+        id: 'gw1',
+        modelApiKey: 'sk-test',
+        modelProvider: 'openai',
+        modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+      },
+    };
+
+    const first = createAIRouterAttemptRequest({
+      req: sharedReq,
+      node,
+      payload: {
+        model: 'first-model',
+      },
+    });
+    const second = createAIRouterAttemptRequest({
+      req: sharedReq,
+      node: {
+        ...node,
+        id: 'node2',
+        gatewayId: 'gw2',
+      },
+      payload: {
+        model: 'second-model',
+      },
+    });
+
+    first.attemptReq.__onAIGatewayLogCreated?.({ id: 'late-log1' } as any);
+    second.attemptReq.__onAIGatewayLogCreated?.({ id: 'late-log2' } as any);
+
+    expect(first.attemptReq).not.toBe(sharedReq);
+    expect(second.attemptReq).not.toBe(sharedReq);
+    expect(second.attemptReq).not.toBe(first.attemptReq);
+    expect(first.attemptReq.params.gatewayId).toBe('gw1');
+    expect(second.attemptReq.params.gatewayId).toBe('gw2');
+    expect(first.attemptReq.body.model).toBe('first-model');
+    expect(second.attemptReq.body.model).toBe('second-model');
+    expect(sharedReq.params).toEqual({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+    });
+    expect(sharedReq.body).toEqual({
+      model: 'shared-model',
+    });
+    await expect(first.getGatewayLogId()).resolves.toBe('late-log1');
+    await expect(second.getGatewayLogId()).resolves.toBe('late-log2');
+    await expect(sharedReq.__aiGatewayLogPromise).resolves.toEqual({
+      id: 'shared-log',
+    });
+  });
+});
+
+describe('aiRouterRouter routes', () => {
+  function getRoutePaths(method: 'get' | 'post') {
+    return (aiRouterRouter.stack as any[])
+      .map((layer) => layer.route)
+      .filter((route) => route?.methods?.[method])
+      .map((route) => route.path);
+  }
+
+  function getPostRoutePaths() {
+    return getRoutePaths('post');
+  }
+
+  test('registers mirrored runtime paths', () => {
+    const paths = getPostRoutePaths();
+
+    expect(paths).toContain(
+      '/:workspaceId/:routerId/openai/v1/chat/completions'
+    );
+    expect(paths).toContain('/:workspaceId/:routerId/openai/v1/responses');
+    expect(paths).toContain(
+      '/:workspaceId/:routerId/deepseek/v1/chat/completions'
+    );
+    expect(paths).toContain(
+      '/:workspaceId/:routerId/anthropic/v1/chat/completions'
+    );
+    expect(paths).toContain('/:workspaceId/:routerId/anthropic/v1/messages');
+    expect(paths).toContain(
+      '/:workspaceId/:routerId/openrouter/v1/chat/completions'
+    );
+    expect(paths).toContain('/:workspaceId/:routerId/openrouter/v1/messages');
+    expect(paths).toContain(
+      '/:workspaceId/:routerId/custom/v1/chat/completions'
+    );
+    expect(paths).toContain('/:workspaceId/:routerId/custom/v1/messages');
+    expect(paths).toContain('/:workspaceId/:routerId/custom/v1/responses');
+  });
+
+  test('registers mirrored models paths', () => {
+    const paths = getRoutePaths('get');
+
+    expect(paths).toContain('/:workspaceId/:routerId/openai/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/deepseek/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/anthropic/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/openrouter/v1/models');
+    expect(paths).toContain('/:workspaceId/:routerId/custom/v1/models');
+  });
+
+  test('writes a failed router log when runtime payload validation fails', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+      id: 'router1',
+    } as any);
+    const createLog = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockResolvedValue({
+        id: 'router-log1',
+      } as any);
+
+    const handler = buildAIRouterOpenAIChatHandler();
+    const req = {
+      params: {
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+      },
+      body: {
+        model: 'gpt-4o-mini',
+      },
+    } as any;
+    const res = {
+      status: vi.fn(),
+      json: vi.fn(),
+    } as any;
+    res.status.mockReturnValue(res);
+
+    await handler(req, res, vi.fn());
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(createLog).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        status: AIRouterLogsStatus.Failed,
+        attemptGatewayIds: [],
+        attemptGatewayLogIds: [],
+        attemptCount: 0,
+      }),
+    });
+    expect(createLog.mock.calls[0][0].data.attemptErrors).toEqual([
+      expect.objectContaining({
+        statusCode: 400,
+        retryable: false,
+        errorType: 'validation',
+      }),
+    ]);
+  });
+
+  test('passes empty content route settings through buffered runtime attempts', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+      id: 'router-empty-runtime',
+      nodes: [
+        {
+          id: 'node-empty',
+          gatewayId: 'gw-empty-runtime',
+          provider: 'anthropic',
+          enabled: true,
+          order: 0,
+          weight: 100,
+          modelOverride: null,
+          timeoutMs: 30000,
+          retryableStatusCodes: [],
+          failOnEmptyContent: true,
+          gateway: {
+            id: 'gw-empty-runtime',
+            modelApiKey: 'sk-empty-runtime',
+          },
+        },
+        {
+          id: 'node-good',
+          gatewayId: 'gw-good-runtime',
+          provider: 'anthropic',
+          enabled: true,
+          order: 1,
+          weight: 0,
+          modelOverride: null,
+          timeoutMs: 30000,
+          retryableStatusCodes: [],
+          failOnEmptyContent: true,
+          gateway: {
+            id: 'gw-good-runtime',
+            modelApiKey: 'sk-good-runtime',
+          },
+        },
+      ],
+    } as any);
+    vi.spyOn(prisma.aIGateway, 'findUnique').mockImplementation((async ({
+      where,
+    }: any) => ({
+      id: where.id,
+      workspaceId: 'workspace-empty-runtime',
+      modelApiKey:
+        where.id === 'gw-empty-runtime'
+          ? 'sk-empty-runtime'
+          : 'sk-good-runtime',
+    })) as any);
+    vi.spyOn(prisma.userApiKey, 'findUnique').mockResolvedValue({
+      user: { id: 'user-empty-runtime' },
+    } as any);
+    vi.spyOn(prisma.userApiKey, 'update').mockResolvedValue({} as any);
+    vi.spyOn(prisma.workspacesOnUsers, 'findFirst').mockResolvedValue({
+      userId: 'user-empty-runtime',
+    } as any);
+    const quotaAlertFindFirst = vi
+      .spyOn(prisma.aIGatewayQuotaAlert, 'findFirst')
+      .mockResolvedValue(null);
+    let gatewayLogSeq = 0;
+    vi.spyOn(prisma.aIGatewayLogs, 'create').mockImplementation(
+      (async ({ data }: any) =>
+        ({
+          id: `gateway-log-${++gatewayLogSeq}`,
+          ...data,
+        }) as any) as any
+    );
+    vi.spyOn(prisma.aIGatewayLogs, 'update').mockResolvedValue({} as any);
+    const createRouterLog = vi
+      .spyOn(prisma.aIRouterLogs, 'create')
+      .mockImplementation((async ({ data }: any) => ({
+        id: 'router-log-empty-runtime',
+        ...data,
+      })) as any);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            content: [{ type: 'text', text: '' }],
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            content: [{ type: 'text', text: 'done' }],
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const handler = buildAIRouterAnthropicMessagesHandler();
+    const writes: Buffer[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      status: vi.fn(),
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: Buffer) => {
+        writes.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        res.headersSent = true;
+        return true;
+      }),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+      json: vi.fn(),
+    };
+    res.status.mockReturnValue(res);
+
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace-empty-runtime',
+          routerId: 'router-empty-runtime',
+        },
+        headers: {
+          'x-api-key': 'sk-request',
+        },
+        body: {
+          model: 'claude-3-5-haiku-latest',
+          max_tokens: 128,
+          messages: [{ role: 'user', content: 'hello' }],
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() =>
+      expect(quotaAlertFindFirst).toHaveBeenCalledTimes(2)
+    );
+    expect(Buffer.concat(writes).toString('utf8')).toContain(
+      '"text":"done"'
+    );
+    expect(createRouterLog.mock.calls[0][0].data).toMatchObject({
+      status: AIRouterLogsStatus.Success,
+      finalGatewayId: 'gw-good-runtime',
+      finalGatewayLogId: 'gateway-log-2',
+      attemptGatewayIds: ['gw-empty-runtime', 'gw-good-runtime'],
+      attemptGatewayLogIds: ['gateway-log-1', 'gateway-log-2'],
+      attemptCount: 2,
+    });
+    expect(createRouterLog.mock.calls[0][0].data.attemptErrors).toEqual([
+      {
+        gatewayId: 'gw-empty-runtime',
+        gatewayLogId: 'gateway-log-1',
+        statusCode: 502,
+        retryable: true,
+        errorType: 'empty_content',
+        message: 'AI Router gateway returned empty content',
+      },
+      {
+        gatewayId: 'gw-good-runtime',
+        gatewayLogId: 'gateway-log-2',
+        statusCode: 200,
+        retryable: false,
+      },
+    ]);
+  });
+
+  test('returns router_failed when exhausted empty content has a buffered response', async () => {
+    const runAttempts = vi.fn(async () => ({
+      result: null,
+      finalResult: {
+        ok: false,
+        committed: false,
+        gatewayId: 'gw-empty',
+        statusCode: 502,
+        failure: {
+          message: 'AI Router gateway returned empty content',
+          errorType: 'empty_content',
+        },
+        response: {
+          statusCode: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+          chunks: [
+            Buffer.from('{"choices":[{"message":{"content":""}}]}'),
+          ],
+          jsonBody: {
+            choices: [{ message: { content: '' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        },
+      },
+      attempts: [
+        {
+          gatewayId: 'gw-empty',
+          statusCode: 502,
+          retryable: true,
+          errorType: 'empty_content',
+          message: 'AI Router gateway returned empty content',
+        },
+      ],
+      log: {
+        id: 'router-log1',
+      },
+    }));
+    const res = {
+      headersSent: false,
+      status: vi.fn(),
+      json: vi.fn(),
+      setHeader: vi.fn(),
+      write: vi.fn(),
+      end: vi.fn(),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.json).toHaveBeenCalledWith({
+      error: {
+        message: 'AI Router gateway returned empty content',
+        type: 'router_failed',
+      },
+    });
+    expect(res.write).not.toHaveBeenCalled();
+    expect(res.end).not.toHaveBeenCalled();
+  });
+
+  test('streams router_failed when exhausted empty content has a buffered response', async () => {
+    const runAttempts = vi.fn(async () => ({
+      result: null,
+      finalResult: {
+        ok: false,
+        committed: false,
+        gatewayId: 'gw-empty',
+        statusCode: 502,
+        failure: {
+          message: 'AI Router gateway returned empty content',
+          errorType: 'empty_content',
+        },
+        response: {
+          statusCode: 200,
+          headers: {
+            'content-type': 'application/json',
+          },
+          chunks: [
+            Buffer.from('{"choices":[{"message":{"content":""}}]}'),
+          ],
+          jsonBody: {
+            choices: [{ message: { content: '' } }],
+          },
+          wroteBody: true,
+          bodyStartedBeforeFailure: false,
+          ended: true,
+        },
+      },
+      attempts: [
+        {
+          gatewayId: 'gw-empty',
+          statusCode: 502,
+          retryable: true,
+          errorType: 'empty_content',
+          message: 'AI Router gateway returned empty content',
+        },
+      ],
+      log: {
+        id: 'router-log1',
+      },
+    }));
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(writes).toContain(
+      'data: {"error":{"message":"AI Router gateway returned empty content","type":"router_failed"}}\n\n'
+    );
+    expect(writes.join('')).not.toContain(
+      '{"choices":[{"message":{"content":""}}]}'
+    );
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([false, true])(
+    'fails over after a truncated heartbeat-only stream with failOnEmptyContent=%s',
+    async (failOnEmptyContent) => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const checkQuotaAlert = vi
+        .spyOn(quotaAlert, 'checkQuotaAlert')
+        .mockResolvedValue();
+      vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue({
+        id: 'router-heartbeat',
+        tiers: ['gw-truncated', 'gw-good'].map((gatewayId, order) => ({
+          id: `tier-${order}`,
+          order,
+          nodes: [
+            {
+              id: `node-${order}`,
+              gatewayId,
+              provider: 'anthropic',
+              enabled: true,
+              order: 0,
+              weight: 100,
+              failOnEmptyContent,
+              gateway: { id: gatewayId, modelApiKey: 'sk-test' },
+            },
+          ],
+        })),
+      } as any);
+      const createRouterLog = vi
+        .spyOn(prisma.aIRouterLogs, 'create')
+        .mockResolvedValue({ id: 'router-log-heartbeat' } as any);
+      vi.spyOn(prisma.aIGateway, 'findUnique').mockResolvedValue({
+        workspaceId: 'workspace-heartbeat',
+      } as any);
+      vi.spyOn(prisma.aIGatewayLogs, 'create').mockResolvedValue({
+        id: 'log-heartbeat',
+      } as any);
+      const updateGatewayLog = vi
+        .spyOn(prisma.aIGatewayLogs, 'update')
+        .mockResolvedValue({} as any);
+      const upstream = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            new ReadableStream({
+              start(controller) {
+                // An incomplete UTF-8 BOM leaves no decoded business output.
+                controller.enqueue(Uint8Array.of(0xef, 0xbb));
+                controller.close();
+              },
+            })
+          )
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            'event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Hola"}}\n\n' +
+              'event: message_stop\ndata: {"type":"message_stop"}\n\n'
+          )
+        );
+      vi.stubGlobal('fetch', upstream);
+      const writes: string[] = [];
+      const res = {
+        headersSent: false,
+        writableEnded: false,
+        setHeader: vi.fn(),
+        flush: vi.fn(),
+        write(chunk: string) {
+          writes.push(String(chunk));
+          res.headersSent = true;
+          return true;
+        },
+        end: vi.fn(() => {
+          res.writableEnded = true;
+        }),
+      };
+
+      await buildAIRouterAnthropicMessagesHandler()(
+        {
+          params: {
+            workspaceId: 'workspace-heartbeat',
+            routerId: 'router-heartbeat',
+          },
+          headers: { 'x-api-key': 'sk-test' },
+          body: {
+            model: 'claude-test',
+            messages: [{ role: 'user', content: 'Hola' }],
+            max_tokens: 16,
+            stream: true,
+          },
+        } as any,
+        res as any,
+        vi.fn()
+      );
+
+      expect(updateGatewayLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: AIGatewayLogsStatus.Failed }),
+        })
+      );
+      expect(createRouterLog).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          status: AIRouterLogsStatus.Success,
+          finalGatewayId: 'gw-good',
+          attemptGatewayIds: ['gw-truncated', 'gw-good'],
+          attemptErrors: [
+            expect.objectContaining({ statusCode: 500, retryable: true }),
+            expect.objectContaining({ statusCode: 200, retryable: false }),
+          ],
+        }),
+      });
+      expect(upstream).toHaveBeenCalledTimes(2);
+      expect(writes.join('')).toContain('"text":"Hola"');
+      expect(writes.join('')).not.toContain('event: error');
+      expect(res.end).toHaveBeenCalledOnce();
+      await vi.waitFor(() => expect(checkQuotaAlert).toHaveBeenCalledOnce());
+    }
+  );
+
+  test('releases both outer and buffered heartbeat timers when an attempt times out', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(prisma.aIGateway, 'findUnique').mockResolvedValue({
+      id: 'gw-heartbeat-timeout',
+      workspaceId: 'workspace-heartbeat',
+    } as any);
+    vi.spyOn(prisma.aIGatewayLogs, 'create').mockResolvedValue({
+      id: 'log-heartbeat',
+    } as any);
+    vi.spyOn(prisma.aIGatewayLogs, 'update').mockResolvedValue({} as any);
+    let rejectFetch!: (error: Error) => void;
+    const fetchMock = vi.fn(
+      () =>
+        new Promise<Response>((_, reject) => {
+          rejectFetch = reject;
+        })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    let attempt: any;
+    const runAttempts = vi.fn(async ({ executeAttempt, requestPayload }: any) => {
+      attempt = await executeAttempt({
+        node: {
+          id: 'node-heartbeat',
+          gatewayId: 'gw-heartbeat-timeout',
+          provider: 'anthropic',
+          timeoutMs: 60_000,
+          failOnEmptyContent: true,
+          gateway: { id: 'gw-heartbeat-timeout' },
+        },
+        payload: requestPayload,
+      });
+      return {
+        result: null,
+        finalResult: attempt,
+        attempts: [
+          { statusCode: attempt.statusCode, message: attempt.failure?.message },
+        ],
+        log: {},
+      };
+    });
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flush: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(String(chunk));
+        res.headersSent = true;
+        return true;
+      }),
+      end: vi.fn(() => {
+        res.writableEnded = true;
+      }),
+    };
+    const done = buildAIRouterAnthropicMessagesHandler({ runAttempts } as any)(
+      {
+        params: {
+          workspaceId: 'workspace-heartbeat',
+          routerId: 'router-heartbeat',
+        },
+        headers: { 'x-api-key': 'sk-test' },
+        body: {
+          model: 'claude-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          max_tokens: 16,
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    await vi.advanceTimersByTimeAsync(60_000);
+    await done;
+    expect(attempt).toMatchObject({
+      ok: false,
+      committed: false,
+      statusCode: 504,
+      failure: { errorType: 'timeout' },
+    });
+    expect(writes.slice(0, 3)).toEqual(['\n\n', '\n\n', '\n\n']);
+    expect(res.end).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+    const count = writes.length;
+    rejectFetch(new Error('late upstream failure'));
+    await vi.advanceTimersByTimeAsync(50_000);
+    expect(writes).toHaveLength(count);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test('replays buffered business events and heartbeats in order after waiting', async () => {
+    vi.useFakeTimers();
+    const chunks = [
+      '\n\n',
+      'data: {"choices":[{"delta":{"content":"Hola"}}]}\n\n',
+      '\n\n',
+      'data: [DONE]\n\n',
+    ];
+    const runAttempts = vi.fn(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60_000));
+      return {
+        result: {
+          ok: true,
+          committed: true,
+          response: {
+            statusCode: 200,
+            headers: { 'content-type': 'text/event-stream' },
+            chunks: chunks.map((chunk) => Buffer.from(chunk)),
+            wroteBody: true,
+            ended: true,
+          },
+        },
+        attempts: [],
+      };
+    });
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      setHeader: vi.fn(),
+      flush: vi.fn(),
+      write: vi.fn((chunk: string | Buffer) => {
+        writes.push(String(chunk));
+        res.headersSent = true;
+        return true;
+      }),
+      end: vi.fn(() => {
+        res.writableEnded = true;
+      }),
+    };
+    const done = buildAIRouterOpenAIChatHandler({ runAttempts } as any)(
+      {
+        params: { workspaceId: 'workspace1', routerId: 'router1' },
+        body: {
+          model: 'gpt-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.advanceTimersByTimeAsync(60_000);
+    await done;
+    expect(writes).toEqual(['\n\n', '\n\n', '\n\n', ...chunks]);
+    expect(res.end).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test('streams heartbeats while router attempts are still buffered', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
+    const runAttempts = vi.fn(
+      () =>
+        new Promise<Awaited<ReturnType<typeof runAIRouterAttempts>>>(
+          () => {}
+        )
+    );
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    void handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    await vi.waitFor(() => expect(runAttempts).toHaveBeenCalledTimes(1));
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
+    expect(res.flush).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    res.destroyed = true;
+    await vi.advanceTimersByTimeAsync(25_000);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  test('returns a streaming error when buffered router attempts fail after keepalive committed headers', async () => {
+    vi.spyOn(prisma.aIRouter, 'findFirst').mockResolvedValue(null);
+    const runAttempts = vi.fn(async () => ({
+      result: null,
+      finalResult: {
+        ok: false,
+        committed: false,
+        gatewayId: 'gw1',
+        statusCode: 504,
+        failure: {
+          message: 'AI Router gateway attempt timed out after 120000ms',
+          errorType: 'timeout',
+        },
+      },
+      log: {
+        id: 'router-log1',
+      },
+      attempts: [
+        {
+          gatewayId: 'gw1',
+          statusCode: 504,
+          retryable: true,
+          errorType: 'timeout',
+          message: 'AI Router gateway attempt timed out after 120000ms',
+        },
+      ],
+    }));
+    const writes: string[] = [];
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
+    expect(writes).toContain(
+      'data: {"error":{"message":"AI Router gateway attempt timed out after 120000ms","type":"router_failed"}}\n\n'
+    );
+    expect(writes).toContain('data: [DONE]\n\n');
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  test('returns a streaming server error when router execution throws after keepalive committed headers', async () => {
+    const runAttempts = vi.fn(async () => {
+      throw new Error('database unavailable');
+    });
+    const writes: string[] = [];
+    const next = vi.fn();
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      destroyed: false,
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        res.headersSent = true;
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      end: vi.fn(() => {
+        res.headersSent = true;
+        res.writableEnded = true;
+        return res;
+      }),
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAIRouterOpenAIChatHandler({ runAttempts } as any);
+    await handler(
+      {
+        params: {
+          workspaceId: 'workspace1',
+          routerId: 'router1',
+        },
+        body: {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+      } as any,
+      res as any,
+      next
+    );
+
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
+    expect(writes).toContain(
+      'data: {"error":{"message":"database unavailable","type":"server_error"}}\n\n'
+    );
+    expect(writes).toContain('data: [DONE]\n\n');
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AI Router logs output schema', () => {
+  test('accepts attempt error arrays returned from router logs', () => {
+    const schema = buildCursorResponseSchema(AIRouterLogsModelSchema);
+
+    const result = schema.safeParse({
+      items: [
+        {
+          id: 'cmqf8x7n628ynpvll25aflog1',
+          workspaceId: 'cm3pzndpk0001thybosby3rhz',
+          routerId: 'cmqf8x7n628ynpvll25afeneq',
+          protocol: AI_ROUTER_PROTOCOLS.ANTHROPIC_MESSAGES,
+          status: AIRouterLogsStatus.Success,
+          finalGatewayId: 'cmqf8x7n628ynpvll25afgw1',
+          finalGatewayLogId: 'cmqf8x7n628ynpvll25afgl1',
+          attemptGatewayIds: ['cmqf8x7n628ynpvll25afgw1'],
+          attemptGatewayLogIds: ['cmqf8x7n628ynpvll25afgl1'],
+          attemptErrors: [
+            {
+              gatewayId: 'cmqf8x7n628ynpvll25afgw1',
+              gatewayLogId: 'cmqf8x7n628ynpvll25afgl1',
+              statusCode: 200,
+              retryable: false,
+            },
+          ],
+          attemptCount: 1,
+          duration: 123,
+          createdAt: new Date('2026-06-28T00:00:00.000Z'),
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('AI Router models discovery', () => {
+  test('aggregates and deduplicates models from eligible nodes in tier order', async () => {
+    const calledGatewayIds: string[] = [];
+
+    const result = await runAIRouterModelsDiscovery({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      loadRouter: async () => ({
+        id: 'router1',
+        tiers: [
+          {
+            id: 'tier1',
+            order: 0,
+            nodes: [
+              {
+                id: 'node-openai',
+                gatewayId: 'gw-openai',
+                provider: 'openai',
+                enabled: true,
+                order: 0,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-openai',
+                  modelApiKey: 'sk-openai',
+                },
+              },
+              {
+                id: 'node-disabled',
+                gatewayId: 'gw-disabled',
+                provider: 'openai',
+                enabled: false,
+                order: 1,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-disabled',
+                  modelApiKey: 'sk-disabled',
+                },
+              },
+            ],
+          },
+          {
+            id: 'tier2',
+            order: 1,
+            nodes: [
+              {
+                id: 'node-custom',
+                gatewayId: 'gw-custom',
+                provider: 'custom',
+                enabled: true,
+                order: 0,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-custom',
+                  modelApiKey: 'sk-custom',
+                },
+              },
+            ],
+          },
+        ],
+      }),
+      listModels: async ({ node }) => {
+        calledGatewayIds.push(node.gatewayId);
+
+        if (node.gatewayId === 'gw-openai') {
+          return [
+            { id: 'gpt-4o', object: 'model' },
+            { id: 'shared-model', object: 'model' },
+          ];
+        }
+
+        return [
+          { id: 'shared-model', object: 'model', owned_by: 'custom' },
+          { id: 'custom-model', object: 'model' },
+        ];
+      },
+    });
+
+    expect(calledGatewayIds).toEqual(['gw-openai', 'gw-custom']);
+    expect(result.models).toEqual([
+      { id: 'gpt-4o', object: 'model' },
+      { id: 'shared-model', object: 'model' },
+      { id: 'custom-model', object: 'model' },
+    ]);
+    expect(result.failures).toEqual([]);
+  });
+
+  test('keeps available models when one eligible gateway fails discovery', async () => {
+    const result = await runAIRouterModelsDiscovery({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      loadRouter: async () => ({
+        id: 'router1',
+        nodes: [
+          {
+            id: 'node-bad',
+            gatewayId: 'gw-bad',
+            provider: 'openai',
+            enabled: true,
+            order: 0,
+            weight: 100,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw-bad',
+              modelApiKey: 'sk-bad',
+            },
+          },
+          {
+            id: 'node-good',
+            gatewayId: 'gw-good',
+            provider: 'custom',
+            enabled: true,
+            order: 1,
+            weight: 100,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw-good',
+              modelApiKey: 'sk-good',
+            },
+          },
+        ],
+      }),
+      listModels: async ({ node }) => {
+        if (node.gatewayId === 'gw-bad') {
+          throw new Error('models unavailable');
+        }
+
+        return [{ id: 'fallback-model', object: 'model' }];
+      },
+    });
+
+    expect(result.models).toEqual([{ id: 'fallback-model', object: 'model' }]);
+    expect(result.failures).toEqual([
+      {
+        gatewayId: 'gw-bad',
+        message: 'models unavailable',
+      },
+    ]);
+  });
+});
+
+describe('AI Router orchestration', () => {
+  test.each([false, true])(
+    'fails over and logs empty_content with heartbeat enabled: %s',
+    async (heartbeat) => {
+      const attemptedGatewayIds: string[] = [];
+      const createdLogs: any[] = [];
+
+      const result = await runAIRouterAttempts({
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        requestPayload: {
+          model: 'original-model',
+          messages: [{ role: 'user', content: 'hello' }],
+          stream: true,
+        },
+        loadRouter: async () => ({
+          id: 'router1',
+          nodes: [
+            {
+              id: 'node-empty',
+              gatewayId: 'gw-empty',
+              provider: 'openai',
+              enabled: true,
+              order: 0,
+              weight: 100,
+              modelOverride: null,
+              timeoutMs: 30000,
+              retryableStatusCodes: [],
+              failOnEmptyContent: true,
+              gateway: {
+                id: 'gw-empty',
+                modelApiKey: 'sk-empty',
+              },
+            },
+            {
+              id: 'node-good',
+              gatewayId: 'gw-good',
+              provider: 'openai',
+              enabled: true,
+              order: 1,
+              weight: 100,
+              modelOverride: null,
+              timeoutMs: 30000,
+              retryableStatusCodes: [],
+              failOnEmptyContent: true,
+              gateway: {
+                id: 'gw-good',
+                modelApiKey: 'sk-good',
+              },
+            },
+          ],
+        }),
+        executeAttempt: async ({ node }) => {
+          attemptedGatewayIds.push(node.gatewayId);
+
+          if (node.gatewayId === 'gw-empty') {
+            return buildBufferedAIGatewayAttemptResult({
+              protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+              failOnEmptyContent: node.failOnEmptyContent,
+              gatewayId: 'gw-empty',
+              logId: 'log-empty',
+              response: {
+                statusCode: 200,
+                headers: { 'content-type': 'text/event-stream' },
+                chunks: heartbeat ? [Buffer.from('\n\n')] : [],
+                wroteBody: heartbeat,
+                bodyStartedBeforeFailure: false,
+                ended: true,
+              },
+            });
+          }
+
+          return {
+            ok: true,
+            committed: true,
+            gatewayId: 'gw-good',
+            statusCode: 200,
+            logId: 'log-good',
+          };
+        },
+        createLog: async (data) => {
+          createdLogs.push(data);
+          return {
+            id: 'router-log1',
+            ...data,
+          };
+        },
+        now: () => 1000,
+        random: () => 0,
+      });
+
+      expect(attemptedGatewayIds).toEqual(['gw-empty', 'gw-good']);
+      expect(result.result).toMatchObject({
+        ok: true,
+        gatewayId: 'gw-good',
+      });
+      expect(createdLogs[0]).toMatchObject({
+        status: AIRouterLogsStatus.Success,
+        finalGatewayId: 'gw-good',
+        finalGatewayLogId: 'log-good',
+        attemptGatewayIds: ['gw-empty', 'gw-good'],
+        attemptGatewayLogIds: ['log-empty', 'log-good'],
+        attemptCount: 2,
+      });
+      expect(createdLogs[0].attemptErrors).toEqual([
+        {
+          gatewayId: 'gw-empty',
+          gatewayLogId: 'log-empty',
+          statusCode: 502,
+          retryable: true,
+          errorType: 'empty_content',
+          message: 'AI Router gateway returned empty content',
+        },
+        {
+          gatewayId: 'gw-good',
+          gatewayLogId: 'log-good',
+          statusCode: 200,
+          retryable: false,
+        },
+      ]);
+    }
+  );
+
+  test('stops failover and writes Partial when an attempt has committed output', async () => {
+    const attemptedGatewayIds: string[] = [];
+    const createdLogs: any[] = [];
+
+    const result = await runAIRouterAttempts({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      requestPayload: {
+        model: 'original-model',
+        messages: [{ role: 'user', content: 'hello' }],
+      },
+      loadRouter: async () => ({
+        id: 'router1',
+        nodes: [
+          {
+            id: 'node1',
+            gatewayId: 'gw1',
+            enabled: true,
+            protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+            order: 1,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw1',
+              modelApiKey: 'sk-first',
+              modelProvider: 'openai',
+              modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+            },
+          },
+          {
+            id: 'node2',
+            gatewayId: 'gw2',
+            enabled: true,
+            protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+            order: 2,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw2',
+              modelApiKey: 'sk-second',
+              modelProvider: 'openai',
+              modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+            },
+          },
+        ],
+      }),
+      executeAttempt: async ({ node }) => {
+        attemptedGatewayIds.push(node.gatewayId);
+
+        return {
+          ok: false,
+          committed: true,
+          gatewayId: node.gatewayId,
+          statusCode: 500,
+          logId: 'log1',
+          failure: {
+            message: 'stream failed after chunks',
+            errorType: 'upstream',
+          },
+        };
+      },
+      createLog: async (data) => {
+        createdLogs.push(data);
+        return {
+          id: 'router-log1',
+          ...data,
+        };
+      },
+      now: () => 1000,
+      random: () => 0,
+    });
+
+    expect(attemptedGatewayIds).toEqual(['gw1']);
+    expect(createdLogs).toHaveLength(1);
+    expect(createdLogs[0]).toMatchObject({
+      status: AIRouterLogsStatus.Partial,
+      finalGatewayId: 'gw1',
+      finalGatewayLogId: 'log1',
+      attemptGatewayIds: ['gw1'],
+      attemptGatewayLogIds: ['log1'],
+      attemptCount: 1,
+    });
+    expect(result.result).toMatchObject({
+      ok: false,
+      committed: true,
+      gatewayId: 'gw1',
+    });
+  });
+
+  test('writes a failed router log without executing when no nodes are eligible', async () => {
+    const createdLogs: any[] = [];
+
+    const result = await runAIRouterAttempts({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      requestPayload: {
+        model: 'original-model',
+        messages: [{ role: 'user', content: 'hello' }],
+      },
+      loadRouter: async () => ({
+        id: 'router1',
+        nodes: [
+          {
+            id: 'node1',
+            gatewayId: 'gw1',
+            enabled: false,
+            protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+            order: 1,
+            modelOverride: null,
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw1',
+              modelApiKey: 'sk-first',
+              modelProvider: 'openai',
+              modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+            },
+          },
+        ],
+      }),
+      executeAttempt: async () => {
+        throw new Error('executor should not run');
+      },
+      createLog: async (data) => {
+        createdLogs.push(data);
+        return {
+          id: 'router-log1',
+          ...data,
+        };
+      },
+      now: () => 1000,
+    });
+
+    expect(result.result).toBeNull();
+    expect(result.attempts).toEqual([]);
+    expect(createdLogs).toEqual([
+      {
+        workspaceId: 'workspace1',
+        routerId: 'router1',
+        protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+        status: AIRouterLogsStatus.Failed,
+        finalGatewayId: undefined,
+        finalGatewayLogId: undefined,
+        attemptGatewayIds: [],
+        attemptGatewayLogIds: [],
+        attemptErrors: [],
+        attemptCount: 0,
+        duration: 0,
+      },
+    ]);
+  });
+
+  test('fails over after retryable failures and writes one success router log', async () => {
+    const attemptedGatewayIds: string[] = [];
+    const payloadModels: unknown[] = [];
+    const createdLogs: any[] = [];
+
+    const result = await runAIRouterAttempts({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      requestPayload: {
+        model: 'original-model',
+        messages: [{ role: 'user', content: 'hello' }],
+      },
+      loadRouter: async () => ({
+        id: 'router1',
+        nodes: [
+          {
+            id: 'node1',
+            gatewayId: 'gw1',
+            enabled: true,
+            protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+            order: 1,
+            modelOverride: 'first-model',
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw1',
+              modelApiKey: 'sk-first',
+              modelProvider: 'openai',
+              modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+            },
+          },
+          {
+            id: 'node2',
+            gatewayId: 'gw2',
+            enabled: true,
+            protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+            order: 2,
+            modelOverride: 'second-model',
+            timeoutMs: 30000,
+            retryableStatusCodes: [],
+            gateway: {
+              id: 'gw2',
+              modelApiKey: 'sk-second',
+              modelProvider: 'openai',
+              modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+            },
+          },
+        ],
+      }),
+      executeAttempt: async ({ node, payload }) => {
+        attemptedGatewayIds.push(node.gatewayId);
+        payloadModels.push(payload.model);
+
+        if (node.gatewayId === 'gw1') {
+          return {
+            ok: false,
+            committed: false,
+            gatewayId: 'gw1',
+            statusCode: 429,
+            logId: 'log1',
+            failure: {
+              message: 'rate limited',
+              errorType: 'upstream',
+            },
+          };
+        }
+
+        return {
+          ok: true,
+          committed: true,
+          gatewayId: 'gw2',
+          statusCode: 200,
+          logId: 'log2',
+        };
+      },
+      createLog: async (data) => {
+        createdLogs.push(data);
+        return {
+          id: 'router-log1',
+          ...data,
+        };
+      },
+      now: (() => {
+        let current = 1000;
+        return () => {
+          current += 25;
+          return current;
+        };
+      })(),
+      random: () => 0,
+    });
+
+    expect(attemptedGatewayIds).toEqual(['gw1', 'gw2']);
+    expect(payloadModels).toEqual(['first-model', 'second-model']);
+    expect(createdLogs).toHaveLength(1);
+    expect(createdLogs[0]).toMatchObject({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      status: AIRouterLogsStatus.Success,
+      finalGatewayId: 'gw2',
+      finalGatewayLogId: 'log2',
+      attemptGatewayIds: ['gw1', 'gw2'],
+      attemptGatewayLogIds: ['log1', 'log2'],
+      attemptCount: 2,
+    });
+    expect(createdLogs[0].attemptErrors).toEqual([
+      {
+        gatewayId: 'gw1',
+        gatewayLogId: 'log1',
+        statusCode: 429,
+        retryable: true,
+        errorType: 'upstream',
+        message: 'rate limited',
+      },
+      {
+        gatewayId: 'gw2',
+        gatewayLogId: 'log2',
+        statusCode: 200,
+        retryable: false,
+      },
+    ]);
+    expect(result.log).toMatchObject({
+      status: AIRouterLogsStatus.Success,
+      attemptCount: 2,
+    });
+    expect(result.result).toMatchObject({
+      ok: true,
+      gatewayId: 'gw2',
+      logId: 'log2',
+    });
+  });
+
+  test('uses weighted tier ordering before falling through to the next tier', async () => {
+    const attemptedGatewayIds: string[] = [];
+
+    const result = await runAIRouterAttempts({
+      workspaceId: 'workspace1',
+      routerId: 'router1',
+      protocol: AI_ROUTER_PROTOCOLS.OPENAI_CHAT,
+      requestPayload: {
+        model: 'original-model',
+        messages: [{ role: 'user', content: 'hello' }],
+      },
+      loadRouter: async () => ({
+        id: 'router1',
+        tiers: [
+          {
+            id: 'tier1',
+            order: 0,
+            nodes: [
+              {
+                id: 'node-small',
+                gatewayId: 'gw-small',
+                enabled: true,
+                order: 0,
+                weight: 1,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-small',
+                  modelApiKey: 'sk-small',
+                  modelProvider: 'openai',
+                  modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+                },
+              },
+              {
+                id: 'node-large',
+                gatewayId: 'gw-large',
+                enabled: true,
+                order: 1,
+                weight: 9,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-large',
+                  modelApiKey: 'sk-large',
+                  modelProvider: 'openai',
+                  modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+                },
+              },
+            ],
+          },
+          {
+            id: 'tier2',
+            order: 1,
+            nodes: [
+              {
+                id: 'node-backup',
+                gatewayId: 'gw-backup',
+                enabled: true,
+                order: 0,
+                weight: 100,
+                modelOverride: null,
+                timeoutMs: 30000,
+                retryableStatusCodes: [],
+                gateway: {
+                  id: 'gw-backup',
+                  modelApiKey: 'sk-backup',
+                  modelProvider: 'openai',
+                  modelProtocols: [AI_ROUTER_PROTOCOLS.OPENAI_CHAT],
+                },
+              },
+            ],
+          },
+        ],
+      }),
+      executeAttempt: async ({ node }) => {
+        attemptedGatewayIds.push(node.gatewayId);
+
+        if (node.gatewayId === 'gw-backup') {
+          return {
+            ok: true,
+            committed: true,
+            gatewayId: node.gatewayId,
+            statusCode: 200,
+            logId: 'log-backup',
+          };
+        }
+
+        return {
+          ok: false,
+          committed: false,
+          gatewayId: node.gatewayId,
+          statusCode: 429,
+          logId: `log-${node.gatewayId}`,
+          failure: {
+            message: 'rate limited',
+            errorType: 'upstream',
+          },
+        };
+      },
+      createLog: async (data) => ({
+        id: 'router-log1',
+        ...data,
+      }),
+      now: () => 1000,
+      random: () => 0.5,
+    });
+
+    expect(attemptedGatewayIds).toEqual([
+      'gw-large',
+      'gw-small',
+      'gw-backup',
+    ]);
+    expect(result.result).toMatchObject({
+      ok: true,
+      gatewayId: 'gw-backup',
+      logId: 'log-backup',
+    });
+  });
+});

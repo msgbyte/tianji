@@ -11,6 +11,7 @@ import { BrainIcon, ChevronDownIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { createContext, memo, useContext, useEffect, useState } from 'react';
 import { Response } from './response';
+import { t } from '@i18next-toolkit/react';
 
 type ReasoningContextValue = {
   isStreaming: boolean;
@@ -137,9 +138,9 @@ export const ReasoningTrigger = memo(
           <>
             <BrainIcon className="size-4" />
             {isStreaming || duration === 0 ? (
-              <p>Thinking...</p>
+              <p>{t('Thinking...')}</p>
             ) : (
-              <p>Thought for {duration} seconds</p>
+              <p>{t('Thought for {{duration}} seconds', { duration })}</p>
             )}
             <ChevronDownIcon
               className={cn(

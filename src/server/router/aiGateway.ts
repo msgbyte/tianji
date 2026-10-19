@@ -1,14 +1,41 @@
 import { Router } from 'express';
 import {
   buildOpenAIHandler,
+  buildOpenRouterHeaders,
+  buildOpenAIResponsesHandler,
   buildAnthropicHandler,
+  buildOpenAIModelsHandler,
+  buildAnthropicModelsHandler,
 } from '../model/aiGateway.js';
+import { geminiHandler } from '../model/aiGateway/gemini.js';
+import { buildAIGatewayPassthroughHandler } from '../model/aiGateway/passthrough.js';
 
 export const aiGatewayRouter = Router();
 
 aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/openrouter/api/alpha/decisions',
+  buildAIGatewayPassthroughHandler({
+    baseUrl: 'https://openrouter.ai',
+    path: '/api/alpha/decisions',
+    header: buildOpenRouterHeaders,
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/custom/api/alpha/decisions',
+  buildAIGatewayPassthroughHandler({ path: '/api/alpha/decisions' })
+);
+
+aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/openai/v1/chat/completions',
   buildOpenAIHandler({
+    modelProvider: 'openai',
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/openai/v1/responses',
+  buildOpenAIResponsesHandler({
     modelProvider: 'openai',
   })
 );
@@ -34,22 +61,20 @@ aiGatewayRouter.post(
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
 aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/custom/v1/chat/completions',
   buildOpenAIHandler({
+    isCustomRoute: true,
+  })
+);
+
+aiGatewayRouter.post(
+  '/:workspaceId/:gatewayId/custom/v1/responses',
+  buildOpenAIResponsesHandler({
     isCustomRoute: true,
   })
 );
@@ -68,16 +93,7 @@ aiGatewayRouter.post(
   buildAnthropicHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
@@ -88,6 +104,47 @@ aiGatewayRouter.post(
   })
 );
 //#endregion
+
+//#region Models list API (/v1/models)
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/openai/v1/models',
+  buildOpenAIModelsHandler({})
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/deepseek/v1/models',
+  buildOpenAIModelsHandler({
+    baseUrl: 'https://api.deepseek.com',
+  })
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/openrouter/v1/models',
+  buildOpenAIModelsHandler({
+    baseUrl: 'https://openrouter.ai/api/v1',
+    header: buildOpenRouterHeaders,
+  })
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/custom/v1/models',
+  buildOpenAIModelsHandler({
+    isCustomRoute: true,
+  })
+);
+
+aiGatewayRouter.get(
+  '/:workspaceId/:gatewayId/anthropic/v1/models',
+  buildAnthropicModelsHandler({
+    baseUrl: 'https://api.anthropic.com/v1',
+  })
+);
+//#endregion
+
+aiGatewayRouter.all(
+  '/:workspaceId/:gatewayId/custom/:version/models/*',
+  geminiHandler
+);
 
 //#region Alias should be remove in future
 aiGatewayRouter.post(
@@ -118,16 +175,7 @@ aiGatewayRouter.post(
   buildOpenAIHandler({
     baseUrl: 'https://openrouter.ai/api/v1',
     modelProvider: 'openrouter',
-    header: (req) => {
-      return {
-        'HTTP-Referer': req.headers['HTTP-Referer']
-          ? String(req.headers['HTTP-Referer'])
-          : 'https://tianji.dev/',
-        'X-Title': req.headers['X-Title']
-          ? String(req.headers['X-Title'])
-          : 'Tianji',
-      };
-    },
+    header: buildOpenRouterHeaders,
   })
 );
 
@@ -137,4 +185,5 @@ aiGatewayRouter.post(
     isCustomRoute: true,
   })
 );
+
 //#endregion

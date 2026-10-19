@@ -66,6 +66,7 @@ export function useWorkspaceMembers() {
   const memberRoleTranslation = {
     [ROLES.owner]: t('Owner'),
     [ROLES.admin]: t('Admin'),
+    [ROLES.write]: t('Write'),
     [ROLES.readOnly]: t('Read Only'),
   };
 
@@ -184,6 +185,9 @@ export function useWorkspaceMembers() {
                 <SelectContent>
                   <SelectItem value={ROLES.admin}>
                     {memberRoleTranslation[ROLES.admin]}
+                  </SelectItem>
+                  <SelectItem value={ROLES.write}>
+                    {memberRoleTranslation[ROLES.write]}
                   </SelectItem>
                   <SelectItem value={ROLES.readOnly}>
                     {memberRoleTranslation[ROLES.readOnly]}

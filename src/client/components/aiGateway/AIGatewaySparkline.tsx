@@ -5,6 +5,7 @@ import React from 'react';
 import { getDateArray } from '@tianji/shared';
 import { getUserTimezone } from '@/api/model/user';
 import dayjs from 'dayjs';
+import { t } from '@i18next-toolkit/react';
 
 export const AIGatewaySparkline: React.FC<{ gatewayId: string }> = React.memo(
   ({ gatewayId }) => {
@@ -84,7 +85,9 @@ export const AIGatewaySparkline: React.FC<{ gatewayId: string }> = React.memo(
     if (isLoading) {
       return (
         <div className="flex h-6 w-20 items-center justify-center">
-          <span className="text-muted-foreground text-xs">Loading...</span>
+          <span className="text-muted-foreground text-xs">
+            {t('Loading...')}
+          </span>
         </div>
       );
     }
@@ -92,7 +95,7 @@ export const AIGatewaySparkline: React.FC<{ gatewayId: string }> = React.memo(
     if (!data || data.length === 0) {
       return (
         <div className="flex h-6 w-20 items-center justify-center">
-          <span className="text-muted-foreground text-xs">No data</span>
+          <span className="text-muted-foreground text-xs">{t('No data')}</span>
         </div>
       );
     }

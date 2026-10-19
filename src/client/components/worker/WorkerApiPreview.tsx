@@ -277,7 +277,7 @@ export const WorkerApiPreview: React.FC<WorkerApiPreviewProps> = ({
           key={`${previewKey}-${previewSrc}`}
           src={previewSrc}
           className="h-full w-full rounded-md"
-          title="Worker Preview"
+          title={t('Worker Preview')}
           sandbox="allow-same-origin allow-scripts"
           onLoad={handlePreviewLoad}
         />

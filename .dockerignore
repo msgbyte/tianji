@@ -2,5 +2,7 @@ apps
 example
 docker
 node_modules
-packages
+packages/*
+!packages/client-sdk
+!packages/client-sdk/**
 website

@@ -15,13 +15,16 @@ import { aiRouter } from './ai.js';
 import { insightsRouter } from './insights/index.js';
 import { applicationRouter } from './application.js';
 import { aiGatewayRouter } from './aiGateway.js';
+import { aiRouterRouter } from './aiRouter.js';
 import { workerRouter } from './worker.js';
 import { shortlinkRouter } from './shortlink.js';
 import { pageRouter } from './page.js';
+import { sharedModuleRouter } from './sharedModule.js';
 
 export const appRouter = router({
   ai: aiRouter,
   aiGateway: aiGatewayRouter,
+  aiRouter: aiRouterRouter,
   global: globalRouter,
   user: userRouter,
   workspace: workspaceRouter,
@@ -38,6 +41,7 @@ export const appRouter = router({
   billing: billingRouter,
   feed: feedRouter,
   worker: workerRouter,
+  sharedModule: sharedModuleRouter,
   shortlink: shortlinkRouter,
 });
 

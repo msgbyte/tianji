@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -36,7 +36,7 @@ function MonitorDetailComponent() {
   });
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const [showPushUsage, setShowPushUsage] = useState(false);
 
   if (!monitorId) {
@@ -69,7 +69,7 @@ function MonitorDetailComponent() {
                 </Button>
               )}
 
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     asChild={true}

@@ -47,7 +47,7 @@ export function createBatchWriter<T>(options: BatchWriterOptions<T>) {
 
   let buffer: T[] = [];
   let timer: ReturnType<typeof setInterval> | null = null;
-  let flushing = false;
+  let flushChain = Promise.resolve();
 
   function ensureTimer() {
     if (timer) return;
@@ -57,20 +57,23 @@ export function createBatchWriter<T>(options: BatchWriterOptions<T>) {
     }
   }
 
-  async function flush(): Promise<void> {
-    if (buffer.length === 0 || flushing) return;
-
-    flushing = true;
+  function flush(): Promise<void> {
     const batch = buffer;
     buffer = [];
 
-    try {
-      await flushFn(batch);
-    } catch (err) {
-      logger.error(`[${name}] Failed to flush ${batch.length} items:`, err);
-    } finally {
-      flushing = false;
+    if (batch.length === 0) {
+      return flushChain;
     }
+
+    flushChain = flushChain.then(async () => {
+      try {
+        await flushFn(batch);
+      } catch (err) {
+        logger.error(`[${name}] Failed to flush ${batch.length} items:`, err);
+      }
+    });
+
+    return flushChain;
   }
 
   function enqueue(item: T): void {

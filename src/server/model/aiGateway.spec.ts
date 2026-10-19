@@ -1,0 +1,2134 @@
+import { AIGatewayLogsStatus } from '@prisma/client';
+import { EventEmitter } from 'node:events';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  AI_GATEWAY_STREAM_HEARTBEAT,
+  AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+  buildAIGatewayForwardHeaders,
+  buildAnthropicHandler,
+  buildOpenAIHandler,
+  buildOpenAIResponsesHandler,
+  buildOpenRouterHeaders,
+  calcAIGatewayCustomModelPrice,
+  calcAIGatewayTpot,
+  finishOpenAIResponsesGatewayLog,
+  getAIGatewayErrorStatusCode,
+  getAIGatewayUsage,
+  mergeAIGatewayStreamUsage,
+  getOpenAIResponsesTerminalResponse,
+  getOpenAIResponsesOutputText,
+  getOpenAIResponsesStreamDelta,
+  getOpenAIResponsesUsage,
+  openaiResponsesRequestSchema,
+  setAIGatewayStreamHeaders,
+  startAIGatewayStreamKeepAlive,
+  trackAIGatewayPendingLog,
+  writeAIGatewayAnthropicStreamError,
+} from './aiGateway.js';
+import { aiGatewayRouter } from '../router/aiGateway.js';
+import { prisma } from './_client.js';
+import { checkQuotaAlert } from './aiGateway/quotaAlert.js';
+
+const { openAIChatCreateMock, openAIResponsesCreateMock, openAIConstructorMock } = vi.hoisted(() => ({
+  openAIChatCreateMock: vi.fn(),
+  openAIResponsesCreateMock: vi.fn(),
+  openAIConstructorMock: vi.fn(),
+}));
+
+vi.mock('openai', () => ({
+  default: class {
+    constructor(options: unknown) {
+      openAIConstructorMock(options);
+    }
+
+    chat = {
+      completions: {
+        create: openAIChatCreateMock,
+      },
+    };
+    responses = { create: openAIResponsesCreateMock };
+  },
+}));
+
+vi.mock('./aiGateway/quotaAlert.js', () => ({
+  checkQuotaAlert: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock('../cache/index.js', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  buildQueryWithCache: (_name: string, get: unknown) => ({ get, del: vi.fn() }),
+}));
+
+vi.mock('./_client.js', () => ({
+  prisma: {
+    aIGateway: {
+      findUnique: vi.fn(),
+    },
+    aIGatewayLogs: {
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
+
+beforeEach(() => {
+  vi.mocked(checkQuotaAlert).mockResolvedValue();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.resetAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe('calcAIGatewayCustomModelPrice', () => {
+  test('selects Gemini tiers using the full prompt while billing cache only once', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 250000,
+      outputToken: 1000,
+      cacheReadInputToken: 100000,
+      inputTokenIncludesCache: true,
+      customModelStrategy: {
+        price: [
+          { inputTokenMax: 200000, input: 3, output: 15, cacheRead: 0.3 },
+          { inputTokenMin: 200001, input: 6, output: 22.5, cacheRead: 0.6 },
+        ],
+      },
+      customModelInputPrice: null,
+      customModelOutputPrice: null,
+    });
+    expect(price?.toNumber()).toBe(0.9825);
+  });
+  test.each([null, { price: { input: 3, output: 15 } }])(
+    'charges cached prompt at the input rate if no cache rate exists: %s',
+    (customModelStrategy) => {
+      const price = calcAIGatewayCustomModelPrice({
+        inputToken: 1000,
+        outputToken: 2000,
+        cacheReadInputToken: 500,
+        inputTokenIncludesCache: true,
+        customModelStrategy,
+        customModelInputPrice: 3,
+        customModelOutputPrice: 15,
+      });
+      expect(price?.toNumber()).toBe(0.033);
+    }
+  );
+  test('uses strategy price before deprecated SQL price fields', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      customModelStrategy: {
+        price: {
+          input: 3,
+          output: 15,
+          cacheRead: 0.3,
+        },
+      },
+      customModelInputPrice: 100,
+      customModelOutputPrice: 100,
+    });
+
+    expect(price?.toNumber()).toBe(0.03315);
+  });
+
+  test('includes cache write tokens from strategy price', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      cacheWriteInputToken: 300,
+      customModelStrategy: {
+        price: {
+          input: 3,
+          output: 15,
+          cacheRead: 0.3,
+          cacheWrite: 3.75,
+        },
+      },
+      customModelInputPrice: 100,
+      customModelOutputPrice: 100,
+    });
+
+    expect(price?.toNumber()).toBe(0.034275);
+  });
+
+  test('selects the matching strategy price tier by input token count', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 250000,
+      outputToken: 1000,
+      cacheReadInputToken: 1000,
+      customModelStrategy: {
+        price: [
+          {
+            inputTokenMax: 200000,
+            input: 3,
+            output: 15,
+            cacheRead: 0.3,
+          },
+          {
+            inputTokenMin: 200001,
+            input: 6,
+            output: 22.5,
+            cacheRead: 0.6,
+          },
+        ],
+      },
+      customModelInputPrice: 3,
+      customModelOutputPrice: 15,
+    });
+
+    expect(price?.toNumber()).toBe(1.5231);
+  });
+
+  test('falls back to deprecated SQL price fields when strategy price is missing', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      customModelStrategy: null,
+      customModelInputPrice: 3,
+      customModelOutputPrice: 15,
+    });
+
+    expect(price?.toNumber()).toBe(0.033);
+  });
+
+  test('returns null when neither strategy nor deprecated SQL price fields are configured', () => {
+    const price = calcAIGatewayCustomModelPrice({
+      inputToken: 1000,
+      outputToken: 2000,
+      cacheReadInputToken: 500,
+      customModelStrategy: null,
+      customModelInputPrice: null,
+      customModelOutputPrice: null,
+    });
+
+    expect(price).toBeNull();
+  });
+});
+
+describe('getAIGatewayUsage', () => {
+  test('maps Anthropic cache creation tokens to cache write tokens', () => {
+    expect(
+      getAIGatewayUsage({
+        input_tokens: 12,
+        output_tokens: 5,
+        cache_read_input_tokens: 7,
+        cache_creation_input_tokens: 3,
+      })
+    ).toEqual({
+      inputToken: 12,
+      outputToken: 5,
+      cacheReadInputToken: 7,
+      cacheWriteInputToken: 3,
+    });
+  });
+
+  test('maps OpenAI-compatible cache write aliases', () => {
+    expect(
+      getAIGatewayUsage({
+        prompt_tokens: 20,
+        completion_tokens: 9,
+        prompt_tokens_details: {
+          cached_tokens: 4,
+          cache_creation_tokens: 6,
+        },
+      })
+    ).toEqual({
+      inputToken: 20,
+      outputToken: 9,
+      cacheReadInputToken: 4,
+      cacheWriteInputToken: 6,
+    });
+  });
+
+  test('maps direct cache write aliases', () => {
+    expect(
+      getAIGatewayUsage({
+        input_tokens: 20,
+        output_tokens: 9,
+        cache_read_input_tokens: 4,
+        cache_write_input_tokens: 6,
+      })
+    ).toEqual({
+      inputToken: 20,
+      outputToken: 9,
+      cacheReadInputToken: 4,
+      cacheWriteInputToken: 6,
+    });
+  });
+});
+
+describe('mergeAIGatewayStreamUsage', () => {
+  test('keeps Anthropic message_start cache usage when message_delta only reports output tokens', () => {
+    const initialUsage = mergeAIGatewayStreamUsage(
+      {
+        inputToken: 0,
+        outputToken: 0,
+        cacheReadInputToken: 0,
+        cacheWriteInputToken: 0,
+      },
+      {
+        input_tokens: 8,
+        output_tokens: 1,
+        cache_read_input_tokens: 1800,
+        cache_creation_input_tokens: 248,
+      }
+    );
+
+    expect(
+      mergeAIGatewayStreamUsage(initialUsage, {
+        output_tokens: 503,
+      })
+    ).toEqual({
+      inputToken: 8,
+      outputToken: 503,
+      cacheReadInputToken: 1800,
+      cacheWriteInputToken: 248,
+    });
+  });
+});
+
+describe('calcAIGatewayTpot', () => {
+  test('returns -1 for non-streaming requests', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: false,
+        status: AIGatewayLogsStatus.Success,
+        duration: 2000,
+        ttft: 500,
+        outputToken: 10,
+      })
+    ).toBe(-1);
+  });
+
+  test('returns -1 for failed requests', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Failed,
+        duration: 2000,
+        ttft: 500,
+        outputToken: 10,
+      })
+    ).toBe(-1);
+  });
+
+  test('returns -1 when ttft is missing', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Success,
+        duration: 2000,
+        ttft: -1,
+        outputToken: 10,
+      })
+    ).toBe(-1);
+  });
+
+  test('returns -1 when there are not enough output tokens', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Success,
+        duration: 2000,
+        ttft: 500,
+        outputToken: 1,
+      })
+    ).toBe(-1);
+  });
+
+  test('returns rounded milliseconds per output token after first token', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Success,
+        duration: 1735,
+        ttft: 500,
+        outputToken: 11,
+      })
+    ).toBe(124);
+  });
+
+  test('returns at least 1ms for valid sub-millisecond averages', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Success,
+        duration: 101,
+        ttft: 100,
+        outputToken: 20,
+      })
+    ).toBe(1);
+  });
+
+  test('returns 1ms when duration equals ttft', () => {
+    expect(
+      calcAIGatewayTpot({
+        stream: true,
+        status: AIGatewayLogsStatus.Success,
+        duration: 500,
+        ttft: 500,
+        outputToken: 10,
+      })
+    ).toBe(1);
+  });
+});
+
+describe('AI Gateway stream keepalive', () => {
+  test('preserves terminal metadata after an Azure filter annotation', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+    const metadata = {
+      id: 'chatcmpl-annotated',
+      object: 'chat.completion.chunk',
+      created: 1720000000,
+      model: 'gpt-4o',
+    };
+    const annotation = {
+      index: 0,
+      finish_reason: null,
+      content_filter_results: {
+        violence: { filtered: false, severity: 'safe' },
+      },
+      content_filter_offsets: {
+        check_offset: 4,
+        start_offset: 0,
+        end_offset: 4,
+      },
+    };
+    const chunks = [
+      {
+        ...metadata,
+        choices: [
+          {
+            index: 0,
+            delta: { role: 'assistant', content: 'Hola' },
+            finish_reason: null,
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
+      },
+      {
+        id: '',
+        object: '',
+        created: 0,
+        model: '',
+        choices: [annotation],
+        usage: null,
+      },
+    ];
+    openAIChatCreateMock.mockResolvedValue(
+      (async function* () {
+        yield* chunks;
+      })()
+    );
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { authorization: 'Bearer sk-test' },
+      body: {
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: 'Hola' }],
+        stream: true,
+      },
+    };
+    const res = streamResponse();
+
+    await buildOpenAIHandler({ modelProvider: 'openai' })(
+      req as any,
+      res as any,
+      vi.fn()
+    );
+
+    for (const chunk of chunks) {
+      expect(res.write).toHaveBeenCalledWith(
+        `data: ${JSON.stringify(chunk)}\n\n`
+      );
+    }
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              ...metadata,
+              content: 'Hola',
+              choices: [
+                expect.objectContaining({
+                  ...annotation,
+                  finish_reason: 'stop',
+                  message: { role: 'assistant', content: 'Hola' },
+                }),
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
+  test('preserves stream filtering details and refusals after a usage-only chunk', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+    const metadata = {
+      id: 'chatcmpl-filtered',
+      object: 'chat.completion.chunk',
+      created: 1720000000,
+      model: 'gpt-4o',
+      system_fingerprint: 'fp_test',
+    };
+    const chunks = [
+      {
+        ...metadata,
+        choices: [],
+        prompt_filter_results: [
+          {
+            prompt_index: 0,
+            content_filter_results: {
+              violence: { filtered: false, severity: 'safe' },
+            },
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [
+          {
+            index: 0,
+            delta: { role: 'assistant', content: '', refusal: 'No puedo ' },
+            finish_reason: null,
+          },
+          {
+            index: 1,
+            delta: { role: 'assistant', content: 'Hola' },
+            finish_reason: null,
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [
+          {
+            index: 1,
+            delta: { content: ' mundo' },
+            finish_reason: 'stop',
+          },
+          {
+            index: 0,
+            delta: { refusal: 'ayudar con eso.' },
+            finish_reason: 'content_filter',
+            native_finish_reason: 'SAFETY',
+            content_filter_results: {
+              violence: { filtered: true, severity: 'high' },
+            },
+          },
+        ],
+      },
+      {
+        ...metadata,
+        choices: [],
+        usage: {
+          cost: 0,
+          prompt_tokens: 0,
+          completion_tokens: 0,
+          total_tokens: 0,
+        },
+      },
+    ];
+    openAIChatCreateMock.mockResolvedValue(
+      (async function* () {
+        yield* chunks;
+      })()
+    );
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { authorization: 'Bearer sk-test' },
+      body: {
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: 'Hola' }],
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      flush: vi.fn(),
+      end: vi.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+    };
+
+    await buildOpenAIHandler({ modelProvider: 'openai' })(
+      req as any,
+      res as any,
+      vi.fn()
+    );
+
+    for (const chunk of chunks) {
+      expect(res.write).toHaveBeenCalledWith(
+        `data: ${JSON.stringify(chunk)}\n\n`
+      );
+    }
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              ...metadata,
+              content: '',
+              usage: {
+                cost: 0,
+                prompt_tokens: 0,
+                completion_tokens: 0,
+                total_tokens: 0,
+              },
+              prompt_filter_results: [
+                {
+                  prompt_index: 0,
+                  content_filter_results: {
+                    violence: { filtered: false, severity: 'safe' },
+                  },
+                },
+              ],
+              choices: [
+                expect.objectContaining({
+                  index: 0,
+                  finish_reason: 'content_filter',
+                  native_finish_reason: 'SAFETY',
+                  content_filter_results: {
+                    violence: { filtered: true, severity: 'high' },
+                  },
+                  message: expect.objectContaining({
+                    role: 'assistant',
+                    content: '',
+                    refusal: 'No puedo ayudar con eso.',
+                  }),
+                }),
+                expect.objectContaining({
+                  index: 1,
+                  finish_reason: 'stop',
+                  message: expect.objectContaining({
+                    role: 'assistant',
+                    content: 'Hola mundo',
+                  }),
+                }),
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
+  test('stores reconstructed OpenAI stream tool calls in the response payload', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+    openAIChatCreateMock.mockResolvedValue(
+      (async function* () {
+        yield {
+          model: 'gemini-2.5-pro',
+          provider: 'Google',
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    id: 'call_weather',
+                    type: 'function',
+                    function: {
+                      name: 'get_weather',
+                      arguments: '{"city":"',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        };
+        yield {
+          model: 'gemini-2.5-pro',
+          provider: 'Google',
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 0,
+                    function: { arguments: '上海"}' },
+                  },
+                  {
+                    index: 1,
+                    id: 'call_time',
+                    type: 'function',
+                    function: {
+                      name: 'get_time',
+                      arguments: '{"zone":"',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        };
+        yield {
+          model: 'gemini-2.5-pro',
+          provider: 'Google',
+          choices: [
+            {
+              delta: {
+                tool_calls: [
+                  {
+                    index: 1,
+                    function: { arguments: 'Asia/Shanghai"}' },
+                  },
+                  {
+                    index: Number.MAX_SAFE_INTEGER,
+                    id: 'call_search',
+                    type: 'function',
+                    function: {
+                      name: 'web_search',
+                      arguments: '{"query":"tianji"}',
+                    },
+                  },
+                ],
+              },
+              finish_reason: 'tool_calls',
+            },
+          ],
+          usage: {
+            prompt_tokens: 10,
+            completion_tokens: 5,
+            total_tokens: 15,
+          },
+        };
+      })()
+    );
+
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: {
+        authorization: 'Bearer sk-test',
+        'x-session-id': 'session-123',
+      },
+      body: {
+        model: 'gemini-2.5-pro',
+        messages: [{ role: 'user', content: 'check weather and time' }],
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      flush: vi.fn(),
+      end: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildOpenAIHandler({ modelProvider: 'openai' });
+    await handler(req as any, res as any, vi.fn());
+
+    expect(openAIConstructorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        defaultHeaders: { 'x-session-id': 'session-123' },
+      })
+    );
+
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              content: '',
+              provider: 'Google',
+              tool_calls: [
+                {
+                  id: 'call_weather',
+                  type: 'function',
+                  function: {
+                    name: 'get_weather',
+                    arguments: '{"city":"上海"}',
+                  },
+                },
+                {
+                  id: 'call_time',
+                  type: 'function',
+                  function: {
+                    name: 'get_time',
+                    arguments: '{"zone":"Asia/Shanghai"}',
+                  },
+                },
+                {
+                  id: 'call_search',
+                  type: 'function',
+                  function: {
+                    name: 'web_search',
+                    arguments: '{"query":"tianji"}',
+                  },
+                },
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
+  test('stores reconstructed Anthropic stream tool use when event and data arrive separately', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+    const event = (type: string, data: unknown) => [
+      `event: ${type}\n`,
+      `data: ${JSON.stringify(data)}\n\n`,
+    ];
+    const chunks = [
+      ...event('message_start', {
+        message: {
+          id: 'msg_tools',
+          type: 'message',
+          role: 'assistant',
+          model: 'claude-3-7-sonnet-latest',
+          stop_reason: null,
+          stop_sequence: null,
+          usage: { input_tokens: 10, output_tokens: 0 },
+        },
+      }),
+      ...event('content_block_start', {
+        index: 0,
+        content_block: {
+          type: 'tool_use',
+          id: 'toolu_weather',
+          name: 'get_weather',
+          input: {},
+        },
+      }),
+      ...event('content_block_delta', {
+        index: 0,
+        delta: {
+          type: 'input_json_delta',
+          partial_json: '{"city":"',
+        },
+      }),
+      ...event('content_block_delta', {
+        index: 0,
+        delta: {
+          type: 'input_json_delta',
+          partial_json: '上海"}',
+        },
+      }),
+      ...event('content_block_start', {
+        index: 1,
+        content_block: {
+          type: 'server_tool_use',
+          id: 'srvtoolu_search',
+          name: 'web_search',
+          input: {},
+        },
+      }),
+      ...event('content_block_delta', {
+        index: 1,
+        delta: {
+          type: 'input_json_delta',
+          partial_json: '{"query":"tianji"}',
+        },
+      }),
+      ...event('message_delta', {
+        delta: { stop_reason: 'tool_use', stop_sequence: null },
+        usage: { output_tokens: 4 },
+      }),
+    ];
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            const encoder = new TextEncoder();
+            chunks.forEach((chunk) => controller.enqueue(encoder.encode(chunk)));
+            controller.close();
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'text/event-stream' } }
+      )
+    );
+
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: {
+        'x-api-key': 'sk-test',
+        'x-session-id': 'session-123',
+      },
+      body: {
+        model: 'claude-3-7-sonnet-latest',
+        messages: [{ role: 'user', content: 'check weather' }],
+        max_tokens: 64,
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      flush: vi.fn(),
+      end: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+      headersSent: true,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: fetchMock as typeof fetch,
+    });
+    await handler(req as any, res as any, vi.fn());
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://anthropic.example/v1/messages',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'x-session-id': 'session-123',
+        }),
+      })
+    );
+
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: expect.objectContaining({
+              id: 'msg_tools',
+              type: 'message',
+              role: 'assistant',
+              model: 'claude-3-7-sonnet-latest',
+              stop_reason: 'tool_use',
+              stop_sequence: null,
+              tool_use: [
+                {
+                  type: 'tool_use',
+                  id: 'toolu_weather',
+                  name: 'get_weather',
+                  input: { city: '上海' },
+                },
+                {
+                  type: 'server_tool_use',
+                  id: 'srvtoolu_search',
+                  name: 'web_search',
+                  input: { query: 'tianji' },
+                },
+              ],
+            }),
+          }),
+        })
+      )
+    );
+  });
+
+  test('stores the complete non-streaming Anthropic response payload', async () => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+    const responseBody = {
+      id: 'msg_1',
+      type: 'message',
+      model: 'claude-3-7-sonnet-latest',
+      role: 'assistant',
+      content: [
+        { type: 'text', text: 'I will check.' },
+        {
+          type: 'tool_use',
+          id: 'toolu_weather',
+          name: 'get_weather',
+          input: { city: '上海' },
+        },
+      ],
+      stop_reason: 'tool_use',
+      usage: { input_tokens: 10, output_tokens: 8 },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(Response.json(responseBody, { status: 200 }));
+    const req = {
+      params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+      headers: { 'x-api-key': 'sk-test' },
+      body: {
+        model: 'claude-3-7-sonnet-latest',
+        messages: [{ role: 'user', content: 'check weather' }],
+        max_tokens: 64,
+        stream: false,
+      },
+    };
+    const res = {
+      json: vi.fn(),
+      status: vi.fn(),
+      setHeader: vi.fn(),
+      end: vi.fn(),
+      headersSent: false,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: fetchMock as typeof fetch,
+    });
+    await handler(req as any, res as any, vi.fn());
+
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            responsePayload: {
+              content: 'I will check.',
+              usage: responseBody.usage,
+              response: responseBody,
+            },
+          }),
+        })
+      )
+    );
+  });
+
+  test('uses a conservative ping interval below common proxy read timeouts', () => {
+    expect(AI_GATEWAY_STREAM_PING_INTERVAL_MS).toBeLessThanOrEqual(30_000);
+  });
+
+  test('flushes SSE headers before the first upstream byte', () => {
+    const res = {
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+    };
+
+    setAIGatewayStreamHeaders(res as any);
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Type',
+      'text/event-stream'
+    );
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Cache-Control',
+      'no-cache, no-transform'
+    );
+    expect(res.setHeader).toHaveBeenCalledWith('Connection', 'keep-alive');
+    expect(res.setHeader).toHaveBeenCalledWith('X-Accel-Buffering', 'no');
+    expect(res.flushHeaders).toHaveBeenCalledTimes(1);
+  });
+
+  test('writes SSE heartbeats immediately and on the configured interval', () => {
+    vi.useFakeTimers();
+    const writes: string[] = [];
+    const res = {
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      flush: vi.fn(),
+    };
+
+    const stop = startAIGatewayStreamKeepAlive(res as any, {
+      intervalMs: AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+      writeInitial: true,
+    });
+
+    expect(writes).toEqual([AI_GATEWAY_STREAM_HEARTBEAT]);
+    expect(res.flush).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
+    expect(writes).toEqual([
+      AI_GATEWAY_STREAM_HEARTBEAT,
+      AI_GATEWAY_STREAM_HEARTBEAT,
+    ]);
+    expect(res.flush).toHaveBeenCalledTimes(2);
+
+    stop();
+    vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
+    expect(writes).toHaveLength(2);
+  });
+
+  test('stops keepalive when writing a ping fails', () => {
+    vi.useFakeTimers();
+    const res = {
+      write: vi.fn(() => {
+        throw new Error('client disconnected');
+      }),
+      flush: vi.fn(),
+    };
+
+    expect(() =>
+      startAIGatewayStreamKeepAlive(res as any, {
+        intervalMs: AI_GATEWAY_STREAM_PING_INTERVAL_MS,
+        writeInitial: true,
+      })
+    ).not.toThrow();
+
+    expect(res.write).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(AI_GATEWAY_STREAM_PING_INTERVAL_MS);
+    expect(res.write).toHaveBeenCalledTimes(1);
+    expect(res.flush).not.toHaveBeenCalled();
+  });
+
+  test('writes Anthropic-compatible stream errors for Messages clients', () => {
+    const writes: string[] = [];
+    const res = {
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      end: vi.fn(),
+    };
+
+    writeAIGatewayAnthropicStreamError(
+      res as any,
+      new Error('upstream overloaded')
+    );
+
+    expect(writes).toEqual([
+      'event: error\n',
+      'data: {"type":"error","error":{"type":"server_error","message":"upstream overloaded"}}\n\n',
+    ]);
+    expect(res.end).toHaveBeenCalledTimes(1);
+  });
+
+  test('Anthropic stream handler sends an initial ping before upstream responds', async () => {
+    vi.useFakeTimers();
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    const fetchMock = vi.fn(() => new Promise<Response>(() => {}));
+
+    const writes: string[] = [];
+    const req = {
+      params: {
+        workspaceId: 'workspace1',
+        gatewayId: 'gateway1',
+      },
+      headers: {
+        'x-api-key': 'sk-test',
+      },
+      body: {
+        model: 'claude-3-5-sonnet-latest',
+        messages: [{ role: 'user', content: 'hello' }],
+        max_tokens: 16,
+        stream: true,
+      },
+    };
+    const res = {
+      setHeader: vi.fn(),
+      write: vi.fn((chunk: string) => {
+        writes.push(chunk);
+        return true;
+      }),
+      flush: vi.fn(),
+      status: vi.fn(),
+      json: vi.fn(),
+      writableEnded: false,
+      destroyed: false,
+    };
+    res.status.mockReturnValue(res);
+
+    const handler = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: fetchMock as typeof fetch,
+    });
+    void handler(req as any, res as any, vi.fn());
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(writes[0]).toBe(AI_GATEWAY_STREAM_HEARTBEAT);
+    expect(res.flush).toHaveBeenCalledTimes(1);
+    res.destroyed = true;
+    vi.advanceTimersByTime(25_000);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+function streamResponse() {
+  const writes: string[] = [];
+  const res = Object.assign(new EventEmitter(), {
+    writes,
+    headersSent: false,
+    writableEnded: false,
+    writableNeedDrain: false,
+    destroyed: false,
+    setHeader: vi.fn(),
+    flushHeaders: vi.fn(),
+    flush: vi.fn(),
+    write: vi.fn((chunk: string) => {
+      writes.push(chunk);
+      res.headersSent = true;
+      return !res.writableNeedDrain;
+    }),
+    end: vi.fn(() => {
+      res.writableEnded = true;
+      res.emit('finish');
+    }),
+    destroy: vi.fn(() => {
+      res.destroyed = true;
+      res.emit('close');
+    }),
+  });
+  return res;
+}
+
+describe('stream heartbeat lifecycle', () => {
+  test('uses exactly two LF bytes every 25 seconds without duplicate timers', () => {
+    vi.useFakeTimers();
+    const res = streamResponse();
+    const stop = startAIGatewayStreamKeepAlive(res as any, {
+      writeInitial: true,
+    });
+    const stopAgain = startAIGatewayStreamKeepAlive(res as any, {
+      writeInitial: true,
+    });
+    expect(stopAgain).toBe(stop);
+    expect(AI_GATEWAY_STREAM_PING_INTERVAL_MS).toBe(25_000);
+    vi.advanceTimersByTime(75_000);
+    expect(res.writes).toEqual(['\n\n', '\n\n', '\n\n', '\n\n']);
+    stop();
+    stop();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(res.eventNames()).toEqual([]);
+  });
+
+  test.each(['finish', 'close', 'error'])('cleans up on %s', (event) => {
+    vi.useFakeTimers();
+    const res = streamResponse();
+    startAIGatewayStreamKeepAlive(res as any);
+    res.emit(event);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(res.eventNames()).toEqual([]);
+    vi.advanceTimersByTime(50_000);
+    expect(res.write).not.toHaveBeenCalled();
+  });
+
+  test.each(['destroyed', 'writableEnded'] as const)(
+    'does not start or continue on %s',
+    (flag) => {
+      vi.useFakeTimers();
+      const res = streamResponse();
+      res[flag] = true;
+      startAIGatewayStreamKeepAlive(res as any);
+      expect(vi.getTimerCount()).toBe(0);
+      res[flag] = false;
+      startAIGatewayStreamKeepAlive(res as any);
+      res[flag] = true;
+      vi.advanceTimersByTime(25_000);
+      expect(res.write).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(res.eventNames()).toEqual([]);
+    }
+  );
+
+  test('skips blocked ticks and backpressure without stopping or catching up', () => {
+    vi.useFakeTimers();
+    const res = streamResponse();
+    let canWrite = false;
+    const stop = startAIGatewayStreamKeepAlive(res as any, {
+      writeInitial: true,
+      canWrite: () => canWrite,
+    });
+    vi.advanceTimersByTime(50_000);
+    expect(res.write).not.toHaveBeenCalled();
+    canWrite = true;
+    res.write.mockImplementationOnce((chunk) => {
+      res.writes.push(chunk);
+      res.writableNeedDrain = true;
+      return false;
+    });
+    vi.advanceTimersByTime(25_000);
+    expect(res.write).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(50_000);
+    expect(res.write).toHaveBeenCalledTimes(1);
+    res.writableNeedDrain = false;
+    res.emit('drain');
+    expect(res.write).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(25_000);
+    expect(res.write).toHaveBeenCalledTimes(2);
+    stop();
+    expect(res.eventNames()).toEqual([]);
+  });
+
+  test.each(['write', 'flush'] as const)(
+    'cleans up when %s throws',
+    (method) => {
+      vi.useFakeTimers();
+      const res = streamResponse();
+      res[method].mockImplementation(() => {
+        throw new Error('disconnected');
+      });
+      expect(() =>
+        startAIGatewayStreamKeepAlive(res as any, { writeInitial: true })
+      ).not.toThrow();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(res.eventNames()).toEqual([]);
+    }
+  );
+});
+
+describe('serialized OpenAI stream heartbeats', () => {
+  test.each(['chat', 'responses'] as const)(
+    '%s preserves business events, tools, usage, price and timing',
+    async (protocol) => {
+      vi.useFakeTimers();
+      vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+        id: 'gateway1',
+        workspaceId: 'workspace1',
+        customModelInputPrice: 2,
+        customModelOutputPrice: 6,
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+        id: 'log1',
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+      const tool = {
+        type: 'function_call',
+        name: 'weather',
+        call_id: 'call_1',
+        arguments: '{"city":"Madrid"}',
+      };
+      const events =
+        protocol === 'chat'
+          ? [
+              {
+                model: 'gpt-test',
+                choices: [
+                  {
+                    delta: {
+                      content: 'Hola',
+                      tool_calls: [
+                        {
+                          index: 0,
+                          id: 'call_1',
+                          type: 'function',
+                          function: { name: 'weather', arguments: '{"city":' },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+              {
+                model: 'gpt-test',
+                choices: [
+                  {
+                    delta: {
+                      tool_calls: [
+                        { index: 0, function: { arguments: '"Madrid"}' } },
+                      ],
+                    },
+                    finish_reason: 'tool_calls',
+                  },
+                ],
+                usage: {
+                  prompt_tokens: 100,
+                  completion_tokens: 10,
+                  prompt_tokens_details: { cached_tokens: 20 },
+                },
+              },
+            ]
+          : [
+              { type: 'response.output_text.delta', delta: 'Hola' },
+              {
+                type: 'response.output_item.added',
+                item: { ...tool, arguments: '' },
+              },
+              {
+                type: 'response.function_call_arguments.delta',
+                delta: '{"city":',
+              },
+              {
+                type: 'response.function_call_arguments.delta',
+                delta: '"Madrid"}',
+              },
+              {
+                type: 'response.completed',
+                response: {
+                  model: 'gpt-test',
+                  output_text: 'Hola',
+                  output: [tool],
+                  usage: {
+                    input_tokens: 100,
+                    output_tokens: 10,
+                    input_tokens_details: { cached_tokens: 20 },
+                  },
+                },
+              },
+            ];
+      const logs: unknown[] = [];
+      for (const blockHeartbeat of [true, false]) {
+        const create =
+          protocol === 'chat'
+            ? openAIChatCreateMock
+            : openAIResponsesCreateMock;
+        create.mockResolvedValue(
+          (async function* () {
+            for (const event of events) {
+              await new Promise((resolve) => setTimeout(resolve, 30_000));
+              yield event;
+            }
+          })()
+        );
+        const res = streamResponse();
+        res.writableNeedDrain = blockHeartbeat;
+        const handler =
+          protocol === 'chat'
+            ? buildOpenAIHandler
+            : buildOpenAIResponsesHandler;
+        const done = handler({
+          isCustomRoute: true,
+          baseUrl: 'https://openai.example/v1',
+        })(
+          {
+            params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+            headers: { authorization: 'Bearer sk-test' },
+            body: {
+              model: 'gpt-test',
+              stream: true,
+              ...(protocol === 'chat'
+                ? { messages: [{ role: 'user', content: 'Hola' }] }
+                : { input: 'Hola' }),
+            },
+          } as any,
+          res as any,
+          vi.fn()
+        );
+        await vi.advanceTimersByTimeAsync(events.length * 30_000 + 1);
+        await done;
+        expect(res.writes.filter((chunk) => chunk !== '\n\n')).toEqual([
+          ...events.map((event) => `data: ${JSON.stringify(event)}\n\n`),
+          'data: [DONE]\n\n',
+        ]);
+        expect(res.writes.filter((chunk) => chunk === '\n\n').length).toBe(
+          blockHeartbeat ? 0 : 1 + Math.floor((events.length * 30_000) / 25_000)
+        );
+        const log = vi.mocked(prisma.aIGatewayLogs.update).mock.lastCall![0]
+          .data;
+        expect(log).toMatchObject({
+          status: AIGatewayLogsStatus.Success,
+          inputToken: 100,
+          outputToken: 10,
+          cacheReadInputToken: 20,
+          ttft: 30_000,
+          responsePayload: { content: 'Hola' },
+        });
+        logs.push(log);
+        expect(res.end).toHaveBeenCalledOnce();
+        expect(vi.getTimerCount()).toBe(0);
+        expect(res.eventNames()).toEqual([]);
+      }
+      expect(logs[1]).toEqual(logs[0]);
+    }
+  );
+
+  test('Responses preserves a stream error and stops heartbeats', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    openAIResponsesCreateMock.mockResolvedValue(
+      (async function* () {
+        await new Promise((resolve) => setTimeout(resolve, 30_000));
+        throw new Error('upstream failed');
+      })()
+    );
+    const res = streamResponse();
+    const done = buildOpenAIResponsesHandler({
+      baseUrl: 'https://openai.example/v1',
+    })(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { authorization: 'Bearer sk-test' },
+        body: { model: 'gpt-test', stream: true, input: 'Hola' },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.advanceTimersByTimeAsync(30_001);
+    await done;
+    expect(res.writes).toEqual([
+      '\n\n',
+      '\n\n',
+      'data: {"error":{"message":"upstream failed","type":"server_error"}}\n\n',
+      'data: [DONE]\n\n',
+    ]);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: AIGatewayLogsStatus.Failed }),
+      })
+    );
+  });
+});
+
+describe('Anthropic raw stream boundaries', () => {
+  const encoder = new TextEncoder();
+  const tick = () => vi.advanceTimersByTimeAsync(25_000);
+
+  async function openStream() {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        source = controller;
+      },
+    });
+    const res = streamResponse();
+    const done = buildAnthropicHandler({
+      baseUrl: 'https://anthropic.example/v1',
+      fetch: vi.fn(async () => new Response(body)),
+    })(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { 'x-api-key': 'sk-test' },
+        body: {
+          model: 'claude-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          max_tokens: 16,
+          stream: true,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    return { res, source, done };
+  }
+
+  test('retains a structured upstream error after partial output', async () => {
+    vi.useFakeTimers();
+    const { res, source, done } = await openStream();
+    const error = { type: 'overloaded_error', message: 'Servicio ocupado' };
+    const events = [
+      ['content_block_delta', { delta: { type: 'text_delta', text: 'Hola' } }],
+      ['error', { type: 'error', error }],
+    ]
+      .map(([type, data]) => `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`)
+      .join('');
+    source.enqueue(encoder.encode(events));
+    source.close();
+    await done;
+    await vi.waitFor(() => {
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: AIGatewayLogsStatus.Failed,
+            responsePayload: expect.objectContaining({ content: 'Hola', error }),
+          }),
+        })
+      );
+    });
+    expect(res.writes.join('')).toContain(events);
+  });
+
+  test.each(['\n', '\r\n', '\r'])(
+    'preserves every byte split with %j line endings',
+    async (newline) => {
+      vi.useFakeTimers();
+      const event = [
+        'event: content_block_delta',
+        'id: 1',
+        'retry: 1000',
+        ': upstream comment',
+        'unknown: value',
+        'data: {"delta":{"type":"text_delta",',
+        'data: "text":"Olé 🌍"}}',
+        '',
+        '',
+      ].join(newline);
+      const bytes = encoder.encode(event);
+      for (let split = 1; split < bytes.length; split++) {
+        const { res, source, done } = await openStream();
+        source.enqueue(bytes.slice(0, split));
+        await vi.advanceTimersByTimeAsync(0);
+        const writesBeforeTick = res.writes.length;
+        await tick();
+        expect(res.writes.length, `split ${split}`).toBe(writesBeforeTick);
+        source.enqueue(bytes.slice(split));
+        await vi.advanceTimersByTimeAsync(0);
+        const writesBeforeBoundaryTick = res.writes.length;
+        await tick();
+        // A trailing CR might still be followed by LF: conservatively wait.
+        expect(res.writes.length).toBe(
+          writesBeforeBoundaryTick + (newline === '\r' ? 0 : 1)
+        );
+        source.close();
+        await done;
+        expect(res.writes.join('')).toBe(
+          '\n\n' + event + (newline === '\r' ? '' : '\n\n')
+        );
+        expect(res.end).toHaveBeenCalledOnce();
+        expect(res.destroy).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(0);
+        expect(res.eventNames()).toEqual([]);
+      }
+    }
+  );
+
+  test('handles bytewise UTF-8 and multiple events per chunk without rewriting upstream comments', async () => {
+    vi.useFakeTimers();
+    const { res, source, done } = await openStream();
+    const event =
+      'event: content_block_delta\ndata: {"delta":{"type":"text_delta","text":"Olé 🌍"}}\n\n';
+    const bytes = encoder.encode(event);
+    for (const byte of bytes.slice(0, -1)) {
+      source.enqueue(Uint8Array.of(byte));
+      await tick();
+    }
+    expect(res.writes.join('')).toBe('\n\n' + event.slice(0, -1));
+    source.enqueue(
+      encoder.encode(
+        '\n: PING\n\nevent: message_stop\ndata: {"type":"message_stop"}\n\n'
+      )
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    await tick();
+    source.close();
+    await done;
+    expect(res.writes.join('')).toBe(
+      '\n\n' +
+        event +
+        ': PING\n\nevent: message_stop\ndata: {"type":"message_stop"}\n\n\n\n'
+    );
+    expect(prisma.aIGatewayLogs.update).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: AIGatewayLogsStatus.Success,
+          responsePayload: expect.objectContaining({ content: 'Olé 🌍' }),
+        }),
+      })
+    );
+  });
+
+  test.each(['eof', 'error'])(
+    'terminates a truncated event on %s without appending an error event',
+    async (reason) => {
+      vi.useFakeTimers();
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { res, source, done } = await openStream();
+      const partial = 'event: content_block_delta\ndata: {"text":"partial';
+      source.enqueue(encoder.encode(partial));
+      await tick();
+      if (reason === 'eof') source.close();
+      else source.error(new Error('upstream disconnected'));
+      await done;
+      expect(res.writes.join('')).toBe('\n\n' + partial);
+      expect(res.destroy).toHaveBeenCalledOnce();
+      expect(res.end).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(res.eventNames()).toEqual([]);
+      expect(prisma.aIGatewayLogs.update).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: AIGatewayLogsStatus.Failed }),
+        })
+      );
+    }
+  );
+
+  test('keeps the existing error event at a complete boundary', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { res, source, done } = await openStream();
+    source.error(new Error('upstream disconnected'));
+    await done;
+    expect(res.writes.join('')).toBe(
+      '\n\nevent: error\ndata: {"type":"error","error":{"type":"server_error","message":"upstream disconnected"}}\n\n'
+    );
+    expect(res.end).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe.each(['stream', 'nonstream', 'websocket'] as const)(
+  'Responses cost accounting over %s',
+  (transport) => {
+    test.each([
+      {
+        name: 'records upstream cost without local pricing',
+        cost: 0.021502125,
+        customPricing: false,
+        modelProvider: 'custom',
+        expectedPrice: 0.021502125,
+      },
+      {
+        name: 'prefers upstream cost over custom pricing',
+        cost: 0.021502125,
+        customPricing: true,
+        modelProvider: 'custom',
+        expectedPrice: 0.021502125,
+      },
+      {
+        name: 'preserves an explicit zero upstream cost',
+        cost: 0,
+        customPricing: true,
+        modelProvider: 'custom',
+        expectedPrice: 0,
+      },
+      {
+        name: 'falls back to custom pricing when cost is absent',
+        cost: undefined,
+        customPricing: true,
+        modelProvider: 'custom',
+        expectedPrice: 0.096406,
+      },
+      {
+        name: 'falls back to built-in pricing when cost is absent',
+        cost: undefined,
+        customPricing: false,
+        modelProvider: 'openai',
+        expectedPrice: 0.0211084,
+      },
+    ])('$name', async ({ cost, customPricing, modelProvider, expectedPrice }) => {
+      const pricing = customPricing
+        ? { customModelInputPrice: 2, customModelOutputPrice: 6 }
+        : {};
+      const modelName =
+        modelProvider === 'custom' ? 'google/gemini-3.7-flash' : 'gpt-4.1-mini';
+      const response = {
+        model: modelName,
+        output_text: 'Hola',
+        usage: {
+          input_tokens: 34499,
+          output_tokens: 4568,
+          total_tokens: 39067,
+          input_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+          output_tokens_details: { reasoning_tokens: 1715 },
+          ...(cost === undefined
+            ? {}
+            : {
+                cost,
+                cost_details: { upstream_inference_cost: 0.04300425 },
+              }),
+        },
+      };
+      vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+        id: 'gateway1',
+        workspaceId: 'workspace1',
+        ...pricing,
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+        id: 'log1',
+      } as any);
+      vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+      if (transport === 'websocket') {
+        await finishOpenAIResponsesGatewayLog({
+          logId: 'log1',
+          workspaceId: 'workspace1',
+          gatewayId: 'gateway1',
+          modelName,
+          modelProvider,
+          input: 'Hola',
+          startedAt: Date.now(),
+          ttft: 0,
+          response,
+          ...pricing,
+        });
+      } else {
+        const stream = transport === 'stream';
+        openAIResponsesCreateMock.mockResolvedValue(
+          stream
+            ? (async function* () {
+                yield { type: 'response.completed', response };
+              })()
+            : response
+        );
+        const res = Object.assign(streamResponse(), { json: vi.fn() });
+        await buildOpenAIResponsesHandler({
+          isCustomRoute: modelProvider === 'custom',
+          baseUrl: 'https://openai.example/v1',
+        })(
+          {
+            params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+            headers: { authorization: 'Bearer sk-test' },
+            body: { model: modelName, input: 'Hola', stream },
+          } as any,
+          res as any,
+          vi.fn()
+        );
+      }
+
+      await vi.waitFor(() => {
+        expect(prisma.aIGatewayLogs.update).toHaveBeenCalledOnce();
+        expect(checkQuotaAlert).toHaveBeenCalledWith(
+          'workspace1',
+          'gateway1',
+          expectedPrice
+        );
+      });
+      const log = vi.mocked(prisma.aIGatewayLogs.update).mock.lastCall![0].data;
+      expect(log).toMatchObject({
+        status: AIGatewayLogsStatus.Success,
+        inputToken: 34499,
+        outputToken: 4568,
+        cacheReadInputToken: 0,
+        cacheWriteInputToken: 0,
+      });
+      expect(Number(log.price)).toBe(expectedPrice);
+    });
+  }
+);
+
+describe('Responses terminal logging', () => {
+  beforeEach(() => {
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({ id: 'log1' } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+  });
+
+  test.each([
+    ['response.failed', 'failed'],
+    ['response.incomplete', 'incomplete'],
+    ['response.done', 'cancelled'],
+  ])('retains the final response for HTTP %s', async (type, status) => {
+    const response = {
+      id: 'resp_filtered',
+      model: 'gpt-4.1-mini',
+      status,
+      error: status === 'failed' ? { code: 'server_error', message: 'Error' } : null,
+      incomplete_details: status === 'incomplete' ? { reason: 'content_filter' } : null,
+      output: [],
+      usage: { input_tokens: 5, output_tokens: 1, cost: 0 },
+    };
+    const events = [
+      { type: 'response.output_text.delta', delta: 'Hola' },
+      { type, response },
+    ];
+    openAIResponsesCreateMock.mockResolvedValue(
+      (async function* () { yield* events; })()
+    );
+    const res = streamResponse();
+    await buildOpenAIResponsesHandler({})(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { authorization: 'Bearer sk-test' },
+        body: { model: response.model, input: 'Hola', stream: true },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+    await vi.waitFor(() => {
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: AIGatewayLogsStatus.Failed,
+            responsePayload: { content: 'Hola', response },
+          }),
+        })
+      );
+    });
+    expect(res.writes.join('')).toContain(`data: ${JSON.stringify(events[1])}\n\n`);
+  });
+
+  test.each([
+    { code: 'content_filter', message: 'No permitido' },
+    { reason: 'content_filter' },
+    new Error('Connection closed'),
+  ])('retains failure details and partial output in WebSocket logs: %j', async (error) => {
+    const response = { id: 'resp_failed', status: 'incomplete', output: [] };
+    await finishOpenAIResponsesGatewayLog({
+      logId: 'log1',
+      workspaceId: 'workspace1',
+      gatewayId: 'gateway1',
+      modelName: 'gpt-4.1-mini',
+      input: 'Hola',
+      outputContent: 'Respuesta parcial',
+      startedAt: Date.now(),
+      ttft: 1,
+      response,
+      error,
+    });
+    expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: AIGatewayLogsStatus.Failed,
+          responsePayload: {
+            content: 'Respuesta parcial',
+            response,
+            error: error instanceof Error ? String(error) : error,
+          },
+        }),
+      })
+    );
+  });
+});
+
+describe('openaiResponsesRequestSchema', () => {
+  test('accepts Responses API payloads and preserves passthrough fields', () => {
+    const payload = openaiResponsesRequestSchema.parse({
+      model: 'gpt-4.1-mini',
+      input: 'Hello',
+      instructions: 'Be brief',
+      stream: true,
+      text: {
+        format: {
+          type: 'text',
+        },
+      },
+    });
+
+    expect(payload).toEqual({
+      model: 'gpt-4.1-mini',
+      input: 'Hello',
+      instructions: 'Be brief',
+      stream: true,
+      text: {
+        format: {
+          type: 'text',
+        },
+      },
+    });
+  });
+});
+
+describe('getOpenAIResponsesUsage', () => {
+  test('maps Responses usage fields to gateway token fields', () => {
+    expect(
+      getOpenAIResponsesUsage({
+        usage: {
+          input_tokens: 12,
+          output_tokens: 5,
+          total_tokens: 17,
+          input_tokens_details: {
+            cached_tokens: 7,
+            cache_creation_tokens: 4,
+          },
+        },
+      })
+    ).toEqual({
+      inputToken: 12,
+      outputToken: 5,
+      cacheReadInputToken: 7,
+      cacheWriteInputToken: 4,
+    });
+  });
+
+  test('falls back to zeroes when usage is not available', () => {
+    expect(getOpenAIResponsesUsage({})).toEqual({
+      inputToken: 0,
+      outputToken: 0,
+      cacheReadInputToken: 0,
+      cacheWriteInputToken: 0,
+    });
+  });
+});
+
+describe('getOpenAIResponsesOutputText', () => {
+  test('prefers the SDK output_text helper field', () => {
+    expect(
+      getOpenAIResponsesOutputText({
+        output_text: 'Hello from output_text',
+        output: [],
+      })
+    ).toBe('Hello from output_text');
+  });
+
+  test('extracts text from output content when output_text is missing', () => {
+    expect(
+      getOpenAIResponsesOutputText({
+        output: [
+          {
+            type: 'message',
+            content: [
+              { type: 'output_text', text: 'Hello ' },
+              { type: 'output_text', text: 'world' },
+            ],
+          },
+        ],
+      })
+    ).toBe('Hello world');
+  });
+});
+
+describe('OpenAI Responses stream helpers', () => {
+  test('extracts output_text delta events', () => {
+    expect(
+      getOpenAIResponsesStreamDelta({
+        type: 'response.output_text.delta',
+        delta: 'chunk',
+      })
+    ).toBe('chunk');
+  });
+
+  test('extracts the completed response from stream events', () => {
+    const response = {
+      id: 'resp_123',
+      model: 'gpt-4.1-mini',
+      usage: {
+        input_tokens: 3,
+        output_tokens: 2,
+        total_tokens: 5,
+      },
+    };
+
+    expect(
+      getOpenAIResponsesTerminalResponse({
+        type: 'response.completed',
+        response,
+      })
+    ).toBe(response);
+  });
+});
+
+describe('AI Gateway runtime metadata helpers', () => {
+  test('forwards only the incoming session id', () => {
+    expect(
+      buildAIGatewayForwardHeaders({
+        headers: {
+          authorization: 'Bearer client-key',
+          cookie: 'private=value',
+          'x-session-id': 'session-123',
+        },
+      } as any)
+    ).toEqual({ 'x-session-id': 'session-123' });
+    expect(buildAIGatewayForwardHeaders({ headers: {} } as any)).toEqual({});
+  });
+
+  test('builds OpenRouter headers with the incoming session id', () => {
+    expect(
+      buildOpenRouterHeaders({
+        headers: {
+          'http-referer': 'https://example.com/app',
+          'x-title': 'Example App',
+          'x-session-id': 'session-123',
+        },
+      } as any)
+    ).toEqual({
+      'HTTP-Referer': 'https://example.com/app',
+      'X-Title': 'Example App',
+      'x-session-id': 'session-123',
+    });
+
+    expect(buildOpenRouterHeaders({ headers: {} } as any)).toEqual({
+      'HTTP-Referer': 'https://tianji.dev/',
+      'X-Title': 'Tianji',
+    });
+  });
+
+  test('preserves numeric upstream error status codes', () => {
+    expect(getAIGatewayErrorStatusCode({ status: 400 })).toBe(400);
+    expect(getAIGatewayErrorStatusCode({ status: 401 })).toBe(401);
+    expect(getAIGatewayErrorStatusCode({ status: 403 })).toBe(403);
+    expect(getAIGatewayErrorStatusCode({ status: 404 })).toBe(404);
+    expect(getAIGatewayErrorStatusCode({ status: 422 })).toBe(422);
+    expect(getAIGatewayErrorStatusCode({ status: '429' })).toBe(500);
+  });
+
+  test('notifies request-scoped listeners when a gateway log is created', async () => {
+    const log = {
+      id: 'gateway-log1',
+    };
+    const observedLogs: unknown[] = [];
+    const req = {
+      __onAIGatewayLogCreated: (createdLog: unknown) => {
+        observedLogs.push(createdLog);
+      },
+    } as any;
+
+    const trackedLog = await trackAIGatewayPendingLog(
+      req,
+      Promise.resolve(log as any)
+    );
+
+    expect(trackedLog).toBe(log);
+    expect(observedLogs).toEqual([log]);
+    await expect(req.__aiGatewayLogPromise).resolves.toBe(log);
+  });
+});
+
+describe('aiGatewayRouter Responses routes', () => {
+  function getPostRoutePaths() {
+    return (aiGatewayRouter.stack as any[])
+      .map((layer) => layer.route)
+      .filter((route) => route?.methods?.post)
+      .map((route) => route.path);
+  }
+
+  test('registers only the current Responses API paths', () => {
+    const paths = getPostRoutePaths();
+
+    expect(paths).toContain('/:workspaceId/:gatewayId/openai/v1/responses');
+    expect(paths).toContain('/:workspaceId/:gatewayId/custom/v1/responses');
+    expect(paths).not.toContain('/v1/:workspaceId/:gatewayId/openai/responses');
+    expect(paths).not.toContain('/v1/:workspaceId/:gatewayId/custom/responses');
+  });
+});
+
+describe('aiGatewayRouter runtime route coverage', () => {
+  function getRoutePaths(method: 'get' | 'post') {
+    return (aiGatewayRouter.stack as any[])
+      .map((layer) => layer.route)
+      .filter((route) => route?.methods?.[method])
+      .map((route) => route.path);
+  }
+
+  test('keeps custom chat, messages, and responses paths', () => {
+    const postPaths = getRoutePaths('post');
+
+    expect(postPaths).toContain(
+      '/:workspaceId/:gatewayId/custom/v1/chat/completions'
+    );
+    expect(postPaths).toContain('/:workspaceId/:gatewayId/custom/v1/messages');
+    expect(postPaths).toContain('/:workspaceId/:gatewayId/custom/v1/responses');
+  });
+});

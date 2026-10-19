@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useDataReady } from '@/hooks/useDataReady';
 import { useEvent } from '@/hooks/useEvent';
 import { Layout } from '@/components/layout';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { cn } from '@/utils/style';
 import { useTranslation } from '@i18next-toolkit/react';
@@ -33,7 +33,7 @@ function ShortLinkComponent() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
-  const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const items = data.map((item) => ({
     id: item.id,
@@ -86,7 +86,7 @@ function ShortLinkComponent() {
               title={t('Short Link')}
               actions={
                 <>
-                  {hasAdminPermission && (
+                  {hasWritePermission && (
                     <Button
                       className={cn(
                         pathname === '/shortlink/add' && '!bg-muted'

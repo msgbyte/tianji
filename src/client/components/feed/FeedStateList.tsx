@@ -1,6 +1,7 @@
 import React from 'react';
 import { FeedEventItem } from './FeedEventItem';
 import { trpc } from '@/api/trpc';
+import { useHasWritePermission } from '@/store/user';
 import { Button } from '../ui/button';
 import { LuCheck, LuLink } from 'react-icons/lu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
@@ -15,6 +16,7 @@ export const FeedStateList: React.FC<FeedStateListProps> = React.memo(
   (props) => {
     const { workspaceId, channelId } = props;
     const { t } = useTranslation();
+    const hasWritePermission = useHasWritePermission();
     const { data: states = [] } = trpc.feed.state.all.useQuery({
       workspaceId,
       channelId,
@@ -56,26 +58,28 @@ export const FeedStateList: React.FC<FeedStateListProps> = React.memo(
                   </Button>
                 )}
 
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-6 w-6 overflow-hidden"
-                      disabled={resolveMutation.isPending}
-                      onClick={() =>
-                        resolveMutation.mutateAsync({
-                          workspaceId,
-                          channelId,
-                          stateId: state.id,
-                        })
-                      }
-                    >
-                      <LuCheck size={12} color="green" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t('Mark as resolved')}</TooltipContent>
-                </Tooltip>
+                {hasWritePermission && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-6 w-6 overflow-hidden"
+                        disabled={resolveMutation.isPending}
+                        onClick={() =>
+                          resolveMutation.mutateAsync({
+                            workspaceId,
+                            channelId,
+                            stateId: state.id,
+                          })
+                        }
+                      >
+                        <LuCheck size={12} color="green" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('Mark as resolved')}</TooltipContent>
+                  </Tooltip>
+                )}
               </>
             }
           />

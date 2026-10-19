@@ -1,6 +1,6 @@
 ---
 sidebar_position: 5
-_i18n_hash: 4ea8ae049c2d4b09f2847744ac37545f
+_i18n_hash: 3656796ebf02a33e45fbef1ecb18923e
 ---
 # Webhook
 
@@ -20,13 +20,13 @@ Le système Tianji enverra une requête POST avec le contenu d'exemple ci-dessou
             "webhookUrl": "example.com"
         }
     },
-    "title": "Test de Notification de Nouvelle Notification",
-    "content": "Tianji : Insight into everything\\nCeci est un test de notification de Nouvelle Notification\\n[image]",
+    "title": "Test de notification de nouvelle notification",
+    "content": "Tianji: Aperçu de tout\\nCeci est un test de notification de Nouvelle Notification\\n[image]",
     "raw": [
         {
             "type": "title",
             "level": 2,
-            "content": "Tianji : Insight into everything"
+            "content": "Tianji: Aperçu de tout"
         },
         {
             "type": "text",
@@ -37,7 +37,7 @@ Le système Tianji enverra une requête POST avec le contenu d'exemple ci-dessou
         },
         {
             "type": "image",
-            "url": "https://tianji.msgbyte.com/img/social-card.png"
+            "url": "https://tianji.dev/img/social-card.png"
         }
     ],
     "time": "2024-06-19T15:41:09.390Z"

@@ -4,8 +4,7 @@
  * This is a simple example worker that handles HTTP requests.
  * You can modify this to suit your needs.
  *
- * Note: The fetch function will be directly exposed after build.
- * Do not use export/import syntax, write plain functions.
+ * Export a Module Worker as the default entry point.
  */
 
 interface RequestPayload {
@@ -13,12 +12,23 @@ interface RequestPayload {
 }
 
 interface RequestContext {
-  type: 'http' | 'cron';
+  type: 'http' | 'cron' | 'manual' | 'test';
+  env: Record<string, string>;
   request?: {
     method: string;
     url: string;
     headers: Record<string, string>;
   };
+}
+
+type WorkerResult = unknown;
+type WorkerFunction = (
+  payload: RequestPayload,
+  context: RequestContext
+) => WorkerResult | Promise<WorkerResult>;
+
+interface TianjiWorker {
+  fetch: WorkerFunction;
 }
 
 /**
@@ -29,18 +39,20 @@ interface RequestContext {
  * @param context - The request context
  * @returns Response data
  */
-function fetch(payload: RequestPayload, context: RequestContext) {
-  // Log the incoming request
-  console.log('Worker triggered:', {
-    type: context.type,
-    payload,
-  });
+export default {
+  async fetch(payload, context) {
+    // Log the incoming request
+    console.log('Worker triggered:', {
+      type: context.type,
+      payload,
+    });
 
-  // Example: Echo the payload back
-  return {
-    success: true,
-    message: 'Hello from Tianji Worker!',
-    receivedPayload: payload,
-    timestamp: new Date().toISOString(),
-  };
-}
+    // Example: Echo the payload back
+    return {
+      success: true,
+      message: 'Hello from Tianji Worker!',
+      receivedPayload: payload,
+      timestamp: new Date().toISOString(),
+    };
+  },
+} satisfies TianjiWorker;

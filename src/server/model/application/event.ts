@@ -4,7 +4,7 @@ import {
   getDateQuery,
   getTimestampIntervalQuery,
 } from '../../utils/prisma.js';
-import { getDateArray } from '@tianji/shared';
+import { formatDate, getDateArray } from '@tianji/shared';
 import { z } from 'zod';
 
 export const eventStatsQueryResultItemSchema = z.object({
@@ -14,6 +14,12 @@ export const eventStatsQueryResultItemSchema = z.object({
   totalTime: z.number(),
   avgEventsPerSession: z.number(),
   avgScreensPerSession: z.number(),
+});
+
+export const eventBreakdownItemSchema = z.object({
+  date: z.string(),
+  eventName: z.string().nullable(),
+  eventCount: z.number(),
 });
 
 type EventStatsQueryResultItem = z.infer<
@@ -30,6 +36,7 @@ export async function getApplicationEventStats(
 ): Promise<{
   current: EventStatsQueryResultItem[];
   previous: EventStatsQueryResultItem[];
+  eventBreakdown: z.infer<typeof eventBreakdownItemSchema>[];
   currentTotalSessionCount: number;
   previousTotalSessionCount: number;
 }> {
@@ -45,10 +52,15 @@ export async function getApplicationEventStats(
   const prevEndDate = new Date(endDate.getTime() - diffInMs);
 
   // Execute all queries in parallel
-  const [currentStats, currentTotalResult, prevStats, previousTotalResult] =
-    await Promise.all([
-      // Get current period stats
-      prisma.$queryRaw<EventStatsQueryResultItem[]>`
+  const [
+    currentStats,
+    currentTotalResult,
+    prevStats,
+    previousTotalResult,
+    eventBreakdown,
+  ] = await Promise.all([
+    // Get current period stats
+    prisma.$queryRaw<EventStatsQueryResultItem[]>`
         SELECT
           ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
           COUNT(*) as "eventCount",
@@ -74,16 +86,16 @@ export async function getApplicationEventStats(
         GROUP BY 1
         ORDER BY 1
       `,
-      // Get current period total session count
-      prisma.$queryRaw<{ totalSessionCount: bigint }[]>`
+    // Get current period total session count
+    prisma.$queryRaw<{ totalSessionCount: bigint }[]>`
         SELECT
           COUNT(DISTINCT "sessionId") as "totalSessionCount"
         FROM "ApplicationEvent"
         WHERE "applicationId" = ${applicationId}
           AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
       `,
-      // Get previous period stats
-      prisma.$queryRaw<EventStatsQueryResultItem[]>`
+    // Get previous period stats
+    prisma.$queryRaw<EventStatsQueryResultItem[]>`
         SELECT
           ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
           COUNT(*) as "eventCount",
@@ -109,18 +121,53 @@ export async function getApplicationEventStats(
         GROUP BY 1
         ORDER BY 1
       `,
-      // Get previous period total session count
-      prisma.$queryRaw<{ totalSessionCount: bigint }[]>`
+    // Get previous period total session count
+    prisma.$queryRaw<{ totalSessionCount: bigint }[]>`
         SELECT
           COUNT(DISTINCT "sessionId") as "totalSessionCount"
         FROM "ApplicationEvent"
         WHERE "applicationId" = ${applicationId}
           AND "createdAt" BETWEEN ${prevStartDate.toISOString()}::timestamptz AND ${prevEndDate.toISOString()}::timestamptz
       `,
-    ]);
+    prisma.$queryRaw<
+      { date: string; eventName: string | null; eventCount: bigint }[]
+    >`
+        WITH event_counts AS (
+          SELECT
+            ${getDateQuery('"ApplicationEvent"."createdAt"', unit, timezone)} date,
+            "eventName",
+            COUNT(*) AS "eventCount"
+          FROM "ApplicationEvent"
+          WHERE "applicationId" = ${applicationId}
+            AND "createdAt" BETWEEN ${startDate.toISOString()}::timestamptz AND ${endDate.toISOString()}::timestamptz
+          GROUP BY 1, 2
+        ), top_events AS (
+          SELECT "eventName"
+          FROM event_counts
+          WHERE "eventName" IS NOT NULL
+          GROUP BY "eventName"
+          ORDER BY SUM("eventCount") DESC, "eventName" ASC
+          LIMIT 9
+        )
+        SELECT
+          event_counts.date,
+          top_events."eventName",
+          SUM(event_counts."eventCount") AS "eventCount"
+        FROM event_counts
+        LEFT JOIN top_events ON event_counts."eventName" = top_events."eventName"
+        GROUP BY 1, 2
+        ORDER BY 1, 2
+      `,
+  ]);
 
   // Format the results
   return {
+    eventBreakdown: eventBreakdown.map((item) => ({
+      // SQL buckets already use the requested timezone.
+      date: formatDate(item.date),
+      eventName: item.eventName,
+      eventCount: Number(item.eventCount),
+    })),
     current: getDateArray(
       currentStats.map((res) => ({
         date: res.date,

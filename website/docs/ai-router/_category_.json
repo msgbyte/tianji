@@ -1,0 +1,5 @@
+{
+  "label": "AI Router",
+  "position": 18,
+  "description": "Route AI requests across multiple AI Gateways with weighted tiers and fallback."
+}

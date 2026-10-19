@@ -10,7 +10,7 @@ import { MonitorStatusPage } from '@/components/monitor/StatusPage';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEvent } from '@/hooks/useEvent';
-import { useHasAdminPermission } from '@/store/user';
+import { useHasAdminPermission, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -30,6 +30,7 @@ function PageComponent() {
   });
   const trpcUtils = trpc.useUtils();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const deletePageMutation = trpc.page.deletePage.useMutation();
 
@@ -73,7 +74,7 @@ function PageComponent() {
           title={pageInfo.title}
           actions={
             <div className="space-x-2">
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <Link to="/page/$slug/edit" params={{ slug }}>
                   <Button variant="outline" size="icon" Icon={LuPencil} />
                 </Link>

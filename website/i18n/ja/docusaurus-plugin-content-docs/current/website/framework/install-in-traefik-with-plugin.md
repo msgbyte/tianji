@@ -1,24 +1,24 @@
 ---
 sidebar_position: 2
-_i18n_hash: 8142a07cc46361e9e72d8c883ab7869a
+_i18n_hash: f85f95f54fdfadadf81712ccb1401e46
 ---
-# プラグインを使用してTraefikにインストール
+# Traefikへのプラグインのインストール
 
 Tianjiは、TraefikプロキシにTianjiのウェブサイト分析機能を簡単に統合できるTraefikプラグインを提供します。
 
 ## プラグイン概要
 
-[traefik-tianji-plugin](https://github.com/msgbyte/traefik-tianji-plugin)は、Tianji用に特別に開発されたTraefikミドルウェアプラグインで、ウェブサイトのコードを変更することなく、Tianjiトラッキングスクリプトを自動的にウェブサイトに挿入して訪問者データの収集を開始できます。
+[traefik-tianji-plugin](https://github.com/msgbyte/traefik-tianji-plugin) は、Tianji専用に開発されたTraefikミドルウェアプラグインで、ウェブサイトコードを変更することなくTianjiのトラッキングスクリプトを自動的にウェブサイトに挿入して、訪問者データの収集を開始できます。
 
 ## プラグインのインストール
 
 ### 1. 静的設定にプラグインを追加
 
-まず、Traefikの静的設定にプラグイン参照を追加する必要があります。プラグインのバージョン番号はgitタグを参照します。
+まず、Traefikの静的設定にプラグイン参照を追加する必要があります。プラグインバージョン番号はGitタグを参照します。
 
 #### YAML設定
 
-`traefik.yml`または静的設定ファイルに以下を追加:
+`traefik.yml`または静的設定ファイルに以下を追加します：
 
 ```yaml
 experimental:
@@ -49,7 +49,7 @@ experimental:
 
 #### YAML動的設定
 
-`config.yml`または動的設定ファイルに以下を追加:
+`config.yml`または動的設定ファイルに：
 
 ```yaml
 http:
@@ -90,18 +90,18 @@ services:
 
 - **tianjiHost**: Tianjiサーバーの完全なURL
   - 例: `https://tianji.your-domain.com`
-  - 公式ホスティングサービスを使用する場合: `https://app.tianji.dev`
+  - 公式ホストサービスを使用する場合: `https://app.tianji.dev`
 
-- **websiteId**: Tianjiで作成されたウェブサイトID
-  - Tianji管理パネルのウェブサイト設定で見つけることができます
+- **websiteId**: Tianjiで作成されたウェブサイトのID
+  - Tianji管理パネルのウェブサイト設定で確認できます
 
 ### オプションパラメータ
 
-プラグインは他の設定パラメータもサポートしており、動作をカスタマイズできます。具体的なパラメータについては、[GitHubリポジトリのドキュメント](https://github.com/msgbyte/traefik-tianji-plugin)を参照してください。
+プラグインは他の設定パラメータをサポートしており、動作をカスタマイズできます。特定のパラメータについては、[GitHubリポジトリのドキュメント](https://github.com/msgbyte/traefik-tianji-plugin)を参照してください。
 
 ## ミドルウェアの使用
 
-設定後、ルーターでこのミドルウェアを使用する必要があります。
+設定後、ルーターでこのミドルウェアを使用する必要があります：
 
 ### YAML設定
 
@@ -124,18 +124,18 @@ labels:
 
 ## 動作の仕組み
 
-1. リクエストがTraefikプロキシを通過するとき、プラグインはレスポンスの内容を確認します
-2. レスポンスがHTMLコンテンツである場合、プラグインは自動的にTianjiトラッキングスクリプトを挿入します
+1. リクエストがTraefikプロキシを通過するとき、プラグインがレスポンス内容をチェックします
+2. レスポンスがHTMLコンテンツの場合、プラグインが自動的にTianjiトラッキングスクリプトを注入します
 3. スクリプトは訪問者データの収集を開始し、ページが読み込まれたときにTianjiサーバーに送信します
 
 ## 重要な注意事項
 
-- Tianjiサーバーのアドレスがクライアントブラウザからアクセス可能であることを確認してください
-- ウェブサイトIDが有効でなければ、データが正しく収集されません
-- プラグインはレスポンスコンテンツタイプがHTMLの場合にのみ有効です
-- 最適なパフォーマンスと機能のために、最新バージョンのプラグインを使用することを推奨します
+- クライアントブラウザからTianjiサーバーアドレスにアクセスできることを確認してください
+- ウェブサイトIDが有効でなければ、データを正しく収集できません
+- プラグインはレスポンス内容のタイプがHTMLの場合にのみ効果を発揮します
+- 最適なパフォーマンスと機能のために、最新バージョンのプラグインを使用することをお勧めします
 
-## 参照
+## 参考
 
-- [プラグインソースコード](https://github.com/msgbyte/traefik-tianji-plugin)
-- [Traefikプラグインドキュメント](https://doc.traefik.io/traefik/plugins/)
+- [プラグインのソースコード](https://github.com/msgbyte/traefik-tianji-plugin)
+- [Traefikプラグインのドキュメント](https://doc.traefik.io/traefik/plugins/)

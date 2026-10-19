@@ -43,7 +43,11 @@ function WorkerAddComponent() {
       workspaceId,
     });
 
-    trpcUtils.worker.all.invalidate();
+    await Promise.all([
+      trpcUtils.worker.all.invalidate({ workspaceId }),
+      trpcUtils.sharedModule.all.invalidate({ workspaceId }),
+      trpcUtils.sharedModule.consumers.invalidate(),
+    ]);
     navigate({
       to: '/worker/$workerId',
       params: { workerId: res.id },

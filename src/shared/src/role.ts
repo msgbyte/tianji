@@ -6,5 +6,6 @@ export enum SYSTEM_ROLES {
 export enum ROLES {
   owner = 'owner',
   admin = 'admin',
+  write = 'write',
   readOnly = 'readOnly',
 }

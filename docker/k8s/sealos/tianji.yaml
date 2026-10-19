@@ -4,12 +4,12 @@ metadata:
   name: tianji
 spec:
   title: 'Tianji'
-  url: 'https://tianji.msgbyte.com/'
+  url: 'https://tianji.dev/'
   gitRepo: 'https://github.com/msgbyte/tianji'
   author: 'moonrailgun'
   description: 'Tianji: Insight into everything, Website Analytics + Uptime Monitor + Server Status. not only another GA alternatives'
   readme: 'https://raw.githubusercontent.com/msgbyte/tianji/master/README.md'
-  icon: 'https://tianji.msgbyte.com/img/logo.svg'
+  icon: 'https://tianji.dev/img/logo.svg'
   templateType: inline
   defaults:
     app_host:
@@ -315,7 +315,7 @@ spec:
   data:
     url: https://${{ defaults.app_host }}.${{ SEALOS_CLOUD_DOMAIN }}
   displayType: normal
-  icon: "https://tianji.msgbyte.com/img/logo.svg"
+  icon: "https://tianji.dev/img/logo.svg"
   menuData:
     nameColor: text-black
   name: ${{ defaults.app_name }}

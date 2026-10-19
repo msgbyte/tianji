@@ -6,7 +6,7 @@ import {
 } from 'mysql2/promise';
 import pg from 'pg';
 import { env } from '../../../utils/env.js';
-import { WarehouseDatabaseTable } from '@prisma/client';
+import { Prisma, WarehouseDatabaseTable } from '@prisma/client';
 import { flatten, get, uniqBy } from 'lodash-es';
 import { prisma } from '../../_client.js';
 import {
@@ -46,6 +46,19 @@ export function extractSchemaFromUrl(url: string): string {
   } catch {
     return 'public';
   }
+}
+
+/**
+ * Quote a client-provided name as a warehouse SQL identifier.
+ * `executeQuery` turns `"` into MySQL backticks and mysql2 treats every `?`
+ * as a placeholder, so these characters could escape the identifier.
+ */
+export function quoteWarehouseIdentifier(name: string): Prisma.Sql {
+  if (/[`"?]/.test(name)) {
+    throw new Error(`Invalid warehouse identifier: ${name}`);
+  }
+
+  return Prisma.raw(`"${name}"`);
 }
 
 export interface WarehouseTableMeta {
@@ -195,7 +208,6 @@ export function getWarehouseConnection(
         connectionString: url,
         options: `-c search_path=${schema},public`,
       });
-      console.log('pool', pool);
       pgConnections.set(url, pool);
     }
     return { driver: 'postgresql', pool };
@@ -252,6 +264,48 @@ export async function pingWarehouse(
 }
 
 const cachedWarehouseTables = new Map<string, WarehouseTableMeta[]>();
+
+export function clearWarehouseTablesCache(url?: string): void {
+  if (url) {
+    cachedWarehouseTables.delete(url);
+  } else {
+    cachedWarehouseTables.clear();
+  }
+}
+
+async function closeWarehousePool(pool: MysqlPool | pg.Pool): Promise<void> {
+  try {
+    await pool.end();
+  } catch {}
+}
+
+export async function disposeWarehouseConnection(url?: string): Promise<void> {
+  if (url) {
+    const mysqlPool = mysqlConnections.get(url);
+    const pgPool = pgConnections.get(url);
+
+    mysqlConnections.delete(url);
+    pgConnections.delete(url);
+    clearWarehouseTablesCache(url);
+
+    await Promise.all([
+      mysqlPool ? closeWarehousePool(mysqlPool) : Promise.resolve(),
+      pgPool ? closeWarehousePool(pgPool) : Promise.resolve(),
+    ]);
+    return;
+  }
+
+  const pools = [
+    ...Array.from(mysqlConnections.values()),
+    ...Array.from(pgConnections.values()),
+  ];
+
+  mysqlConnections.clear();
+  pgConnections.clear();
+  clearWarehouseTablesCache();
+
+  await Promise.all(pools.map((pool) => closeWarehousePool(pool)));
+}
 
 async function getMysqlTables(pool: MysqlPool): Promise<WarehouseTableMeta[]> {
   const [res, fields] = await pool.query(

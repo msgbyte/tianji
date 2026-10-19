@@ -11,16 +11,20 @@ Tianji supports various environment variables to customize its behavior. You can
 | Variable | Description | Default | Example |
 | --- | --- | --- | --- |
 | `PORT` | Server port | `12345` | `3000` |
-| `JWT_SECRET` | Secret for JWT tokens | Random Text | `your-secret-key` |
+| `JWT_SECRET` | Secret for JWT tokens | Random secret on each startup | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | Enable user registration | `false` | `true` |
 | `ALLOW_OPENAPI` | Enable OpenAPI access | `true` | `false` |
 | `WEBSITE_ID` | Website identifier | - | `your-website-id` |
 | `DISABLE_AUTO_CLEAR` | Disable automatic data cleanup | `false` | `true` |
+| `AUDIT_LOG_RETENTION_DAYS` | Number of days to retain audit logs | `30` | `90` |
 | `DISABLE_ACCESS_LOGS` | Disable access logs | `false` | `true` |
 | `DB_DEBUG` | Enable database debugging | `false` | `true` |
 | `ALPHA_MODE` | Enable alpha features | `false` | `true` |
 | `ENABLE_FUNCTION_WORKER` | Enable function worker | `false` | `true` |
+| `WORKER_EXECUTION_REQUEST_PAYLOAD_DISABLED_WORKER_IDS` | Comma-separated worker IDs whose execution request payloads are not persisted. Payloads are still passed to worker code. | - | `worker-id-1,worker-id-2` |
 | `REGISTER_AUTO_JOIN_WORKSPACE_ID` | Auto-join workspace ID for new users | - | `workspace-id-123` |
+
+If `JWT_SECRET` is empty or set to `replace-me-with-a-random-string`, Tianji generates a random secret on each startup. For production, generate a secret with `openssl rand -hex 32`, store it in your deployment configuration, and use the same value across replicas to keep tokens valid across restarts. Deployments using older example values must replace them with a generated secret.
 
 ## Cache Configuration
 

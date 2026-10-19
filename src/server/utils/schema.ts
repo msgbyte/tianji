@@ -40,6 +40,7 @@ const FilterInfoValue = z.union([
 
 const FilterInfoSchema = z.object({
   name: z.string(),
+  source: z.enum(['builtin', 'custom']).optional(),
   operator: FilterOperator,
   type: FilterType,
   value: FilterInfoValue.nullable(),
@@ -69,6 +70,7 @@ export const insightsQuerySchema = z.object({
   groups: z
     .object({
       value: z.string(),
+      source: z.enum(['builtin', 'custom']).optional(),
       type: FilterType,
       customGroups: z
         .object({

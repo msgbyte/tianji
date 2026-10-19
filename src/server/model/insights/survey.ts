@@ -8,6 +8,7 @@ import {
   processGroupedTimeSeriesData,
 } from './utils.js';
 import { prisma } from '../_client.js';
+import { quoteSqlIdentifier } from '../../utils/sql.js';
 
 const { sql, raw } = Prisma;
 
@@ -55,24 +56,24 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
 
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as ${raw(`"${alias}"`)}`;
+          return sql`count(1) as ${quoteSqlIdentifier(alias)}`;
         }
 
         if (insightsSurveyBuiltinFields.includes(item.name)) {
-          return sql`sum(case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
+          return sql`sum(case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN 1 ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`sum(case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
+        return sql`sum(case WHEN "SurveyResult"."payload"->>${item.name} IS NOT NULL AND "SurveyResult"."payload"->>${item.name} <> '' THEN 1 ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
       } else if (item.math === 'sessions') {
         if (item.name === '$all_event') {
-          return sql`count(distinct "sessionId") as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct "sessionId") as ${quoteSqlIdentifier(alias)}`;
         }
 
         if (insightsSurveyBuiltinFields.includes(item.name)) {
-          return sql`count(distinct case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct case WHEN "SurveyResult"."${raw(item.name)}" IS NOT NULL AND "SurveyResult"."${raw(item.name)}" <> '' THEN "sessionId" ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
         }
 
-        return sql`count(distinct case WHEN "SurveyResult"."payload"->>'${item.name}' IS NOT NULL AND "SurveyResult"."payload"->>'${item.name}' <> '' THEN "sessionId" ELSE 0 END) as ${raw(`"${alias}"`)}`;
+        return sql`count(distinct case WHEN "SurveyResult"."payload"->>${item.name} IS NOT NULL AND "SurveyResult"."payload"->>${item.name} <> '' THEN "sessionId" ELSE 0 END) as ${quoteSqlIdentifier(alias)}`;
       }
 
       return null;
@@ -87,11 +88,11 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
         if (!g.customGroups) {
           if (insightsSurveyBuiltinFields.includes(g.value)) {
             groupSelectQueryArr.push(
-              sql`"SurveyResult"."${raw(g.value)}" as "%${raw(g.value)}"`
+              sql`"SurveyResult"."${raw(g.value)}" as ${quoteSqlIdentifier(`%${g.value}`)}`
             );
           } else {
             groupSelectQueryArr.push(
-              sql`"SurveyResult"."payload" ->> ${g.value} as "%${raw(g.value)}"`
+              sql`"SurveyResult"."payload" ->> ${g.value} as ${quoteSqlIdentifier(`%${g.value}`)}`
             );
           }
         } else if (g.customGroups && g.customGroups.length > 0) {
@@ -102,7 +103,7 @@ export class SurveyInsightsSqlBuilder extends InsightsSqlBuilder {
                 g.type,
                 cg.filterOperator,
                 cg.filterValue
-              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+              )} as ${quoteSqlIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
         }

@@ -1,4 +1,4 @@
-import { get, uniq } from 'lodash-es';
+import { get, groupBy } from 'lodash-es';
 import { DateUnit, getDateArray } from './date';
 
 export interface MetricsInfo {
@@ -11,8 +11,11 @@ export type FilterInfoValue = string | number | string[] | number[];
 
 export type FilterInfoType = 'number' | 'string' | 'boolean' | 'date' | 'array';
 
+export type InsightPropertySource = 'builtin' | 'custom';
+
 export interface FilterInfo {
   name: string;
+  source?: InsightPropertySource;
   operator: FilterOperator;
   type: FilterInfoType;
   value: FilterInfoValue | null;
@@ -25,8 +28,19 @@ export interface CustomGroupInfo {
 
 export interface GroupInfo {
   value: string;
+  source?: InsightPropertySource;
   type: FilterInfoType;
   customGroups?: CustomGroupInfo[];
+}
+
+export function getInsightGroupAlias(
+  group: Pick<GroupInfo, 'value' | 'source'>,
+  index: number
+) {
+  // Custom aliases always start with %, so builtin aliases cannot collide.
+  return group.source === 'builtin'
+    ? `__builtin_group_${index}`
+    : `%${group.value}`;
 }
 
 export type FilterNumberOperator =
@@ -66,9 +80,7 @@ export type GroupedTimeSeriesQuery = {
     name: string;
     alias?: string;
   }[];
-  groups?: {
-    value: string;
-  }[];
+  groups?: Pick<GroupInfo, 'value' | 'source'>[];
 };
 
 /**
@@ -97,33 +109,36 @@ export function processGroupedTimeSeriesData(
 
   for (const m of metrics) {
     if (groups.length > 0) {
-      for (const g of groups) {
-        const allGroupValue = uniq(
-          data.map((item) => get(item, `%${g.value}`) as any)
-        );
-
-        result.push(
-          ...allGroupValue.map((gv) => ({
-            name: m.name,
-            alias: m.alias,
-            [g.value]: gv,
-            data: getDateArray(
-              data
-                .filter((item) => get(item, `%${g.value}`) === gv)
-                .map((item) => {
-                  return {
-                    value: Number(get(item, m.alias ?? m.name)),
-                    date: String(item.date),
-                  };
-                }),
-              startAt,
-              endAt,
-              unit,
-              timezone
-            ),
-          }))
-        );
-      }
+      const combinations = groupBy(data, (item) =>
+        JSON.stringify(
+          groups.map((g, index) => get(item, getInsightGroupAlias(g, index)))
+        )
+      );
+      result.push(
+        ...Object.values(combinations).map((rows) => ({
+          ...Object.fromEntries(
+            groups.map((g, index) => [
+              g.value,
+              get(rows[0], getInsightGroupAlias(g, index)),
+            ])
+          ),
+          groupValues: groups.map((g, index) =>
+            get(rows[0], getInsightGroupAlias(g, index))
+          ),
+          name: m.name,
+          alias: m.alias,
+          data: getDateArray(
+            rows.map((item) => ({
+              value: Number(get(item, m.alias ?? m.name)),
+              date: String(item.date),
+            })),
+            startAt,
+            endAt,
+            unit,
+            timezone
+          ),
+        }))
+      );
     } else {
       result.push({
         name: m.name,

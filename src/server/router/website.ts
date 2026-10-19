@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { type Response, Router } from 'express';
 import { body, validate } from '../middleware/validate.js';
 import * as yup from 'yup';
 import { COLLECTION_TYPE } from '../utils/const.js';
@@ -6,17 +6,23 @@ import {
   findSession,
   saveWebsiteEvent,
   saveWebsiteSessionData,
+  WebsiteNotFoundError,
 } from '../model/website/index.js';
-import { createToken } from '../utils/common.js';
+import { createToken, hashUuid } from '../utils/common.js';
 import { hostnameRegex } from '@tianji/shared';
 import { isWorkspacePaused } from '../model/billing/workspace.js';
-import { promWebsiteEventCounter, promWebsiteSessionErrorCounter } from '../utils/prometheus/client.js';
+import {
+  promWebsiteEventCounter,
+  promWebsiteSessionErrorCounter,
+} from '../utils/prometheus/client.js';
+import { logger } from '../utils/logger.js';
 
 export const websiteRouter = Router();
 
 // Shared validation schema for event payload
 const eventPayloadSchema = yup.object().shape({
   data: yup.object(),
+  distinctId: yup.string().trim().max(500),
   hostname: yup.string().matches(hostnameRegex).max(100),
   language: yup.string().max(35),
   referrer: yup.string().max(500),
@@ -26,6 +32,40 @@ const eventPayloadSchema = yup.object().shape({
   website: yup.string().required(),
   name: yup.string().max(50),
 });
+
+function handleFindSessionError(
+  res: Response,
+  error: unknown,
+  endpoint: 'send' | 'batch',
+  requestWebsiteId?: string
+) {
+  promWebsiteSessionErrorCounter.inc({ type: 'find_session', endpoint });
+
+  if (error instanceof WebsiteNotFoundError) {
+    const websiteId = error.websiteId || requestWebsiteId;
+
+    logger.warn('[Website] Website not found in request', {
+      endpoint,
+      websiteId,
+    });
+    res.status(404).json({
+      error: error.message,
+    });
+    return;
+  }
+
+  const message = error instanceof Error ? error.message : 'Unknown error';
+
+  logger.warn('[Website] Failed to find session for request', {
+    endpoint,
+    websiteId: requestWebsiteId,
+    error: message,
+  });
+
+  res.status(400).json({
+    error: message,
+  });
+}
 
 // Shared function to process a single event
 async function processEvent(type: string, payload: any, session: any) {
@@ -84,6 +124,10 @@ async function processEvent(type: string, payload: any, session: any) {
       utmContent,
       ...session,
       sessionId: session.id,
+      distinctId:
+        typeof payload.distinctId === 'string' && payload.distinctId.trim()
+          ? hashUuid(session.websiteId, payload.distinctId.trim())
+          : undefined,
     });
     return { status: 'success', type: 'event' };
   }
@@ -93,9 +137,13 @@ async function processEvent(type: string, payload: any, session: any) {
       throw new Error('Data required for identify event');
     }
 
+    const sessionData = { ...eventData };
+    delete sessionData.id;
+    delete sessionData.userId;
+
     await saveWebsiteSessionData({
       ...session,
-      sessionData: eventData,
+      sessionData,
       sessionId: session.id,
     });
     return { status: 'success', type: 'identify' };
@@ -142,10 +190,7 @@ websiteRouter.post(
       });
       res.send(token);
     } catch (error) {
-      promWebsiteSessionErrorCounter.inc({ type: 'find_session', endpoint: 'send' });
-      res.status(400).json({
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      handleFindSessionError(res, error, 'send', payload?.website);
     }
   }
 );
@@ -181,10 +226,12 @@ websiteRouter.post(
     try {
       session = await findSession(req, events[0]);
     } catch (error) {
-      promWebsiteSessionErrorCounter.inc({ type: 'find_session', endpoint: 'batch' });
-      res.status(400).json({
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      handleFindSessionError(
+        res,
+        error,
+        'batch',
+        events[0]?.payload?.website
+      );
       return;
     }
 

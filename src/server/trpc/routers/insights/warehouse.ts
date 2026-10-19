@@ -3,6 +3,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../../trpc.js';
 import { prisma } from '../../../model/_client.js';
 import { WarehouseDatebaseModelSchema } from '../../../prisma/zod/warehousedatebase.js';
@@ -13,6 +14,8 @@ import {
   getMysqlFieldType,
   getPostgresqlFieldType,
   extractSchemaFromUrl,
+  clearWarehouseTablesCache,
+  disposeWarehouseConnection,
   type WarehouseDriver,
 } from '../../../model/insights/warehouse/utils.js';
 import { upsertWarehouseTable } from '../../../model/insights/warehouse/connections.js';
@@ -60,8 +63,8 @@ export const warehouseRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        const db = await prisma.warehouseDatabase.findUnique({
-          where: { id: input.id },
+        const db = await prisma.warehouseDatabase.findFirst({
+          where: { id: input.id, workspaceId: input.workspaceId },
           select: { id: true, connectionUri: true },
         });
         if (!db) {
@@ -85,6 +88,18 @@ export const warehouseRouter = router({
       )
       .output(WarehouseDatebaseModelSchema)
       .mutation(async ({ input }) => {
+        let previousConnectionUri: string | undefined;
+        if (input.id) {
+          const previous = await prisma.warehouseDatabase.findFirst({
+            where: { id: input.id, workspaceId: input.workspaceId },
+            select: { connectionUri: true },
+          });
+          if (!previous) {
+            throw new Error('Warehouse database not found');
+          }
+          previousConnectionUri = previous.connectionUri;
+        }
+
         // only ping when connectionUri provided (create or update connection string)
         if (typeof input.connectionUri === 'string') {
           const isHealthy = await pingWarehouse(
@@ -108,11 +123,19 @@ export const warehouseRouter = router({
             data.dbDriver = input.dbDriver;
           }
           const res = await prisma.warehouseDatabase.update({
-            where: { id: input.id },
+            where: { id: input.id, workspaceId: input.workspaceId },
             data,
           });
 
           if (typeof input.connectionUri === 'string') {
+            if (
+              previousConnectionUri &&
+              previousConnectionUri !== input.connectionUri
+            ) {
+              await disposeWarehouseConnection(previousConnectionUri);
+            }
+
+            clearWarehouseTablesCache(input.connectionUri);
             await upsertWarehouseTable(input.id, input.connectionUri);
           }
 
@@ -131,6 +154,7 @@ export const warehouseRouter = router({
             },
           });
 
+          clearWarehouseTablesCache(input.connectionUri);
           await upsertWarehouseTable(res.id, input.connectionUri);
           return res;
         }
@@ -140,8 +164,9 @@ export const warehouseRouter = router({
       .output(WarehouseDatebaseModelSchema)
       .mutation(async ({ input }) => {
         const res = await prisma.warehouseDatabase.delete({
-          where: { id: input.id },
+          where: { id: input.id, workspaceId: input.workspaceId },
         });
+        await disposeWarehouseConnection(res.connectionUri);
         return res;
       }),
   }),
@@ -155,7 +180,7 @@ export const warehouseRouter = router({
         });
         return items;
       }),
-    upsert: workspaceAdminProcedure
+    upsert: workspaceWriteProcedure
       .input(
         z.object({
           id: z.string().optional(),
@@ -170,7 +195,7 @@ export const warehouseRouter = router({
       .mutation(async ({ input }) => {
         if (input.id) {
           const res = await prisma.warehouseDatabaseTable.update({
-            where: { id: input.id },
+            where: { id: input.id, workspaceId: input.workspaceId },
             data: {
               name: input.name,
               description: input.description ?? '',
@@ -180,6 +205,17 @@ export const warehouseRouter = router({
           });
           return res;
         } else {
+          const database = await prisma.warehouseDatabase.findFirst({
+            where: {
+              id: input.databaseId,
+              workspaceId: input.workspaceId,
+            },
+            select: { id: true },
+          });
+          if (!database) {
+            throw new Error('Warehouse database not found');
+          }
+
           const res = await prisma.warehouseDatabaseTable.create({
             data: {
               workspaceId: input.workspaceId,
@@ -198,7 +234,7 @@ export const warehouseRouter = router({
       .output(WarehouseDatabaseTableModelSchema)
       .mutation(async ({ input }) => {
         const res = await prisma.warehouseDatabaseTable.delete({
-          where: { id: input.id },
+          where: { id: input.id, workspaceId: input.workspaceId },
         });
         return res;
       }),
@@ -225,7 +261,7 @@ export const warehouseRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        const { databaseId, sql } = input;
+        const { databaseId, sql, workspaceId } = input;
         const startTime = Date.now();
 
         // Validate SQL - only allow SELECT statements
@@ -250,8 +286,8 @@ export const warehouseRouter = router({
         }
 
         // Get database connection URI and driver
-        const database = await prisma.warehouseDatabase.findUnique({
-          where: { id: databaseId },
+        const database = await prisma.warehouseDatabase.findFirst({
+          where: { id: databaseId, workspaceId },
           select: { connectionUri: true, dbDriver: true },
         });
 

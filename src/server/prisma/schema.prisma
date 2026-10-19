@@ -31,11 +31,16 @@ model User {
   deletedAt          DateTime? @db.Timestamptz(6)
   currentWorkspaceId String?   @db.VarChar(30)
 
-  accounts            Account[]
-  sessions            Session[]
-  workspaces          WorkspacesOnUsers[]
-  apiKeys             UserApiKey[]
-  workspaceInvitation WorkspaceInvitation[]
+  accounts                        Account[]
+  sessions                        Session[]
+  workspaces                      WorkspacesOnUsers[]
+  apiKeys                         UserApiKey[]
+  workspaceInvitation             WorkspaceInvitation[]
+  functionWorkersCreated          FunctionWorker[]         @relation("FunctionWorkerCreator")
+  functionWorkersOwned            FunctionWorker[]         @relation("FunctionWorkerOwner")
+  functionWorkerRevisionsOperated FunctionWorkerRevision[] @relation("FunctionWorkerRevisionOperator")
+  sharedModulesOwned              SharedModule[]           @relation("SharedModuleOwner")
+  sharedModuleRevisionsOperated   SharedModuleRevision[]   @relation("SharedModuleRevisionOperator")
 }
 
 model UserApiKey {
@@ -121,10 +126,15 @@ model Workspace {
   feedChannels           FeedChannel[]
   workspaceInvitation    WorkspaceInvitation[]
   functionWorkers        FunctionWorker[]
+  sharedModules          SharedModule[]
   warehouseCohorts       WarehouseCohorts[]
   warehouseDatabase      WarehouseDatabase[]
   warehouseDatabaseTable WarehouseDatabaseTable[]
   aiGateways             AIGateway[]
+  aiRouters              AIRouter[]
+  aiRouterTiers          AIRouterTier[]
+  aiRouterNodes          AIRouterNode[]
+  aiRouterLogs           AIRouterLogs[]
   aiGatewayQuotaAlerts   AIGatewayQuotaAlert[]
   workspaceConfigs       WorkspaceConfig[]
   shortLinks             ShortLink[]
@@ -309,6 +319,7 @@ model WebsiteEvent {
   id             String   @id() @default(cuid()) @db.VarChar(30)
   websiteId      String   @db.VarChar(30)
   sessionId      String   @db.Uuid
+  distinctId     String?  @db.Uuid
   urlPath        String   @db.VarChar(500)
   urlQuery       String?  @db.VarChar(500)
   referrerPath   String?  @db.VarChar(500)
@@ -706,7 +717,6 @@ model MonitorData {
   monitor Monitor @relation(fields: [monitorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([createdAt])
-  @@index([monitorId, createdAt(sort: Desc)])
   @@index([monitorId, createdAt, value])
 }
 
@@ -796,13 +806,13 @@ model WorkspaceDailyUsage {
 
 model WorkspaceAuditLog {
   id          String                 @id @default(cuid()) @db.VarChar(30)
-  workspaceId String                 @db.VarChar(30)
+  workspaceId String?                @db.VarChar(30)
   content     String
   relatedId   String?
   relatedType WorkspaceAuditLogType?
   createdAt   DateTime               @default(now()) @db.Timestamptz(6)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
   @@index([createdAt])
 }
@@ -812,6 +822,7 @@ enum WorkspaceAuditLogType {
   Notification
   Task
   FunctionWorker
+  SharedModule
   User
   Workspace
 }
@@ -955,14 +966,120 @@ model AIGateway {
   modelApiKey            String? // optional, if set, user can use this api key to request model
   customModelBaseUrl     String? // optional, if set, user can use this base url to request model in custom model
   customModelName        String? // optional, if set, user can use this name to request model in custom model
-  customModelInputPrice  Decimal? // optional, if set, user can use this price to calc cost in custom model(unit: usd, pre 1m token)
-  customModelOutputPrice Decimal? // optional, if set, user can use this price to calc cost in custom model(unit: usd, pre 1m token)
+  /// [Nullable<PrismaJson.CommonPayload>]
+  /// @zod.custom(imports.CommonPayloadSchema.nullish())
+  customModelStrategy    Json?    @db.Json // optional strategy object for custom model behavior, including price rules
+  customModelInputPrice  Decimal? // optional, deprecated custom input price fallback(unit: usd, pre 1m token)
+  customModelOutputPrice Decimal? // optional, deprecated custom output price fallback(unit: usd, pre 1m token)
   createdAt              DateTime @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime @updatedAt @db.Timestamptz(6)
 
   aiGatewayLogs        AIGatewayLogs[]
   aiGatewayQuotaAlerts AIGatewayQuotaAlert[]
+  aiRouterNodes        AIRouterNode[]
   workspace            Workspace             @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model AIRouter {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  name        String
+  enabled     Boolean  @default(true) @db.Boolean
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  tiers     AIRouterTier[]
+  nodes     AIRouterNode[]
+  logs      AIRouterLogs[]
+
+  @@unique([workspaceId, id])
+  @@index([workspaceId])
+  @@index([enabled])
+}
+
+model AIRouterTier {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  routerId    String   @db.VarChar(30)
+  order       Int      @db.Integer
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter       @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+  nodes     AIRouterNode[]
+
+  @@unique([workspaceId, id])
+  @@unique([workspaceId, routerId, id])
+  @@unique([routerId, order])
+  @@index([workspaceId])
+  @@index([routerId])
+}
+
+model AIRouterNode {
+  id                   String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId          String   @db.VarChar(30)
+  routerId             String   @db.VarChar(30)
+  tierId               String   @db.VarChar(30)
+  gatewayId            String   @db.VarChar(30)
+  provider             String   @default("openai")
+  order                Int      @db.Integer
+  enabled              Boolean  @default(true) @db.Boolean
+  weight               Int      @default(100) @db.Integer
+  modelOverride        String?
+  timeoutMs            Int      @default(30000) @db.Integer
+  retryableStatusCodes Int[]    @default([])
+  failOnEmptyContent   Boolean  @default(false) @db.Boolean
+  createdAt            DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter     @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+  tier      AIRouterTier @relation(fields: [workspaceId, routerId, tierId], references: [workspaceId, routerId, id], onUpdate: Cascade, onDelete: Cascade)
+  gateway   AIGateway    @relation(fields: [gatewayId], references: [id], onUpdate: Cascade, onDelete: NoAction)
+
+  @@unique([routerId, tierId, order])
+  @@index([workspaceId])
+  @@index([routerId])
+  @@index([tierId])
+  @@index([gatewayId])
+  @@index([enabled])
+}
+
+enum AIRouterLogsStatus {
+  Success
+  Failed
+  Partial
+}
+
+model AIRouterLogs {
+  id                   String             @id @default(cuid()) @db.VarChar(30)
+  workspaceId          String             @db.VarChar(30)
+  routerId             String             @db.VarChar(30)
+  protocol             String
+  status               AIRouterLogsStatus
+  finalGatewayId       String?            @db.VarChar(30)
+  finalGatewayLogId    String?            @db.VarChar(30)
+  attemptGatewayIds    String[]           @default([])
+  attemptGatewayLogIds String[]           @default([])
+  /// [Nullable<Array<PrismaJson.CommonPayload>>]
+  /// @zod.custom(imports.CommonPayloadSchema.array().nullish())
+  attemptErrors        Json?              @db.Json
+  attemptCount         Int                @default(0) @db.Integer
+  duration             Int                @default(0) @db.Integer
+  createdAt            DateTime           @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  router    AIRouter  @relation(fields: [workspaceId, routerId], references: [workspaceId, id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([routerId])
+  @@index([protocol])
+  @@index([status])
+  @@index([createdAt])
+  @@index([workspaceId, createdAt])
+  @@index([routerId, createdAt])
 }
 
 enum AIGatewayLogsStatus {
@@ -972,22 +1089,24 @@ enum AIGatewayLogsStatus {
 }
 
 model AIGatewayLogs {
-  id              String              @id @default(cuid()) @db.VarChar(30)
-  workspaceId     String              @db.VarChar(30)
-  gatewayId       String              @db.VarChar(30)
-  inputToken      Int                 @default(0) @db.Integer
-  outputToken     Int                 @default(0) @db.Integer
+  id                   String              @id @default(cuid()) @db.VarChar(30)
+  workspaceId          String              @db.VarChar(30)
+  gatewayId            String              @db.VarChar(30)
+  inputToken           Int                 @default(0) @db.Integer
+  outputToken          Int                 @default(0) @db.Integer
   cacheReadInputToken  Int                 @default(0) @db.Integer
   cacheWriteInputToken Int                 @default(0) @db.Integer
-  stream          Boolean             @default(false) @db.Boolean // stream response or not
-  modelName       String
-  status          AIGatewayLogsStatus
-  duration        Int // All response usage time, unit: ms
-  ttft            Int                 @default(-1) // Time To First Token, unit: ms
-  price           Decimal             @default(0.0) @db.Decimal(30, 13) // unit: usd
-  requestPayload  Json                @default("{}")
-  responsePayload Json                @default("{}")
-  userId          String?             @db.VarChar(30) // if use api call, log the user id
+  stream               Boolean             @default(false) @db.Boolean // stream response or not
+  modelName            String
+  modelProvider        String              @default("") // upstream provider, e.g. openai, anthropic, openrouter, deepseek, custom
+  status               AIGatewayLogsStatus
+  duration             Int // All response usage time, unit: ms
+  ttft                 Int                 @default(-1) // Time To First Token, unit: ms
+  tpot                 Int                 @default(-1) @db.Integer // Time Per Output Token, unit: ms/token
+  price                Decimal             @default(0.0) @db.Decimal(30, 13) // unit: usd
+  requestPayload       Json                @default("{}")
+  responsePayload      Json                @default("{}")
+  userId               String?             @db.VarChar(30) // if use api call, log the user id
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -1027,9 +1146,16 @@ enum FunctionWorkerVisibility {
   Private
 }
 
+enum FunctionWorkerEnvironmentVariableType {
+  Text
+  Secret
+}
+
 model FunctionWorker {
   id             String                   @id @default(cuid()) @db.VarChar(30)
   workspaceId    String                   @db.VarChar(30)
+  creatorId      String?                  @db.VarChar(30)
+  ownerId        String?                  @db.VarChar(30)
   name           String
   description    String?
   code           String
@@ -1042,11 +1168,32 @@ model FunctionWorker {
   updatedAt      DateTime                 @updatedAt @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  creator   User?     @relation("FunctionWorkerCreator", fields: [creatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  owner     User?     @relation("FunctionWorkerOwner", fields: [ownerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
-  executions FunctionWorkerExecution[]
-  revisions  FunctionWorkerRevision[]
+  executions           FunctionWorkerExecution[]
+  revisions            FunctionWorkerRevision[]
+  environmentVariables FunctionWorkerEnvironmentVariable[]
+  moduleBindings       FunctionWorkerModuleBinding[]
 
   @@index([workspaceId])
+  @@index([creatorId])
+  @@index([ownerId])
+}
+
+model FunctionWorkerEnvironmentVariable {
+  id        String                                @id @default(cuid()) @db.VarChar(30)
+  workerId  String                                @db.VarChar(30)
+  key       String                                @db.VarChar(255)
+  type      FunctionWorkerEnvironmentVariableType
+  value     String
+  createdAt DateTime                              @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime                              @updatedAt @db.Timestamptz(6)
+
+  worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([workerId, key])
+  @@index([workerId])
 }
 
 enum FunctionWorkerExecutionStatus {
@@ -1077,16 +1224,100 @@ model FunctionWorkerExecution {
 }
 
 model FunctionWorkerRevision {
-  id        String   @id @default(cuid()) @db.VarChar(30)
-  workerId  String   @db.VarChar(30)
-  revision  Int
-  code      String
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  id         String   @id @default(cuid()) @db.VarChar(30)
+  workerId   String   @db.VarChar(30)
+  operatorId String?  @db.VarChar(30)
+  revision   Int
+  code       String
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
 
-  worker FunctionWorker @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  worker         FunctionWorker                        @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  operator       User?                                 @relation("FunctionWorkerRevisionOperator", fields: [operatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  moduleBindings FunctionWorkerRevisionModuleBinding[]
 
   @@unique([workerId, revision])
   @@index([workerId, createdAt])
+  @@index([operatorId])
+}
+
+model SharedModule {
+  id             String    @id @default(cuid()) @db.VarChar(30)
+  workspaceId    String    @db.VarChar(30)
+  ownerId        String?   @db.VarChar(30)
+  name           String
+  description    String?
+  importAlias    String    @db.VarChar(255)
+  latestRevision Int       @default(0)
+  archivedAt     DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+
+  workspace              Workspace                             @relation(fields: [workspaceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  owner                  User?                                 @relation("SharedModuleOwner", fields: [ownerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  revisions              SharedModuleRevision[]
+  workerBindings         FunctionWorkerModuleBinding[]
+  workerRevisionBindings FunctionWorkerRevisionModuleBinding[]
+
+  @@unique([workspaceId, importAlias])
+  @@index([workspaceId, archivedAt])
+  @@index([ownerId])
+}
+
+model SharedModuleRevision {
+  id              String   @id @default(cuid()) @db.VarChar(30)
+  moduleId        String   @db.VarChar(30)
+  operatorId      String?  @db.VarChar(30)
+  revision        Int
+  source          String
+  compiledCode    String
+  declarationCode String
+  exportsMetadata Json     @default("[]")
+  compilerVersion String   @db.VarChar(100)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  module                 SharedModule                          @relation(fields: [moduleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  operator               User?                                 @relation("SharedModuleRevisionOperator", fields: [operatorId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  workerBindings         FunctionWorkerModuleBinding[]
+  workerRevisionBindings FunctionWorkerRevisionModuleBinding[]
+
+  @@unique([moduleId, revision])
+  @@index([moduleId, createdAt])
+  @@index([operatorId])
+}
+
+model FunctionWorkerModuleBinding {
+  id               String   @id @default(cuid()) @db.VarChar(30)
+  workerId         String   @db.VarChar(30)
+  moduleId         String   @db.VarChar(30)
+  moduleRevisionId String   @db.VarChar(30)
+  importAlias      String   @db.VarChar(255)
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
+
+  worker         FunctionWorker       @relation(fields: [workerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  module         SharedModule         @relation(fields: [moduleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  moduleRevision SharedModuleRevision @relation(fields: [moduleRevisionId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([workerId, importAlias])
+  @@unique([workerId, moduleId])
+  @@index([moduleId])
+  @@index([moduleRevisionId])
+}
+
+model FunctionWorkerRevisionModuleBinding {
+  id               String @id @default(cuid()) @db.VarChar(30)
+  workerRevisionId String @db.VarChar(30)
+  moduleId         String @db.VarChar(30)
+  moduleRevisionId String @db.VarChar(30)
+  importAlias      String @db.VarChar(255)
+
+  workerRevision FunctionWorkerRevision @relation(fields: [workerRevisionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  module         SharedModule           @relation(fields: [moduleId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  moduleRevision SharedModuleRevision   @relation(fields: [moduleRevisionId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+
+  @@unique([workerRevisionId, importAlias])
+  @@index([moduleId])
+  @@index([moduleRevisionId])
 }
 
 model WarehouseCohorts {

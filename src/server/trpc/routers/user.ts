@@ -17,7 +17,10 @@ import { userInfoSchema } from '../../model/_schema/index.js';
 import { OPENAPI_TAG } from '../../utils/const.js';
 import { prisma } from '../../model/_client.js';
 import { UserApiKeyModelSchema } from '../../prisma/zod/userapikey.js';
-import { createAuditLog } from '../../model/auditLog.js';
+import {
+  createAuditLog,
+  createWorkspaceMutationAuditLog,
+} from '../../model/auditLog.js';
 
 export const userRouter = router({
   login: publicProcedure
@@ -48,8 +51,9 @@ export const userRouter = router({
       const token = jwtSign(user);
 
       if (user.currentWorkspaceId) {
-        createAuditLog({
+        await createAuditLog({
           workspaceId: user.currentWorkspaceId,
+          relatedId: user.id,
           relatedType: 'User',
           content: `User login: ${username}`,
         });
@@ -89,6 +93,15 @@ export const userRouter = router({
 
         const newToken = jwtSign(user);
 
+        if (user.currentWorkspaceId) {
+          await createAuditLog({
+            workspaceId: user.currentWorkspaceId,
+            relatedId: user.id,
+            relatedType: 'User',
+            content: `User login with token: ${user.username}`,
+          });
+        }
+
         return { info: user, token: newToken };
       } catch (err) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Invalid token' });
@@ -127,19 +140,24 @@ export const userRouter = router({
       const { username, password } = input;
 
       const userCount = await getUserCount();
-      if (userCount === 0) {
-        const user = await createAdminUser(username, password);
+      const user =
+        userCount === 0
+          ? await createAdminUser(username, password)
+          : await createUser(username, password);
+      const token = jwtSign(user);
 
-        const token = jwtSign(user);
-
-        return { info: user, token };
-      } else {
-        const user = await createUser(username, password);
-
-        const token = jwtSign(user);
-
-        return { info: user, token };
+      if (user.currentWorkspaceId) {
+        await createWorkspaceMutationAuditLog({
+          workspaceId: user.currentWorkspaceId,
+          path: 'user.register',
+          input: { username },
+          actor: user,
+          relatedId: user.id,
+          relatedType: 'User',
+        });
       }
+
+      return { info: user, token };
     }),
   changePassword: protectProedure
     .input(
@@ -159,8 +177,9 @@ export const userRouter = router({
         select: { currentWorkspaceId: true, username: true },
       });
       if (user?.currentWorkspaceId) {
-        createAuditLog({
+        await createAuditLog({
           workspaceId: user.currentWorkspaceId,
+          relatedId: userId,
           relatedType: 'User',
           content: `User changed password: ${user.username}`,
         });
@@ -198,8 +217,9 @@ export const userRouter = router({
         select: { currentWorkspaceId: true, username: true },
       });
       if (user?.currentWorkspaceId) {
-        createAuditLog({
+        await createAuditLog({
           workspaceId: user.currentWorkspaceId,
+          relatedId: ctx.user.id,
           relatedType: 'User',
           content: `User generated API key: ${user.username}`,
         });
@@ -227,8 +247,9 @@ export const userRouter = router({
         select: { currentWorkspaceId: true, username: true },
       });
       if (user?.currentWorkspaceId) {
-        createAuditLog({
+        await createAuditLog({
           workspaceId: user.currentWorkspaceId,
+          relatedId: ctx.user.id,
           relatedType: 'User',
           content: `User deleted API key: ${user.username}`,
         });
@@ -252,5 +273,20 @@ export const userRouter = router({
           description: input.description,
         },
       });
+
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.user.id },
+        select: { currentWorkspaceId: true },
+      });
+      if (user?.currentWorkspaceId) {
+        await createWorkspaceMutationAuditLog({
+          workspaceId: user.currentWorkspaceId,
+          path: 'user.updateApiKeyDescription',
+          input,
+          actor: ctx.user,
+          relatedId: ctx.user.id,
+          relatedType: 'User',
+        });
+      }
     }),
 });

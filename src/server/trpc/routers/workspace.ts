@@ -32,7 +32,10 @@ import {
   clearWorkspaceSettingsCache,
   getWorkspaceServiceCount,
 } from '../../model/workspace.js';
-import { createAuditLog } from '../../model/auditLog.js';
+import {
+  createAuditLog,
+  createWorkspaceMutationAuditLog,
+} from '../../model/auditLog.js';
 import {
   acceptInvitation,
   createWorkspaceInvitation,
@@ -97,6 +100,17 @@ export const workspaceRouter = router({
         });
       });
 
+      if (userInfo.currentWorkspaceId) {
+        await createWorkspaceMutationAuditLog({
+          workspaceId: userInfo.currentWorkspaceId,
+          path: 'workspace.create',
+          input,
+          actor: ctx.user,
+          relatedId: userInfo.currentWorkspaceId,
+          relatedType: 'Workspace',
+        });
+      }
+
       return userInfo;
     }),
   switch: protectProedure
@@ -140,6 +154,15 @@ export const workspaceRouter = router({
           currentWorkspaceId: targetWorkspace.id,
         },
         select: createUserSelect,
+      });
+
+      await createWorkspaceMutationAuditLog({
+        workspaceId,
+        path: 'workspace.switch',
+        input: { currentWorkspaceId: workspaceId },
+        actor: ctx.user,
+        relatedId: userId,
+        relatedType: 'User',
       });
 
       return userInfo;
@@ -190,12 +213,6 @@ export const workspaceRouter = router({
       const { workspaceId } = input;
       const userId = ctx.user.id;
 
-      createAuditLog({
-        workspaceId,
-        relatedType: 'Workspace',
-        content: `Workspace deleted by ${String(ctx.user.username)}(${userId})`,
-      });
-
       const monitors = await prisma.monitor.findMany({
         where: {
           workspaceId,
@@ -209,17 +226,27 @@ export const workspaceRouter = router({
         monitors.map((m) => monitorManager.delete(workspaceId, m.id))
       );
 
-      await prisma.workspace.delete({
-        where: {
-          id: workspaceId,
-          users: {
-            some: {
-              userId,
-              role: ROLES.owner,
+      await prisma.$transaction([
+        prisma.workspaceAuditLog.create({
+          data: {
+            workspaceId,
+            relatedId: workspaceId,
+            relatedType: 'Workspace',
+            content: `Workspace deleted by ${String(ctx.user.username)}(${userId})`,
+          },
+        }),
+        prisma.workspace.delete({
+          where: {
+            id: workspaceId,
+            users: {
+              some: {
+                userId,
+                role: ROLES.owner,
+              },
             },
           },
-        },
-      });
+        }),
+      ]);
     }),
   members: workspaceProcedure
     .meta(
@@ -236,6 +263,7 @@ export const workspaceRouter = router({
             user: z.object({
               username: z.string(),
               nickname: z.string().nullable(),
+              avatar: z.string().nullable(),
               email: z.string().nullable(),
               emailVerified: z.date().nullable(),
             }),
@@ -255,6 +283,7 @@ export const workspaceRouter = router({
             select: {
               username: true,
               nickname: true,
+              avatar: true,
               email: true,
               emailVerified: true,
             },
@@ -304,7 +333,7 @@ export const workspaceRouter = router({
         get(prev, ['settings', 'timezone']) !== settings.timezone
       ) {
         // should be restart all monitor
-        monitorManager.restartWithWorkspaceId(workspaceId);
+        await monitorManager.restartWithWorkspaceId(workspaceId);
       }
 
       clearWorkspaceSettingsCache(workspaceId);
@@ -322,7 +351,9 @@ export const workspaceRouter = router({
     .input(
       z.object({
         emailOrId: z.string(),
-        role: z.enum([ROLES.admin, ROLES.readOnly]).default(ROLES.readOnly),
+        role: z
+          .enum([ROLES.admin, ROLES.write, ROLES.readOnly])
+          .default(ROLES.readOnly),
       })
     )
     .output(z.void())
@@ -362,7 +393,7 @@ export const workspaceRouter = router({
 
       if (targetUser) {
         // if user exist
-        await joinWorkspace(targetUser.id, workspaceId);
+        await joinWorkspace(targetUser.id, workspaceId, input.role);
       } else if (emailOrId.includes('@')) {
         // user not exist, and is email invite user with send email
         const invitation = await createWorkspaceInvitation(
@@ -382,7 +413,18 @@ export const workspaceRouter = router({
   acceptInvitation: protectProedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return acceptInvitation(input.token, ctx.user.id);
+      const result = await acceptInvitation(input.token, ctx.user.id);
+
+      await createWorkspaceMutationAuditLog({
+        workspaceId: result.workspaceId,
+        path: 'workspace.acceptInvitation',
+        input: { role: result.role },
+        actor: ctx.user,
+        relatedId: ctx.user.id,
+        relatedType: 'User',
+      });
+
+      return result;
     }),
 
   // Get invitation info (no login required)
@@ -448,13 +490,14 @@ export const workspaceRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { targetUserId, workspaceId } = input;
 
-      createAuditLog({
+      await leaveWorkspace(targetUserId, workspaceId);
+
+      await createAuditLog({
         workspaceId,
-        relatedType: 'Workspace',
+        relatedId: targetUserId,
+        relatedType: 'User',
         content: `Member(${targetUserId}) kicked by ${String(ctx.user.username)}(${ctx.user.id})`,
       });
-
-      leaveWorkspace(targetUserId, workspaceId);
     }),
 
   updateMemberRole: workspaceOwnerProcedure
@@ -505,9 +548,10 @@ export const workspaceRouter = router({
         },
       });
 
-      createAuditLog({
+      await createAuditLog({
         workspaceId,
-        relatedType: 'Workspace',
+        relatedId: userId,
+        relatedType: 'User',
         content: `Member(${userId}) role changed to ${role} by ${String(ctx.user.username)}(${ctx.user.id})`,
       });
     }),
@@ -553,6 +597,7 @@ export const workspaceRouter = router({
         feed: z.number(),
         shortLink: z.number(),
         aiGateway: z.number(),
+        aiRouter: z.number(),
         functionWorker: z.number(),
       })
     )
@@ -574,6 +619,7 @@ export const workspaceRouter = router({
         feed,
         shortLink,
         aiGateway,
+        aiRouter,
         functionWorker,
       } = serviceCount;
 
@@ -588,6 +634,7 @@ export const workspaceRouter = router({
         feed,
         shortLink,
         aiGateway,
+        aiRouter,
         functionWorker,
       };
     }),

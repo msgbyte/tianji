@@ -1,4 +1,4 @@
-import { useTranslation } from '@i18next-toolkit/react';
+import { t, useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { useEventWithLoading } from '@/hooks/useEvent';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -24,12 +24,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import React, { useState } from 'react';
+import React from 'react';
+import { useLocalStorageState } from 'ahooks';
 import { TipIcon } from '../TipIcon';
 import { cn } from '@/utils/style';
 import { Switch } from '../ui/switch';
 import { FeedChannelPicker } from '../feed/FeedChannelPicker';
 import { Textarea } from '../ui/textarea';
+
+const advancedModeStorageKey = 'tianji:survey:advanced-mode';
 
 const addFormSchema = z.object({
   name: z.string(),
@@ -53,7 +56,7 @@ export type SurveyEditFormValues = z.infer<typeof addFormSchema>;
 
 function generateDefaultItem() {
   return {
-    label: 'New Field',
+    label: t('New Field'),
     name: 'field_' + generateRandomString(4),
     type: 'text' as const,
   };
@@ -67,7 +70,10 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
 
-    const [advancedMode, setAdvancedMode] = useState(false);
+    const [advancedMode = false, setAdvancedMode] =
+      useLocalStorageState<boolean>(advancedModeStorageKey, {
+        defaultValue: false,
+      });
 
     const form = useForm<SurveyEditFormValues>({
       resolver: zodResolver(addFormSchema),
@@ -141,7 +147,7 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                 <div className="flex items-center justify-end gap-2">
                   <Switch
                     checked={advancedMode}
-                    onCheckedChange={(checked) => setAdvancedMode(checked)}
+                    onCheckedChange={setAdvancedMode}
                   />
                   <div className="text-sm">{t('Advanced Mode')}</div>
                 </div>
@@ -174,39 +180,40 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                       </FormItem>
                     )}
 
-                    <FormItem>
-                      <FormLabel>{t('Type')}</FormLabel>
-                      <FormControl>
-                        <Select
-                          defaultValue="text"
-                          onValueChange={(val) =>
-                            form.setValue(`payload.items.${i}.type`, val as any)
-                          }
-                        >
-                          <SelectTrigger
-                            className="w-[130px]"
-                            {...form.register(`payload.items.${i}.type`)}
+                    <FormField
+                      control={form.control}
+                      name={`payload.items.${i}.type`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('Type')}</FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
                           >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">{t('Text')}</SelectItem>
-                            <SelectItem value="email">{t('Email')}</SelectItem>
-                            <SelectItem value="url">{t('Url')}</SelectItem>
-                            <SelectItem value="imageUrl">
-                              {t('Image Url')}
-                            </SelectItem>
-                            <SelectItem value="hidden">
-                              {t('Hidden Field')}
-                            </SelectItem>
-                            {/* <SelectItem value="select">
-                              {t('Select')}
-                            </SelectItem> */}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                            <FormControl>
+                              <SelectTrigger className="w-[130px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="text">{t('Text')}</SelectItem>
+                              <SelectItem value="email">{t('Email')}</SelectItem>
+                              <SelectItem value="url">{t('Url')}</SelectItem>
+                              <SelectItem value="imageUrl">
+                                {t('Image Url')}
+                              </SelectItem>
+                              <SelectItem value="hidden">
+                                {t('Hidden Field')}
+                              </SelectItem>
+                              {/* <SelectItem value="select">
+                                {t('Select')}
+                              </SelectItem> */}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     {/* actions */}
                     <div className="grid min-w-10 grid-flow-col grid-cols-2 grid-rows-2 gap-0.5 self-end">
@@ -301,7 +308,9 @@ export const SurveyEditForm: React.FC<SurveyEditFormProps> = React.memo(
                       <FormLabel>{t('Feed Template')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="survey {{_surveyName}} receive a new record."
+                          placeholder={t(
+                            'survey {{_surveyName}} receive a new record.'
+                          )}
                           {...field}
                         />
                       </FormControl>

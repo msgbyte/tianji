@@ -107,7 +107,20 @@ my-worker/
 
 ## Worker API
 
-Your worker receives two parameters:
+Export a Module Worker. The handler parameters are inferred from the Tianji
+worker types:
+
+```typescript
+export default {
+  async fetch(payload, context) {
+    return { payload, trigger: context.type };
+  },
+} satisfies TianjiWorker;
+```
+
+Legacy `function fetch(payload, context) {}` workers remain supported.
+
+Your worker callback receives two parameters:
 
 ### `payload`
 
@@ -119,7 +132,8 @@ The request context with the following structure:
 
 ```typescript
 interface RequestContext {
-  type: 'http' | 'cron';
+  type: 'http' | 'cron' | 'manual' | 'test';
+  env: Record<string, string>;
   request?: {
     method: string;
     url: string;
@@ -250,8 +264,8 @@ Check that your `src/index.ts` has a default export function.
 
 ## Learn More
 
-- [Tianji Documentation](https://tianji.msgbyte.com/docs)
-- [Worker Documentation](https://tianji.msgbyte.com/docs/dev)
+- [Tianji Documentation](https://tianji.dev/docs)
+- [Worker Documentation](https://tianji.dev/docs/dev)
 
 ## License
 

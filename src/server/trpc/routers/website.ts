@@ -4,18 +4,22 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { z } from 'zod';
 import {
   getWebsiteOnlineUserCount,
   getWorkspaceWebsitePageview,
   getWorkspaceWebsiteSession,
+  getWorkspaceWebsiteRetention,
   getWorkspaceWebsiteStats,
+  getWorkspaceWebsiteVisitorCounts,
   delWebsiteCache,
 } from '../../model/website/index.js';
 import { prisma } from '../../model/_client.js';
 import {
   EVENT_COLUMNS,
+  EVENT_TYPE,
   FILTER_COLUMNS,
   OPENAPI_TAG,
   SESSION_COLUMNS,
@@ -71,6 +75,11 @@ const metricsTypeSchema = z.enum([
   'utm_content',
 ]);
 const publicRangeSchema = z.enum(['realtime', '24h', '7d', '30d', '90d']);
+const websiteRetentionSchema = z.object({
+  date: z.string(),
+  cohortSize: z.number(),
+  retention: z.array(z.number().nullable()).length(31),
+});
 
 export const websiteRouter = router({
   onlineCount: workspaceProcedure
@@ -132,38 +141,9 @@ export const websiteRouter = router({
     .output(z.record(z.string(), z.number()))
     .query(async ({ input }) => {
       const { workspaceId } = input;
+      const startAt = dayjs().subtract(1, 'day').toDate();
 
-      const websiteIds = (
-        await prisma.website.findMany({
-          where: {
-            workspaceId,
-          },
-          select: {
-            id: true,
-          },
-        })
-      ).map((item) => item.id);
-
-      const res = await prisma.websiteEvent.groupBy({
-        by: ['websiteId'],
-        where: {
-          websiteId: {
-            in: [...websiteIds],
-          },
-          createdAt: {
-            gte: dayjs().subtract(1, 'day').toDate(),
-          },
-        },
-        _count: true,
-      });
-
-      return res.reduce<Record<string, number>>((prev, item) => {
-        if (item.websiteId) {
-          prev[item.websiteId] = item._count;
-        }
-
-        return prev;
-      }, {});
+      return getWorkspaceWebsiteVisitorCounts(workspaceId, startAt);
     }),
   info: workspaceProcedure
     .meta(
@@ -223,6 +203,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
         startAt,
         endAt,
       } = input;
@@ -252,6 +239,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       } as WebsiteQueryFilters;
 
       const [metrics, prevPeriod] = await Promise.all([
@@ -281,6 +275,49 @@ export const websiteRouter = router({
       );
 
       return websiteStatsSchema.parse(stats);
+    }),
+  retention: workspaceProcedure
+    .meta(
+      buildWebsiteOpenapi({
+        method: 'GET',
+        path: '/retention',
+        summary: 'Get visitor retention',
+      })
+    )
+    .input(
+      z.object({
+        websiteId: z.string(),
+        startAt: z.number(),
+        endAt: z.number(),
+        timezone: z.string().optional(),
+      })
+    )
+    .output(z.array(websiteRetentionSchema))
+    .query(async ({ input }) => {
+      const { workspaceId, websiteId, startAt, endAt, timezone } = input;
+      const website = await prisma.website.findUnique({
+        where: { id: websiteId, workspaceId },
+        select: { id: true },
+      });
+
+      if (!website) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Website not found',
+        });
+      }
+
+      const { startDate, endDate } = await parseDateRange({
+        websiteId,
+        startAt,
+        endAt,
+      });
+
+      return getWorkspaceWebsiteRetention(websiteId, {
+        startDate,
+        endDate,
+        timezone,
+      });
     }),
   geoStats: workspaceProcedure
     .meta(
@@ -367,6 +404,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       } = input;
 
       const { startDate, endDate, unit } = await parseDateRange({
@@ -390,6 +434,13 @@ export const websiteRouter = router({
         country,
         region,
         city,
+        language,
+        event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       };
 
       const [pageviews, sessions] = await Promise.all([
@@ -459,6 +510,11 @@ export const websiteRouter = router({
         city,
         language,
         event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       } = input;
 
       const { startDate, endDate } = await parseDateRange({
@@ -481,6 +537,11 @@ export const websiteRouter = router({
         city,
         language,
         event,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content,
       };
 
       const column = FILTER_COLUMNS[type] || type;
@@ -519,7 +580,7 @@ export const websiteRouter = router({
 
       return [];
     }),
-  add: workspaceAdminProcedure
+  add: workspaceWriteProcedure
     .meta({
       openapi: {
         method: 'POST',
@@ -595,7 +656,7 @@ export const websiteRouter = router({
 
       return website;
     }),
-  updateInfo: workspaceAdminProcedure
+  updateInfo: workspaceWriteProcedure
     .meta(
       buildWebsiteOpenapi({
         method: 'PUT',
@@ -631,7 +692,7 @@ export const websiteRouter = router({
 
       return websiteInfo;
     }),
-  generateLighthouseReport: workspaceProcedure
+  generateLighthouseReport: workspaceWriteProcedure
     .meta(
       buildWebsiteOpenapi({
         method: 'POST',

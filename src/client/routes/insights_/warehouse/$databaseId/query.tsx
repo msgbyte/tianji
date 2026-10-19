@@ -86,8 +86,8 @@ function PageComponent() {
       setQueryResult(data);
       setActiveTab('table');
       toast.success(
-        t('Query executed successfully: {{count}} rows', {
-          count: data.rowCount,
+        t('Query executed successfully: {{num}} rows', {
+          num: data.rowCount,
         })
       );
     },

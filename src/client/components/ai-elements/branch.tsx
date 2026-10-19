@@ -6,6 +6,7 @@ import type { UIMessage } from 'ai';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import type { ComponentProps, HTMLAttributes, ReactElement } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { t } from '@i18next-toolkit/react';
 
 type BranchContextType = {
   currentBranch: number;
@@ -144,7 +145,7 @@ export const BranchPrevious = ({
 
   return (
     <Button
-      aria-label="Previous branch"
+      aria-label={t('Previous branch')}
       className={cn(
         'size-7 shrink-0 rounded-full text-muted-foreground transition-colors',
         'hover:bg-accent hover:text-foreground',
@@ -174,7 +175,7 @@ export const BranchNext = ({
 
   return (
     <Button
-      aria-label="Next branch"
+      aria-label={t('Next branch')}
       className={cn(
         'size-7 shrink-0 rounded-full text-muted-foreground transition-colors',
         'hover:bg-accent hover:text-foreground',
@@ -206,7 +207,10 @@ export const BranchPage = ({ className, ...props }: BranchPageProps) => {
       )}
       {...props}
     >
-      {currentBranch + 1} of {totalBranches}
+      {t('{{current}} of {{total}}', {
+        current: currentBranch + 1,
+        total: totalBranches,
+      })}
     </span>
   );
 };

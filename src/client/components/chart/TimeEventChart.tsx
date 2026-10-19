@@ -86,6 +86,11 @@ export const TimeEventChart: React.FC<TimeEventChartProps> = React.memo(
       Object.keys(chartConfig)
     );
 
+    // Use unique gradient id per chart instance to avoid SVG id collisions
+    // when multiple charts coexist on the same page (e.g. all using `value` key).
+    const reactId = React.useId();
+    const gradientIdPrefix = `gradient-${reactId.replace(/:/g, '')}`;
+
     const stacked = chartType === 'stack';
 
     // Render pie chart
@@ -137,7 +142,7 @@ export const TimeEventChart: React.FC<TimeEventChartProps> = React.memo(
                 return (
                   <linearGradient
                     key={key}
-                    id={`color-${key}`}
+                    id={`${gradientIdPrefix}-${key}`}
                     x1="0"
                     y1="0"
                     x2="0"
@@ -258,7 +263,9 @@ export const TimeEventChart: React.FC<TimeEventChartProps> = React.memo(
                 stackId={stacked ? '1' : undefined}
                 stroke={color}
                 fillOpacity={chartType === 'line' ? 0 : 1}
-                fill={drawGradientArea ? `url(#color-${key})` : color}
+                fill={
+                  drawGradientArea ? `url(#${gradientIdPrefix}-${key})` : color
+                }
                 strokeWidth={2}
                 strokeDasharray={getStrokeDasharray(key)}
                 onAnimationEnd={handleAnimationEnd}

@@ -6,26 +6,22 @@ on:
       - master
     paths:
       - "website/**"
+      - "skills/tianji-worker/**"
   workflow_dispatch:
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: prj_V3iY3AcH0wIXxMHW4oDy3W3XzfnN
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-    defaults:
-      run:
-        working-directory: website
     steps:
-    - uses: actions/checkout@v4
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25.1.1
-      env:
-        VERSION: ${{ env.GITHUB_SHA }}
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: prj_V3iY3AcH0wIXxMHW4oDy3W3XzfnN
-        working-directory: ./
-        vercel-args: '--prod'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}

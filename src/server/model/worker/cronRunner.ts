@@ -5,7 +5,7 @@ import {
 } from '@prisma/client';
 import { Cron } from 'croner';
 import { logger } from '../../utils/logger.js';
-import { execWorker } from './index.js';
+import { execStoredWorker } from './index.js';
 import { createAuditLog } from '../auditLog.js';
 import dayjs from 'dayjs';
 import { get } from 'lodash-es';
@@ -41,7 +41,7 @@ export class WorkerCronRunner {
           );
 
           // Execute the worker
-          const result = await execWorker(worker.code, worker.id, undefined, {
+          const result = await execStoredWorker(worker, undefined, {
             type: 'cron',
           });
 

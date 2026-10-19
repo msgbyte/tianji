@@ -15,6 +15,7 @@ import {
   getWarehouseApplications,
   getWarehouseConnection,
   MYSQL_DATE_FORMATS,
+  quoteWarehouseIdentifier,
   WarehouseLongTableInsightsApplication,
 } from './utils.js';
 
@@ -284,10 +285,10 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
 
       if (item.math === 'events') {
         if (item.name === '$all_event') {
-          return sql`count(1) as ${raw(`"${alias}"`)}`;
+          return sql`count(1) as ${quoteWarehouseIdentifier(alias)}`;
         }
 
-        return sql`sum(case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${raw(`"${alias}"`)}`;
+        return sql`sum(case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN 1 ELSE 0 END) as ${quoteWarehouseIdentifier(alias)}`;
       } else if (item.math === 'sessions') {
         const sessionIdField = eventTable.sessionIdField;
         if (!sessionIdField) {
@@ -297,10 +298,10 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
         }
 
         if (item.name === '$all_event') {
-          return sql`count(distinct "${raw(eventTable.name)}"."${raw(sessionIdField)}") as ${raw(`"${alias}"`)}`;
+          return sql`count(distinct "${raw(eventTable.name)}"."${raw(sessionIdField)}") as ${quoteWarehouseIdentifier(alias)}`;
         }
 
-        return sql`count(distinct case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN "${raw(eventTable.name)}"."${raw(sessionIdField)}" ELSE null END) as ${raw(`"${alias}"`)}`;
+        return sql`count(distinct case WHEN "${raw(eventTable.name)}"."${raw(eventTable.eventNameField)}" = ${item.name} THEN "${raw(eventTable.name)}"."${raw(sessionIdField)}" ELSE null END) as ${quoteWarehouseIdentifier(alias)}`;
       }
 
       return null;
@@ -314,7 +315,7 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
       for (const g of groups) {
         if (!g.customGroups) {
           groupSelectQueryArr.push(
-            sql`${this.getValueField(g.type)} as "%${raw(g.value)}"`
+            sql`${this.getValueField(g.type)} as ${quoteWarehouseIdentifier(`%${g.value}`)}`
           );
         } else if (g.customGroups && g.customGroups.length > 0) {
           for (const cg of g.customGroups) {
@@ -323,7 +324,7 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
                 g.type,
                 cg.filterOperator,
                 cg.filterValue
-              )} as "%${raw(`${g.value}|${cg.filterOperator}|${cg.filterValue}`)}"`
+              )} as ${quoteWarehouseIdentifier(`%${g.value}|${cg.filterOperator}|${cg.filterValue}`)}`
             );
           }
         }
@@ -361,7 +362,9 @@ export class WarehouseLongTableInsightsSqlBuilder extends InsightsSqlBuilder {
         );
         innerJoinQuery = sql`${innerJoinQuery} AND ${Prisma.join(
           groupConditions,
-          ' OR '
+          ' OR ',
+          '(',
+          ')'
         )}`;
       }
     }

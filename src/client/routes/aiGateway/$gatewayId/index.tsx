@@ -1,25 +1,28 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { AIGatewayLogTable } from '@/components/aiGateway/AIGatewayLogTable';
 import { AIGatewayOverview } from '@/components/aiGateway/AIGatewayOverview';
 import { AIGatewayAnalytics } from '@/components/aiGateway/AIGatewayAnalytics';
 import { AIGatewayCodeExampleBtn } from '@/components/aiGateway/AIGatewayCodeExampleBtn';
+import { AIGatewayActionsMenu } from '@/components/aiGateway/AIGatewayActionsMenu';
 import { useState, useRef } from 'react';
 import { SearchInput } from '@/components/ui/input';
 import { useTranslation } from '@i18next-toolkit/react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { trpc, defaultErrorHandler } from '@/api/trpc';
-import { AlertConfirm } from '@/components/AlertConfirm';
 import { Button } from '@/components/ui/button';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CommonHeader } from '@/components/CommonHeader';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { useNavigate } from '@tanstack/react-router';
-import { LuPencil, LuTrash, LuRefreshCw } from 'react-icons/lu';
+import { LuRefreshCw } from 'react-icons/lu';
 import { message } from 'antd';
 import { NotFoundTip } from '@/components/NotFoundTip';
 import { useEvent } from '@/hooks/useEvent';
@@ -42,6 +45,7 @@ function PageComponent() {
   });
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { t } = useTranslation();
   const trpcUtils = trpc.useUtils();
 
@@ -62,6 +66,13 @@ function PageComponent() {
     navigate({
       to: '/aiGateway',
       replace: true,
+    });
+  });
+
+  const handleEditGateway = useEvent(() => {
+    navigate({
+      to: '/aiGateway/$gatewayId/edit',
+      params: { gatewayId },
     });
   });
 
@@ -86,33 +97,14 @@ function PageComponent() {
             <div className="space-x-2">
               <AIGatewayCodeExampleBtn gatewayId={gatewayId} />
 
-              {hasAdminPermission && (
-                <>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    Icon={LuPencil}
-                    onClick={() =>
-                      navigate({
-                        to: '/aiGateway/$gatewayId/edit',
-                        params: {
-                          gatewayId,
-                        },
-                      })
-                    }
-                  />
-
-                  <AlertConfirm
-                    title={t('Delete AI Gateway') + ' ' + gateway.name}
-                    description={t(
-                      'Are you sure you want to delete this AI Gateway? This action cannot be undone.'
-                    )}
-                    onConfirm={handleDeleteGateway}
-                  >
-                    <Button size="icon" variant="outline" Icon={LuTrash} />
-                  </AlertConfirm>
-                </>
-              )}
+              <AIGatewayActionsMenu
+                gatewayId={gatewayId}
+                gatewayName={gateway.name}
+                canEdit={hasWritePermission}
+                canDelete={hasAdminPermission}
+                onEdit={handleEditGateway}
+                onDelete={handleDeleteGateway}
+              />
             </div>
           }
         />

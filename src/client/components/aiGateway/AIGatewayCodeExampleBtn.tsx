@@ -20,13 +20,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  ANTHROPIC_EXAMPLE_MODEL,
+  GEMINI_EXAMPLE_MODEL,
+  OPENAI_EXAMPLE_MODEL,
+  OPENROUTER_OPENAI_EXAMPLE_MODEL,
+} from '@/components/aiModelExamples';
 
 interface AIGatewayCodeExampleBtnProps {
   gatewayId: string;
 }
 
 // Define AI provider types
-type AIProvider = 'openai' | 'deepseek' | 'openrouter' | 'anthropic' | 'custom';
+type AIProvider =
+  | 'openai'
+  | 'deepseek'
+  | 'openrouter'
+  | 'anthropic'
+  | 'gemini-cli'
+  | 'gemini'
+  | 'custom';
 
 // Define interface and models for each AI provider
 interface ProviderConfig {
@@ -54,7 +67,7 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
       () => ({
         openai: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openai',
-          defaultModel: 'gpt-4o',
+          defaultModel: OPENAI_EXAMPLE_MODEL,
           description: t('OpenAI API compatible'),
           label: 'OpenAI API',
         },
@@ -66,15 +79,25 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
         },
         openrouter: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/openrouter',
-          defaultModel: 'openai/gpt-4o',
+          defaultModel: OPENROUTER_OPENAI_EXAMPLE_MODEL,
           description: t('OpenRouter API compatible'),
           label: 'OpenRouter API',
         },
         anthropic: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/anthropic',
-          defaultModel: 'claude-opus-4-20250514',
+          defaultModel: ANTHROPIC_EXAMPLE_MODEL,
           description: t('Anthropic API compatible'),
           label: 'Anthropic API',
+        },
+        'gemini-cli': {
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/custom',
+          defaultModel: GEMINI_EXAMPLE_MODEL,
+          label: 'Gemini CLI',
+        },
+        gemini: {
+          baseUrl: '/api/ai/${workspaceId}/${gatewayId}/custom',
+          defaultModel: GEMINI_EXAMPLE_MODEL,
+          label: 'Gemini API',
         },
         custom: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/custom',
@@ -83,13 +106,17 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
           label: 'Custom API',
         },
       }),
-      [gatewayId]
+      [t]
     );
 
     const isAnthropicNative = (provider: AIProvider) =>
       provider === 'anthropic';
 
-    const generateOpenAITemplate = (baseUrl: string, model: string, language: string) => {
+    const generateOpenAITemplate = (
+      baseUrl: string,
+      model: string,
+      language: string
+    ) => {
       switch (language) {
         case 'nodejs':
           return `const axios = require('axios');
@@ -184,7 +211,11 @@ call_ai_gateway()`;
       }
     };
 
-    const generateAnthropicTemplate = (baseUrl: string, model: string, language: string) => {
+    const generateAnthropicTemplate = (
+      baseUrl: string,
+      model: string,
+      language: string
+    ) => {
       switch (language) {
         case 'nodejs':
           return `const Anthropic = require('@anthropic-ai/sdk');
@@ -260,6 +291,24 @@ print(message.content)
         .replace('${gatewayId}', gatewayId);
       const model = config.defaultModel;
 
+      if (provider === 'gemini-cli' || provider === 'gemini') {
+        const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
+        const geminiModel = gateway?.customModelName || model;
+        if (provider === 'gemini-cli') {
+          return `export GOOGLE_GEMINI_BASE_URL=${quote(window.location.origin + baseUrl)}
+export GEMINI_API_KEY='<YOUR_API_KEY>'
+export GEMINI_MODEL=${quote(geminiModel)}
+gemini`;
+        }
+        const modelPath = geminiModel
+          .split('/')
+          .map(encodeURIComponent)
+          .join('/');
+        return `curl -N ${quote(`${window.location.origin}${baseUrl}/v1beta/models/${modelPath}:streamGenerateContent?alt=sse`)} \\
+  -H 'Content-Type: application/json' \\
+  -H 'x-goog-api-key: <YOUR_API_KEY>' \\
+  -d '{"contents":[{"role":"user","parts":[{"text":"Hello"}]}]}'`;
+      }
       if (isAnthropicNative(provider)) {
         return generateAnthropicTemplate(baseUrl, model, language);
       }
@@ -267,6 +316,8 @@ print(message.content)
     };
 
     const currentConfig = providerConfigs[selectedProvider];
+    const isGemini =
+      selectedProvider === 'gemini-cli' || selectedProvider === 'gemini';
 
     return (
       <Dialog>
@@ -341,21 +392,34 @@ print(message.content)
               {/* Code example area */}
               <div className="overflow-hidden">
                 <CodeExample
+                  key={selectedProvider}
                   className="overflow-hidden"
-                  example={{
-                    curl: {
-                      label: 'cURL',
-                      code: generateCode(selectedProvider, 'curl'),
-                    },
-                    python: {
-                      label: 'Python',
-                      code: generateCode(selectedProvider, 'python'),
-                    },
-                    nodejs: {
-                      label: 'Node.js',
-                      code: generateCode(selectedProvider, 'nodejs'),
-                    },
-                  }}
+                  example={
+                    isGemini
+                      ? {
+                          curl: {
+                            label:
+                              selectedProvider === 'gemini-cli'
+                                ? t('Shell')
+                                : t('cURL'),
+                            code: generateCode(selectedProvider, 'curl'),
+                          },
+                        }
+                      : {
+                          curl: {
+                            label: 'cURL',
+                            code: generateCode(selectedProvider, 'curl'),
+                          },
+                          python: {
+                            label: 'Python',
+                            code: generateCode(selectedProvider, 'python'),
+                          },
+                          nodejs: {
+                            label: 'Node.js',
+                            code: generateCode(selectedProvider, 'nodejs'),
+                          },
+                        }
+                  }
                 />
               </div>
 
@@ -363,6 +427,37 @@ print(message.content)
               <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
                 <p className="font-medium">{t('Important Notes')}:</p>
                 <ul className="ml-5 mt-1 list-disc space-y-1">
+                  {isGemini && (
+                    <>
+                      <li>
+                        {t(
+                          'Configure a native Gemini upstream with a base URL such as https://relay.example/v1beta. A configured /v1 or /v1beta overrides the client API version; without a version, the client API version is used.'
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          'In Gemini CLI, keep GOOGLE_GEMINI_BASE_URL ending in /custom and select Use Gemini API Key. Google login and Vertex AI are not supported by this endpoint.'
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          'If the gateway stores an upstream key, use a Tianji API key belonging to a workspace member. Otherwise, use your upstream API key.'
+                        )}
+                      </li>
+                      <li>
+                        {t(
+                          'Test Connection only checks OpenAI compatibility, not Gemini compatibility.'
+                        )}
+                      </li>
+                      {gateway?.customModelName && (
+                        <li>
+                          {t(
+                            'The configured model overrides all requested models, including Gemini CLI auxiliary requests.'
+                          )}
+                        </li>
+                      )}
+                    </>
+                  )}
                   <li>
                     {t('Replace "YOUR_API_KEY" with your actual API key')}
                   </li>

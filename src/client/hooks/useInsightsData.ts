@@ -12,15 +12,22 @@ import { ChartConfig } from '@/components/ui/chart';
  */
 function generateSeriesName(
   item: InsightsRawData,
-  groups: Pick<GroupInfo, 'value'>[]
+  groups: Pick<GroupInfo, 'value'>[],
+  groupValueFormatter?: GroupValueFormatter
 ): string {
   // Use alias if available, otherwise use name
   let name = item.alias ?? item.name;
 
   if (groups.length > 0) {
     const groupSuffixes = groups
-      .map((group) => {
-        return get(item, group.value);
+      .map((group, index) => {
+        const value = item.groupValues
+          ? item.groupValues[index]
+          : get(item, group.value);
+
+        return value && groupValueFormatter
+          ? groupValueFormatter(String(value), group)
+          : value;
       })
       .filter(Boolean) // Remove null/undefined values
       .join('-');
@@ -48,6 +55,11 @@ export interface ProcessedChartData {
   [key: string]: string | number;
 }
 
+export type GroupValueFormatter = (
+  value: string,
+  group: Pick<GroupInfo, 'value'>
+) => string;
+
 export interface UseInsightsDataOptions {
   data: InsightsRawData[];
   groups: Pick<GroupInfo, 'value'>[];
@@ -57,6 +69,7 @@ export interface UseInsightsDataOptions {
     unit: DateUnit;
   };
   valueProcessor?: (value: number) => number;
+  groupValueFormatter?: GroupValueFormatter;
 }
 
 /**
@@ -73,7 +86,7 @@ export function processInsightsData(options: UseInsightsDataOptions): {
   isMultiSeries: boolean;
   seriesCount: number;
 } {
-  const { data, groups, time, valueProcessor } = options;
+  const { data, groups, time, valueProcessor, groupValueFormatter } = options;
 
   if (!data || data.length === 0) {
     return {
@@ -117,6 +130,13 @@ export function processInsightsData(options: UseInsightsDataOptions): {
 
   // For complex case (groups or multiple metrics), process full chart data
   const res: { date: string }[] = [];
+  const seriesLabels = new Map<string, string>();
+  const seriesNames = data.map((item) => generateSeriesName(item, groups));
+  // Preserve existing chart config keys unless display names collide.
+  const seriesKeys =
+    new Set(seriesNames).size === seriesNames.length
+      ? seriesNames
+      : data.map((_, index) => `series_${index}`);
 
   // Collect all unique dates from all data series
   const allDates = new Set<string>();
@@ -126,11 +146,14 @@ export function processInsightsData(options: UseInsightsDataOptions): {
   const dates = Array.from(allDates).sort();
 
   dates.forEach((date) => {
-    data.forEach((item) => {
+    data.forEach((item, index) => {
       const dataPoint = item.data.find((d) => d.date === date);
       const value = dataPoint?.value ?? 0;
       const processedValue = valueProcessor?.(value) ?? value;
-      const name = generateSeriesName(item, groups);
+      const name = seriesKeys[index];
+      const label = generateSeriesName(item, groups, groupValueFormatter);
+
+      seriesLabels.set(name, label);
 
       res.push({
         date,
@@ -151,7 +174,7 @@ export function processInsightsData(options: UseInsightsDataOptions): {
           return {
             ...prev,
             [curr]: {
-              label: curr,
+              label: seriesLabels.get(curr) ?? curr,
               color: pickColorWithNum(i),
             },
           };
@@ -193,6 +216,7 @@ export function useInsightsData(options: UseInsightsDataOptions) {
       options.time.endAt,
       options.time.unit,
       options.valueProcessor,
+      options.groupValueFormatter,
     ]
   );
 }

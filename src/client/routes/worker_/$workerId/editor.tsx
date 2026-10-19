@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasWritePermission,
+  useUserInfo,
+} from '@/store/user';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,10 +17,17 @@ import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
 import { NavigationBlocker } from '@/components/NavigationBlocker';
 import { AppRouterOutput, defaultErrorHandler, trpc } from '@/api/trpc';
 import { useEvent } from '@/hooks/useEvent';
+import { buildWorkerTestCodeInput } from '@/components/worker/workerTestCodeInput';
 import { Loading } from '@/components/Loading';
 import { ErrorTip } from '@/components/ErrorTip';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { LuActivity, LuArrowLeft, LuRefreshCw, LuRocket } from 'react-icons/lu';
+import {
+  LuActivity,
+  LuArrowLeft,
+  LuRefreshCw,
+  LuRocket,
+  LuSparkles,
+} from 'react-icons/lu';
 import { Allotment } from 'allotment';
 import {
   Sheet,
@@ -26,6 +37,11 @@ import {
 } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
+import {
+  canMigrateLegacyWorkerCode,
+  migrateLegacyWorkerCode,
+} from '@/components/worker/workerCodeMigration';
+import { useWorkerSharedModuleTypes } from '@/components/worker/WorkerModuleResources';
 
 import 'allotment/dist/style.css';
 
@@ -49,7 +65,9 @@ function PageComponent() {
   const { t } = useTranslation();
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
-  const hasAdminPermission = useHasAdminPermission();
+  const trpcUtils = trpc.useUtils();
+  const hasWritePermission = useHasWritePermission();
+  const userId = useUserInfo()?.id;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedExecutionIndex, setSelectedExecutionIndex] =
@@ -66,6 +84,7 @@ function PageComponent() {
     workspaceId,
     workerId,
   });
+  const { extraLibraries } = useWorkerSharedModuleTypes(workerId);
 
   const {
     data: executionsData,
@@ -123,8 +142,14 @@ function PageComponent() {
     return code !== worker.code;
   }, [code, worker]);
 
+  const canMigrateWorkerCode = useMemo(
+    () => canMigrateLegacyWorkerCode(code),
+    [code]
+  );
+  const canEdit = hasWritePermission || worker?.owner?.id === userId;
+
   const handleSave = useEvent(async () => {
-    if (!worker || !hasAdminPermission || !isCodeDirty) {
+    if (!worker || !canEdit || !isCodeDirty) {
       return;
     }
 
@@ -139,7 +164,16 @@ function PageComponent() {
       cronExpression: worker.cronExpression ?? undefined,
     });
     toast.success(t('Worker updated successfully'));
-    refetchWorker();
+    await Promise.all([
+      refetchWorker(),
+      trpcUtils.worker.getModuleBindings.invalidate({ workspaceId, workerId }),
+      trpcUtils.sharedModule.all.invalidate({ workspaceId }),
+      trpcUtils.sharedModule.consumers.invalidate(),
+    ]);
+  });
+
+  const handleMigrateWorkerCode = useEvent(() => {
+    setCode((currentCode) => migrateLegacyWorkerCode(currentCode));
   });
 
   const handleLogRefresh = useEvent(() => {
@@ -178,11 +212,16 @@ function PageComponent() {
 
   const handleTestExecution = useEvent(
     async (payload?: Record<string, any>) => {
-      const result = await testCodeMutation.mutateAsync({
-        workspaceId,
-        code,
-        payload,
-      });
+      const result = await testCodeMutation.mutateAsync(
+        buildWorkerTestCodeInput(
+          { workerId },
+          {
+            workspaceId,
+            code,
+            payload,
+          }
+        )
+      );
       return result;
     }
   );
@@ -244,12 +283,32 @@ function PageComponent() {
               </div>
 
               <div className="text-muted-foreground text-xs">
+                {t('Creator')}:{' '}
+                {worker.creator?.nickname ??
+                  worker.creator?.username ??
+                  t('Unknown')}
+                {' · '}
+                {t('Owner')}:{' '}
+                {worker.owner?.nickname ??
+                  worker.owner?.username ??
+                  t('Unknown')}
+                {' · '}
                 {t('Last updated at {{time}}', {
                   time: dayjs(worker.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
                 })}
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {canEdit && canMigrateWorkerCode && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  Icon={LuSparkles}
+                  onClick={handleMigrateWorkerCode}
+                >
+                  {t('Migrate to Module Worker')}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -259,7 +318,7 @@ function PageComponent() {
               >
                 {t('Refresh')}
               </Button>
-              {hasAdminPermission && (
+              {canEdit && (
                 <Button
                   variant="default"
                   size="sm"
@@ -278,11 +337,12 @@ function PageComponent() {
         <Allotment>
           <Allotment.Pane>
             <CodeEditor
-              readOnly={!hasAdminPermission || updateMutation.isPending}
+              readOnly={!canEdit || updateMutation.isPending}
               height="100%"
               value={code}
               onChange={setCode}
               language="typescript"
+              extraLibraries={extraLibraries}
             />
           </Allotment.Pane>
           <Allotment.Pane>
@@ -317,7 +377,7 @@ function PageComponent() {
                   isActive={worker.active}
                   disabled={isCodeDirty}
                   onPreviewLoaded={handleLogRefresh}
-                  onTest={hasAdminPermission ? handleTestExecution : undefined}
+                  onTest={canEdit ? handleTestExecution : undefined}
                   variant="split"
                 />
               </Allotment.Pane>

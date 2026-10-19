@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '@i18next-toolkit/react';
-import { trpc } from '@/api/trpc';
+import { trpc, defaultErrorHandler } from '@/api/trpc';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,25 +15,48 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loading } from '@/components/Loading';
 import { WorkerRevisionDiffViewer } from './WorkerRevisionDiffViewer';
-import { LuArrowLeftRight, LuArrowRight } from 'react-icons/lu';
+import { AlertConfirm } from '@/components/AlertConfirm';
+import {
+  LuArrowLeftRight,
+  LuArrowRight,
+  LuUndo2,
+  LuGitCompareArrows,
+  LuDiff,
+} from 'react-icons/lu';
+import { SimpleTooltip } from '@/components/ui/tooltip';
 import dayjs from 'dayjs';
+import { UserIdentity } from '@/components/UserSelect';
 
 interface WorkerRevisionsSectionProps {
   workspaceId: string;
   workerId: string;
+  canEdit?: boolean;
+  onRollback?: () => void;
 }
 
 export const WorkerRevisionsSection: React.FC<WorkerRevisionsSectionProps> = ({
   workspaceId,
   workerId,
+  canEdit = false,
+  onRollback,
 }) => {
   const { t } = useTranslation();
-  const { data: revisions = [], isLoading } = trpc.worker.getRevisions.useQuery(
-    {
-      workspaceId,
-      workerId,
-    }
-  );
+  const {
+    data: revisions = [],
+    isLoading,
+    refetch: refetchRevisions,
+  } = trpc.worker.getRevisions.useQuery({
+    workspaceId,
+    workerId,
+  });
+
+  const rollbackMutation = trpc.worker.rollbackToRevision.useMutation({
+    onError: defaultErrorHandler,
+    onSuccess: () => {
+      refetchRevisions();
+      onRollback?.();
+    },
+  });
   const [baseRevisionId, setBaseRevisionId] = useState<string | null>(null);
   const [targetRevisionId, setTargetRevisionId] = useState<string | null>(null);
 
@@ -180,31 +203,69 @@ export const WorkerRevisionsSection: React.FC<WorkerRevisionsSectionProps> = ({
                                 <Badge variant="outline">{t('Base')}</Badge>
                               )}
                             </div>
-                            <div className="text-muted-foreground text-xs">
-                              {createdAt.isValid()
-                                ? createdAt.format('YYYY-MM-DD HH:mm:ss')
-                                : ''}
+                            <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                              <span>
+                                {createdAt.isValid()
+                                  ? createdAt.format('YYYY-MM-DD HH:mm:ss')
+                                  : ''}
+                              </span>
+                              <span>·</span>
+                              {revision.operator ? (
+                                <UserIdentity user={revision.operator} />
+                              ) : (
+                                <span>{t('Unknown')}</span>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setBaseRevisionId(revision.id)}
-                              className="h-7 text-xs"
-                            >
-                              {t('Set base')}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setTargetRevisionId(revision.id)}
-                              className="h-7 text-xs"
-                            >
-                              {t('Set compare')}
-                            </Button>
+                          <div className="flex items-center gap-1">
+                            <SimpleTooltip content={t('Set base')}>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant={isBase ? 'default' : 'ghost'}
+                                onClick={() => setBaseRevisionId(revision.id)}
+                                className="h-7 w-7"
+                                Icon={LuGitCompareArrows}
+                              />
+                            </SimpleTooltip>
+                            <SimpleTooltip content={t('Set compare')}>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant={isTarget ? 'default' : 'ghost'}
+                                onClick={() => setTargetRevisionId(revision.id)}
+                                className="h-7 w-7"
+                                Icon={LuDiff}
+                              />
+                            </SimpleTooltip>
+                            {canEdit && !isLatest && (
+                              <AlertConfirm
+                                title={t('Rollback to Revision #{{num}}', {
+                                  num: revision.revision,
+                                })}
+                                description={t(
+                                  'Are you sure you want to rollback the worker code to this revision? This will create a new revision with the rolled-back code.'
+                                )}
+                                onConfirm={async () => {
+                                  await rollbackMutation.mutateAsync({
+                                    workspaceId,
+                                    workerId,
+                                    revisionId: revision.id,
+                                  });
+                                }}
+                              >
+                                <SimpleTooltip content={t('Rollback')}>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7"
+                                    Icon={LuUndo2}
+                                    loading={rollbackMutation.isPending}
+                                  />
+                                </SimpleTooltip>
+                              </AlertConfirm>
+                            )}
                           </div>
                         </div>
                       );

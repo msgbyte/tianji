@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { runCodeInIVM } from './index.js';
+import { createSandboxProxy } from './sandbox.js';
 
 describe('runCodeInIVM', () => {
   test('should execute simple code and return result', async () => {
@@ -131,15 +132,59 @@ describe('runCodeInIVM', () => {
     });
   });
 
-  test('should properly cleanup isolate', async () => {
+  test('should collect resource metrics without exposing isolate handles', async () => {
     const code = '(async () => { return "cleanup test"; })()';
     const result = await runCodeInIVM(code);
 
-    expect(result.isolate).toBeDefined();
     expect(result.result).toBe('cleanup test');
+    expect(result).not.toHaveProperty('isolate');
+    expect(result.cpuTime).toEqual(expect.any(Number));
+    expect(result.cpuTime).toBeGreaterThanOrEqual(0);
+    expect(result.memoryUsage).toEqual(
+      expect.objectContaining({
+        used_heap_size: expect.any(Number),
+      })
+    );
+  });
 
-    // Check that isolate is marked for disposal
-    result.isolate.dispose();
+  test('should expose provided globals to sandbox code without embedding them in source', async () => {
+    const payload = {
+      data: 'x'.repeat(50_000),
+    };
+    const code = '(async () => { return __requestPayload.data.length; })()';
+    const result = await runCodeInIVM(code, {
+      __requestPayload: payload,
+    });
+
+    expect(result.result).toBe(50_000);
+    expect(result.error).toBeUndefined();
+  });
+
+  test('calls async methods through a sandbox proxy', async () => {
+    const host = createSandboxProxy({
+      get: async (key: string) => ({ key, value: 42 }),
+    });
+    const result = await runCodeInIVM(
+      `(async () => reproxy(__host).get('answer'))()`,
+      { __host: host }
+    );
+
+    expect(result.error).toBeUndefined();
+    expect(result.result).toEqual({ key: 'answer', value: 42 });
+  });
+
+  test('propagates sanitized async proxy rejections', async () => {
+    const host = createSandboxProxy({
+      get: async () => {
+        throw new Error('WORKER_KV_UNAVAILABLE');
+      },
+    });
+    const result = await runCodeInIVM(
+      `(async () => reproxy(__host).get('answer'))()`,
+      { __host: host }
+    );
+
+    expect(String(result.error)).toContain('WORKER_KV_UNAVAILABLE');
   });
 
   test('should track execution time', async () => {
@@ -188,8 +233,32 @@ describe('runCodeInIVM', () => {
     expect(result.result).toBe('complete');
   });
 
-  test.only('should support typescript code', async () => {
+  test('should safely format non-cloneable console arguments', async () => {
     const code = `
+      (async () => {
+        async function task() {}
+        const circular = { task };
+        circular.self = circular;
+        console.log(task, circular);
+        return 'complete';
+      })()
+    `;
+    const result = await runCodeInIVM(code);
+
+    expect(result.error).toBeUndefined();
+    expect(result.result).toBe('complete');
+    expect(result.logger[0]).toEqual([
+      'log',
+      expect.any(Number),
+      '[AsyncFunction: task]',
+      { task: '[AsyncFunction: task]', self: '[Circular]' },
+    ]);
+  });
+
+  test.runIf(process.env.ENABLE_FUNCTION_WORKER_TYPESCRIPT_SUPPORT === 'true')(
+    'should support typescript code',
+    async () => {
+      const code = `
       (async () => {
         const a: number = 1;
         const b: number = 2;
@@ -197,7 +266,8 @@ describe('runCodeInIVM', () => {
         return a + b;
       })()
     `;
-    const result = await runCodeInIVM(code);
-    expect(result.result).toBe(3);
-  });
+      const result = await runCodeInIVM(code);
+      expect(result.result).toBe(3);
+    }
+  );
 });

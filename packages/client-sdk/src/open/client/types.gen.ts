@@ -190,7 +190,7 @@ export type $OpenApiTs = {
     id: string;
     workspaceId: string;
     name: string;
-    modelApiKey?: string | null;
+    hasModelApiKey: boolean;
     customModelBaseUrl?: string | null;
     customModelName?: string | null;
     customModelInputPrice?: number | null;
@@ -228,7 +228,7 @@ export type $OpenApiTs = {
                     workspaceId: string;
                     gatewayId: string;
                     name: string;
-                    modelApiKey: string | null;
+                    modelApiKey?: string | null;
                     customModelBaseUrl: string | null;
                     customModelName: string | null;
                     customModelInputPrice: number | null;
@@ -243,7 +243,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    modelApiKey?: string | null;
+                    hasModelApiKey: boolean;
                     customModelBaseUrl?: string | null;
                     customModelName?: string | null;
                     customModelInputPrice?: number | null;
@@ -288,7 +288,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    modelApiKey?: string | null;
+                    hasModelApiKey: boolean;
                     customModelBaseUrl?: string | null;
                     customModelName?: string | null;
                     customModelInputPrice?: number | null;
@@ -573,7 +573,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    modelApiKey?: string | null;
+                    hasModelApiKey: boolean;
                     customModelBaseUrl?: string | null;
                     customModelName?: string | null;
                     customModelInputPrice?: number | null;
@@ -625,7 +625,7 @@ export type $OpenApiTs = {
                     id: string;
                     workspaceId: string;
                     name: string;
-                    modelApiKey?: string | null;
+                    hasModelApiKey: boolean;
                     customModelBaseUrl?: string | null;
                     customModelName?: string | null;
                     customModelInputPrice?: number | null;

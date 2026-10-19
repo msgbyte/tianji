@@ -16,7 +16,12 @@ import { GroupInfo } from '@tianji/shared';
 
 interface BreakdownParamsBlockProps {
   index: number;
-  list: { name: string; type: GroupInfo['type']; count: number }[];
+  list: {
+    name: string;
+    type: GroupInfo['type'];
+    source?: GroupInfo['source'];
+    count: number;
+  }[];
   info: GroupInfo | null;
   onSelect: (info: GroupInfo) => void;
   onDelete: () => void;
@@ -36,11 +41,17 @@ export const BreakdownParamsBlock: React.FC<BreakdownParamsBlockProps> =
           defaultIsOpen={props.info === null}
           filterText={filterText}
           list={metrics}
-          value={props.info?.value ?? ''}
+          value={
+            props.info
+              ? `${props.info.source ?? 'custom'}:${props.info.value}`
+              : ''
+          }
+          getItemValue={(item) => `${item.source ?? 'custom'}:${item.name}`}
           onSelect={(name, item) => {
             props.onSelect({
               ...props.info,
               value: name,
+              source: item.source,
               type: item.type ?? 'string',
             });
           }}
@@ -58,6 +69,11 @@ export const BreakdownParamsBlock: React.FC<BreakdownParamsBlockProps> =
             <>
               <DataTypeIcon type={item.type} />
               <span>{item.name}</span>
+              {item.source && (
+                <span className="text-muted-foreground text-xs">
+                  {item.source === 'builtin' ? t('Built-in') : t('Custom')}
+                </span>
+              )}
             </>
           )}
         >
@@ -66,6 +82,11 @@ export const BreakdownParamsBlock: React.FC<BreakdownParamsBlockProps> =
               <div className="hover:bg-muted flex w-full flex-1 cursor-pointer items-center gap-2 rounded-lg px-2 py-1">
                 <DataTypeIcon type={props.info?.type} />
                 <span>{props.info?.value ?? <>&nbsp;</>}</span>
+                {props.info?.source === 'builtin' && (
+                  <span className="text-muted-foreground text-xs">
+                    {t('Built-in')}
+                  </span>
+                )}
               </div>
             </PopoverTrigger>
 

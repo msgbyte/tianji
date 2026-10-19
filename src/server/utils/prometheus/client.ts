@@ -81,6 +81,13 @@ export const promWorkerMemoryUsage = new Prometheus.Histogram({
   buckets: [1024, 10240, 102400, 1048576, 5242880, 10485760],
 });
 
+export const promWorkerRequestPayloadSize = new Prometheus.Histogram({
+  name: 'tianji_worker_request_payload_bytes',
+  help: 'Serialized request payload size received by function worker in bytes',
+  labelNames: ['workerId', 'status'],
+  buckets: [128, 512, 1024, 10240, 102400, 1048576, 5242880, 10485760],
+});
+
 export const promWebsiteEventCounter = new Prometheus.Counter({
   name: 'tianji_website_event_counter',
   help: 'website event counter',

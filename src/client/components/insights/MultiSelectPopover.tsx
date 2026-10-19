@@ -171,7 +171,7 @@ export const MultiSelectPopover: React.FC<MultiSelectPopoverProps> = (
                   ))}
                   {selectedValues.length > 3 && (
                     <div className="bg-secondary flex items-center rounded px-2 py-0.5 text-xs">
-                      +{selectedValues.length - 3} more
+                      +{selectedValues.length - 3} {t('more')}
                     </div>
                   )}
                 </div>

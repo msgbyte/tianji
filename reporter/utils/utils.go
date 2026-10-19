@@ -1,12 +1,8 @@
 package utils
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	dockerTypes "github.com/docker/docker/api/types"
-	dockerContainer "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
@@ -18,6 +14,9 @@ import (
 	"log"
 	"math"
 	"net"
+	"net/http"
+	"net/url"
+	"os"
 	"os/exec"
 	"runtime"
 	"sort"
@@ -47,23 +46,87 @@ type ReportDataPayload struct {
 }
 
 type DockerDataPayload struct {
-	ID               string             `json:"id"`
-	Image            string             `json:"image"`
-	ImageID          string             `json:"imageId"`
-	Ports            []dockerTypes.Port `json:"ports"`
-	CreatedAt        int64              `json:"createdAt"`
-	State            string             `json:"state"`
-	Status           string             `json:"status"`
-	CpuPercent       float64            `json:"cpuPercent"`
-	Memory           float64            `json:"memory"`
-	MemLimit         uint64             `json:"memLimit"`
-	MemPercent       float64            `json:"memPercent"`
-	StorageWriteSize uint64             `json:"storageWriteSize"`
-	StorageReadSize  uint64             `json:"storageReadSize"`
-	NetworkRx        float64            `json:"networkRx"`
-	NetworkTx        float64            `json:"networkTx"`
-	IORead           uint64             `json:"ioRead"`
-	IOWrite          uint64             `json:"ioWrite"`
+	ID               string       `json:"id"`
+	Image            string       `json:"image"`
+	ImageID          string       `json:"imageId"`
+	Ports            []DockerPort `json:"ports"`
+	CreatedAt        int64        `json:"createdAt"`
+	State            string       `json:"state"`
+	Status           string       `json:"status"`
+	CpuPercent       float64      `json:"cpuPercent"`
+	Memory           float64      `json:"memory"`
+	MemLimit         uint64       `json:"memLimit"`
+	MemPercent       float64      `json:"memPercent"`
+	StorageWriteSize uint64       `json:"storageWriteSize"`
+	StorageReadSize  uint64       `json:"storageReadSize"`
+	NetworkRx        float64      `json:"networkRx"`
+	NetworkTx        float64      `json:"networkTx"`
+	IORead           uint64       `json:"ioRead"`
+	IOWrite          uint64       `json:"ioWrite"`
+}
+
+type DockerPort struct {
+	IP          string `json:"IP,omitempty"`
+	PrivatePort uint16 `json:"PrivatePort"`
+	PublicPort  uint16 `json:"PublicPort,omitempty"`
+	Type        string `json:"Type"`
+}
+
+type dockerContainerSummary struct {
+	ID      string       `json:"Id"`
+	Image   string       `json:"Image"`
+	ImageID string       `json:"ImageID"`
+	Ports   []DockerPort `json:"Ports"`
+	Created int64        `json:"Created"`
+	State   string       `json:"State"`
+	Status  string       `json:"Status"`
+}
+
+type dockerStatsResponse struct {
+	Read         time.Time                     `json:"read"`
+	PreRead      time.Time                     `json:"preread"`
+	NumProcs     uint32                        `json:"num_procs"`
+	CPUStats     dockerCPUStats                `json:"cpu_stats"`
+	PreCPUStats  dockerCPUStats                `json:"precpu_stats"`
+	MemoryStats  dockerMemoryStats             `json:"memory_stats"`
+	BlkioStats   dockerBlkioStats              `json:"blkio_stats"`
+	StorageStats dockerStorageStats            `json:"storage_stats"`
+	Networks     map[string]dockerNetworkStats `json:"networks"`
+}
+
+type dockerCPUStats struct {
+	CPUUsage    dockerCPUUsage `json:"cpu_usage"`
+	SystemUsage uint64         `json:"system_cpu_usage"`
+}
+
+type dockerCPUUsage struct {
+	TotalUsage  uint64   `json:"total_usage"`
+	PercpuUsage []uint64 `json:"percpu_usage"`
+}
+
+type dockerMemoryStats struct {
+	Usage             uint64 `json:"usage"`
+	Limit             uint64 `json:"limit"`
+	PrivateWorkingSet uint64 `json:"privateworkingset"`
+}
+
+type dockerBlkioStats struct {
+	IoServiceBytesRecursive []dockerBlkioEntry `json:"io_service_bytes_recursive"`
+}
+
+type dockerBlkioEntry struct {
+	Op    string `json:"op"`
+	Value uint64 `json:"value"`
+}
+
+type dockerStorageStats struct {
+	ReadSizeBytes  uint64 `json:"read_size_bytes"`
+	WriteSizeBytes uint64 `json:"write_size_bytes"`
+}
+
+type dockerNetworkStats struct {
+	RxBytes uint64 `json:"rx_bytes"`
+	TxBytes uint64 `json:"tx_bytes"`
 }
 
 type ProcessInfo struct {
@@ -270,16 +333,13 @@ func BytesToString(b []byte) string {
 }
 
 func GetDockerStat() ([]DockerDataPayload, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
+	httpClient, baseURL, err := newDockerHTTPClient()
 	if err != nil {
 		return nil, err
 	}
-	defer cli.Close()
 
-	ctx := context.Background()
-
-	containers, err := cli.ContainerList(context.Background(), dockerContainer.ListOptions{All: true})
+	var containers []dockerContainerSummary
+	_, err = getDockerJSON(httpClient, baseURL, "/containers/json?all=1", &containers)
 	if err != nil {
 		return nil, err
 	}
@@ -287,23 +347,22 @@ func GetDockerStat() ([]DockerDataPayload, error) {
 	var dockerPayloads []DockerDataPayload
 
 	for _, container := range containers {
-		containerStats, err := cli.ContainerStats(ctx, container.ID, false)
+		var v dockerStatsResponse
+		resp, err := getDockerJSON(
+			httpClient,
+			baseURL,
+			"/containers/"+url.PathEscape(container.ID)+"/stats?stream=false",
+			&v,
+		)
 		if err != nil {
 			return nil, err
 		}
-
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(containerStats.Body)
-		newStr := buf.String()
-
-		v := dockerContainer.StatsResponse{}
-		jsoniter.Unmarshal([]byte(newStr), &v)
 
 		var cpuPercent float64
 		var blkRead, blkWrite uint64
 		var mem float64
 		var memPercent float64
-		if containerStats.OSType != "windows" {
+		if resp.Header.Get("OSType") != "windows" {
 			if v.MemoryStats.Limit != 0 {
 				memPercent = float64(v.MemoryStats.Usage) / float64(v.MemoryStats.Limit) * 100.0
 			}
@@ -342,6 +401,65 @@ func GetDockerStat() ([]DockerDataPayload, error) {
 	}
 
 	return dockerPayloads, nil
+}
+
+func newDockerHTTPClient() (*http.Client, string, error) {
+	dockerHost := os.Getenv("DOCKER_HOST")
+	if dockerHost == "" {
+		dockerHost = "unix:///var/run/docker.sock"
+	}
+
+	hostURL, err := url.Parse(dockerHost)
+	if err != nil {
+		return nil, "", err
+	}
+
+	switch hostURL.Scheme {
+	case "unix":
+		socketPath := hostURL.Path
+		if socketPath == "" {
+			socketPath = "/var/run/docker.sock"
+		}
+
+		transport := &http.Transport{
+			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+				var dialer net.Dialer
+				return dialer.DialContext(ctx, "unix", socketPath)
+			},
+		}
+
+		return &http.Client{Transport: transport}, "http://docker", nil
+	case "tcp":
+		hostURL.Scheme = "http"
+		return http.DefaultClient, strings.TrimRight(hostURL.String(), "/"), nil
+	case "http", "https":
+		return http.DefaultClient, strings.TrimRight(hostURL.String(), "/"), nil
+	default:
+		return nil, "", fmt.Errorf("unsupported Docker host: %s", dockerHost)
+	}
+}
+
+func getDockerJSON(client *http.Client, baseURL string, endpoint string, out interface{}) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, baseURL+endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp, fmt.Errorf("Docker API request failed: %s %s", endpoint, resp.Status)
+	}
+
+	if err := jsoniter.NewDecoder(resp.Body).Decode(out); err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }
 
 func getTopCPUProcesses(n int) []ProcessInfo {
@@ -444,7 +562,7 @@ func getTopMemoryProcesses(n int) []ProcessInfo {
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L175
  */
-func calculateCPUPercentUnix(v *dockerContainer.StatsResponse) float64 {
+func calculateCPUPercentUnix(v *dockerStatsResponse) float64 {
 	previousCPU := v.PreCPUStats.CPUUsage.TotalUsage
 	previousSystem := v.PreCPUStats.SystemUsage
 	cpuPercent := 0.0
@@ -462,7 +580,7 @@ func calculateCPUPercentUnix(v *dockerContainer.StatsResponse) float64 {
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L190
  */
-func calculateCPUPercentWindows(v *dockerContainer.StatsResponse) float64 {
+func calculateCPUPercentWindows(v *dockerStatsResponse) float64 {
 	// Max number of 100ns intervals between the previous time read and now
 	possIntervals := uint64(v.Read.Sub(v.PreRead).Nanoseconds()) // Start with number of ns intervals
 	possIntervals /= 100                                         // Convert to number of 100ns intervals
@@ -481,7 +599,7 @@ func calculateCPUPercentWindows(v *dockerContainer.StatsResponse) float64 {
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L206
  */
-func calculateBlockIO(blkio dockerContainer.BlkioStats) (blkRead uint64, blkWrite uint64) {
+func calculateBlockIO(blkio dockerBlkioStats) (blkRead uint64, blkWrite uint64) {
 	for _, bioEntry := range blkio.IoServiceBytesRecursive {
 		switch strings.ToLower(bioEntry.Op) {
 		case "read":
@@ -496,7 +614,7 @@ func calculateBlockIO(blkio dockerContainer.BlkioStats) (blkRead uint64, blkWrit
 /**
  * Reference: https://github.com/moby/moby/blob/eb131c5383db8cac633919f82abad86c99bffbe5/cli/command/container/stats_helpers.go#L218
  */
-func calculateNetwork(network map[string]dockerContainer.NetworkStats) (float64, float64) {
+func calculateNetwork(network map[string]dockerNetworkStats) (float64, float64) {
 	var rx, tx float64
 
 	for _, v := range network {

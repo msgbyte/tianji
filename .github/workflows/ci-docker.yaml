@@ -5,34 +5,64 @@ on:
     branches:
       - master
     paths:
+      - ".github/workflows/ci-docker.yaml"
       - "Dockerfile"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "src/server/**"
+      - "src/shared/**"
   workflow_dispatch:
 
 jobs:
   docker:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15.4-alpine
+        env:
+          POSTGRES_DB: tianji
+          POSTGRES_USER: tianji
+          POSTGRES_PASSWORD: tianji
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tianji -d tianji"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
-      - name: Docker Setup QEMU
-        uses: docker/setup-qemu-action@v3
-        id: qemu
-        with:
-          platforms: amd64,arm64
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: moonrailgun/tianji
-          tags: |
-            type=sha
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build
         uses: docker/build-push-action@v5
         with:
-          # context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          load: true
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: tianji-ci:${{ github.sha }}
+      - name: Smoke test production image
+        run: |
+          docker run -d --name tianji-ci --network host \
+            -e DATABASE_URL=postgresql://tianji:tianji@127.0.0.1:5432/tianji \
+            -e JWT_SECRET=ci-test-secret \
+            tianji-ci:${{ github.sha }}
+
+          for _ in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:12345/health > /dev/null; then
+              exit 0
+            fi
+            if [ "$(docker inspect --format '{{.State.Running}}' tianji-ci)" != "true" ]; then
+              docker logs tianji-ci
+              exit 1
+            fi
+            sleep 2
+          done
+
+          docker logs tianji-ci
+          exit 1
+      - name: Stop production image
+        if: always()
+        run: docker rm --force tianji-ci || true

@@ -12,7 +12,7 @@ Tianjiは、その動作をカスタマイズするためにさまざまな環�
 | 変数 | 説明 | デフォルト | 例 |
 | --- | --- | --- | --- |
 | `PORT` | サーバーポート | `12345` | `3000` |
-| `JWT_SECRET` | JWTトークンのための秘密鍵 | ランダムテキスト | `your-secret-key` |
+| `JWT_SECRET` | JWTトークンのための秘密鍵 | ランダムテキスト | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | ユーザー登録を有効化 | `false` | `true` |
 | `ALLOW_OPENAPI` | OpenAPIアクセスを有効化 | `true` | `false` |
 | `WEBSITE_ID` | ウェブサイト識別子 | - | `your-website-id` |

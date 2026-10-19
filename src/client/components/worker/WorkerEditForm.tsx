@@ -1,6 +1,6 @@
 import { useTranslation } from '@i18next-toolkit/react';
 import { Button } from '@/components/ui/button';
-import { useEventWithLoading } from '@/hooks/useEvent';
+import { useEvent, useEventWithLoading } from '@/hooks/useEvent';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { z } from 'zod';
 import {
@@ -27,10 +27,14 @@ import {
   LuClock,
   LuTriangleAlert,
   LuExternalLink,
+  LuSparkles,
 } from 'react-icons/lu';
 import { trpc } from '@/api/trpc';
 import { defaultErrorHandler } from '@/api/trpc';
-import { useCurrentWorkspaceId } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+} from '@/store/user';
 import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail';
 import {
   Dialog,
@@ -43,6 +47,55 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Spinner } from '../ui/spinner';
 import { useCronPreview } from './useCronPreview';
 import { useNavigate } from '@tanstack/react-router';
+import {
+  WorkerEnvironmentVariablesField,
+  type WorkerEnvironmentVariableFormValue,
+} from './WorkerEnvironmentVariablesField';
+import { buildWorkerTestCodeInput } from './workerTestCodeInput';
+import {
+  canMigrateLegacyWorkerCode,
+  migrateLegacyWorkerCode,
+} from './workerCodeMigration';
+import { UserSelect } from '@/components/UserSelect';
+import {
+  useWorkerSharedModuleTypes,
+} from './WorkerModuleResources';
+
+const environmentVariableKeySchema = z
+  .string()
+  .min(1, 'Environment variable key is required')
+  .max(255)
+  .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, 'Invalid environment variable key');
+
+const environmentVariableSchema: z.ZodType<WorkerEnvironmentVariableFormValue> =
+  z.discriminatedUnion('type', [
+    z.object({
+      id: z.string().optional(),
+      key: environmentVariableKeySchema,
+      type: z.literal('Text'),
+      value: z.string(),
+    }),
+    z.object({
+      id: z.string().optional(),
+      key: environmentVariableKeySchema,
+      type: z.literal('Secret'),
+      value: z.string().optional(),
+      hasValue: z.boolean().optional(),
+    }),
+  ])
+    .superRefine((value, ctx) => {
+      if (
+        value.type === 'Secret' &&
+        !value.hasValue &&
+        value.value === undefined
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'A value is required',
+          path: ['value'],
+        });
+      }
+    });
 
 const formSchema = z
   .object({
@@ -53,6 +106,22 @@ const formSchema = z
     enableCron: z.boolean().default(false),
     cronExpression: z.string().optional(),
     visibility: z.enum(['Public', 'Private']).default('Public'),
+    ownerId: z.cuid2().optional(),
+    environmentVariables: z.array(environmentVariableSchema).superRefine(
+      (items, ctx) => {
+        const keys = new Set<string>();
+        items.forEach((item, index) => {
+          if (keys.has(item.key)) {
+            ctx.addIssue({
+              code: 'custom',
+              message: 'Environment variable keys must be unique',
+              path: [index, 'key'],
+            });
+          }
+          keys.add(item.key);
+        });
+      }
+    ),
   })
   .refine(
     (data) => {
@@ -67,9 +136,11 @@ const formSchema = z
     }
   );
 
-const defaultCode = `async function fetch(payload) {
-  return 'Hello, World!';
-}
+const defaultCode = `export default {
+  async fetch(payload, context) {
+    return 'Hello, World!';
+  },
+} satisfies TianjiWorker;
 `;
 
 export type WorkerEditFormValues = z.infer<typeof formSchema>;
@@ -86,24 +157,44 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
   (props) => {
     const { t } = useTranslation();
     const workspaceId = useCurrentWorkspaceId();
+    const hasAdminPermission = useHasAdminPermission();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [testResult, setTestResult] = useState<any>(null);
     const [showTestResult, setShowTestResult] = useState(false);
     const navigate = useNavigate();
 
-    const form = useForm<WorkerEditFormValues>({
-      resolver: zodResolver(formSchema),
-      defaultValues: {
+    const defaultValues = React.useMemo(
+      () => ({
         name: '',
         description: '',
         code: defaultCode,
         active: true,
         enableCron: false,
         cronExpression: '',
-        visibility: 'Public',
+        visibility: 'Public' as const,
+        environmentVariables: [],
         ...props.defaultValues,
-      },
+      }),
+      [props.defaultValues]
+    );
+    const { data: workspaceMembers = [] } = trpc.workspace.members.useQuery(
+      { workspaceId },
+      { enabled: hasAdminPermission }
+    );
+    const form = useForm<WorkerEditFormValues>({
+      resolver: zodResolver(formSchema),
+      defaultValues,
     });
+    const { isDirty } = form.formState;
+    const workerCode = form.watch('code');
+    const { extraLibraries } = useWorkerSharedModuleTypes(props.workerId);
+    const canMigrateWorkerCode = canMigrateLegacyWorkerCode(workerCode);
+
+    useEffect(() => {
+      if (!isDirty) {
+        form.reset(defaultValues);
+      }
+    }, [defaultValues, form, isDirty]);
 
     const enableCron = form.watch('enableCron');
     const cronExpressionValue = form.watch('cronExpression');
@@ -144,9 +235,22 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
 
     const [handleTestCode, isTestLoading] = useEventWithLoading(async () => {
       const code = form.getValues('code');
-      await testCodeMutation.mutateAsync({
-        workspaceId,
-        code,
+      await testCodeMutation.mutateAsync(
+        buildWorkerTestCodeInput(
+          { workerId: props.workerId },
+          {
+            workspaceId,
+            code,
+            environmentVariables: form.getValues('environmentVariables'),
+          }
+        )
+      );
+    });
+
+    const handleMigrateWorkerCode = useEvent(() => {
+      form.setValue('code', migrateLegacyWorkerCode(form.getValues('code')), {
+        shouldDirty: true,
+        shouldValidate: true,
       });
     });
 
@@ -202,6 +306,17 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                       {t('JavaScript Code')}
                       {!props.workerId && (
                         <div className="flex items-center space-x-2">
+                          {canMigrateWorkerCode && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              Icon={LuSparkles}
+                              onClick={handleMigrateWorkerCode}
+                            >
+                              {t('Migrate to Module Worker')}
+                            </Button>
+                          )}
                           <Button
                             type="button"
                             variant="outline"
@@ -258,6 +373,7 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                           value={field.value}
                           onChange={field.onChange}
                           codeValidator={codeValidator}
+                          extraLibraries={extraLibraries}
                         />
                       )}
                     </FormControl>
@@ -265,6 +381,35 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
                   </FormItem>
                 )}
               />
+
+              {hasAdminPermission && props.workerId && (
+                <FormField
+                  control={form.control}
+                  name="ownerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Owner')}</FormLabel>
+                      <UserSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder={t('Select owner')}
+                        users={workspaceMembers.map((member) => ({
+                          id: member.userId,
+                          username: member.user.username,
+                          nickname: member.user.nickname,
+                          avatar: member.user.avatar,
+                        }))}
+                      />
+                      <FormDescription>
+                        {t(
+                          'The owner can edit this worker regardless of workspace role.'
+                        )}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
@@ -435,12 +580,15 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
               </div>
             </CardContent>
 
-            <CardFooter>
-              <Button type="submit" loading={isLoading}>
-                {props.workerId ? t('Update Worker') : t('Create Worker')}
-              </Button>
-            </CardFooter>
           </Card>
+
+          <WorkerEnvironmentVariablesField />
+
+          <CardFooter className="justify-end px-0">
+            <Button type="submit" loading={isLoading}>
+              {props.workerId ? t('Update Worker') : t('Create Worker')}
+            </Button>
+          </CardFooter>
 
           <FullscreenModal
             isOpen={isFullscreen}
@@ -449,9 +597,12 @@ export const WorkerEditForm: React.FC<WorkerEditFormProps> = React.memo(
           >
             <CodeEditor
               height="100%"
-              value={form.watch('code')}
-              onChange={(value) => form.setValue('code', value)}
+              value={workerCode}
+              onChange={(value) =>
+                form.setValue('code', value, { shouldDirty: true })
+              }
               codeValidator={codeValidator}
+              extraLibraries={extraLibraries}
             />
           </FullscreenModal>
 

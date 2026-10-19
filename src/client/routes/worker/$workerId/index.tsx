@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+  useUserInfo,
+} from '@/store/user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
 import { routeAuthBeforeLoad } from '@/utils/route';
@@ -48,6 +53,10 @@ import { WorkerExecutionDetail } from '@/components/worker/WorkerExecutionDetail
 import { WorkerApiPreview } from '@/components/worker/WorkerApiPreview';
 import { WorkerRevisionsSection } from '@/components/worker/WorkerRevisionsSection';
 
+const LazyWorkerStatsSection = React.lazy(
+  () => import('@/components/worker/WorkerStatsSection')
+);
+
 export const Route = createFileRoute('/worker/$workerId/')({
   beforeLoad: routeAuthBeforeLoad,
   component: PageComponent,
@@ -59,6 +68,8 @@ function PageComponent() {
   const workspaceId = useCurrentWorkspaceId();
   const navigate = useNavigate();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
+  const userId = useUserInfo()?.id;
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [showExecutionResult, setShowExecutionResult] = useState(false);
   const [selectedExecutionIndex, setSelectedExecutionIndex] = useState(-1);
@@ -96,21 +107,6 @@ function PageComponent() {
   const selectedExecution =
     selectedExecutionIndex >= 0 ? executions[selectedExecutionIndex] : null;
 
-  const { data: stats } = trpc.worker.getExecutionStats.useQuery(
-    {
-      workspaceId,
-      workerId,
-      days: 7,
-    },
-    {
-      trpc: {
-        context: {
-          skipBatch: true,
-        },
-      },
-    }
-  );
-
   const deleteMutation = trpc.worker.delete.useMutation({
     onError: defaultErrorHandler,
   });
@@ -140,7 +136,11 @@ function PageComponent() {
       workspaceId,
       workerId: worker.id,
     });
-    trpcUtils.worker.all.invalidate();
+    await Promise.all([
+      trpcUtils.worker.all.invalidate(),
+      trpcUtils.sharedModule.all.invalidate({ workspaceId }),
+      trpcUtils.sharedModule.consumers.invalidate(),
+    ]);
 
     navigate({
       to: '/worker',
@@ -211,10 +211,13 @@ function PageComponent() {
     return <ErrorTip />;
   }
 
+  const canEdit = hasWritePermission || worker.owner?.id === userId;
+
   return (
     <CommonWrapper
       header={
         <CommonHeader
+          desc={`${t('Creator')}: ${worker.creator?.nickname ?? worker.creator?.username ?? t('Unknown')} · ${t('Owner')}: ${worker.owner?.nickname ?? worker.owner?.username ?? t('Unknown')}`}
           title={
             <div className="flex items-center space-x-2">
               <span>{worker.name}</span>
@@ -234,7 +237,7 @@ function PageComponent() {
           }
           actions={
             <div className="flex items-center space-x-2">
-              {hasAdminPermission && (
+              {canEdit && (
                 <>
                   <Button
                     variant="outline"
@@ -262,17 +265,18 @@ function PageComponent() {
                     Icon={LuPencil}
                     onClick={handleEdit}
                   />
-
-                  <AlertConfirm
-                    title={t('Delete Worker')}
-                    description={t(
-                      'Are you sure you want to delete this worker? This action cannot be undone.'
-                    )}
-                    onConfirm={handleDelete}
-                  >
-                    <Button variant="outline" size="icon" Icon={LuTrash} />
-                  </AlertConfirm>
                 </>
+              )}
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Delete Worker')}
+                  description={t(
+                    'Are you sure you want to delete this worker? This action cannot be undone.'
+                  )}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
               )}
             </div>
           }
@@ -402,121 +406,21 @@ function PageComponent() {
             <WorkerRevisionsSection
               workspaceId={workspaceId}
               workerId={workerId}
+              canEdit={canEdit}
+              onRollback={refetch}
             />
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-4">
-            {/* Cron Information */}
-            {worker.enableCron && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <LuActivity className="h-5 w-5" />
-                    <span>{t('Cron Schedule')}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <div className="text-muted-foreground text-sm font-medium">
-                        {t('Expression')}
-                      </div>
-                      <div className="font-mono text-sm">
-                        {worker.cronExpression}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground text-sm font-medium">
-                        {t('Status')}
-                      </div>
-                      <div className="text-sm">
-                        {worker.active
-                          ? t('Running')
-                          : t('Stopped (Worker Inactive)')}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {stats && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Total Executions')}
-                    </CardTitle>
-                    <LuActivity className="text-muted-foreground h-4 w-4" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.totalExecutions}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Success Rate')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.totalExecutions > 0
-                        ? `${Math.round((stats.successExecutions / stats.totalExecutions) * 100)}%`
-                        : '0%'}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Avg Duration')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.avgDuration
-                        ? `${Math.round(stats.avgDuration)}ms`
-                        : '-'}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Avg Memory Usage')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.avgMemoryUsed
-                        ? `${Math.round(stats.avgMemoryUsed / 1024)}KB`
-                        : '-'}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {t('Avg CPU Time')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {stats.avgCpuTime
-                        ? `${Math.round(stats.avgCpuTime / 1000)}μs`
-                        : '-'}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+            <Suspense fallback={<Loading />}>
+              <LazyWorkerStatsSection
+                workspaceId={workspaceId}
+                workerId={workerId}
+                enableCron={worker.enableCron}
+                cronExpression={worker.cronExpression}
+                active={worker.active}
+              />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

@@ -1,15 +1,16 @@
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { CommonWrapper } from '@/components/CommonWrapper';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AIGatewayEditForm,
   AIGatewayEditFormValues,
 } from '@/components/aiGateway/AIGatewayEditForm';
+import { parseAIGatewayCustomModelStrategy } from '@/components/aiGateway/AIGatewayStrategyEditor.utils';
 
 export const Route = createFileRoute('/aiGateway/add')({
   beforeLoad: routeAuthBeforeLoad,
@@ -32,6 +33,9 @@ function AIGatewayAddComponent() {
       modelApiKey: values.modelApiKey ?? null,
       customModelBaseUrl: values.customModelBaseUrl ?? null,
       customModelName: values.customModelName ?? null,
+      customModelStrategy: parseAIGatewayCustomModelStrategy(
+        values.customModelStrategy
+      ),
       customModelInputPrice: values.customModelInputPrice ?? null,
       customModelOutputPrice: values.customModelOutputPrice ?? null,
     });
@@ -50,9 +54,9 @@ function AIGatewayAddComponent() {
     <CommonWrapper
       header={<h1 className="text-xl font-bold">{t('Add AI Gateway')}</h1>}
     >
-      <div className="p-4">
+      <ScrollArea className="h-full overflow-hidden p-4">
         <AIGatewayEditForm onSubmit={handleSubmit} />
-      </div>
+      </ScrollArea>
     </CommonWrapper>
   );
 }

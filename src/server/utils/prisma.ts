@@ -2,9 +2,15 @@ import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import { loadWebsite } from '../model/website/index.js';
 import { maxDate } from './common.js';
-import { FILTER_COLUMNS, OPERATORS, SESSION_COLUMNS } from './const.js';
+import {
+  EVENT_TYPE,
+  FILTER_COLUMNS,
+  OPERATORS,
+  SESSION_COLUMNS,
+} from './const.js';
 import { loadTelemetry } from '../model/telemetry.js';
 import { get } from 'lodash-es';
+import { assertQuotedSqlIdentifierPath } from './sql.js';
 
 export const POSTGRESQL_DATE_FORMATS = {
   minute: 'YYYY-MM-DD HH24:MI:00',
@@ -38,6 +44,11 @@ export interface WebsiteQueryFilters extends BaseQueryFilters {
   device?: string;
   language?: string;
   event?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
 }
 
 export interface QueryOptions {
@@ -85,14 +96,26 @@ export async function parseWebsiteFilters(
           ])
         : Prisma.empty,
     filterQuery: getWebsiteFilterQuery(filters, options, websiteDomain),
+    clickhouseFilter: getWebsiteClickHouseFilterQuery(
+      filters,
+      options,
+      websiteDomain
+    ),
     params: {
       ...normalizeFilters(filters),
+      eventType:
+        filters.event !== undefined
+          ? EVENT_TYPE.customEvent
+          : EVENT_TYPE.pageView,
       websiteId,
       startDate: dayjs(
         maxDate(filters.startDate, website.resetAt)
       ).toISOString(),
       endDate: filters.endDate
         ? dayjs(filters.endDate).toISOString()
+        : undefined,
+      resetDate: website.resetAt
+        ? dayjs(website.resetAt).toISOString()
         : undefined,
       websiteDomain,
     },
@@ -151,19 +174,17 @@ export function getWebsiteFilterQuery(
   options: QueryOptions = {},
   websiteDomain: string | null = null
 ) {
-  const query = Object.keys(filters).reduce<string[]>((arr, name) => {
+  const query = Object.keys(filters).reduce<Prisma.Sql[]>((arr, name) => {
     const value: any = filters[name as keyof WebsiteQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
     const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
-    // TODO
-
     if (value !== undefined && column) {
-      arr.push(`AND ${mapFilter(column, operator, name)}`);
+      arr.push(mapFilter(column, operator, value?.value ?? value));
 
-      if (name === 'referrer') {
+      if (name === 'referrer' && websiteDomain) {
         arr.push(
-          `AND ("WebsiteEvent"."referrerDomain" != ${websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`
+          Prisma.sql`AND ("WebsiteEvent"."referrerDomain" != ${websiteDomain} or "WebsiteEvent"."referrerDomain" is null)`
         );
       }
     }
@@ -171,44 +192,86 @@ export function getWebsiteFilterQuery(
     return arr;
   }, []);
 
-  return Prisma.sql([query.join('\n')]);
+  return query.length > 0 ? Prisma.join(query, '\n') : Prisma.empty;
+}
+
+/**
+ * Same filters as getWebsiteFilterQuery, for the ClickHouse queries.
+ * Values are passed as query params, never inlined into the SQL text.
+ */
+export function getWebsiteClickHouseFilterQuery(
+  filters: WebsiteQueryFilters = {},
+  options: QueryOptions = {},
+  websiteDomain: string | null = null
+) {
+  const params: Record<string, string> = {};
+  const query: string[] = [];
+
+  Object.keys(filters).forEach((name) => {
+    const value: any = filters[name as keyof WebsiteQueryFilters];
+    const operator = value?.filter ?? OPERATORS.equals;
+    const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
+    const sqlOperator = SQL_OPERATORS[operator];
+
+    if (value === undefined || !column || !sqlOperator) {
+      return;
+    }
+
+    assertQuotedSqlIdentifierPath(`"${column}"`);
+
+    const param = `filter_${query.length}`;
+    params[param] = String(value?.value ?? value);
+    query.push(`AND ${column} ${sqlOperator} {${param}:String}`);
+
+    if (name === 'referrer' && websiteDomain) {
+      params.filter_websiteDomain = websiteDomain;
+      query.push(
+        'AND (referrerDomain != {filter_websiteDomain:String} or referrerDomain is null)'
+      );
+    }
+  });
+
+  return { sql: query.join('\n'), params };
 }
 
 export function getTelemetryFilterQuery(
   filters: BaseQueryFilters = {},
   options: QueryOptions = {}
 ) {
-  const query = Object.keys(filters).reduce<string[]>((arr, name) => {
+  const query = Object.keys(filters).reduce<Prisma.Sql[]>((arr, name) => {
     const value: any = filters[name as keyof BaseQueryFilters];
     const operator = value?.filter ?? OPERATORS.equals;
     const column = get(FILTER_COLUMNS, name, options?.columns?.[name]);
 
-    // TODO
-
     if (value !== undefined && column) {
-      arr.push(`AND ${mapFilter(column, operator, name)}`);
+      arr.push(mapFilter(column, operator, value?.value ?? value));
     }
 
     return arr;
   }, []);
 
-  return Prisma.sql([query.join('\n')]);
+  return query.length > 0 ? Prisma.join(query, '\n') : Prisma.empty;
 }
+
+const SQL_OPERATORS: Record<string, string> = {
+  [OPERATORS.equals]: '=',
+  [OPERATORS.notEquals]: '!=',
+};
 
 function mapFilter(
   column: string,
   operator: (typeof OPERATORS)[keyof typeof OPERATORS],
-  name: string,
-  type = 'varchar'
+  value: unknown
 ) {
-  switch (operator) {
-    case OPERATORS.equals:
-      return `"${column}" = '${name}'::${type}`;
-    case OPERATORS.notEquals:
-      return `"${column}" != '${name}'::${type}`;
-    default:
-      return '';
+  const sqlOperator = SQL_OPERATORS[operator];
+
+  if (!sqlOperator) {
+    return Prisma.empty;
   }
+
+  const identifier = Prisma.raw(assertQuotedSqlIdentifierPath(`"${column}"`));
+
+  return Prisma.sql`AND ${identifier} ${Prisma.raw(sqlOperator)} ${String(value)}::varchar`;
 }
 
 export function getDateQuery(
@@ -216,14 +279,17 @@ export function getDateQuery(
   unit: keyof typeof POSTGRESQL_DATE_FORMATS,
   timezone?: string
 ) {
-  if (timezone) {
-    return Prisma.sql([
-      `to_char(date_trunc('${unit}', ${field} at time zone '${timezone}'), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
-    ]);
+  if (!(unit in POSTGRESQL_DATE_FORMATS)) {
+    throw new Error(`Invalid date unit: ${unit}`);
   }
-  return Prisma.sql([
-    `to_char(date_trunc('${unit}', ${field}), '${POSTGRESQL_DATE_FORMATS[unit]}')`,
-  ]);
+
+  const safeField = Prisma.raw(assertQuotedSqlIdentifierPath(field));
+  const format = POSTGRESQL_DATE_FORMATS[unit];
+
+  if (timezone) {
+    return Prisma.sql`to_char(date_trunc(${unit}, ${safeField} at time zone ${timezone}), ${format})`;
+  }
+  return Prisma.sql`to_char(date_trunc(${unit}, ${safeField}), ${format})`;
 }
 
 export function getTimestampIntervalQuery(field: string) {

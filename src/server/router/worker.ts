@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { param, validate } from '../middleware/validate.js';
-import { execWorker, getWorker } from '../model/worker/index.js';
+import { execStoredWorker, getWorker } from '../model/worker/index.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../utils/env.js';
 import { FunctionWorkerVisibility } from '@prisma/client';
@@ -52,19 +52,14 @@ workerRouter.all(
       }
 
       // Execute the worker
-      const execution = await execWorker(
-        worker.code,
-        workerId,
-        requestPayload,
-        {
+      const execution = await execStoredWorker(worker, requestPayload, {
           type: 'http',
           request: {
             method: req.method,
             url: req.url,
             headers: { ...req.headers },
           },
-        }
-      );
+      });
 
       const response = execution.responsePayload;
 
@@ -80,7 +75,6 @@ workerRouter.all(
       res.status(500).json({
         success: false,
         error: 'Internal server error during worker execution',
-        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }

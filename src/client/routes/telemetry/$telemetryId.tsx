@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -37,6 +37,7 @@ export const Route = createFileRoute('/telemetry/$telemetryId')({
 function TelemetryDetailComponent() {
   const { telemetryId } = Route.useParams<{ telemetryId: string }>();
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
   const { t } = useTranslation();
   const { startDate, endDate } = useGlobalRangeDate();
   const { data: info } = trpc.telemetry.info.useQuery({
@@ -76,17 +77,19 @@ function TelemetryDetailComponent() {
           title={info?.name ?? ''}
           actions={
             <div className="space-x-2">
-              <AlertConfirm
-                title={t('Confirm to delete this telemetry?')}
-                description={t('Telemetry name: {{name}} | events: {{num}}', {
-                  name: info?.name ?? '',
-                  num: eventCount ?? 0,
-                })}
-                content={t('It will permanently delete the relevant data')}
-                onConfirm={handleDelete}
-              >
-                <Button variant="outline" size="icon" Icon={LuTrash} />
-              </AlertConfirm>
+              {hasAdminPermission && (
+                <AlertConfirm
+                  title={t('Confirm to delete this telemetry?')}
+                  description={t('Telemetry name: {{name}} | events: {{num}}', {
+                    name: info?.name ?? '',
+                    num: eventCount ?? 0,
+                  })}
+                  content={t('It will permanently delete the relevant data')}
+                  onConfirm={handleDelete}
+                >
+                  <Button variant="outline" size="icon" Icon={LuTrash} />
+                </AlertConfirm>
+              )}
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -96,16 +99,18 @@ function TelemetryDetailComponent() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Usage</AlertDialogTitle>
+                    <AlertDialogTitle>{t('Usage')}</AlertDialogTitle>
                   </AlertDialogHeader>
 
                   <div className="space-y-2">
-                    <p>Here is some way to use telemetry:</p>
+                    <p>{t('Here is some way to use telemetry:')}</p>
                     <Typography.Title level={3}>
-                      Insert to article:
+                      {t('Insert to article:')}
                     </Typography.Title>
                     <p>
-                      if your article support raw html, you can direct insert it{' '}
+                      {t(
+                        'if your article support raw html, you can direct insert it'
+                      )}{' '}
                       <Typography.Text
                         code={true}
                         copyable={{ text: blankGif }}
@@ -115,14 +120,14 @@ function TelemetryDetailComponent() {
                     </p>
 
                     <Collapsible>
-                      <CollapsibleTrigger>Advanced</CollapsibleTrigger>
+                      <CollapsibleTrigger>{t('Advanced')}</CollapsibleTrigger>
 
                       <CollapsibleContent>
                         <div className="pl-5">
                           <p>
-                            Some website will not allow send `referer` field. so
-                            its maybe can not track source. so you can mark it
-                            by yourself. for example:
+                            {t(
+                              'Some website will not allow send `referer` field. so its maybe can not track source. so you can mark it by yourself. for example:'
+                            )}
                           </p>
                           <p>
                             <Typography.Text code={true}>
@@ -134,10 +139,12 @@ function TelemetryDetailComponent() {
                     </Collapsible>
 
                     <Typography.Title level={3}>
-                      Count your website visitor:
+                      {t('Count your website visitor:')}
                     </Typography.Title>
                     <p>
-                      if your article support raw html, you can direct insert it{' '}
+                      {t(
+                        'if your article support raw html, you can direct insert it'
+                      )}{' '}
                       <Typography.Text
                         code={true}
                         copyable={{ text: countBadgeUrl }}
@@ -146,7 +153,7 @@ function TelemetryDetailComponent() {
                       </Typography.Text>
                     </p>
                     <p>
-                      Like this: <img src={countBadgeUrl} />
+                      {t('Like this:')} <img src={countBadgeUrl} />
                     </p>
                   </div>
 

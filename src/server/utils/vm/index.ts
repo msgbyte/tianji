@@ -1,5 +1,9 @@
 import ivm from 'isolated-vm';
-import { buildSandbox, environmentScript } from './sandbox.js';
+import {
+  buildSandbox,
+  describeDisposedIsolateError,
+  environmentScript,
+} from './sandbox.js';
 import { env } from '../env.js';
 import { runCodeInVM2 } from './sandbox-vm2.js';
 import { logger } from '../logger.js';
@@ -11,11 +15,18 @@ if (env.sandbox.useVM2) {
   );
 }
 
-export async function runCodeInVM(_code: string): Promise<{
+export interface VMExecutionResult {
   logger: any[][];
   result: any;
+  error?: any;
   usage: number;
-}> {
+  cpuTime?: number;
+  memoryUsage?: ivm.HeapStatistics;
+}
+
+export async function runCodeInVM(
+  _code: string
+): Promise<VMExecutionResult> {
   const code = `;(async () => {${_code}})();`;
 
   try {
@@ -50,9 +61,12 @@ export async function runCodeInVM(_code: string): Promise<{
 /**
  * Only run code with isolated-vm
  */
-export async function runCodeInIVM(_code: string) {
+export async function runCodeInIVM(
+  _code: string,
+  globals: Record<string, any> = {},
+  options: { requestPayloadBytes?: number } = {}
+): Promise<VMExecutionResult> {
   const start = Date.now();
-  const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
   // const transformedCode = await transformTypescriptCode(_code);
   let sourceCode = _code;
 
@@ -65,47 +79,80 @@ export async function runCodeInIVM(_code: string) {
 
 ${sourceCode}`;
 
-  const [context, script] = await Promise.all([
-    isolate.createContext(),
-    isolate.compileScript(code),
-  ]);
-
+  const isolate = new ivm.Isolate({ memoryLimit: env.sandbox.memoryLimit });
   const logger: any[][] = [];
-
-  buildSandbox(context, {
-    console: {
-      log: (...args: any[]) => {
-        logger.push(['log', Date.now(), ...args]);
-      },
-      warn: (...args: any[]) => {
-        logger.push(['warn', Date.now(), ...args]);
-      },
-      error: (...args: any[]) => {
-        logger.push(['error', Date.now(), ...args]);
-      },
-    },
-  });
+  const requestLog: string[] = [];
 
   let res: any;
   let err: any;
+  let context: ivm.Context | undefined;
+  let script: ivm.Script | undefined;
+
   try {
-    res = await script.run(context, {
-      promise: true,
-      copy: true,
+    context = await isolate.createContext();
+    script = await isolate.compileScript(code);
+
+    buildSandbox(context, {
+      globals,
+      requestLog,
+      console: {
+        log: (...args: any[]) => {
+          logger.push(['log', Date.now(), ...args]);
+        },
+        warn: (...args: any[]) => {
+          logger.push(['warn', Date.now(), ...args]);
+        },
+        error: (...args: any[]) => {
+          logger.push(['error', Date.now(), ...args]);
+        },
+      },
     });
-  } catch (e) {
-    console.trace(e);
-    err = e;
+
+    try {
+      res = await script.run(context, {
+        promise: true,
+        copy: true,
+        timeout: env.sandbox.timeout,
+      });
+    } catch (e) {
+      console.trace(e);
+      err = e;
+    }
+
+    // isolated-vm disposes the isolate itself when it hits the memory limit.
+    if (isolate.isDisposed) {
+      return {
+        logger,
+        result: res,
+        error: describeDisposedIsolateError(
+          err,
+          requestLog,
+          options.requestPayloadBytes
+        ),
+        usage: Date.now() - start,
+      };
+    }
+
+    const cpuTime = Number(isolate.cpuTime); // unit: ns
+    const memoryUsage = await isolate.getHeapStatistics(); // unit: bytes
+
+    return {
+      logger,
+      result: res,
+      error: err,
+      usage: Date.now() - start,
+      cpuTime,
+      memoryUsage,
+    };
+  } finally {
+    try {
+      context?.release();
+    } catch {}
+    try {
+      script?.release();
+    } catch {}
+    if (!isolate.isDisposed) {
+      isolate.dispose();
+    }
   }
-
-  context.release();
-  script.release();
-
-  return {
-    isolate,
-    logger,
-    result: res,
-    error: err,
-    usage: Date.now() - start,
-  };
 }

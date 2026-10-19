@@ -1,9 +1,18 @@
 import Editor, { Monaco, OnMount } from '@monaco-editor/react';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTheme } from '../../store/settings';
 import { useEvent } from '../../hooks/useEvent';
 import { sandboxGlobal } from './lib/sandbox';
+import {
+  registerSharedModuleTypeHover,
+  retainExtraLibraryModel,
+} from './lib/shared-module-types';
 import { ValidatorFn } from './validator/fetch';
+
+export interface CodeEditorExtraLibrary {
+  content: string;
+  filePath: string;
+}
 
 interface CodeEditorProps {
   height?: string | number;
@@ -12,6 +21,7 @@ interface CodeEditorProps {
   onChange?: (code: string) => void;
   codeValidator?: ValidatorFn[];
   language?: string;
+  extraLibraries?: CodeEditorExtraLibrary[];
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
@@ -24,6 +34,56 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
   const theme = colorScheme === 'dark' ? 'vs-dark' : 'light';
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const extraLibraryDisposablesRef = useRef<Array<{ dispose: () => void }>>(
+    []
+  );
+  const extraLibraryModelDisposablesRef = useRef<
+    Array<{ dispose: () => void }>
+  >([]);
+
+  const replaceExtraLibraries = useEvent(
+    (monaco: Monaco, libraries: CodeEditorExtraLibrary[]) => {
+      extraLibraryDisposablesRef.current.forEach((disposable) =>
+        disposable.dispose()
+      );
+      extraLibraryModelDisposablesRef.current.forEach((disposable) =>
+        disposable.dispose()
+      );
+      extraLibraryDisposablesRef.current = libraries.flatMap((library) => [
+        monaco.languages.typescript.javascriptDefaults.addExtraLib(
+          library.content,
+          library.filePath
+        ),
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(
+          library.content,
+          library.filePath
+        ),
+      ]);
+      extraLibraryModelDisposablesRef.current = libraries.map((library) =>
+        retainExtraLibraryModel(monaco, library)
+      );
+    }
+  );
+
+  useEffect(() => {
+    if (monacoRef.current) {
+      replaceExtraLibraries(monacoRef.current, props.extraLibraries ?? []);
+    }
+  }, [props.extraLibraries, replaceExtraLibraries]);
+
+  useEffect(
+    () => () => {
+      extraLibraryDisposablesRef.current.forEach((disposable) =>
+        disposable.dispose()
+      );
+      extraLibraryDisposablesRef.current = [];
+      extraLibraryModelDisposablesRef.current.forEach((disposable) =>
+        disposable.dispose()
+      );
+      extraLibraryModelDisposablesRef.current = [];
+    },
+    []
+  );
 
   const validateCode = useEvent(
     (code: string): { isValid: boolean; errors: string[] } => {
@@ -41,6 +101,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = React.memo((props) => {
   const handleEditorDidMount: OnMount = useEvent((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+    registerSharedModuleTypeHover(monaco);
+    replaceExtraLibraries(monaco, props.extraLibraries ?? []);
 
     const tsDefaults = monaco.languages.typescript.typescriptDefaults;
     tsDefaults.setCompilerOptions({

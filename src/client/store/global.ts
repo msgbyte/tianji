@@ -20,6 +20,7 @@ interface GlobalState {
   startDate: Dayjs | null;
   endDate: Dayjs | null;
   showPreviousPeriod: boolean;
+  rangeDateRefreshKey: number;
 }
 
 export const useGlobalStateStore = create<GlobalState>(() => ({
@@ -27,4 +28,5 @@ export const useGlobalStateStore = create<GlobalState>(() => ({
   startDate: null,
   endDate: null,
   showPreviousPeriod: false,
+  rangeDateRefreshKey: 0,
 }));

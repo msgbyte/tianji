@@ -11,7 +11,7 @@ Tianji prend en charge diverses variables d'environnement pour personnaliser son
 | Variable | Description | Défaut | Exemple |
 | --- | --- | --- | --- |
 | `PORT` | Port du serveur | `12345` | `3000` |
-| `JWT_SECRET` | Secret pour les jetons JWT | Texte aléatoire | `votre-secret-key` |
+| `JWT_SECRET` | Secret pour les jetons JWT | Texte aléatoire | `replace-me-with-a-random-string` |
 | `ALLOW_REGISTER` | Activer l'enregistrement des utilisateurs | `false` | `true` |
 | `ALLOW_OPENAPI` | Activer l'accès OpenAPI | `true` | `false` |
 | `WEBSITE_ID` | Identifiant du site web | - | `votre-website-id` |

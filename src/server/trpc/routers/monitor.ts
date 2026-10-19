@@ -4,6 +4,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { prisma } from '../../model/_client.js';
 import { z } from 'zod';
@@ -117,7 +118,7 @@ export const monitorRouter = router({
 
       return getMonitorPublicInfos(monitorIds);
     }),
-  upsert: workspaceAdminProcedure
+  upsert: workspaceWriteProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'POST',
@@ -156,6 +157,18 @@ export const monitorRouter = router({
         upMessageTemplate,
         downMessageTemplate,
       } = input;
+
+      if (id) {
+        const existing = await prisma.monitor.findUnique({
+          where: { id, workspaceId },
+          select: { payload: true },
+        });
+        // Token rotation is handled by the admin-only regeneration endpoint.
+        const pushToken = get(existing?.payload, 'pushToken');
+        if (pushToken) {
+          payload.pushToken = pushToken;
+        }
+      }
 
       const monitor = await monitorManager.upsert({
         id,
@@ -240,7 +253,7 @@ export const monitorRouter = router({
         },
       });
 
-      createAuditLog({
+      await createAuditLog({
         workspaceId,
         relatedId: monitorId,
         relatedType: 'Monitor',
@@ -249,7 +262,7 @@ export const monitorRouter = router({
 
       return newPushToken;
     }),
-  testCustomScript: workspaceAdminProcedure
+  testCustomScript: workspaceWriteProcedure
     .input(
       z.object({
         code: z.string(),
@@ -271,7 +284,7 @@ export const monitorRouter = router({
         usage: res.usage,
       };
     }),
-  testNotifyScript: workspaceAdminProcedure
+  testNotifyScript: workspaceWriteProcedure
     .input(
       z.object({
         monitorId: z.string(),
@@ -314,22 +327,21 @@ export const monitorRouter = router({
       const user = ctx.user;
 
       try {
-        // Create audit log for manual trigger
-        createAuditLog({
-          workspaceId: workspaceId,
-          relatedId: monitorId,
-          relatedType: 'Monitor',
-          content: `Monitor(id: ${monitorId}) manual trigger by ${String(
-            user.username
-          )}(${String(user.id)})`,
-        });
-
         const runner = await monitorManager.ensureRunner(
           workspaceId,
           monitorId
         );
 
         await runner.manualTrigger();
+
+        await createAuditLog({
+          workspaceId,
+          relatedId: monitorId,
+          relatedType: 'Monitor',
+          content: `Monitor(id: ${monitorId}) manual trigger by ${String(
+            user.username
+          )}(${String(user.id)})`,
+        });
       } catch (err) {
         const errorMessage = get(err, 'message', String(err));
         logger.error(
@@ -338,7 +350,7 @@ export const monitorRouter = router({
         );
 
         // Create audit log for error
-        createAuditLog({
+        await createAuditLog({
           workspaceId: workspaceId,
           relatedId: monitorId,
           relatedType: 'Monitor',
@@ -383,7 +395,7 @@ export const monitorRouter = router({
         new Date(endAt)
       );
     }),
-  changeActive: workspaceAdminProcedure
+  changeActive: workspaceWriteProcedure
     .meta(
       buildMonitorOpenapi({
         method: 'PATCH',
@@ -402,30 +414,21 @@ export const monitorRouter = router({
       const { workspaceId, monitorId, active } = input;
       const user = ctx.user;
 
-      const monitor = await prisma.monitor.update({
-        where: {
-          workspaceId,
-          id: monitorId,
-        },
-        data: {
-          active,
-        },
-        include: {
-          notifications: true,
-        },
-      });
-      let runner = monitorManager.getRunner(monitorId);
-      if (!runner) {
-        runner = await monitorManager.createRunner(monitor);
-      }
+      const { monitor } = await monitorManager.setActive(
+        workspaceId,
+        monitorId,
+        active
+      );
 
       if (active === true) {
-        runner.startMonitor();
-        runner.createEvent(
-          'UP',
-          `Monitor [${monitor.name}] has been manual start`
-        );
-        createAuditLog({
+        await prisma.monitorEvent.create({
+          data: {
+            monitorId,
+            type: 'UP',
+            message: `Monitor [${monitor.name}] has been manual start`,
+          },
+        });
+        await createAuditLog({
           workspaceId: workspaceId,
           relatedId: monitorId,
           relatedType: 'Monitor',
@@ -434,12 +437,14 @@ export const monitorRouter = router({
           )}(${String(user.id)})`,
         });
       } else {
-        runner.stopMonitor();
-        runner.createEvent(
-          'DOWN',
-          `Monitor [${monitor.name}] has been manual stop`
-        );
-        createAuditLog({
+        await prisma.monitorEvent.create({
+          data: {
+            monitorId,
+            type: 'DOWN',
+            message: `Monitor [${monitor.name}] has been manual stop`,
+          },
+        });
+        await createAuditLog({
           workspaceId: workspaceId,
           relatedId: monitorId,
           relatedType: 'Monitor',

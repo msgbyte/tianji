@@ -86,7 +86,7 @@ export default function Pricing(): JSX.Element {
               features={[
                 'Pay as you need',
                 'One click to online',
-                'Secure cloud hosting',
+                'EU data residency (Frankfurt, Germany)',
                 'Email support',
               ]}
               button={

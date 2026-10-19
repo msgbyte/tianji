@@ -17,7 +17,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertConfirm } from '@/components/AlertConfirm';
 import { trpc, defaultErrorHandler } from '@/api/trpc';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { useEvent } from '@/hooks/useEvent';
 import {
   LuFilePen,
@@ -68,6 +72,7 @@ function PageComponent() {
   const navigate = useNavigate();
   const workspaceId = useCurrentWorkspaceId();
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
   const { connectionId } = Route.useParams();
 
   const {
@@ -150,12 +155,12 @@ function PageComponent() {
   });
 
   const headerActions = useMemo(() => {
-    if (!hasAdminPermission) {
+    if (!hasWritePermission) {
       return null;
     }
     return (
       <div className="flex items-center gap-2">
-        {connectionId && (
+        {hasAdminPermission && connectionId && (
           <AlertConfirm
             title={t('Sync tables from database?')}
             content={t(
@@ -173,7 +178,7 @@ function PageComponent() {
         </Button>
       </div>
     );
-  }, [hasAdminPermission]);
+  }, [hasAdminPermission, hasWritePermission, connectionId]);
 
   return (
     <CommonWrapper
@@ -222,7 +227,7 @@ function PageComponent() {
                     <CardTitle className="truncate text-base">
                       {item.name}
                     </CardTitle>
-                    {hasAdminPermission && (
+                    {hasWritePermission && (
                       <div className="flex items-center gap-2">
                         <Button
                           size="sm"
@@ -232,14 +237,16 @@ function PageComponent() {
                         >
                           {t('Edit')}
                         </Button>
-                        <AlertConfirm
-                          title={t('Is delete this item?')}
-                          onConfirm={() => handleDelete(item.id)}
-                        >
-                          <Button variant="destructive" size="icon">
-                            <LuTrash2 />
-                          </Button>
-                        </AlertConfirm>
+                        {hasAdminPermission && (
+                          <AlertConfirm
+                            title={t('Is delete this item?')}
+                            onConfirm={() => handleDelete(item.id)}
+                          >
+                            <Button variant="destructive" size="icon">
+                              <LuTrash2 />
+                            </Button>
+                          </AlertConfirm>
+                        )}
                       </div>
                     )}
                   </CardHeader>

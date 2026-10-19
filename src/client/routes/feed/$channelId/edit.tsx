@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useEvent } from '@/hooks/useEvent';
-import { useCurrentWorkspaceId } from '@/store/user';
+import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
 import { defaultErrorHandler, trpc } from '@/api/trpc';
 import { Card, CardContent } from '@/components/ui/card';
 import { CommonWrapper } from '@/components/CommonWrapper';
@@ -24,6 +24,7 @@ function PageComponent() {
   const { t } = useTranslation();
   const { channelId } = Route.useParams<{ channelId: string }>();
   const workspaceId = useCurrentWorkspaceId();
+  const hasAdminPermission = useHasAdminPermission();
   const navigate = useNavigate();
   const mutation = trpc.feed.updateChannelInfo.useMutation({
     onError: defaultErrorHandler,
@@ -135,8 +136,12 @@ function PageComponent() {
             <FeedChannelEditForm
               defaultValues={channel}
               onSubmit={handleSubmit}
-              onRefreshPublicShare={handleRefreshPublicShare}
-              onDisablePublicShare={handleDisablePublicShare}
+              onRefreshPublicShare={
+                hasAdminPermission ? handleRefreshPublicShare : undefined
+              }
+              onDisablePublicShare={
+                hasAdminPermission ? handleDisablePublicShare : undefined
+              }
             />
           </CardContent>
         </Card>

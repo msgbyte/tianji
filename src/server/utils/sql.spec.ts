@@ -1,5 +1,28 @@
 import { describe, it, expect } from 'vitest';
-import { validateSqlIsQuery } from './sql.js';
+import {
+  quoteSqlIdentifier,
+  quoteSqlIdentifierPath,
+  validateSqlIsQuery,
+} from './sql.js';
+
+describe('SQL identifier helpers', () => {
+  it('quotes a normal identifier', () => {
+    expect(quoteSqlIdentifier('safe').sql).toBe('"safe"');
+  });
+
+  it('keeps malicious identifier text inside one escaped identifier', () => {
+    const identifier = 'x", (SELECT current_database()) as injected --';
+    expect(quoteSqlIdentifier(identifier).sql).toBe(
+      '"x"", (SELECT current_database()) as injected --"'
+    );
+  });
+
+  it('quotes identifier paths', () => {
+    expect(quoteSqlIdentifierPath('WebsiteEvent', 'createdAt').sql).toBe(
+      '"WebsiteEvent"."createdAt"'
+    );
+  });
+});
 
 describe('validateSqlIsQuery', () => {
   describe('MySQL', () => {

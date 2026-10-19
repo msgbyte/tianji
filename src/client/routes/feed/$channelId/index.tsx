@@ -6,7 +6,11 @@ import {
 } from '@/api/trpc';
 import { CommonHeader } from '@/components/CommonHeader';
 import { CommonWrapper } from '@/components/CommonWrapper';
-import { useCurrentWorkspaceId, useHasAdminPermission } from '@/store/user';
+import {
+  useCurrentWorkspaceId,
+  useHasAdminPermission,
+  useHasWritePermission,
+} from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
@@ -57,6 +61,7 @@ function PageComponent() {
     channelId,
   });
   const hasAdminPermission = useHasAdminPermission();
+  const hasWritePermission = useHasWritePermission();
 
   const {
     data,
@@ -137,7 +142,7 @@ function PageComponent() {
 
               <FeedArchivePageButton channelId={channelId} />
 
-              {hasAdminPermission && (
+              {hasWritePermission && (
                 <>
                   {info?.publicShareId ? (
                     <Button

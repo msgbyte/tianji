@@ -2,6 +2,7 @@ import {
   router,
   workspaceAdminProcedure,
   workspaceProcedure,
+  workspaceWriteProcedure,
 } from '../trpc.js';
 import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
@@ -32,10 +33,10 @@ export const notificationRouter = router({
         token.title('Tianji: Insight into everything', 2),
         token.text(`This is Notification Testing from ${input.name}`),
         token.newline(),
-        token.image('https://tianji.msgbyte.com/img/social-card.png'),
+        token.image('https://tianji.dev/img/social-card.png'),
       ]);
     }),
-  upsert: workspaceAdminProcedure
+  upsert: workspaceWriteProcedure
     .input(
       z.object({
         id: z.string().optional(),

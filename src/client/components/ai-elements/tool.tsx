@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/collapsible';
 import { cn } from '@/utils/style';
 import type { ToolUIPart } from 'ai';
+import { t } from '@i18next-toolkit/react';
 import {
   CheckCircleIcon,
   ChevronDownIcon,
@@ -100,7 +101,7 @@ export type ToolInputProps = ComponentProps<'div'> & {
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
   <div className={cn('space-y-2 overflow-hidden p-4', className)} {...props}>
     <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-      Parameters
+      {t('Parameters')}
     </h4>
     <div className="bg-muted/50 rounded-md">
       <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
@@ -126,7 +127,7 @@ export const ToolOutput = ({
   return (
     <div className={cn('space-y-2 p-4', className)} {...props}>
       <h4 className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-        {errorText ? 'Error' : 'Result'}
+        {errorText ? t('Error') : t('Result')}
       </h4>
       <div
         className={cn(

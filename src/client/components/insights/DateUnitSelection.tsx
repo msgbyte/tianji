@@ -23,7 +23,7 @@ export const DateUnitSelection: React.FC<DateRangeSelectionProps> = React.memo(
     return (
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-[120px]">
-          <SelectValue placeholder="Day" />
+          <SelectValue placeholder={t('Day')} />
         </SelectTrigger>
         <SelectContent align="end">
           <SelectItem value="minute" disabled={!allowMinute}>

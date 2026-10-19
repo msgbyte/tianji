@@ -17,6 +17,14 @@ const renderNullableValue = (value: number) => {
   return value;
 };
 
+const getOutputTps = (tpot: number) => {
+  if (tpot <= 0) {
+    return null;
+  }
+
+  return (1000 / tpot).toFixed(2);
+};
+
 export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
   const { t } = useTranslation();
 
@@ -38,6 +46,19 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
               {props.getValue().substring(0, 8)}
             </div>
           );
+        },
+      }),
+      columnHelper.accessor('modelProvider', {
+        header: t('Provider'),
+        size: 100,
+        cell: (props) => {
+          const val = props.getValue();
+          if (!val) {
+            return (
+              <span className="text-muted-foreground opacity-50">-</span>
+            );
+          }
+          return val;
         },
       }),
       columnHelper.accessor('modelName', {
@@ -98,6 +119,20 @@ export function useAIGatewayLogColumns(onRowSelect?: (index: number) => void) {
         header: t('TTFT (ms)'),
         size: 100,
         cell: (props) => renderNullableValue(props.getValue()),
+      }),
+      columnHelper.accessor((row) => getOutputTps(row.tpot), {
+        id: 'outputTps',
+        header: t('Output TPS'),
+        size: 120,
+        cell: (props) => {
+          const value = props.getValue();
+          if (!value) {
+            return (
+              <span className="text-muted-foreground opacity-50">(null)</span>
+            );
+          }
+          return value;
+        },
       }),
       columnHelper.accessor('stream', {
         header: t('Stream'),

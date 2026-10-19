@@ -28,6 +28,11 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
 
   const dateUnit = props.dateUnit;
   const dates = props.data[0].data.map((item) => item.date);
+  const groupLabels = props.groups.map((group) =>
+    group.source === 'builtin'
+      ? t('{{name}} (Built-in)', { name: group.value })
+      : group.value
+  );
 
   const columns = [
     columnHelper.display({
@@ -38,15 +43,16 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
         return props.row.original.alias ?? props.row.original.name;
       },
     }),
-    ...props.groups.map((g) => {
-      return columnHelper.accessor(g.value, {
-        header: g.value,
+    ...props.groups.map((g, index) => {
+      return columnHelper.accessor((row) => row[groupLabels[index]], {
+        id: `group_${index}`,
+        header: groupLabels[index],
         size: 110,
         meta: {
           className: 'text-right',
         },
         cell(props) {
-          return get(props.row.original, g.value);
+          return props.cell.getValue();
         },
       });
     }),
@@ -82,11 +88,17 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
   ];
 
   const tableData = props.data.map((item) => {
-    const { name, data, ...others } = item;
+    const { name, alias, data } = item;
 
     return {
       name,
-      ...others,
+      ...(alias ? { alias } : {}),
+      ...Object.fromEntries(
+        props.groups.map((group, index) => [
+          groupLabels[index],
+          item.groupValues ? item.groupValues[index] : get(item, group.value),
+        ])
+      ),
       ...data.reduce((prev, curr) => {
         return {
           ...prev,
@@ -109,7 +121,11 @@ export const TableView: React.FC<TableViewProps> = React.memo((props) => {
       </div>
       <DataTable
         columnPinning={{
-          left: ['name', ...props.groups.map((item) => item.value), 'average'],
+          left: [
+            'name',
+            ...props.groups.map((_, index) => `group_${index}`),
+            'average',
+          ],
         }}
         columns={columns}
         data={tableData}
