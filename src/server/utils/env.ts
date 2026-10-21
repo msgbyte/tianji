@@ -57,6 +57,8 @@ export const env = {
       issuer: process.env.AUTH_CUSTOM_ISSUER,
       clientId: process.env.AUTH_CUSTOM_ID,
       clientSecret: process.env.AUTH_CUSTOM_SECRET,
+      // Auth.js defaults to ['pkce'] alone; providers such as PocketID reject a request without state.
+      checks: ['pkce', 'state'] as ('pkce' | 'state')[],
     },
   },
   publicUrl: process.env.PUBLIC_URL || undefined, // for example: https://app.tianji.com
