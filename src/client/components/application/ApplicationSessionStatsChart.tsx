@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { SimplePieChart } from '../chart/SimplePieChart';
+import { sumBy } from 'lodash-es';
 import { trpc, AppRouterInput } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
-import { ChartConfig } from '../ui/chart';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useTranslation } from '@i18next-toolkit/react';
 import { useGlobalRangeDate } from '@/hooks/useGlobalRangeDate';
+import { BarList, BarListItem } from '../chart/BarList';
 import { Loading } from '../Loading';
 
 const MAX_DISPLAY_ITEMS = 5;
@@ -19,11 +19,13 @@ interface ApplicationSessionStatsChartProps {
   groupBy: SessionStatsGroupBy;
   title: string;
   formatLabel?: (name: string) => string;
+  labelClassName?: string;
 }
 
 export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChartProps> =
   React.memo((props) => {
-    const { applicationId, groupBy, title, formatLabel } = props;
+    const { applicationId, groupBy, title, formatLabel, labelClassName } =
+      props;
     const workspaceId = useCurrentWorkspaceId();
     const { t } = useTranslation();
     const { startDate, endDate } = useGlobalRangeDate();
@@ -37,15 +39,15 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
         groupBy,
       });
 
-    const { data, chartConfig } = useMemo(() => {
+    const { data, total } = useMemo(() => {
       if (stats.length === 0) {
-        return { data: [], chartConfig: {} };
+        return { data: [], total: 0 };
       }
 
       const topItems = stats.slice(0, MAX_DISPLAY_ITEMS);
       const otherItems = stats.slice(MAX_DISPLAY_ITEMS);
 
-      const displayData = [...topItems];
+      const displayData = topItems.map((item) => ({ ...item, muted: false }));
 
       if (otherItems.length > 0) {
         const otherCount = otherItems.reduce(
@@ -55,6 +57,7 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
         displayData.push({
           name: OTHER_NAME,
           count: otherCount,
+          muted: true,
         });
       }
 
@@ -65,21 +68,15 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
         return formatLabel ? formatLabel(name) : name;
       };
 
-      const chartConfig: ChartConfig = {};
-      displayData.forEach((item, i) => {
-        chartConfig[`item-${i}`] = {
-          label: getLabel(item.name),
-          color: `hsl(var(--chart-${(i % 5) + 1}))`,
-        };
-      });
-
       return {
-        data: displayData.map((item, i) => ({
-          label: getLabel(item.name),
-          count: item.count,
-          fill: `var(--color-item-${i})`,
-        })),
-        chartConfig,
+        data: displayData.map(
+          (item): BarListItem => ({
+            label: getLabel(item.name),
+            count: item.count,
+            muted: item.muted,
+          })
+        ),
+        total: sumBy(displayData, 'count'),
       };
     }, [stats, formatLabel]);
 
@@ -113,15 +110,18 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
 
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-baseline justify-between space-y-0">
           <CardTitle>{title}</CardTitle>
+          <span className="text-muted-foreground text-xs tabular-nums">
+            {total.toLocaleString()} {t('Sessions')}
+          </span>
         </CardHeader>
         <CardContent>
-          <SimplePieChart
-            className="mx-auto min-h-[260px] w-full"
+          <BarList
+            aria-label={title}
             data={data}
-            chartConfig={chartConfig}
-            showLegend={true}
+            total={total}
+            labelClassName={labelClassName}
           />
         </CardContent>
       </Card>

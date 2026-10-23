@@ -21,6 +21,7 @@ export const ApplicationVersionChart: React.FC<ApplicationVersionChartProps> =
         groupBy="version"
         title={t('Version Distribution')}
         formatLabel={formatVersion}
+        labelClassName="font-mono"
       />
     );
   });
