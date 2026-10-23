@@ -1,5 +1,13 @@
 
 
+## [1.33.12](https://github.com/msgbyte/tianji/compare/v1.33.11...v1.33.12) (2026-10-23)
+
+### Features
+
+* **application:** replace distribution pie charts with bar lists ([e9c3789](https://github.com/msgbyte/tianji/commit/e9c3789a092fe9359b5874b4b2221f678d0ea3bd))
+* **application:** show country names with flags in distribution card ([b7b08f1](https://github.com/msgbyte/tianji/commit/b7b08f1bea6f4686d03a6b65e7ad1c76bddf1d0f))
+* **chart:** add reusable BarList component ([8784b9a](https://github.com/msgbyte/tianji/commit/8784b9a2e6921d8c618348d8f7d46be1ed05e644))
+
 ## [1.33.11](https://github.com/msgbyte/tianji/compare/v1.33.10...v1.33.11) (2026-10-18)
 
 ### Bug Fixes
