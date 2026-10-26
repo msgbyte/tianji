@@ -129,3 +129,5 @@ And its inspired by `umami` license which under `MIT` and `uptime-kuma` which un
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/msgbyte/tianji)
 
 [![Run on ClawCloud](https://raw.githubusercontent.com/ClawCloud/Run-Template/refs/heads/main/Run-on-ClawCloud.svg)](https://template.run.claw.cloud/?referralCode=TNW6NVWTLHPQ&openapp=system-fastdeploy%3FtemplateName%3Dtianji)
+
+[![Deploy on ZopDay](https://zop.dev/deploytozopday-inkhard.svg)](https://zop.dev/zopday/app/deploy?image=moonrailgun/tianji:latest&port=12345)
