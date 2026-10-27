@@ -10,6 +10,18 @@ export function useAuth() {
   const trpcUtils = trpc.useUtils();
   const { t } = useTranslation();
 
+  const getLoginError = (res: SignInResponse, fallback: string) => {
+    if (res.status === 429) {
+      return t('Too many attempts. Please try again later.');
+    }
+    if (res.status === 503) {
+      return t(
+        'Authentication is temporarily unavailable. Please try again later.'
+      );
+    }
+    return fallback;
+  };
+
   const loginWithPassword = useEvent(
     async (username: string, password: string) => {
       let res: SignInResponse | undefined;
@@ -25,7 +37,12 @@ export function useAuth() {
       }
 
       if (res?.error) {
-        toast.error(t('Login failed, please check your username and password'));
+        toast.error(
+          getLoginError(
+            res,
+            t('Login failed, please check your username and password')
+          )
+        );
         throw new Error('Login failed');
       }
 
@@ -54,7 +71,9 @@ export function useAuth() {
       }
 
       if (res?.error) {
-        toast.error(t('Login failed, please check your email'));
+        toast.error(
+          getLoginError(res, t('Login failed, please check your email'))
+        );
         throw new Error('Login failed');
       }
 
@@ -77,7 +96,7 @@ export function useAuth() {
       }
 
       if (res?.error) {
-        toast.error(t('Login failed'));
+        toast.error(getLoginError(res, t('Login failed')));
         throw new Error('Login failed');
       }
 
