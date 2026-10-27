@@ -21,6 +21,7 @@ export const env = {
   jwtSecret,
   port: Number(process.env.PORT || 12345),
   auth: {
+    rateLimitEnabled: !checkEnvTrusty(process.env.DISABLE_AUTH_RATE),
     provider: compact([
       !checkEnvTrusty(process.env.DISABLE_ACCOUNT) && 'account',
       !!process.env.EMAIL_SERVER && 'email',

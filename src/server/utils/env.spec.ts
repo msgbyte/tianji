@@ -6,6 +6,24 @@ afterEach(() => {
   vi.resetModules();
 });
 
+describe('DISABLE_AUTH_RATE', () => {
+  test.each([
+    [undefined, true],
+    ['', true],
+    ['true', false],
+    ['false', true],
+    ['1', false],
+    ['0', true],
+  ])('uses %s to set rateLimitEnabled=%s', async (value, expected) => {
+    vi.stubEnv('DISABLE_AUTH_RATE', value);
+    vi.resetModules();
+
+    const { env } = await import('./env.js');
+
+    expect(env.auth.rateLimitEnabled).toBe(expected);
+  });
+});
+
 describe('JWT_SECRET', () => {
   test('rejects tokens signed with the example placeholder', async () => {
     const placeholder = 'replace-me-with-a-random-string';

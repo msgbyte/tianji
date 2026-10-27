@@ -31,7 +31,25 @@ If `JWT_SECRET` is empty or set to `replace-me-with-a-random-string`, Tianji gen
 | Variable | Description | Default | Example |
 | --- | --- | --- | --- |
 | `CACHE_MEMORY_ONLY` | Use memory-only caching | `false` | `true` |
-| `REDIS_URL` | Redis connection URL | - | `redis://localhost:6379` |
+| `REDIS_URL` | Redis connection URL for caching and shared authentication rate limits | - | `redis://localhost:6379` |
+
+### Authentication rate limits
+
+Authentication rate limiting is enabled by default (`DISABLE_AUTH_RATE=false`) and requires `REDIS_URL`. Set `DISABLE_AUTH_RATE=true` to disable it without affecting Redis caching. When active, atomic, IP-based limits are shared by all replicas, Auth.js, tRPC (including each operation in a batch), and OpenAPI. Limits count all attempts, including successful requests. They use fixed windows starting with the first attempt and expire automatically in Redis.
+
+| Operation | Requests per IP | Window |
+| --- | --- | --- |
+| Password login | 10 | 15 minutes |
+| Registration | 5 | 1 hour |
+| Password change | 5 | 15 minutes |
+| Token login, email verification, invitation lookup/acceptance, and OAuth sign-in/callback (shared quota) | 30 | 15 minutes |
+| Sign-in emails and workspace invitations (shared quota) | 5 | 15 minutes |
+
+Exceeding a limit returns `429 Too Many Requests` with the remaining wait in the error message. Auth.js responses also include `Retry-After`. Workspace invitations count even when an existing user is added without sending email. Session reads, CSRF token requests, and sign-out are unaffected.
+
+Without `REDIS_URL`, these limits are disabled. `CACHE_MEMORY_ONLY` does not disable rate limiting when `REDIS_URL` is set. If configured Redis is unavailable, protected operations return `503 Service Unavailable` instead of bypassing the limits.
+
+By default, rate limits use the socket's remote IP and ignore forwarded headers. Behind a reverse proxy, set `CLIENT_IP_HEADER` to a header containing one client IP, such as `x-real-ip` or `cf-connecting-ip`. The proxy **must overwrite this header**, and direct access to Tianji must be restricted to trusted proxies. Missing or invalid header values fall back to the socket IP. Without this configuration, users behind the same proxy share its quota. IP addresses are hashed in Redis keys; no passwords, tokens, or email addresses are stored by the limiter.
 
 ## Authentication
 
@@ -39,6 +57,7 @@ If `JWT_SECRET` is empty or set to `replace-me-with-a-random-string`, Tianji gen
 | --- | --- | --- | --- |
 | `DISABLE_ACCOUNT` | Disable account-based authentication | `false` | `true` |
 | `AUTH_SECRET` | Authentication secret | MD5 of JWT secret | `your-auth-secret` |
+| `DISABLE_AUTH_RATE` | Disable Redis-backed authentication and email rate limits | `false` | `true` |
 | `AUTH_RESTRICT_EMAIL` | Restrict registration to specific email domains | - | `@example.com` |
 | `AUTH_USE_SECURE_COOKIES` | Use secure cookies for authentication | `false` | `true` |
 

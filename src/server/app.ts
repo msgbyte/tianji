@@ -36,6 +36,7 @@ import {
 } from './router/staticPage.js';
 import { pageRouter } from './router/page.js';
 import { geminiError } from './model/aiGateway/gemini.js';
+import { authRateLimit } from './middleware/authRateLimit.js';
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use(
 
 app.use('/health', healthRouter);
 app.use('/s', shortlinkRouter);
+app.use('/api/auth', authRateLimit);
 app.use('/api/auth/*', ExpressAuth(authConfig));
 app.use('/api/website', websiteRouter);
 app.use('/api/application', applicationRouter);

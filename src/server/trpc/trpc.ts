@@ -12,6 +12,11 @@ import { verifyUserApiKey } from '../model/user.js';
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { parse as languageParse } from 'accept-language-parser';
 import { createWorkspaceMutationAuditLog } from '../model/auditLog.js';
+import {
+  authRateLimitMessage,
+  authRateLimitProcedures,
+  consumeAuthRateLimit,
+} from '../middleware/authRateLimit.js';
 
 const WORKSPACE_MUTATION_AUDIT_EXCLUDED_PATHS = new Set([
   'aiGateway.testConnection',
@@ -97,7 +102,21 @@ const prom = middleware(async (opts) => {
   }
 });
 
-export const publicProcedure = t.procedure.use(prom);
+const rateLimit = middleware(async (opts) => {
+  const policy = authRateLimitProcedures[opts.path];
+  if (policy) {
+    const retryAfter = await consumeAuthRateLimit(opts.ctx.req, policy);
+    if (retryAfter) {
+      throw new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
+        message: authRateLimitMessage(retryAfter),
+      });
+    }
+  }
+  return opts.next();
+});
+
+export const publicProcedure = t.procedure.use(prom).use(rateLimit);
 
 const isUser = middleware(async (opts) => {
   // auth with token
@@ -152,7 +171,7 @@ const isUser = middleware(async (opts) => {
   throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No Token or Session' });
 });
 
-export const protectProedure = t.procedure.use(prom).use(isUser);
+export const protectProedure = publicProcedure.use(isUser);
 
 const isSystemAdmin = isUser.unstable_pipe(async (opts) => {
   const { ctx, input } = opts;
