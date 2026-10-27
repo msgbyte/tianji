@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import http, { type Server } from 'node:http';
 import https from 'node:https';
 import type { AddressInfo } from 'node:net';
-import { createGunzip, gzipSync } from 'node:zlib';
+import { createGunzip, gunzipSync, gzipSync } from 'node:zlib';
 import request from 'supertest';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { app } from '../../app.js';
@@ -246,6 +246,54 @@ test('preserves compressed response bytes and headers', async () => {
   expect(result.headers['content-length']).toBe(String(compressed.length));
 });
 
+test.each([
+  path + 'generations',
+  '/api/ai/workspace/gateway/custom/api/alpha/decisions',
+])('compresses chunked JSON efficiently on %s', async (url) => {
+  const body = Buffer.from(
+    JSON.stringify({
+      data: Array.from({ length: 256 }, () => ({
+        b64_json: 'sample-image-output'.repeat(32),
+      })),
+    })
+  );
+  reply = async (_req, res) => {
+    res.type('application/json');
+    for (let offset = 0; offset < body.length; offset += 1024) {
+      res.write(body.subarray(offset, offset + 1024));
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+    res.end();
+  };
+  const listener = app.listen(0, '127.0.0.1');
+  await once(listener, 'listening');
+  try {
+    const client = http.request({
+      hostname: '127.0.0.1',
+      port: (listener.address() as AddressInfo).port,
+      path: url,
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer caller-key',
+        'content-type': 'application/json',
+        'accept-encoding': 'gzip',
+      },
+    });
+    client.end('{}');
+    const [response] = await once(client, 'response');
+    const chunks: Buffer[] = [];
+    for await (const chunk of response) chunks.push(chunk);
+    const compressed = Buffer.concat(chunks);
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-encoding']).toBe('gzip');
+    expect(gunzipSync(compressed)).toEqual(body);
+    expect(compressed.length).toBeLessThan(gzipSync(body).length * 2);
+  } finally {
+    listener.closeAllConnections();
+    await new Promise<void>((resolve) => listener.close(() => resolve()));
+  }
+});
+
 test('forwards multipart with an invalid boundary without blocking', async () => {
   expect(
     (
@@ -371,7 +419,7 @@ test('streams response chunks before completion and closes upstream on client di
     upstreamResponse = res;
     res
       .set('Cache-Control', 'no-cache')
-      .type('text/event-stream')
+      .set('Content-Type', 'Text/Event-Stream; charset=utf-8')
       .write('data: private partial image\n\n');
   };
   const listener = app.listen(0, '127.0.0.1');

@@ -64,7 +64,13 @@ export function buildAIGatewayPassthroughHandler(options: {
         res.writeHead(response.statusCode ?? 502, response.headers);
         response.on('error', () => res.destroy());
         response.pipe(res);
-        response.on('data', () => res.flush?.());
+        const contentType = response.headers['content-type']
+          ?.split(';', 1)[0]
+          .trim()
+          .toLowerCase();
+        if (contentType === 'text/event-stream') {
+          response.on('data', () => res.flush?.());
+        }
       }
     );
     res.once('close', () => {
