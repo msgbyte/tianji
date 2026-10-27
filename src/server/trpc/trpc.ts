@@ -90,7 +90,7 @@ const prom = middleware(async (opts) => {
     const res = await opts.next();
 
     endRequest({
-      status: 'success',
+      status: res.ok ? 'success' : 'error',
     });
     return res;
   } catch (err) {

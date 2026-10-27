@@ -81,6 +81,9 @@ test.each(['website.info', 'website%2Einfo'])(
     expect(await counts()).toEqual([
       { method: 'GET', route: '/trpc/website.info', code: 500, value: 1 },
     ]);
+    expect(await counts('trpc_request_duration_seconds')).toEqual([
+      { route: 'website.info', type: 'query', status: 'error', value: 1 },
+    ]);
   }
 );
 
@@ -104,7 +107,7 @@ test.each([
   ['application/json', 207],
   ['application/jsonl', 200],
 ])(
-  'groups %s batches with different procedure combinations under one HTTP route',
+  'groups %s batches and records every procedure outcome separately',
   async (accept, code) => {
     for (const path of [
       'ping,website.info,ping',
@@ -129,6 +132,14 @@ test.each([
     expect(await counts()).toEqual([
       { method: 'GET', route: '/trpc/batch', code, value: 3 },
     ]);
+    expect(await counts('trpc_request_duration_seconds')).toEqual(
+      expect.arrayContaining([
+        { route: 'ping', type: 'query', status: 'success', value: 3 },
+        { route: 'ready', type: 'query', status: 'success', value: 1 },
+        { route: 'website.info', type: 'query', status: 'error', value: 3 },
+      ])
+    );
+    expect(await counts('trpc_request_duration_seconds')).toHaveLength(3);
   }
 );
 
@@ -136,6 +147,13 @@ test('groups single-procedure batches under the same HTTP route', async () => {
   await request(app).get('/trpc/ping?batch=1').expect(200);
   expect(await counts()).toEqual([
     { method: 'GET', route: '/trpc/batch', code: 200, value: 1 },
+  ]);
+});
+
+test('records input validation failures in procedure metrics', async () => {
+  await request(app).get('/trpc/website.info').expect(400);
+  expect(await counts('trpc_request_duration_seconds')).toEqual([
+    { route: 'website.info', type: 'query', status: 'error', value: 1 },
   ]);
 });
 
