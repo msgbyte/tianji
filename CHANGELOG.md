@@ -1,5 +1,29 @@
 
 
+## [1.33.13](https://github.com/msgbyte/tianji/compare/v1.33.12...v1.33.13) (2026-10-27)
+
+### Features
+
+* **ai-gateway:** add direct image request routes ([d73a7ee](https://github.com/msgbyte/tianji/commit/d73a7ee7f154cc0b030eb20b37de02c12dbc2cfe))
+* **auth:** add Redis-backed authentication rate limits ([df412a0](https://github.com/msgbyte/tianji/commit/df412a0ea517bb6bd04260221c82ea0241f86fa7))
+
+### Bug Fixes
+
+* **ai-gateway:** support unparsed streaming passthrough ([fe6e8fe](https://github.com/msgbyte/tianji/commit/fe6e8fe6d02224beb86f7f00cd6aaecd56411ac7))
+* **auth:** clarify rate limit and availability errors ([f5cad48](https://github.com/msgbyte/tianji/commit/f5cad485960310e552363eb18bdd498776636183))
+* **metrics:** expose bounded OpenAPI and tRPC route labels ([1030db9](https://github.com/msgbyte/tianji/commit/1030db9e9637eccb9c70b485f512ae69315b4451))
+* **metrics:** record failed tRPC procedure outcomes ([1417c46](https://github.com/msgbyte/tianji/commit/1417c46239c67aaf57ddaa6dbd56343a5d007798))
+
+### Document
+
+* **ai-gateway:** document image passthrough endpoints ([dc76621](https://github.com/msgbyte/tianji/commit/dc766217dcb99326a7b8ac70d468d74623034bac))
+* **metrics:** explain HTTP and procedure monitoring queries ([11780a1](https://github.com/msgbyte/tianji/commit/11780a16c992b5162911f94759fc77f2115efaf2))
+
+### Others
+
+* **ai-gateway:** limit compression flushing to SSE ([37666d1](https://github.com/msgbyte/tianji/commit/37666d19f37536258891e94c7a61d400c6bfd341))
+* **release:** use version-only release names ([532bcf1](https://github.com/msgbyte/tianji/commit/532bcf1e451f576e86cd022ef167f71905118e89))
+
 ## [1.33.12](https://github.com/msgbyte/tianji/compare/v1.33.11...v1.33.12) (2026-10-23)
 
 ### Features
