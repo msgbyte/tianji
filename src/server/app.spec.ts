@@ -28,6 +28,7 @@ vi.mock('./trpc/index.js', () => ({
   trpcExpressMiddleware: (_req: any, _res: any, next: any) => next(),
   trpcOpenapiDocument: {},
   trpcOpenapiHttpHandler: vi.fn(),
+  trpcMetricsRoute: () => undefined,
 }));
 vi.mock('@auth/express', () => ({
   ExpressAuth: () => (_req: any, _res: any, next: any) => next(),

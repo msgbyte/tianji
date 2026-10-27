@@ -4,12 +4,50 @@ import { appRouter } from './routers/index.js';
 import {
   generateOpenApiDocument,
   createOpenApiExpressMiddleware,
+  forEachOpenApiProcedure,
+  getPathRegExp,
+  normalizePath,
 } from 'trpc-to-openapi';
+import type { Request } from 'express';
 const packageJson = await import('../../../package.json', {
   with: { type: 'json' },
 });
 
 export type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
+
+const procedurePaths = new Set(Object.keys(appRouter._def.procedures));
+const openapiRoutes: { method: string; path: string; pattern: RegExp }[] = [];
+forEachOpenApiProcedure(appRouter._def.procedures, ({ type, meta }) => {
+  if (type === 'subscription') return;
+  const path = normalizePath(meta.openapi.path);
+  openapiRoutes.push({
+    method: meta.openapi.method,
+    path,
+    pattern: getPathRegExp(path),
+  });
+});
+
+export function trpcMetricsRoute(req: Request): string | undefined {
+  const baseUrl = req.baseUrl.toLowerCase();
+  if (baseUrl === '/open') {
+    const path = normalizePath(req.path);
+    const route = openapiRoutes.find(
+      (route) => route.method === req.method && route.pattern.test(path)
+    );
+    return route ? `/open${route.path}` : '/open';
+  }
+  if (baseUrl === '/trpc') {
+    if (req.query.batch === '1') return '/trpc/batch';
+
+    let path: string;
+    try {
+      path = decodeURIComponent(req.path.slice(req.path.lastIndexOf('/') + 1));
+    } catch {
+      return '/trpc';
+    }
+    return procedurePaths.has(path) ? `/trpc/${path}` : '/trpc';
+  }
+}
 
 export const trpcExpressMiddleware = trpcExpress.createExpressMiddleware({
   router: appRouter,

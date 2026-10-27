@@ -57,6 +57,9 @@ export class ExpressMiddleware {
   }
 
   _getRoute(req: Request) {
+    const resolvedRoute = this.setupOptions.resolveRoute?.(req);
+    if (resolvedRoute) return resolvedRoute;
+
     let route = req.baseUrl;
     if (req.route) {
       if (req.route.path !== '/') {

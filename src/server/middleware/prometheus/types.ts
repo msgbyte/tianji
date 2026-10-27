@@ -11,6 +11,7 @@ export interface ApiMetricsOpts {
   metricsPrefix?: string;
   excludeRoutes?: string[];
   includeQueryParams?: boolean;
+  resolveRoute?: (req: Request) => string | undefined;
   additionalLabels?: string[];
   extractAdditionalLabelValuesFn?: (
     req: Request,
@@ -29,6 +30,7 @@ export interface SetupOptions {
   metricsRoute?: string;
   excludeRoutes?: string[];
   includeQueryParams?: boolean;
+  resolveRoute?: ApiMetricsOpts['resolveRoute'];
   defaultMetricsInterval?: number;
   additionalLabels?: string[];
   extractAdditionalLabelValuesFn?: (

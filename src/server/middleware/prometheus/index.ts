@@ -17,6 +17,7 @@ export function prometheusApiVersion(options: ApiMetricsOpts = {}) {
     metricsPrefix,
     excludeRoutes,
     includeQueryParams,
+    resolveRoute,
     additionalLabels = [],
     extractAdditionalLabelValuesFn,
   } = options;
@@ -38,6 +39,7 @@ export function prometheusApiVersion(options: ApiMetricsOpts = {}) {
   });
 
   setupOptions.includeQueryParams = includeQueryParams;
+  setupOptions.resolveRoute = resolveRoute;
   setupOptions.defaultMetricsInterval = defaultMetricsInterval;
 
   setupOptions.additionalLabels = utils.validateInput({

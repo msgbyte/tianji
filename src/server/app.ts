@@ -10,6 +10,7 @@ import {
   trpcExpressMiddleware,
   trpcOpenapiDocument,
   trpcOpenapiHttpHandler,
+  trpcMetricsRoute,
 } from './trpc/index.js';
 import { env } from './utils/env.js';
 import cors from 'cors';
@@ -48,6 +49,7 @@ app.use((_req, res, next) => {
 app.use(
   prometheusApiVersion({
     metricsPath: env.observability.prometheus.metricsPath,
+    resolveRoute: trpcMetricsRoute,
   })
 );
 app.use(compression());
