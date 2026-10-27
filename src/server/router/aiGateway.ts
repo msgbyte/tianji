@@ -11,6 +11,21 @@ import { geminiHandler } from '../model/aiGateway/gemini.js';
 import { buildAIGatewayPassthroughHandler } from '../model/aiGateway/passthrough.js';
 
 export const aiGatewayRouter = Router();
+export const aiGatewayImageRouter = Router();
+
+for (const action of ['generations', 'edits', 'variations'] as const) {
+  aiGatewayImageRouter.post(
+    `/:workspaceId/:gatewayId/openai/v1/images/${action}`,
+    buildAIGatewayPassthroughHandler({
+      path: `/v1/images/${action}`,
+      baseUrl: 'https://api.openai.com',
+    })
+  );
+  aiGatewayImageRouter.post(
+    `/:workspaceId/:gatewayId/custom/v1/images/${action}`,
+    buildAIGatewayPassthroughHandler({ path: `/v1/images/${action}` })
+  );
+}
 
 aiGatewayRouter.post(
   '/:workspaceId/:gatewayId/openrouter/api/alpha/decisions',

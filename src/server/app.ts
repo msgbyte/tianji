@@ -25,7 +25,7 @@ import { ExpressAuth } from '@auth/express';
 import { authConfig } from './model/auth.js';
 import { prometheusApiVersion } from './middleware/prometheus/index.js';
 import { billingRouter } from './router/billing.js';
-import { aiGatewayRouter } from './router/aiGateway.js';
+import { aiGatewayImageRouter, aiGatewayRouter } from './router/aiGateway.js';
 import { aiRouterRouter } from './router/aiRouter.js';
 import { pushRouter } from './router/push.js';
 import { workerRouter } from './router/worker.js';
@@ -53,6 +53,16 @@ app.use(
   })
 );
 app.use(compression());
+if (!env.disableAccessLogs && process.env.NODE_ENV !== 'test') {
+  app.use(morgan('tiny'));
+}
+app.use(cors());
+
+// http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
+app.disable('x-powered-by');
+
+// Stream image uploads before JSON parsing consumes the request body.
+app.use('/api/ai', aiGatewayImageRouter);
 app.use(
   express.json({
     limit: '10mb',
@@ -61,13 +71,6 @@ app.use(
     },
   })
 );
-if (!env.disableAccessLogs && process.env.NODE_ENV !== 'test') {
-  app.use(morgan('tiny'));
-}
-app.use(cors());
-
-// http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
-app.disable('x-powered-by');
 
 app.use(
   '/tracker.js',
