@@ -10,6 +10,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { aiGatewayRouter } from '../../router/aiGateway.js';
 import { prisma } from '../_client.js';
 import { checkQuotaAlert } from './quotaAlert.js';
+import { buildAIGatewayPassthroughHandler } from './passthrough.js';
 
 vi.mock('../_client.js', () => ({
   prisma: {
@@ -26,6 +27,10 @@ vi.mock('../../cache/index.js', async (importOriginal) => ({
 }));
 
 const app = express();
+app.post(
+  '/unparsed/:workspaceId/:gatewayId',
+  buildAIGatewayPassthroughHandler({ path: '/v1/images/edits' })
+);
 app.use(
   express.json({
     verify(req, _res, buffer) {
@@ -100,6 +105,24 @@ function post(url = path) {
     .set('Content-Type', 'application/json')
     .send(payload);
 }
+
+test.each([
+  ['application/json', '{ "image": "original bytes" }'],
+  [
+    'multipart/form-data; boundary=image-boundary',
+    '--image-boundary\r\nContent-Disposition: form-data; name="image"\r\n\r\nimage bytes\r\n--image-boundary--\r\n',
+  ],
+])('streams an unparsed %s request unchanged', async (contentType, body) => {
+  const result = await request(app)
+    .post('/unparsed/workspace/gateway')
+    .set('Authorization', 'Bearer caller-key')
+    .set('Content-Type', contentType)
+    .send(body);
+  expect(result.status).toBe(201);
+  expect(received[0].body).toBe(body);
+  expect(received[0].headers['content-type']).toBe(contentType);
+  expect(received[0].url).toBe('/api/v1/images/edits');
+});
 
 test.each([
   ['', '/api/alpha/decisions'],
