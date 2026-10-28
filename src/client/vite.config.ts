@@ -30,6 +30,7 @@ export default defineConfig({
   build: {
     target: esbuildTarget,
     outDir: '../server/public',
+    emptyOutDir: true,
   },
   optimizeDeps: {
     esbuildOptions: {
