@@ -4,7 +4,7 @@
     "releaseName": "v${version}"
   },
   "git": {
-    "commitMessage": "v${version}",
+    "commitMessage": "chore: release version v${version}",
     "tag": true,
     "tagName": "v${version}",
     "tagAnnotation": "v${version}"
