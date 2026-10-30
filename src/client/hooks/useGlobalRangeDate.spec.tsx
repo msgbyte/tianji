@@ -19,7 +19,11 @@ afterEach(() => {
   useGlobalStateStore.setState(useGlobalStateStore.getInitialState());
 });
 
-test('manual refresh advances the relative range for every consumer', () => {
+test.each([
+  [DateRange.Last24Hours, 24],
+  [DateRange.Last14Hours, 14],
+])('manual refresh advances %s for every consumer', (dateRange, hours) => {
+  useGlobalStateStore.setState({ dateRange });
   const first = renderHook(useGlobalRangeDate);
   const second = renderHook(useGlobalRangeDate);
   const now = new Date('2026-07-10T13:00:00Z');
@@ -30,9 +34,21 @@ test('manual refresh advances the relative range for every consumer', () => {
   for (const consumer of [first, second]) {
     expect(consumer.result.current.endDate.valueOf()).toBe(now.valueOf());
     expect(consumer.result.current.startDate.valueOf()).toBe(
-      dayjs(now).subtract(1, 'day').valueOf()
+      now.valueOf() - hours * 60 * 60 * 1000
     );
   }
+});
+
+test('last 14 hours spans midnight and uses hourly buckets', () => {
+  useGlobalStateStore.setState({ dateRange: DateRange.Last14Hours });
+  const { result } = renderHook(useGlobalRangeDate);
+
+  expect(result.current.startDate.toISOString()).toBe(
+    '2026-07-09T22:00:00.000Z'
+  );
+  expect(result.current.endDate.toISOString()).toBe('2026-07-10T12:00:00.000Z');
+  expect(result.current.unit).toBe('hour');
+  expect(result.current.label).toBe('Last 14 hours');
 });
 
 test('manual refresh preserves a selected custom range', () => {
