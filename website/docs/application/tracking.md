@@ -6,6 +6,25 @@ sidebar_position: 1
 
 Tianji provides a powerful SDK for tracking events and user behavior in your applications. This guide explains how to integrate and use the Application Tracking SDK in your projects.
 
+## Quick Integration with AI Agent
+
+Open your application in Tianji and click **Usage** in the top right corner. The **AI Prompt** tab contains a prompt with your server URL and application ID already filled in. Paste it into your coding agent (Claude Code, Cursor, Codex, etc.) and it will install the SDK, initialize it, and add screen, user, and event tracking for you.
+
+You can also write the prompt yourself:
+
+```text
+Integrate Tianji application tracking into this project.
+
+Tianji server URL: https://tianji.example.com
+Application ID: your-application-id
+Documentation: https://tianji.dev/docs/application/tracking
+
+Install the SDK, initialize it at app startup, report screen views on
+navigation, identify the user after sign in, report API requests and
+uncaught errors, flush events when the app goes to the background, and
+propose key business events for me to approve before tracking them.
+```
+
 ## Installation
 
 Install the Tianji React Native SDK and its peer dependency [`react-native-device-info`](https://github.com/react-native-device-info/react-native-device-info) in your project:
@@ -35,7 +54,7 @@ initApplication({
 });
 ```
 
-Make sure the server URL is reachable from real devices: not `localhost`, and HTTPS unless your app allows cleartext traffic.
+You can find the server URL and application ID in the **Usage** dialog of your application in Tianji. Make sure the server URL is reachable from real devices: not `localhost`, and HTTPS unless your app allows cleartext traffic.
 
 Events are sent in batches by default. Use `batchDelay` (default `200` ms) to change the batch window, or `disableBatch: true` to send each event immediately.
 

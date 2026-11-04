@@ -25,6 +25,7 @@ import { ApplicationCompareTab } from '@/components/application/ApplicationCompa
 import { ApplicationVersionChart } from '@/components/application/ApplicationVersionChart';
 import { ApplicationCountryChart } from '@/components/application/ApplicationCountryChart';
 import { ApplicationOSChart } from '@/components/application/ApplicationOSChart';
+import { ApplicationUsageBtn } from '@/components/application/ApplicationUsageBtn';
 
 export const Route = createFileRoute('/application/$applicationId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -81,6 +82,7 @@ function PageComponent() {
           title={application.name}
           actions={
             <div className="space-x-2">
+              <ApplicationUsageBtn applicationId={applicationId} />
               {hasWritePermission && (
                 <>
                   <Button
