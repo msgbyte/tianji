@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { LuCopy, LuCopyCheck } from 'react-icons/lu';
 import { toast } from 'sonner';
 import { useTranslation } from '@i18next-toolkit/react';
+import copy from 'copy-to-clipboard';
 
 export const CodeBlock: React.FC<{
   code: string;
@@ -13,7 +14,10 @@ export const CodeBlock: React.FC<{
   const { t } = useTranslation();
 
   const handleCopy = useEvent(() => {
-    window.navigator.clipboard.writeText(props.code);
+    // navigator.clipboard is undefined on insecure (http) origins
+    if (!copy(props.code)) {
+      return;
+    }
 
     toast(t('Copied into clipboard!'));
 
