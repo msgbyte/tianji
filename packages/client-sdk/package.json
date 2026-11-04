@@ -1,6 +1,6 @@
 {
   "name": "tianji-client-sdk",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
