@@ -37,12 +37,7 @@ export class BatchManager<T = any> {
   private options: BatchManagerOptions;
 
   constructor(options: BatchManagerOptions) {
-    this.options = {
-      batchDelay: 200,
-      maxBatchSize: 100,
-      disableBatch: false,
-      ...options,
-    };
+    this.options = withDefaults(options);
   }
 
   /**
@@ -60,7 +55,7 @@ export class BatchManager<T = any> {
     this.queue.push({ type, payload });
 
     // Send immediately if queue reaches the limit
-    if (this.queue.length >= (this.options.maxBatchSize || 100)) {
+    if (this.queue.length >= this.options.maxBatchSize!) {
       // Fire and forget, but catch errors to prevent unhandled promise rejection
       this.flush().catch((error) => {
         console.error('Error in auto-flush:', error);
@@ -122,7 +117,7 @@ export class BatchManager<T = any> {
    * Update batch manager options
    */
   updateOptions(options: Partial<BatchManagerOptions>): void {
-    this.options = { ...this.options, ...options };
+    this.options = withDefaults({ ...this.options, ...options });
   }
 
   /**
@@ -131,4 +126,14 @@ export class BatchManager<T = any> {
   getQueueSize(): number {
     return this.queue.length;
   }
+}
+
+// Callers pass optional fields explicitly, so spread defaults would be overwritten by undefined
+function withDefaults(options: BatchManagerOptions): BatchManagerOptions {
+  return {
+    ...options,
+    batchDelay: options.batchDelay ?? 200,
+    maxBatchSize: options.maxBatchSize ?? 100,
+    disableBatch: options.disableBatch ?? false,
+  };
 }
