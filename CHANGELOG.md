@@ -1,5 +1,27 @@
 
 
+## [1.33.14](https://github.com/msgbyte/tianji/compare/v1.33.13...v1.33.14) (2026-11-04)
+
+### Features
+
+* **application:** add tracking usage dialog ([60d78ac](https://github.com/msgbyte/tianji/commit/60d78acf05c57aab3ab93e100642713e1064a197))
+* **date-filter:** add last 14 hours preset ([2feecfc](https://github.com/msgbyte/tianji/commit/2feecfc1dae83b5522978e0f87418eb2c32b927e))
+
+### Bug Fixes
+
+* **build:** clear stale client assets before bundling ([edb21df](https://github.com/msgbyte/tianji/commit/edb21df8575595adf199bf9b33bbd63f95847123))
+* **client:** support code copying on insecure origins ([ea3f8c6](https://github.com/msgbyte/tianji/commit/ea3f8c64454f8516b4f9100ab753dfc29d74cb90))
+* **sdk:** preserve batch defaults for undefined options ([f04ea76](https://github.com/msgbyte/tianji/commit/f04ea76a55b61f7f1ce923f2927073e14cae05b8))
+
+### Document
+
+* **application:** expand tracking integration guidance ([51c7994](https://github.com/msgbyte/tianji/commit/51c7994040864e9936f3649e7758d5fed2db523c))
+
+### Others
+
+* **release:** standardize release commit messages ([4fdad8d](https://github.com/msgbyte/tianji/commit/4fdad8df96395e9b958e842538d6419c35867feb))
+* **sdk:** bump tracking package patch versions ([3b50b30](https://github.com/msgbyte/tianji/commit/3b50b30764b8316643059ce243353a6dabcc1fe4))
+
 ## [1.33.13](https://github.com/msgbyte/tianji/compare/v1.33.12...v1.33.13) (2026-10-27)
 
 ### Features
