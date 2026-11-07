@@ -26,6 +26,7 @@ import { Route as MonitorImport } from './routes/monitor'
 import { Route as LoginImport } from './routes/login'
 import { Route as InsightsImport } from './routes/insights'
 import { Route as FeedImport } from './routes/feed'
+import { Route as ArtifactsImport } from './routes/artifacts'
 import { Route as ApplicationImport } from './routes/application'
 import { Route as AiRouterImport } from './routes/aiRouter'
 import { Route as AiGatewayImport } from './routes/aiGateway'
@@ -38,6 +39,7 @@ import { Route as PageIndexImport } from './routes/page/index'
 import { Route as MonitorIndexImport } from './routes/monitor/index'
 import { Route as InsightsIndexImport } from './routes/insights/index'
 import { Route as FeedIndexImport } from './routes/feed/index'
+import { Route as ArtifactsIndexImport } from './routes/artifacts/index'
 import { Route as ApplicationIndexImport } from './routes/application/index'
 import { Route as AiRouterIndexImport } from './routes/aiRouter/index'
 import { Route as AiGatewayIndexImport } from './routes/aiGateway/index'
@@ -78,6 +80,7 @@ import { Route as PageSlugIndexImport } from './routes/page/$slug/index'
 import { Route as MonitorMonitorIdIndexImport } from './routes/monitor/$monitorId/index'
 import { Route as InsightsWarehouseIndexImport } from './routes/insights/warehouse/index'
 import { Route as FeedChannelIdIndexImport } from './routes/feed/$channelId/index'
+import { Route as ArtifactsArtifactIdIndexImport } from './routes/artifacts/$artifactId/index'
 import { Route as ApplicationApplicationIdIndexImport } from './routes/application/$applicationId/index'
 import { Route as AiRouterRouterIdIndexImport } from './routes/aiRouter/$routerId/index'
 import { Route as AiGatewayGatewayIdIndexImport } from './routes/aiGateway/$gatewayId/index'
@@ -184,6 +187,11 @@ const FeedRoute = FeedImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ArtifactsRoute = ArtifactsImport.update({
+  path: '/artifacts',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ApplicationRoute = ApplicationImport.update({
   path: '/application',
   getParentRoute: () => rootRoute,
@@ -242,6 +250,11 @@ const InsightsIndexRoute = InsightsIndexImport.update({
 const FeedIndexRoute = FeedIndexImport.update({
   path: '/',
   getParentRoute: () => FeedRoute,
+} as any)
+
+const ArtifactsIndexRoute = ArtifactsIndexImport.update({
+  path: '/',
+  getParentRoute: () => ArtifactsRoute,
 } as any)
 
 const ApplicationIndexRoute = ApplicationIndexImport.update({
@@ -444,6 +457,11 @@ const FeedChannelIdIndexRoute = FeedChannelIdIndexImport.update({
   getParentRoute: () => FeedRoute,
 } as any)
 
+const ArtifactsArtifactIdIndexRoute = ArtifactsArtifactIdIndexImport.update({
+  path: '/$artifactId/',
+  getParentRoute: () => ArtifactsRoute,
+} as any)
+
 const ApplicationApplicationIdIndexRoute =
   ApplicationApplicationIdIndexImport.update({
     path: '/$applicationId/',
@@ -615,6 +633,10 @@ declare module '@tanstack/react-router' {
     }
     '/application': {
       preLoaderRoute: typeof ApplicationImport
+      parentRoute: typeof rootRoute
+    }
+    '/artifacts': {
+      preLoaderRoute: typeof ArtifactsImport
       parentRoute: typeof rootRoute
     }
     '/feed': {
@@ -797,6 +819,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApplicationIndexImport
       parentRoute: typeof ApplicationImport
     }
+    '/artifacts/': {
+      preLoaderRoute: typeof ArtifactsIndexImport
+      parentRoute: typeof ArtifactsImport
+    }
     '/feed/': {
       preLoaderRoute: typeof FeedIndexImport
       parentRoute: typeof FeedImport
@@ -917,6 +943,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApplicationApplicationIdIndexImport
       parentRoute: typeof ApplicationImport
     }
+    '/artifacts/$artifactId/': {
+      preLoaderRoute: typeof ArtifactsArtifactIdIndexImport
+      parentRoute: typeof ArtifactsImport
+    }
     '/feed/$channelId/': {
       preLoaderRoute: typeof FeedChannelIdIndexImport
       parentRoute: typeof FeedImport
@@ -1007,6 +1037,10 @@ export const routeTree = rootRoute.addChildren([
     ApplicationIndexRoute,
     ApplicationApplicationIdEditRoute,
     ApplicationApplicationIdIndexRoute,
+  ]),
+  ArtifactsRoute.addChildren([
+    ArtifactsIndexRoute,
+    ArtifactsArtifactIdIndexRoute,
   ]),
   FeedRoute.addChildren([
     FeedAddRoute,
