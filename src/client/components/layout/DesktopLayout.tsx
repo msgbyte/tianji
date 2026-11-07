@@ -12,6 +12,7 @@ import {
   LuSquareFunction,
   LuLink,
   LuRoute,
+  LuPanelsTopLeft,
 } from 'react-icons/lu';
 import {
   ResizableHandle,
@@ -37,6 +38,7 @@ import { DevContainer } from '../DevContainer';
 import { AIPanel } from '../ai/AIPanel';
 import { compact } from 'lodash-es';
 import { useGlobalConfig } from '@/hooks/useConfig';
+import { useSettingsStore } from '@/store/settings';
 
 const defaultLayout: [number, number, number] = [15, 25, 60];
 
@@ -61,7 +63,9 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
     }
   );
   const { t } = useTranslation();
-  const { alphaMode, enableFunctionWorker } = useGlobalConfig();
+  const { alphaMode: serverAlphaMode, enableFunctionWorker } =
+    useGlobalConfig();
+  const alphaMode = useSettingsStore((state) => state.alphaMode);
 
   const navbar = (
     <>
@@ -150,6 +154,11 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             icon: LuLink,
             to: '/shortlink',
           },
+          alphaMode && {
+            title: t('Artifacts'),
+            icon: LuPanelsTopLeft,
+            to: '/artifacts',
+          },
           {
             title: t('AI Gateway'),
             label: String(serviceCount?.aiGateway ?? ''),
@@ -162,7 +171,7 @@ export const DesktopLayout: React.FC<LayoutProps> = React.memo((props) => {
             icon: LuRoute,
             to: '/aiRouter',
           },
-          alphaMode &&
+          serverAlphaMode &&
             enableFunctionWorker && {
               title: t('Function'),
               label: String(serviceCount?.functionWorker ?? ''),

@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 
 interface SettingsState {
   colorScheme: 'light' | 'dark' | 'system';
+  alphaMode: boolean;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -11,6 +12,7 @@ export const useSettingsStore = create<SettingsState>()(
     () =>
       ({
         colorScheme: 'dark' as const,
+        alphaMode: false,
       }) as SettingsState,
     {
       name: 'settings',

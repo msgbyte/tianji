@@ -8,6 +8,7 @@ import {
   LuServer,
   LuWifi,
   LuLink,
+  LuPanelsTopLeft,
 } from 'react-icons/lu';
 import { useTranslation } from '@i18next-toolkit/react';
 import { IconType } from 'react-icons';
@@ -20,9 +21,11 @@ import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { MobileLayoutMenu } from './Menu';
 import { RiSurveyLine } from 'react-icons/ri';
 import { WorkspacePauseTip } from '../workspace/WorkspacePauseTip';
+import { useSettingsStore } from '@/store/settings';
 
 export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
   const { t } = useTranslation();
+  const alphaMode = useSettingsStore((state) => state.alphaMode);
 
   return (
     <div className="flex h-svh flex-col">
@@ -71,7 +74,7 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
               </div>
             </DrawerTrigger>
             <DrawerContent>
-              <div className="flex flex-row items-center justify-center gap-2 p-3">
+              <div className="flex flex-row flex-wrap items-center justify-center gap-2 p-3">
                 <MobileNavItem
                   title={t('Telemetry')}
                   icon={LuWifi}
@@ -96,6 +99,14 @@ export const MobileLayout: React.FC<LayoutProps> = React.memo((props) => {
                   to="/shortlink"
                   extraModal={true}
                 />
+                {alphaMode && (
+                  <MobileNavItem
+                    title={t('Artifacts')}
+                    icon={LuPanelsTopLeft}
+                    to="/artifacts"
+                    extraModal={true}
+                  />
+                )}
               </div>
             </DrawerContent>
           </Drawer>
