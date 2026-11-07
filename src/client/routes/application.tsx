@@ -29,6 +29,9 @@ function ApplicationComponent() {
   const { data = [], isLoading } = trpc.application.all.useQuery({
     workspaceId,
   });
+  const { data: overviewData } = trpc.application.allOverview.useQuery({
+    workspaceId,
+  });
   const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -38,6 +41,7 @@ function ApplicationComponent() {
     id: item.id,
     title: item.name,
     content: new Date(item.createdAt).toLocaleString(),
+    number: overviewData ? (overviewData[item.id] ?? 0) : undefined,
     href: `/application/${item.id}`,
   }));
 
