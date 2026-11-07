@@ -5,6 +5,27 @@ It preserves Markdown headings, links, and code fences; frontmatter and MDX ESM 
 
 ================================================================================
 
+===== FILE: docs/ai-gateway/images.md =====
+
+# Image requests
+
+AI Gateway forwards the following POST endpoints for `openai` and `custom` providers:
+
+```text
+/api/ai/<workspaceId>/<gatewayId>/<provider>/v1/images/generations
+/api/ai/<workspaceId>/<gatewayId>/<provider>/v1/images/edits
+/api/ai/<workspaceId>/<gatewayId>/<provider>/v1/images/variations
+```
+
+Use `openai` for `https://api.openai.com`, or `custom` for the gateway's custom base URL. A trailing `/v1` is accepted without duplication; other path prefixes are retained. The upstream provider must support the selected endpoint and model.
+
+Authentication follows the existing gateway rules: when a model API key is stored, send a Tianji API key belonging to a workspace member. Otherwise, the caller's bearer key is forwarded to the provider.
+
+JSON and multipart requests retain their body, query parameters, and multipart boundaries. Multipart files and responses are streamed without saving images to disk. Upstream status codes, response headers, and response bodies pass through without retries. Image requests do not apply the gateway's custom model name override.
+
+Image requests are direct passthrough calls. They do not create AI Gateway log entries, record payloads, calculate usage or cost, or trigger quota alerts. No database migration is required. Existing chat logging and pricing are unchanged.
+
+
 ===== FILE: docs/ai-router/intro.md =====
 
 # AI Router
@@ -704,17 +725,40 @@ async function getSystemConfig() {
 
 Tianji provides a powerful SDK for tracking events and user behavior in your applications. This guide explains how to integrate and use the Application Tracking SDK in your projects.
 
+## Quick Integration with AI Agent
+
+Open your application in Tianji and click **Usage** in the top right corner. The **AI Prompt** tab contains a prompt with your server URL and application ID already filled in. Paste it into your coding agent (Claude Code, Cursor, Codex, etc.) and it will install the SDK, initialize it, and add screen, user, and event tracking for you.
+
+You can also write the prompt yourself:
+
+```text
+Integrate Tianji application tracking into this project.
+
+Tianji server URL: https://tianji.example.com
+Application ID: your-application-id
+Documentation: https://tianji.dev/docs/application/tracking
+
+Install the SDK, initialize it at app startup, report screen views on
+navigation, identify the user after sign in, report API requests and
+uncaught errors, flush events when the app goes to the background, and
+propose key business events for me to approve before tracking them.
+```
+
 ## Installation
 
-Install the Tianji react native SDK in your project:
+Install the Tianji React Native SDK and its peer dependency [`react-native-device-info`](https://github.com/react-native-device-info/react-native-device-info) in your project:
 
 ```bash
-npm install tianji-react-native
+npm install tianji-react-native react-native-device-info
 # or
-yarn add tianji-react-native
+yarn add tianji-react-native react-native-device-info
 # or
-pnpm add tianji-react-native
+pnpm add tianji-react-native react-native-device-info
 ```
+
+`react-native-device-info` is a native module, so Expo projects need a [development build](https://docs.expo.dev/develop/development-builds/introduction/) (or `expo prebuild`); importing it in Expo Go crashes the app.
+
+In Expo Go and other JavaScript runtimes, install `tianji-client-sdk` instead. It exposes the same API, but `initApplication` does not report the OS and app version automatically; call `identifyApplicationUser({ os, version })` yourself after initialization. For other platforms (Flutter, native iOS/Android, etc.), use the [HTTP API](#http-api).
 
 ## Initialization
 
@@ -727,6 +771,10 @@ initApplication({
   applicationId: 'your-application-id'       // Your application identifier
 });
 ```
+
+You can find the server URL and application ID in the **Usage** dialog of your application in Tianji. Make sure the server URL is reachable from real devices: not `localhost`, and HTTPS unless your app allows cleartext traffic.
+
+Events are sent in batches by default. Use `batchDelay` (default `200` ms) to change the batch window, or `disableBatch: true` to send each event immediately.
 
 ## Tracking Events
 
@@ -772,7 +820,9 @@ reportApplicationScreenView();
 reportApplicationScreenView('Checkout', { cartItems: 3 });
 ```
 
-#### Intergate with expo-router
+#### Integrate with expo-router
+
+Use the route pattern (for example `/product/[id]`) as the screen name. A resolved path such as `/product/123` would count every product as a different screen. Pass only the params you need: search params can contain tokens from deep links or OAuth callbacks.
 
 ```tsx
 
@@ -787,6 +837,156 @@ identifyApplicationUser({
 });
 ```
 
+## Common Scenarios
+
+Use a fixed name for each kind of event and put the variable parts in the event data. The dashboard groups events by name, so a name like `GET /users/123` would split one metric into thousands. Never include passwords, tokens, request bodies, or other secrets in event data.
+
+### API Request Monitoring
+
+The SDK does not capture network requests automatically. Report them from your app's own API client instead of patching the global `fetch`: the SDK sends its events with `fetch` too, so a global patch would report its own requests in a loop.
+
+With a `fetch` wrapper:
+
+```ts
+
+  // Tracking must never break the request
+  const report = (name: string, data: Record<string, unknown>) => {
+    try {
+      reportApplicationEvent(name, {
+        method: (init?.method ?? 'GET').toUpperCase(),
+        path: String(url).split('?')[0].slice(0, 500), // query strings may contain tokens
+        duration: Date.now() - startAt,
+        ...data,
+      }).catch(() => {});
+    } catch {}
+  };
+
+  try {
+    const response = await fetch(url, init);
+    report('API Request', { status: response.status });
+    return response;
+  } catch (error) {
+    if (!(error instanceof Error && error.name === 'AbortError')) {
+      report('API Request Failed', { message: String(error).slice(0, 500) });
+    }
+    throw error;
+  }
+}
+```
+
+With axios interceptors:
+
+```ts
+
+// Stored on the config itself so it survives interceptors that copy the config
+type TimedConfig = InternalAxiosRequestConfig & { startAt?: number };
+
+function reportRequest(config?: TimedConfig, status?: number) {
+  if (!config?.startAt) {
+    return;
+  }
+
+  reportApplicationEvent(status ? 'API Request' : 'API Request Failed', {
+    method: (config.method ?? 'get').toUpperCase(),
+    path: config.url?.split('?')[0].slice(0, 500),
+    status,
+    duration: Date.now() - config.startAt,
+  });
+}
+
+api.interceptors.request.use((config: TimedConfig) => {
+  config.startAt = Date.now();
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => {
+    reportRequest(response.config, response.status);
+    return response;
+  },
+  (error) => {
+    if (!axios.isCancel(error)) {
+      reportRequest(error.config, error.response?.status);
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+For high-traffic apps, report only failed (`status >= 400`) or slow requests.
+
+### Error Tracking
+
+Report uncaught JavaScript errors with the React Native global handler. Wrap the tracking code in `try/finally` so the default handler always runs:
+
+```ts
+
+const defaultHandler = ErrorUtils.getGlobalHandler();
+
+ErrorUtils.setGlobalHandler((error, isFatal) => {
+  try {
+    reportApplicationEvent('App Error', {
+      name: String(error?.name ?? 'Error').slice(0, 500),
+      message: String(error?.message ?? error).slice(0, 500),
+      isFatal: Boolean(isFatal),
+    });
+    flushApplicationBatchQueue();
+  } finally {
+    defaultHandler(error, isFatal);
+  }
+});
+```
+
+Run this once at app startup from a module that rarely changes; Fast Refresh re-runs edited modules and would wrap the handler again. Fatal errors may close the app before the event is sent, so this is best effort. For render errors, call `reportApplicationEvent('App Error', ...)` from an error boundary's `componentDidCatch`. Native crashes are not covered.
+
+### App Lifecycle
+
+Batched events are kept in memory for a short time. Flush them when the app moves to the background so they are not lost. On iOS, the app also briefly becomes `inactive` (Control Center, system prompts), so report a foreground event only when it returns from `background`:
+
+```ts
+
+let wasInBackground = false;
+
+AppState.addEventListener('change', (state) => {
+  if (state === 'background') {
+    wasInBackground = true;
+    reportApplicationEvent('App Background');
+    flushApplicationBatchQueue();
+  }
+
+  if (state === 'active' && wasInBackground) {
+    wasInBackground = false;
+    reportApplicationEvent('App Foreground');
+  }
+});
+```
+
+## HTTP API
+
+Platforms without an SDK can send events directly. No authentication is required; the application ID identifies the target.
+
+```bash
+curl -X POST 'https://tianji.example.com/api/application/send' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "type": "event",
+  "payload": {
+    "application": "your-application-id",
+    "name": "Button Clicked",
+    "data": { "button": "signup" },
+    "screen": "Home",
+    "params": {},
+    "os": "ios",
+    "language": "en-US"
+  }
+}'
+```
+
+- `type`: `event` or `identify`. An `identify` request stores `payload.data` as user information.
+- A screen view is an `event` without `name`.
+- Sessions are derived from the client IP and user agent.
+- To send up to 100 events in one request, `POST /api/application/batch` with `{ "events": [{ "type": "event", "payload": { ... } }] }`. All events in a batch are stored under the application and session of the first event, so only batch events from one application on one device. If any event fails validation, the whole batch is rejected.
+
 ## API Reference
 
 ### `initApplication(options)`
@@ -798,6 +998,8 @@ Initializes the application tracking SDK.
 - `options`: ApplicationTrackingOptions
   - `serverUrl`: Your Tianji server URL (e.g., 'https://tianji.example.com')
   - `applicationId`: Your application identifier
+  - `batchDelay`: (Optional) Batch window in milliseconds, defaults to `200`
+  - `disableBatch`: (Optional) Send each event immediately, defaults to `false`
 
 ### `reportApplicationEvent(eventName, eventData?, screenName?, screenParams?)`
 
@@ -836,12 +1038,18 @@ Identifies a user in the application.
 
 - `userInfo`: User identification data object
 
+### `flushApplicationBatchQueue()`
+
+Sends all pending batched events immediately.
+
 ## Payload Limitations
 
 - Language information: max 35 characters
 - Operating system information: max 20 characters
 - URL information: max 500 characters
+- Screen name: max 500 characters
 - Event name: max 50 characters
+- Event data and user data string values: max 500 characters
 
 
 ===== FILE: docs/artifacts.md =====
@@ -1363,7 +1571,25 @@ If `JWT_SECRET` is empty or set to `replace-me-with-a-random-string`, Tianji gen
 | Variable | Description | Default | Example |
 | --- | --- | --- | --- |
 | `CACHE_MEMORY_ONLY` | Use memory-only caching | `false` | `true` |
-| `REDIS_URL` | Redis connection URL | - | `redis://localhost:6379` |
+| `REDIS_URL` | Redis connection URL for caching and shared authentication rate limits | - | `redis://localhost:6379` |
+
+### Authentication rate limits
+
+Authentication rate limiting is enabled by default (`DISABLE_AUTH_RATE=false`) and requires `REDIS_URL`. Set `DISABLE_AUTH_RATE=true` to disable it without affecting Redis caching. When active, atomic, IP-based limits are shared by all replicas, Auth.js, tRPC (including each operation in a batch), and OpenAPI. Limits count all attempts, including successful requests. They use fixed windows starting with the first attempt and expire automatically in Redis.
+
+| Operation | Requests per IP | Window |
+| --- | --- | --- |
+| Password login | 10 | 15 minutes |
+| Registration | 5 | 1 hour |
+| Password change | 5 | 15 minutes |
+| Token login, email verification, invitation lookup/acceptance, and OAuth sign-in/callback (shared quota) | 30 | 15 minutes |
+| Sign-in emails and workspace invitations (shared quota) | 5 | 15 minutes |
+
+Exceeding a limit returns `429 Too Many Requests` with the remaining wait in the error message. Auth.js responses also include `Retry-After`. Workspace invitations count even when an existing user is added without sending email. Session reads, CSRF token requests, and sign-out are unaffected.
+
+Without `REDIS_URL`, these limits are disabled. `CACHE_MEMORY_ONLY` does not disable rate limiting when `REDIS_URL` is set. If configured Redis is unavailable, protected operations return `503 Service Unavailable` instead of bypassing the limits.
+
+By default, rate limits use the socket's remote IP and ignore forwarded headers. Behind a reverse proxy, set `CLIENT_IP_HEADER` to a header containing one client IP, such as `x-real-ip` or `cf-connecting-ip`. The proxy **must overwrite this header**, and direct access to Tianji must be restricted to trusted proxies. Missing or invalid header values fall back to the socket IP. Without this configuration, users behind the same proxy share its quota. IP addresses are hashed in Redis keys; no passwords, tokens, or email addresses are stored by the limiter.
 
 ## Authentication
 
@@ -1371,6 +1597,7 @@ If `JWT_SECRET` is empty or set to `replace-me-with-a-random-string`, Tianji gen
 | --- | --- | --- | --- |
 | `DISABLE_ACCOUNT` | Disable account-based authentication | `false` | `true` |
 | `AUTH_SECRET` | Authentication secret | MD5 of JWT secret | `your-auth-secret` |
+| `DISABLE_AUTH_RATE` | Disable Redis-backed authentication and email rate limits | `false` | `true` |
 | `AUTH_RESTRICT_EMAIL` | Restrict registration to specific email domains | - | `@example.com` |
 | `AUTH_USE_SECURE_COOKIES` | Use secure cookies for authentication | `false` | `true` |
 
@@ -1655,6 +1882,79 @@ and only just need to wait for a moment. then you can open your own Tianji in yo
 > Url: `http://<your-ip>:12345`  
 > Default username: `admin`  
 > Default password: `admin`
+
+
+===== FILE: docs/install/prometheus.md =====
+
+# Prometheus API Metrics
+
+Tianji exposes Prometheus metrics at `/_prom/metrics`. Set `OBSERVABILITY_PROMETHEUS_METRICS_PATH` to change this path.
+
+## HTTP Requests
+
+`http_request_duration_seconds` records each HTTP request once, with `method`, `route`, and `code` labels.
+
+- OpenAPI requests use route templates, such as `/open/workspace/{workspaceId}/website/{websiteId}`. IDs and query values are excluded.
+- Single tRPC requests use the procedure path, such as `/trpc/website.info`.
+- All tRPC batch requests use `/trpc/batch`, including batches containing only one procedure. Different procedure combinations share this label.
+- Unrecognized non-batch API paths use `/open` or `/trpc`.
+
+HTTP 5xx requests per second, grouped by route:
+
+```promql
+sum by (route) (
+  rate(http_request_duration_seconds_count{
+    route!="/health", route!="/", route!="N/A",
+    namespace=~"$namespace", instance=~"$instance", app=~"$app",
+    code=~"5[0-9]{2}"
+  }[$__rate_interval])
+)
+```
+
+These examples use Grafana variables. Remove the `namespace`, `instance`, or `app` filters if your scrape configuration does not provide those labels, and replace `$__rate_interval` with a range such as `5m` when querying Prometheus directly.
+
+## Individual Procedure Calls
+
+Use `trpc_request_duration_seconds` to see each procedure separately, including calls inside a batch and calls through OpenAPI. Its labels are `route` (for example, `website.info`), `type` (`query`, `mutation`, or `subscription`), and `status` (`success` or `error`). Each procedure invocation reaching the metrics middleware is counted separately, including repeated calls to the same procedure in a batch.
+
+Create Grafana panels with the following queries and use `{{route}}` as the legend.
+
+Calls per second:
+
+```promql
+sum by (route) (
+  rate(trpc_request_duration_seconds_count{
+    namespace=~"$namespace", instance=~"$instance", app=~"$app"
+  }[$__rate_interval])
+)
+```
+
+Failed calls per second:
+
+```promql
+sum by (route) (
+  rate(trpc_request_duration_seconds_count{
+    namespace=~"$namespace", instance=~"$instance", app=~"$app",
+    status="error"
+  }[$__rate_interval])
+)
+```
+
+95th percentile procedure duration in seconds:
+
+```promql
+histogram_quantile(0.95,
+  sum by (le, route) (
+    rate(trpc_request_duration_seconds_bucket{
+      namespace=~"$namespace", instance=~"$instance", app=~"$app"
+    }[$__rate_interval])
+  )
+)
+```
+
+Procedure errors include validation and authorization failures, not just server errors. These metrics have no HTTP `code` label. A mixed-result HTTP batch can return `207`, and a streaming batch can return `200` even when a procedure fails; use `status="error"` to find those failures. Requests rejected before the procedure metrics middleware runs, such as calls to unknown procedures, are only visible in HTTP metrics.
+
+After deploying the change, new procedure failures are recorded as `status="error"`. Historical samples previously recorded as successful are not rewritten.
 
 
 ===== FILE: docs/install/telemetry.md =====
@@ -3796,11 +4096,11 @@ You don't need React to write simple standalone pages.
 
 # Tianji Privacy Policy
 
-> Last updated August 26, 2024
+> Last updated September 20, 2026
 
-This privacy notice for `tianji.msgbye.com` ("we," "us," or "our") explains how and why we collect, store, use, and/or share ("process") your personal information when you use our services ("Services"). This includes actions like:
+This privacy notice for `app.tianji.dev` ("we," "us," or "our") explains how and why we collect, store, use, and/or share ("process") your personal information when you use our services ("Services"). This includes actions like:
 
-- Visiting our website at `msgbye.com`, or any other website of ours that links to this privacy notice.
+- Visiting our website at `tianji.dev`, or any other website of ours that links to this privacy notice.
 - Interacting with us in other related ways, such as during sales, marketing activities, or events.
 
 If you have any questions or concerns about our privacy practices, reading this privacy notice will help you understand your rights and choices. If you disagree with our policies and practices, please refrain from using our services. For any further questions or concerns, contact us at `moonrailgun@gmail.com`.
@@ -3823,14 +4123,14 @@ We encrypt sensitive information, such as passwords, to protect your data even i
 
 ### Single Sign-On
 
-If you sign up for our website `tianji.msgbye.com` through Google, you authorize us to collect authentication information, including your username, encrypted access credentials, and any other personal data available through your third-party application account.
+If you sign up for our website `app.tianji.dev` through Google, you authorize us to collect authentication information, including your username, encrypted access credentials, and any other personal data available through your third-party application account.
 
 ## How We Use Your Personal Data
 
 We use your personal data to:
 
 - **Provide, Improve, and Develop the Platform**: We process your data primarily to ensure the proper functioning of our website. We may also use your data to improve our website and offer you the best possible experience. Specifically, we:
-  - Operate and maintain your `tianji.msgbye.com` account, allowing you to access and use the Platform. Your email address and password are used to identify you when you log in.
+  - Operate and maintain your `app.tianji.dev` account, allowing you to access and use the Platform. Your email address and password are used to identify you when you log in.
   
 - **Maintain a Safe and Secure Environment**: We process your data to enhance the security of our Platform, ensuring a safe experience for all users.
 
@@ -3838,18 +4138,24 @@ We use your personal data to:
 
 We do not sell your personal data to external parties.
 
-- **Through Your Profile**: Any personal data you choose to disclose in your public profile on `tianji.msgbye.com` will be visible to other users. They may view your profile information and interact with any public prompts you share.
+- **Through Your Profile**: Any personal data you choose to disclose in your public profile on `app.tianji.dev` will be visible to other users. They may view your profile information and interact with any public prompts you share.
   
 - **Compliance with Laws**: We may disclose your personal data to courts, law enforcement agencies, or government authorities if required to:
   - Comply with legal obligations or processes.
-  - Respond to claims against `tianji.msgbye.com`.
+  - Respond to claims against `app.tianji.dev`.
   - Address verified requests related to criminal investigations or alleged illegal activities.
   - Enforce our Terms of Use and other agreements.
-  - Protect the rights, property, or personal safety of `tianji.msgbye.com`, its employees, and the public.
+  - Protect the rights, property, or personal safety of `app.tianji.dev`, its employees, and the public.
+
+## Data Storage and Location
+
+Tianji Cloud (`app.tianji.dev`) is hosted in Frankfurt, Germany. Customer data, including account information, analytics events, monitoring results and survey responses, is stored in a data center located in Frankfurt, within the European Union.
+
+If you self-host Tianji, your data is stored wherever you deploy it.
 
 ## Information Security
 
-`tianji.msgbye.com` implements technical, administrative, and physical safeguards designed to prevent unauthorized access, use, or disclosure of the personal data we collect or store. These measures are intended to ensure a level of security appropriate to the risk involved. We regularly monitor our systems for vulnerabilities and potential attacks. However, no internet transmission is completely secure, so you provide personal data at your own discretion and risk.
+`app.tianji.dev` implements technical, administrative, and physical safeguards designed to prevent unauthorized access, use, or disclosure of the personal data we collect or store. These measures are intended to ensure a level of security appropriate to the risk involved. We regularly monitor our systems for vulnerabilities and potential attacks. However, no internet transmission is completely secure, so you provide personal data at your own discretion and risk.
 
 ## Contact Information
 

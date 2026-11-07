@@ -4,6 +4,7 @@ This file lists documentation titles with absolute URLs.
 
 ================================================================================
 
+Image requests - https://tianji.dev/docs/ai-gateway/images
 AI Router - https://tianji.dev/docs/ai-router/intro
 AI Router usage - https://tianji.dev/docs/ai-router/usage
 Authentication - https://tianji.dev/docs/api/authentication
@@ -23,6 +24,7 @@ Environment Variables - https://tianji.dev/docs/install/environment
 Install in Helm - https://tianji.dev/docs/install/kubernetes/helm
 Install without docker - https://tianji.dev/docs/install/manual
 Install in aaPanel - https://tianji.dev/docs/install/other/install-in-aapanel
+Prometheus API Metrics - https://tianji.dev/docs/install/prometheus
 Telemetry - https://tianji.dev/docs/install/telemetry
 Troubleshooting - https://tianji.dev/docs/install/troubleshooting
 Introduction - https://tianji.dev/docs/intro
