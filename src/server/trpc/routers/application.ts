@@ -60,6 +60,36 @@ export const applicationRouter = router({
       return applications;
     }),
 
+  allOverview: workspaceProcedure
+    .meta({
+      openapi: {
+        method: 'GET',
+        path: '/workspace/{workspaceId}/application/allOverview',
+        tags: [OPENAPI_TAG.APPLICATION],
+        protect: true,
+        summary: 'Get application session counts for the last 24 hours',
+      },
+    })
+    .output(z.record(z.string(), z.number()))
+    .query(async ({ input }) => {
+      const endAt = new Date();
+      const startAt = new Date(endAt.getTime() - 24 * 60 * 60 * 1000);
+      const stats = await prisma.applicationSession.groupBy({
+        by: ['applicationId'],
+        where: {
+          application: { workspaceId: input.workspaceId, deletedAt: null },
+          applicationEvent: {
+            some: { createdAt: { gte: startAt, lte: endAt } },
+          },
+        },
+        _count: true,
+      });
+
+      return Object.fromEntries(
+        stats.map((item) => [item.applicationId, item._count])
+      );
+    }),
+
   info: workspaceProcedure
     .meta(
       buildApplicationOpenapi({
