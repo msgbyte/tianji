@@ -1,0 +1,5 @@
+# Keep generated projects independent when initialized inside another workspace.
+packages:
+  - '.'
+onlyBuiltDependencies:
+  - esbuild

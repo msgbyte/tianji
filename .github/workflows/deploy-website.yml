@@ -7,6 +7,7 @@ on:
     paths:
       - "website/**"
       - "skills/tianji-worker/**"
+      - "skills/tianji-artifacts/**"
   workflow_dispatch:
 
 env:

@@ -6,6 +6,11 @@ import {
   createOpenApiExpressMiddleware,
   generateOpenApiDocument,
 } from 'trpc-to-openapi';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { promisify } from 'node:util';
 
 const mocks = vi.hoisted(() => ({
   membership: vi.fn(),
@@ -315,5 +320,67 @@ describe('Artifact OpenAPI', () => {
         document.paths['/workspace/{workspaceId}/artifacts/{artifactId}']!
       )
     ).toEqual(expect.arrayContaining(['get', 'put', 'delete']));
+  });
+
+  test('runs the documented Skill example to create and update without overwriting a stale revision', async () => {
+    const reference = await readFile(
+      new URL(
+        '../../../../skills/tianji-artifacts/references/operations.md',
+        import.meta.url
+      ),
+      'utf8'
+    );
+    const example = reference.match(/```python\n([\s\S]*?)\n```/)?.[1];
+    expect(example).toBeTruthy();
+    const directory = await mkdtemp(
+      path.join(tmpdir(), 'tianji-artifact-example-')
+    );
+    const server = app.listen(0, '127.0.0.1');
+    await new Promise<void>((resolve) => server.once('listening', resolve));
+    try {
+      const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+      const script = path.join(directory, 'publish.py');
+      const html = path.join(directory, 'page.html');
+      const metadata = path.join(directory, 'artifact.json');
+      await writeFile(script, example!);
+      await writeFile(html, body.source);
+      await writeFile(
+        metadata,
+        JSON.stringify({ title: body.title, description: body.description })
+      );
+      const publish = () =>
+        promisify(execFile)('python3', [script, html, metadata], {
+          env: {
+            ...process.env,
+            TIANJI_SERVER_URL: origin,
+            TIANJI_WORKSPACE_ID: workspaceId,
+            TIANJI_API_KEY: 'sk_example_local_only',
+          },
+        });
+      const created = await publish();
+      expect(created.stderr).toBe('');
+      expect(JSON.parse(created.stdout)).toEqual({
+        id: 'artifactone',
+        revision: 1,
+        url: `${origin}/artifacts/artifactone?workspaceId=${workspaceId}`,
+      });
+      expect(saved.source).toBe(body.source);
+      await writeFile(metadata, JSON.stringify((await call('get')).body));
+      await writeFile(html, '<p>Updated report: mañana</p>');
+      const updated = await publish();
+      expect(JSON.parse(updated.stdout).revision).toBe(2);
+      await writeFile(html, '<p>Stale edit</p>');
+      await expect(publish()).rejects.toMatchObject({
+        stderr: expect.stringContaining('HTTP 409.'),
+      });
+      expect(saved.source).toBe('<p>Updated report: mañana</p>');
+      expect(mocks.audit).toHaveBeenCalledTimes(2);
+      expect(created.stdout + updated.stdout).not.toContain(
+        'sk_example_local_only'
+      );
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });

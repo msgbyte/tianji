@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "dev": "node scripts/build-worker-skill.cjs && docusaurus start",
-    "build": "node scripts/build-worker-skill.cjs && docusaurus build",
+    "dev": "node scripts/build-worker-skill.cjs && node scripts/build-artifacts-skill.cjs && docusaurus start",
+    "build": "node scripts/build-worker-skill.cjs && node scripts/build-artifacts-skill.cjs && docusaurus build",
+    "build:artifacts-skill": "node scripts/build-artifacts-skill.cjs",
+    "test:artifacts-skill": "node --test scripts/build-artifacts-skill.test.cjs",
+    "test:artifacts-scaffold": "tsx --test scripts/artifacts-scaffold.test.ts",
     "build:worker-skill": "node scripts/build-worker-skill.cjs",
     "test:worker-skill": "node --test scripts/build-worker-skill.test.cjs",
     "compile-llm": "TS_NODE_SKIP_PROJECT=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\"}' node -r ts-node/register/transpile-only -e \"require('./scripts/compile-llm-docs.ts')\"",
