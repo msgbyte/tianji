@@ -41,6 +41,8 @@ model User {
   functionWorkerRevisionsOperated FunctionWorkerRevision[] @relation("FunctionWorkerRevisionOperator")
   sharedModulesOwned              SharedModule[]           @relation("SharedModuleOwner")
   sharedModuleRevisionsOperated   SharedModuleRevision[]   @relation("SharedModuleRevisionOperator")
+  artifactsCreated               Artifact[]               @relation("ArtifactCreator")
+  artifactsUpdated               Artifact[]               @relation("ArtifactUpdater")
 }
 
 model UserApiKey {
@@ -138,6 +140,26 @@ model Workspace {
   aiGatewayQuotaAlerts   AIGatewayQuotaAlert[]
   workspaceConfigs       WorkspaceConfig[]
   shortLinks             ShortLink[]
+  artifacts              Artifact[]
+}
+
+model Artifact {
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  workspaceId String   @db.VarChar(30)
+  title       String   @db.VarChar(200)
+  description String   @default("") @db.VarChar(2000)
+  source      String   @db.Text
+  revision    Int      @default(1)
+  createdById String?  @db.VarChar(30)
+  updatedById String?  @db.VarChar(30)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("ArtifactCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?     @relation("ArtifactUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, updatedAt])
 }
 
 model WorkspacesOnUsers {
@@ -818,6 +840,7 @@ model WorkspaceAuditLog {
 }
 
 enum WorkspaceAuditLogType {
+  Artifact
   Monitor
   Notification
   Task

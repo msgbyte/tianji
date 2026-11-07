@@ -20,8 +20,10 @@ import { workerRouter } from './worker.js';
 import { shortlinkRouter } from './shortlink.js';
 import { pageRouter } from './page.js';
 import { sharedModuleRouter } from './sharedModule.js';
+import { artifactRouter } from './artifact.js';
 
 export const appRouter = router({
+  artifact: artifactRouter,
   ai: aiRouter,
   aiGateway: aiGatewayRouter,
   aiRouter: aiRouterRouter,

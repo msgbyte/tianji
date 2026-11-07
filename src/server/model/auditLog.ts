@@ -6,6 +6,7 @@ const SENSITIVE_FIELD =
 const RELATED_TYPE_BY_ROUTER: Partial<
   Record<string, WorkspaceAuditLogType>
 > = {
+  artifact: WorkspaceAuditLogType.Artifact,
   monitor: WorkspaceAuditLogType.Monitor,
   notification: WorkspaceAuditLogType.Notification,
   sharedModule: WorkspaceAuditLogType.SharedModule,

@@ -30,6 +30,9 @@ const WORKSPACE_MUTATION_AUDIT_EXCLUDED_PATHS = new Set([
 ]);
 
 const WORKSPACE_MUTATION_AUDIT_EXISTING_PATHS = new Set([
+  'artifact.create',
+  'artifact.update',
+  'artifact.delete',
   'monitor.changeActive',
   'monitor.regeneratePushToken',
   'monitor.triggerMonitor',
