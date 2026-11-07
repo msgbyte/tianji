@@ -87,7 +87,7 @@ export const CommonList: React.FC<CommonListProps> = React.memo((props) => {
           )}
 
           {finalList.map((item) => {
-            const isSelected = item.href === location.pathname;
+            const isSelected = item.href.split('?')[0] === location.pathname;
 
             return (
               <button
