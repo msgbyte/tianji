@@ -65,11 +65,11 @@ export const DateFilter: React.FC<DateFilterProps> = React.memo((props) => {
             <SelectItem value={String(DateRange.Today)}>
               {t('Today')}
             </SelectItem>
-            <SelectItem value={String(DateRange.Last14Hours)}>
-              {t('Last 14 hours')}
-            </SelectItem>
             <SelectItem value={String(DateRange.Last24Hours)}>
               {t('Last 24 Hours')}
+            </SelectItem>
+            <SelectItem value={String(DateRange.Last48Hours)}>
+              {t('Last 48 hours')}
             </SelectItem>
             <SelectItem value={String(DateRange.Yesterday)}>
               {t('Yesterday')}

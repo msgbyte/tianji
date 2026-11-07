@@ -21,7 +21,7 @@ afterEach(() => {
 
 test.each([
   [DateRange.Last24Hours, 24],
-  [DateRange.Last14Hours, 14],
+  [DateRange.Last48Hours, 48],
 ])('manual refresh advances %s for every consumer', (dateRange, hours) => {
   useGlobalStateStore.setState({ dateRange });
   const first = renderHook(useGlobalRangeDate);
@@ -39,16 +39,16 @@ test.each([
   }
 });
 
-test('last 14 hours spans midnight and uses hourly buckets', () => {
-  useGlobalStateStore.setState({ dateRange: DateRange.Last14Hours });
+test('last 48 hours spans two days and uses hourly buckets', () => {
+  useGlobalStateStore.setState({ dateRange: DateRange.Last48Hours });
   const { result } = renderHook(useGlobalRangeDate);
 
   expect(result.current.startDate.toISOString()).toBe(
-    '2026-07-09T22:00:00.000Z'
+    '2026-07-08T12:00:00.000Z'
   );
   expect(result.current.endDate.toISOString()).toBe('2026-07-10T12:00:00.000Z');
   expect(result.current.unit).toBe('hour');
-  expect(result.current.label).toBe('Last 14 hours');
+  expect(result.current.label).toBe('Last 48 hours');
 });
 
 test('manual refresh preserves a selected custom range', () => {

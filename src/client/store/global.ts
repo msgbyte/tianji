@@ -3,8 +3,8 @@ import { create } from 'zustand';
 
 export enum DateRange {
   Realtime = 'realtime',
-  Last14Hours = 'last14hours',
   Last24Hours = 'last24hours',
+  Last48Hours = 'last48hours',
   Today = 'today',
   Yesterday = 'yesterday',
   ThisWeek = 'thisweek',

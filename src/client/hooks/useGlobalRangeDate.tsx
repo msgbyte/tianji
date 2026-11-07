@@ -60,10 +60,10 @@ export function useGlobalRangeDate(): {
       };
     }
 
-    if (dateRange === DateRange.Last14Hours) {
+    if (dateRange === DateRange.Last48Hours) {
       return {
-        label: t('Last 14 hours'),
-        startDate: dayjs().subtract(14, 'hour'),
+        label: t('Last 48 hours'),
+        startDate: dayjs().subtract(48, 'hour'),
         endDate: dayjs(),
         unit: 'hour' as const,
       };
