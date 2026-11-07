@@ -10,6 +10,7 @@ Authentication - https://tianji.dev/docs/api/authentication
 API Getting Started - https://tianji.dev/docs/api/getting-started
 OpenAPI SDK Usage Guide - https://tianji.dev/docs/api/openapi-sdk
 Application Tracking - https://tianji.dev/docs/application/tracking
+Artifacts - https://tianji.dev/docs/artifacts
 Prepare To Develop - https://tianji.dev/docs/dev/prepare
 Event Tracking - https://tianji.dev/docs/events/track
 Channels - https://tianji.dev/docs/feed/channels
