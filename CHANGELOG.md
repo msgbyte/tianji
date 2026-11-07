@@ -1,5 +1,28 @@
 
 
+## [1.34.0](https://github.com/msgbyte/tianji/compare/v1.33.14...v1.34.0) (2026-11-07)
+
+### Features
+
+* **application:** add rolling 24-hour session counts ([1b74fd3](https://github.com/msgbyte/tianji/commit/1b74fd3d945927f415def7953c2104cf017bcb5d))
+* **application:** show 24-hour session counts in sidebar ([42010a0](https://github.com/msgbyte/tianji/commit/42010a06e053b5b260913ad38fc94ec297c9d59b))
+* **artifacts:** add sandboxed HTML preview ([135bdd9](https://github.com/msgbyte/tianji/commit/135bdd93d796c2847f20e2d2b3d782031f132aaa))
+* **artifacts:** add workspace artifact API with audit logging ([2f01c48](https://github.com/msgbyte/tianji/commit/2f01c48f105f3725e8f47504750f6a9407d4b775))
+* **artifacts:** add workspace artifact dashboard ([f87cb79](https://github.com/msgbyte/tianji/commit/f87cb79a5589c18b34e8ee18bb2afb175fae5394))
+* **artifacts:** package publishing skill and React starter ([938f362](https://github.com/msgbyte/tianji/commit/938f362df19fc1f04ee2c6784fa9833df61a0226))
+* **settings:** gate artifacts navigation behind alpha mode ([351191e](https://github.com/msgbyte/tianji/commit/351191ed4951db71d6dab034f4aa8289f049082c))
+
+### Bug Fixes
+
+* **date-filter:** replace 14-hour preset with 48 hours ([cf90212](https://github.com/msgbyte/tianji/commit/cf9021278dc06e3359e5511b54fe59bc5f99eefa))
+* **navigation:** match list selection without query parameters ([b17cd56](https://github.com/msgbyte/tianji/commit/b17cd568565f75be2f20155298fd5bbabeee0925))
+
+### Document
+
+* **artifacts:** document publishing and alpha access ([a8835a1](https://github.com/msgbyte/tianji/commit/a8835a1fff624361573c8e1884836ae620a6dc67))
+* **artifacts:** record design and implementation plan ([46309e2](https://github.com/msgbyte/tianji/commit/46309e286303150304e98b0b275351be96227b4b))
+* **llm:** sync generated documentation exports ([0af2020](https://github.com/msgbyte/tianji/commit/0af202035daee12e7efa8c98c5de45c31f473cc2))
+
 ## [1.33.14](https://github.com/msgbyte/tianji/compare/v1.33.13...v1.33.14) (2026-11-04)
 
 ### Features
