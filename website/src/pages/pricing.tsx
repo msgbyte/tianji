@@ -6,7 +6,7 @@ import { Button, Input, message } from 'antd';
 import Link from '@docusaurus/Link';
 import { submitSurvey, initOpenapiSDK } from 'tianji-client-sdk';
 
-initOpenapiSDK('https://tianji.moonrailgun.com/');
+initOpenapiSDK('https://app.tianji.dev/');
 
 export default function Pricing(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();

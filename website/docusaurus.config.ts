@@ -212,7 +212,7 @@ const config: Config = {
 
   scripts: [
     {
-      src: 'https://tianji.moonrailgun.com/tracker.js',
+      src: 'https://app.tianji.dev/tracker.js',
       async: true,
       defer: true,
       'data-website-id': 'clopxgjr6050tqn5dzxo7pjac',
