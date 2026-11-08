@@ -3,10 +3,11 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { useSettingsStore } from '@/store/settings';
+import { languages } from '@/utils/i18n';
 import { routeAuthBeforeLoad } from '@/utils/route';
-import { useTranslation } from '@i18next-toolkit/react';
+import { setLanguage, useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Card, Form } from 'antd';
+import { Card, Form, Select } from 'antd';
 
 export const Route = createFileRoute('/settings/general')({
   beforeLoad: routeAuthBeforeLoad,
@@ -14,7 +15,7 @@ export const Route = createFileRoute('/settings/general')({
 });
 
 function PageComponent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const alphaMode = useSettingsStore((state) => state.alphaMode);
 
   return (
@@ -22,6 +23,17 @@ function PageComponent() {
       <ScrollArea className="h-full overflow-hidden p-4">
         <Card>
           <Form layout="vertical">
+            <Form.Item label={t('Language')} htmlFor="interface-language">
+              <Select
+                id="interface-language"
+                className="w-full max-w-xs"
+                value={i18n.language ?? 'en'}
+                options={languages}
+                fieldNames={{ value: 'key' }}
+                onChange={setLanguage}
+              />
+            </Form.Item>
+
             <Form.Item
               label={t('Alpha Mode')}
               htmlFor="alpha-mode"
