@@ -34,6 +34,11 @@ function PageComponent() {
       href: '/settings/profile',
     },
     {
+      id: 'general',
+      title: t('Settings'),
+      href: '/settings/general',
+    },
+    {
       id: 'notifications',
       title: t('Notifications'),
       href: '/settings/notifications',

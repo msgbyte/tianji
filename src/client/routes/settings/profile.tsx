@@ -11,8 +11,6 @@ import { CommonHeader } from '@/components/CommonHeader';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/api/authjs/useAuth';
-import { useSettingsStore } from '@/store/settings';
-import { Switch } from '@/components/ui/switch';
 
 export const Route = createFileRoute('/settings/profile')({
   beforeLoad: routeAuthBeforeLoad,
@@ -22,7 +20,6 @@ export const Route = createFileRoute('/settings/profile')({
 function PageComponent() {
   const { t } = useTranslation();
   const userInfo = useUserStore((state) => state.info);
-  const alphaMode = useSettingsStore((state) => state.alphaMode);
   const [openChangePassword, setOpenChangePassword] = useState(false);
 
   const changePasswordMutation = trpc.user.changePassword.useMutation({
@@ -66,31 +63,6 @@ function PageComponent() {
             >
               <Button variant="destructive">{t('Logout')}</Button>
             </Popconfirm>
-          </Card>
-
-          <Card title={t('Settings')}>
-            <Form layout="vertical">
-              <Form.Item
-                label={t('Alpha Mode')}
-                htmlFor="alpha-mode"
-                extra={
-                  <span id="alpha-mode-description">
-                    {t(
-                      'Show experimental features that have not been fully tested, including Artifacts. This setting is saved in this browser.'
-                    )}
-                  </span>
-                }
-              >
-                <Switch
-                  id="alpha-mode"
-                  aria-describedby="alpha-mode-description"
-                  checked={alphaMode}
-                  onCheckedChange={(checked) =>
-                    useSettingsStore.setState({ alphaMode: checked })
-                  }
-                />
-              </Form.Item>
-            </Form>
           </Card>
 
           <Modal
