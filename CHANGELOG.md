@@ -1,5 +1,19 @@
 
 
+## [1.34.1](https://github.com/msgbyte/tianji/compare/v1.34.0...v1.34.1) (2026-11-08)
+
+### Features
+
+* **settings:** add interface language selector ([fdc7607](https://github.com/msgbyte/tianji/commit/fdc7607b10f9b774059b71a5697198ca3e8a7def))
+
+### Bug Fixes
+
+* **telemetry:** migrate hosted endpoints to app.tianji.dev ([0c5d1c5](https://github.com/msgbyte/tianji/commit/0c5d1c5273d0373ccce5ddaeef8d6ac03c18575b))
+
+### Others
+
+* **settings:** move alpha mode to general settings ([ec7b339](https://github.com/msgbyte/tianji/commit/ec7b339b5d7b98f6161613e6564b8ca9b461e0e5))
+
 ## [1.34.0](https://github.com/msgbyte/tianji/compare/v1.33.14...v1.34.0) (2026-11-07)
 
 ### Features
