@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths:
+      - ".vercelignore"
       - "website/**"
       - "skills/tianji-worker/**"
       - "skills/tianji-artifacts/**"
