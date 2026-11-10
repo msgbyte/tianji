@@ -1,5 +1,23 @@
 
 
+## [1.34.2](https://github.com/msgbyte/tianji/compare/v1.34.1...v1.34.2) (2026-11-10)
+
+### Features
+
+* **analytics:** persist operating system versions ([4de7b14](https://github.com/msgbyte/tianji/commit/4de7b144e1ef555f19b2e2415cb12905b0875358))
+* **application:** report native operating system versions ([f520b42](https://github.com/msgbyte/tianji/commit/f520b425cdc6990afeeb50435465cb54d04b1e72))
+* **application:** show operating system version statistics ([7707ec6](https://github.com/msgbyte/tianji/commit/7707ec69b6719a6af12ce4e61f913666584615e3))
+* **insights:** add application chart sources ([ec38e91](https://github.com/msgbyte/tianji/commit/ec38e91c672241fb7087e02be17db325973c550c))
+* **insights:** add application event sources ([9bf96be](https://github.com/msgbyte/tianji/commit/9bf96be29b06553f2e46330f8db3d21c29c4778c))
+* **insights:** support application queries ([4585a82](https://github.com/msgbyte/tianji/commit/4585a82d6bbc29441274c088539bc8f59f5bb46d))
+* **tracker:** collect browser operating system versions ([d745368](https://github.com/msgbyte/tianji/commit/d74536822f8c3de33828e17ecf2fa95a814fcc62))
+* **website:** show operating system version statistics ([ec4fd5a](https://github.com/msgbyte/tianji/commit/ec4fd5a0766064a3e5e1dfe805f77ce296ff3552))
+
+### Bug Fixes
+
+* **ci:** upgrade isolated-vm to 6.2.0 ([0f30e77](https://github.com/msgbyte/tianji/commit/0f30e779442a2bdc4fd6f60358ef685fe5651e57))
+* **website:** include artifact template ignore file in deployment ([44bf557](https://github.com/msgbyte/tianji/commit/44bf557a445734ab319b73c5bbdba841c6e6913a))
+
 ## [1.34.1](https://github.com/msgbyte/tianji/compare/v1.34.0...v1.34.1) (2026-11-08)
 
 ### Features
