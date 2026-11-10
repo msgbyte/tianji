@@ -25,6 +25,7 @@ const eventPayloadSchema = yup.object().shape({
   distinctId: yup.string().trim().max(500),
   hostname: yup.string().matches(hostnameRegex).max(100),
   language: yup.string().max(35),
+  osVersion: yup.string().strict().max(20),
   referrer: yup.string().max(500),
   screen: yup.string().max(11),
   title: yup.string().max(500),

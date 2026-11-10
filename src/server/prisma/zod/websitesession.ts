@@ -8,6 +8,7 @@ export const WebsiteSessionModelSchema = z.object({
   hostname: z.string().nullish(),
   browser: z.string().nullish(),
   os: z.string().nullish(),
+  osVersion: z.string().nullish(),
   device: z.string().nullish(),
   screen: z.string().nullish(),
   language: z.string().nullish(),

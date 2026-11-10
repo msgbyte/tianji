@@ -305,6 +305,7 @@ model WebsiteSession {
   hostname       String?  @db.VarChar(100)
   browser        String?  @db.VarChar(20)
   os             String?  @db.VarChar(20)
+  osVersion      String?  @db.VarChar(20)
   device         String?  @db.VarChar(20)
   screen         String?  @db.VarChar(11)
   language       String?  @db.VarChar(35)
@@ -438,7 +439,8 @@ model Application {
 model ApplicationSession {
   id             String    @id @unique @db.Uuid
   applicationId  String    @db.VarChar(30)
-  os             String?   @db.VarChar(20) // android or ios os version
+  os             String?   @db.VarChar(20) // operating system name
+  osVersion      String?   @db.VarChar(20)
   language       String?   @db.VarChar(35)
   version        String?   @db.VarChar(35) // application version
   sdkVersion     String?   @db.VarChar(35) // tianji sdk version

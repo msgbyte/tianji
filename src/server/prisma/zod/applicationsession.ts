@@ -6,6 +6,7 @@ export const ApplicationSessionModelSchema = z.object({
   id: z.string(),
   applicationId: z.string(),
   os: z.string().nullish(),
+  osVersion: z.string().nullish(),
   language: z.string().nullish(),
   version: z.string().nullish(),
   sdkVersion: z.string().nullish(),

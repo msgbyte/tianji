@@ -326,6 +326,7 @@ curl -X POST 'https://tianji.example.com/api/application/send' \
     "screen": "Home",
     "params": {},
     "os": "ios",
+    "osVersion": "17.4.1",
     "language": "en-US"
   }
 }'
@@ -394,7 +395,7 @@ Sends all pending batched events immediately.
 ## Payload Limitations
 
 - Language information: max 35 characters
-- Operating system information: max 20 characters
+- Operating system name and version: max 20 characters each; `osVersion` must be a string
 - URL information: max 500 characters
 - Screen name: max 500 characters
 - Event name: max 50 characters

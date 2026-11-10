@@ -3,6 +3,7 @@ import {
   flattenJSON,
   hashUuid,
   isCuid,
+  isUuid,
   parseToken,
 } from '../../utils/common.js';
 import { prisma } from '../_client.js';
@@ -17,6 +18,7 @@ export interface ApplicationEventPayload {
   data?: object;
   language?: string;
   os?: string;
+  osVersion?: string;
   url?: string;
   application: string;
   name?: string;
@@ -35,20 +37,10 @@ export async function findSession(
   // Verify payload
   const { payload } = body;
 
-  // Check if cache token is passed
-  const cacheToken = req.headers['x-tianji-cache'] as string;
-
-  if (cacheToken) {
-    const result = parseToken(cacheToken);
-
-    if (result) {
-      return result as any;
-    }
-  }
-
   const {
     application: applicationId,
     os,
+    osVersion,
     language,
     version,
     sdkVersion,
@@ -63,6 +55,30 @@ export async function findSession(
 
   if (!application) {
     throw new Error(`Application not found: ${applicationId}.`);
+  }
+
+  const cacheToken = req.headers['x-tianji-cache'] as string;
+  const cached = cacheToken ? parseToken(cacheToken) : null;
+  if (
+    cached &&
+    typeof cached === 'object' &&
+    'id' in cached &&
+    typeof cached.id === 'string' &&
+    isUuid(cached.id) &&
+    'applicationId' in cached &&
+    cached.applicationId === applicationId
+  ) {
+    let session = await loadSession(cached.id);
+    if (session && session.applicationId === applicationId) {
+      if (osVersion && session.osVersion !== osVersion) {
+        session = await prisma.applicationSession.update({
+          where: { id: session.id },
+          data: { osVersion },
+        });
+        await delApplicationSessionCache(session.id);
+      }
+      return { ...session, workspaceId: application.workspaceId };
+    }
   }
 
   const {
@@ -91,6 +107,7 @@ export async function findSession(
           id: sessionId,
           applicationId,
           os,
+          osVersion,
           language,
           ip,
           version,
@@ -123,6 +140,14 @@ export async function findSession(
 
         return existingSession;
       });
+  }
+
+  if (osVersion && session.osVersion !== osVersion) {
+    session = await prisma.applicationSession.update({
+      where: { id: sessionId },
+      data: { osVersion },
+    });
+    await delApplicationSessionCache(sessionId);
   }
 
   const res: any = { ...session!, workspaceId: application.workspaceId };
@@ -237,7 +262,13 @@ export async function saveApplicationEvent(data: {
   return applicationEvent;
 }
 
-const builtinSessionDataKeys = ['os', 'language', 'version', 'sdkVersion'];
+const builtinSessionDataKeys = [
+  'os',
+  'osVersion',
+  'language',
+  'version',
+  'sdkVersion',
+];
 export async function saveApplicationSessionData(data: {
   applicationId: string;
   sessionId: string;
@@ -247,14 +278,13 @@ export async function saveApplicationSessionData(data: {
 
   const builtinSessionData = pick(sessionData, builtinSessionDataKeys);
   if (Object.keys(builtinSessionData).length > 0) {
-    void prisma.applicationSession
-      .update({
-        where: {
-          id: sessionId,
-        },
-        data: builtinSessionData,
-      })
-      .catch(() => {});
+    await prisma.applicationSession.update({
+      where: {
+        id: sessionId,
+      },
+      data: builtinSessionData,
+    });
+    await delApplicationSessionCache(sessionId);
   }
 
   const jsonKeys = flattenJSON(sessionData);

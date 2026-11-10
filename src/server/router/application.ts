@@ -18,6 +18,7 @@ const eventPayloadSchema = yup.object().shape({
   data: yup.object(),
   language: yup.string().max(35),
   os: yup.string().max(20),
+  osVersion: yup.string().strict().max(20),
   application: yup.string().required(),
   name: yup.string().max(50),
   screen: yup.string().max(500),
@@ -49,6 +50,10 @@ async function processEvent(type: string, payload: any, session: any) {
     if (!eventData) {
       throw new Error('Data required for identify event');
     }
+
+    await yup
+      .object({ osVersion: yup.string().strict().max(20) })
+      .validate(eventData);
 
     await saveApplicationSessionData({
       ...session,

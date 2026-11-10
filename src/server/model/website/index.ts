@@ -9,6 +9,7 @@ import {
 import { prisma } from '../_client.js';
 import { Request } from 'express';
 import { getClientInfo } from '../../utils/detect.js';
+import { getOSVersion } from '../../utils/os.js';
 import {
   DATA_TYPE,
   EVENT_NAME_LENGTH,
@@ -141,6 +142,7 @@ export interface WebsiteEventPayload {
   distinctId?: string;
   hostname: string;
   language?: string;
+  osVersion?: string;
   referrer?: string;
   screen?: string;
   title?: string;
@@ -166,6 +168,8 @@ export async function findSession(
     screen,
     language,
   } = payload as WebsiteEventPayload;
+  const osVersion =
+    payload.osVersion || getOSVersion(req.headers['user-agent'] ?? '');
 
   // Check the hostname value for legality to eliminate dirty data
   const validHostnameRegex = /^[\w-.]+$/;
@@ -201,9 +205,19 @@ export async function findSession(
       isUuid(result.id) &&
       result.websiteId === websiteId
     ) {
-      const session = await loadLiveSession(result.id);
+      let session = await loadLiveSession(result.id);
 
       if (session && session.websiteId === websiteId) {
+        if (
+          osVersion &&
+          session.osVersion !== osVersion &&
+          (payload.osVersion || !session.osVersion)
+        ) {
+          session = await prisma.websiteSession.update({
+            where: { id: session.id },
+            data: { osVersion },
+          });
+        }
         await updateWebsiteSessionCache(result.id)(session);
 
         return {
@@ -249,6 +263,7 @@ export async function findSession(
           hostname,
           browser,
           os,
+          osVersion,
           device,
           screen,
           language,
@@ -279,6 +294,17 @@ export async function findSession(
     }
   }
 
+  if (
+    osVersion &&
+    session.osVersion !== osVersion &&
+    (payload.osVersion || !session.osVersion)
+  ) {
+    session = await prisma.websiteSession.update({
+      where: { id: sessionId },
+      data: { osVersion },
+    });
+  }
+
   await updateWebsiteSessionCache(sessionId)(session);
 
   const res: WebsiteSession & { workspaceId: string } = {
@@ -287,6 +313,7 @@ export async function findSession(
     hostname: session?.hostname ?? hostname,
     browser: session?.browser ?? browser,
     os: session?.os ?? os,
+    osVersion: session?.osVersion ?? osVersion ?? null,
     device: session?.device ?? device ?? null,
     screen: session?.screen ?? screen ?? null,
     language: session?.language ?? language ?? null,

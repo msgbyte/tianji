@@ -41,6 +41,7 @@ const session: ApplicationSession = {
   ip,
   language: 'es',
   os: 'ios',
+  osVersion: null,
   version: '1.0.0',
   sdkVersion: null,
   country: null,
