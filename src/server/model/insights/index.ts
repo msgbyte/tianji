@@ -4,6 +4,10 @@ import {
   insightsQuerySchema,
 } from '../../utils/schema.js';
 import { insightsWebsite, WebsiteInsightsSqlBuilder } from './website.js';
+import {
+  ApplicationInsightsSqlBuilder,
+  insightsApplication,
+} from './application.js';
 import { insightsSurvey, SurveyInsightsSqlBuilder } from './survey.js';
 import { insightsAIGateway } from './aiGateway.js';
 import { compact, omit } from 'lodash-es';
@@ -26,6 +30,10 @@ export async function queryInsight(
 
   if (insightType === 'website') {
     return insightsWebsite(query, context);
+  }
+
+  if (insightType === 'application') {
+    return insightsApplication(query, context);
   }
 
   if (insightType === 'survey') {
@@ -58,8 +66,12 @@ export async function queryEvents(
 ) {
   const { insightType } = query;
 
-  if (insightType === 'website') {
-    const builder = new WebsiteInsightsSqlBuilder(query, context);
+  if (insightType === 'website' || insightType === 'application') {
+    const builder =
+      insightType === 'application'
+        ? new ApplicationInsightsSqlBuilder(query, context)
+        : new WebsiteInsightsSqlBuilder(query, context);
+    if (insightType === 'application') builder.resultLimit = query.limit;
 
     const events = await builder.queryEvents(query.cursor);
 
@@ -67,16 +79,22 @@ export async function queryEvents(
       events.map((event) => event.properties.sessionId)
     );
 
-    const sessions = await prisma.websiteSession.findMany({
-      where: {
-        id: {
-          in: sessionIds,
-        },
-      },
-      include: {
-        sessionData: true,
-      },
-    });
+    const sessions =
+      insightType === 'application'
+        ? await prisma.applicationSession.findMany({
+            where: { applicationId: query.insightId, id: { in: sessionIds } },
+            include: { sessionData: true },
+          })
+        : await prisma.websiteSession.findMany({
+            where: {
+              id: {
+                in: sessionIds,
+              },
+            },
+            include: {
+              sessionData: true,
+            },
+          });
 
     return events.map((event) => {
       const session = sessions.find(

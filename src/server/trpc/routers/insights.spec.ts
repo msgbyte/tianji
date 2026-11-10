@@ -1,4 +1,5 @@
 import { createId } from '@paralleldrive/cuid2';
+import type { ApplicationEvent } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import {
   afterAll,
@@ -658,7 +659,13 @@ describe('insightsRouter workspace ownership', () => {
     'filterParams',
     'filterParamValues',
   ] as const;
-  const insightTypes = ['website', 'survey', 'aigateway', 'warehouse'] as const;
+  const insightTypes = [
+    'website',
+    'application',
+    'survey',
+    'aigateway',
+    'warehouse',
+  ] as const;
   const time = {
     startAt: Date.parse('2026-07-01T00:00:00.000Z'),
     endAt: Date.parse('2026-07-01T23:59:59.999Z'),
@@ -681,6 +688,9 @@ describe('insightsRouter workspace ownership', () => {
         domain: 'insights.example.com',
         workspaceId,
       },
+    });
+    const application = await prisma.application.create({
+      data: { name: 'Insights Application', workspaceId },
     });
     const survey = await prisma.survey.create({
       data: { name: 'Insights Survey', payload: { items: [] }, workspaceId },
@@ -711,6 +721,7 @@ describe('insightsRouter workspace ownership', () => {
 
     return {
       website: website.id,
+      application: application.id,
       survey: survey.id,
       aigateway: gateway.id,
       warehouse,
@@ -852,5 +863,476 @@ describe('insightsRouter workspace ownership', () => {
     expect(query).not.toContain('search?q');
     expect(query).not.toContain('plan?');
     expect(Object.values(query_params)).not.toContain(undefined);
+  });
+});
+
+describe('application insights', () => {
+  const time = {
+    startAt: Date.parse('2026-07-02T00:00:00Z'),
+    endAt: Date.parse('2026-07-02T23:59:59.999Z'),
+    unit: 'day' as const,
+    timezone: 'UTC',
+  };
+
+  async function setup() {
+    const workspace = await prisma.workspace.create({
+      data: { name: 'Application Insights Workspace' },
+    });
+    workspaceId = workspace.id;
+    const application = await prisma.application.create({
+      data: { name: 'Mobile App', workspaceId },
+    });
+    const session = await prisma.applicationSession.create({
+      data: {
+        id: randomUUID(),
+        applicationId: application.id,
+        os: 'iOS',
+        language: 'es',
+        country: 'ES',
+        version: '1.0',
+        sessionData: {
+          create: {
+            applicationId: application.id,
+            key: 'plan',
+            stringValue: 'pro',
+            dataType: DATA_TYPE.string,
+          },
+        },
+      },
+    });
+    const secondSession = await prisma.applicationSession.create({
+      data: { id: randomUUID(), applicationId: application.id, os: 'Android' },
+    });
+    // IDs deliberately run against chronological order to exercise pagination.
+    const events: ApplicationEvent[] = [];
+    for (const [index, id] of ['z-first', 'a-second', 'm-third'].entries()) {
+      events.push(
+        await prisma.applicationEvent.create({
+          data: {
+            id: id[0] + createId(),
+            applicationId: application.id,
+            sessionId: index === 2 ? secondSession.id : session.id,
+            eventType:
+              index === 0 ? EVENT_TYPE.pageView : EVENT_TYPE.customEvent,
+            eventName: index === 0 ? null : 'purchase',
+            screenName: index === 0 ? 'Home' : 'Checkout',
+            screenParams: { tab: 'main' },
+            createdAt: new Date(`2026-07-02T12:00:0${index}Z`),
+          },
+        })
+      );
+    }
+    await prisma.applicationEventData.createMany({
+      data: [
+        { eventKey: '$country', stringValue: 'MX', dataType: DATA_TYPE.string },
+        { eventKey: 'price', numberValue: 0, dataType: DATA_TYPE.number },
+        { eventKey: 'plan?\\', stringValue: 'pro', dataType: DATA_TYPE.string },
+        { eventKey: 'plan?\\', stringValue: 'pro', dataType: DATA_TYPE.string },
+      ].map((data) => ({
+        ...data,
+        applicationId: application.id,
+        applicationEventId: events[1].id,
+      })),
+    });
+    return {
+      caller: await createCaller(),
+      events,
+      session,
+      input: {
+        workspaceId,
+        insightId: application.id,
+        insightType: 'application' as const,
+        metrics: [{ name: '$all_event', math: 'events' as const }],
+        time,
+      },
+    };
+  }
+
+  test('counts screen views, custom events and distinct sessions', async () => {
+    const { caller, input } = await setup();
+    const result = await caller.query({
+      ...input,
+      metrics: [
+        { name: '$all_event', math: 'events', alias: 'all' },
+        { name: '$screen_view', math: 'events', alias: 'views' },
+        { name: 'purchase', math: 'events', alias: 'purchases' },
+        { name: '$all_event', math: 'sessions', alias: 'users' },
+        { name: 'purchase', math: 'sessions', alias: 'buyers' },
+        { name: '$screen_view', math: 'sessions', alias: 'viewers' },
+      ],
+    });
+    expect(
+      Object.fromEntries(
+        result.map((series) => [series.alias, series.data[0].value])
+      )
+    ).toEqual({
+      all: 3,
+      views: 1,
+      purchases: 2,
+      users: 2,
+      buyers: 2,
+      viewers: 1,
+    });
+    expect(await caller.query({ ...input, metrics: [] })).toEqual([]);
+    expect(
+      await caller.query({
+        ...input,
+        time: {
+          ...time,
+          startAt: time.startAt + 86400000,
+          endAt: time.endAt + 86400000,
+        },
+      })
+    ).toMatchObject([{ name: '$all_event', data: [] }]);
+  });
+
+  test('lists event names, builtin properties and typed custom values', async () => {
+    const { caller, input } = await setup();
+    expect(await caller.eventNames(input)).toEqual([
+      { name: 'purchase', count: 2 },
+      { name: '$screen_view', count: 1 },
+    ]);
+    expect(await caller.filterParams(input)).toEqual(
+      expect.arrayContaining([
+        { name: '$screenName', source: 'builtin', type: 'string', count: 0 },
+        { name: '$version', source: 'builtin', type: 'string', count: 0 },
+        { name: '$country', source: 'custom', type: 'string', count: 1 },
+        { name: 'price', source: 'custom', type: 'number', count: 1 },
+      ])
+    );
+    for (const [paramName, source, expected] of [
+      ['$country', 'builtin', ['ES']],
+      ['$country', 'custom', ['MX']],
+      ['$screenName', 'builtin', ['Checkout', 'Home']],
+      ['price', 'custom', ['0']],
+    ] as const) {
+      expect(
+        await caller.filterParamValues({ ...input, paramName, source })
+      ).toEqual(expected);
+    }
+  });
+
+  test('combines builtin and independent custom filters without duplicate counts', async () => {
+    const { caller, input, events } = await setup();
+    const filters = [
+      {
+        name: '$country',
+        source: 'builtin' as const,
+        type: 'string' as const,
+        operator: 'equals' as const,
+        value: 'ES',
+      },
+      {
+        name: '$country',
+        source: 'custom' as const,
+        type: 'string' as const,
+        operator: 'equals' as const,
+        value: 'MX',
+      },
+      {
+        name: 'price',
+        type: 'number' as const,
+        operator: 'equals' as const,
+        value: 0,
+      },
+    ];
+    expect(
+      await caller.query({
+        ...input,
+        filters,
+        groups: [{ value: 'plan?\\', type: 'string' }],
+      })
+    ).toMatchObject([{ 'plan?\\': 'pro', data: [{ value: 1 }] }]);
+    expect(
+      await caller.query({
+        ...input,
+        filters,
+        groups: [{ value: '$screenName', source: 'builtin', type: 'string' }],
+      })
+    ).toMatchObject([{ $screenName: 'Checkout', data: [{ value: 1 }] }]);
+    expect(await caller.queryEvents({ ...input, filters })).toMatchObject([
+      {
+        id: events[1].id,
+        properties: { price: 0, screenName: 'Checkout' },
+        sessions: { os: 'iOS', plan: 'pro' },
+      },
+    ]);
+  });
+
+  test('paginates events by time and includes screen and session metadata', async () => {
+    const { caller, input, events, session } = await setup();
+    let cursor: string | undefined;
+    const ids: string[] = [];
+    for (let index = 0; index < 3; index++) {
+      const page = await caller.queryEvents({ ...input, limit: 1, cursor });
+      expect(page).toHaveLength(1);
+      ids.push(page[0].id);
+      cursor = page[0].id;
+    }
+    expect(ids).toEqual(events.map((event) => event.id).reverse());
+    expect(await caller.queryEvents({ ...input, limit: 1, cursor })).toEqual(
+      []
+    );
+    expect(
+      await caller.queryEvents({
+        ...input,
+        metrics: [{ name: '$screen_view', math: 'events' }],
+      })
+    ).toMatchObject([
+      {
+        id: events[0].id,
+        name: 'Screen View',
+        properties: {
+          sessionId: session.id,
+          distinctId: session.id,
+          screenName: 'Home',
+          screenParams: { tab: 'main' },
+        },
+      },
+    ]);
+  });
+
+  async function setupBooleanEvents() {
+    const context = await setup();
+    const { saveApplicationEvent } = await import(
+      '../../model/application/index.js'
+    );
+    const booleanEvents = [];
+    for (const success of [true, false]) {
+      const event = await saveApplicationEvent({
+        applicationId: context.input.insightId,
+        sessionId: context.session.id,
+        eventName: 'checkout',
+        eventData: { success },
+      });
+      await prisma.applicationEvent.update({
+        where: { id: event.id },
+        data: { createdAt: new Date(time.startAt + 1000) },
+      });
+      booleanEvents.push(event);
+    }
+    return {
+      ...context,
+      booleanEvents,
+      input: {
+        ...context.input,
+        metrics: [{ name: 'checkout', math: 'events' as const }],
+      },
+    };
+  }
+
+  test('reads persisted boolean properties as visible event values', async () => {
+    const { caller, input, booleanEvents } = await setupBooleanEvents();
+    expect(await caller.queryEvents(input)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: booleanEvents[0].id,
+          properties: expect.objectContaining({ success: 'true' }),
+        }),
+        expect.objectContaining({
+          id: booleanEvents[1].id,
+          properties: expect.objectContaining({ success: 'false' }),
+        }),
+      ])
+    );
+  });
+
+  test.each([1, 0])(
+    'filters persisted boolean properties by %s',
+    async (value) => {
+      const { caller, input, booleanEvents } = await setupBooleanEvents();
+      for (const operator of ['equals', 'not equals'] as const) {
+        const filteredInput = {
+          ...input,
+          filters: [
+            { name: 'success', type: 'boolean' as const, operator, value },
+          ],
+        };
+        const expectedIndex = operator === 'equals' ? 1 - value : value;
+        expect(await caller.query(filteredInput)).toMatchObject([
+          { data: [{ value: 1 }] },
+        ]);
+        expect(await caller.queryEvents(filteredInput)).toMatchObject([
+          { id: booleanEvents[expectedIndex].id },
+        ]);
+      }
+    }
+  );
+
+  test('groups persisted boolean properties without merging true and false', async () => {
+    const { caller, input } = await setupBooleanEvents();
+    const result = await caller.query({
+      ...input,
+      groups: [{ value: 'success', type: 'boolean' }],
+    });
+    expect(result).toHaveLength(2);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          success: 1,
+          data: [{ date: '2026-07-02 00:00:00', value: 1 }],
+        }),
+        expect.objectContaining({
+          success: 0,
+          data: [{ date: '2026-07-02 00:00:00', value: 1 }],
+        }),
+      ])
+    );
+  });
+
+  test.each([
+    ['$event', 'eventName', 'purchase'],
+    ['$screenName', 'screenName', 'Checkout'],
+  ] as const)(
+    'preserves null and empty %s values with ClickHouse enabled',
+    async (name, column, value) => {
+      const { caller, input, events } = await setup();
+      await prisma.applicationEvent.update({
+        where: { id: events[0].id },
+        data: { [column]: null },
+      });
+      await prisma.applicationEvent.update({
+        where: { id: events[1].id },
+        data: { [column]: '' },
+      });
+      mocks.isClickhouseHealthy.mockReturnValue(true);
+      mocks.clickhouseQuery.mockResolvedValue({
+        json: async () => ({ data: [] }),
+      });
+      const filteredInput = {
+        ...input,
+        filters: [
+          {
+            name,
+            source: 'builtin' as const,
+            type: 'string' as const,
+            operator: 'not equals' as const,
+            value,
+          },
+        ],
+      };
+      expect(await caller.query(filteredInput)).toMatchObject([
+        { data: [{ value: 1 }] },
+      ]);
+      expect(await caller.queryEvents(filteredInput)).toMatchObject([
+        { id: events[1].id },
+      ]);
+      const grouped = await caller.query({
+        ...input,
+        groups: [{ value: name, source: 'builtin', type: 'string' }],
+      });
+      expect(grouped).toHaveLength(3);
+      expect(grouped).toEqual(
+        expect.arrayContaining(
+          [null, '', value].map((groupValue) =>
+            expect.objectContaining({
+              [name]: groupValue,
+              data: [{ date: '2026-07-02 00:00:00', value: 1 }],
+            })
+          )
+        )
+      );
+      expect(mocks.clickhouseQuery).not.toHaveBeenCalled();
+    }
+  );
+
+  test('uses PostgreSQL for application version filters and groups', async () => {
+    const { caller, input } = await setup();
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    expect(
+      await caller.query({
+        ...input,
+        filters: [
+          {
+            name: '$version',
+            source: 'builtin',
+            type: 'string',
+            operator: 'equals',
+            value: '1.0',
+          },
+        ],
+      })
+    ).toMatchObject([{ data: [{ value: 2 }] }]);
+    expect(
+      await caller.query({
+        ...input,
+        groups: [{ value: '$sdkVersion', source: 'builtin', type: 'string' }],
+      })
+    ).toMatchObject([{ $sdkVersion: null, data: [{ value: 3 }] }]);
+    expect(mocks.clickhouseQuery).not.toHaveBeenCalled();
+  });
+
+  test('normalizes ClickHouse counts and event details with bound parameters', async () => {
+    const { caller, input, events } = await setup();
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockResolvedValueOnce({
+      json: async () => ({
+        data: [{ date: '2026-07-02', m0: '2', g0: 'pro' }],
+      }),
+    });
+    expect(
+      await caller.query({
+        ...input,
+        metrics: [{ name: 'search?q', math: 'events', alias: 'A.search?q' }],
+        groups: [{ value: 'plan?', type: 'string' }],
+      })
+    ).toMatchObject([
+      { alias: 'A.search?q', 'plan?': 'pro', data: [{ value: 2 }] },
+    ]);
+    const [{ query, query_params }] = mocks.clickhouseQuery.mock.calls[0];
+    expect(query).not.toContain('search?q');
+    expect(query).not.toContain('plan?');
+    expect(Object.values(query_params)).toContain('search?q');
+    expect(Object.values(query_params)).toContain('plan?');
+    expect(Object.values(query_params)).not.toContain(undefined);
+
+    mocks.clickhouseQuery.mockResolvedValueOnce({
+      json: async () => ({
+        data: [
+          {
+            ...events[1],
+            createdAt: '2026-07-02 12:00:01.000',
+            screenParams: '{"tab":"main"}',
+          },
+        ],
+      }),
+    });
+    expect(
+      await caller.queryEvents({ ...input, limit: 1, cursor: events[2].id })
+    ).toMatchObject([
+      {
+        id: events[1].id,
+        createdAt: events[1].createdAt,
+        properties: { price: 0, screenParams: { tab: 'main' } },
+        sessions: { os: 'iOS' },
+      },
+    ]);
+    expect(
+      Object.values(mocks.clickhouseQuery.mock.calls[1][0].query_params)
+    ).toContain(events[2].id);
+    expect(mocks.forceClickhouseHealthCheck).not.toHaveBeenCalled();
+  });
+
+  test('binds ClickHouse parameters and rebuilds aggregate and event queries on failure', async () => {
+    const { caller, input, events } = await setup();
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    mocks.clickhouseQuery.mockRejectedValue(
+      new Error('ClickHouse unavailable')
+    );
+    expect(
+      await caller.query({
+        ...input,
+        metrics: [{ name: '$all_event', math: 'events', alias: 'A.search?\\' }],
+      })
+    ).toMatchObject([{ alias: 'A.search?\\', data: [{ value: 3 }] }]);
+    expect(await caller.queryEvents({ ...input, limit: 1 })).toMatchObject([
+      { id: events[2].id },
+    ]);
+    for (const [{ query, query_params }] of mocks.clickhouseQuery.mock.calls) {
+      expect(query).not.toContain('?');
+      expect(Object.values(query_params)).not.toContain(undefined);
+      expect(Object.values(query_params)).toContain(input.insightId);
+    }
+    expect(mocks.forceClickhouseHealthCheck).toHaveBeenCalledTimes(2);
   });
 });

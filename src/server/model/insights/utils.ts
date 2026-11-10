@@ -15,6 +15,24 @@ export const insightsWebsiteBuiltinFields = [
   table: SESSION_COLUMNS.includes(name) ? 'WebsiteSession' : 'WebsiteEvent',
 }));
 
+export const insightsApplicationBuiltinFields = [
+  ...[
+    'os',
+    'language',
+    'version',
+    'sdkVersion',
+    'country',
+    'region',
+    'city',
+  ].map((name) => ({
+    name: `$${name}`,
+    column: name === 'region' ? 'subdivision1' : name,
+    table: 'ApplicationSession',
+  })),
+  { name: '$screenName', column: 'screenName', table: 'ApplicationEvent' },
+  { name: '$event', column: 'eventName', table: 'ApplicationEvent' },
+];
+
 export const insightsSurveyBuiltinFields = [
   'aiCategory',
   'aiTranslation',

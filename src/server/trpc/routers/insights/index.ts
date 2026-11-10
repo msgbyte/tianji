@@ -11,6 +11,7 @@ import { EVENT_TYPE, INIT_WORKSPACE_ID } from '../../../utils/const.js';
 import { stringifyDateType } from '../../../utils/common.js';
 import { queryEvents, queryInsight } from '../../../model/insights/index.js';
 import {
+  insightsApplicationBuiltinFields,
   insightsSurveyBuiltinFields,
   insightsWebsiteBuiltinFields,
 } from '../../../model/insights/utils.js';
@@ -48,11 +49,13 @@ const insightTargetProcedure = workspaceProcedure
     const target =
       insightType === 'website'
         ? await prisma.website.findUnique({ where, select })
-        : insightType === 'survey'
-          ? await prisma.survey.findUnique({ where, select })
-          : insightType === 'aigateway'
-            ? await prisma.aIGateway.findUnique({ where, select })
-            : await findWarehouseApplication(workspaceId, insightId);
+        : insightType === 'application'
+          ? await prisma.application.findUnique({ where, select })
+          : insightType === 'survey'
+            ? await prisma.survey.findUnique({ where, select })
+            : insightType === 'aigateway'
+              ? await prisma.aIGateway.findUnique({ where, select })
+              : await findWarehouseApplication(workspaceId, insightId);
 
     if (!target) {
       throw new TRPCError({
@@ -82,26 +85,35 @@ export const insightsRouter = router({
   eventNames: insightTargetProcedure.query(async ({ input }) => {
     const { insightId, insightType } = input;
 
-    if (insightType === 'website') {
-      const res = await prisma.websiteEvent.groupBy({
-        by: ['eventName', 'eventType'],
-        where: {
-          websiteId: insightId,
-        },
+    if (insightType === 'website' || insightType === 'application') {
+      const args = {
+        by: ['eventName', 'eventType'] as ['eventName', 'eventType'],
         _count: {
-          id: true,
+          id: true as const,
         },
         orderBy: {
           _count: {
-            id: 'desc',
+            id: 'desc' as const,
           },
         },
-      });
+      };
+      const res =
+        insightType === 'application'
+          ? await prisma.applicationEvent.groupBy({
+              ...args,
+              where: { applicationId: insightId },
+            })
+          : await prisma.websiteEvent.groupBy({
+              ...args,
+              where: { websiteId: insightId },
+            });
 
       return res.map((item) => ({
         name:
           item.eventType === EVENT_TYPE.pageView
-            ? '$page_view'
+            ? insightType === 'application'
+              ? '$screen_view'
+              : '$page_view'
             : (item.eventName ?? '<null>'),
         count: item._count.id,
       }));
@@ -140,24 +152,35 @@ export const insightsRouter = router({
   filterParams: insightTargetProcedure.query(async ({ input }) => {
     const { insightId, insightType } = input;
 
-    if (insightType === 'website') {
-      const res = await prisma.websiteEventData.groupBy({
-        by: ['eventKey', 'dataType'],
-        where: {
-          websiteId: insightId,
-        },
+    if (insightType === 'website' || insightType === 'application') {
+      const args = {
+        by: ['eventKey', 'dataType'] as ['eventKey', 'dataType'],
         _count: {
-          id: true,
+          id: true as const,
         },
         orderBy: {
           _count: {
-            id: 'desc',
+            id: 'desc' as const,
           },
         },
-      });
+      };
+      const res =
+        insightType === 'application'
+          ? await prisma.applicationEventData.groupBy({
+              ...args,
+              where: { applicationId: insightId },
+            })
+          : await prisma.websiteEventData.groupBy({
+              ...args,
+              where: { websiteId: insightId },
+            });
+      const builtinFields =
+        insightType === 'application'
+          ? insightsApplicationBuiltinFields
+          : insightsWebsiteBuiltinFields;
 
       return [
-        ...insightsWebsiteBuiltinFields.map(({ name }) => ({
+        ...builtinFields.map(({ name }) => ({
           name,
           source: 'builtin' as const,
           type: 'string' as const,
@@ -235,8 +258,12 @@ export const insightsRouter = router({
     .query(async ({ input }) => {
       const { insightId, insightType, paramName } = input;
 
-      if (insightType === 'website') {
-        const builtin = insightsWebsiteBuiltinFields.find(
+      if (insightType === 'website' || insightType === 'application') {
+        const builtinFields =
+          insightType === 'application'
+            ? insightsApplicationBuiltinFields
+            : insightsWebsiteBuiltinFields;
+        const builtin = builtinFields.find(
           (field) => input.source === 'builtin' && field.name === paramName
         );
         if (builtin) {
@@ -246,21 +273,39 @@ export const insightsRouter = router({
             take: 100,
           };
           const rows =
-            builtin.table === 'WebsiteSession'
-              ? await prisma.websiteSession.findMany({
-                  ...args,
-                  where: {
-                    websiteId: insightId,
-                    website: { workspaceId: input.workspaceId },
-                  },
-                })
-              : await prisma.websiteEvent.findMany({
-                  ...args,
-                  where: {
-                    websiteId: insightId,
-                    session: { website: { workspaceId: input.workspaceId } },
-                  },
-                });
+            insightType === 'application'
+              ? builtin.table === 'ApplicationSession'
+                ? await prisma.applicationSession.findMany({
+                    ...args,
+                    where: {
+                      applicationId: insightId,
+                      application: { workspaceId: input.workspaceId },
+                    },
+                  })
+                : await prisma.applicationEvent.findMany({
+                    ...args,
+                    where: {
+                      applicationId: insightId,
+                      session: {
+                        application: { workspaceId: input.workspaceId },
+                      },
+                    },
+                  })
+              : builtin.table === 'WebsiteSession'
+                ? await prisma.websiteSession.findMany({
+                    ...args,
+                    where: {
+                      websiteId: insightId,
+                      website: { workspaceId: input.workspaceId },
+                    },
+                  })
+                : await prisma.websiteEvent.findMany({
+                    ...args,
+                    where: {
+                      websiteId: insightId,
+                      session: { website: { workspaceId: input.workspaceId } },
+                    },
+                  });
           return uniq(
             rows
               .map((row) => (row as Record<string, unknown>)[builtin.column])
@@ -270,21 +315,27 @@ export const insightsRouter = router({
               )
           ).slice(0, 10);
         }
-        const res = await prisma.websiteEventData.findMany({
-          where: {
-            websiteId: insightId,
-            eventKey: paramName,
-          },
+        const args = {
           select: {
             stringValue: true,
             numberValue: true,
             dateValue: true,
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: 'desc' as const,
           },
           take: 100,
-        });
+        };
+        const res =
+          insightType === 'application'
+            ? await prisma.applicationEventData.findMany({
+                ...args,
+                where: { applicationId: insightId, eventKey: paramName },
+              })
+            : await prisma.websiteEventData.findMany({
+                ...args,
+                where: { websiteId: insightId, eventKey: paramName },
+              });
 
         return uniq(
           res.map((item) => {

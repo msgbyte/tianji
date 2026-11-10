@@ -351,7 +351,10 @@ export abstract class InsightsSqlBuilder {
     `;
   }
 
-  public async executeQuery(sql: Prisma.Sql): Promise<any[]> {
+  public async executeQuery(
+    sql: Prisma.Sql,
+    buildPostgresQuery: () => Prisma.Sql = () => this.build()
+  ): Promise<any[]> {
     const shouldUseClickhouse = this.shouldUseClickhouse();
 
     if (shouldUseClickhouse) {
@@ -402,7 +405,7 @@ export abstract class InsightsSqlBuilder {
 
         // Rebuild SQL for PostgreSQL and execute
         this.useClickhouse = false;
-        const pgSql = this.build();
+        const pgSql = buildPostgresQuery();
         return await prisma.$queryRaw(pgSql);
       }
     } else {

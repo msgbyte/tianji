@@ -48,6 +48,7 @@ const FilterInfoSchema = z.object({
 
 export const insightTypeSchema = z.enum([
   'website',
+  'application',
   'survey',
   'aigateway',
   'warehouse',
