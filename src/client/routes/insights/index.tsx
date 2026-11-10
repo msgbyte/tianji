@@ -57,6 +57,9 @@ function PageComponent() {
   const addFilter = useInsightsStore((state) => state.addFilter);
   const removeFilter = useInsightsStore((state) => state.removeFilter);
   const { data: websites = [] } = trpc.website.all.useQuery({ workspaceId });
+  const { data: applications = [] } = trpc.application.all.useQuery({
+    workspaceId,
+  });
   const { data: surveys = [] } = trpc.survey.all.useQuery({ workspaceId });
   const { data: warehouseApplicationIds = [] } =
     trpc.insights.warehouseApplications.useQuery({ workspaceId });
@@ -65,11 +68,13 @@ function PageComponent() {
   const createShortLinkMutation = trpc.shortlink.create.useMutation();
 
   const handleValueChange = useEvent((insightId: string) => {
-    const insightType = surveys.some((item) => item.id === insightId)
-      ? 'survey'
-      : warehouseApplicationIds.some((item) => item === insightId)
-        ? 'warehouse'
-        : 'website';
+    const insightType = applications.some((item) => item.id === insightId)
+      ? 'application'
+      : surveys.some((item) => item.id === insightId)
+        ? 'survey'
+        : warehouseApplicationIds.some((item) => item === insightId)
+          ? 'warehouse'
+          : 'website';
 
     setInsightTarget(insightId, insightType);
   });
@@ -139,6 +144,17 @@ function PageComponent() {
                       <SelectLabel>{t('Websites')}</SelectLabel>
 
                       {websites.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+
+                  {applications.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>{t('Applications')}</SelectLabel>
+                      {applications.map((item) => (
                         <SelectItem key={item.id} value={item.id}>
                           {item.name}
                         </SelectItem>

@@ -16,7 +16,12 @@ import {
 import React from 'react';
 import { deserializeInsightsState } from '../utils/insights';
 
-export type InsightType = 'website' | 'survey' | 'aigateway' | 'warehouse';
+export type InsightType =
+  | 'application'
+  | 'website'
+  | 'survey'
+  | 'aigateway'
+  | 'warehouse';
 
 interface InsightsState {
   insightId: string;

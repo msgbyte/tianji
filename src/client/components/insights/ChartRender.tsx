@@ -3,7 +3,7 @@ import { useCurrentWorkspaceId } from '@/store/user';
 import dayjs from 'dayjs';
 import React, { useMemo, useEffect, useRef } from 'react';
 import { TimeEventChart } from '../chart/TimeEventChart';
-import { useInsightsStore } from '@/store/insights';
+import { useInsightsStore, type InsightType } from '@/store/insights';
 import { DateRangeSelection } from './DateRangeSelection';
 import { DateUnitSelection } from './DateUnitSelection';
 import { FilterInfo, GroupInfo, MetricsInfo } from '@tianji/shared';
@@ -28,7 +28,7 @@ import { getMetricAlias } from './utils/common';
 
 interface ChartRenderProps {
   insightId: string;
-  insightType: 'survey' | 'website' | 'aigateway' | 'warehouse';
+  insightType: InsightType;
 }
 export const ChartRender: React.FC<ChartRenderProps> = React.memo((props) => {
   const workspaceId = useCurrentWorkspaceId();

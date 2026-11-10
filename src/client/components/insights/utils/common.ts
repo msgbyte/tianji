@@ -36,6 +36,10 @@ export function getMetricLabel(metricName: string) {
     return t('Page View');
   }
 
+  if (metricName === '$screen_view') {
+    return t('Screen View');
+  }
+
   return metricName;
 }
 
