@@ -124,3 +124,38 @@ describe('applicationRouter.allOverview', () => {
     });
   });
 });
+
+test('groups OS versions by both system and version, including legacy sessions', async () => {
+  const application = await prisma.application.create({
+    data: { workspaceId, name: 'OS Versions' },
+  });
+  await prisma.applicationSession.createMany({
+    data: [
+      { os: 'Android', osVersion: '14' },
+      { os: 'Android', osVersion: '14' },
+      { os: 'iOS', osVersion: '14' },
+      { os: 'Android', osVersion: null },
+    ].map((device) => ({
+      ...device,
+      id: randomUUID(),
+      applicationId: application.id,
+      updatedAt: now,
+    })),
+  });
+
+  const result = await caller.sessionStats({
+    workspaceId,
+    applicationId: application.id,
+    startAt: startAt.getTime(),
+    endAt: now.getTime(),
+    groupBy: 'osVersion',
+  });
+  expect(result).toHaveLength(3);
+  expect(result[0]).toEqual({ name: 'Android 14', count: 2 });
+  expect(result).toEqual(
+    expect.arrayContaining([
+      { name: 'iOS 14', count: 1 },
+      { name: 'Android (Unknown)', count: 1 },
+    ])
+  );
+});

@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { ApplicationSessionStatsChart } from './ApplicationSessionStatsChart';
 import { ApplicationCountryChart } from './ApplicationCountryChart';
+import { ApplicationOSChart } from './ApplicationOSChart';
 
 const { useQuery } = vi.hoisted(() => ({ useQuery: vi.fn() }));
 
@@ -23,6 +24,19 @@ vi.mock('@/hooks/useGlobalRangeDate', () => ({
 }));
 
 describe('ApplicationSessionStatsChart', () => {
+  test('switches between OS and OS version statistics', () => {
+    useQuery.mockReturnValue({ isLoading: false, data: [] });
+    render(<ApplicationOSChart applicationId="app" />);
+    expect(useQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ groupBy: 'os' })
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'OS Version' }));
+    expect(useQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({ groupBy: 'osVersion' })
+    );
+    expect(screen.getByRole('radio', { name: 'OS Version' })).toBeChecked();
+  });
+
   test('folds items beyond the top five into Other and shows shares of the total', () => {
     useQuery.mockReturnValue({
       isLoading: false,

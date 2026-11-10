@@ -18,6 +18,7 @@ interface ApplicationSessionStatsChartProps {
   applicationId: string;
   groupBy: SessionStatsGroupBy;
   title: string;
+  header?: React.ReactNode;
   formatLabel?: (name: string) => string;
   labelClassName?: string;
 }
@@ -84,7 +85,7 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
       return (
         <Card>
           <CardHeader>
-            <CardTitle>{title}</CardTitle>
+            <CardTitle>{props.header ?? title}</CardTitle>
           </CardHeader>
           <CardContent>
             <Loading />
@@ -97,7 +98,7 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
       return (
         <Card>
           <CardHeader>
-            <CardTitle>{title}</CardTitle>
+            <CardTitle>{props.header ?? title}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-muted-foreground flex h-[200px] items-center justify-center">
@@ -111,7 +112,7 @@ export const ApplicationSessionStatsChart: React.FC<ApplicationSessionStatsChart
     return (
       <Card>
         <CardHeader className="flex-row items-baseline justify-between space-y-0">
-          <CardTitle>{title}</CardTitle>
+          <CardTitle>{props.header ?? title}</CardTitle>
           <span className="text-muted-foreground text-xs tabular-nums">
             {total.toLocaleString()} {t('Sessions')}
           </span>

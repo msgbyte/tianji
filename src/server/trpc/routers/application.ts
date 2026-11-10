@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { formatOSVersion } from '../../utils/os.js';
 import {
   OpenApiMetaInfo,
   publicProcedure,
@@ -399,7 +400,7 @@ export const applicationRouter = router({
         applicationId: z.string(),
         startAt: z.number(),
         endAt: z.number(),
-        groupBy: z.enum(['version', 'country', 'os', 'language']),
+        groupBy: z.enum(['version', 'country', 'os', 'osVersion', 'language']),
       })
     )
     .output(
@@ -417,7 +418,7 @@ export const applicationRouter = router({
       const endDate = new Date(endAt);
 
       const stats = await prisma.applicationSession.groupBy({
-        by: [groupBy],
+        by: groupBy === 'osVersion' ? ['os', 'osVersion'] : [groupBy],
         where: {
           applicationId,
           updatedAt: {
@@ -430,7 +431,10 @@ export const applicationRouter = router({
 
       return stats
         .map((item) => ({
-          name: (item[groupBy] as string) || 'Unknown',
+          name:
+            groupBy === 'osVersion'
+              ? formatOSVersion(item.os, item.osVersion)
+              : (item[groupBy] as string) || 'Unknown',
           count: item._count || 0,
         }))
         .sort((a, b) => b.count - a.count);

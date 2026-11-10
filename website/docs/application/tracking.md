@@ -60,7 +60,7 @@ Events are sent in batches by default. Use `batchDelay` (default `200` ms) to ch
 
 ## Operating System Version
 
-The React Native SDK automatically records `os` and `osVersion` at initialization. `osVersion` is the operating system release (for example, `"14"` for Android 14), while `version` remains the application version.
+The React Native SDK automatically records `os` and `osVersion` at initialization. `osVersion` is the operating system release (for example, `"14"` for Android 14), while `version` remains the application version. The dashboard's OS chart can switch to **OS Version**.
 
 When using `tianji-client-sdk` directly, supply these values after initialization:
 
