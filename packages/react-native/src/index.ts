@@ -5,7 +5,7 @@ import {
   identifyApplicationUser,
 } from 'tianji-client-sdk';
 import { Platform } from 'react-native';
-import { getVersion } from 'react-native-device-info';
+import { getVersion, getSystemVersion } from 'react-native-device-info';
 
 export * from 'tianji-client-sdk';
 
@@ -14,6 +14,7 @@ export function initApplication(_options: ApplicationTrackingOptions) {
 
   identifyApplicationUser({
     os: Platform.OS,
+    osVersion: getSystemVersion(),
     version: getVersion(),
     sdkVersion: packageJson.version,
   });

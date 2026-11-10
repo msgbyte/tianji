@@ -39,7 +39,7 @@ pnpm add tianji-react-native react-native-device-info
 
 `react-native-device-info` is a native module, so Expo projects need a [development build](https://docs.expo.dev/develop/development-builds/introduction/) (or `expo prebuild`); importing it in Expo Go crashes the app.
 
-In Expo Go and other JavaScript runtimes, install `tianji-client-sdk` instead. It exposes the same API, but `initApplication` does not report the OS and app version automatically; call `identifyApplicationUser({ os, version })` yourself after initialization. For other platforms (Flutter, native iOS/Android, etc.), use the [HTTP API](#http-api).
+In Expo Go and other JavaScript runtimes, install `tianji-client-sdk` instead. It exposes the same API, but `initApplication` does not report the OS and app version automatically; call `identifyApplicationUser({ os, osVersion, version })` yourself after initialization. For other platforms (Flutter, native iOS/Android, etc.), use the [HTTP API](#http-api).
 
 ## Initialization
 
@@ -57,6 +57,18 @@ initApplication({
 You can find the server URL and application ID in the **Usage** dialog of your application in Tianji. Make sure the server URL is reachable from real devices: not `localhost`, and HTTPS unless your app allows cleartext traffic.
 
 Events are sent in batches by default. Use `batchDelay` (default `200` ms) to change the batch window, or `disableBatch: true` to send each event immediately.
+
+## Operating System Version
+
+The React Native SDK automatically records `os` and `osVersion` at initialization. `osVersion` is the operating system release (for example, `"14"` for Android 14), while `version` remains the application version.
+
+When using `tianji-client-sdk` directly, supply these values after initialization:
+
+```ts
+identifyApplicationUser({ os: 'android', osVersion: '14', version: '2.0.0' });
+```
+
+The SDK includes the OS metadata in subsequent events. For direct HTTP requests, include `os` and `osVersion` in the payload of each request. Omit `osVersion` when unavailable; existing records without a version remain unknown until the client reports one.
 
 ## Tracking Events
 

@@ -17,6 +17,8 @@ export interface ApplicationEventPayload {
    * Operating system information (max 20 chars)
    */
   os?: string;
+  /** Operating system version (max 20 chars), separate from the app version. */
+  osVersion?: string;
   /**
    * URL information (max 500 chars)
    */
@@ -88,12 +90,14 @@ export interface ApplicationTrackingOptions {
 }
 
 let options: ApplicationTrackingOptions | undefined;
+let deviceInfo: Pick<ApplicationEventPayload, 'os' | 'osVersion'> = {};
 let batchManager: BatchManager<
   ApplicationEventPayload | ApplicationIdentifyPayload
 > | null = null;
 
 export function initApplication(_options: ApplicationTrackingOptions) {
   options = _options;
+  deviceInfo = {};
 
   // Initialize batch manager
   batchManager = new BatchManager({
@@ -184,6 +188,8 @@ export async function reportApplicationEvent(
 }
 
 export interface VersionPayload {
+  os?: string;
+  osVersion?: string;
   version?: string;
   sdkVersion?: string;
 }
@@ -207,6 +213,10 @@ export async function identifyApplicationUser(
     return;
   }
 
+  for (const key of ['os', 'osVersion'] as const) {
+    if (typeof userInfo[key] === 'string') deviceInfo[key] = userInfo[key];
+  }
+
   const payload: ApplicationIdentifyPayload = {
     application: options.applicationId,
     data: userInfo,
@@ -227,7 +237,7 @@ function sendRequest(
     return;
   }
 
-  batchManager.add(type, payload);
+  batchManager.add(type, { ...deviceInfo, ...payload });
 }
 
 /**
