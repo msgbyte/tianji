@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { getOSVersion } from '../os.js';
+import { getOSVersion, formatOSVersion } from '../os.js';
 
 describe('OS version detection', () => {
   test.each([
@@ -18,4 +18,10 @@ describe('OS version detection', () => {
     expect(getOSVersion(ua)).toBe(expected);
   });
 
+  test('keeps operating systems distinct and replaces legacy Windows labels', () => {
+    expect(formatOSVersion('Android', '14')).toBe('Android 14');
+    expect(formatOSVersion('iOS', '14')).toBe('iOS 14');
+    expect(formatOSVersion('Windows 10', '11')).toBe('Windows 11');
+    expect(formatOSVersion('Android', null)).toBe('Android (Unknown)');
+  });
 });

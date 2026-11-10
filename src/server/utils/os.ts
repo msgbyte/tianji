@@ -9,3 +9,11 @@ export function getOSVersion(userAgent: string): string | undefined {
   }
   // macOS UAs also freeze at 10_15_7; use client hints for desktop versions.
 }
+
+export function formatOSVersion(
+  os: string | null,
+  version: string | null
+): string {
+  const name = version && os?.startsWith('Windows') ? 'Windows' : os;
+  return `${name || 'Unknown'} ${version || '(Unknown)'}`;
+}

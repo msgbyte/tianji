@@ -360,6 +360,24 @@ describe('website event filters', () => {
     });
   });
 
+  test('reads updated OS versions from PostgreSQL even when ClickHouse is healthy', async () => {
+    await prisma.websiteSession.updateMany({
+      where: { websiteId, browser: 'Firefox' },
+      data: { os: 'Windows 10', osVersion: '11' },
+    });
+    mocks.isClickhouseHealthy.mockReturnValue(true);
+    const caller = await createCaller();
+    expect(
+      await caller.metrics({
+        workspaceId: workspaceId!,
+        websiteId,
+        ...range,
+        type: 'osVersion',
+      })
+    ).toEqual([{ x: 'Windows 11', y: 1 }]);
+    expect(mocks.clickhouseQuery).not.toHaveBeenCalled();
+  });
+
   test('uses matching custom events for page and visitor dimension metrics', async () => {
     const caller = await createCaller();
     const input = {

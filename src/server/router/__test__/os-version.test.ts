@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { createTestContext } from '../../tests/utils.js';
 import { prisma } from '../../model/_client.js';
+import { randomUUID } from 'node:crypto';
+import { getWebsiteSessionMetrics } from '../../model/website/index.js';
 
 describe('OS version ingestion', () => {
   const { app, createTestWorkspace } = createTestContext();
@@ -165,4 +167,49 @@ describe('OS version ingestion', () => {
     expect((await readSession('application', second.id)).osVersion).toBe('14');
   });
 
+  test('website OS version statistics keep systems separate and include legacy sessions', async () => {
+    const website = await createTarget('website');
+    const now = new Date();
+    for (const device of [
+      { os: 'Android', osVersion: '14' },
+      { os: 'iOS', osVersion: '14' },
+      { os: 'Android', osVersion: null },
+    ]) {
+      await prisma.websiteSession.create({
+        data: {
+          id: randomUUID(),
+          websiteId: website.id,
+          ...device,
+          websiteEvent: {
+            create: [
+              {
+                websiteId: website.id,
+                createdAt: now,
+                eventType: 1,
+                urlPath: '/',
+              },
+              {
+                websiteId: website.id,
+                createdAt: now,
+                eventType: 1,
+                urlPath: '/',
+              },
+            ],
+          },
+        },
+      });
+    }
+    const rows = await getWebsiteSessionMetrics(website.id, 'osVersion', {
+      startDate: new Date(now.getTime() - 1000),
+      endDate: new Date(now.getTime() + 1000),
+    });
+    expect(rows.map((row) => ({ x: row.x, y: Number(row.y) }))).toEqual(
+      expect.arrayContaining([
+        { x: 'Android 14', y: 1 },
+        { x: 'iOS 14', y: 1 },
+        { x: 'Android (Unknown)', y: 1 },
+      ])
+    );
+    expect(rows).toHaveLength(3);
+  });
 });

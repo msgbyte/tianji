@@ -65,6 +65,7 @@ const metricsTypeSchema = z.enum([
   'title',
   'browser',
   'os',
+  'osVersion',
   'device',
   'country',
   'event',

@@ -13,7 +13,7 @@ type MetricsItemType = AppRouterOutput['website']['metrics'][number];
 
 interface MetricsTableProps {
   websiteId: string;
-  title: [string, string];
+  title: [React.ReactNode, string];
   type:
     | 'url'
     | 'language'
@@ -21,6 +21,7 @@ interface MetricsTableProps {
     | 'title'
     | 'browser'
     | 'os'
+    | 'osVersion'
     | 'device'
     | 'country'
     | 'event'

@@ -28,7 +28,7 @@ import { useCurrentWorkspaceId, useHasWritePermission } from '@/store/user';
 import { routeAuthBeforeLoad } from '@/utils/route';
 import { useTranslation } from '@i18next-toolkit/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Card } from 'antd';
+import { Card, Segmented } from 'antd';
 import { LuChevronDown, LuCompass, LuSettings } from 'react-icons/lu';
 import copy from 'copy-to-clipboard';
 import { toast } from 'sonner';
@@ -53,6 +53,7 @@ function PageComponent() {
   const [retentionOpen, setRetentionOpen] = useState(false);
   const [dailyStatsOpen, setDailyStatsOpen] = useState(false);
   const [lighthouseOpen, setLighthouseOpen] = useState(false);
+  const [osMetric, setOSMetric] = useState<'os' | 'osVersion'>('os');
   const resetInsightsStore = useInsightsStore((state) => state.reset);
   const setInsightTarget = useInsightsStore((state) => state.setInsightTarget);
 
@@ -206,8 +207,19 @@ function PageComponent() {
           >
             <WebsiteMetricsTable
               websiteId={websiteId}
-              type="os"
-              title={[t('OS'), t('Visitors')]}
+              type={osMetric}
+              title={[
+                <Segmented
+                  size="small"
+                  value={osMetric}
+                  onChange={setOSMetric}
+                  options={[
+                    { label: t('OS'), value: 'os' },
+                    { label: t('OS Version'), value: 'osVersion' },
+                  ]}
+                />,
+                t('Visitors'),
+              ]}
               startAt={startAt}
               endAt={endAt}
             />

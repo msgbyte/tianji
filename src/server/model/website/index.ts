@@ -9,7 +9,7 @@ import {
 import { prisma } from '../_client.js';
 import { Request } from 'express';
 import { getClientInfo } from '../../utils/detect.js';
-import { getOSVersion } from '../../utils/os.js';
+import { getOSVersion, formatOSVersion } from '../../utils/os.js';
 import {
   DATA_TYPE,
   EVENT_NAME_LENGTH,
@@ -618,8 +618,14 @@ export async function getWebsiteSessionMetrics(
       }
     );
   const includeCountry = column === 'city' || column === 'subdivision1';
+  const includeOS = column === 'osVersion';
 
-  if (env.clickhouse.enable && clickhouseHealthManager.isClickHouseHealthy()) {
+  // shortcut: use PostgreSQL for OS versions until ClickHouse syncs session updates.
+  if (
+    !includeOS &&
+    env.clickhouse.enable &&
+    clickhouseHealthManager.isClickHouseHealthy()
+  ) {
     try {
       const chFilter = clickhouseFilter.sql;
 
@@ -664,10 +670,13 @@ export async function getWebsiteSessionMetrics(
     }
   }
 
-  return prisma.$queryRaw`select
+  const rows = await prisma.$queryRaw<
+    { x: string; y: number; os: string | null }[]
+  >`select
       ${Prisma.sql([`"${column}"`])} x,
       count(distinct coalesce("WebsiteEvent"."distinctId", "WebsiteEvent"."sessionId")) y
       ${includeCountry ? Prisma.sql([', country']) : Prisma.empty}
+      ${includeOS ? Prisma.sql([', os']) : Prisma.empty}
     from "WebsiteEvent"
     ${joinSession}
     where "WebsiteEvent"."websiteId" = ${websiteId}
@@ -678,9 +687,12 @@ export async function getWebsiteSessionMetrics(
       and "WebsiteEvent"."eventType" = ${params.eventType}
       ${filterQuery}
     group by 1
-    ${includeCountry ? Prisma.sql([', 3']) : Prisma.empty}
+    ${includeCountry || includeOS ? Prisma.sql([', 3']) : Prisma.empty}
     order by 2 desc
     limit 100`;
+  return includeOS
+    ? rows.map((row) => ({ x: formatOSVersion(row.os, row.x), y: row.y }))
+    : rows;
 }
 
 export async function getWebsitePageviewMetrics(

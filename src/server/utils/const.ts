@@ -79,6 +79,7 @@ export const EVENT_COLUMNS = [
 export const SESSION_COLUMNS = [
   'browser',
   'os',
+  'osVersion',
   'device',
   'screen',
   'language',
@@ -110,6 +111,7 @@ export const FILTER_COLUMNS = {
   title: 'pageTitle',
   query: 'urlQuery',
   os: 'os',
+  osVersion: 'osVersion',
   browser: 'browser',
   device: 'device',
   country: 'country',

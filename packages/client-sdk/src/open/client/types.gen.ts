@@ -1976,7 +1976,7 @@ export type $OpenApiTs = {
                 region?: string;
                 startAt: number;
                 title?: string;
-                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'device' | 'country' | 'event' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
+                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'osVersion' | 'device' | 'country' | 'event' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
                 url?: string;
                 utmCampaign?: string;
                 utmContent?: string;
@@ -2352,7 +2352,7 @@ export type $OpenApiTs = {
             req: {
                 range?: 'realtime' | '24h' | '7d' | '30d' | '90d';
                 shareId: string;
-                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'device' | 'country' | 'event' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
+                type: 'url' | 'language' | 'referrer' | 'title' | 'browser' | 'os' | 'osVersion' | 'device' | 'country' | 'event' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content';
             };
             res: {
                 /**
