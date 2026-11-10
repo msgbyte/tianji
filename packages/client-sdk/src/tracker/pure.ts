@@ -6,6 +6,7 @@
 import { IdentifyPayload } from '../types';
 import { BatchManager, BatchItem } from '../utils/batch-manager';
 import { DEFAULT_WEBSITE_BATCH_DELAY, getWebsiteDistinctId } from './core';
+import { getBrowserOSVersion } from './os';
 
 /**
  * Website event payload interface
@@ -31,6 +32,8 @@ export interface WebsiteEventPayload {
    * Browser language
    */
   language?: string;
+  /** Operating system version, separate from the browser version. */
+  osVersion?: string;
   /**
    * Page title
    */
@@ -106,19 +109,27 @@ let batchManager: BatchManager<
 export function initWebsiteTracking(_options: WebsiteTrackingOptions) {
   options = _options;
   distinctId = undefined;
+  const osVersion = getBrowserOSVersion();
 
   // Initialize batch manager
   batchManager = new BatchManager({
     batchDelay: _options.batchDelay ?? DEFAULT_WEBSITE_BATCH_DELAY,
     disableBatch: _options.disableBatch,
     onBatchSend: async (items) => {
-      await sendBatchRequest(_options.serverUrl, items);
+      const version = await osVersion;
+      await sendBatchRequest(
+        _options.serverUrl,
+        items.map((item) => ({
+          ...item,
+          payload: { osVersion: version, ...item.payload },
+        }))
+      );
     },
     onSingleSend: async (item) => {
       await sendSingleRequest(
         _options.serverUrl,
         item.type as 'event' | 'identify',
-        item.payload
+        { osVersion: await osVersion, ...item.payload }
       );
     },
   });

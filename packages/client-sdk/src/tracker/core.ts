@@ -3,6 +3,7 @@
  */
 
 import { BatchManager, BatchItem } from '../utils/batch-manager';
+import { getBrowserOSVersion } from './os';
 
 export const DEFAULT_WEBSITE_BATCH_DELAY = 1_000;
 
@@ -12,6 +13,7 @@ export interface WebsiteEventPayload {
   hostname?: string;
   screen?: string;
   language?: string;
+  osVersion?: string;
   title?: string;
   url?: string;
   referrer?: string;
@@ -74,6 +76,7 @@ export function createTrackerCore(options: TrackerCoreOptions) {
   const endpoint = `${serverUrl}/api/website/send`;
   const batchEndpoint = `${serverUrl}/api/website/batch`;
   let distinctId: string | undefined;
+  const osVersion = getBrowserOSVersion();
 
   const sendSingle = async (
     type: 'event' | 'identify',
@@ -83,7 +86,10 @@ export function createTrackerCore(options: TrackerCoreOptions) {
       await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, payload }),
+        body: JSON.stringify({
+          type,
+          payload: { osVersion: await osVersion, ...payload },
+        }),
       });
     } catch (e) {
       // Silent fail for tracking
@@ -92,10 +98,16 @@ export function createTrackerCore(options: TrackerCoreOptions) {
 
   const sendBatch = async (items: BatchItem[]): Promise<void> => {
     try {
+      const version = await osVersion;
       await fetch(batchEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events: items }),
+        body: JSON.stringify({
+          events: items.map((item) => ({
+            ...item,
+            payload: { osVersion: version, ...item.payload },
+          })),
+        }),
       });
     } catch (e) {
       // Silent fail for tracking

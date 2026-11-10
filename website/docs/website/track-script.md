@@ -16,6 +16,12 @@ the script look like below:
 
 you can get this script code from your **Tianji** website list
 
+## Operating System Version
+
+The tracker records `osVersion` when the browser provides it through User-Agent Client Hints. The server also reads Android and iOS versions from user agents that expose them. Windows client hints are mapped to Windows 10 or 11; reduced user agents such as `Windows NT 10.0` and `Android 10; K` are not treated as reliable versions.
+
+Browsers that hide this information and historical records without a version have no version recorded. Deploy the updated tracker and server migrations to start collecting this field.
+
 ## Script Attributes
 
 The tracker script supports the following `data-*` attributes on the `<script>` tag:
