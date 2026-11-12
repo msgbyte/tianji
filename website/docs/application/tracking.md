@@ -188,6 +188,31 @@ identifyApplicationUser({
 });
 ```
 
+### Count users by Identify properties
+
+Enable **Alpha Mode** in **Settings → General** to show the experimental **User properties** tab. This setting is saved in the current browser.
+
+Open **Application → User properties**, select or enter an Identify field, choose its value type and value, and click **Apply filter**. Field suggestions come from the 1,000 most recently identified users; enter a field name directly if it is missing from the suggestions or suggestions are unavailable. **Matching users** is the full count of distinct user IDs across all identified users, independent of field suggestions, pagination, and the overview date range. Expand a user row to inspect all saved Identify fields.
+
+The user list supports up to 1,000,000 pages. If more users match, the interface shows a notice; counts still include all matches.
+
+```ts
+// Join a group: filter joinedGroup = Boolean true in Tianji.
+identifyApplicationUser({ id: 'user-123', joinedGroup: true });
+
+// A partial update preserves joinedGroup.
+identifyApplicationUser({ id: 'user-123', plan: 'premium' });
+
+// Leave the group: this user no longer matches joinedGroup = true.
+identifyApplicationUser({ id: 'user-123', joinedGroup: false });
+```
+
+- Include a stable, non-empty string `id` (up to 500 characters) in **every** Identify profile update. `userId` is accepted when `id` is absent; if both are supplied, `id` takes precedence. The SDK does not remember the user ID between calls.
+- Each application counts an ID once, even across devices or repeated calls. Device metadata without an ID does not create an identified user.
+- The last received value for each field wins; omitted fields retain their values. `null` clears a field's value and is distinct from `false`, a missing field, and the string `"true"`.
+- Nested properties use dotted field names, such as `groups.beta`. Updates merge by flattened field name; to clear a nested field, send that leaf as `null`. Avoid mixing nested objects with literal dotted keys of the same name.
+- These are current-state counts, not historical join events. Existing Identify sessions are not backfilled on upgrade. A user appears after their next Identify update with an ID, and only newly reported fields are available; send a complete profile update to include all current membership properties.
+
 ## Common Scenarios
 
 Use a fixed name for each kind of event and put the variable parts in the event data. The dashboard groups events by name, so a name like `GET /users/123` would split one metric into thousands. Never include passwords, tokens, request bodies, or other secrets in event data.

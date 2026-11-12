@@ -104,7 +104,7 @@ Steps:
 3. Report a screen view whenever the focused screen changes with \`reportApplicationScreenView(name, params)\`. Use the route pattern (e.g. \`/product/[id]\`) as the name, and pass only the non-sensitive params you need (search params can contain tokens).
    - expo-router: use \`useSegments()\` and \`useGlobalSearchParams()\` in the root layout.
    - React Navigation: use the \`onReady\` and \`onStateChange\` callbacks of \`NavigationContainer\`, and report only when the current route key changes.
-4. After the user signs in, call \`identifyApplicationUser({ id, ...profile })\`.
+4. After the user signs in, call \`identifyApplicationUser({ id, ...profile })\`. Include the same stable string id on every profile update. To count group membership, send \`{ id, joinedGroup: true }\` on joining and \`{ id, joinedGroup: false }\` on leaving; enable Alpha Mode in Settings > General, then filter joinedGroup = true in the User properties tab. Omitted fields keep their previous values.
 5. Report API requests from the app's own API client (fetch wrapper or axios interceptors) as an \`API Request\` event with uppercase method, path without query string, status, and duration. Skip cancelled requests. Do not patch the global \`fetch\`: the SDK uses it to send events.
 6. Report uncaught errors as an \`App Error\` event (React Native: \`ErrorUtils.setGlobalHandler\`). Wrap the tracking code in try/finally so the default handler always runs.
 7. Call \`flushApplicationBatchQueue()\` when the app moves to the background.
@@ -140,7 +140,13 @@ reportApplicationScreenView('Home');
 reportApplicationEvent('Button Clicked', { button: 'signup' });
 
 // Identify user after sign in
-identifyApplicationUser({ id: 'user-123', name: 'John Doe' });`,
+identifyApplicationUser({ id: 'user-123', name: 'John Doe' });
+
+// Enable Alpha Mode in Settings > General, then count membership in Application > User properties
+identifyApplicationUser({ id: 'user-123', joinedGroup: true });
+
+// Leaving the group updates this user's current state
+identifyApplicationUser({ id: 'user-123', joinedGroup: false });`,
     },
     http: {
       label: args.labels.http,

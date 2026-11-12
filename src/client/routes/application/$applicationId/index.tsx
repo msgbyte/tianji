@@ -4,9 +4,11 @@ import { CommonWrapper } from '@/components/CommonWrapper';
 import { ErrorTip } from '@/components/ErrorTip';
 import { Loading } from '@/components/Loading';
 import { NotFoundTip } from '@/components/NotFoundTip';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSettingsStore } from '@/store/settings';
 import {
   useCurrentWorkspaceId,
   useHasAdminPermission,
@@ -26,6 +28,7 @@ import { ApplicationVersionChart } from '@/components/application/ApplicationVer
 import { ApplicationCountryChart } from '@/components/application/ApplicationCountryChart';
 import { ApplicationOSChart } from '@/components/application/ApplicationOSChart';
 import { ApplicationUsageBtn } from '@/components/application/ApplicationUsageBtn';
+import { ApplicationUsers } from '@/components/application/ApplicationUsers';
 
 export const Route = createFileRoute('/application/$applicationId/')({
   beforeLoad: routeAuthBeforeLoad,
@@ -35,6 +38,7 @@ export const Route = createFileRoute('/application/$applicationId/')({
 function PageComponent() {
   const { applicationId } = Route.useParams<{ applicationId: string }>();
   const workspaceId = useCurrentWorkspaceId();
+  const alphaMode = useSettingsStore((state) => state.alphaMode);
   const { data: application, isLoading } = trpc.application.info.useQuery({
     workspaceId,
     applicationId,
@@ -123,6 +127,14 @@ function PageComponent() {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList>
             <TabsTrigger value="overview">{t('Overview')}</TabsTrigger>
+            {alphaMode && (
+              <TabsTrigger value="users">
+                {t('User properties')}
+                <Badge variant="secondary" className="ml-2 px-1.5 py-0">
+                  {t('Alpha')}
+                </Badge>
+              </TabsTrigger>
+            )}
             {application.applicationStoreInfos.some(
               (info) => info.storeType === 'appstore'
             ) && <TabsTrigger value="appstore">App Store</TabsTrigger>}
@@ -152,6 +164,15 @@ function PageComponent() {
               ))}
             </div>
           </TabsContent>
+
+          {alphaMode && (
+            <TabsContent value="users" className="mt-4">
+              <ApplicationUsers
+                key={applicationId}
+                applicationId={applicationId}
+              />
+            </TabsContent>
+          )}
 
           {/* App Store tab content */}
           {application.applicationStoreInfos.some(
