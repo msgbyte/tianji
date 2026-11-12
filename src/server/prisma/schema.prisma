@@ -429,11 +429,26 @@ model Application {
   sessions                     ApplicationSession[]
   eventData                    ApplicationEventData[]
   sessionData                  ApplicationSessionData[]
+  users                        ApplicationUser[]
   applicationStoreInfos        ApplicationStoreInfo[]
   applicationStoreInfoHistorys ApplicationStoreInfoHistory[]
 
   @@index([workspaceId])
   @@index([createdAt])
+}
+
+model ApplicationUser {
+  applicationId String   @db.VarChar(30)
+  userId        String   @db.VarChar(500)
+  properties    Json     @db.JsonB
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+
+  application Application @relation(fields: [applicationId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([applicationId, userId])
+  @@index([applicationId, updatedAt])
+  @@index([properties(ops: JsonbPathOps)], type: Gin)
 }
 
 model ApplicationSession {

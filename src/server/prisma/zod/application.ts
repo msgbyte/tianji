@@ -1,6 +1,6 @@
 import * as z from "zod"
 import * as imports from "./schemas/index.js"
-import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteApplicationSession, RelatedApplicationSessionModelSchema, CompleteApplicationEventData, RelatedApplicationEventDataModelSchema, CompleteApplicationSessionData, RelatedApplicationSessionDataModelSchema, CompleteApplicationStoreInfo, RelatedApplicationStoreInfoModelSchema, CompleteApplicationStoreInfoHistory, RelatedApplicationStoreInfoHistoryModelSchema } from "./index.js"
+import { CompleteWorkspace, RelatedWorkspaceModelSchema, CompleteApplicationSession, RelatedApplicationSessionModelSchema, CompleteApplicationEventData, RelatedApplicationEventDataModelSchema, CompleteApplicationSessionData, RelatedApplicationSessionDataModelSchema, CompleteApplicationUser, RelatedApplicationUserModelSchema, CompleteApplicationStoreInfo, RelatedApplicationStoreInfoModelSchema, CompleteApplicationStoreInfoHistory, RelatedApplicationStoreInfoHistoryModelSchema } from "./index.js"
 
 export const ApplicationModelSchema = z.object({
   id: z.string(),
@@ -16,6 +16,7 @@ export interface CompleteApplication extends z.infer<typeof ApplicationModelSche
   sessions: CompleteApplicationSession[]
   eventData: CompleteApplicationEventData[]
   sessionData: CompleteApplicationSessionData[]
+  users: CompleteApplicationUser[]
   applicationStoreInfos: CompleteApplicationStoreInfo[]
   applicationStoreInfoHistorys: CompleteApplicationStoreInfoHistory[]
 }
@@ -30,6 +31,7 @@ export const RelatedApplicationModelSchema: z.ZodSchema<CompleteApplication> = z
   sessions: RelatedApplicationSessionModelSchema.array(),
   eventData: RelatedApplicationEventDataModelSchema.array(),
   sessionData: RelatedApplicationSessionDataModelSchema.array(),
+  users: RelatedApplicationUserModelSchema.array(),
   applicationStoreInfos: RelatedApplicationStoreInfoModelSchema.array(),
   applicationStoreInfoHistorys: RelatedApplicationStoreInfoHistoryModelSchema.array(),
 }))

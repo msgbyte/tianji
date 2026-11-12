@@ -13,6 +13,7 @@ import { DATA_TYPE, EVENT_NAME_LENGTH, EVENT_TYPE } from '../../utils/const.js';
 import type { DynamicData } from '../../utils/types.js';
 import { omit, pick } from 'lodash-es';
 import { buildQueryWithCache } from '../../cache/index.js';
+import { upsertApplicationUser } from './user.js';
 
 export interface ApplicationEventPayload {
   data?: object;
@@ -275,6 +276,7 @@ export async function saveApplicationSessionData(data: {
   sessionData: DynamicData;
 }) {
   const { applicationId, sessionId, sessionData } = data;
+  const userUpdate = upsertApplicationUser(applicationId, sessionData);
 
   const builtinSessionData = pick(sessionData, builtinSessionDataKeys);
   if (Object.keys(builtinSessionData).length > 0) {
@@ -300,7 +302,7 @@ export async function saveApplicationSessionData(data: {
             ? String(Number(parseFloat(a.value).toFixed(4)))
             : a.dynamicDataType === DATA_TYPE.date
               ? a.value.split('.')[0] + 'Z'
-              : a.value.toString(),
+              : (a.value?.toString() ?? null),
         numberValue: a.dynamicDataType === DATA_TYPE.number ? a.value : null,
         dateValue:
           a.dynamicDataType === DATA_TYPE.date ? new Date(a.value) : null,
@@ -317,5 +319,6 @@ export async function saveApplicationSessionData(data: {
     prisma.applicationSessionData.createMany({
       data: flattendData,
     }),
+    ...(userUpdate ? [userUpdate] : []),
   ]);
 }

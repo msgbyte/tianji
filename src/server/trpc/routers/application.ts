@@ -24,6 +24,12 @@ import {
   getApplicationEventStats,
 } from '../../model/application/event.js';
 import { ApplicationStoreInfoHistoryModelSchema } from '../../prisma/zod/applicationstoreinfohistory.js';
+import {
+  APPLICATION_USERS_MAX_PAGE,
+  applicationUserFilterSchema,
+  getApplicationUserFields,
+  getApplicationUsers,
+} from '../../model/application/user.js';
 
 const applicationNameSchema = z.string().max(100);
 
@@ -34,6 +40,28 @@ const applicationCreateSchema = z.object({
 });
 
 export const applicationRouter = router({
+  userFields: workspaceProcedure
+    .input(z.object({ applicationId: z.string() }))
+    .query(({ input }) =>
+      getApplicationUserFields(input.workspaceId, input.applicationId)
+    ),
+
+  users: workspaceProcedure
+    .input(
+      z.object({
+        applicationId: z.string(),
+        page: z
+          .number()
+          .int()
+          .min(1)
+          .max(APPLICATION_USERS_MAX_PAGE)
+          .default(1),
+        pageSize: z.number().int().min(1).max(100).default(20),
+        filter: applicationUserFilterSchema.optional(),
+      })
+    )
+    .query(({ input }) => getApplicationUsers(input)),
+
   all: workspaceProcedure
     .meta({
       openapi: {
