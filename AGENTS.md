@@ -12,6 +12,10 @@
 - Run `pnpm build` to generate production assets.
 - Prefer reusing existing hooks, components, utilities, and other project assets instead of creating new implementations.
 
+## Database Migrations
+- All migrations must be generated and managed exclusively through the Prisma CLI, based on changes to `schema.prisma`.
+- Do not manually create migration directories or SQL files, edit generated migration SQL, or add custom SQL or data backfills to migrations.
+
 ## Serialization Boundaries
 - Treat all tRPC HTTP inputs as JSON wire values; objects such as `Date` arrive in their serialized form unless a transformer is explicitly configured.
 - For date inputs, use `z.coerce.date<Date>()` at the server boundary, or validate an ISO date string and convert it before use.
