@@ -1,5 +1,16 @@
 
 
+## [1.34.3](https://github.com/msgbyte/tianji/compare/v1.34.2...v1.34.3) (2026-11-13)
+
+### Features
+
+* **application:** add alpha user property counts ([f002067](https://github.com/msgbyte/tianji/commit/f0020670ad51ee60348afc2e6940517dc268731b))
+* **application:** persist and query identify user profiles ([ee7c67a](https://github.com/msgbyte/tianji/commit/ee7c67aee98e9bc6151ec44ddb7867d780ea2d81))
+
+### Document
+
+* require prisma-managed migrations ([6ce35dc](https://github.com/msgbyte/tianji/commit/6ce35dc8f41d2bb067c8bfa667036f34dc8acbd8))
+
 ## [1.34.2](https://github.com/msgbyte/tianji/compare/v1.34.1...v1.34.2) (2026-11-10)
 
 ### Features
