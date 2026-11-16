@@ -67,7 +67,7 @@
     "express-validator": "^7.2.1",
     "execa": "^9.5.2",
     "fs-extra": "^11.3.0",
-    "google-play-scraper": "^10.1.2",
+    "google-play-scraper": "^10.1.4",
     "got": "^14.4.7",
     "iconv-lite": "^0.6.3",
     "ioredis": "^5.7.0",

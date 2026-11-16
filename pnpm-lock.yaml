@@ -918,8 +918,8 @@ importers:
         specifier: ^11.3.0
         version: 11.3.0
       google-play-scraper:
-        specifier: ^10.1.2
-        version: 10.1.2
+        specifier: ^10.1.4
+        version: 10.1.4
       got:
         specifier: ^14.4.7
         version: 14.4.7
@@ -11179,8 +11179,8 @@ packages:
     resolution: {integrity: sha512-eAmLkjDjAFCVXg7A1unxHsLf961m6y17QFqXqAXGj/gVkKFrEICfStRfwUlGNfeCEjNRa32JEWOUTlYXPyyKvA==}
     engines: {node: '>=14'}
 
-  google-play-scraper@10.1.2:
-    resolution: {integrity: sha512-jDgJlIXc4T785jUyD7qTTZ1i5GrJjZuJ3lxkLiUqQubxDFt669xygoRxiBmeWPRX10SWJt1rK3Mb6psO5y9xCw==}
+  google-play-scraper@10.1.4:
+    resolution: {integrity: sha512-rL+I3Ma5FWyBofGlgxnxsors7QHcG2fnS0272rzIGzF4rM+Kd1aw5XWSWOfRErCcohfnf0QRpovRP2TwTDttkQ==}
 
   google-play-scraper@9.2.0:
     resolution: {integrity: sha512-LpXaaSxwmWBqvmfYVIXCkD97BLAmWhxP9QBriVwtz7ypgCizKv01HKLbmhFcUpjPpET1WQZekoYi4gxmDg0cXw==}
@@ -32516,7 +32516,7 @@ snapshots:
 
   google-logging-utils@1.1.3: {}
 
-  google-play-scraper@10.1.2:
+  google-play-scraper@10.1.4:
     dependencies:
       cheerio: 1.0.0-rc.12
       debug: 3.2.7
