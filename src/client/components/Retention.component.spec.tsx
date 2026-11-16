@@ -3,9 +3,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import dayjs from 'dayjs';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebsiteRetention } from './website/WebsiteRetention';
+import { ApplicationRetention } from './application/ApplicationRetention';
 
 const mocks = vi.hoisted(() => ({
-  useQuery: vi.fn(),
+  website: vi.fn(),
+  application: vi.fn(),
   renderChart: vi.fn(),
 }));
 
@@ -20,9 +22,10 @@ vi.mock('@/api/model/user', () => ({
 
 vi.mock('@/api/trpc', () => ({
   trpc: {
+    application: { retention: { useQuery: mocks.application } },
     website: {
       retention: {
-        useQuery: mocks.useQuery,
+        useQuery: mocks.website,
       },
     },
   },
@@ -41,10 +44,13 @@ vi.mock('antd', async (importOriginal) => ({
   Spin: () => <div>Loading</div>,
 }));
 
-describe('WebsiteRetention', () => {
+describe.each(['website', 'application'] as const)('%s retention', (type) => {
+  const Retention =
+    type === 'website' ? WebsiteRetention : ApplicationRetention;
+  const useQuery = mocks[type];
   beforeEach(() => {
-    mocks.useQuery.mockReset();
-    mocks.useQuery.mockReturnValue({ data: [], isLoading: false });
+    useQuery.mockReset();
+    useQuery.mockReturnValue({ data: [], isLoading: false });
     mocks.renderChart.mockReset();
   });
 
@@ -55,24 +61,23 @@ describe('WebsiteRetention', () => {
     const endAt = dayjs().valueOf();
 
     render(
-      <WebsiteRetention
+      <Retention
         workspaceId="workspace-1"
         websiteId="website-1"
+        applicationId="application-1"
         startAt={startAt}
         endAt={endAt}
       />
     );
 
-    expect(mocks.useQuery).not.toHaveBeenCalled();
+    expect(useQuery).not.toHaveBeenCalled();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Visitor retention' })
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Visitor retention' }));
 
     const completeEnd = dayjs(endAt).subtract(1, 'day').endOf('day');
-    expect(mocks.useQuery).toHaveBeenCalledWith({
+    expect(useQuery).toHaveBeenCalledWith({
       workspaceId: 'workspace-1',
-      websiteId: 'website-1',
+      [`${type}Id`]: `${type}-1`,
       startAt: completeEnd.subtract(30, 'day').startOf('day').valueOf(),
       endAt: completeEnd.valueOf(),
       timezone: 'UTC',
@@ -80,7 +85,7 @@ describe('WebsiteRetention', () => {
   });
 
   test('shows D0-D30 with only the weighted total selected by default', async () => {
-    mocks.useQuery.mockReturnValue({
+    useQuery.mockReturnValue({
       isLoading: false,
       data: [
         {
@@ -97,16 +102,15 @@ describe('WebsiteRetention', () => {
     });
 
     render(
-      <WebsiteRetention
+      <Retention
         workspaceId="workspace-1"
         websiteId="website-1"
+        applicationId="application-1"
         startAt={new Date('2026-07-01T00:00:00Z').valueOf()}
         endAt={new Date('2026-08-02T00:00:00Z').valueOf()}
       />
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Visitor retention' })
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Visitor retention' }));
 
     await waitFor(() => expect(mocks.renderChart).toHaveBeenCalled());
     const props = mocks.renderChart.mock.lastCall?.[0] as {
@@ -153,10 +157,7 @@ describe('WebsiteRetention', () => {
       const nextProps = mocks.renderChart.mock.lastCall?.[0] as {
         chartConfig: Record<string, unknown>;
       };
-      expect(Object.keys(nextProps.chartConfig)).toEqual([
-        'all',
-        '2026-08-01',
-      ]);
+      expect(Object.keys(nextProps.chartConfig)).toEqual(['all', '2026-08-01']);
     });
   });
 

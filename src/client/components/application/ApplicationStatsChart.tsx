@@ -10,6 +10,7 @@ import { trpc } from '@/api/trpc';
 import { useCurrentWorkspaceId } from '@/store/user';
 import { StatCard } from './StatCard';
 import prettyMilliseconds from 'pretty-ms';
+import { ApplicationRetention } from './ApplicationRetention';
 
 interface ApplicationStatsChartProps {
   applicationId: string;
@@ -21,6 +22,7 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
     const { applicationId } = props;
     const { t } = useTranslation();
     const { startDate, endDate, unit, refresh } = useGlobalRangeDate();
+    const trpcUtils = trpc.useUtils();
 
     const { data } = trpc.application.eventStats.useQuery({
       workspaceId,
@@ -151,14 +153,26 @@ export const ApplicationStatsChart: React.FC<ApplicationStatsChartProps> =
         </div>
 
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-wrap items-center justify-between gap-2">
             <span>{t('Application Statistics')}</span>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <ApplicationRetention
+                workspaceId={workspaceId}
+                applicationId={applicationId}
+                startAt={startDate.valueOf()}
+                endAt={endDate.valueOf()}
+              />
               <DateFilter />
               <Button
                 size="icon"
                 variant="outline"
-                onClick={refresh}
+                onClick={() => {
+                  refresh();
+                  void trpcUtils.application.retention.invalidate({
+                    workspaceId,
+                    applicationId,
+                  });
+                }}
                 title={t('Refresh')}
               >
                 <LuRefreshCw className="h-4 w-4" />
