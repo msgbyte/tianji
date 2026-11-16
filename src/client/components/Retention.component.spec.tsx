@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import dayjs from 'dayjs';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { WebsiteRetention } from './WebsiteRetention';
+import { WebsiteRetention } from './website/WebsiteRetention';
 
 const mocks = vi.hoisted(() => ({
   useQuery: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock('@/api/trpc', () => ({
   },
 }));
 
-vi.mock('../chart/TimeEventChart', () => ({
+vi.mock('./chart/TimeEventChart', () => ({
   TimeEventChart: (props: unknown) => {
     mocks.renderChart(props);
     return <div>retention-chart</div>;
