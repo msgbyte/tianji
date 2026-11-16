@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import { formatOSVersion } from '../../utils/os.js';
 import {
   OpenApiMetaInfo,
@@ -18,6 +19,7 @@ import {
   setupStoreInfo,
 } from '../../model/application/storeInfo.js';
 import { delApplicationCache } from '../../model/application/index.js';
+import { getApplicationRetention } from '../../model/application/retention.js';
 import {
   eventStatsQueryResultItemSchema,
   eventBreakdownItemSchema,
@@ -366,6 +368,57 @@ export const applicationRouter = router({
       });
 
       return history;
+    }),
+  retention: workspaceProcedure
+    .meta(
+      buildApplicationOpenapi({
+        method: 'GET',
+        path: '/retention',
+        summary: 'Get visitor retention',
+      })
+    )
+    .input(
+      z.object({
+        applicationId: z.string(),
+        startAt: z.number(),
+        endAt: z.number(),
+        timezone: z.string().optional(),
+      })
+    )
+    .output(
+      z.array(
+        z.object({
+          date: z.string(),
+          cohortSize: z.number(),
+          retention: z.array(z.number().nullable()).length(31),
+        })
+      )
+    )
+    .query(async ({ ctx, input }) => {
+      const {
+        workspaceId,
+        applicationId,
+        startAt,
+        endAt,
+        timezone = ctx.timezone,
+      } = input;
+      const application = await prisma.application.findUnique({
+        where: { id: applicationId, workspaceId, deletedAt: null },
+        select: { id: true },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Application not found',
+        });
+      }
+
+      return getApplicationRetention(applicationId, {
+        startDate: new Date(startAt),
+        endDate: new Date(endAt),
+        timezone,
+      });
     }),
   eventStats: workspaceProcedure
     .meta(
