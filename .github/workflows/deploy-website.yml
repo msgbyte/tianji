@@ -1,29 +1,63 @@
-name: "Deployment Website"
+name: "Deploy Website"
 
 on:
   push:
     branches:
       - master
     paths:
-      - ".vercelignore"
+      - ".github/workflows/deploy-website.yml"
+      - "packages/client-sdk/**"
       - "website/**"
       - "skills/tianji-worker/**"
       - "skills/tianji-artifacts/**"
   workflow_dispatch:
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: prj_V3iY3AcH0wIXxMHW4oDy3W3XzfnN
+concurrency:
+  group: deploy-website
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      - name: Deploy to Vercel
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+          node-version: 22
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.27.0
+          run_install: false
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      - name: Setup pnpm cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build client SDK
+        run: pnpm --filter tianji-client-sdk build
+      - name: Build website
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          pnpm --filter @tianji/website compile-llm
+          pnpm --filter @tianji/website build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy website/build --project-name=tianji-website --branch=master --commit-dirty=true
