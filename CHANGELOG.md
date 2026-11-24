@@ -1,5 +1,21 @@
 
 
+## [1.34.4](https://github.com/msgbyte/tianji/compare/v1.34.3...v1.34.4) (2026-11-24)
+
+### Features
+
+* **application:** add visitor retention API ([c952063](https://github.com/msgbyte/tianji/commit/c95206316296e25b4da279738696338b49ff4e2a))
+* **application:** show visitor retention analytics ([21e0af0](https://github.com/msgbyte/tianji/commit/21e0af08cf03d93fd34ec8acbb4167b648950408))
+
+### Bug Fixes
+
+* **application:** restore Google Play search ([34b983e](https://github.com/msgbyte/tianji/commit/34b983e899bbeff1626200dad0e312d21c03970f))
+* **website:** invoke wrangler via npx in deploy workflow ([7604b9e](https://github.com/msgbyte/tianji/commit/7604b9ee8f0cc4f016063dfbbbede7fc53032484))
+
+### Others
+
+* **analytics:** share retention chart components ([66bd26b](https://github.com/msgbyte/tianji/commit/66bd26bc371fd800ad10662f1af02d6c680437ac))
+
 ## [1.34.3](https://github.com/msgbyte/tianji/compare/v1.34.2...v1.34.3) (2026-11-13)
 
 ### Features
