@@ -1,8 +1,12 @@
 import {
+  fetchAIGatewayUrl,
+  parseAIGatewayUrl,
+} from '../../utils/aiGatewayUrl.js';
+import {
   GoogleGenAI,
   type Content,
   type GenerateContentResponse,
-} from '@google/genai';
+} from '@google/genai/node';
 import { Prisma, type AIGateway } from '@prisma/client';
 import type { RequestHandler } from 'express';
 import { once } from 'node:events';
@@ -103,6 +107,16 @@ function resolveBaseUrl(value: string | null, requestVersion: string) {
     throw failure(
       400,
       'Gemini upstream base URL must use HTTP(S), optionally end in /v1 or /v1beta, and contain no credentials, query, fragment, or API action path.'
+    );
+  }
+  try {
+    parseAIGatewayUrl(url.toString());
+  } catch (error) {
+    throw failure(
+      400,
+      error instanceof Error
+        ? error.message
+        : 'Invalid Gemini upstream base URL.'
     );
   }
   return { baseUrl: url.toString().replace(/\/$/, ''), apiVersion };
@@ -245,6 +259,7 @@ export const geminiHandler: RequestHandler = async (req, res) => {
     );
     totalTimer.unref();
     const ai = new GoogleGenAI({
+      fetch: fetchAIGatewayUrl,
       apiKey: upstreamKey,
       vertexai: false,
       httpOptions: {

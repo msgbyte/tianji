@@ -1,0 +1,51 @@
+diff --git a/dist/node/index.cjs b/dist/node/index.cjs
+--- a/dist/node/index.cjs
++++ b/dist/node/index.cjs
+@@ -13896,7 +13896,7 @@
+             const attempt = createAttemptSignal(timeout, abortSignal);
+             let response;
+             try {
+-                response = await fetch(url, Object.assign(Object.assign({}, requestInit), { signal: attempt.signal }));
++                response = await (this.clientOptions.fetch ?? fetch)(url, Object.assign(Object.assign({}, requestInit), { signal: attempt.signal }));
+             }
+             catch (e) {
+                 attempt.dispose();
+@@ -26313,6 +26313,7 @@
+             googleAuthOptions: options.googleAuthOptions,
+         });
+         this.apiClient = new ApiClient({
++            fetch: options.fetch,
+             auth: auth,
+             project: this.project,
+             location: this.location,
+diff --git a/dist/node/index.mjs b/dist/node/index.mjs
+--- a/dist/node/index.mjs
++++ b/dist/node/index.mjs
+@@ -13874,7 +13874,7 @@
+             const attempt = createAttemptSignal(timeout, abortSignal);
+             let response;
+             try {
+-                response = await fetch(url, Object.assign(Object.assign({}, requestInit), { signal: attempt.signal }));
++                response = await (this.clientOptions.fetch ?? fetch)(url, Object.assign(Object.assign({}, requestInit), { signal: attempt.signal }));
+             }
+             catch (e) {
+                 attempt.dispose();
+@@ -26291,6 +26291,7 @@
+             googleAuthOptions: options.googleAuthOptions,
+         });
+         this.apiClient = new ApiClient({
++            fetch: options.fetch,
+             auth: auth,
+             project: this.project,
+             location: this.location,
+diff --git a/dist/node/node.d.ts b/dist/node/node.d.ts
+--- a/dist/node/node.d.ts
++++ b/dist/node/node.d.ts
+@@ -6795,6 +6795,7 @@
+  * See {@link GoogleGenAI} for usage samples.
+  */
+ export declare interface GoogleGenAIOptions {
++    fetch?: typeof globalThis.fetch;
+     /**
+      * Optional. Determines whether to use the Vertex AI or the Gemini API.
+      *

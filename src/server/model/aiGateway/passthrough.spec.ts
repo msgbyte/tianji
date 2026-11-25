@@ -1,5 +1,7 @@
 import 'express-async-errors';
 import express from 'express';
+import type { LookupAddress } from 'node:dns';
+import dns from 'node:dns/promises';
 import { once } from 'node:events';
 import http, { type Server } from 'node:http';
 import https from 'node:https';
@@ -11,6 +13,8 @@ import { aiGatewayRouter } from '../../router/aiGateway.js';
 import { prisma } from '../_client.js';
 import { checkQuotaAlert } from './quotaAlert.js';
 import { buildAIGatewayPassthroughHandler } from './passthrough.js';
+
+vi.hoisted(() => vi.stubEnv('AI_GATEWAY_ALLOW_PRIVATE_URL', 'true'));
 
 vi.mock('../_client.js', () => ({
   prisma: {
@@ -105,6 +109,19 @@ function post(url = path) {
     .set('Content-Type', 'application/json')
     .send(payload);
 }
+
+test('checks the DNS addresses of a stored custom base URL before forwarding', async () => {
+  gateway.customModelBaseUrl = upstreamUrl.replace('127.0.0.1', 'localhost');
+  const resolver: {
+    lookup(host: string, options: { all: true }): Promise<LookupAddress[]>;
+  } = dns;
+  const lookup = vi.spyOn(resolver, 'lookup').mockResolvedValue([
+    { address: '169.254.169.254', family: 4 },
+  ]);
+  expect((await post()).status).toBe(502);
+  expect(lookup).toHaveBeenCalledWith('localhost', { all: true });
+  expect(received).toHaveLength(0);
+});
 
 test.each([
   ['application/json', '{ "image": "original bytes" }'],

@@ -11,6 +11,8 @@ import { app } from '../../app.js';
 import { prisma } from '../_client.js';
 import { checkQuotaAlert } from './quotaAlert.js';
 
+vi.hoisted(() => vi.stubEnv('AI_GATEWAY_ALLOW_PRIVATE_URL', 'true'));
+
 vi.mock('../_client.js', () => ({
   prisma: {
     aIGateway: { findUnique: vi.fn() },

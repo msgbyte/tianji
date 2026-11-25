@@ -129,6 +129,83 @@ describe('AI Gateway secret boundaries', () => {
   };
   const target = { workspaceId: gateway.workspaceId, gatewayId: gateway.id };
 
+  test('rejects unsafe base URLs before saving, copying or probing them', async () => {
+    const input = { ...settings, ...target, customModelBaseUrl: 'http://169.254.169.254' };
+    mocks.findGateway.mockResolvedValue({ ...gateway, ...input });
+    const caller = await createCaller();
+    const error = { code: 'BAD_REQUEST', message: expect.stringContaining('public IP') };
+
+    await expect(caller.create(input)).rejects.toMatchObject(error);
+    await expect(caller.update(input)).rejects.toMatchObject(error);
+    await expect(caller.testConnection(input)).rejects.toMatchObject(error);
+    await expect(caller.duplicate({ ...target, name: 'Copy' })).rejects.toMatchObject(error);
+    expect(mocks.createGateway).not.toHaveBeenCalled();
+    expect(mocks.updateGateway).not.toHaveBeenCalled();
+    expect(mocks.testConnection).not.toHaveBeenCalled();
+  });
+
+  test('trims customModelBaseUrl before validating and saving it', async () => {
+    mocks.createGateway.mockResolvedValue({
+      ...gateway,
+      customModelBaseUrl: 'https://1.1.1.1/v1',
+    });
+    mocks.updateGateway.mockResolvedValue({
+      ...gateway,
+      customModelBaseUrl: 'https://1.1.1.1/v1',
+    });
+    const caller = await createCaller();
+    const padded = {
+      ...settings,
+      ...target,
+      customModelBaseUrl: '  https://1.1.1.1/v1  ',
+    };
+
+    await caller.create(padded);
+    await caller.update(padded);
+
+    expect(mocks.createGateway).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          customModelBaseUrl: 'https://1.1.1.1/v1',
+        }),
+      })
+    );
+    expect(mocks.updateGateway).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          customModelBaseUrl: 'https://1.1.1.1/v1',
+        }),
+      })
+    );
+  });
+
+  test('does not leak raw DNS lookup errors when validating customModelBaseUrl', async () => {
+    const dns = (await import('node:dns/promises')).default;
+    const lookup = vi
+      .spyOn(dns, 'lookup')
+      .mockRejectedValue(
+        new Error('getaddrinfo ENOTFOUND secret-service.svc.cluster.local')
+      );
+    try {
+      const caller = await createCaller();
+      const caught = await caller
+        .create({
+          ...settings,
+          workspaceId: gateway.workspaceId,
+          customModelBaseUrl: 'https://secret-service.svc.cluster.local/v1',
+        })
+        .catch((error) => error);
+      expect(caught).toMatchObject({
+        code: 'BAD_REQUEST',
+        message: expect.stringContaining('public IP'),
+      });
+      expect(caught.message).not.toContain('ENOTFOUND');
+      expect(caught.message).not.toContain('secret-service.svc.cluster.local');
+    } finally {
+      lookup.mockRestore();
+    }
+  });
+
   test.each(['owner', 'admin', 'write', 'readOnly'])(
     'never returns the stored secret to a %s member',
     async (role) => {
@@ -316,7 +393,7 @@ describe('aiGatewayRouter.testConnection', () => {
         workspaceId,
         gatewayId: 'gateway_1',
         modelApiKey: 'sk-current',
-        customModelBaseUrl: 'https://models.example.com/v1',
+        customModelBaseUrl: 'https://1.1.1.1/v1',
         customModelName: null,
       })
     ).rejects.toMatchObject({
@@ -344,13 +421,13 @@ describe('aiGatewayRouter.testConnection', () => {
       workspaceId,
       gatewayId: 'gateway_1',
       modelApiKey: 'sk-current',
-      customModelBaseUrl: 'https://models.example.com/v1',
+      customModelBaseUrl: 'https://1.1.1.1/v1',
       customModelName: 'selected-model',
     });
 
     expect(mocks.testConnection).toHaveBeenCalledWith({
       modelApiKey: 'sk-current',
-      customModelBaseUrl: 'https://models.example.com/v1',
+      customModelBaseUrl: 'https://1.1.1.1/v1',
       customModelName: 'selected-model',
     });
     expect(result).toEqual({ model: 'selected-model', durationMs: 42 });
@@ -439,7 +516,7 @@ describe('aiGatewayRouter.duplicate', () => {
     const apiKey = 'sk-sensitive-duplicate';
     mocks.findGateway.mockResolvedValue({
       modelApiKey: apiKey,
-      customModelBaseUrl: 'https://models.example.com/v1',
+      customModelBaseUrl: 'https://1.1.1.1/v1',
       customModelName: 'model-a',
       customModelStrategy: { price: { input: 1 } },
       customModelInputPrice: 2,
@@ -462,7 +539,7 @@ describe('aiGatewayRouter.duplicate', () => {
         workspaceId,
         name: 'Gateway Copy',
         modelApiKey: apiKey,
-        customModelBaseUrl: 'https://models.example.com/v1',
+        customModelBaseUrl: 'https://1.1.1.1/v1',
         customModelName: 'model-a',
         customModelStrategy: { price: { input: 1 } },
         customModelInputPrice: 2,

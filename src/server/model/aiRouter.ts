@@ -1,3 +1,4 @@
+import { CustomGatewayOpenAI, fetchAIGatewayUrl } from '../utils/aiGatewayUrl.js';
 import { AIRouterLogsStatus, type Prisma } from '@prisma/client';
 import {
   type NextFunction,
@@ -1053,9 +1054,11 @@ async function listAIRouterOpenAIModels(args: {
   modelProvider: string;
   modelApiKey: string;
 }): Promise<unknown[]> {
-  const openai = new OpenAI({
+  const baseURL = resolveAIRouterOpenAIModelsBaseUrl(args.node, args.modelProvider);
+  const Client = args.modelProvider === 'custom' && baseURL ? CustomGatewayOpenAI : OpenAI;
+  const openai = new Client({
     apiKey: args.modelApiKey,
-    baseURL: resolveAIRouterOpenAIModelsBaseUrl(args.node, args.modelProvider),
+    baseURL,
     defaultHeaders:
       args.modelProvider === 'openrouter'
         ? buildOpenRouterHeaders(args.req)
@@ -1079,7 +1082,8 @@ async function listAIRouterAnthropicModels(args: {
   const queryString = new URLSearchParams(
     args.req.query as Record<string, string>
   ).toString();
-  const upstreamResponse = await fetch(
+  const fetchImpl = args.modelProvider === 'anthropic' ? fetch : fetchAIGatewayUrl;
+  const upstreamResponse = await fetchImpl(
     `${baseUrl}/models${queryString ? `?${queryString}` : ''}`,
     {
       method: 'GET',

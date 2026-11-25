@@ -11,6 +11,8 @@ import { prisma } from '../_client.js';
 import { checkQuotaAlert } from './quotaAlert.js';
 import { AI_GATEWAY_STREAM_HEARTBEAT } from '../aiGateway.js';
 
+vi.hoisted(() => vi.stubEnv('AI_GATEWAY_ALLOW_PRIVATE_URL', 'true'));
+
 // Minimal SSE framing fixture from @google/genai 1.30.0 ApiClient.processStreamResponse,
 // bundled with Gemini CLI 0.61.0. Preserve its anchored regex and EOF check.
 // https://github.com/googleapis/js-genai/blob/v1.30.0/src/_api_client.ts
@@ -207,6 +209,18 @@ afterEach(async () => {
 });
 
 describe('Gemini native relay with the official SDK', () => {
+  test('does not follow a redirect returned by a custom Gemini relay', async () => {
+    relayHandler = (req, res) => {
+      if (req.path === '/redirected') res.json(response);
+      else res.redirect(307, relayUrl + '/redirected');
+    };
+
+    expect((await post()).status).toBe(502);
+    expect(received.map(({ url }) => url)).toEqual([
+      '/gemini/v1beta/models/relay/gemini:generateContent',
+    ]);
+  });
+
   test.each(['generateContent', 'streamGenerateContent', 'countTokens'])(
     'authenticates custom relay %s with the stored upstream key',
     async (action) => {
@@ -991,10 +1005,12 @@ describe('Gemini native relay with the official SDK', () => {
     'https://relay.example/%76%31beta/v1',
     'https://relay.example/v1beta/models/m:generateContent',
     'https://relay.example/v1/models',
+    'http://169.254.169.254/v1beta',
   ])('rejects an invalid saved base URL: %s', async (baseUrl) => {
     gateway.customModelBaseUrl = baseUrl;
     expect((await post()).status).toBe(400);
     expect(received).toHaveLength(0);
+    expect(prisma.aIGatewayLogs.create).not.toHaveBeenCalled();
   });
   test('returns 405 for known actions with the wrong method', async () => {
     expect(

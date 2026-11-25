@@ -1,3 +1,4 @@
+import { CustomGatewayOpenAI, fetchAIGatewayUrl } from '../utils/aiGatewayUrl.js';
 import { buildQueryWithCache } from '../cache/index.js';
 import { prisma } from './_client.js';
 import { type RequestHandler, type Request, type Response } from 'express';
@@ -789,10 +790,8 @@ export function buildOpenAIHandler(
       });
 
     // Use custom settings from gateway if available
-    const baseUrl =
-      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
-        ? gatewayInfo?.customModelBaseUrl
-        : options.baseUrl;
+    const customBaseUrl = options.isCustomRoute && gatewayInfo?.customModelBaseUrl;
+    const baseUrl = customBaseUrl || options.baseUrl;
     const modelName =
       options.isCustomRoute && gatewayInfo?.customModelName
         ? gatewayInfo?.customModelName
@@ -816,7 +815,8 @@ export function buildOpenAIHandler(
     );
 
     try {
-      const openai = new OpenAI({
+      const Client = customBaseUrl ? CustomGatewayOpenAI : OpenAI;
+      const openai = new Client({
         apiKey: modelApiKey,
         baseURL: baseUrl,
         defaultHeaders: {
@@ -1225,10 +1225,8 @@ export function buildOpenAIResponsesHandler(
         requestApiKey: apiKey,
       });
 
-    const baseUrl =
-      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
-        ? gatewayInfo?.customModelBaseUrl
-        : options.baseUrl;
+    const customBaseUrl = options.isCustomRoute && gatewayInfo?.customModelBaseUrl;
+    const baseUrl = customBaseUrl || options.baseUrl;
     const modelName =
       options.isCustomRoute && gatewayInfo?.customModelName
         ? gatewayInfo?.customModelName
@@ -1252,7 +1250,8 @@ export function buildOpenAIResponsesHandler(
     );
 
     try {
-      const openai = new OpenAI({
+      const Client = customBaseUrl ? CustomGatewayOpenAI : OpenAI;
+      const openai = new Client({
         apiKey: modelApiKey,
         baseURL: baseUrl,
         defaultHeaders: {
@@ -1527,13 +1526,12 @@ export function buildOpenAIModelsHandler(
       requestApiKey: apiKey,
     });
 
-    const baseUrl =
-      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
-        ? gatewayInfo?.customModelBaseUrl
-        : options.baseUrl;
+    const customBaseUrl = options.isCustomRoute && gatewayInfo?.customModelBaseUrl;
+    const baseUrl = customBaseUrl || options.baseUrl;
 
     try {
-      const openai = new OpenAI({
+      const Client = customBaseUrl ? CustomGatewayOpenAI : OpenAI;
+      const openai = new Client({
         apiKey: modelApiKey,
         baseURL: baseUrl,
         defaultHeaders: {
@@ -1585,10 +1583,8 @@ export function buildAnthropicModelsHandler(
       requestApiKey: apiKey,
     });
 
-    const baseUrl =
-      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
-        ? gatewayInfo?.customModelBaseUrl
-        : options.baseUrl;
+    const customBaseUrl = options.isCustomRoute && gatewayInfo?.customModelBaseUrl;
+    const baseUrl = customBaseUrl || options.baseUrl;
 
     try {
       const queryString = new URLSearchParams(
@@ -1614,7 +1610,8 @@ export function buildAnthropicModelsHandler(
         headers['anthropic-beta'] = String(betaHeader);
       }
 
-      const upstreamResponse = await fetch(upstreamUrl, {
+      const fetchImpl = customBaseUrl ? fetchAIGatewayUrl : fetch;
+      const upstreamResponse = await fetchImpl(upstreamUrl, {
         method: 'GET',
         headers,
       });
@@ -1682,10 +1679,8 @@ export function buildAnthropicHandler(
         requestApiKey: apiKey,
       });
 
-    const baseUrl =
-      options.isCustomRoute && gatewayInfo?.customModelBaseUrl
-        ? gatewayInfo?.customModelBaseUrl
-        : options.baseUrl;
+    const customBaseUrl = options.isCustomRoute && gatewayInfo?.customModelBaseUrl;
+    const baseUrl = customBaseUrl || options.baseUrl;
     const modelName =
       options.isCustomRoute && gatewayInfo?.customModelName
         ? gatewayInfo?.customModelName
@@ -1717,7 +1712,7 @@ export function buildAnthropicHandler(
       promAIGatewayRequestCounter.inc({ modelProvider });
 
       const upstreamUrl = `${baseUrl}/messages`;
-      const fetchImpl = options.fetch ?? fetch;
+      const fetchImpl = options.fetch ?? (customBaseUrl ? fetchAIGatewayUrl : fetch);
       const anthropicVersion =
         (req.headers['anthropic-version'] as string) ||
         DEFAULT_ANTHROPIC_VERSION;

@@ -1,3 +1,4 @@
+import { parseAIGatewayUrl, lookupAIGatewayAddress } from '../utils/aiGatewayUrl.js';
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer, type IncomingMessage } from 'http';
 import { createAdapter } from '@socket.io/redis-adapter';
@@ -84,6 +85,7 @@ type ResponsesWebSocketTarget = {
   gatewayId: string;
   userId: string | null;
   upstreamUrl: string;
+  useCustomBaseUrl?: boolean;
   modelApiKey: string;
   modelProvider: ResponsesWebSocketProvider;
   modelOverride?: string | null;
@@ -131,9 +133,9 @@ function resolveResponsesWebSocketUrl(
   customBaseUrl: string | null | undefined,
   openAIBaseUrl: string
 ) {
-  const url = new URL(
-    provider === 'custom' && customBaseUrl ? customBaseUrl : openAIBaseUrl
-  );
+  const url = provider === 'custom' && customBaseUrl
+    ? parseAIGatewayUrl(customBaseUrl)
+    : new URL(openAIBaseUrl);
   if (url.protocol === 'https:') url.protocol = 'wss:';
   else if (url.protocol === 'http:') url.protocol = 'ws:';
   else if (url.protocol !== 'wss:' && url.protocol !== 'ws:') {
@@ -155,6 +157,11 @@ function connectResponsesWebSocketUpstream(
 ) {
   return new Promise<WebSocket>((resolve, reject) => {
     const upstream = new WebSocket(target.upstreamUrl, {
+      ...(target.useCustomBaseUrl && {
+        lookup: lookupAIGatewayAddress,
+        agent: false,
+        followRedirects: false,
+      }),
       headers: {
         Authorization: `Bearer ${target.modelApiKey}`,
         'OpenAI-Beta': OPENAI_RESPONSES_WEBSOCKET_BETA,
@@ -217,6 +224,8 @@ function buildAIRouterResponsesTarget(args: {
       gateway.customModelBaseUrl,
       args.openAIBaseUrl
     ),
+    useCustomBaseUrl:
+      modelProvider === 'custom' && Boolean(gateway.customModelBaseUrl),
     modelApiKey,
     modelProvider,
     modelOverride:
@@ -528,15 +537,35 @@ export function initAIGatewayResponsesWebSocket(
           });
         }
 
+        let upstreamUrl: string;
+        try {
+          upstreamUrl = resolveResponsesWebSocketUrl(
+            path.provider,
+            resolved.gatewayInfo?.customModelBaseUrl,
+            openAIBaseUrl
+          );
+        } catch (error) {
+          throw Object.assign(
+            new Error(
+              error instanceof Error
+                ? error.message
+                : 'Invalid upstream WebSocket URL'
+            ),
+            {
+              statusCode: 400,
+              cause: error,
+            }
+          );
+        }
+
         target = {
           workspaceId: path.workspaceId,
           gatewayId: path.gatewayId,
           userId: resolved.userId,
-          upstreamUrl: resolveResponsesWebSocketUrl(
-            path.provider,
-            resolved.gatewayInfo?.customModelBaseUrl,
-            openAIBaseUrl
-          ),
+          upstreamUrl,
+          useCustomBaseUrl:
+            path.provider === 'custom' &&
+            Boolean(resolved.gatewayInfo?.customModelBaseUrl),
           modelApiKey: resolved.modelApiKey,
           modelProvider: path.provider,
           modelOverride:
@@ -654,13 +683,15 @@ export function initAIGatewayResponsesWebSocket(
           ? (error as any).statusCode
           : 500;
       const statusText =
-        statusCode === 401
-          ? 'Unauthorized'
-          : statusCode === 404
-            ? 'Not Found'
-            : statusCode === 502
-              ? 'Bad Gateway'
-              : 'Internal Server Error';
+        statusCode === 400
+          ? 'Bad Request'
+          : statusCode === 401
+            ? 'Unauthorized'
+            : statusCode === 404
+              ? 'Not Found'
+              : statusCode === 502
+                ? 'Bad Gateway'
+                : 'Internal Server Error';
       socket.write(
         `HTTP/1.1 ${statusCode} ${statusText}\r\nConnection: close\r\n\r\n`
       );

@@ -1,3 +1,4 @@
+import { parseAIGatewayUrl, lookupAIGatewayAddress } from '../../utils/aiGatewayUrl.js';
 import type { Request, RequestHandler } from 'express';
 import http from 'node:http';
 import https from 'node:https';
@@ -32,9 +33,11 @@ export function buildAIGatewayPassthroughHandler(options: {
     }
     const queryIndex = req.originalUrl.indexOf('?');
     const query = queryIndex < 0 ? '' : req.originalUrl.slice(queryIndex);
-    const url = new URL(`${prefix}${options.path}${query}`);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      res.status(400).json({ message: 'Upstream URL must use HTTP or HTTPS.' });
+    let url: URL;
+    try {
+      url = parseAIGatewayUrl(`${prefix}${options.path}${query}`);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Invalid upstream URL.' });
       return;
     }
     const body = Buffer.isBuffer(req.rawBody)
@@ -57,6 +60,7 @@ export function buildAIGatewayPassthroughHandler(options: {
     const upstream = transport.request(
       url,
       {
+        ...(options.baseUrl === undefined && { lookup: lookupAIGatewayAddress, agent: false as const }),
         method: 'POST',
         headers,
       },
