@@ -95,6 +95,7 @@
       "zod-openapi": "5.4.3"
     },
     "patchedDependencies": {
+      "@google/genai@2.22.0": "patches/@google__genai@2.22.0.patch",
       "zod-prisma@0.5.4": "patches/zod-prisma@0.5.4.patch",
       "@docusaurus/plugin-sitemap@3.7.0": "patches/@docusaurus__plugin-sitemap.patch"
     },

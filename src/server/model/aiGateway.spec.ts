@@ -2131,4 +2131,48 @@ describe('aiGatewayRouter runtime route coverage', () => {
     expect(postPaths).toContain('/:workspaceId/:gatewayId/custom/v1/messages');
     expect(postPaths).toContain('/:workspaceId/:gatewayId/custom/v1/responses');
   });
+
+  test('blocks unsafe customModelBaseUrl in buildAnthropicHandler without issuing fetch', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    vi.mocked(prisma.aIGateway.findUnique).mockResolvedValue({
+      id: 'gateway1',
+      workspaceId: 'workspace1',
+      customModelBaseUrl: 'http://169.254.169.254/v1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.create).mockResolvedValue({
+      id: 'log1',
+    } as any);
+    vi.mocked(prisma.aIGatewayLogs.update).mockResolvedValue({} as any);
+
+    const res = {
+      headersSent: false,
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+    };
+    await buildAnthropicHandler({ isCustomRoute: true })(
+      {
+        params: { workspaceId: 'workspace1', gatewayId: 'gateway1' },
+        headers: { 'x-api-key': 'sk-test' },
+        body: {
+          model: 'claude-test',
+          messages: [{ role: 'user', content: 'Hola' }],
+          max_tokens: 16,
+          stream: false,
+        },
+      } as any,
+      res as any,
+      vi.fn()
+    );
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: expect.stringContaining('public IP'),
+        }),
+      })
+    );
+  });
 });

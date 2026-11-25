@@ -1,8 +1,12 @@
 import { createServer, type Server } from 'http';
 import { once } from 'events';
+import type { LookupAddress } from 'node:dns';
+import dns from 'node:dns/promises';
 import { WebSocket, WebSocketServer } from 'ws';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import * as websocket from './index.js';
+
+vi.hoisted(() => vi.stubEnv('AI_GATEWAY_ALLOW_PRIVATE_URL', 'true'));
 
 const aiGatewayMocks = vi.hoisted(() => ({
   resolveModelApiKey: vi.fn(),
@@ -450,6 +454,128 @@ describe('AI Gateway Responses WebSocket', () => {
       proxyWss.close();
       upstreamWss.close();
       gatewayServer.close();
+      upstreamServer.close();
+    }
+  });
+
+  test('rejects a custom upstream handshake when DNS returns a link-local address', async () => {
+    const resolver: {
+      lookup(host: string, options: { all: true }): Promise<LookupAddress[]>;
+    } = dns;
+    const lookup = vi.spyOn(resolver, 'lookup').mockResolvedValue([
+      { address: '169.254.169.254', family: 4 },
+    ]);
+    aiGatewayMocks.resolveModelApiKey.mockResolvedValue({
+      gatewayInfo: { customModelBaseUrl: 'http://localhost/v1' },
+      modelApiKey: 'test',
+      userId: null,
+    });
+    const server = createServer();
+    const proxy = websocket.initAIGatewayResponsesWebSocket(server);
+    const port = await listen(server);
+    const client = new WebSocket(
+      `ws://127.0.0.1:${port}/api/ai/workspace_1/gateway_1/custom/v1/responses`,
+      { headers: { Authorization: 'Bearer gateway-key' } }
+    );
+    try {
+      const [error] = await once(client, 'error');
+      expect(error.message).toContain('502');
+      expect(lookup).toHaveBeenCalledWith('localhost', { all: true });
+    } finally {
+      lookup.mockRestore();
+      client.terminate();
+      await proxy.close();
+      server.close();
+    }
+  });
+
+  test('rejects a stored link-local custom base URL with 400 before connecting', async () => {
+    aiGatewayMocks.resolveModelApiKey.mockResolvedValue({
+      gatewayInfo: { customModelBaseUrl: 'http://169.254.169.254/v1' },
+      modelApiKey: 'test',
+      userId: null,
+    });
+    const server = createServer();
+    const proxy = websocket.initAIGatewayResponsesWebSocket(server);
+    const port = await listen(server);
+    const client = new WebSocket(
+      `ws://127.0.0.1:${port}/api/ai/workspace_1/gateway_1/custom/v1/responses`,
+      { headers: { Authorization: 'Bearer gateway-key' } }
+    );
+    try {
+      const [error] = await once(client, 'error');
+      expect(error.message).toContain('400');
+    } finally {
+      client.terminate();
+      await proxy.close();
+      server.close();
+    }
+  });
+
+  test('does not follow a redirect during a custom upstream WebSocket handshake', async () => {
+    const paths: string[] = [];
+    const upstreamServer = createServer((req, res) => {
+      paths.push(req.url ?? '');
+      res.writeHead(302, { location: '/redirected' }).end();
+    });
+    const upstreamPort = await listen(upstreamServer);
+    aiGatewayMocks.resolveModelApiKey.mockResolvedValue({
+      gatewayInfo: { customModelBaseUrl: `http://127.0.0.1:${upstreamPort}/v1` },
+      modelApiKey: 'test',
+      userId: null,
+    });
+    const server = createServer();
+    const proxy = websocket.initAIGatewayResponsesWebSocket(server);
+    const port = await listen(server);
+    const client = new WebSocket(
+      `ws://127.0.0.1:${port}/api/ai/workspace_1/gateway_1/custom/v1/responses`,
+      { headers: { Authorization: 'Bearer gateway-key' } }
+    );
+    try {
+      const [error] = await once(client, 'error');
+      expect(error.message).toContain('502');
+      expect(paths).toEqual(['/v1/responses']);
+    } finally {
+      client.terminate();
+      await proxy.close();
+      server.close();
+      upstreamServer.close();
+    }
+  });
+
+  test('falls back to openAIBaseUrl without custom lookup when customModelBaseUrl is absent', async () => {
+    const resolver: {
+      lookup(host: string, options: { all: true }): Promise<LookupAddress[]>;
+    } = dns;
+    const lookup = vi.spyOn(resolver, 'lookup');
+    const upstreamServer = createServer();
+    const upstreamWss = new WebSocketServer({ server: upstreamServer });
+    const upstreamPort = await listen(upstreamServer);
+    aiGatewayMocks.resolveModelApiKey.mockResolvedValue({
+      gatewayInfo: { customModelBaseUrl: null },
+      modelApiKey: 'test',
+      userId: null,
+    });
+    const server = createServer();
+    const proxy = websocket.initAIGatewayResponsesWebSocket(
+      server,
+      `http://localhost:${upstreamPort}/v1`
+    );
+    const port = await listen(server);
+    const client = new WebSocket(
+      `ws://127.0.0.1:${port}/api/ai/workspace_1/gateway_1/custom/v1/responses`,
+      { headers: { Authorization: 'Bearer gateway-key' } }
+    );
+    try {
+      await once(client, 'open');
+      expect(lookup).not.toHaveBeenCalled();
+    } finally {
+      lookup.mockRestore();
+      client.terminate();
+      for (const socket of upstreamWss.clients) socket.terminate();
+      await proxy.close();
+      upstreamWss.close();
+      server.close();
       upstreamServer.close();
     }
   });

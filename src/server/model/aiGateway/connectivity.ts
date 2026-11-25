@@ -1,3 +1,4 @@
+import { CustomGatewayOpenAI } from '../../utils/aiGatewayUrl.js';
 import OpenAI from 'openai';
 import { redactSecret } from './redactSecret.js';
 
@@ -63,7 +64,10 @@ export async function testAIGatewayCustomConnection(
 
   const createClient =
     dependencies.createClient ??
-    ((options: AIGatewayConnectivityClientOptions) => new OpenAI(options));
+    ((options: AIGatewayConnectivityClientOptions) => {
+      const Client = options.baseURL ? CustomGatewayOpenAI : OpenAI;
+      return new Client(options);
+    });
   const now = dependencies.now ?? Date.now;
   const startedAt = now();
 

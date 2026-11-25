@@ -1,3 +1,4 @@
+import { validateAIGatewayUrl } from '../../utils/aiGatewayUrl.js';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
@@ -100,10 +101,24 @@ const aiGatewayModelPricingCostSchema = z
   })
   .passthrough();
 
+async function validateCustomBaseUrl(value: string | null) {
+  // The gateway form uses an empty string to clear an optional base URL.
+  if (!value) return;
+  try {
+    await validateAIGatewayUrl(value);
+  } catch (cause) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: cause instanceof Error ? cause.message : 'Invalid custom model base URL.',
+      cause,
+    });
+  }
+}
+
 const aiGatewayCreateSchema = z.object({
   name: z.string().max(100),
   modelApiKey: z.string().nullable(),
-  customModelBaseUrl: z.string().nullable(),
+  customModelBaseUrl: z.string().trim().nullable(),
   customModelName: z.string().nullable(),
   customModelStrategy: aiGatewayCustomModelStrategySchema.nullable(),
   customModelInputPrice: z.number().nullable(),
@@ -195,6 +210,8 @@ export const aiGatewayRouter = router({
         customModelOutputPrice,
       } = input;
 
+      await validateCustomBaseUrl(customModelBaseUrl);
+
       const aiGateway = await prisma.aIGateway.create({
         data: {
           workspaceId,
@@ -239,6 +256,8 @@ export const aiGatewayRouter = router({
         customModelInputPrice,
         customModelOutputPrice,
       } = input;
+
+      await validateCustomBaseUrl(customModelBaseUrl);
 
       const aiGateway = await prisma.aIGateway.update({
         where: {
@@ -309,6 +328,8 @@ export const aiGatewayRouter = router({
         });
       }
 
+      await validateCustomBaseUrl(customModelBaseUrl);
+
       try {
         const result = await testAIGatewayCustomConnection({
           modelApiKey: apiKey,
@@ -367,6 +388,8 @@ export const aiGatewayRouter = router({
           message: 'AI Gateway not found',
         });
       }
+
+      await validateCustomBaseUrl(source.customModelBaseUrl);
 
       return prisma.aIGateway.create({
         data: {
