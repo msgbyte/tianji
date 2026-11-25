@@ -1,5 +1,11 @@
 
 
+## [1.34.5](https://github.com/msgbyte/tianji/compare/v1.34.4...v1.34.5) (2026-11-25)
+
+### Bug Fixes
+
+* **aiGateway:** prevent SSRF via custom model base URLs ([#299](https://github.com/msgbyte/tianji/issues/299)) ([2eaa2cd](https://github.com/msgbyte/tianji/commit/2eaa2cd2946d96da2a5ef74885271e37fe5eb1d4))
+
 ## [1.34.4](https://github.com/msgbyte/tianji/compare/v1.34.3...v1.34.4) (2026-11-24)
 
 ### Features
