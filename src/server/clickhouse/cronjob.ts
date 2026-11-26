@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Cron } from 'croner';
 import { clickhouse } from './index.js';
 import { prisma } from '../model/_client.js';
@@ -5,61 +6,87 @@ import { logger } from '../utils/logger.js';
 import dayjs from 'dayjs';
 import { env } from '../utils/env.js';
 import { withDistributedLock } from '../cache/index.js';
+import { quoteSqlIdentifier } from '../utils/sql.js';
+
+interface SyncTableConfig {
+  pgTable: string;
+  chTable: string;
+  idField: string;
+  idType: 'uuid' | 'text';
+  timestampField: string;
+}
+
+interface SyncCursor {
+  timestamp: string;
+  id: string;
+}
+
+type SyncRow = Record<string, unknown>;
 
 // Tables to sync from PostgreSQL to ClickHouse
-const TABLES_TO_SYNC = [
+const TABLES_TO_SYNC: SyncTableConfig[] = [
   {
     pgTable: 'WebsiteSession',
     chTable: 'WebsiteSession',
     idField: 'id',
+    idType: 'uuid',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'WebsiteEvent',
     chTable: 'WebsiteEvent',
     idField: 'id',
+    idType: 'text',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'WebsiteEventData',
     chTable: 'WebsiteEventData',
     idField: 'id',
+    idType: 'text',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'WebsiteSessionData',
     chTable: 'WebsiteSessionData',
     idField: 'id',
+    idType: 'text',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'ApplicationSession',
     chTable: 'ApplicationSession',
     idField: 'id',
+    idType: 'uuid',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'ApplicationEvent',
     chTable: 'ApplicationEvent',
     idField: 'id',
+    idType: 'text',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'ApplicationEventData',
     chTable: 'ApplicationEventData',
     idField: 'id',
+    idType: 'text',
     timestampField: 'createdAt',
   },
   {
     pgTable: 'ApplicationSessionData',
     chTable: 'ApplicationSessionData',
     idField: 'id',
+    idType: 'text',
     timestampField: 'createdAt',
   },
 ];
 
 // Table to store sync state
 const SYNC_STATE_TABLE = '_clickhouse_sync_state';
+const CURSOR_TS_ALIAS = '__cursor_ts';
+const SYNC_SAFETY_LAG_SECONDS = 10;
 
 // Initialize sync state table
 async function initSyncStateTable() {
@@ -152,99 +179,160 @@ async function updateSyncState(tableName: string, timestamp: string) {
   }
 }
 
+async function getPostgresSyncUpperBoundMs(): Promise<number> {
+  const rows = await prisma.$queryRaw<
+    { upperBoundMs: bigint | number | string }[]
+  >`
+    SELECT floor(extract(epoch from (now() - make_interval(secs => ${SYNC_SAFETY_LAG_SECONDS}::double precision))) * 1000)::bigint AS "upperBoundMs"
+  `;
+
+  const upperBoundMs = Number(rows[0]?.upperBoundMs);
+  if (!Number.isFinite(upperBoundMs) || upperBoundMs < 0) {
+    throw new Error('Failed to resolve PostgreSQL sync upper bound timestamp');
+  }
+
+  return upperBoundMs;
+}
+
+function buildSyncBatchQuery(params: {
+  tableConfig: SyncTableConfig;
+  lastSyncIso: string | null;
+  syncUpperBoundIso: string;
+  cursor: SyncCursor | null;
+  batchSize: number;
+}): Prisma.Sql {
+  const { tableConfig, lastSyncIso, syncUpperBoundIso, cursor, batchSize } =
+    params;
+  const tableRef = quoteSqlIdentifier(tableConfig.pgTable);
+  const idCol = quoteSqlIdentifier(tableConfig.idField);
+  const timestampCol = quoteSqlIdentifier(tableConfig.timestampField);
+  const cursorTsAlias = quoteSqlIdentifier(CURSOR_TS_ALIAS);
+  const idCast =
+    tableConfig.idType === 'uuid' ? Prisma.raw('::uuid') : Prisma.raw('::text');
+
+  // Preserve full microsecond precision for the pagination cursor and rely on
+  // the existing single-column createdAt index via `createdAt >= $1` + incremental sort.
+  const whereClause = cursor
+    ? Prisma.sql`
+        WHERE ${timestampCol} >= ${cursor.timestamp}::timestamptz
+          AND (${timestampCol} > ${cursor.timestamp}::timestamptz OR ${idCol} > ${cursor.id}${idCast})
+          AND ${timestampCol} <= ${syncUpperBoundIso}::timestamptz
+      `
+    : lastSyncIso !== null
+      ? Prisma.sql`
+          WHERE ${timestampCol} > ${lastSyncIso}::timestamptz
+            AND ${timestampCol} <= ${syncUpperBoundIso}::timestamptz
+        `
+      : Prisma.sql`
+          WHERE ${timestampCol} <= ${syncUpperBoundIso}::timestamptz
+        `;
+
+  return Prisma.sql`
+    SELECT *, to_char(${timestampCol} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS ${cursorTsAlias}
+    FROM ${tableRef}
+    ${whereClause}
+    ORDER BY ${timestampCol} ASC, ${idCol} ASC
+    LIMIT ${batchSize}
+  `;
+}
+
+function extractCursorTimestamp(row: SyncRow, timestampField: string): string {
+  const cursorTs = row[CURSOR_TS_ALIAS];
+  if (typeof cursorTs === 'string' && cursorTs.length > 0) {
+    return cursorTs;
+  }
+
+  const rawTimestamp = row[timestampField];
+  if (rawTimestamp instanceof Date) {
+    return rawTimestamp.toISOString();
+  }
+
+  return String(rawTimestamp);
+}
+
+function formatRowForClickHouse(row: SyncRow): SyncRow {
+  const formattedRow: SyncRow = { ...row };
+  delete formattedRow[CURSOR_TS_ALIAS];
+
+  Object.keys(formattedRow).forEach((key) => {
+    const value = formattedRow[key];
+    if (value instanceof Date) {
+      // Convert to Unix timestamp in milliseconds to preserve precision
+      formattedRow[key] = value.getTime();
+    } else if (value === null) {
+      // Handle null values based on column type
+      delete formattedRow[key];
+    }
+  });
+
+  return formattedRow;
+}
+
 // Sync data for a specific table
-async function syncTable(tableConfig: (typeof TABLES_TO_SYNC)[0]) {
+async function syncTable(tableConfig: SyncTableConfig) {
   const { pgTable, chTable, idField, timestampField } = tableConfig;
 
   try {
     // Get last sync timestamp
     const lastSyncTimestamp = await getLastSyncTimestamp(pgTable);
+    const syncUpperBoundMs = await getPostgresSyncUpperBoundMs();
 
-    // Prepare query to get new data from PostgreSQL
-    let query: any = {};
-    if (lastSyncTimestamp) {
-      const lastSyncDate = dayjs(lastSyncTimestamp).toISOString();
-
-      query = {
-        where: {
-          [timestampField]: {
-            gt: new Date(lastSyncDate),
-          },
-        },
-        orderBy: {
-          [timestampField]: 'asc',
-        },
-      };
-    } else {
-      query = {
-        orderBy: {
-          [timestampField]: 'asc',
-        },
-      };
+    if (lastSyncTimestamp !== null && lastSyncTimestamp >= syncUpperBoundMs) {
+      return true;
     }
 
-    // Get data from PostgreSQL in batches
-    const batchSize = env.clickhouse.sync.batchSize;
+    const lastSyncIso =
+      lastSyncTimestamp !== null
+        ? new Date(lastSyncTimestamp).toISOString()
+        : null;
+    const syncUpperBoundIso = new Date(syncUpperBoundMs).toISOString();
+
+    // Get data from PostgreSQL in batches using (createdAt, id) keyset pagination
+    const batchSize = Math.max(1, Math.trunc(env.clickhouse.sync.batchSize));
     let hasMore = true;
-    let lastId: string | null = null;
-    let latestTimestamp: string | null = null;
+    let cursor: SyncCursor | null = null;
 
     while (hasMore) {
-      // Modify query to get next batch
-      if (lastId) {
-        query.where = {
-          ...query.where,
-          [idField]: {
-            gt: lastId,
-          },
-        };
-      }
-
-      // @ts-ignore - Dynamic table access
-      const data = await prisma[pgTable].findMany({
-        ...query,
-        take: batchSize,
+      const query = buildSyncBatchQuery({
+        tableConfig,
+        lastSyncIso,
+        syncUpperBoundIso,
+        cursor,
+        batchSize,
       });
+
+      const data = await prisma.$queryRaw<SyncRow[]>(query);
 
       if (data.length === 0) {
         hasMore = false;
         continue;
       }
 
+      const rows = data.map(formatRowForClickHouse);
+
       // Insert data into ClickHouse
-      if (data.length > 0) {
-        // Convert data to ClickHouse format
-        const rows = data.map((row: any) => {
-          // Convert dates to ClickHouse format
-          const formattedRow = { ...row };
-          Object.keys(formattedRow).forEach((key) => {
-            if (formattedRow[key] instanceof Date) {
-              // Convert to Unix timestamp in milliseconds to preserve precision
-              formattedRow[key] = formattedRow[key].getTime();
-            } else if (formattedRow[key] === null) {
-              // Handle null values based on column type
-              delete formattedRow[key];
-            }
-          });
-          return formattedRow;
-        });
+      await clickhouse.insert({
+        table: chTable,
+        values: rows,
+        format: 'JSONEachRow',
+      });
 
-        // Insert data into ClickHouse
-        await clickhouse.insert({
-          table: chTable,
-          values: rows,
-          format: 'JSONEachRow',
-        });
+      const lastRow = data[data.length - 1];
+      const lastCursorTimestamp = extractCursorTimestamp(
+        lastRow,
+        timestampField
+      );
+      const lastId = String(lastRow[idField]);
 
-        // Update tracking variables
-        lastId = data[data.length - 1][idField];
-        latestTimestamp = data[data.length - 1][timestampField];
+      cursor = {
+        timestamp: lastCursorTimestamp,
+        id: lastId,
+      };
 
-        logger.info(`Synced ${data.length} rows to ${chTable}`);
+      logger.info(`Synced ${data.length} rows to ${chTable}`);
 
-        if (latestTimestamp) {
-          await updateSyncState(pgTable, latestTimestamp);
-        }
+      if (lastCursorTimestamp) {
+        await updateSyncState(pgTable, lastCursorTimestamp);
       }
 
       // If we got less than the batch size, we're done
