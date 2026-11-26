@@ -87,6 +87,7 @@ const TABLES_TO_SYNC: SyncTableConfig[] = [
 const SYNC_STATE_TABLE = '_clickhouse_sync_state';
 const CURSOR_TS_ALIAS = '__cursor_ts';
 const SYNC_SAFETY_LAG_SECONDS = 10;
+const STATE_UPDATE_BATCH_INTERVAL = 10;
 
 // Initialize sync state table
 async function initSyncStateTable() {
@@ -112,7 +113,13 @@ async function getLastSyncTimestamp(tableName: string): Promise<number | null> {
   try {
     const result = await clickhouse.query({
       // NOTICE: toUnixTimestamp64Milli need clickhouse version >= 22.10
-      query: `SELECT toUnixTimestamp64Milli(last_sync_timestamp) as last_sync_timestamp FROM ${SYNC_STATE_TABLE} WHERE table_name = {table:String}`,
+      query: `
+        SELECT toUnixTimestamp64Milli(last_sync_timestamp) as last_sync_timestamp
+        FROM ${SYNC_STATE_TABLE}
+        WHERE table_name = {table:String}
+        ORDER BY last_sync_timestamp DESC
+        LIMIT 1
+      `,
       query_params: {
         table: tableName,
       },
@@ -125,54 +132,34 @@ async function getLastSyncTimestamp(tableName: string): Promise<number | null> {
     return Number(data[0].last_sync_timestamp);
   } catch (err) {
     logger.error(`Failed to get last sync timestamp for ${tableName}:`, err);
-    return null;
+    throw err;
   }
 }
 
-// Update sync state for a table
-async function updateSyncState(tableName: string, timestamp: string) {
+// Append sync state checkpoint for a table without triggering ClickHouse mutations
+async function updateSyncState(
+  tableName: string,
+  timestamp: string | number | Date
+) {
   try {
-    // First check if the record exists
-    const result = await clickhouse.query({
-      query: `SELECT 1 FROM ${SYNC_STATE_TABLE} WHERE table_name = {table:String}`,
-      query_params: {
-        table: tableName,
-      },
-    });
-
-    const { data } = await result.json();
-    const exists = data.length > 0;
-
     // Convert timestamp to Unix timestamp in milliseconds for ClickHouse
     const formattedTimestamp = dayjs(timestamp).valueOf();
-
-    if (exists) {
-      // If record exists, update using ALTER TABLE
-      await clickhouse.exec({
-        query: `
-          ALTER TABLE ${SYNC_STATE_TABLE}
-          UPDATE last_sync_timestamp = toDateTime64({timestamp:UInt64} / 1000.0, 3, 'UTC'),
-                 updated_at = now64(3, 'UTC')
-          WHERE table_name = {table:String}
-        `,
-        query_params: {
-          table: tableName,
-          timestamp: formattedTimestamp,
-        },
-      });
-    } else {
-      // If record doesn't exist, insert new record
-      await clickhouse.exec({
-        query: `
-          INSERT INTO ${SYNC_STATE_TABLE} (table_name, last_sync_timestamp)
-          VALUES ({table:String}, toDateTime64({timestamp:UInt64} / 1000.0, 3, 'UTC'))
-        `,
-        query_params: {
-          table: tableName,
-          timestamp: formattedTimestamp,
-        },
-      });
+    if (!Number.isFinite(formattedTimestamp) || formattedTimestamp < 0) {
+      throw new Error(
+        `Invalid sync state timestamp for ${tableName}: ${String(timestamp)}`
+      );
     }
+
+    await clickhouse.exec({
+      query: `
+        INSERT INTO ${SYNC_STATE_TABLE} (table_name, last_sync_timestamp)
+        VALUES ({table:String}, toDateTime64({timestamp:UInt64} / 1000.0, 3, 'UTC'))
+      `,
+      query_params: {
+        table: tableName,
+        timestamp: formattedTimestamp,
+      },
+    });
   } catch (err) {
     logger.error(`Failed to update sync state for ${tableName}:`, err);
     throw err;
@@ -272,11 +259,18 @@ function formatRowForClickHouse(row: SyncRow): SyncRow {
 async function syncTable(tableConfig: SyncTableConfig) {
   const { pgTable, chTable, idField, timestampField } = tableConfig;
 
+  let lastPersistedTimestamp: number | null = null;
+  let latestSyncedTimestampMs: number | null = null;
+  let syncedRows = 0;
+  let batchesSinceStateUpdate = 0;
+  let completedAllBatches = false;
+
   try {
     // Get last sync timestamp
     const lastSyncTimestamp = await getLastSyncTimestamp(pgTable);
-    const syncUpperBoundMs = await getPostgresSyncUpperBoundMs();
+    lastPersistedTimestamp = lastSyncTimestamp;
 
+    const syncUpperBoundMs = await getPostgresSyncUpperBoundMs();
     if (lastSyncTimestamp !== null && lastSyncTimestamp >= syncUpperBoundMs) {
       return true;
     }
@@ -304,6 +298,7 @@ async function syncTable(tableConfig: SyncTableConfig) {
       const data = await prisma.$queryRaw<SyncRow[]>(query);
 
       if (data.length === 0) {
+        completedAllBatches = true;
         hasMore = false;
         continue;
       }
@@ -328,21 +323,65 @@ async function syncTable(tableConfig: SyncTableConfig) {
         timestamp: lastCursorTimestamp,
         id: lastId,
       };
+      latestSyncedTimestampMs = dayjs(lastCursorTimestamp).valueOf();
+      syncedRows += data.length;
+      batchesSinceStateUpdate += 1;
 
       logger.info(`Synced ${data.length} rows to ${chTable}`);
 
-      if (lastCursorTimestamp) {
-        await updateSyncState(pgTable, lastCursorTimestamp);
-      }
-
       // If we got less than the batch size, we're done
       if (data.length < batchSize) {
+        completedAllBatches = true;
         hasMore = false;
+      } else if (batchesSinceStateUpdate >= STATE_UPDATE_BATCH_INTERVAL) {
+        // Persist a safe mid-run checkpoint (1ms back to preserve sub-ms siblings on crash)
+        const checkpointMs = Math.max(0, latestSyncedTimestampMs - 1);
+        if (
+          lastPersistedTimestamp === null ||
+          checkpointMs > lastPersistedTimestamp
+        ) {
+          await updateSyncState(pgTable, checkpointMs);
+          lastPersistedTimestamp = checkpointMs;
+        }
+        batchesSinceStateUpdate = 0;
+      }
+    }
+
+    if (completedAllBatches && syncedRows > 0) {
+      if (
+        lastPersistedTimestamp === null ||
+        syncUpperBoundMs > lastPersistedTimestamp
+      ) {
+        await updateSyncState(pgTable, syncUpperBoundMs);
+        lastPersistedTimestamp = syncUpperBoundMs;
       }
     }
 
     return true;
   } catch (err) {
+    // Persist progress from previously succeeded batches on partial failure
+    if (
+      !completedAllBatches &&
+      syncedRows > 0 &&
+      latestSyncedTimestampMs !== null
+    ) {
+      const checkpointMs = Math.max(0, latestSyncedTimestampMs - 1);
+      if (
+        lastPersistedTimestamp === null ||
+        checkpointMs > lastPersistedTimestamp
+      ) {
+        try {
+          await updateSyncState(pgTable, checkpointMs);
+          lastPersistedTimestamp = checkpointMs;
+        } catch (stateErr) {
+          logger.error(
+            `Failed to persist partial sync checkpoint for ${pgTable}:`,
+            stateErr
+          );
+        }
+      }
+    }
+
     logger.error(`Error syncing table ${pgTable} to ${chTable}:`, err);
     return false;
   }
@@ -370,8 +409,19 @@ export async function syncPostgresToClickHouse() {
         await initSyncStateTable();
 
         // Sync each table
+        const failedTables: string[] = [];
         for (const tableConfig of TABLES_TO_SYNC) {
-          await syncTable(tableConfig);
+          const synced = await syncTable(tableConfig);
+          if (!synced) {
+            failedTables.push(tableConfig.pgTable);
+          }
+        }
+
+        if (failedTables.length > 0) {
+          logger.warn(
+            `PostgreSQL to ClickHouse sync completed with failures: ${failedTables.join(', ')}`
+          );
+          return false;
         }
 
         logger.info('PostgreSQL to ClickHouse sync completed successfully');
