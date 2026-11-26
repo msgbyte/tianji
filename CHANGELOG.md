@@ -1,5 +1,15 @@
 
 
+## [1.34.6](https://github.com/msgbyte/tianji/compare/v1.34.5...v1.34.6) (2026-11-26)
+
+### Bug Fixes
+
+* **clickhouse:** replace sync state mutations with append-only checkpoints ([51f63a0](https://github.com/msgbyte/tianji/commit/51f63a0b2a5add41668cc36d9aeb6bbdef1b9efb))
+
+### Others
+
+* **clickhouse:** use composite keyset pagination for PostgreSQL sync ([6616217](https://github.com/msgbyte/tianji/commit/661621771b2dc7d2e6605a4ad4e56d6c53b4082d))
+
 ## [1.34.5](https://github.com/msgbyte/tianji/compare/v1.34.4...v1.34.5) (2026-11-25)
 
 ### Bug Fixes
