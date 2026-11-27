@@ -7,6 +7,7 @@ import {
   workspaceOwnerProcedure,
   workspaceProcedure,
 } from '../trpc.js';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { prisma } from '../../model/_client.js';
 import {
@@ -350,7 +351,7 @@ export const workspaceRouter = router({
     )
     .input(
       z.object({
-        emailOrId: z.string(),
+        emailOrId: z.string().trim().min(1),
         role: z
           .enum([ROLES.admin, ROLES.write, ROLES.readOnly])
           .default(ROLES.readOnly),
@@ -360,18 +361,6 @@ export const workspaceRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { emailOrId, workspaceId } = input;
       const userId = ctx.user.id;
-      const targetUser = await prisma.user.findFirst({
-        where: {
-          OR: [
-            {
-              email: emailOrId,
-            },
-            {
-              id: emailOrId,
-            },
-          ],
-        },
-      });
 
       if (input.role === ROLES.admin) {
         // Need to check if the user is the owner of the workspace
@@ -385,13 +374,44 @@ export const workspaceRouter = router({
         });
 
         if (userWorkspace?.role !== ROLES.owner) {
-          throw new Error(
-            'You do not have permission to invite members to this workspace'
-          );
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message:
+              'You do not have permission to invite members to this workspace',
+          });
         }
       }
 
+      const targetUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            {
+              email: emailOrId,
+            },
+            {
+              id: emailOrId,
+            },
+          ],
+        },
+      });
+
       if (targetUser) {
+        const existingMember = await prisma.workspacesOnUsers.findUnique({
+          where: {
+            userId_workspaceId: {
+              userId: targetUser.id,
+              workspaceId,
+            },
+          },
+        });
+
+        if (existingMember) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'This user is already a member of this workspace',
+          });
+        }
+
         // if user exist
         await joinWorkspace(targetUser.id, workspaceId, input.role);
       } else if (emailOrId.includes('@')) {

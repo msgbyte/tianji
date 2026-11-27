@@ -148,3 +148,85 @@ test('an owner can assign the write role to an existing member', async () => {
   });
   expect(mocks.audit).toHaveBeenCalledOnce();
 });
+
+test('trims whitespace when inviting an existing user by User ID', async () => {
+  const workspaceId = createId();
+  const targetUserId = createId();
+  mocks.findUser.mockResolvedValue({ id: targetUserId });
+  mocks.findMember.mockResolvedValue(null);
+
+  await caller.invite({
+    workspaceId,
+    emailOrId: `  ${targetUserId}  `,
+    role: ROLES.write,
+  });
+
+  expect(mocks.findUser).toHaveBeenCalledWith({
+    where: {
+      OR: [{ email: targetUserId }, { id: targetUserId }],
+    },
+  });
+  expect(mocks.joinWorkspace).toHaveBeenCalledWith(
+    targetUserId,
+    workspaceId,
+    ROLES.write
+  );
+  expect(mocks.audit).toHaveBeenCalledOnce();
+});
+
+test('rejects inviting a user who is already a workspace member', async () => {
+  const workspaceId = createId();
+  const targetUserId = createId();
+  mocks.findUser.mockResolvedValue({ id: targetUserId });
+  mocks.findMember.mockResolvedValue({ role: ROLES.readOnly });
+
+  await expect(
+    caller.invite({
+      workspaceId,
+      emailOrId: targetUserId,
+      role: ROLES.write,
+    })
+  ).rejects.toMatchObject({
+    code: 'CONFLICT',
+    message: 'This user is already a member of this workspace',
+  });
+
+  expect(mocks.joinWorkspace).not.toHaveBeenCalled();
+  expect(mocks.audit).not.toHaveBeenCalled();
+});
+
+test('rejects whitespace-only emailOrId', async () => {
+  const workspaceId = createId();
+
+  await expect(
+    caller.invite({
+      workspaceId,
+      emailOrId: '   ',
+      role: ROLES.readOnly,
+    })
+  ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+
+  expect(mocks.findUser).not.toHaveBeenCalled();
+  expect(mocks.joinWorkspace).not.toHaveBeenCalled();
+});
+
+test('non-owner admin cannot invite a member with the admin role', async () => {
+  const workspaceId = createId();
+  mocks.getWorkspaceUser.mockResolvedValue({ role: ROLES.admin });
+  mocks.findMember.mockResolvedValue({ role: ROLES.admin });
+
+  await expect(
+    caller.invite({
+      workspaceId,
+      emailOrId: createId(),
+      role: ROLES.admin,
+    })
+  ).rejects.toMatchObject({
+    code: 'FORBIDDEN',
+    message: 'You do not have permission to invite members to this workspace',
+  });
+
+  expect(mocks.findUser).not.toHaveBeenCalled();
+  expect(mocks.joinWorkspace).not.toHaveBeenCalled();
+  expect(mocks.audit).not.toHaveBeenCalled();
+});
