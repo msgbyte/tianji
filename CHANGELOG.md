@@ -1,5 +1,16 @@
 
 
+## [1.34.7](https://github.com/msgbyte/tianji/compare/v1.34.6...v1.34.7) (2026-11-27)
+
+### Features
+
+* **workspace:** redesign member invitation with User ID and Email mode tabs ([7c8131e](https://github.com/msgbyte/tianji/commit/7c8131e7775bcca687f27ba9b47a6a10f5c44de0))
+* **workspace:** show avatars, copyable user IDs, and role badges in members table ([0c2d14a](https://github.com/msgbyte/tianji/commit/0c2d14ae2da3698e1e1af5e677d42eb8ebd936b6))
+
+### Bug Fixes
+
+* **workspace:** trim invite identifier and reject duplicate members ([905c72e](https://github.com/msgbyte/tianji/commit/905c72eeb53e60f36a527203af461b41ed8357f6))
+
 ## [1.34.6](https://github.com/msgbyte/tianji/compare/v1.34.5...v1.34.6) (2026-11-26)
 
 ### Bug Fixes
