@@ -466,6 +466,61 @@ describe('ensureJSONOutput', () => {
       expect(result).toEqual(expectObj);
     });
   });
+
+  describe('code fence extraction', () => {
+    test.each([
+      ['LF fence', '```json\n{"a": 1}\n```', { a: 1 }],
+      ['CRLF fence', '```json\r\n{"a": 1}\r\n```', { a: 1 }],
+      ['fence without newlines', '```json{"a": 1}```', { a: 1 }],
+      ['upper case language tag', '```JSON\n{"a": 1}\n```', { a: 1 }],
+      ['generic fence', '```\n[1, 2]\n```', [1, 2]],
+      [
+        'fence inside prose',
+        'Here you go:\n```json\n{"a": 1}\n```\nDone.',
+        { a: 1 },
+      ],
+      [
+        'first fence wins',
+        '```json\n{"a": 1}\n```\n```json\n{"a": 2}\n```',
+        { a: 1 },
+      ],
+      ['unterminated fence', '```json\n{"a": 1}', { a: 1 }],
+      ['whitespace-only json fence', '```json   \n  ```', null],
+      ['whitespace-only generic fence', '```   \n  ```', null],
+      ['non-JSON generic fence', '```\nnot json\n```', null],
+    ])('%s', (_name, input, expected) => {
+      expect(ensureJSONOutput(input)).toEqual(expected);
+    });
+
+    // Both fence shapes survive `content.trim()` and fail every parse attempt,
+    // so each fence regex has to scan the whole run of spaces. The assertion
+    // is on growth (4x the input must not cost anywhere near 16x or 64x the
+    // time) rather than on an absolute budget, so it does not depend on the
+    // speed of the machine running it.
+    const SIZES = [200_000, 800_000];
+    const RUNS = 7;
+    const median = (values: number[]) =>
+      [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+    const measure = (input: string) => {
+      ensureJSONOutput(input); // warm up
+      const times: number[] = [];
+      for (let i = 0; i < RUNS; i++) {
+        const start = performance.now();
+        expect(ensureJSONOutput(input)).toBeNull();
+        times.push(performance.now() - start);
+      }
+      return median(times);
+    };
+
+    test.each([
+      ['```json fence', (n: number) => '```json' + ' '.repeat(n) + 'x'],
+      ['generic fence', (n: number) => '```' + ' '.repeat(n) + 'x'],
+    ])('unterminated %s followed by spaces scales linearly', (_name, build) => {
+      const [small, large] = SIZES.map((n) => measure(build(n)));
+      // linear is about 4x, quadratic about 16x, cubic about 64x
+      expect(large / small).toBeLessThan(8);
+    });
+  });
 });
 
 describe('calcMessagesToken', () => {
