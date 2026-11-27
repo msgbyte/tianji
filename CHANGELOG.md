@@ -1,5 +1,11 @@
 
 
+## [1.34.8](https://github.com/msgbyte/tianji/compare/v1.34.7...v1.34.8) (2026-11-27)
+
+### Features
+
+* **aiGateway:** support Cloudflare /ai/run upstream for Gemini gateway ([#301](https://github.com/msgbyte/tianji/issues/301)) ([b2386b7](https://github.com/msgbyte/tianji/commit/b2386b748c57fdde43524a74aa3d4d504d33191c))
+
 ## [1.34.7](https://github.com/msgbyte/tianji/compare/v1.34.6...v1.34.7) (2026-11-27)
 
 ### Features
