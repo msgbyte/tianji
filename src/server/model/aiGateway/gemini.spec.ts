@@ -1022,3 +1022,702 @@ describe('Gemini native relay with the official SDK', () => {
     ).toBe(405);
   });
 });
+
+describe('Cloudflare /ai/run upstream adapter for Gemini gateway', () => {
+  const cloudflarePath = '/client/v4/accounts/account-123/ai/run';
+
+  beforeEach(() => {
+    gateway.customModelBaseUrl = `${relayUrl}${cloudflarePath}`;
+  });
+
+  test.each([
+    { suffix: '', enveloped: false },
+    { suffix: '/', enveloped: true },
+  ])(
+    'translates generateContent to Cloudflare /ai/run (suffix="$suffix", enveloped=$enveloped) and logs usage and cost',
+    async ({ suffix, enveloped }) => {
+      gateway.customModelBaseUrl = `${relayUrl}${cloudflarePath}${suffix}`;
+      gateway.modelApiKey = 'cf-secret-token';
+      gateway.customModelStrategy = {
+        price: { input: 2, output: 6, cacheRead: 0.5 },
+        cloudflareGatewayId: 'prod-gateway',
+      };
+      const citationSources = [
+        {
+          startIndex: 0,
+          endIndex: 4,
+          uri: 'https://example.com/source',
+          license: 'CC-BY',
+        },
+      ];
+      const geminiPayload = {
+        ...response,
+        candidates: [
+          {
+            index: 0,
+            content: {
+              role: 'model',
+              parts: [
+                {
+                  text: 'Hola desde Cloudflare',
+                  thoughtSignature: 'sig-cf-1',
+                },
+              ],
+            },
+            finishReason: 'STOP',
+            citationMetadata: { citationSources },
+          },
+        ],
+        modelVersion: 'gemini-4-hydrogen',
+      };
+      relayHandler = (_req, res) => {
+        res.json(
+          enveloped
+            ? {
+                result: geminiPayload,
+                success: true,
+                errors: [],
+                messages: [],
+              }
+            : geminiPayload
+        );
+      };
+
+      const requestBody = {
+        model: 'models/ignored-by-cloudflare-input',
+        contents,
+        systemInstruction: { parts: [{ text: 'Responde en espanol.' }] },
+        generationConfig: {
+          thinkingConfig: { thinkingLevel: 'HIGH' },
+          temperature: 0.2,
+        },
+        tools: [{ functionDeclarations: [{ name: 'lookup' }] }],
+        toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      };
+
+      const result = await post(
+        'generateContent',
+        requestBody,
+        'google/gemini-4-hydrogen'
+      )
+        .set('x-goog-api-key', 'caller-secret-key')
+        .set('x-session-id', 'session-cf');
+
+      expect(result.status).toBe(200);
+      expect(result.body).toEqual(geminiPayload);
+      expect(received).toHaveLength(1);
+      expect(received[0].url).toBe(cloudflarePath);
+      expect(received[0].headers).toMatchObject({
+        authorization: 'Bearer cf-secret-token',
+        'content-type': 'application/json',
+        'x-session-id': 'session-cf',
+        'cf-aig-gateway-id': 'prod-gateway',
+      });
+      expect(received[0].headers['x-goog-api-key']).toBeUndefined();
+      expect(JSON.stringify(received[0])).not.toContain('caller-secret-key');
+      const { model: _strippedModel, ...expectedInput } = requestBody;
+      expect(received[0].body).toEqual({
+        model: 'google/gemini-4-hydrogen',
+        input: expectedInput,
+      });
+
+      await vi.waitFor(() =>
+        expect(prisma.aIGatewayLogs.update).toHaveBeenCalled()
+      );
+      expect(
+        vi.mocked(prisma.aIGatewayLogs.create).mock.calls[0][0].data
+      ).toMatchObject({
+        modelName: 'google/gemini-4-hydrogen',
+        modelProvider: 'custom',
+        stream: false,
+        userId: 'user',
+        requestPayload: {
+          ...expectedInput,
+          gateway: {
+            protocol: 'gemini',
+            action: 'generateContent',
+            requestedModel: 'google/gemini-4-hydrogen',
+            upstreamFormat: 'cloudflare-ai-run',
+          },
+        },
+      });
+      const updated = vi.mocked(prisma.aIGatewayLogs.update).mock.calls[0][0]
+        .data;
+      expect(updated).toMatchObject({
+        status: 'Success',
+        inputToken: 100,
+        outputToken: 20,
+        cacheReadInputToken: 40,
+        responsePayload: {
+          response: geminiPayload,
+          usage: usageMetadata,
+          gateway: {
+            protocol: 'gemini',
+            action: 'generateContent',
+            requestedModel: 'google/gemini-4-hydrogen',
+            upstreamFormat: 'cloudflare-ai-run',
+            usageSource: 'upstream',
+            priceKnown: true,
+          },
+        },
+      });
+      expect(String(updated.price)).toBe('0.00026');
+      expect(checkQuotaAlert).toHaveBeenCalledWith(
+        'workspace',
+        'gateway',
+        0.00026
+      );
+    }
+  );
+
+  test.each([
+    {
+      requested: 'gemini-4-hydrogen',
+      customModelName: undefined,
+      expected: 'google/gemini-4-hydrogen',
+    },
+    {
+      requested: 'google/gemini-4-hydrogen',
+      customModelName: undefined,
+      expected: 'google/gemini-4-hydrogen',
+    },
+    {
+      requested: 'custom/support-fast',
+      customModelName: undefined,
+      expected: 'custom/support-fast',
+    },
+    {
+      requested: 'gemini-3.8-flash',
+      customModelName: 'google/gemini-4-carbon',
+      expected: 'google/gemini-4-carbon',
+    },
+    {
+      requested: 'gemini-3.8-flash',
+      customModelName: 'gemini-4-hydrogen',
+      expected: 'google/gemini-4-hydrogen',
+    },
+    {
+      requested: 'gemini-3.8-flash',
+      customModelName: '@cf/google/gemma-4-26b-a4b-it',
+      expected: '@cf/google/gemma-4-26b-a4b-it',
+    },
+  ])(
+    'resolves Cloudflare model "$expected" from requested="$requested" and customModelName="$customModelName"',
+    async ({ requested, customModelName, expected }) => {
+      gateway.customModelName = customModelName;
+      const result = await post('generateContent', { contents }, requested);
+
+      expect(result.status).toBe(200);
+      expect(received[0].body).toEqual({
+        model: expected,
+        input: { contents },
+      });
+      expect(
+        vi.mocked(prisma.aIGatewayLogs.create).mock.calls[0][0].data
+      ).toMatchObject({
+        modelName: expected,
+      });
+    }
+  );
+
+  test('supports BYOK when the gateway has no stored key', async () => {
+    gateway.modelApiKey = null;
+    const result = await post(
+      'generateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    );
+
+    expect(result.status).toBe(200);
+    expect(received[0].headers.authorization).toBe('Bearer test-upstream-key');
+    expect(received[0].headers['x-goog-api-key']).toBeUndefined();
+    expect(prisma.userApiKey.findUnique).not.toHaveBeenCalled();
+  });
+
+  test('wraps a Cloudflare JSON response into valid SSE for @google/genai generateContentStream', async () => {
+    relayHandler = (_req, res) => {
+      res.json({
+        result: response,
+        success: true,
+        errors: [],
+        messages: [],
+      });
+    };
+    const baseUrl = await listen(app);
+    const ai = new GoogleGenAI({
+      apiKey: 'test-upstream-key',
+      httpOptions: { baseUrl: `${baseUrl}${prefix}`, apiVersion: 'v1beta' },
+    });
+
+    const chunks = [];
+    for await (const chunk of await ai.models.generateContentStream({
+      model: 'gemini-4-hydrogen',
+      contents,
+      config: { automaticFunctionCalling: { disable: true } },
+    })) {
+      const { sdkHttpResponse: _headers, ...data } = chunk;
+      chunks.push(data);
+    }
+
+    expect(chunks).toEqual([response]);
+    expect(received).toHaveLength(1);
+    expect(received[0].url).toBe(cloudflarePath);
+    expect(received[0].body).toEqual({
+      model: 'google/gemini-4-hydrogen',
+      input: { contents, generationConfig: {} },
+    });
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'Success',
+            inputToken: 100,
+            outputToken: 20,
+          }),
+        })
+      )
+    );
+  });
+
+  test('streams incremental Cloudflare SSE chunks and preserves tail usage and [DONE]', async () => {
+    const first = {
+      candidates: [
+        { index: 0, content: { role: 'model', parts: [{ text: 'Ho' }] } },
+      ],
+    };
+    const tail = {
+      ...response,
+      candidates: [
+        {
+          index: 0,
+          content: {
+            role: 'model',
+            parts: [{ text: 'la', thoughtSignature: 'tail-cf-sig' }],
+          },
+          finishReason: 'STOP',
+        },
+      ],
+    };
+    relayHandler = (_req, res) => {
+      res.type('text/event-stream');
+      res.write(': keepalive\r\n\r\n');
+      res.write(`data: ${JSON.stringify({ result: first, success: true })}\r`);
+      setTimeout(() => {
+        res.write('\n\r\n');
+        res.write(`data: ${JSON.stringify(tail)}\n\n`);
+        res.end('data: [DONE]\n\n');
+      }, 15);
+    };
+
+    const baseUrl = await listen(app);
+    const ai = new GoogleGenAI({
+      apiKey: 'test-upstream-key',
+      httpOptions: { baseUrl: `${baseUrl}${prefix}`, apiVersion: 'v1beta' },
+    });
+    const chunks = [];
+    for await (const chunk of await ai.models.generateContentStream({
+      model: 'google/gemini-4-hydrogen',
+      contents,
+      config: { automaticFunctionCalling: { disable: true } },
+    })) {
+      const { sdkHttpResponse: _headers, ...data } = chunk;
+      chunks.push(data);
+    }
+
+    expect(chunks).toEqual([first, tail]);
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'Success',
+            inputToken: 100,
+            outputToken: 20,
+            cacheReadInputToken: 40,
+          }),
+        })
+      )
+    );
+  });
+
+  test.each([
+    'broken-json',
+    'incomplete',
+    'cloudflare-error-event',
+    'invalid-usage',
+  ])(
+    'reports %s Cloudflare SSE streams as failures to an official SDK client',
+    async (mode) => {
+      relayHandler = (_req, res) => {
+        res.type('text/event-stream');
+        res.write(
+          `data: ${JSON.stringify({ candidates: [{ index: 0, content: { parts: [{ text: 'Parcial' }] } }], usageMetadata })}\n\n`
+        );
+        setTimeout(() => {
+          res.end(
+            mode === 'broken-json'
+              ? 'data: {bad}\n\n'
+              : mode === 'invalid-usage'
+                ? 'data: {"usageMetadata":{"promptTokenCount":2147483648}}\n\n'
+                : mode === 'cloudflare-error-event'
+                  ? 'data: {"success":false,"errors":[{"code":2018,"message":"Rate limit exceeded"}]}\n\n'
+                  : ''
+          );
+        }, 10);
+      };
+
+      const baseUrl = await listen(app);
+      const ai = new GoogleGenAI({
+        apiKey: 'test-upstream-key',
+        httpOptions: {
+          baseUrl: `${baseUrl}${prefix}`,
+          retryOptions: { attempts: 1 },
+        },
+      });
+      let chunks = 0;
+      await expect(
+        (async () => {
+          for await (const _chunk of await ai.models.generateContentStream({
+            model: 'google/gemini-4-hydrogen',
+            contents,
+          }))
+            chunks++;
+        })()
+      ).rejects.toThrow();
+      expect(chunks).toBe(1);
+      await vi.waitFor(() =>
+        expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              status: 'Failed',
+              inputToken: 100,
+              outputToken: 20,
+            }),
+          })
+        )
+      );
+      expect(checkQuotaAlert).toHaveBeenCalledWith(
+        'workspace',
+        'gateway',
+        0.00026
+      );
+    }
+  );
+
+  test('returns 501 UNIMPLEMENTED for countTokens without calling Cloudflare /ai/run', async () => {
+    const result = await post(
+      'countTokens',
+      { contents },
+      'google/gemini-4-hydrogen'
+    );
+
+    expect(result.status).toBe(501);
+    expect(result.body).toEqual({
+      error: {
+        code: 501,
+        status: 'UNIMPLEMENTED',
+        message: 'countTokens is not supported for Cloudflare /ai/run upstreams.',
+      },
+    });
+    expect(received).toHaveLength(0);
+    expect(prisma.aIGatewayLogs.create).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    {
+      httpStatus: 400,
+      expectedStatus: 'INVALID_ARGUMENT',
+      payload: {
+        result: null,
+        success: false,
+        errors: [
+          {
+            code: 7003,
+            message:
+              'Model execution failed (User Input Error): Bad field with cf-secret-token and caller-secret-key',
+          },
+        ],
+        messages: [],
+      },
+      expectedFragment: 'Model execution failed (User Input Error): Bad field',
+    },
+    {
+      httpStatus: 402,
+      expectedStatus: 'FAILED_PRECONDITION',
+      payload: {
+        result: null,
+        success: false,
+        errors: [
+          {
+            code: 2052,
+            message: 'Insufficient unified billing balance for this request.',
+          },
+        ],
+        messages: [],
+      },
+      expectedFragment: 'Insufficient unified billing balance',
+    },
+    {
+      httpStatus: 429,
+      expectedStatus: 'RESOURCE_EXHAUSTED',
+      payload: {
+        result: null,
+        success: false,
+        errors: [
+          {
+            code: 2018,
+            message: 'Unified billing rate limit exceeded for this gateway.',
+          },
+        ],
+        messages: [],
+      },
+      expectedFragment: 'Unified billing rate limit exceeded',
+    },
+  ])(
+    'maps Cloudflare HTTP $httpStatus errors to Gemini errors and redacts secrets',
+    async ({ httpStatus, expectedStatus, payload, expectedFragment }) => {
+      gateway.modelApiKey = 'cf-secret-token';
+      relayHandler = (_req, res) => {
+        res.status(httpStatus).json(payload);
+      };
+
+      const result = await post(
+        'streamGenerateContent',
+        { contents },
+        'google/gemini-4-hydrogen'
+      ).set('x-goog-api-key', 'caller-secret-key');
+
+      expect(result.status).toBe(httpStatus);
+      expect(result.headers['content-type']).toContain('application/json');
+      expect(result.body.error).toMatchObject({
+        code: httpStatus,
+        status: expectedStatus,
+      });
+      expect(result.body.error.message).toContain(expectedFragment);
+      expect(received).toHaveLength(1);
+      await vi.waitFor(() =>
+        expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({ status: 'Failed' }),
+          })
+        )
+      );
+      const serialized = JSON.stringify({
+        response: result.body,
+        updated: vi.mocked(prisma.aIGatewayLogs.update).mock.calls,
+      });
+      expect(serialized).not.toContain('cf-secret-token');
+      expect(serialized).not.toContain('caller-secret-key');
+    }
+  );
+
+  test('fails safely on HTTP 200 Cloudflare error envelopes and non-JSON upstream errors', async () => {
+    relayHandler = (_req, res) => {
+      res.status(200).json({
+        result: null,
+        success: false,
+        errors: [{ code: 7003, message: 'Rejected by model' }],
+        messages: [],
+      });
+    };
+    const envelopeError = await post(
+      'generateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    );
+    expect(envelopeError.status).toBe(502);
+    expect(envelopeError.body.error.message).toBe('Rejected by model');
+
+    relayHandler = (_req, res) => {
+      res.status(503).type('text/html').end('<html>raw upstream html</html>');
+    };
+    const htmlError = await post(
+      'generateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    );
+    expect(htmlError.status).toBe(503);
+    expect(htmlError.body.error.message).toBe('Gemini upstream request failed.');
+    expect(htmlError.text).not.toContain('raw upstream html');
+  });
+
+  test('does not follow redirects and rejects unsafe Cloudflare /ai/run base URLs', async () => {
+    relayHandler = (req, res) => {
+      if (req.path === '/redirected') res.json(response);
+      else res.redirect(307, relayUrl + '/redirected');
+    };
+    expect(
+      (await post('generateContent', { contents }, 'google/gemini-4-hydrogen'))
+        .status
+    ).toBe(502);
+    expect(received.map(({ url }) => url)).toEqual([cloudflarePath]);
+
+    received = [];
+    for (const unsafeUrl of [
+      'http://169.254.169.254/client/v4/accounts/acc/ai/run',
+      'https://api.cloudflare.com/v1/ai/run',
+      'https://api.cloudflare.com/client/v4/accounts/acc/ai/run?key=secret',
+      'https://user:pass@api.cloudflare.com/client/v4/accounts/acc/ai/run',
+    ]) {
+      gateway.customModelBaseUrl = unsafeUrl;
+      expect(
+        (
+          await post(
+            'generateContent',
+            { contents },
+            'google/gemini-4-hydrogen'
+          )
+        ).status
+      ).toBe(400);
+    }
+    expect(received).toHaveLength(0);
+  });
+
+  test('aborts an idle Cloudflare /ai/run request and finalizes the failed log', async () => {
+    let upstreamClosed = false;
+    relayHandler = (_req, res) => {
+      res.on('close', () => {
+        upstreamClosed = true;
+      });
+    };
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
+    });
+    const resultPromise = post(
+      'generateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    ).then((result) => result);
+    await vi.waitFor(() => expect(received).toHaveLength(1));
+    await vi.advanceTimersByTimeAsync(120_001);
+    const result = await resultPromise;
+    expect(result.status).toBe(504);
+    expect(result.body.error.status).toBe('DEADLINE_EXCEEDED');
+    vi.useRealTimers();
+    await vi.waitFor(() => expect(upstreamClosed).toBe(true));
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'Failed' }),
+        })
+      )
+    );
+  });
+
+  test('cancelling the downstream closes the Cloudflare /ai/run upstream and logs 499', async () => {
+    let upstreamClosed = false;
+    relayHandler = (_req, res) => {
+      res.on('close', () => {
+        upstreamClosed = true;
+      });
+      res
+        .type('text/event-stream')
+        .write(
+          `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Parcial' }] } }], usageMetadata })}\n\n`
+        );
+    };
+    const baseUrl = await listen(app);
+    const controller = new AbortController();
+    const res = await fetch(
+      `${baseUrl}${prefix}/v1beta/models/google/gemini-4-hydrogen:streamGenerateContent?alt=sse`,
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-goog-api-key': 'test-upstream-key',
+        },
+        body: JSON.stringify({ contents }),
+        signal: controller.signal,
+      }
+    );
+    await res.body!.getReader().read();
+    controller.abort();
+    await vi.waitFor(() => expect(upstreamClosed).toBe(true));
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledTimes(1)
+    );
+    expect(
+      vi.mocked(prisma.aIGatewayLogs.update).mock.calls[0][0].data
+    ).toMatchObject({
+      status: 'Failed',
+      responsePayload: { error: { code: 499 } },
+    });
+  });
+
+  test('preserves JSON-shaped Cloudflare error messages and errors-only envelopes', async () => {
+    relayHandler = (_req, res) => {
+      res.status(400).json({
+        success: false,
+        errors: [{ code: 7003, message: '{"detail":"Invalid field"}' }],
+      });
+    };
+    const jsonMessageError = await post(
+      'generateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    );
+    expect(jsonMessageError.status).toBe(400);
+    expect(jsonMessageError.body.error.message).toBe(
+      '{"detail":"Invalid field"}'
+    );
+
+    relayHandler = (_req, res) => {
+      res.status(200).json({
+        errors: [{ code: 7003, message: 'Errors array without success flag' }],
+      });
+    };
+    const errorsOnly = await post(
+      'generateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    );
+    expect(errorsOnly.status).toBe(502);
+    expect(errorsOnly.body.error.message).toBe(
+      'Errors array without success flag'
+    );
+  });
+
+  test('resets idle timeout while Cloudflare SSE emits comment keepalives', async () => {
+    let upstream: express.Response;
+    relayHandler = (_req, res) => {
+      upstream = res;
+      res.type('text/event-stream');
+      res.write(': keepalive\n\n');
+    };
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
+    });
+    const resultPromise = post(
+      'streamGenerateContent',
+      { contents },
+      'google/gemini-4-hydrogen'
+    ).then((result) => result);
+    await vi.waitFor(() => expect(received).toHaveLength(1));
+
+    await vi.advanceTimersByTimeAsync(90_000);
+    await new Promise<void>((resolve) =>
+      upstream!.write(': keepalive\n\n', () =>
+        setImmediate(() => setImmediate(resolve))
+      )
+    );
+    await vi.advanceTimersByTimeAsync(90_000);
+    upstream!.end(`data: ${JSON.stringify(response)}\n\ndata: [DONE]\n\n`);
+
+    const result = await resultPromise;
+    expect(result.status).toBe(200);
+    expect(result.text).toContain('Hola');
+    vi.useRealTimers();
+    await vi.waitFor(() =>
+      expect(prisma.aIGatewayLogs.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'Success' }),
+        })
+      )
+    );
+  });
+});
