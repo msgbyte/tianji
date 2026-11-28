@@ -101,12 +101,12 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
         },
         custom: {
           baseUrl: '/api/ai/${workspaceId}/${gatewayId}/custom',
-          defaultModel: 'custom-model',
+          defaultModel: gateway?.customModelName?.trim() || '<YOUR-MODEL-ID>',
           description: t('Custom model API with your own settings'),
           label: 'Custom API',
         },
       }),
-      [t]
+      [gateway?.customModelName, t]
     );
 
     const isAnthropicNative = (provider: AIProvider) =>
@@ -117,6 +117,7 @@ export const AIGatewayCodeExampleBtn: React.FC<AIGatewayCodeExampleBtnProps> =
       model: string,
       language: string
     ) => {
+      const modelLiteral = JSON.stringify(model);
       switch (language) {
         case 'nodejs':
           return `const axios = require('axios');
@@ -136,7 +137,7 @@ async function callAIGateway() {
             content: "Hello"
           }
         ],
-        model: "${model}"
+        model: ${modelLiteral}
       },
       {
         headers: {
@@ -176,7 +177,7 @@ def call_ai_gateway():
                 "content": "Hello"
             }
         ],
-        "model": "${model}"
+        "model": ${modelLiteral}
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
@@ -203,7 +204,7 @@ call_ai_gateway()`;
       "content": "Hello"
     }
   ],
-  "model": "${model}"
+  "model": ${modelLiteral.replaceAll("'", '\\u0027')}
 }'`;
 
         default:

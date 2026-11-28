@@ -197,7 +197,38 @@ describe('AIGatewayCodeExampleBtn', () => {
     );
   });
 
-  test('keeps other providers independent of the configured Gemini model', () => {
+  test.each([
+    ['', '<YOUR-MODEL-ID>'],
+    ['   ', '<YOUR-MODEL-ID>'],
+    ['relay/model', 'relay/model'],
+  ])('shows %j as %j in all Custom API examples', (configured, expected) => {
+    gateway.customModelName = configured;
+    render(<AIGatewayCodeExampleBtn gatewayId="gateway_1" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Custom API' }));
+
+    const code = screen.getByTestId('code-example').textContent ?? '';
+    expect(code.match(/(?:"model"|model): .+/g)).toEqual([
+      `"model": "${expected}"`,
+      `"model": "${expected}"`,
+      `model: "${expected}"`,
+    ]);
+    expect(code).toContain('/custom/v1/chat/completions');
+  });
+
+  test('escapes quotes in configured model IDs for each Custom API example', () => {
+    gateway.customModelName = `relay/model's "preview"`;
+    render(<AIGatewayCodeExampleBtn gatewayId="gateway_1" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Custom API' }));
+
+    const code = screen.getByTestId('code-example').textContent ?? '';
+    expect(code.match(/(?:"model"|model): .+/g)).toEqual([
+      String.raw`"model": "relay/model\u0027s \"preview\""`,
+      String.raw`"model": "relay/model's \"preview\""`,
+      String.raw`model: "relay/model's \"preview\""`,
+    ]);
+  });
+
+  test('keeps built-in chat providers independent of the configured model', () => {
     gateway.customModelName = 'relay/gemini';
     render(<AIGatewayCodeExampleBtn gatewayId="gateway_1" />);
 
@@ -211,7 +242,6 @@ describe('AIGatewayCodeExampleBtn', () => {
       ['Deepseek API', 'deepseek-chat', '/deepseek/v1/chat/completions'],
       ['OpenRouter API', 'openai/gpt-5.5', '/openrouter/v1/chat/completions'],
       ['Anthropic API', 'claude-opus-4-8', '/anthropic/v1/messages'],
-      ['Custom API', 'custom-model', '/custom/v1/chat/completions'],
     ]) {
       fireEvent.click(screen.getByRole('button', { name: provider }));
 
