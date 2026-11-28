@@ -143,7 +143,7 @@ export function ensureJSONOutput(content: string): Record<string, any> | null {
   }
 
   // Try to find JSON wrapped in ```json ``` blocks
-  const jsonBlockRegex = /```json\s*\n?([\s\S]*?)\n?\s*```/i;
+  const jsonBlockRegex = /```json([\s\S]*?)```/i;
   const jsonBlockMatch = trimmedContent.match(jsonBlockRegex);
 
   if (jsonBlockMatch && jsonBlockMatch[1]) {
@@ -161,7 +161,7 @@ export function ensureJSONOutput(content: string): Record<string, any> | null {
   }
 
   // Try to find JSON wrapped in generic ``` blocks (without language specification)
-  const codeBlockRegex = /```\s*\n?([\s\S]*?)\n?\s*```/;
+  const codeBlockRegex = /```([\s\S]*?)```/;
   const codeBlockMatch = trimmedContent.match(codeBlockRegex);
 
   if (codeBlockMatch && codeBlockMatch[1]) {
